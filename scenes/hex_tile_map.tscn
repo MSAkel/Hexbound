@@ -29,7 +29,7 @@ script = ExtResource("1_d5c3r")
 width = 15
 height = 15
 
-[node name="BaseLayer" type="TileMapLayer" parent="."]
+[node name="BaseLayer" type="TileMapLayer" parent="." groups=["hex_map_group"]]
 tile_set = SubResource("TileSet_ekk8a")
 
 [node name="HexBorderLayer" type="TileMapLayer" parent="."]

@@ -17,3 +17,7 @@ func generate_terrain() -> void:
 	for x in width:
 		for y in height:
 			base_layer.set_cell(Vector2i(x, y), 0, Vector2i(1,1))
+
+# Used for setting camera boundaries
+func map_to_local(coords: Vector2i) -> Vector2i:
+	return base_layer.map_to_local(coords)
