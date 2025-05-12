@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://dvclsca8njca3"]
+
+[ext_resource type="Texture2D" uid="uid://cuygx4fg7pjp" path="res://assets/card slot.png" id="1_lhyts"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b7wrg"]
+size = Vector2(59, 78.5)
+
+[node name="CardDropArea" type="Area2D"]
+collision_layer = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(29.5, 39.5)
+scale = Vector2(0.356725, 0.303846)
+texture = ExtResource("1_lhyts")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(29.5, 39.75)
+shape = SubResource("RectangleShape2D_b7wrg")

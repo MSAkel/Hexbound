@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Card" load_steps=3 format=3 uid="uid://hi72xkryp1rr"]
+
+[ext_resource type="Texture2D" uid="uid://bubvyeaiw0hss" path="res://assets/cards/farm.png" id="1_8h7xu"]
+[ext_resource type="Script" uid="uid://bgbg3svfebv4w" path="res://resources/card.gd" id="1_srgiw"]
+
+[resource]
+script = ExtResource("1_srgiw")
+id = "farm"
+type = 1
+target = 2
+value = 5
+health = -1
+card_slots = 2
+icon = ExtResource("1_8h7xu")
+name = "Farm"
+tooltip_text = "Gather food"
+metadata/_custom_type_script = "uid://bgbg3svfebv4w"

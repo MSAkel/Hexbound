@@ -1,0 +1,119 @@
+[gd_scene load_steps=11 format=3 uid="uid://b4k5fq6ran8f5"]
+
+[ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://main_theme.tres" id="1_s55cg"]
+[ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/card_ui.gd" id="2_1kpl7"]
+[ext_resource type="StyleBox" uid="uid://bq6ifmu3s6k48" path="res://scenes/ui/card_base_stylebox.tres" id="3_7cyci"]
+[ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="3_fbbsm"]
+[ext_resource type="Texture2D" uid="uid://cmcilmjnmmk5x" path="res://assets/cards/peasant.png" id="4_u2fwa"]
+[ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="4_vk10k"]
+[ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="5_im7p3"]
+[ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="6_7cyci"]
+[ext_resource type="Script" uid="uid://bpqk41cscv01x" path="res://scenes/cards/card states/card_link_state.gd" id="7_u2fwa"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
+size = Vector2(58, 77)
+
+[node name="CardUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -11.0
+offset_top = -15.0
+offset_right = -1105.0
+offset_bottom = -586.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_s55cg")
+script = ExtResource("2_1kpl7")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("3_7cyci")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -15.0
+offset_right = 15.0
+offset_bottom = 8.0
+grow_horizontal = 2
+text = "Test"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Icon" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_u2fwa")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Color" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.192305, 0.413268, 0.268796, 1)
+
+[node name="State" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "State"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DropPointArea" type="Area2D" parent="."]
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea"]
+position = Vector2(29, 38.5)
+shape = SubResource("RectangleShape2D_s55cg")
+
+[node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+script = ExtResource("3_fbbsm")
+initial_state = NodePath("CardBaseState")
+
+[node name="CardBaseState" type="Node" parent="CardStateMachine"]
+script = ExtResource("4_vk10k")
+
+[node name="CardClickedState" type="Node" parent="CardStateMachine"]
+script = ExtResource("5_im7p3")
+state = 1
+
+[node name="CardDraggingState" type="Node" parent="CardStateMachine"]
+script = ExtResource("6_7cyci")
+state = 2
+
+[node name="CardLinkState" type="Node" parent="CardStateMachine"]
+script = ExtResource("7_u2fwa")
+state = 3
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
+[connection signal="area_entered" from="DropPointArea" to="." method="_on_drop_point_area_area_entered"]
+[connection signal="area_exited" from="DropPointArea" to="." method="_on_drop_point_area_area_exited"]

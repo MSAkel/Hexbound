@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3 uid="uid://cpvr3k1luft0f"]
+
+[ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://hex_tile_map.gd" id="1_d5c3r"]
+[ext_resource type="Texture2D" uid="uid://xyr8ssa54dw4" path="res://assets/tilesets/base_hex_tiles.png" id="2_c0fpv"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_iobf8"]
+texture = ExtResource("2_c0fpv")
+texture_region_size = Vector2i(222, 256)
+0:0/0 = 0
+1:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_ekk8a"]
+tile_shape = 3
+tile_size = Vector2i(222, 256)
+sources/0 = SubResource("TileSetAtlasSource_iobf8")
+
+[sub_resource type="TileSet" id="TileSet_8rbqn"]
+tile_shape = 3
+tile_size = Vector2i(256, 256)
+
+[sub_resource type="TileSet" id="TileSet_3rbfx"]
+tile_shape = 3
+tile_size = Vector2i(256, 256)
+
+[node name="HexTileMap" type="Node2D"]
+script = ExtResource("1_d5c3r")
+width = 15
+height = 15
+
+[node name="BaseLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_ekk8a")
+
+[node name="HexBorderLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_8rbqn")
+
+[node name="SelectionOverlayLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_3rbfx")

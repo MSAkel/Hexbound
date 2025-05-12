@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://dum71arlltl5g"]
+
+[ext_resource type="Texture2D" uid="uid://ignkxt8bgyps" path="res://assets/background/natureBG.png" id="1_ns7vs"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_e2a3c"]
+size = Vector2(2587, 1037)
+
+[node name="TestSceneCardDropArea" type="Node2D"]
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("1_ns7vs")
+
+[node name="CardDropArea" type="Area2D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CardDropArea"]
+position = Vector2(0.5, 156.5)
+shape = SubResource("RectangleShape2D_e2a3c")
