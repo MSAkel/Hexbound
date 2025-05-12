@@ -6,5 +6,7 @@
 [node name="TestSceneCamera" type="Node2D"]
 
 [node name="HexTileMap" parent="." groups=["hex_map_group"] instance=ExtResource("1_5bcyv")]
+width = 7
+height = 7
 
 [node name="Camera" parent="." instance=ExtResource("2_nhudf")]
