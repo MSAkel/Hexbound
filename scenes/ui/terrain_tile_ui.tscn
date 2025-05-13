@@ -1,0 +1,122 @@
+[gd_scene load_steps=4 format=3 uid="uid://bif4cx5edh2ng"]
+
+[ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/terrain_tile_ui.gd" id="1_h2p2k"]
+[ext_resource type="Texture2D" uid="uid://r4el2w4g2am" path="res://assets/background/fields.png" id="2_bcbo3"]
+[ext_resource type="Texture2D" uid="uid://b7krqyb0k5usu" path="res://assets/icons/resources/berries.png" id="3_bcbo3"]
+
+[node name="TerrainTileUi" type="Panel"]
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -308.0
+offset_top = -185.0
+offset_bottom = 185.0
+grow_horizontal = 0
+grow_vertical = 2
+script = ExtResource("1_h2p2k")
+
+[node name="BackgroundImage" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bcbo3")
+expand_mode = 1
+
+[node name="TerrianLabel" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Terrian:"
+
+[node name="Resources" type="Label" parent="."]
+layout_mode = 0
+offset_top = 56.0
+offset_right = 40.0
+offset_bottom = 79.0
+text = "Resources"
+
+[node name="Buildings" type="Label" parent="."]
+layout_mode = 0
+offset_top = 133.0
+offset_right = 40.0
+offset_bottom = 156.0
+text = "Buildings"
+
+[node name="Production" type="Label" parent="."]
+layout_mode = 0
+offset_top = 208.0
+offset_right = 40.0
+offset_bottom = 231.0
+text = "Production"
+
+[node name="ProductionText1" type="Label" parent="."]
+layout_mode = 0
+offset_top = 235.0
+offset_right = 86.0
+offset_bottom = 258.0
+text = "item 1"
+
+[node name="ProductionText2" type="Label" parent="."]
+layout_mode = 0
+offset_top = 256.0
+offset_right = 86.0
+offset_bottom = 279.0
+text = "item 2"
+
+[node name="Rune" type="Label" parent="."]
+layout_mode = 0
+offset_left = 156.0
+offset_top = 56.0
+offset_right = 196.0
+offset_bottom = 79.0
+text = "Rune"
+
+[node name="RuneIcon" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 158.0
+offset_top = 82.0
+offset_right = 198.0
+offset_bottom = 122.0
+
+[node name="ResourceIcon1" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 82.0
+offset_right = 44.0
+offset_bottom = 122.0
+texture = ExtResource("3_bcbo3")
+expand_mode = 1
+
+[node name="ResourceIcon2" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 59.0
+offset_top = 82.0
+offset_right = 99.0
+offset_bottom = 122.0
+texture = ExtResource("3_bcbo3")
+expand_mode = 1
+
+[node name="BuildingIcon1" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 157.0
+offset_right = 44.0
+offset_bottom = 197.0
+
+[node name="Button" type="Button" parent="."]
+modulate = Color(0.917332, 0.299453, 0.346819, 1)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -31.0
+offset_bottom = 31.0
+grow_horizontal = 0
+text = "x"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

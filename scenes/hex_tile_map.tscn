@@ -1,7 +1,13 @@
-[gd_scene load_steps=8 format=3 uid="uid://cpvr3k1luft0f"]
+[gd_scene load_steps=14 format=3 uid="uid://cpvr3k1luft0f"]
 
 [ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://hex_tile_map.gd" id="1_d5c3r"]
+[ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/resource_data.gd" id="2_047vf"]
 [ext_resource type="Texture2D" uid="uid://xyr8ssa54dw4" path="res://assets/tilesets/base_hex_tiles.png" id="2_c0fpv"]
+[ext_resource type="Texture2D" uid="uid://bgme2susi6nhr" path="res://assets/tilesets/selected_tile_overlay.png" id="3_c0fpv"]
+[ext_resource type="Resource" uid="uid://8slf12t7lne6" path="res://resources/resource/berries.tres" id="3_tt7jl"]
+[ext_resource type="Resource" uid="uid://upewdosmftp2" path="res://resources/resource/sheep.tres" id="4_b6nmi"]
+[ext_resource type="Resource" uid="uid://dmo8iuvkajm6p" path="res://resources/resource/stone.tres" id="5_4rcl8"]
+[ext_resource type="Resource" uid="uid://dpig8u2yptoeu" path="res://resources/resource/wood.tres" id="6_xmj4m"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d5c3r"]
 texture = ExtResource("2_c0fpv")
@@ -19,26 +25,26 @@ tile_shape = 3
 tile_size = Vector2i(222, 256)
 sources/0 = SubResource("TileSetAtlasSource_d5c3r")
 
-[sub_resource type="GDScript" id="GDScript_d5c3r"]
-script/source = "extends Node
-
-enum TerrainType { PLAINS, WATER, DESERT, MOUNTAIN, ICE, SHALLOW_WATER, FOREST, BEACH }
-"
-
 [sub_resource type="TileSet" id="TileSet_8rbqn"]
 tile_shape = 3
 tile_size = Vector2i(256, 256)
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_c0fpv"]
+texture = ExtResource("3_c0fpv")
+texture_region_size = Vector2i(222, 256)
+0:0/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_3rbfx"]
 tile_shape = 3
-tile_size = Vector2i(256, 256)
+tile_size = Vector2i(222, 256)
+sources/0 = SubResource("TileSetAtlasSource_c0fpv")
 
 [node name="HexTileMap" type="Node2D"]
 script = ExtResource("1_d5c3r")
+resource_list = Array[ExtResource("2_047vf")]([ExtResource("3_tt7jl"), ExtResource("4_b6nmi"), ExtResource("5_4rcl8"), ExtResource("6_xmj4m")])
 
 [node name="BaseLayer" type="TileMapLayer" parent="." groups=["hex_map_group"]]
 tile_set = SubResource("TileSet_ekk8a")
-script = SubResource("GDScript_d5c3r")
 
 [node name="HexBorderLayer" type="TileMapLayer" parent="."]
 tile_set = SubResource("TileSet_8rbqn")

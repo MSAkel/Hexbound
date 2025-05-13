@@ -14,6 +14,10 @@ config/name="Game++"
 run/main_scene="uid://pmd7yvxmfr8m"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
+[autoload]
+
+UiManager="*res://scripts/ui_manager.gd"
+
 [display]
 
 window/vsync/vsync_mode=0

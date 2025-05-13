@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ResourceData" load_steps=3 format=3 uid="uid://8slf12t7lne6"]
+
+[ext_resource type="Texture2D" uid="uid://b7krqyb0k5usu" path="res://assets/icons/resources/berries.png" id="1_68c5l"]
+[ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/resource_data.gd" id="2_0o6hs"]
+
+[resource]
+script = ExtResource("2_0o6hs")
+id = "berries"
+name = "Berries"
+icon = ExtResource("1_68c5l")
+description = ""
+base_production_rate = 5
+rarity = 1
+metadata/_custom_type_script = "uid://cnbs0ekyu3tkp"

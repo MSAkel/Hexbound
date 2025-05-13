@@ -2,13 +2,20 @@ class_name  HexTileMap
 extends Node2D
 
 @onready var base_layer: TileMapLayer = $BaseLayer
-@onready var hex_border_layer: TileMapLayer = $HexBorderLayer
+#@onready var hex_border_layer: TileMapLayer = $HexBorderLayer
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 
 @export var width := 7
 @export var height := 7
 
+@export var resource_list: Array[ResourceData] = []
+#@onready var base_layer: TileMapLayer = $BaseLayer
+
+@onready var terrain_tile_ui: TerrainTileUI = $"../CanvasLayer/TerrainTileUi"
+
 var hex: Hex
+
+var selected_cell: Vector2i = Vector2i(-1, -1)
 
 var map_data: Dictionary = {}  # Dictionary<Vector2i, Hex>
 var terrain_textures: Dictionary = {
@@ -23,7 +30,47 @@ var terrain_textures: Dictionary = {
 
 func _ready() -> void:
 	generate_terrain()
-		
+	generate_resources()
+
+# Handles listening to tile clicks and selection
+func _unhandled_input(event: InputEvent) -> void:
+	# only detect input if it hasn't already been consumed
+	if event is InputEventMouseButton:
+		var map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
+		# Check if mouse click is within terrain boundaries
+		if map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
+			if event.button_mask == MOUSE_BUTTON_MASK_LEFT:
+				print(map_data[map_coords].get_tile_data())
+				var h: Hex = map_data[map_coords]
+				terrain_tile_ui._set_hex(h)
+				
+				# Remove the current overlay texture on selecting a different tile
+				if map_coords != selected_cell:
+					selection_overlay_layer.set_cell(selected_cell, -1)
+					
+				# Apply overlay tile on selecting a tile
+				selection_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+				selected_cell = map_coords
+		else:
+			# Deselect active cell on clicking outside the map
+			selection_overlay_layer.set_cell(selected_cell, -1)
+
+func generate_resources() -> void:
+	for x in width:
+		for y in height:
+			var h : Hex = map_data[Vector2i(x, y)]
+			resource_list.shuffle()  # Randomize the order of the array
+			var tile_resources: Array[ResourceData] = resource_list.slice(0, 2)
+			h.resource_1 = tile_resources[0]
+			h.resource_2 = tile_resources[1]
+
+	#for x in width:
+		#for y in height:
+			#var h: Hex = map_data[Vector2i(x,y)]
+			#
+			#match h._terrain_type:
+				#hex.TerrainType.FIELDS:
+					#h.
 		
 func generate_terrain() -> void:
 	# Initialize noise maps for terrain features
@@ -111,6 +158,8 @@ func generate_terrain() -> void:
 				_hex._terrain_type = hex.TerrainType.WATER
 			
 			base_layer.set_cell(Vector2i(x, y), 0, terrain_textures[_hex._terrain_type])
+			
+			
 	
 # Used for setting camera boundaries
 func map_to_local(coords: Vector2i) -> Vector2i:

@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://ignkxt8bgyps" path="res://assets/background/natureBG.png" id="1_02vbf"]
 [ext_resource type="PackedScene" uid="uid://b4k5fq6ran8f5" path="res://scenes/ui/card_ui.tscn" id="2_5omo2"]
-[ext_resource type="Resource" uid="uid://myygvfgh6vgu" path="res://cards/villagers/villager.tres" id="3_mtcxc"]
+[ext_resource type="Resource" uid="uid://myygvfgh6vgu" path="res://resources/cards/villagers/villager.tres" id="3_mtcxc"]
 
 [node name="TestSceneCardDropArea" type="Node2D"]
 position = Vector2(578, 301)
