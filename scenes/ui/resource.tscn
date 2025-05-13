@@ -11,13 +11,13 @@ font_color = Color(0, 0, 0, 1)
 script = ExtResource("1_1a6om")
 
 [node name="Icon" type="Sprite2D" parent="."]
-scale = Vector2(0.202703, 0.202703)
+scale = Vector2(0.0540541, 0.054054)
 texture = ExtResource("2_52j84")
 
 [node name="Label" type="Label" parent="."]
 offset_left = -13.0
-offset_top = 16.0
+offset_top = 5.0
 offset_right = 16.0
-offset_bottom = 28.0
+offset_bottom = 17.0
 text = "Berries"
 label_settings = SubResource("LabelSettings_xluhd")

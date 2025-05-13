@@ -1,0 +1,23 @@
+[gd_scene load_steps=6 format=3 uid="uid://b40vvy3d0sxlv"]
+
+[ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/ui_manager.gd" id="1_7wyih"]
+[ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="1_8mww4"]
+[ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_6fp5t"]
+[ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="2_rb232"]
+[ext_resource type="AudioStream" uid="uid://bv3wa8uo6wfsc" path="res://assets/audio/main_theme.mp3" id="5_3qfj4"]
+
+[node name="TestSceneTerrainGen" type="Node2D"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+script = ExtResource("1_7wyih")
+
+[node name="TerrainTileUi" parent="CanvasLayer" instance=ExtResource("2_6fp5t")]
+
+[node name="HexTileMap" parent="." groups=["hex_map_group"] instance=ExtResource("1_8mww4")]
+
+[node name="Camera" parent="." instance=ExtResource("2_rb232")]
+zoom = Vector2(0.5, 0.5)
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="Camera"]
+stream = ExtResource("5_3qfj4")
+autoplay = true

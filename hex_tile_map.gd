@@ -40,17 +40,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Check if mouse click is within terrain boundaries
 		if map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
 			if event.button_mask == MOUSE_BUTTON_MASK_LEFT:
-				print(map_data[map_coords].get_tile_data())
 				var h: Hex = map_data[map_coords]
-				terrain_tile_ui._set_hex(h)
-				
-				# Remove the current overlay texture on selecting a different tile
-				if map_coords != selected_cell:
-					selection_overlay_layer.set_cell(selected_cell, -1)
+				if h._terrain_type != hex.TerrainType.WATER:
+					terrain_tile_ui._set_hex(h)
 					
-				# Apply overlay tile on selecting a tile
-				selection_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
-				selected_cell = map_coords
+					# Remove the current overlay texture on selecting a different tile
+					if map_coords != selected_cell:
+						selection_overlay_layer.set_cell(selected_cell, -1)
+						
+					# Apply overlay tile on selecting a tile
+					selection_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+					selected_cell = map_coords
 		else:
 			# Deselect active cell on clicking outside the map
 			selection_overlay_layer.set_cell(selected_cell, -1)
@@ -59,19 +59,36 @@ func generate_resources() -> void:
 	for x in width:
 		for y in height:
 			var h : Hex = map_data[Vector2i(x, y)]
-			resource_list.shuffle()  # Randomize the order of the array
-			var tile_resources: Array[ResourceData] = resource_list.slice(0, 2)
-			h.resource_1 = tile_resources[0]
-			h.resource_2 = tile_resources[1]
+			
+			# generate 2 resources on each tile except water
+			if h._terrain_type != hex.TerrainType.WATER:
+				resource_list.shuffle()  # Randomize the order of the array
+				var tile_resources: Array[ResourceData] = resource_list.slice(0, 2)
+				h.resource_1 = tile_resources[0]
+				h.resource_2 = tile_resources[1]
+				
+				# Geneate resource icons on the tiles
+				var base_pos := base_layer.map_to_local(Vector2i(x, y))
+				var set_icon_size := Vector2(64, 64)
 
-	#for x in width:
-		#for y in height:
-			#var h: Hex = map_data[Vector2i(x,y)]
-			#
-			#match h._terrain_type:
-				#hex.TerrainType.FIELDS:
-					#h.
-		
+			
+				var resource_icon_1 := Sprite2D.new() 
+				resource_icon_1.texture = tile_resources[0].icon
+				resource_icon_1.position = base_pos + Vector2(-30, -24)
+				
+				var texture_size_1 := resource_icon_1.texture.get_size()
+				resource_icon_1.scale = set_icon_size / texture_size_1
+				add_child(resource_icon_1)
+				
+				var resource_icon_2 := Sprite2D.new() 
+				resource_icon_2.texture = tile_resources[1].icon
+				resource_icon_2.position = base_pos + Vector2(30, -24)
+				
+				var texture_size_2 := resource_icon_2.texture.get_size()
+				resource_icon_2.scale = set_icon_size / texture_size_2
+				add_child(resource_icon_2)
+			
+
 func generate_terrain() -> void:
 	# Initialize noise maps for terrain features
 	var noise_map := []
@@ -103,38 +120,14 @@ func generate_terrain() -> void:
 	
 	var noise_max := 0.0
 	
-	#var mountain_noise := FastNoiseLite.new()
-	
 	# Generate noise values
 	for x in width:
 		for y in height:
-			# Moving water to edge of map, disabled for now and using the more straightforward approach
-			# Calculate distance to center
-			#var center := Vector2(width / 2, height / 2)
-			#var distance := Vector2(x, y).distance_to(center)
-			#var max_distance := center.length()  # max possible distance in the map
-#
-			## Create falloff value: closer to edge = closer to 1
-			#var edge_falloff: float = clamp(distance / max_distance, 0.0, 1.0)
-#
-			## Sharpen the falloff with a curve
-			#edge_falloff = pow(edge_falloff, 3)  # stronger near edges
-#
-			## Apply falloff to terrain noise (push edge values down toward water)
-			#noise_map[x][y] *= (1.0 - edge_falloff)
-						
-			
 			# Base terrain
 			noise_map[x][y] = abs(base_noise.get_noise_2d(x, y))
 			noise_max = max(noise_max, noise_map[x][y])
 	
-	#var terrain_ranges := [
-		#{ "min": 0.0, "max": noise_max / 10.0 * 7.5, "type": hex.TerrainType.FIELDS },
-		##{ "min": noise_max / 10.0 * 4.0, "max": noise_max / 10.0 * 4.5, "type": hex.TerrainType.FIELDS },
-		#{ "min": noise_max / 10.0 * 1.5, "max": noise_max + 0.05, "type": hex.TerrainType.FOREST }
-	#]
 	var terrain_ranges := [
-		#{ "min": 0.0, "max": noise_max / 10.0 * 0.2, "type": hex.TerrainType.WATER },
 		{ "min": 0, "max": noise_max / 10.0 * 4.5, "type": hex.TerrainType.FIELDS },
 		{ "min": noise_max / 10.0 * 2.0, "max": noise_max / 10.0 * 3, "type": hex.TerrainType.MOUNTAIN },
 		{ "min": noise_max / 10.0 * 1.5, "max": noise_max + 0.05, "type": hex.TerrainType.FOREST }
@@ -158,9 +151,10 @@ func generate_terrain() -> void:
 				_hex._terrain_type = hex.TerrainType.WATER
 			
 			base_layer.set_cell(Vector2i(x, y), 0, terrain_textures[_hex._terrain_type])
-			
-			
-	
+
+func generate_tile_icons() -> void:
+	pass
+
 # Used for setting camera boundaries
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
