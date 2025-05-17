@@ -10,6 +10,7 @@
 [node name="MainUI" parent="." instance=ExtResource("4_i3mjp")]
 
 [node name="HexTileMap" parent="." groups=["hex_map_group"] instance=ExtResource("3_t3dkj")]
+cursed_tiles_count = 3
 
 [node name="Camera" parent="." instance=ExtResource("4_rpmvn")]
 

@@ -36,14 +36,6 @@ func end_turn() -> void:
 	for tile in explored_tiles:
 		gold_count += 5
 		
-		if tile._resource_1.id == "berries":
-			food_count += tile._resource_1.base_production_rate
-		
-		if tile.resource_2.id == "berries":
-			food_count += tile.resource_2.base_production_rate
-
-
-
 func explore_tile(hex: Hex) -> void:
 	explored_tiles.append(hex)
 	hex.explored = true

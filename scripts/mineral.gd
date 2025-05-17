@@ -10,6 +10,5 @@ var mineral_data: MineralData
 @onready var label: Label = $Label
 
 func _ready() -> void:
-	# Set the icon and label to the mineral data
 	icon.texture = mineral_data.icon
 	label.text = mineral_data.name

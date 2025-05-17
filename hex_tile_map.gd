@@ -16,9 +16,12 @@ extends Node2D
 @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUi"
 
 var mineral_scene: PackedScene = preload("res://scenes/ui/mineral.tscn")
+var curse_scene: PackedScene = preload("res://scenes/ui/curse_event.tscn")
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
-var map_data: Dictionary = {}  # Dictionary<Vector2i, Hex>
+ # Dictionary<Vector2i, Hex>
+var map_data: Dictionary = {}
+# Based off the tilemap textures order. If changed, update the dictionary.
 var terrain_textures: Dictionary = {
 	hex.TerrainType.FIELDS: Vector2i(0,0),
 	hex.TerrainType.FOREST: Vector2i(1,0),
@@ -26,12 +29,10 @@ var terrain_textures: Dictionary = {
 	hex.TerrainType.SNOW: Vector2i(3,0),
 	hex.TerrainType.WATER: Vector2i(4,0),
 	hex.TerrainType.SWAMP: Vector2i(5,0),
-	hex.TerrainType.CURSED: Vector2i(6,0),
 }
 
 func _ready() -> void:
 	generate_terrain()
-	# generate_minerals()
 	GameManager.turn_ended.connect(on_turn_ended)
 	GameManager.tile_explored.connect(explore_tile)
 
@@ -58,47 +59,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			# Deselect active cell on clicking outside the map
 			selection_overlay_layer.set_cell(selected_cell, -1)
 
-# func generate_minerals_2() -> void:
-# 	for x in width:
-# 		for y in height:
-# 			var h : Hex = map_data[Vector2i(x, y)]
-			
-# 			# generate 2 resources on each tile except water
-# 			if h.terrain_type != hex.TerrainType.WATER:
-# 				minerals.shuffle()  # Randomize the order of the array
-# 				var tile_minerals: Array[MineralData] = minerals.slice(0, 2)
-# 				h.mineral_1 = tile_minerals[0]
-# 				h.mineral_2 = tile_minerals[1]
-				
-# 				# Geneate mineral icons on the tiles
-# 				var base_pos := base_layer.map_to_local(Vector2i(x, y))
-# 				var set_icon_size := Vector2(64, 64)
-
-			
-# 				var mineral_icon_1 := Sprite2D.new() 
-# 				mineral_icon_1.texture = tile_minerals[0].icon
-# 				mineral_icon_1.position = base_pos + Vector2(-30, -32)
-				
-# 				var texture_size_1 := mineral_icon_1.texture.get_size()
-# 				mineral_icon_1.scale = set_icon_size / texture_size_1
-# 				add_child(mineral_icon_1)
-				
-# 				var mineral_icon_1_icon_2 := Sprite2D.new() 
-# 				mineral_icon_1_icon_2.texture = tile_minerals[1].icon
-# 				mineral_icon_1_icon_2.position = base_pos + Vector2(30, -32)
-				
-# 				var texture_size_2 := mineral_icon_1_icon_2.texture.get_size()
-# 				mineral_icon_1_icon_2.scale = set_icon_size / texture_size_2
-# 				add_child(mineral_icon_1_icon_2)
-				
-# 				if h.terrain_type == hex.TerrainType.CURSED:
-# 					#var base_pos := base_layer.map_to_local(Vector2i(x, y))
-# 					var curse_icon := Sprite2D.new() 
-# 					curse_icon.texture = preload("res://assets/icons/events/curse.png")
-# 					print(curse_icon.texture)
-# 					curse_icon.position = base_pos + Vector2(0, 24)
-# 					add_child(curse_icon)
-	
 func generate_terrain() -> void:
 	# Initialize noise maps for terrain features
 	var noise_map := []
@@ -143,13 +103,11 @@ func generate_terrain() -> void:
 		{ "min": noise_max / 10.0 * 5, "max": noise_max + 0.05, "type": hex.TerrainType.FOREST }
 	]
 	
-	var cursed_tiles = generate_cursed_tiles_coords()
-	
 	var x_center = width / 2
 	var y_center = height / 2
 
 	for x in width:
-		for y in height:			
+		for y in height:
 			var h := Hex.new(Vector2i(x, y))
 			var noise_value: float = noise_map[x][y]
 			
@@ -165,21 +123,22 @@ func generate_terrain() -> void:
 			if x < border_thickness or x >= width - border_thickness or y < border_thickness or y >= height - border_thickness:
 				h.terrain_type = hex.TerrainType.WATER
 			
-			# Final override for special tiles
-			var coord := Vector2i(x, y)
-			if cursed_tiles.has(coord):
-				h.terrain_type = cursed_tiles[coord]
 			
 			base_layer.set_cell(Vector2i(x, y), 0, terrain_textures[h.terrain_type])
 			fog_overlay_layer.set_cell(Vector2i(x, y), 0, Vector2i(0,0))
 			generate_minerals(h, Vector2i(x, y))
-
+		
 			if x == x_center and y == y_center:
 				explore_tile(h)
+			elif  h.terrain_type != hex.TerrainType.WATER:
+				var containsEvent = randi_range(0, 4)
+				if containsEvent == 1:
+					h.special_state = hex.SpecialTileState.CURSED
+					apply_special_tile_state(h, Vector2i(x, y))
+				elif containsEvent == 2:
+					h.special_state = hex.SpecialTileState.ENCAMPMENT
+					apply_special_tile_state(h, Vector2i(x, y))
 
-			
-
-	
 func generate_minerals(h: Hex, coords: Vector2i) -> void:
 	# generate 2 resources on each tile except water
 	if h.terrain_type != hex.TerrainType.WATER:
@@ -190,11 +149,10 @@ func generate_minerals(h: Hex, coords: Vector2i) -> void:
 			var tile_mineral = tile_minerals[i]
 			var mineral: Mineral = mineral_scene.instantiate() as Mineral
 			mineral.map = self
-			h.minerals.append(mineral)
-			mineral.tile = h
-
 			# Where on the map the mineral is located
 			mineral.center_coordinates = coords
+			mineral.tile = h
+			h.minerals.append(mineral)
 
 			# Base position on the tile
 			var base_pos = base_layer.map_to_local(coords)
@@ -206,24 +164,23 @@ func generate_minerals(h: Hex, coords: Vector2i) -> void:
 			add_child(mineral)
 			mineral.hide()
 		
+# Needs a special tile state scene
+func apply_special_tile_state(h: Hex, coords: Vector2i) -> void:
+	if h.special_state == hex.SpecialTileState.CURSED:
+		var curse: CurseEvent = curse_scene.instantiate() as CurseEvent
+		curse.map = self
+		curse.tile = h
+		curse.center_coordinates = coords
+		h.curse = curse
 
-		if h.terrain_type == hex.TerrainType.CURSED:
-			var curse_icon := Sprite2D.new() 
-			curse_icon.texture = preload("res://assets/icons/events/curse.png")
-			curse_icon.position =  Vector2i(0, 24)
-			h.add_child(curse_icon)
-
-func generate_cursed_tiles_coords():
-	var cursed_tiles_coords := {}
-	while cursed_tiles_coords.size() < cursed_tiles_count:
-		# the 1 is the value of border_thickness
-		var rx = randi() % (width - 1 * 2) + 1
-		var ry = randi() % (height - 1 * 2) + 1
-		var pos = Vector2i(rx, ry)
-		cursed_tiles_coords[pos] = hex.TerrainType.CURSED
+		curse.position = base_layer.map_to_local(coords)
+		# TODO get the curse data from the curse event
+		# curse.curse_data = 
+		add_child(curse)
+		
+	elif h.special_state == hex.SpecialTileState.ENCAMPMENT:
+		pass
 	
-	return cursed_tiles_coords
-
 # Used for setting camera boundaries
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
