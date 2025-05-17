@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://6quv54inxx4v"]
+
+[ext_resource type="Texture2D" uid="uid://bhnfrrx28pbe6" path="res://assets/icons/minerals/wood.png" id="1_aqwe1"]
+
+[node name="ActivePerks" type="Control" groups=["main_ui"]]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="MarginContainer" type="NinePatchRect" parent="."]
+layout_mode = 2
+offset_right = 250.0
+offset_bottom = 105.0
+
+[node name="HBoxContainer" type="GridContainer" parent="MarginContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 234.0
+offset_bottom = 92.0
+columns = 6
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture = ExtResource("1_aqwe1")
+expand_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture = ExtResource("1_aqwe1")
+expand_mode = 1
+
+[node name="TextureRect3" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture = ExtResource("1_aqwe1")
+expand_mode = 1
+
+[node name="TextureRect4" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture = ExtResource("1_aqwe1")
+expand_mode = 1

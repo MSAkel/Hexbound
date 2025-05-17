@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PerkData" load_steps=3 format=3 uid="uid://bwq5egi2lnf6h"]
+
+[ext_resource type="Texture2D" uid="uid://tgdbwb2mrst3" path="res://assets/icons/perks/recovery_perk.png" id="1_8piu8"]
+[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk_data.gd" id="1_mtpyf"]
+
+[resource]
+script = ExtResource("1_mtpyf")
+id = "recovery"
+name = "Recovery"
+icon = ExtResource("1_8piu8")
+description = ""
+rarity = 1
+metadata/_custom_type_script = "uid://c7a8r2og86kxl"

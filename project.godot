@@ -17,9 +17,12 @@ config/features=PackedStringArray("4.4", "Forward Plus")
 [autoload]
 
 UiManager="*res://scripts/ui_manager.gd"
+GameManager="*res://scripts/game_manager.gd"
 
 [display]
 
+window/size/viewport_width=1920
+window/size/viewport_height=1080
 window/vsync/vsync_mode=0
 
 [file_customization]
@@ -34,6 +37,11 @@ folder_colors={
 
 ui_layer=""
 hex_map_group=""
+main_ui="UI which is always on display"
+
+[gui]
+
+theme/default_font_multichannel_signed_distance_field=true
 
 [input]
 

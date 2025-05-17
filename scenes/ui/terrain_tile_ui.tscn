@@ -1,23 +1,37 @@
-[gd_scene load_steps=4 format=3 uid="uid://bif4cx5edh2ng"]
+[gd_scene load_steps=6 format=3 uid="uid://bif4cx5edh2ng"]
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/terrain_tile_ui.gd" id="1_h2p2k"]
 [ext_resource type="Texture2D" uid="uid://r4el2w4g2am" path="res://assets/background/fields.png" id="2_bcbo3"]
-[ext_resource type="Texture2D" uid="uid://b7krqyb0k5usu" path="res://assets/icons/resources/berries.png" id="3_bcbo3"]
+[ext_resource type="Texture2D" uid="uid://b7krqyb0k5usu" path="res://assets/icons/minerals/berries.png" id="3_bcbo3"]
+[ext_resource type="Texture2D" uid="uid://bubvyeaiw0hss" path="res://assets/cards/farm.png" id="3_d4ddw"]
 
-[node name="TerrainTileUi" type="Panel"]
-anchors_preset = 6
-anchor_left = 1.0
+[sub_resource type="Theme" id="Theme_d4ddw"]
+
+[node name="TerrainTileUi" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
 anchor_top = 0.5
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -308.0
-offset_top = -185.0
-offset_bottom = 185.0
-grow_horizontal = 0
+offset_left = -408.0
+offset_top = -346.0
+offset_right = 408.0
+offset_bottom = 346.0
+grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_h2p2k")
 
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
 [node name="BackgroundImage" type="TextureRect" parent="."]
+modulate = Color(0.266575, 0.266575, 0.266575, 1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,86 +43,188 @@ expand_mode = 1
 
 [node name="TerrianLabel" type="Label" parent="."]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-text = "Terrian:"
+offset_left = 21.0
+offset_top = 9.0
+offset_right = 77.0
+offset_bottom = 32.0
+text = "Terrian"
 
-[node name="Resources" type="Label" parent="."]
+[node name="Minerals" type="Label" parent="."]
 layout_mode = 0
-offset_top = 56.0
-offset_right = 40.0
-offset_bottom = 79.0
-text = "Resources"
+offset_left = 13.0
+offset_top = 55.0
+offset_right = 93.0
+offset_bottom = 78.0
+text = "Minerals"
 
-[node name="Buildings" type="Label" parent="."]
-layout_mode = 0
-offset_top = 133.0
-offset_right = 40.0
-offset_bottom = 156.0
+[node name="BuildingsPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.672
+anchor_bottom = 0.672
+offset_left = -1.0
+offset_top = -177.024
+offset_right = 676.0
+offset_bottom = 176.976
+grow_vertical = 0
+
+[node name="Buildings" type="Label" parent="BuildingsPanel"]
+layout_mode = 1
+offset_left = 14.0
+offset_top = 7.0
+offset_right = 85.0
+offset_bottom = 30.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
 text = "Buildings"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="BuildingsPanel"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 6.0
+offset_top = -136.0
+offset_right = 372.0
+offset_bottom = 137.0
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="BuildingPanel1" type="Panel" parent="BuildingsPanel/HBoxContainer"]
+custom_minimum_size = Vector2(200, 250)
+layout_mode = 2
+
+[node name="BuildingTexture1" type="TextureRect" parent="BuildingsPanel/HBoxContainer/BuildingPanel1"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_d4ddw")
+expand_mode = 1
+
+[node name="BuildingPanel2" type="Panel" parent="BuildingsPanel/HBoxContainer"]
+custom_minimum_size = Vector2(200, 250)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BuildingTexture2" type="TextureRect" parent="BuildingsPanel/HBoxContainer/BuildingPanel2"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_d4ddw")
+expand_mode = 1
 
 [node name="Production" type="Label" parent="."]
 layout_mode = 0
-offset_top = 208.0
-offset_right = 40.0
-offset_bottom = 231.0
+offset_left = 17.0
+offset_top = 169.0
+offset_right = 103.0
+offset_bottom = 192.0
 text = "Production"
 
 [node name="ProductionText1" type="Label" parent="."]
 layout_mode = 0
-offset_top = 235.0
-offset_right = 86.0
-offset_bottom = 258.0
+offset_left = 17.0
+offset_top = 196.0
+offset_right = 103.0
+offset_bottom = 219.0
 text = "item 1"
 
 [node name="ProductionText2" type="Label" parent="."]
 layout_mode = 0
-offset_top = 256.0
-offset_right = 86.0
-offset_bottom = 279.0
+offset_left = 18.0
+offset_top = 234.0
+offset_right = 104.0
+offset_bottom = 257.0
 text = "item 2"
 
-[node name="Rune" type="Label" parent="."]
-layout_mode = 0
-offset_left = 156.0
-offset_top = 56.0
-offset_right = 196.0
-offset_bottom = 79.0
-text = "Rune"
+[node name="Rune" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.668
+anchor_top = 0.22
+anchor_right = 0.668
+anchor_bottom = 0.22
+offset_left = -156.088
+offset_top = -115.24
+offset_right = 128.912
+offset_bottom = 109.76
+grow_horizontal = 0
+grow_vertical = 2
 
-[node name="RuneIcon" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 158.0
-offset_top = 82.0
-offset_right = 198.0
-offset_bottom = 122.0
+[node name="ActiveRuneLabel" type="Label" parent="Rune"]
+layout_mode = 1
+offset_right = 91.0
+offset_bottom = 23.0
+text = "Active Rune"
 
-[node name="ResourceIcon1" type="TextureRect" parent="."]
+[node name="ActiveRuneContainer" type="Panel" parent="Rune"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -74.0
+offset_right = 148.0
+offset_bottom = 74.0
+grow_vertical = 2
+
+[node name="RuneIcon" type="TextureRect" parent="Rune/ActiveRuneContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="ActiveRuneIcon" type="TextureRect" parent="Rune/ActiveRuneContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RuneListGrid" type="GridContainer" parent="Rune"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -131.0
+offset_top = -72.5
+offset_bottom = 71.5
+grow_horizontal = 0
+grow_vertical = 2
+columns = 4
+
+[node name="MineralIcon1" type="TextureRect" parent="."]
 layout_mode = 0
-offset_left = 4.0
-offset_top = 82.0
-offset_right = 44.0
-offset_bottom = 122.0
+offset_left = 16.0
+offset_top = 93.0
+offset_right = 56.0
+offset_bottom = 133.0
 texture = ExtResource("3_bcbo3")
 expand_mode = 1
 
-[node name="ResourceIcon2" type="TextureRect" parent="."]
+[node name="MineralIcon2" type="TextureRect" parent="."]
 layout_mode = 0
-offset_left = 59.0
-offset_top = 82.0
-offset_right = 99.0
-offset_bottom = 122.0
+offset_left = 79.0
+offset_top = 92.0
+offset_right = 119.0
+offset_bottom = 132.0
 texture = ExtResource("3_bcbo3")
 expand_mode = 1
 
-[node name="BuildingIcon1" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 4.0
-offset_top = 157.0
-offset_right = 44.0
-offset_bottom = 197.0
-
-[node name="Button" type="Button" parent="."]
+[node name="CloseButton" type="Button" parent="."]
 modulate = Color(0.917332, 0.299453, 0.346819, 1)
 layout_mode = 1
 anchors_preset = 1
@@ -119,4 +235,23 @@ offset_bottom = 31.0
 grow_horizontal = 0
 text = "x"
 
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[node name="ExploreButton" type="Button" parent="."]
+modulate = Color(0.52549, 1, 1, 1)
+self_modulate = Color(0.827699, 0.965843, 0, 1)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -62.5
+offset_top = -29.0
+offset_right = 62.5
+offset_bottom = 17.0
+grow_horizontal = 2
+grow_vertical = 0
+theme = SubResource("Theme_d4ddw")
+text = "Explore"
+
+[connection signal="pressed" from="CloseButton" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="ExploreButton" to="." method="_on_explore_button_pressed"]

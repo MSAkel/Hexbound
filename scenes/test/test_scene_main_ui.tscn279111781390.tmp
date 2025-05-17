@@ -1,0 +1,19 @@
+[gd_scene load_steps=5 format=3 uid="uid://dsxnolewpjnyq"]
+
+[ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="3_t3dkj"]
+[ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="4_i3mjp"]
+[ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="4_rpmvn"]
+[ext_resource type="AudioStream" uid="uid://bv3wa8uo6wfsc" path="res://assets/audio/main_theme.mp3" id="5_kwfbp"]
+
+[node name="TestSceneTerrainTileUi" type="Node2D"]
+
+[node name="MainUI" parent="." instance=ExtResource("4_i3mjp")]
+
+[node name="HexTileMap" parent="." groups=["hex_map_group"] instance=ExtResource("3_t3dkj")]
+cursed_tiles_count = null
+
+[node name="Camera" parent="." instance=ExtResource("4_rpmvn")]
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="Camera"]
+stream = ExtResource("5_kwfbp")
+autoplay = true

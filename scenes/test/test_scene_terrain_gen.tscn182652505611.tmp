@@ -14,8 +14,6 @@ script = ExtResource("1_7wyih")
 [node name="TerrainTileUi" parent="CanvasLayer" instance=ExtResource("2_6fp5t")]
 
 [node name="HexTileMap" parent="." groups=["hex_map_group"] instance=ExtResource("1_8mww4")]
-width = 8
-height = 8
 
 [node name="Camera" parent="." instance=ExtResource("2_rb232")]
 zoom = Vector2(0.5, 0.5)
