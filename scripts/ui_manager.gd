@@ -8,9 +8,10 @@ signal show_building_choice_panel()
 @onready var top_panel_ui: TopPanelUi = $TopPanelUI
 
 func _ready() -> void:
-	hide_all_panels()
+	pass
+	# hide_all_panels()
 
-func hide_all_panels():
-	for child in get_children():
-		if child is Control and not child.is_in_group("main_ui"):
-			child.hide()
+# func hide_all_panels():
+# 	for child in get_children():
+# 		if child is Control and not child.is_in_group("main_ui"):
+# 			child.hide()

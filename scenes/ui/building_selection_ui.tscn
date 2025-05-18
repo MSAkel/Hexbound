@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://dr6tgv52a40ou"]
+[gd_scene load_steps=2 format=3 uid="uid://dr6tgv52a40ou"]
+
+[ext_resource type="Script" uid="uid://of3a6xlmc8m0" path="res://scripts/building_selection_ui.gd" id="1_y7yt6"]
 
 [node name="BuildingSelectionUi" type="Control"]
 layout_mode = 3
@@ -7,8 +9,11 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_vertical = 8
+mouse_filter = 2
+script = ExtResource("1_y7yt6")
 
-[node name="Button" type="Button" parent="."]
+[node name="openBuildingSelectionButton" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -18,7 +23,8 @@ offset_right = 222.0
 grow_vertical = 0
 text = "Select New Building"
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="PanelContainer" type="MarginContainer" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -32,10 +38,10 @@ offset_bottom = 315.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="Panel" parent="MarginContainer"]
+[node name="Panel" type="Panel" parent="PanelContainer"]
 layout_mode = 2
 
-[node name="TitleLabel" type="Label" parent="MarginContainer/Panel"]
+[node name="TitleLabel" type="Label" parent="PanelContainer/Panel"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -46,7 +52,7 @@ offset_bottom = 22.3333
 grow_horizontal = 2
 text = "Select Building"
 
-[node name="ChoicesContainer" type="HBoxContainer" parent="MarginContainer/Panel"]
+[node name="ChoicesContainer" type="HBoxContainer" parent="PanelContainer/Panel"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -61,7 +67,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 64
 
-[node name="CloseButton" type="Button" parent="MarginContainer/Panel"]
+[node name="CloseButton" type="Button" parent="PanelContainer/Panel"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -71,7 +77,7 @@ offset_bottom = 8.0
 grow_horizontal = 0
 text = "Close"
 
-[node name="Button" type="Button" parent="MarginContainer/Panel"]
+[node name="RerollButton" type="Button" parent="PanelContainer/Panel"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -83,4 +89,8 @@ offset_top = -8.0
 offset_right = 4.0
 grow_horizontal = 2
 grow_vertical = 0
-text = "Reroll (25)"
+text = "Reroll (free)"
+
+[connection signal="pressed" from="openBuildingSelectionButton" to="." method="_on_open_building_selection_button_pressed"]
+[connection signal="pressed" from="PanelContainer/Panel/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="PanelContainer/Panel/RerollButton" to="." method="_on_reroll_button_pressed"]

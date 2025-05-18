@@ -17,7 +17,7 @@ const RUNE_GUI = preload("res://scenes/ui/rune_gui.tscn")
 func _ready() -> void:
 	populate_rune_list(GameManager.available_runes)
 
-func _set_hex(h: Hex) -> void:
+func set_hex(h: Hex) -> void:
 	hex = h
 	mineral_1_icon.texture = h.minerals[0].mineral_data.icon
 	mineral_2_icon.texture = h.minerals[1].mineral_data.icon

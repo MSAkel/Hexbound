@@ -11,6 +11,16 @@
 [ext_resource type="Texture2D" uid="uid://n6xksl30322r" path="res://scripts/base_hex_tiles_2.png" id="7_tt7jl"]
 [ext_resource type="Texture2D" uid="uid://b1l1imm0jdaes" path="res://assets/tilesets/fog_overlay.png" id="9_tt7jl"]
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xmj4m"]
+texture = ExtResource("2_c0fpv")
+texture_region_size = Vector2i(256, 256)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_b6nmi"]
 texture = ExtResource("7_tt7jl")
 texture_region_size = Vector2i(222, 256)
@@ -22,22 +32,11 @@ texture_region_size = Vector2i(222, 256)
 5:0/0 = 0
 6:0/0 = 0
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d5c3r"]
-texture = ExtResource("2_c0fpv")
-texture_region_size = Vector2i(222, 256)
-0:0/0 = 0
-1:0/0 = 0
-2:0/0 = 0
-3:0/0 = 0
-4:0/0 = 0
-5:0/0 = 0
-6:0/0 = 0
-
 [sub_resource type="TileSet" id="TileSet_ekk8a"]
 tile_shape = 3
-tile_size = Vector2i(222, 256)
-sources/2 = SubResource("TileSetAtlasSource_d5c3r")
-sources/0 = SubResource("TileSetAtlasSource_b6nmi")
+tile_size = Vector2i(256, 256)
+sources/1 = SubResource("TileSetAtlasSource_b6nmi")
+sources/0 = SubResource("TileSetAtlasSource_xmj4m")
 
 [sub_resource type="TileSet" id="TileSet_8rbqn"]
 tile_shape = 3
@@ -45,22 +44,22 @@ tile_size = Vector2i(256, 256)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tt7jl"]
 texture = ExtResource("3_c0fpv")
-texture_region_size = Vector2i(222, 256)
+texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_3rbfx"]
 tile_shape = 3
-tile_size = Vector2i(222, 256)
+tile_size = Vector2i(256, 256)
 sources/0 = SubResource("TileSetAtlasSource_tt7jl")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4rcl8"]
 texture = ExtResource("9_tt7jl")
-texture_region_size = Vector2i(222, 256)
+texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_xmj4m"]
 tile_shape = 3
-tile_size = Vector2i(222, 256)
+tile_size = Vector2i(256, 256)
 sources/0 = SubResource("TileSetAtlasSource_4rcl8")
 
 [node name="HexTileMap" type="Node2D"]
@@ -73,6 +72,7 @@ minerals = Array[ExtResource("2_8rbqn")]([ExtResource("3_b6nmi"), ExtResource("4
 tile_set = SubResource("TileSet_ekk8a")
 
 [node name="HexBorderLayer" type="TileMapLayer" parent="."]
+visible = false
 tile_set = SubResource("TileSet_8rbqn")
 
 [node name="SelectionOverlayLayer" type="TileMapLayer" parent="."]

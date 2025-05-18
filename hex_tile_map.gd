@@ -27,8 +27,8 @@ var terrain_textures: Dictionary = {
 	hex.TerrainType.FOREST: Vector2i(1,0),
 	hex.TerrainType.MOUNTAIN: Vector2i(2,0),
 	hex.TerrainType.SNOW: Vector2i(3,0),
-	hex.TerrainType.WATER: Vector2i(4,0),
-	hex.TerrainType.SWAMP: Vector2i(5,0),
+	hex.TerrainType.SWAMP: Vector2i(4,0),
+	hex.TerrainType.WATER: Vector2i(5,0),
 }
 
 func _ready() -> void:
@@ -46,7 +46,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.button_mask == MOUSE_BUTTON_MASK_LEFT:
 				var h: Hex = map_data[map_coords]
 				if h.terrain_type != hex.TerrainType.WATER:
-					terrain_tile_ui._set_hex(h)
+					terrain_tile_ui.set_hex(h)
 					
 					# Remove the current overlay texture on selecting a different tile
 					if map_coords != selected_cell:
@@ -188,6 +188,10 @@ func map_to_local(coords: Vector2i) -> Vector2i:
 func explore_tile(h: Hex) -> void:
 	fog_overlay_layer.set_cell(h._coordinates, -1)
 	h.explored = true
+
+	if h.curse != null:
+		h.curse.curse_button.disabled = false
+
 	GameManager.explored_tiles.append(h)
 	for i in h.minerals.size():
 		h.minerals[i].show()

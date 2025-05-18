@@ -7,6 +7,7 @@ var tile: Hex
 var curse_data: CurseData
 
 @onready var curse_panel: Panel = $HBoxContainer/CursePanel
+@onready var curse_button: TextureButton = $HBoxContainer/CurseButton
 
 func _on_curse_button_pressed() -> void:
 	curse_panel.show()

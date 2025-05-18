@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3 uid="uid://db6mcuxlla6lm"]
+
+[ext_resource type="Texture2D" uid="uid://7ll5nygn8c60" path="res://assets/icons/buildings/mine.png" id="1_l7pyc"]
+[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building_data.gd" id="2_mfnvy"]
+
+[resource]
+script = ExtResource("2_mfnvy")
+id = "mine"
+label = "Mine"
+icon = ExtResource("1_l7pyc")
+description = "Increases mineral production within the tile it is placed in by 5"
+type = 2
+metadata/_custom_type_script = "uid://byuy57newj5vi"

@@ -1,10 +1,10 @@
-class_name PerkData
+class_name BuildingData
 extends Resource
 
-enum PerkRarity { COMMON, UNCOMMON, RARE, LEGENDARY }
+enum BuildingType { FARM, WAREHOUSE, MINE, WINDMILL }
 
 @export var id: String
 @export var label: String
 @export var icon: Texture2D
 @export_multiline var description: String
-@export var rarity: PerkRarity
+@export var type: BuildingType

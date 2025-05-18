@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3 uid="uid://bpkcr7bnj4ami"]
+
+[ext_resource type="Texture2D" uid="uid://63hun0yuf2p6" path="res://assets/icons/buildings/windmill.png" id="1_87p71"]
+[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building_data.gd" id="2_ymx1s"]
+
+[resource]
+script = ExtResource("2_ymx1s")
+id = "windmill"
+label = "Windmill"
+icon = ExtResource("1_87p71")
+description = "Grain or something idk"
+type = 3
+metadata/_custom_type_script = "uid://byuy57newj5vi"

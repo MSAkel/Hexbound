@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://kpxwpid0wq2v"]
+[gd_scene load_steps=4 format=3 uid="uid://kpxwpid0wq2v"]
 
 [ext_resource type="Script" uid="uid://h4dr23y4fi1k" path="res://scripts/curse_event.gd" id="1_fnxol"]
 [ext_resource type="Texture2D" uid="uid://cadutpr4x30t0" path="res://assets/icons/events/curse.png" id="2_fjmh8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fnxol"]
+atlas = ExtResource("2_fjmh8")
 
 [node name="CurseEvent" type="Control"]
 layout_mode = 3
@@ -24,14 +27,16 @@ offset_right = 240.0
 offset_bottom = 151.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
-[node name="CurseButton" type="Button" parent="HBoxContainer"]
-layout_mode = 2
-offset_right = 72.0
-offset_bottom = 72.0
+[node name="CurseButton" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 1
+offset_right = 64.0
+offset_bottom = 64.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
-icon = ExtResource("2_fjmh8")
+disabled = true
+texture_normal = SubResource("AtlasTexture_fnxol")
 
 [node name="CursePanel" type="Panel" parent="HBoxContainer"]
 visible = false
