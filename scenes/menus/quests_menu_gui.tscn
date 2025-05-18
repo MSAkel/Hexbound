@@ -1,0 +1,59 @@
+[gd_scene load_steps=3 format=3 uid="uid://cxcsr4dwcpcrh"]
+
+[ext_resource type="Texture2D" uid="uid://2lcbgkqeo8fr" path="res://assets/gui/icon_container_image.png" id="1_xyy2o"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2eo12"]
+atlas = ExtResource("1_xyy2o")
+
+[node name="QuestsMenuGui" type="Control"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+grow_horizontal = 0
+
+[node name="Button" type="TextureButton" parent="."]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -64.0
+offset_bottom = 64.0
+grow_horizontal = 0
+texture_normal = SubResource("AtlasTexture_2eo12")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Icon" type="TextureRect" parent="Button"]
+visible = false
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -33.0
+offset_right = 33.0
+offset_bottom = 31.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 4
+
+[node name="Label" type="Label" parent="Button"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.1667
+offset_right = 20.0
+offset_bottom = 11.1667
+grow_horizontal = 2
+grow_vertical = 2
+text = "Quests"

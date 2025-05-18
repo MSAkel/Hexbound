@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_mtpyf")
 id = "recovery"
-name = "Recovery"
+label = "Recovery"
 icon = ExtResource("1_8piu8")
-description = ""
+description = "Something to do with curses"
 rarity = 1
 metadata/_custom_type_script = "uid://c7a8r2og86kxl"

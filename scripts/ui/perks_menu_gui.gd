@@ -7,46 +7,44 @@ extends Control
 var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_gui.tscn")
 
 func _ready() -> void:
-	reroll_button.text = "Reroll (%s)" % GameManager.building_reroll_cost
-	if GameManager.building_reroll_cost > GameManager.gold_count:
+	reroll_button.text = "Reroll (%s)" % GameManager.available_perk_rerolls
+	if GameManager.available_perk_rerolls < 1:
 		reroll_button.disabled = true
 	else:
 		reroll_button.disabled = false
 
-
-func _on_open_building_selection_button_pressed() -> void:
+func _on_perks_menu_button_pressed() -> void:
 	panel_container.show()
-	instantiate_building_choices()
-	
+	instantiate_perk_choices()
+
+func _on_reroll_button_pressed() -> void:
+	if GameManager.available_perk_rerolls < 1:
+		return
+
+	reroll_button.disabled = true
+
+	await clear_choices()
+	GameManager.available_perk_rerolls -= 1
+	GameManager.perks_pack.clear()
+	GameManager.create_perks_pack()
+	reroll_button.text = "Reroll (%s)" % GameManager.available_perk_rerolls
+	instantiate_perk_choices()
+
+	reroll_button.disabled = false
+
 
 func _on_close_button_pressed() -> void:
 	panel_container.hide()
 
-
-func _on_reroll_button_pressed() -> void:
-	if GameManager.building_reroll_cost > GameManager.gold_count:
-		return
-
-	reroll_button.disabled = true
-	
-	await clear_choices()
-	GameManager.buildings_pack.clear()
-	GameManager.create_buildings_pack()
-	GameManager.building_reroll_cost += 5
-	reroll_button.text = "Reroll (%s)" % GameManager.building_reroll_cost
-	instantiate_building_choices()
-	
-	reroll_button.disabled = false
-
-func instantiate_building_choices() -> void:
+func instantiate_perk_choices() -> void:
 	if choices_container.get_child_count() == 0:
-		for building in GameManager.buildings_pack:
+		for perk in GameManager.perks_pack:
 			var selectionItem: SelectionItemGui = selection_item_scene.instantiate() as SelectionItemGui
-			selectionItem.find_child("Icon").texture = building.icon
-			selectionItem.find_child("Label").text = building.label
-			selectionItem.find_child("Description").text = building.description
+			selectionItem.find_child("Icon").texture = perk.icon
+			selectionItem.find_child("Label").text = perk.label
+			selectionItem.find_child("Description").text = perk.description
 			choices_container.add_child(selectionItem)
-
+		
 func clear_choices() -> void:
 	for node in choices_container.get_children():
 		animate_and_free(node)

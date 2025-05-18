@@ -13,13 +13,16 @@ var runes_pool: Array[RuneData] = []
 var available_runes: Array[RuneData] = []
 var active_runes: Array[RuneData] = []
 
+# Perks variables
 var perks_pool: Array[PerkData] = []
 var available_perks: int
 var active_perks: Array[PerkData] = []
+var perks_pack: Array[PerkData] = [] # Perks available for selection on the perks selection menu
+var available_perk_rerolls: int = 1
 
-#buildings management
+#buildings variables
 var buildings_pool: Array[BuildingData] = [] # All buildings available in the game
-var buildings_pack: Array[BuildingData] = [] # 3 buildings available for selection
+var buildings_pack: Array[BuildingData] = [] # Buildings available for selection on the buildings selection menu
 var selected_building: Array[CardUI] = [] # The building selected by the player
 var available_buidling_packs: int = 0 # increment by 1 on turn end
 var building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
@@ -43,6 +46,7 @@ func _ready() -> void:
 		buildings_pool.append(building)
 
 	create_buildings_pack()
+	create_perks_pack()
 
 func end_turn() -> void:
 	current_year += 1
@@ -67,3 +71,12 @@ func create_buildings_pack() -> void:
 
 		for i in 3:
 			buildings_pack.append(shuffled_pool[i])
+
+
+func create_perks_pack() -> void:
+	if perks_pack.size() == 0:
+		var shuffled_pool := perks_pool.duplicate()
+		shuffled_pool.shuffle()
+
+		for i in 3:
+			perks_pack.append(shuffled_pool[i])

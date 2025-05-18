@@ -1,8 +1,7 @@
-[gd_scene load_steps=11 format=3 uid="uid://b4k5fq6ran8f5"]
+[gd_scene load_steps=10 format=3 uid="uid://b4k5fq6ran8f5"]
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://main_theme.tres" id="1_s55cg"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scripts/card_ui.gd" id="2_1kpl7"]
-[ext_resource type="StyleBox" uid="uid://bq6ifmu3s6k48" path="res://scenes/ui/card_base_stylebox.tres" id="3_7cyci"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="3_fbbsm"]
 [ext_resource type="Texture2D" uid="uid://cmcilmjnmmk5x" path="res://assets/cards/villager.png" id="4_u2fwa"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="4_vk10k"]
@@ -26,16 +25,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_s55cg")
 script = ExtResource("2_1kpl7")
-
-[node name="Panel" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = ExtResource("3_7cyci")
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 1

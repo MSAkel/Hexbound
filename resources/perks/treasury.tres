@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_xca5k")
 id = "treasury"
-name = "Treasury"
+label = "Treasury"
 icon = ExtResource("1_urkl8")
-description = ""
+description = "Gain 1 prestige for every 50 gold gained"
 rarity = 1
 metadata/_custom_type_script = "uid://c7a8r2og86kxl"

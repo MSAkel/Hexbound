@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://clbo25fmtd5ba"]
+[gd_scene load_steps=9 format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/active_perks.tscn" id="1_hcnxy"]
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/ui_manager.gd" id="1_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://cm3sdx2an61fm" path="res://scenes/ui/top_panel_ui.tscn" id="4_travt"]
 [ext_resource type="PackedScene" uid="uid://dr6tgv52a40ou" path="res://scenes/ui/building_selection_ui.tscn" id="5_46cp5"]
+[ext_resource type="PackedScene" uid="uid://3pwk1tu6fo3o" path="res://scenes/menus/perks_menu_gui.tscn" id="6_t0li6"]
+[ext_resource type="PackedScene" uid="uid://cxcsr4dwcpcrh" path="res://scenes/menus/quests_menu_gui.tscn" id="7_oxwcw"]
+[ext_resource type="PackedScene" uid="uid://bxb0s5v0ycga6" path="res://scenes/menus/runes_menu_gui.tscn" id="8_oxwcw"]
 
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_l8t6x")
@@ -17,3 +20,36 @@ visible = false
 [node name="TopPanelUI" parent="." groups=["main_ui"] instance=ExtResource("4_travt")]
 
 [node name="BuildingSelectionUi" parent="." instance=ExtResource("5_46cp5")]
+
+[node name="TopRightSection" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="TopRightSection"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopRightSection/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="PerksMenuGui" parent="TopRightSection/MarginContainer/HBoxContainer" instance=ExtResource("6_t0li6")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="QuestsGui" parent="TopRightSection/MarginContainer/HBoxContainer" instance=ExtResource("7_oxwcw")]
+layout_mode = 2
+
+[node name="RunesGui" parent="TopRightSection/MarginContainer/HBoxContainer" instance=ExtResource("8_oxwcw")]
+layout_mode = 2

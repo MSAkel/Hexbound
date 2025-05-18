@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_7wkyo")
 id = "food_surplus"
-name = "Food Surplus"
+label = "Food Surplus"
 icon = ExtResource("1_fhhok")
 description = "Provides 5 food at the end of each turn"
 rarity = 0

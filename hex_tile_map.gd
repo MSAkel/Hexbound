@@ -62,46 +62,85 @@ func _unhandled_input(event: InputEvent) -> void:
 func generate_terrain() -> void:
 	# Initialize noise maps for terrain features
 	var noise_map := []
-	var forest_map := []
-	var desert_map := []
+	var swamp_map := []
+	var snow_map := []
 	var mountain_map := []
 
 	# Prepare 2D arrays (width x height) initialized to 0.0
 	for x in width:
 		noise_map.append([])
-		forest_map.append([])
-		desert_map.append([])
+		swamp_map.append([])
+		snow_map.append([])
 		mountain_map.append([])
 		for y in height:
 			noise_map[x].append(0.0)
-			forest_map[x].append(0.0)
-			desert_map[x].append(0.0)
+			swamp_map[x].append(0.0)
+			snow_map[x].append(0.0)
 			mountain_map[x].append(0.0)
 	
-	# Generate a random seed
+
 	var rand_seed := randi() % 100000
-	
+
+	# Experment with different noise values
+
+	# Base terrain (fields, mountains, forests)
 	var base_noise := FastNoiseLite.new()
+	var noise_max := 0.0
+
 	base_noise.seed = rand_seed
 	base_noise.frequency = 0.008
 	base_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
 	base_noise.fractal_octaves = 4
 	base_noise.fractal_lacunarity = 2.25
 	
-	var noise_max := 0.0
+	# Swamps
+	var swamp_noise := FastNoiseLite.new()
+	var swamp_noise_max := 0.0
+
+	swamp_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	swamp_noise.seed = rand_seed
+	swamp_noise.frequency = 0.04
+	swamp_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+	swamp_noise.fractal_lacunarity = 2
+
+	# Snow
+	var snow_noise := FastNoiseLite.new()
+	var snow_noise_max := 0.0
+
+	snow_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	snow_noise.seed = rand_seed
+	snow_noise.frequency = 0.015
+	snow_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+	snow_noise.fractal_lacunarity = 2
 	
+
 	# Generate noise values
 	for x in width:
 		for y in height:
-			# Base terrain
+			#base
 			noise_map[x][y] = abs(base_noise.get_noise_2d(x, y))
 			noise_max = max(noise_max, noise_map[x][y])
+			#swamp
+			swamp_map[x][y] = abs(base_noise.get_noise_2d(x, y))
+			swamp_noise_max = max(swamp_noise_max, swamp_map[x][y])
+			#snow
+			snow_map[x][y] = abs(base_noise.get_noise_2d(x, y))
+			snow_noise_max = max(snow_noise_max, snow_map[x][y])
 	
 	var terrain_ranges := [
 		{ "min": 0, "max": noise_max / 10.0 * 4, "type": hex.TerrainType.FIELDS },
 		{ "min": noise_max / 10.0 * 4, "max": noise_max / 10.0 * 5, "type": hex.TerrainType.MOUNTAIN },
 		{ "min": noise_max / 10.0 * 5, "max": noise_max + 0.05, "type": hex.TerrainType.FOREST }
 	]
+
+	# The upper 30% of the swamp noise will be swamp tiles
+	# var swamp_ranges := [
+	# 	{ "min": swamp_noise_max / 10.0 * 7, "max": swamp_noise_max + 0.05, "type": hex.TerrainType.SWAMP }
+	# ]
+
+	# var snow_ranges := [
+	# 	{ "min": snow_noise_max / 10.0 * 7, "max": snow_noise_max + 0.05, "type": hex.TerrainType.SNOW }
+	# ]
 	
 	var x_center = width / 2
 	var y_center = height / 2
@@ -117,6 +156,11 @@ func generate_terrain() -> void:
 					break
 
 			map_data[Vector2i(x,y)] = h
+
+			# if swamp_noise[x][y] >= swamp_ranges[0].min and swamp_noise[x][y] < swamp_ranges[0].max:
+			# 	h.terrain_type = hex.TerrainType.SWAMP
+			# elif snow_noise[x][y] >= snow_ranges[0].min and snow_noise[x][y] < snow_ranges[0].max:
+			# 	h.terrain_type = hex.TerrainType.SNOW
 			
 			# Outer Water tiles generation
 			var border_thickness := 1

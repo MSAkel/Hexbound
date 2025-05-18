@@ -1,8 +1,8 @@
 class_name TopPanelUi
 extends Control
 
-# var year = 1
-@onready var year_label: Label = $MarginContainer/Panel/YearLabel
+
+@onready var year_label: Label = $Panel/MarginContainer/VBoxContainer/YearLabel
 @onready var gold_count: Label = $MarginContainer/HBoxContainer/GoldContainer/GoldCount
 @onready var food_count: Label = $MarginContainer/HBoxContainer/FoodContainer/FoodCount
 
