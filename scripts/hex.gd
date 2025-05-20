@@ -12,7 +12,7 @@ enum TerrainType { FIELDS, FOREST, MOUNTAIN, SNOW, WATER, SWAMP }
 var terrain_type: TerrainType
 var _coordinates: Vector2i = Vector2i(0, 0)
 var explored: bool = false
-var active_rune: RuneData
+var active_rune: Rune
 var special_state: SpecialTileState = SpecialTileState.NONE
 var curse: CurseEvent
 

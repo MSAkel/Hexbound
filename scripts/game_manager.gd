@@ -1,17 +1,20 @@
 extends Node
 
+const GAME_SETTINGS = preload("res://scripts/resources/game_settings.gd")
+
 signal turn_ended()
 signal tile_explored(hex: Hex)
 
 var current_year := 1
 var gold_count := 0
 var food_count := 25
+var available_explores: int = 0
 
 var explored_tiles: Array[Hex] = []
 
-var runes_pool: Array[RuneData] = []
-var available_runes: Array[RuneData] = []
-var active_runes: Array[RuneData] = []
+var runes_pool: Array[Rune] = []
+# var available_runes: Array[Rune] = []
+var active_runes: Array[Rune] = []
 
 var perks_pool: Array[Perk] = []
 var available_perks: int
@@ -25,6 +28,9 @@ var selected_building: Array[CardUI] = [] # The building selected by the player
 var available_buidling_packs: int = 0 # increment by 1 on turn end
 var building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
 
+# Game settings
+var game_settings: GAME_SETTINGS
+
 # Essence, each tile gives 1 essence of a specific type
 var nature_essence: int = 0
 var fire_essence: int = 0
@@ -32,6 +38,15 @@ var frost_essence: int = 0
 var storm_essence: int = 0
 
 func _ready() -> void:
+	# Load game settings
+	game_settings = load("res://scripts/resources/game_settings.tres")
+	if not game_settings:
+		push_error("Failed to load game settings")
+		return
+	
+	# Initialize available explores
+	available_explores = game_settings.base_explores_per_turn
+	
 	# Load the runes from the resources directory
 	var runes_directory = DirAccess.open("res://resources/runes/")
 	for file in runes_directory.get_files():
@@ -52,7 +67,7 @@ func _ready() -> void:
 	create_buildings_pack()
 	create_perks_pack()
 
-	# turn_ended.connect(trigger_tile)
+	turn_ended.connect(end_turn)
 
 func end_turn() -> void:
 	current_year += 1
@@ -60,7 +75,8 @@ func end_turn() -> void:
 	available_buidling_packs += 1
 	for tile in explored_tiles:
 		gold_count += 5
-
+	
+	available_explores = game_settings.base_explores_per_turn
 
 func update_explored_tiles_list(h: Hex) -> void:
 	explored_tiles.append(h)
@@ -94,7 +110,3 @@ func create_perks_pack() -> void:
 
 # func add_essence(terrainType: Hex.TerrainType, amount: int) -> void:
 # 	pass
-
-# func trigger_tile() -> void:
-# 	for explored_tile: Hex in explored_tiles:
-# 		print(explored_tile._coordinates)

@@ -10,7 +10,6 @@ func enter() -> void:
 	
 	if not card_ui.targets.is_empty():
 		linked = true
-		print("link card", card_ui.targets)
 
 func on_input(event: InputEvent) -> void:
 	if linked:

@@ -14,15 +14,9 @@ extends Control
 func _ready() -> void:
 	year_label.text = "Year: %s" % [GameManager.current_year]
 
-# func on_turn_end() -> void:
-# 	year += 1
-# 	year_label.text = "Year: %s" % [year]
-
 func _on_end_turn_button_pressed() -> void:
 	GameManager.turn_ended.emit()
-	GameManager.end_turn()
 	year_label.text = "Year: %s" % [GameManager.current_year]
-	# on_turn_end()
 
 func _process(delta: float) -> void:
 	nature_essence_count.text = "%s" % [GameManager.nature_essence]

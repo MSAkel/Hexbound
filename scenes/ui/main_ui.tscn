@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://clbo25fmtd5ba"]
+[gd_scene load_steps=10 format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/active_perks.tscn" id="1_hcnxy"]
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/ui_manager.gd" id="1_l8t6x"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://3pwk1tu6fo3o" path="res://scenes/ui/perks/perks_menu_gui.tscn" id="6_t0li6"]
 [ext_resource type="PackedScene" uid="uid://cxcsr4dwcpcrh" path="res://scenes/menus/quests_menu_gui.tscn" id="7_oxwcw"]
 [ext_resource type="PackedScene" uid="uid://bxb0s5v0ycga6" path="res://scenes/menus/runes_menu_gui.tscn" id="8_oxwcw"]
+[ext_resource type="PackedScene" uid="uid://dtamn2cc6wba" path="res://scenes/ui/quests/quests_panel.tscn" id="9_yc0ux"]
 
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_l8t6x")
@@ -57,3 +58,6 @@ layout_mode = 2
 
 [node name="RunesGui" parent="TopRightSection/MarginContainer/HBoxContainer" instance=ExtResource("8_oxwcw")]
 layout_mode = 2
+
+[node name="QuestsPanel" parent="." instance=ExtResource("9_yc0ux")]
+visible = false

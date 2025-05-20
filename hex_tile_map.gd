@@ -48,7 +48,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
 			if event.button_mask == MOUSE_BUTTON_MASK_LEFT:
 				var h: Hex = map_data[map_coords]
-				if h.terrain_type != hex.TerrainType.WATER:
+				if h.explored and h.terrain_type != hex.TerrainType.WATER:
 					terrain_tile_ui.set_hex(h)
 					
 					# Remove the current overlay texture on selecting a different tile
@@ -242,14 +242,10 @@ func update_explore_buttons() -> void:
 	# Add explore buttons to tiles surrounding explored tiles
 	for explored_tile in GameManager.explored_tiles:
 		var surrounding_tiles = base_layer.get_surrounding_cells(explored_tile.coordinates)
-		print(surrounding_tiles)
 		for coords in surrounding_tiles:
-			print(map_data.has(coords))
 			if map_data.has(coords):
-				print(coords)
 				var h = map_data[coords]
 				if not h.explored and h.terrain_type != h.TerrainType.WATER:
-					print("Adding explore button to tile: ", coords)
 					var explore_button = EXPLORE_BUTTON.instantiate()
 					explore_button.hex = h
 					explore_button.position = base_layer.map_to_local(coords)

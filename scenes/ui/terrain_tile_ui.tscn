@@ -1,11 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://bif4cx5edh2ng"]
+[gd_scene load_steps=5 format=3 uid="uid://bif4cx5edh2ng"]
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/terrain_tile_ui.gd" id="1_h2p2k"]
 [ext_resource type="Texture2D" uid="uid://r4el2w4g2am" path="res://assets/background/fields.png" id="2_bcbo3"]
 [ext_resource type="Texture2D" uid="uid://b7krqyb0k5usu" path="res://assets/icons/minerals/berries.png" id="3_bcbo3"]
 [ext_resource type="Texture2D" uid="uid://bubvyeaiw0hss" path="res://assets/cards/farm.png" id="3_d4ddw"]
-
-[sub_resource type="Theme" id="Theme_d4ddw"]
 
 [node name="TerrainTileUi" type="Control"]
 layout_mode = 3
@@ -64,8 +62,9 @@ anchor_top = 0.672
 anchor_bottom = 0.672
 offset_left = -1.0
 offset_top = -177.024
-offset_right = 676.0
+offset_right = 817.0
 offset_bottom = 176.976
+grow_horizontal = 2
 grow_vertical = 0
 
 [node name="Buildings" type="Label" parent="BuildingsPanel"]
@@ -154,16 +153,16 @@ anchor_right = 0.668
 anchor_bottom = 0.22
 offset_left = -156.088
 offset_top = -115.24
-offset_right = 128.912
+offset_right = 264.912
 offset_bottom = 109.76
 grow_horizontal = 0
 grow_vertical = 2
 
-[node name="ActiveRuneLabel" type="Label" parent="Rune"]
+[node name="RuneLabel" type="Label" parent="Rune"]
 layout_mode = 1
 offset_right = 91.0
 offset_bottom = 23.0
-text = "Active Rune"
+text = "Rune"
 
 [node name="ActiveRuneContainer" type="Panel" parent="Rune"]
 layout_mode = 1
@@ -192,19 +191,43 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="RuneListGrid" type="GridContainer" parent="Rune"]
+[node name="RemoveRuneButton" type="Button" parent="Rune/ActiveRuneContainer"]
+visible = false
 layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -131.0
-offset_top = -72.5
-offset_bottom = 71.5
-grow_horizontal = 0
+anchor_bottom = 1.0
+offset_top = -31.0
+grow_horizontal = 2
+grow_vertical = 0
+disabled = true
+text = "Remove"
+
+[node name="RunesListContainer" type="VBoxContainer" parent="Rune"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 153.0
+offset_top = 40.0
+grow_horizontal = 2
 grow_vertical = 2
-columns = 4
+theme_override_constants/separation = 8
+
+[node name="RuneListGrid" type="GridContainer" parent="Rune/RunesListContainer"]
+layout_mode = 2
+columns = 7
+
+[node name="RuneDescription" type="Label" parent="Rune/RunesListContainer"]
+layout_mode = 2
+
+[node name="RuneRequirements" type="Label" parent="Rune/RunesListContainer"]
+layout_mode = 2
+
+[node name="InsertRuneButton" type="Button" parent="Rune/RunesListContainer"]
+layout_mode = 2
+text = "Insert"
 
 [node name="MineralIcon1" type="TextureRect" parent="."]
 layout_mode = 0
@@ -235,23 +258,6 @@ offset_bottom = 31.0
 grow_horizontal = 0
 text = "x"
 
-[node name="ExploreButton" type="Button" parent="."]
-modulate = Color(0.52549, 1, 1, 1)
-self_modulate = Color(0.827699, 0.965843, 0, 1)
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -62.5
-offset_top = -29.0
-offset_right = 62.5
-offset_bottom = 17.0
-grow_horizontal = 2
-grow_vertical = 0
-theme = SubResource("Theme_d4ddw")
-text = "Explore"
-
+[connection signal="pressed" from="Rune/ActiveRuneContainer/RemoveRuneButton" to="." method="_on_remove_rune_button_pressed"]
+[connection signal="pressed" from="Rune/RunesListContainer/InsertRuneButton" to="." method="_on_insert_rune_button_pressed"]
 [connection signal="pressed" from="CloseButton" to="." method="_on_button_pressed"]
-[connection signal="pressed" from="ExploreButton" to="." method="_on_explore_button_pressed"]
