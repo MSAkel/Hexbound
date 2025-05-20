@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://bkyj5id0pr10q"]
+
+[ext_resource type="Script" uid="uid://gm0hxgclp8pl" path="res://scripts/perks/perk_ui.gd" id="1_ac3sv"]
+[ext_resource type="Texture2D" uid="uid://dv33v70ofgm00" path="res://assets/icons/perks/elemntal_affinity.png" id="1_kh0m4"]
+[ext_resource type="Resource" uid="uid://rd58q063ak7h" path="res://resources/perks/elemental_affinity.tres" id="2_7ocbg"]
+
+[node name="PerkUI" type="Control"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_ac3sv")
+perk = ExtResource("2_7ocbg")
+
+[node name="Icon" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_right = 24.0
+offset_bottom = 24.0
+pivot_offset = Vector2(12, 12)
+texture = ExtResource("1_kh0m4")
+expand_mode = 1
+stretch_mode = 5
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]

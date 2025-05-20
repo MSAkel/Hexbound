@@ -41,7 +41,7 @@ func instantiate_perk_choices() -> void:
 		for perk in GameManager.perks_pack:
 			var selectionItem: SelectionItemGui = selection_item_scene.instantiate() as SelectionItemGui
 			selectionItem.find_child("Icon").texture = perk.icon
-			selectionItem.find_child("Label").text = perk.label
+			selectionItem.find_child("Label").text = perk.perk_name
 			selectionItem.find_child("Description").text = perk.description
 			choices_container.add_child(selectionItem)
 		

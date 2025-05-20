@@ -6,8 +6,6 @@ func enter() -> void:
 	
 	card_ui.reparent_requested.emit(card_ui)
 	card_ui.panel.set("theme_override_styles/panel", card_ui.BASE_STYLEBOX)
-	#card_ui.color.color = Color.WEB_GREEN
-	#card_ui.state.text = "BASE"
 	# pivot offset to prevent card snapping to mouse cursor at (0,0) and on cursor location instead
 	card_ui.pivot_offset = Vector2.ZERO
 	

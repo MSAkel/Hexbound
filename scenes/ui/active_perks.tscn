@@ -1,45 +1,23 @@
-[gd_scene load_steps=2 format=3 uid="uid://6quv54inxx4v"]
+[gd_scene load_steps=3 format=3 uid="uid://6quv54inxx4v"]
 
-[ext_resource type="Texture2D" uid="uid://bhnfrrx28pbe6" path="res://assets/icons/minerals/wood.png" id="1_aqwe1"]
+[ext_resource type="PackedScene" uid="uid://bkyj5id0pr10q" path="res://scenes/ui/perks/perk_ui.tscn" id="1_aqwe1"]
+[ext_resource type="Script" uid="uid://brc5yty1tkrix" path="res://scenes/ui/perk_manager.gd" id="1_yhbqg"]
 
-[node name="ActivePerks" type="Control" groups=["main_ui"]]
-layout_mode = 3
-anchors_preset = 0
+[node name="ActivePerks" type="MarginContainer" groups=["main_ui"]]
+offset_right = 164.0
+offset_bottom = 52.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+script = ExtResource("1_yhbqg")
 
-[node name="MarginContainer" type="NinePatchRect" parent="."]
+[node name="PerksGrid" type="GridContainer" parent="."]
+custom_minimum_size = Vector2(164, 32)
 layout_mode = 2
-offset_right = 397.0
-offset_bottom = 105.0
-
-[node name="HBoxContainer" type="GridContainer" parent="MarginContainer"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 234.0
-offset_bottom = 92.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
 columns = 6
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(64, 64)
+[node name="PerkUI" parent="PerksGrid" instance=ExtResource("1_aqwe1")]
 layout_mode = 2
-texture = ExtResource("1_aqwe1")
-expand_mode = 1
-
-[node name="TextureRect2" type="TextureRect" parent="MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-texture = ExtResource("1_aqwe1")
-expand_mode = 1
-
-[node name="TextureRect3" type="TextureRect" parent="MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-texture = ExtResource("1_aqwe1")
-expand_mode = 1
-
-[node name="TextureRect4" type="TextureRect" parent="MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-texture = ExtResource("1_aqwe1")
-expand_mode = 1

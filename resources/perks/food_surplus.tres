@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="PerkData" load_steps=3 format=3 uid="uid://di7iaf0ggvr7a"]
+[gd_resource type="Resource" script_class="Perk" load_steps=3 format=3 uid="uid://di7iaf0ggvr7a"]
 
-[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk_data.gd" id="1_7wkyo"]
+[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk.gd" id="1_7wkyo"]
 [ext_resource type="Texture2D" uid="uid://qio4dg17e1ik" path="res://assets/icons/perks/food_surplus_perk.png" id="1_fhhok"]
 
 [resource]
 script = ExtResource("1_7wkyo")
 id = "food_surplus"
-label = "Food Surplus"
+perk_name = "Food Surplus"
 icon = ExtResource("1_fhhok")
-description = "Provides 5 food at the end of each turn"
+type = 0
 rarity = 0
+description = "Provides 5 food at the end of each turn"
 metadata/_custom_type_script = "uid://c7a8r2og86kxl"

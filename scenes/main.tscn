@@ -1,3 +1,13 @@
-[gd_scene format=3 uid="uid://bpaabu6bfu0hv"]
+[gd_scene load_steps=4 format=3 uid="uid://bpaabu6bfu0hv"]
+
+[ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="1_sugp2"]
+[ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="2_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 
 [node name="Main" type="Node2D"]
+
+[node name="MainUI" parent="." instance=ExtResource("1_sugp2")]
+
+[node name="HexTileMap" parent="." groups=["hex_map_group"] instance=ExtResource("2_jyhfs")]
+
+[node name="Camera" parent="." instance=ExtResource("3_tbgi4")]

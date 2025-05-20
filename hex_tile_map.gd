@@ -235,10 +235,18 @@ func explore_tile(h: Hex) -> void:
 
 	if h.curse != null:
 		h.curse.curse_button.disabled = false
-
-	GameManager.explored_tiles.append(h)
+	h.on_explore()
 	for i in h.minerals.size():
 		h.minerals[i].show()
 
+	GameManager.explored_tiles.append(h)
+
 func on_turn_ended():
-	print("hex_title")
+	# var tween := create_tween()
+	for tile in GameManager.explored_tiles:
+		var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
+		floating_text.position =  base_layer.map_to_local(tile.coordinates)
+
+		var gold_amount: int = tile.generate_gold()
+		floating_text.set_text(("+%s gold") % gold_amount)
+		get_tree().current_scene.add_child(floating_text)

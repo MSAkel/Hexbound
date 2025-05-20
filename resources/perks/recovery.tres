@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="PerkData" load_steps=3 format=3 uid="uid://bwq5egi2lnf6h"]
+[gd_resource type="Resource" script_class="Perk" load_steps=3 format=3 uid="uid://bwq5egi2lnf6h"]
 
 [ext_resource type="Texture2D" uid="uid://tgdbwb2mrst3" path="res://assets/icons/perks/recovery_perk.png" id="1_8piu8"]
-[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk_data.gd" id="1_mtpyf"]
+[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk.gd" id="1_mtpyf"]
 
 [resource]
 script = ExtResource("1_mtpyf")
 id = "recovery"
-label = "Recovery"
+perk_name = "Recovery"
 icon = ExtResource("1_8piu8")
-description = "Something to do with curses"
+type = 0
 rarity = 1
+description = "Something to do with curses"
 metadata/_custom_type_script = "uid://c7a8r2og86kxl"

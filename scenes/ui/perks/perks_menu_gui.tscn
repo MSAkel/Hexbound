@@ -6,7 +6,7 @@
 [sub_resource type="AtlasTexture" id="AtlasTexture_peeah"]
 atlas = ExtResource("2_2dvy3")
 
-[node name="PerksMenuGui" type="Control"]
+[node name="ModifiersMenuGui" type="Control"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 3
 anchors_preset = 15
@@ -16,7 +16,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_6j2cj")
 
-[node name="PerksMenuButton" type="TextureButton" parent="."]
+[node name="ModifiersMenuButton" type="TextureButton" parent="."]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 1
 anchors_preset = 1
@@ -29,7 +29,7 @@ texture_normal = SubResource("AtlasTexture_peeah")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="Icon" type="TextureRect" parent="PerksMenuButton"]
+[node name="Icon" type="TextureRect" parent="ModifiersMenuButton"]
 visible = false
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 1
@@ -46,7 +46,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Label" type="Label" parent="PerksMenuButton"]
+[node name="Label" type="Label" parent="ModifiersMenuButton"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -118,6 +118,6 @@ grow_horizontal = 2
 grow_vertical = 0
 text = "Reroll (1)"
 
-[connection signal="pressed" from="PerksMenuButton" to="." method="_on_perks_menu_button_pressed"]
+[connection signal="pressed" from="ModifiersMenuButton" to="." method="_on_perks_menu_button_pressed"]
 [connection signal="pressed" from="PanelContainer/Panel/CloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="PanelContainer/Panel/RerollButton" to="." method="_on_reroll_button_pressed"]

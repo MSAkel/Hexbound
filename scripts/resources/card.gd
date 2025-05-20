@@ -19,6 +19,3 @@ extends Resource
 @export_multiline var tooltip_text: String
 
 #var assigned_cards: Array[Node] = []
-
-#func is_targeting_building() -> bool:
-	#return target == Target.BUILDING

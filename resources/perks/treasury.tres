@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="PerkData" load_steps=3 format=3 uid="uid://wjmjuccsvnx0"]
+[gd_resource type="Resource" script_class="Perk" load_steps=3 format=3 uid="uid://wjmjuccsvnx0"]
 
 [ext_resource type="Texture2D" uid="uid://bid7ix2ewqka3" path="res://assets/icons/perks/treasury_perk.png" id="1_urkl8"]
-[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk_data.gd" id="1_xca5k"]
+[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk.gd" id="1_xca5k"]
 
 [resource]
 script = ExtResource("1_xca5k")
 id = "treasury"
-label = "Treasury"
+perk_name = "Treasury"
 icon = ExtResource("1_urkl8")
-description = "Gain 1 prestige for every 50 gold gained"
+type = 2
 rarity = 1
+description = "Gain 1 prestige for every 50 gold gained"
 metadata/_custom_type_script = "uid://c7a8r2og86kxl"

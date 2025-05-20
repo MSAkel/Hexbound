@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="PerkData" load_steps=3 format=3 uid="uid://b02pmq1v3coq6"]
+[gd_resource type="Resource" script_class="Perk" load_steps=3 format=3 uid="uid://b02pmq1v3coq6"]
 
 [ext_resource type="Texture2D" uid="uid://bghjf64286ahe" path="res://assets/icons/minerals/sheep.png" id="1_h3rkv"]
-[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk_data.gd" id="2_03crd"]
+[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk.gd" id="2_03crd"]
 
 [resource]
 script = ExtResource("2_03crd")
 id = "test"
-label = "Test perk"
+perk_name = "Test"
 icon = ExtResource("1_h3rkv")
-description = "A test Perk"
+type = 0
 rarity = 1
+description = "A test Perk"
 metadata/_custom_type_script = "uid://c7a8r2og86kxl"

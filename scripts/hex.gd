@@ -28,3 +28,25 @@ func _init(coords: Vector2i) -> void:
 
 func get_tile_data() -> void:
 	pass
+
+func on_explore() -> void:
+	if explored:
+		match terrain_type:
+			TerrainType.FIELDS:
+				GameManager.fire_essence += 1
+			TerrainType.FOREST:
+				GameManager.nature_essence += 1
+			TerrainType.MOUNTAIN:
+				GameManager.storm_essence += 1
+			TerrainType.SNOW:
+				GameManager.ice_essence += 1
+
+# func activate_tile() -> void:
+func generate_gold() -> int:
+	# check for any perks/runes which could impact gold production
+	return 5
+
+func generate_mineral(mineral: Mineral) -> int:
+	# check for any perks/runes which could impact mineral production
+	# if mineral.t
+	pass

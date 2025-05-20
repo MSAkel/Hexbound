@@ -27,7 +27,7 @@ func _on_button_pressed() -> void:
 	hide()
 
 func _on_explore_button_pressed() -> void:
-	GameManager.explore_tile(hex)
+	# GameManager.explore_tile(hex)
 	GameManager.tile_explored.emit(hex)
 	explore_button.text = "Explored"
 

@@ -13,19 +13,23 @@ var runes_pool: Array[RuneData] = []
 var available_runes: Array[RuneData] = []
 var active_runes: Array[RuneData] = []
 
-# Perks variables
-var perks_pool: Array[PerkData] = []
+var perks_pool: Array[Perk] = []
 var available_perks: int
-var active_perks: Array[PerkData] = []
-var perks_pack: Array[PerkData] = [] # Perks available for selection on the perks selection menu
+var active_perks: Array[Perk] = []
+var perks_pack: Array[Perk] = [] # Perks available for selection on the perks selection menu
 var available_perk_rerolls: int = 1
 
-#buildings variables
 var buildings_pool: Array[BuildingData] = [] # All buildings available in the game
 var buildings_pack: Array[BuildingData] = [] # Buildings available for selection on the buildings selection menu
 var selected_building: Array[CardUI] = [] # The building selected by the player
 var available_buidling_packs: int = 0 # increment by 1 on turn end
 var building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
+
+# Essence, each tile gives 1 essence of a specific type
+var nature_essence: int = 0
+var fire_essence: int = 0
+var frost_essence: int = 0
+var storm_essence: int = 0
 
 func _ready() -> void:
 	# Load the runes from the resources directory
@@ -37,8 +41,8 @@ func _ready() -> void:
 	# Load the perks from the resources directory
 	var perks_directory = DirAccess.open("res://resources/perks/")
 	for file in perks_directory.get_files():
-		var rune = load("res://resources/perks/" + file)
-		perks_pool.append(rune)
+		var perk = load("res://resources/perks/" + file)
+		perks_pool.append(perk)
 
 	var buildings_directory = DirAccess.open("res://resources/buildings/")
 	for file in buildings_directory.get_files():
@@ -47,6 +51,8 @@ func _ready() -> void:
 
 	create_buildings_pack()
 	create_perks_pack()
+
+	# turn_ended.connect(trigger_tile)
 
 func end_turn() -> void:
 	current_year += 1
@@ -80,3 +86,11 @@ func create_perks_pack() -> void:
 
 		for i in 3:
 			perks_pack.append(shuffled_pool[i])
+
+
+# func add_essence(terrainType: Hex.TerrainType, amount: int) -> void:
+# 	pass
+
+# func trigger_tile() -> void:
+# 	for explored_tile: Hex in explored_tiles:
+# 		print(explored_tile._coordinates)
