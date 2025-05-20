@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ResourceData" load_steps=3 format=3 uid="uid://dpig8u2yptoeu"]
 
 [ext_resource type="Texture2D" uid="uid://bhnfrrx28pbe6" path="res://assets/icons/minerals/wood.png" id="1_k8ev1"]
-[ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/mineral_data.gd" id="2_6bnsf"]
+[ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/mineral.gd" id="2_6bnsf"]
 
 [resource]
 script = ExtResource("2_6bnsf")

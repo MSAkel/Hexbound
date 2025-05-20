@@ -17,7 +17,7 @@ var special_state: SpecialTileState = SpecialTileState.NONE
 var curse: CurseEvent
 
 # The minerals which the tile will contain.
-var minerals: Array[Mineral] = []
+var minerals: Array[MineralUI] = []
 
 var coordinates: Vector2i:
 	get:
@@ -46,7 +46,5 @@ func generate_gold() -> int:
 	# check for any perks/runes which could impact gold production
 	return 5
 
-func generate_mineral(mineral: Mineral) -> int:
-	# check for any perks/runes which could impact mineral production
-	# if mineral.t
-	pass
+# func generate_mineral(mineral: MineralUI) -> int:
+# 	pass

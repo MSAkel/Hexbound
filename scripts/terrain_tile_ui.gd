@@ -19,8 +19,8 @@ func _ready() -> void:
 
 func set_hex(h: Hex) -> void:
 	hex = h
-	mineral_1_icon.texture = h.minerals[0].mineral_data.icon
-	mineral_2_icon.texture = h.minerals[1].mineral_data.icon
+	mineral_1_icon.texture = h.minerals[0].icon
+	mineral_2_icon.texture = h.minerals[1].icon
 	show()
 
 func _on_button_pressed() -> void:

@@ -1,7 +1,7 @@
 [gd_scene load_steps=19 format=3 uid="uid://cpvr3k1luft0f"]
 
 [ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://hex_tile_map.gd" id="1_d5c3r"]
-[ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/mineral_data.gd" id="2_8rbqn"]
+[ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/mineral.gd" id="2_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://xyr8ssa54dw4" path="res://assets/tilesets/base_hex_tiles.png" id="2_c0fpv"]
 [ext_resource type="Resource" uid="uid://8slf12t7lne6" path="res://resources/minerals/berries.tres" id="3_b6nmi"]
 [ext_resource type="Texture2D" uid="uid://bgme2susi6nhr" path="res://assets/tilesets/selected_tile_overlay.png" id="3_c0fpv"]

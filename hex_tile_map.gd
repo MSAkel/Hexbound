@@ -12,10 +12,10 @@ extends Node2D
 
 @export var cursed_tiles_count := 3
 
-@export var minerals: Array[MineralData] = []
+@export var minerals: Array[Mineral] = []
 @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUi"
 
-var mineral_scene: PackedScene = preload("res://scenes/ui/mineral.tscn")
+const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
 var curse_scene: PackedScene = preload("res://scenes/ui/curse_event.tscn")
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
@@ -187,26 +187,27 @@ func generate_minerals(h: Hex, coords: Vector2i) -> void:
 	# generate 2 resources on each tile except water
 	if h.terrain_type != hex.TerrainType.WATER:
 		minerals.shuffle()  # Randomize the order of the array
-		var tile_minerals: Array[MineralData] = minerals.slice(0, 2)
+		var tile_minerals: Array[Mineral] = minerals.slice(0, 2)
 
 		for i in tile_minerals.size():
-			var tile_mineral = tile_minerals[i]
-			var mineral: Mineral = mineral_scene.instantiate() as Mineral
-			mineral.map = self
+			var mineral = tile_minerals[i]
+			var mineral_ui: MineralUI = MINERAL_UI.instantiate() as MineralUI
+			mineral_ui.map = self
 			# Where on the map the mineral is located
-			mineral.center_coordinates = coords
-			mineral.tile = h
-			h.minerals.append(mineral)
+			mineral_ui.center_coordinates = coords
+			mineral_ui.tile = h
+			h.minerals.append(mineral_ui)
 
 			# Base position on the tile
 			var base_pos = base_layer.map_to_local(coords)
 			var offset = Vector2((i - (tile_minerals.size() - 1) / 2.0) * 72, -32)
 			# Spread out horizontally and slightly above center
-			mineral.position = base_pos + offset  
+			mineral_ui.position = base_pos + offset  
 
-			mineral.mineral_data = tile_mineral
-			add_child(mineral)
-			mineral.hide()
+			mineral_ui.set_mineral(mineral)
+			# mineral.mineral_data = tile_mineral
+			add_child(mineral_ui)
+			mineral_ui.hide()
 		
 # Needs a special tile state scene
 func apply_special_tile_state(h: Hex, coords: Vector2i) -> void:
