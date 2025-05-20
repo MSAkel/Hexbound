@@ -46,5 +46,14 @@ func generate_gold() -> int:
 	# check for any perks/runes which could impact gold production
 	return 5
 
-# func generate_mineral(mineral: MineralUI) -> int:
-# 	pass
+func generate_mineral(mineral_ui: MineralUI) -> int:
+	if mineral_ui.mineral.type == Mineral.Type.BERRIES:
+		return 5
+	elif mineral_ui.mineral.type == Mineral.Type.WOOL:
+		return 3
+	elif mineral_ui.mineral.type == Mineral.Type.STONE:
+		return 3
+	elif mineral_ui.mineral.type == Mineral.Type.WOOD:
+		return 5
+	
+	return 5

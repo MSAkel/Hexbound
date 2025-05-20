@@ -60,12 +60,16 @@ func end_turn() -> void:
 	available_buidling_packs += 1
 	for tile in explored_tiles:
 		gold_count += 5
-		
-func explore_tile(hex: Hex) -> void:
-	explored_tiles.append(hex)
-	hex.explored = true
-	print("Exploring tile at %s" % [hex.coordinates])
-	print("Current gold count: %s" % [gold_count])
+
+
+func update_explored_tiles_list(h: Hex) -> void:
+	explored_tiles.append(h)
+	explored_tiles.sort_custom(func(a, b):
+		var ca = a._coordinates
+		var cb = b._coordinates
+		return ca.y == cb.y if ca.x < cb.x else ca.y < cb.y
+	)
+
 
 # This function is called when the end turns.
 # it will go through the buildings list and randomly select 3 buildings to be available for selection

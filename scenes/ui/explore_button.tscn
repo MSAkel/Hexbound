@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://ualar7pfjhj7"]
+
+[ext_resource type="Script" uid="uid://bm8we0o3rc8h1" path="res://scenes/ui/explore_button.gd" id="1_y1hnq"]
+[ext_resource type="AudioStream" uid="uid://dhba2e6ec1471" path="res://assets/audio/air-woosh.wav" id="2_px1ja"]
+
+[node name="Button" type="Button"]
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Explore"
+script = ExtResource("1_y1hnq")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_px1ja")
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]

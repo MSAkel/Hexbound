@@ -2,7 +2,6 @@ class_name  HexTileMap
 extends Node2D
 
 @onready var base_layer: TileMapLayer = $BaseLayer
-#@onready var hex_border_layer: TileMapLayer = $HexBorderLayer
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var fog_overlay_layer: TileMapLayer = $FogOverlayLayer
 
@@ -16,6 +15,8 @@ extends Node2D
 @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUi"
 
 const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
+const EXPLORE_BUTTON: PackedScene = preload("res://scenes/ui/explore_button.tscn")
+
 var curse_scene: PackedScene = preload("res://scenes/ui/curse_event.tscn")
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
@@ -35,6 +36,8 @@ func _ready() -> void:
 	generate_terrain()
 	GameManager.turn_ended.connect(on_turn_ended)
 	GameManager.tile_explored.connect(explore_tile)
+	# Add initial explore button after terrain generation is complete
+	update_explore_buttons()
 
 # Handles listening to tile clicks and selection
 func _unhandled_input(event: InputEvent) -> void:
@@ -230,6 +233,28 @@ func apply_special_tile_state(h: Hex, coords: Vector2i) -> void:
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
 
+func update_explore_buttons() -> void:
+	# Remove all existing explore buttons
+	for child in get_children():
+		if child is Button and child.has_method("_on_pressed"):
+			child.queue_free()
+	
+	# Add explore buttons to tiles surrounding explored tiles
+	for explored_tile in GameManager.explored_tiles:
+		var surrounding_tiles = base_layer.get_surrounding_cells(explored_tile.coordinates)
+		print(surrounding_tiles)
+		for coords in surrounding_tiles:
+			print(map_data.has(coords))
+			if map_data.has(coords):
+				print(coords)
+				var h = map_data[coords]
+				if not h.explored and h.terrain_type != h.TerrainType.WATER:
+					print("Adding explore button to tile: ", coords)
+					var explore_button = EXPLORE_BUTTON.instantiate()
+					explore_button.hex = h
+					explore_button.position = base_layer.map_to_local(coords)
+					add_child(explore_button)
+
 func explore_tile(h: Hex) -> void:
 	fog_overlay_layer.set_cell(h._coordinates, -1)
 	h.explored = true
@@ -240,14 +265,60 @@ func explore_tile(h: Hex) -> void:
 	for i in h.minerals.size():
 		h.minerals[i].show()
 
-	GameManager.explored_tiles.append(h)
+	GameManager.update_explored_tiles_list(h)
+	update_explore_buttons()  # Update explore buttons after exploring a tile
 
 func on_turn_ended():
-	# var tween := create_tween()
-	for tile in GameManager.explored_tiles:
-		var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
-		floating_text.position =  base_layer.map_to_local(tile.coordinates)
+	var delay_interval := 0.5
 
+	for tile in GameManager.explored_tiles:
+		# Create and start scale animation for individual tile
+		var tile_pos = base_layer.map_to_local(tile._coordinates)
+		
+		# Create a temporary sprite for the animation
+		var sprite = Sprite2D.new()
+		var atlas_source = base_layer.tile_set.get_source(0) as TileSetAtlasSource
+		var coords = terrain_textures[tile.terrain_type]
+		var tile_id = atlas_source.get_tile_at_coords(coords)
+		sprite.texture = atlas_source.texture
+		sprite.region_enabled = true
+		sprite.region_rect = atlas_source.get_tile_texture_region(tile_id)
+		sprite.position = tile_pos
+		sprite.centered = true
+		base_layer.add_sibling(sprite, true)  # Add as sibling before base_layer
+		
+		var tween = create_tween()
+		tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), 0.1)
+		tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.1)
+		tween.tween_callback(sprite.queue_free)
+		
+		var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
+		floating_text.position = tile_pos
 		var gold_amount: int = tile.generate_gold()
-		floating_text.set_text(("+%s gold") % gold_amount)
+		floating_text.set_text("+%s gold" % gold_amount, true)
 		get_tree().current_scene.add_child(floating_text)
+
+		await get_tree().create_timer(delay_interval).timeout
+
+		for mineral_ui in tile.minerals:
+			# Create another sprite for mineral animation
+			var mineral_sprite = Sprite2D.new()
+			mineral_sprite.texture = atlas_source.texture
+			mineral_sprite.region_enabled = true
+			mineral_sprite.region_rect = atlas_source.get_tile_texture_region(tile_id)
+			mineral_sprite.position = tile_pos
+			mineral_sprite.centered = true
+			base_layer.add_sibling(mineral_sprite, true)  # Add as sibling before base_layer
+			
+			var mineral_tween = create_tween()
+			mineral_tween.tween_property(mineral_sprite, "scale", Vector2(1.05, 1.05), 0.1)
+			mineral_tween.tween_property(mineral_sprite, "scale", Vector2(1.0, 1.0), 0.1)
+			mineral_tween.tween_callback(mineral_sprite.queue_free)
+			
+			var floating_text_mineral = preload("res://scenes/animations/floating_text.tscn").instantiate()
+			floating_text_mineral.position = tile_pos
+			var mineral_amount = tile.generate_mineral(mineral_ui)
+			floating_text_mineral.set_text(("+%s %s") % [mineral_amount, mineral_ui.mineral.name], false)
+			get_tree().current_scene.add_child(floating_text_mineral)
+
+			await get_tree().create_timer(delay_interval).timeout
