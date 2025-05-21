@@ -20,7 +20,7 @@ const EXPLORE_BUTTON: PackedScene = preload("res://scenes/ui/explore_button.tscn
 var curse_scene: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
- # Dictionary<Vector2i, Hex>
+# Dictionary<Vector2i, Hex>
 var map_data: Dictionary = {}
 # Based off the tilemap textures order. If changed, update the dictionary.
 var terrain_textures: Dictionary = {
@@ -81,10 +81,7 @@ func generate_terrain() -> void:
 			snow_map[x].append(0.0)
 			mountain_map[x].append(0.0)
 	
-
 	var rand_seed := randi() % 100000
-
-	# Experment with different noise values
 
 	# Base terrain (fields, mountains, forests)
 	var base_noise := FastNoiseLite.new()
@@ -116,7 +113,6 @@ func generate_terrain() -> void:
 	snow_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
 	snow_noise.fractal_lacunarity = 2
 	
-
 	# Generate noise values
 	for x in width:
 		for y in height:
@@ -135,15 +131,6 @@ func generate_terrain() -> void:
 		{ "min": noise_max / 10.0 * 4, "max": noise_max / 10.0 * 5, "type": hex.TerrainType.MOUNTAIN },
 		{ "min": noise_max / 10.0 * 5, "max": noise_max + 0.05, "type": hex.TerrainType.FOREST }
 	]
-
-	# The upper 30% of the swamp noise will be swamp tiles
-	# var swamp_ranges := [
-	# 	{ "min": swamp_noise_max / 10.0 * 7, "max": swamp_noise_max + 0.05, "type": hex.TerrainType.SWAMP }
-	# ]
-
-	# var snow_ranges := [
-	# 	{ "min": snow_noise_max / 10.0 * 7, "max": snow_noise_max + 0.05, "type": hex.TerrainType.SNOW }
-	# ]
 	
 	var x_center = width / 2
 	var y_center = height / 2
@@ -151,6 +138,7 @@ func generate_terrain() -> void:
 	for x in width:
 		for y in height:
 			var h := Hex.new(Vector2i(x, y))
+			h.setup(self, MINERAL_UI, curse_scene)
 			var noise_value: float = noise_map[x][y]
 			
 			for r in terrain_ranges:
@@ -159,78 +147,26 @@ func generate_terrain() -> void:
 					break
 
 			map_data[Vector2i(x,y)] = h
-
-			# if swamp_noise[x][y] >= swamp_ranges[0].min and swamp_noise[x][y] < swamp_ranges[0].max:
-			# 	h.terrain_type = hex.TerrainType.SWAMP
-			# elif snow_noise[x][y] >= snow_ranges[0].min and snow_noise[x][y] < snow_ranges[0].max:
-			# 	h.terrain_type = hex.TerrainType.SNOW
 			
 			# Outer Water tiles generation
 			var border_thickness := 1
 			if x < border_thickness or x >= width - border_thickness or y < border_thickness or y >= height - border_thickness:
 				h.terrain_type = hex.TerrainType.WATER
 			
-			
 			base_layer.set_cell(Vector2i(x, y), 0, terrain_textures[h.terrain_type])
 			fog_overlay_layer.set_cell(Vector2i(x, y), 0, Vector2i(0,0))
-			generate_minerals(h, Vector2i(x, y))
+			h.generate_minerals(minerals)
 		
 			if x == x_center and y == y_center:
 				explore_tile(h)
-			elif  h.terrain_type != hex.TerrainType.WATER:
+			elif h.terrain_type != hex.TerrainType.WATER:
 				var containsEvent = randi_range(0, 4)
 				if containsEvent == 1:
 					h.special_state = hex.SpecialTileState.CURSED
-					apply_special_tile_state(h, Vector2i(x, y))
+					h.apply_special_state()
 				elif containsEvent == 2:
 					h.special_state = hex.SpecialTileState.ENCAMPMENT
-					apply_special_tile_state(h, Vector2i(x, y))
-
-func generate_minerals(h: Hex, coords: Vector2i) -> void:
-	# generate 2 resources on each tile except water
-	if h.terrain_type != hex.TerrainType.WATER:
-		minerals.shuffle()  # Randomize the order of the array
-		var tile_minerals: Array[Mineral] = minerals.slice(0, 2)
-
-		for i in tile_minerals.size():
-			var mineral = tile_minerals[i]
-			var mineral_ui: MineralUI = MINERAL_UI.instantiate() as MineralUI
-			mineral_ui.map = self
-			# Where on the map the mineral is located
-			mineral_ui.center_coordinates = coords
-			mineral_ui.tile = h
-			h.minerals.append(mineral_ui)
-
-			# Base position on the tile
-			var base_pos = base_layer.map_to_local(coords)
-			var offset = Vector2((i - (tile_minerals.size() - 1) / 2.0) * 72, -32)
-			# Spread out horizontally and slightly above center
-			mineral_ui.position = base_pos + offset  
-
-			mineral_ui.set_mineral(mineral)
-			# mineral.mineral_data = tile_mineral
-			add_child(mineral_ui)
-			mineral_ui.hide()
-		
-# Needs a special tile state scene
-func apply_special_tile_state(h: Hex, coords: Vector2i) -> void:
-	if h.special_state == hex.SpecialTileState.CURSED:
-		var curse: CurseUI = curse_scene.instantiate() as CurseUI
-		curse.map = self
-		curse.tile = h
-		curse.center_coordinates = coords
-		h.curse = curse
-
-		curse.position = base_layer.map_to_local(coords)
-		# TODO get the curse data from the curse event
-		add_child(curse)
-		
-	elif h.special_state == hex.SpecialTileState.ENCAMPMENT:
-		pass
-	
-# Used for setting camera boundaries
-func map_to_local(coords: Vector2i) -> Vector2i:
-	return base_layer.map_to_local(coords)
+					h.apply_special_state()
 
 func update_explore_buttons() -> void:
 	# Remove all existing explore buttons
@@ -252,22 +188,8 @@ func update_explore_buttons() -> void:
 
 func explore_tile(h: Hex) -> void:
 	fog_overlay_layer.set_cell(h._coordinates, -1)
-	h.explored = true
-
-	if h.curse != null:
-		h.curse.curse_button.disabled = false
-	h.on_explore()
-	for i in h.minerals.size():
-		h.minerals[i].show()
-
-	GameManager.update_explored_tiles_list(h)
-	update_explore_buttons()  # Update explore buttons after exploring a tile
-
-func create_scale_animation(sprite: Sprite2D, duration: float) -> void:
-	var tween = create_tween()
-	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), duration)
-	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), duration)
-	tween.tween_callback(sprite.queue_free)
+	h.explore()
+	update_explore_buttons()
 
 func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
 	var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
@@ -275,46 +197,24 @@ func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
 	floating_text.set_text(text, is_gold)
 	get_tree().current_scene.add_child(floating_text)
 
+# Used for setting camera boundaries and other coordinate conversions
+func map_to_local(coords: Vector2i) -> Vector2i:
+	return base_layer.map_to_local(coords)
+
 func on_turn_ended():
 	var base_delay_interval := 0.5
 	var delay_interval := base_delay_interval / GameManager.game_speed
 	var vertical_offset := 0
 
 	for tile in GameManager.explored_tiles:
-		var tile_pos = base_layer.map_to_local(tile._coordinates)
-		
-		# Create and animate tile sprite
-		var sprite = Sprite2D.new()
-		var atlas_source = base_layer.tile_set.get_source(0) as TileSetAtlasSource
-		var coords = terrain_textures[tile.terrain_type]
-		var tile_id = atlas_source.get_tile_at_coords(coords)
-		sprite.texture = atlas_source.texture
-		sprite.region_enabled = true
-		sprite.region_rect = atlas_source.get_tile_texture_region(tile_id)
-		sprite.position = tile_pos
-		sprite.centered = true
-		base_layer.add_sibling(sprite, true)
-		
-		create_scale_animation(sprite, 0.1 / GameManager.game_speed)
-		create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s gold" % tile.generate_gold(), true)
+		tile.create_resource_animation("gold", tile.generate_gold(), vertical_offset)
 		vertical_offset += 20
-
 		await get_tree().create_timer(delay_interval).timeout
 
 		for mineral_ui in tile.minerals:
-			var mineral_sprite = Sprite2D.new()
-			mineral_sprite.texture = atlas_source.texture
-			mineral_sprite.region_enabled = true
-			mineral_sprite.region_rect = atlas_source.get_tile_texture_region(tile_id)
-			mineral_sprite.position = tile_pos
-			mineral_sprite.centered = true
-			base_layer.add_sibling(mineral_sprite, true)
-			
-			create_scale_animation(mineral_sprite, 0.1 / GameManager.game_speed)
-			var mineral_amount = tile.generate_mineral(mineral_ui)
-			create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [mineral_amount, mineral_ui.mineral.name], false)
+			var mineral_amount = tile.produce_mineral(mineral_ui)
+			tile.create_resource_animation(mineral_ui.mineral.name, mineral_amount, vertical_offset)
 			vertical_offset += 20
-
 			await get_tree().create_timer(delay_interval).timeout
 		
 		vertical_offset = 0
