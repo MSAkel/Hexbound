@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6x8v0j6y5n3q"]
+
+[ext_resource type="Script" uid="uid://dnemyfiv3bu8e" path="res://scenes/ui/boons_selection/boon_item.gd" id="1_2k4m3"]
+
+[node name="BoonItem" type="TextureButton"]
+custom_minimum_size = Vector2(200, 100)
+offset_right = 200.0
+offset_bottom = 150.0
+script = ExtResource("1_2k4m3")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Boon Name"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Boon Description"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="CostLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Cost: 1"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]

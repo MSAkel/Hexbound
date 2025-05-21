@@ -1,0 +1,109 @@
+[gd_scene load_steps=7 format=3 uid="uid://gd4rito42dyr"]
+
+[ext_resource type="Script" uid="uid://b6oc5xxbytb4f" path="res://scenes/ui/main_menu/main_menu.gd" id="1_fe2o3"]
+[ext_resource type="Texture2D" uid="uid://jgmv1d02181a" path="res://assets/gui/main_menu_background.png" id="1_sl1te"]
+
+[sub_resource type="Gradient" id="Gradient_fe2o3"]
+colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1g8jr"]
+gradient = SubResource("Gradient_fe2o3")
+width = 50
+
+[sub_resource type="LabelSettings" id="LabelSettings_m1kxf"]
+font_size = 64
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x2yvf"]
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(5, 5, 0)
+emission_shape_scale = Vector3(5, 5, 1)
+emission_shape = 1
+emission_sphere_radius = 128.0
+angle_min = -118.5
+angle_max = 62.6
+gravity = Vector3(0, 98, 0)
+scale_max = 3.0
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fe2o3")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_sl1te")
+expand_mode = 1
+
+[node name="Foreground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture1D_1g8jr")
+
+[node name="Container" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 369.0
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Label" type="Label" parent="Container"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Hexbound"
+label_settings = SubResource("LabelSettings_m1kxf")
+
+[node name="MenuItemsContainer" type="VBoxContainer" parent="Container"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="Continue" type="Button" parent="Container/MenuItemsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Continue"
+
+[node name="Play" type="Button" parent="Container/MenuItemsContainer"]
+layout_mode = 2
+text = "Play"
+
+[node name="Options" type="Button" parent="Container/MenuItemsContainer"]
+layout_mode = 2
+text = "Options"
+
+[node name="Exit" type="Button" parent="Container/MenuItemsContainer"]
+layout_mode = 2
+text = "Exit"
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+modulate = Color(0.747408, 0.580086, 1, 1)
+position = Vector2(977, 175)
+rotation = -3.14027
+amount = 10
+sub_emitter = NodePath(".")
+lifetime = 3.0
+speed_scale = 0.2
+randomness = 1.0
+process_material = SubResource("ParticleProcessMaterial_x2yvf")
+
+[connection signal="pressed" from="Container/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="Container/MenuItemsContainer/Play" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="Container/MenuItemsContainer/Options" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="Container/MenuItemsContainer/Exit" to="." method="_on_exit_pressed"]
