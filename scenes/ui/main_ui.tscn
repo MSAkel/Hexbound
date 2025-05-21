@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/active_perks.tscn" id="1_hcnxy"]
-[ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/ui_manager.gd" id="1_l8t6x"]
+[ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://cm3sdx2an61fm" path="res://scenes/ui/top_panel_ui.tscn" id="4_travt"]
 [ext_resource type="PackedScene" uid="uid://dr6tgv52a40ou" path="res://scenes/ui/building_selection_ui.tscn" id="5_46cp5"]

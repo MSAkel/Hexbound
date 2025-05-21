@@ -31,6 +31,8 @@ var selected_building: Array[CardUI] = [] # The building selected by the player
 var _available_building_packs: int = 0 # increment by 1 on turn end
 var _building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
 
+var selected_boons: Array[Boon] = []
+
 # Essence, each tile gives 1 essence of a specific type
 var _nature_essence: int = 0
 var _fire_essence: int = 0

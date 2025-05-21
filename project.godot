@@ -16,8 +16,12 @@ config/features=PackedStringArray("4.4", "Forward Plus")
 
 [autoload]
 
-UiManager="*res://scripts/ui_manager.gd"
-GameManager="*res://scripts/game_manager.gd"
+UiManager="*res://scripts/autoload/ui_manager.gd"
+GameManager="*res://scripts/autoload/game_manager.gd"
+
+[debug]
+
+gdscript/warnings/unused_signal=0
 
 [display]
 

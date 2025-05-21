@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://b40vvy3d0sxlv"]
 
-[ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/ui_manager.gd" id="1_7wyih"]
+[ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_7wyih"]
 [ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="1_8mww4"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_6fp5t"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="2_rb232"]
