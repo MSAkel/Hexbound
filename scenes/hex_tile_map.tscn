@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://cpvr3k1luft0f"]
+[gd_scene load_steps=17 format=3 uid="uid://cpvr3k1luft0f"]
 
 [ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://hex_tile_map.gd" id="1_d5c3r"]
 [ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/mineral.gd" id="2_8rbqn"]
@@ -8,7 +8,6 @@
 [ext_resource type="Resource" uid="uid://upewdosmftp2" path="res://resources/minerals/sheep.tres" id="4_4rcl8"]
 [ext_resource type="Resource" uid="uid://dmo8iuvkajm6p" path="res://resources/minerals/stone.tres" id="5_xmj4m"]
 [ext_resource type="Resource" uid="uid://dpig8u2yptoeu" path="res://resources/minerals/wood.tres" id="6_o8iio"]
-[ext_resource type="Texture2D" uid="uid://n6xksl30322r" path="res://scripts/base_hex_tiles_2.png" id="7_tt7jl"]
 [ext_resource type="Texture2D" uid="uid://b1l1imm0jdaes" path="res://assets/tilesets/fog_overlay.png" id="9_tt7jl"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xmj4m"]
@@ -21,21 +20,9 @@ texture_region_size = Vector2i(256, 256)
 4:0/0 = 0
 5:0/0 = 0
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_b6nmi"]
-texture = ExtResource("7_tt7jl")
-texture_region_size = Vector2i(222, 256)
-0:0/0 = 0
-1:0/0 = 0
-2:0/0 = 0
-3:0/0 = 0
-4:0/0 = 0
-5:0/0 = 0
-6:0/0 = 0
-
 [sub_resource type="TileSet" id="TileSet_ekk8a"]
 tile_shape = 3
 tile_size = Vector2i(256, 256)
-sources/1 = SubResource("TileSetAtlasSource_b6nmi")
 sources/0 = SubResource("TileSetAtlasSource_xmj4m")
 
 [sub_resource type="TileSet" id="TileSet_8rbqn"]

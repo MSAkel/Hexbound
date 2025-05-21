@@ -1,0 +1,163 @@
+[gd_scene load_steps=7 format=3 uid="uid://dicyak4kt044t"]
+
+[ext_resource type="Script" uid="uid://df4lfjvinn7jd" path="res://scenes/ui/settings/settings.gd" id="1_settings"]
+[ext_resource type="Texture2D" uid="uid://jgmv1d02181a" path="res://assets/gui/main_menu_background.png" id="2_wj0em"]
+
+[sub_resource type="Gradient" id="Gradient_fe2o3"]
+colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1g8jr"]
+gradient = SubResource("Gradient_fe2o3")
+width = 50
+
+[sub_resource type="LabelSettings" id="LabelSettings_m1kxf"]
+font_size = 64
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x2yvf"]
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(5, 5, 0)
+emission_shape_scale = Vector3(5, 5, 1)
+emission_shape = 1
+emission_sphere_radius = 128.0
+angle_min = -118.5
+angle_max = 62.6
+gravity = Vector3(0, 98, 0)
+scale_max = 3.0
+
+[node name="Settings" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_settings")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_wj0em")
+expand_mode = 1
+
+[node name="Foreground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture1D_1g8jr")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -176.0
+offset_top = 50.0
+offset_right = 176.0
+offset_bottom = 139.333
+grow_horizontal = 2
+size_flags_vertical = 0
+text = "Settings"
+label_settings = SubResource("LabelSettings_m1kxf")
+horizontal_alignment = 1
+
+[node name="Container" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="SettingsContainer" type="VBoxContainer" parent="Container"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="MasterVolume" type="VBoxContainer" parent="Container/SettingsContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container/SettingsContainer/MasterVolume"]
+layout_mode = 2
+text = "Master Volume"
+
+[node name="HSlider" type="HSlider" parent="Container/SettingsContainer/MasterVolume"]
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="MusicVolume" type="VBoxContainer" parent="Container/SettingsContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container/SettingsContainer/MusicVolume"]
+layout_mode = 2
+text = "Music Volume"
+
+[node name="HSlider" type="HSlider" parent="Container/SettingsContainer/MusicVolume"]
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SFXVolume" type="VBoxContainer" parent="Container/SettingsContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container/SettingsContainer/SFXVolume"]
+layout_mode = 2
+text = "SFX Volume"
+
+[node name="HSlider" type="HSlider" parent="Container/SettingsContainer/SFXVolume"]
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="UIVolume" type="VBoxContainer" parent="Container/SettingsContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container/SettingsContainer/UIVolume"]
+layout_mode = 2
+text = "UI Volume"
+
+[node name="HSlider" type="HSlider" parent="Container/SettingsContainer/UIVolume"]
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="BackButton" type="Button" parent="Container"]
+layout_mode = 2
+size_flags_vertical = 8
+text = "Back"
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+modulate = Color(0.747408, 0.580086, 1, 1)
+position = Vector2(977, 175)
+rotation = -3.14027
+amount = 10
+sub_emitter = NodePath(".")
+lifetime = 3.0
+speed_scale = 0.2
+randomness = 1.0
+process_material = SubResource("ParticleProcessMaterial_x2yvf")
+
+[connection signal="focus_entered" from="Container/BackButton" to="." method="_on_back_button_focus_entered"]
+[connection signal="mouse_entered" from="Container/BackButton" to="." method="_on_back_button_mouse_entered"]
+[connection signal="pressed" from="Container/BackButton" to="." method="_on_back_button_pressed"]

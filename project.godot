@@ -18,6 +18,8 @@ config/features=PackedStringArray("4.4", "Forward Plus")
 
 UiManager="*res://scripts/autoload/ui_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
+AudioManager="*res://scripts/autoload/audio_manager.gd"
+Events="*res://scripts/autoload/events.gd"
 
 [debug]
 

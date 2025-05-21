@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://3pwk1tu6fo3o"]
 
-[ext_resource type="Script" uid="uid://n4q4nrxyxrki" path="res://scripts/ui/perks_menu_gui.gd" id="1_6j2cj"]
+[ext_resource type="Script" uid="uid://n4q4nrxyxrki" path="res://scenes/ui/perks/perks_menu_gui.gd" id="1_6j2cj"]
 [ext_resource type="Texture2D" uid="uid://2lcbgkqeo8fr" path="res://assets/gui/icon_container_image.png" id="2_2dvy3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_peeah"]

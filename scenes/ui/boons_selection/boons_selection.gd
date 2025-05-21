@@ -4,8 +4,10 @@ extends Control
 const MAX_SLOTS = 4
 const BOON_ITEM = preload("res://scenes/ui/boons_selection/boon_item.tscn")
 const BOON = preload("res://scripts/resources/boon.gd")
-const MAIN_SCENE = preload("res://scenes/main.tscn")
-const MAIN_MENU_SCENE = preload("res://scenes/ui/main_menu/main_menu.tscn")
+const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
+
+var main_scene = load("res://scenes/main.tscn")
+var main_menu_scene = load("res://scenes/ui/main_menu/main_menu.tscn")
 
 @onready var boons_container: GridContainer = $Container/Boons/BoonsContainer
 @onready var slots_label: Label = $Container/Boons/SlotsLabel
@@ -22,6 +24,11 @@ func _ready() -> void:
 	load_boons()
 	# Update the slots label to show initial state
 	update_slots_label()
+	
+	# Play boons selection music
+	var music = SOUNDTRACK.get_music_for_scene(scene_file_path)
+	if music:
+		AudioManager.play_music(music)
 
 # Load all available boons and create UI items for each one
 func load_boons() -> void:
@@ -68,8 +75,8 @@ func update_slots_label() -> void:
 # Called when the start button is pressed
 # TODO: Implement game start with selected boons
 func _on_start_button_pressed() -> void:
-	get_tree().change_scene_to_packed(MAIN_SCENE)
+	get_tree().change_scene_to_packed(main_scene)
 
 # Return to the main menu
 func _on_back_button_pressed() -> void:
-	get_tree().change_scene_to_packed(MAIN_MENU_SCENE)
+	get_tree().change_scene_to_packed(main_menu_scene)

@@ -86,7 +86,7 @@ text = "Play"
 
 [node name="Options" type="Button" parent="Container/MenuItemsContainer"]
 layout_mode = 2
-text = "Options"
+text = "Settings"
 
 [node name="Exit" type="Button" parent="Container/MenuItemsContainer"]
 layout_mode = 2

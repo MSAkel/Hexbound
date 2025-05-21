@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="1_8mww4"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_6fp5t"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="2_rb232"]
-[ext_resource type="AudioStream" uid="uid://bv3wa8uo6wfsc" path="res://assets/audio/main_theme.mp3" id="5_3qfj4"]
+[ext_resource type="AudioStream" uid="uid://bv3wa8uo6wfsc" path="res://assets/audio/music/main_theme.mp3" id="5_3qfj4"]
 
 [node name="TestSceneTerrainGen" type="Node2D"]
 

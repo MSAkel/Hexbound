@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="3_t3dkj"]
 [ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="4_i3mjp"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="4_rpmvn"]
-[ext_resource type="AudioStream" uid="uid://bv3wa8uo6wfsc" path="res://assets/audio/main_theme.mp3" id="5_kwfbp"]
+[ext_resource type="AudioStream" uid="uid://bv3wa8uo6wfsc" path="res://assets/audio/music/main_theme.mp3" id="5_kwfbp"]
 
 [node name="TestSceneTerrainTileUi" type="Node2D"]
 
