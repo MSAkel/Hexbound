@@ -22,7 +22,7 @@ offset_right = 408.0
 offset_bottom = 426.0
 mouse_filter = 2
 
-[node name="RuinsButton" type="TextureButton" parent="Container"]
+[node name="RuinsIconButton" type="TextureButton" parent="Container"]
 layout_mode = 1
 offset_right = 64.0
 offset_bottom = 64.0
@@ -81,6 +81,6 @@ offset_bottom = 8.0
 grow_horizontal = 0
 text = "Close"
 
-[connection signal="pressed" from="Container/RuinsButton" to="." method="_on_ruins_button_pressed"]
+[connection signal="pressed" from="Container/RuinsIconButton" to="." method="_on_ruins_icon_button_pressed"]
 [connection signal="pressed" from="Container/DescriptionPanel/VBoxContainer/ExploreButton" to="." method="_on_explore_button_pressed"]
 [connection signal="pressed" from="Container/DescriptionPanel/CloseButton" to="." method="_on_close_button_pressed"]

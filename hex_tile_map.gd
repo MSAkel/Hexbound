@@ -9,15 +9,15 @@ extends Node2D
 @export var width: int
 @export var height: int
 
-@export var cursed_tiles_count := 3
-
 @export var minerals: Array[Mineral] = []
 @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUi"
 
 const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
 const EXPLORE_BUTTON: PackedScene = preload("res://scenes/ui/explore_button.tscn")
+# Special events UI
+var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
+const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
 
-var curse_scene: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>
@@ -138,7 +138,7 @@ func generate_terrain() -> void:
 	for x in width:
 		for y in height:
 			var h := Hex.new(Vector2i(x, y))
-			h.setup(self, MINERAL_UI, curse_scene)
+			h.setup(self, MINERAL_UI)
 			var noise_value: float = noise_map[x][y]
 			
 			for r in terrain_ranges:
@@ -160,12 +160,12 @@ func generate_terrain() -> void:
 			if x == x_center and y == y_center:
 				explore_tile(h)
 			elif h.terrain_type != hex.TerrainType.WATER:
-				var containsEvent = randi_range(0, 4)
+				var containsEvent = randi_range(0, 6)
 				if containsEvent == 1:
 					h.special_state = hex.SpecialTileState.CURSED
 					h.apply_special_state()
 				elif containsEvent == 2:
-					h.special_state = hex.SpecialTileState.ENCAMPMENT
+					h.special_state = hex.SpecialTileState.RUINS
 					h.apply_special_state()
 
 func update_explore_buttons() -> void:
@@ -203,10 +203,12 @@ func map_to_local(coords: Vector2i) -> Vector2i:
 
 func on_turn_ended():
 	var base_delay_interval := 0.5
-	var delay_interval := base_delay_interval / GameManager.game_speed
 	var vertical_offset := 0
 
 	for tile in GameManager.explored_tiles:
+		# Calculate delay interval for each tile to respect current game speed
+		var delay_interval := base_delay_interval / GameManager.game_speed
+		
 		tile.create_resource_animation("gold", tile.generate_gold(), vertical_offset)
 		vertical_offset += 20
 		await get_tree().create_timer(delay_interval).timeout

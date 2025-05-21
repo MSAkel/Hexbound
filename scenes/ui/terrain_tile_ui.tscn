@@ -7,16 +7,15 @@
 
 [node name="TerrainTileUi" type="Control"]
 layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
+anchors_preset = 6
+anchor_left = 1.0
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -408.0
+offset_left = -816.0
 offset_top = -346.0
-offset_right = 408.0
 offset_bottom = 346.0
-grow_horizontal = 2
+grow_horizontal = 0
 grow_vertical = 2
 script = ExtResource("1_h2p2k")
 

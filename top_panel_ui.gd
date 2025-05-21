@@ -17,11 +17,14 @@ extends Control
 @onready var double_game_speed_button: Button = $GameSpeedContainer/DoubleGameSpeedButton
 @onready var triple_game_speed_button: Button = $GameSpeedContainer/TripleGameSpeedButton
 
+@onready var end_turn_audio: AudioStreamPlayer2D = $EndTurnAudio
+
 func _ready() -> void:
 	year_label.text = "Year: %s" % [GameManager.current_year]
 
 func _on_end_turn_button_pressed() -> void:
 	GameManager.turn_ended.emit()
+	end_turn_audio.play()
 	year_label.text = "Year: %s" % [GameManager.current_year]
 
 func _process(delta: float) -> void:

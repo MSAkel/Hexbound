@@ -1,53 +1,128 @@
 extends Node
 
-const GAME_SETTINGS = preload("res://scripts/resources/game_settings.gd")
-
 signal turn_ended()
 signal tile_explored(hex: Hex)
 signal game_speed_changed(new_speed: float)
 
-var current_year := 1
-var gold_count := 0
-var food_count := 25
-var available_explores: int = 0
-var game_speed: float = 1.0  # 1.0 is normal speed, 2.0 is double, 3.0 is triple
+# Game constants
+const BASE_EXPLORES_PER_TURN := 1
+const MAX_EXPLORES := 3
+
+var _current_year := 1
+var _gold_count := 0
+var _food_count := 25
+var _available_explores: int = 0
+var _game_speed: float = 1.0  # 1.0 is normal speed, 2.0 is double, 3.0 is triple
 
 var explored_tiles: Array[Hex] = []
 
 var runes_pool: Array[Rune] = []
-# var available_runes: Array[Rune] = []
 var active_runes: Array[Rune] = []
 
 var perks_pool: Array[Perk] = []
-var available_perks: int
+var _available_perks: int
 var active_perks: Array[Perk] = []
 var perks_pack: Array[Perk] = [] # Perks available for selection on the perks selection menu
-var available_perk_rerolls: int = 1
+var _available_perk_rerolls: int = 1
 
 var buildings_pool: Array[BuildingData] = [] # All buildings available in the game
 var buildings_pack: Array[BuildingData] = [] # Buildings available for selection on the buildings selection menu
 var selected_building: Array[CardUI] = [] # The building selected by the player
-var available_buidling_packs: int = 0 # increment by 1 on turn end
-var building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
-
-# Game settings
-var game_settings: GAME_SETTINGS
+var _available_building_packs: int = 0 # increment by 1 on turn end
+var _building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
 
 # Essence, each tile gives 1 essence of a specific type
-var nature_essence: int = 0
-var fire_essence: int = 0
-var frost_essence: int = 0
-var storm_essence: int = 0
+var _nature_essence: int = 0
+var _fire_essence: int = 0
+var _frost_essence: int = 0
+var _storm_essence: int = 0
+
+# Core game state getters and setters
+var current_year: int:
+	get:
+		return _current_year
+	set(value):
+		_current_year = max(1, value)
+
+var gold_count: int:
+	get:
+		return _gold_count
+	set(value):
+		_gold_count = max(0, value)
+		# look for potential perks/runes which could impact gold production or adding signals here if needed
+
+var food_count: int:
+	get:
+		return _food_count
+	set(value):
+		_food_count = max(0, value) 
+
+var available_explores: int:
+	get:
+		return _available_explores
+	set(value):
+		_available_explores = clamp(value, 0, MAX_EXPLORES)
+
+var game_speed: float:
+	get:
+		return _game_speed
+	set(value):
+		_game_speed = clamp(value, 1, 3.0)  # Limit speed between 1x and 3x
+		game_speed_changed.emit(_game_speed)
+
+# Perk and building related getters and setters
+var available_perks: int:
+	get:
+		return _available_perks
+	set(value):
+		_available_perks = max(0, value)
+
+var available_perk_rerolls: int:
+	get:
+		return _available_perk_rerolls
+	set(value):
+		_available_perk_rerolls = max(0, value)
+
+var available_building_packs: int:
+	get:
+		return _available_building_packs
+	set(value):
+		_available_building_packs = max(0, value)
+
+var building_reroll_cost: int:
+	get:
+		return _building_reroll_cost
+	set(value):
+		_building_reroll_cost = max(0, value)
+
+# Essence getters and setters
+var nature_essence: int:
+	get:
+		return _nature_essence
+	set(value):
+		_nature_essence = max(0, value)
+
+var fire_essence: int:
+	get:
+		return _fire_essence
+	set(value):
+		_fire_essence = max(0, value)
+
+var frost_essence: int:
+	get:
+		return _frost_essence
+	set(value):
+		_frost_essence = max(0, value)
+
+var storm_essence: int:
+	get:
+		return _storm_essence
+	set(value):
+		_storm_essence = max(0, value)
 
 func _ready() -> void:
-	# Load game settings
-	game_settings = load("res://scripts/resources/game_settings.tres")
-	if not game_settings:
-		push_error("Failed to load game settings")
-		return
-	
 	# Initialize available explores
-	available_explores = game_settings.base_explores_per_turn
+	_available_explores = BASE_EXPLORES_PER_TURN
 	
 	# Load the runes from the resources directory
 	var runes_directory = DirAccess.open("res://resources/runes/")
@@ -72,13 +147,10 @@ func _ready() -> void:
 	turn_ended.connect(end_turn)
 
 func end_turn() -> void:
-	current_year += 1
+	_current_year += 1
 	available_perks += 1
-	available_buidling_packs += 1
-	for tile in explored_tiles:
-		gold_count += 5
-	
-	available_explores = game_settings.base_explores_per_turn
+	available_building_packs += 1
+	_available_explores = BASE_EXPLORES_PER_TURN
 
 func update_explored_tiles_list(h: Hex) -> void:
 	explored_tiles.append(h)
@@ -109,10 +181,6 @@ func create_perks_pack() -> void:
 		for i in 3:
 			perks_pack.append(shuffled_pool[i])
 
-
-# func add_essence(terrainType: Hex.TerrainType, amount: int) -> void:
-# 	pass
-
 func set_game_speed(speed: float) -> void:
-	game_speed = speed
-	game_speed_changed.emit(speed)
+	_game_speed = speed
+	game_speed_changed.emit(_game_speed)

@@ -10,18 +10,24 @@ enum SpecialTileState { NONE, CURSED, ENCAMPMENT, RUINS }
 # Example: Forest map would have a high wood weight
 enum TerrainType { FIELDS, FOREST, MOUNTAIN, SNOW, WATER, SWAMP }
 
+# Special events UI
+var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
+const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
+
+var curse: CurseUI
+var ruins: RuinsUI
+
 var terrain_type: TerrainType
 var _coordinates: Vector2i = Vector2i(0, 0)
 var explored: bool = false
 var active_rune: Rune
 var special_state: SpecialTileState = SpecialTileState.NONE
-var curse: CurseUI
 var minerals: Array[MineralUI] = []
 
 # References to UI elements
 var mineral_ui_scene: PackedScene
-var curse_scene: PackedScene
 var map: Node2D  # Reference to the HexTileMap
+
 
 var coordinates: Vector2i:
 	get:
@@ -30,10 +36,9 @@ var coordinates: Vector2i:
 func _init(coords: Vector2i) -> void:
 	_coordinates = coords
 
-func setup(map_ref: Node2D, mineral_scene: PackedScene, curse_scene_ref: PackedScene) -> void:
+func setup(map_ref: Node2D, mineral_scene: PackedScene) -> void:
 	map = map_ref
 	mineral_ui_scene = mineral_scene
-	curse_scene = curse_scene_ref
 
 func on_explore() -> void:
 	if explored:
@@ -48,8 +53,9 @@ func on_explore() -> void:
 				GameManager.ice_essence += 1
 
 func generate_gold() -> int:
-	# check for any perks/runes which could impact gold production
-	return 5
+	const BASE_GOLD_PRODUCTION: int = 5
+	GameManager.gold_count += BASE_GOLD_PRODUCTION
+	return BASE_GOLD_PRODUCTION
 
 func produce_mineral(mineral_ui: MineralUI) -> int:
 	if mineral_ui.mineral.type == Mineral.Type.BERRIES:
@@ -91,7 +97,7 @@ func generate_minerals(available_minerals: Array[Mineral]) -> void:
 func apply_special_state() -> void:
 	match special_state:
 		SpecialTileState.CURSED:
-			var curse_instance: CurseUI = curse_scene.instantiate() as CurseUI
+			var curse_instance: CurseUI = CURSE_UI.instantiate() as CurseUI
 			curse_instance.map = map
 			curse_instance.tile = self
 			curse_instance.center_coordinates = coordinates
@@ -103,8 +109,14 @@ func apply_special_state() -> void:
 			# TODO: Implement encampment logic
 			pass
 		SpecialTileState.RUINS:
-			# TODO: Implement ruins logic
-			pass
+			var ruins_instance: RuinsUI = RUINS_UI.instantiate() as RuinsUI
+			ruins_instance.map = map
+			ruins_instance.tile = self
+			ruins_instance.center_coordinates = coordinates
+			ruins = ruins_instance
+			
+			ruins_instance.position = map.base_layer.map_to_local(coordinates)
+			map.add_child(ruins_instance)
 
 func explore() -> void:
 	if not explored:
@@ -134,7 +146,9 @@ func create_resource_animation(resource_type: String, amount: int, vertical_offs
 	sprite.centered = true
 	map.base_layer.add_sibling(sprite, true)
 	
-	create_scale_animation(sprite, 0.1 / GameManager.game_speed)
+	# Calculate animation duration based on current game speed
+	var animation_duration := 0.1 / GameManager.game_speed
+	create_scale_animation(sprite, animation_duration)
 	map.create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [amount, resource_type], resource_type == "gold")
 
 func create_scale_animation(sprite: Sprite2D, duration: float) -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cm3sdx2an61fm"]
+[gd_scene load_steps=10 format=3 uid="uid://cm3sdx2an61fm"]
 
 [ext_resource type="Script" uid="uid://d26ag2i5t0ue2" path="res://top_panel_ui.gd" id="1_er6pf"]
 [ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currencies/coin.png" id="2_ftuxj"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://6h6yad1x5yco" path="res://assets/icons/essences/frost.png" id="6_sab0e"]
 [ext_resource type="Texture2D" uid="uid://pi1uppa3jgya" path="res://assets/icons/essences/lightning.png" id="7_1d8jj"]
 [ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/play.png" id="8_wn18o"]
+[ext_resource type="AudioStream" uid="uid://cuseni5joeuqv" path="res://assets/audio/end-turn-sound.wav" id="9_sab0e"]
 
 [node name="TopPanelUI" type="Control"]
 layout_mode = 3
@@ -184,6 +185,9 @@ text = "x2"
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 text = "x3"
+
+[node name="EndTurnAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("9_sab0e")
 
 [connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/EndTurnButton" to="." method="_on_end_turn_button_pressed"]
 [connection signal="pressed" from="GameSpeedContainer/RegularGameSpeedButton" to="." method="_on_regular_game_speed_button_pressed"]
