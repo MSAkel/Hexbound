@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CurseData" load_steps=2 format=3 uid="uid://v205devpra34"]
 
-[ext_resource type="Script" uid="uid://bw4ncyypkcagn" path="res://scripts/resources/curse_data.gd" id="1_6emni"]
+[ext_resource type="Script" uid="uid://bw4ncyypkcagn" path="res://scenes/events/curse/curse.gd" id="1_6emni"]
 
 [resource]
 script = ExtResource("1_6emni")

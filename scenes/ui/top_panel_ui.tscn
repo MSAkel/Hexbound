@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cm3sdx2an61fm"]
+[gd_scene load_steps=9 format=3 uid="uid://cm3sdx2an61fm"]
 
 [ext_resource type="Script" uid="uid://d26ag2i5t0ue2" path="res://top_panel_ui.gd" id="1_er6pf"]
 [ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currencies/coin.png" id="2_ftuxj"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://3uobudpqpp0n" path="res://assets/icons/essences/fire.png" id="5_wn18o"]
 [ext_resource type="Texture2D" uid="uid://6h6yad1x5yco" path="res://assets/icons/essences/frost.png" id="6_sab0e"]
 [ext_resource type="Texture2D" uid="uid://pi1uppa3jgya" path="res://assets/icons/essences/lightning.png" id="7_1d8jj"]
+[ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/play.png" id="8_wn18o"]
 
 [node name="TopPanelUI" type="Control"]
 layout_mode = 3
@@ -17,10 +18,14 @@ grow_horizontal = 2
 script = ExtResource("1_er6pf")
 
 [node name="Panel" type="Panel" parent="."]
-layout_mode = 0
-offset_left = -330.0
-offset_right = 238.0
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -284.0
+offset_right = 284.0
 offset_bottom = 102.0
+grow_horizontal = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel"]
 layout_mode = 1
@@ -35,7 +40,11 @@ grow_horizontal = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 8
+size_flags_vertical = 4
+
+[node name="VictoryPoints" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Victory Points: 0/15"
 
 [node name="YearLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" groups=["main_ui"]]
 layout_mode = 2
@@ -144,4 +153,39 @@ layout_mode = 2
 text = "0"
 horizontal_alignment = 1
 
+[node name="GameSpeedContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -70.0
+offset_top = 107.0
+offset_right = 34.0
+offset_bottom = 147.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="RegularGameSpeedButton" type="TextureButton" parent="GameSpeedContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+texture_normal = ExtResource("8_wn18o")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="DoubleGameSpeedButton" type="Button" parent="GameSpeedContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+text = "x2"
+
+[node name="TripleGameSpeedButton" type="Button" parent="GameSpeedContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+text = "x3"
+
 [connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/EndTurnButton" to="." method="_on_end_turn_button_pressed"]
+[connection signal="pressed" from="GameSpeedContainer/RegularGameSpeedButton" to="." method="_on_regular_game_speed_button_pressed"]
+[connection signal="pressed" from="GameSpeedContainer/DoubleGameSpeedButton" to="." method="_on_double_game_speed_button_pressed"]
+[connection signal="pressed" from="GameSpeedContainer/TripleGameSpeedButton" to="." method="_on_triple_game_speed_button_pressed"]

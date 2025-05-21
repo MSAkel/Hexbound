@@ -1,0 +1,86 @@
+[gd_scene load_steps=4 format=3 uid="uid://nl761od8nnm8"]
+
+[ext_resource type="Script" uid="uid://dlcicwjgb6qkv" path="res://scenes/events/ruins/ruins_ui.gd" id="1_mmsej"]
+[ext_resource type="Texture2D" uid="uid://dt5nw0ptq83f7" path="res://assets/icons/events/ruins.png" id="2_316ux"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0nadc"]
+atlas = ExtResource("2_316ux")
+
+[node name="RuinsUi" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mmsej")
+
+[node name="Container" type="Panel" parent="."]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+offset_right = 408.0
+offset_bottom = 426.0
+mouse_filter = 2
+
+[node name="RuinsButton" type="TextureButton" parent="Container"]
+layout_mode = 1
+offset_right = 64.0
+offset_bottom = 64.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+disabled = true
+texture_normal = SubResource("AtlasTexture_0nadc")
+
+[node name="DescriptionPanel" type="Panel" parent="Container"]
+visible = false
+z_index = 1
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+offset_left = 76.0
+offset_right = 424.0
+offset_bottom = 441.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Container/DescriptionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="RuinsName" type="Label" parent="Container/DescriptionPanel/VBoxContainer"]
+layout_mode = 2
+text = "Ruins of the Duck Lord"
+
+[node name="Icon" type="TextureRect" parent="Container/DescriptionPanel/VBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+expand_mode = 1
+
+[node name="Description" type="Label" parent="Container/DescriptionPanel/VBoxContainer"]
+custom_minimum_size = Vector2(100, 150)
+layout_mode = 2
+text = "The Ruins of the Duck Lord are ancient, moss-covered remnants of a forgotten kingdom once ruled by the legendary Duck Lord. Nestled in a misty marsh or hidden deep within enchanted forests, these crumbling stone structures echo with whispers of avian power and long-lost rituals. Strange carvings of ducks and mysterious glyphs hint at a civilization that revered their feathery monarch, leaving behind relics said to possess quirky but potent magic."
+autowrap_mode = 3
+
+[node name="ExploreButton" type="Button" parent="Container/DescriptionPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+text = "Explore (50g)"
+
+[node name="CloseButton" type="Button" parent="Container/DescriptionPanel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -8.0
+offset_bottom = 8.0
+grow_horizontal = 0
+text = "Close"
+
+[connection signal="pressed" from="Container/RuinsButton" to="." method="_on_ruins_button_pressed"]
+[connection signal="pressed" from="Container/DescriptionPanel/VBoxContainer/ExploreButton" to="." method="_on_explore_button_pressed"]
+[connection signal="pressed" from="Container/DescriptionPanel/CloseButton" to="." method="_on_close_button_pressed"]

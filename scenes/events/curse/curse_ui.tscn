@@ -1,17 +1,17 @@
 [gd_scene load_steps=4 format=3 uid="uid://kpxwpid0wq2v"]
 
-[ext_resource type="Script" uid="uid://h4dr23y4fi1k" path="res://scripts/curse_event.gd" id="1_fnxol"]
-[ext_resource type="Texture2D" uid="uid://cadutpr4x30t0" path="res://assets/icons/events/curse.png" id="2_fjmh8"]
+[ext_resource type="Script" uid="uid://h4dr23y4fi1k" path="res://scenes/events/curse/curse_ui.gd" id="1_blmy0"]
+[ext_resource type="Texture2D" uid="uid://cadutpr4x30t0" path="res://assets/icons/events/curse.png" id="2_bh7aq"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fnxol"]
-atlas = ExtResource("2_fjmh8")
+atlas = ExtResource("2_bh7aq")
 
-[node name="CurseEvent" type="Control"]
+[node name="CurseUI" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 size_flags_horizontal = 0
 size_flags_vertical = 0
-script = ExtResource("1_fnxol")
+script = ExtResource("1_blmy0")
 
 [node name="HBoxContainer" type="Panel" parent="."]
 self_modulate = Color(1, 1, 1, 0)

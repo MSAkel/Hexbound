@@ -17,7 +17,7 @@ extends Node2D
 const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
 const EXPLORE_BUTTON: PackedScene = preload("res://scenes/ui/explore_button.tscn")
 
-var curse_scene: PackedScene = preload("res://scenes/ui/curse_event.tscn")
+var curse_scene: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
  # Dictionary<Vector2i, Hex>
@@ -215,7 +215,7 @@ func generate_minerals(h: Hex, coords: Vector2i) -> void:
 # Needs a special tile state scene
 func apply_special_tile_state(h: Hex, coords: Vector2i) -> void:
 	if h.special_state == hex.SpecialTileState.CURSED:
-		var curse: CurseEvent = curse_scene.instantiate() as CurseEvent
+		var curse: CurseUI = curse_scene.instantiate() as CurseUI
 		curse.map = self
 		curse.tile = h
 		curse.center_coordinates = coords
@@ -223,7 +223,6 @@ func apply_special_tile_state(h: Hex, coords: Vector2i) -> void:
 
 		curse.position = base_layer.map_to_local(coords)
 		# TODO get the curse data from the curse event
-		# curse.curse_data = 
 		add_child(curse)
 		
 	elif h.special_state == hex.SpecialTileState.ENCAMPMENT:
@@ -264,14 +263,27 @@ func explore_tile(h: Hex) -> void:
 	GameManager.update_explored_tiles_list(h)
 	update_explore_buttons()  # Update explore buttons after exploring a tile
 
+func create_scale_animation(sprite: Sprite2D, duration: float) -> void:
+	var tween = create_tween()
+	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), duration)
+	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), duration)
+	tween.tween_callback(sprite.queue_free)
+
+func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
+	var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
+	floating_text.position = pos
+	floating_text.set_text(text, is_gold)
+	get_tree().current_scene.add_child(floating_text)
+
 func on_turn_ended():
-	var delay_interval := 0.5
+	var base_delay_interval := 0.5
+	var delay_interval := base_delay_interval / GameManager.game_speed
+	var vertical_offset := 0
 
 	for tile in GameManager.explored_tiles:
-		# Create and start scale animation for individual tile
 		var tile_pos = base_layer.map_to_local(tile._coordinates)
 		
-		# Create a temporary sprite for the animation
+		# Create and animate tile sprite
 		var sprite = Sprite2D.new()
 		var atlas_source = base_layer.tile_set.get_source(0) as TileSetAtlasSource
 		var coords = terrain_textures[tile.terrain_type]
@@ -281,40 +293,28 @@ func on_turn_ended():
 		sprite.region_rect = atlas_source.get_tile_texture_region(tile_id)
 		sprite.position = tile_pos
 		sprite.centered = true
-		base_layer.add_sibling(sprite, true)  # Add as sibling before base_layer
+		base_layer.add_sibling(sprite, true)
 		
-		var tween = create_tween()
-		tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), 0.1)
-		tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.1)
-		tween.tween_callback(sprite.queue_free)
-		
-		var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
-		floating_text.position = tile_pos
-		var gold_amount: int = tile.generate_gold()
-		floating_text.set_text("+%s gold" % gold_amount, true)
-		get_tree().current_scene.add_child(floating_text)
+		create_scale_animation(sprite, 0.1 / GameManager.game_speed)
+		create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s gold" % tile.generate_gold(), true)
+		vertical_offset += 20
 
 		await get_tree().create_timer(delay_interval).timeout
 
 		for mineral_ui in tile.minerals:
-			# Create another sprite for mineral animation
 			var mineral_sprite = Sprite2D.new()
 			mineral_sprite.texture = atlas_source.texture
 			mineral_sprite.region_enabled = true
 			mineral_sprite.region_rect = atlas_source.get_tile_texture_region(tile_id)
 			mineral_sprite.position = tile_pos
 			mineral_sprite.centered = true
-			base_layer.add_sibling(mineral_sprite, true)  # Add as sibling before base_layer
+			base_layer.add_sibling(mineral_sprite, true)
 			
-			var mineral_tween = create_tween()
-			mineral_tween.tween_property(mineral_sprite, "scale", Vector2(1.05, 1.05), 0.1)
-			mineral_tween.tween_property(mineral_sprite, "scale", Vector2(1.0, 1.0), 0.1)
-			mineral_tween.tween_callback(mineral_sprite.queue_free)
-			
-			var floating_text_mineral = preload("res://scenes/animations/floating_text.tscn").instantiate()
-			floating_text_mineral.position = tile_pos
+			create_scale_animation(mineral_sprite, 0.1 / GameManager.game_speed)
 			var mineral_amount = tile.generate_mineral(mineral_ui)
-			floating_text_mineral.set_text(("+%s %s") % [mineral_amount, mineral_ui.mineral.name], false)
-			get_tree().current_scene.add_child(floating_text_mineral)
+			create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [mineral_amount, mineral_ui.mineral.name], false)
+			vertical_offset += 20
 
 			await get_tree().create_timer(delay_interval).timeout
+		
+		vertical_offset = 0

@@ -14,7 +14,7 @@ var _coordinates: Vector2i = Vector2i(0, 0)
 var explored: bool = false
 var active_rune: Rune
 var special_state: SpecialTileState = SpecialTileState.NONE
-var curse: CurseEvent
+var curse: CurseUI
 
 # The minerals which the tile will contain.
 var minerals: Array[MineralUI] = []

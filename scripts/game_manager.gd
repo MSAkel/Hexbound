@@ -4,11 +4,13 @@ const GAME_SETTINGS = preload("res://scripts/resources/game_settings.gd")
 
 signal turn_ended()
 signal tile_explored(hex: Hex)
+signal game_speed_changed(new_speed: float)
 
 var current_year := 1
 var gold_count := 0
 var food_count := 25
 var available_explores: int = 0
+var game_speed: float = 1.0  # 1.0 is normal speed, 2.0 is double, 3.0 is triple
 
 var explored_tiles: Array[Hex] = []
 
@@ -110,3 +112,7 @@ func create_perks_pack() -> void:
 
 # func add_essence(terrainType: Hex.TerrainType, amount: int) -> void:
 # 	pass
+
+func set_game_speed(speed: float) -> void:
+	game_speed = speed
+	game_speed_changed.emit(speed)
