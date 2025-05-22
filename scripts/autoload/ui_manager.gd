@@ -1,19 +1,16 @@
 extends CanvasLayer
 
-#signal show_perks_choice_panel()
-#signal show_runes_panel()
-#signal show_building_choice_panel()
-signal show_quests_panel()
+signal show_perks_panel
+signal show_runes_panel
+signal show_quests_panel
 
-#@onready var terrain_tile_ui: TerrainTileUI = $TerrainTileUi
-#@onready var top_panel_ui: TopPanelUi = $TopPanelUI
-
+var active_panel: Control = null
 
 func _ready() -> void:
 	pass
-	# hide_all_panels()
 
-# func hide_all_panels():
-# 	for child in get_children():
-# 		if child is Control and not child.is_in_group("main_ui"):
-# 			child.hide()
+func show_panel(panel: Control) -> void:
+	if active_panel != null:
+		active_panel.hide()
+	active_panel = panel
+	panel.show()

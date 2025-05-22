@@ -54,9 +54,13 @@ texture = SubResource("GradientTexture1D_1g8jr")
 
 [node name="Container" type="MarginContainer" parent="."]
 layout_mode = 1
-anchors_preset = 9
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_right = 369.0
+offset_left = -184.5
+offset_right = 184.5
+grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 24
@@ -65,6 +69,7 @@ theme_override_constants/margin_bottom = 24
 
 [node name="Label" type="Label" parent="Container"]
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 0
 text = "Hexbound"
 label_settings = SubResource("LabelSettings_m1kxf")
@@ -96,11 +101,11 @@ text = "Exit"
 modulate = Color(0.747408, 0.580086, 1, 1)
 position = Vector2(977, 175)
 rotation = -3.14027
-amount = 10
+amount = 20
 sub_emitter = NodePath(".")
-lifetime = 3.0
-speed_scale = 0.2
-randomness = 1.0
+lifetime = 4.0
+speed_scale = 0.3
+randomness = 0.5
 process_material = SubResource("ParticleProcessMaterial_x2yvf")
 
 [connection signal="pressed" from="Container/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]

@@ -5,10 +5,10 @@
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://cm3sdx2an61fm" path="res://scenes/ui/top_panel_ui.tscn" id="4_travt"]
 [ext_resource type="PackedScene" uid="uid://dr6tgv52a40ou" path="res://scenes/ui/building_selection_ui.tscn" id="5_46cp5"]
-[ext_resource type="PackedScene" uid="uid://3pwk1tu6fo3o" path="res://scenes/ui/perks/perks_menu_gui.tscn" id="6_t0li6"]
-[ext_resource type="PackedScene" uid="uid://cxcsr4dwcpcrh" path="res://scenes/menus/quests_menu_gui.tscn" id="7_oxwcw"]
-[ext_resource type="PackedScene" uid="uid://bxb0s5v0ycga6" path="res://scenes/menus/runes_menu_gui.tscn" id="8_oxwcw"]
-[ext_resource type="PackedScene" uid="uid://dtamn2cc6wba" path="res://scenes/ui/quests/quests_panel.tscn" id="9_yc0ux"]
+[ext_resource type="PackedScene" uid="uid://3pwk1tu6fo3o" path="res://scenes/ui/perks/perks_menu.tscn" id="6_t0li6"]
+[ext_resource type="PackedScene" uid="uid://dtamn2cc6wba" path="res://scenes/ui/quests/quests_menu.tscn" id="8_yc0ux"]
+[ext_resource type="PackedScene" uid="uid://c8cjskufdru2i" path="res://scenes/ui/runes/runes_menu.tscn" id="9_b65ll"]
+[ext_resource type="PackedScene" uid="uid://clcafvhour5gy" path="res://scenes/ui/top_right_ui.tscn" id="9_yc0ux"]
 
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_l8t6x")
@@ -22,42 +22,13 @@ visible = false
 
 [node name="BuildingSelectionUi" parent="." instance=ExtResource("5_46cp5")]
 
-[node name="TopRightSection" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+[node name="TopRightUI" parent="." instance=ExtResource("9_yc0ux")]
 
-[node name="MarginContainer" type="MarginContainer" parent="TopRightSection"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
+[node name="PerksMenuUI" parent="." instance=ExtResource("6_t0li6")]
+visible = false
 
-[node name="HBoxContainer" type="HBoxContainer" parent="TopRightSection/MarginContainer"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 8
-alignment = 2
+[node name="QuestsPanel" parent="." instance=ExtResource("8_yc0ux")]
+visible = false
 
-[node name="PerksMenuGui" parent="TopRightSection/MarginContainer/HBoxContainer" instance=ExtResource("6_t0li6")]
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
-
-[node name="QuestsGui" parent="TopRightSection/MarginContainer/HBoxContainer" instance=ExtResource("7_oxwcw")]
-layout_mode = 2
-
-[node name="RunesGui" parent="TopRightSection/MarginContainer/HBoxContainer" instance=ExtResource("8_oxwcw")]
-layout_mode = 2
-
-[node name="QuestsPanel" parent="." instance=ExtResource("9_yc0ux")]
+[node name="RunesMenuUI" parent="." instance=ExtResource("9_b65ll")]
 visible = false

@@ -1,40 +1,35 @@
 extends Control
 
-@onready var panel_container: MarginContainer = $PanelContainer
-@onready var choices_container: HBoxContainer = $PanelContainer/Panel/ChoicesContainer
-@onready var reroll_button: Button = $PanelContainer/Panel/RerollButton
+@onready var panel: Panel = $Panel
+@onready var choices_container: HBoxContainer = $Panel/ChoicesContainer
+@onready var reroll_button: Button = $Panel/RerollButton
 
 var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_gui.tscn")
 
 func _ready() -> void:
+	hide()  # Start hidden
+	UiManager.show_perks_panel.connect(_on_show_panel)
 	reroll_button.text = "Reroll (%s)" % GameManager.available_perk_rerolls
 	if GameManager.available_perk_rerolls < 1:
 		reroll_button.disabled = true
-	else:
-		reroll_button.disabled = false
 
-func _on_perks_menu_button_pressed() -> void:
-	panel_container.show()
-	instantiate_perk_choices()
+func _on_show_panel() -> void:
+	UiManager.show_panel(self)
+
+func _on_close_button_pressed() -> void:
+	hide()
 
 func _on_reroll_button_pressed() -> void:
 	if GameManager.available_perk_rerolls < 1:
 		return
 
 	reroll_button.disabled = true
-
-	await clear_choices()
 	GameManager.available_perk_rerolls -= 1
 	GameManager.perks_pack.clear()
 	GameManager.create_perks_pack()
 	reroll_button.text = "Reroll (%s)" % GameManager.available_perk_rerolls
-	instantiate_perk_choices()
-
+	# TODO: Implement perk reroll logic
 	reroll_button.disabled = false
-
-
-func _on_close_button_pressed() -> void:
-	panel_container.hide()
 
 func instantiate_perk_choices() -> void:
 	if choices_container.get_child_count() == 0:

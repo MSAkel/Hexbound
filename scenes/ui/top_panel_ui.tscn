@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://cm3sdx2an61fm"]
+[gd_scene load_steps=12 format=3 uid="uid://cm3sdx2an61fm"]
 
 [ext_resource type="Script" uid="uid://d26ag2i5t0ue2" path="res://top_panel_ui.gd" id="1_er6pf"]
+[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="2_1d8jj"]
 [ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currencies/coin.png" id="2_ftuxj"]
 [ext_resource type="Texture2D" uid="uid://bick04tcuw36i" path="res://assets/icons/minerals/bread.png" id="3_vhdv4"]
 [ext_resource type="Texture2D" uid="uid://8nbekdcvjsn7" path="res://assets/icons/essences/nature.png" id="4_3dad6"]
@@ -9,6 +10,9 @@
 [ext_resource type="Texture2D" uid="uid://pi1uppa3jgya" path="res://assets/icons/essences/lightning.png" id="7_1d8jj"]
 [ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/play.png" id="8_wn18o"]
 [ext_resource type="AudioStream" uid="uid://cuseni5joeuqv" path="res://assets/audio/end-turn-sound.wav" id="9_sab0e"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1ubwj"]
+texture = ExtResource("2_1d8jj")
 
 [node name="TopPanelUI" type="Control"]
 layout_mode = 3
@@ -27,6 +31,7 @@ offset_left = -284.0
 offset_right = 284.0
 offset_bottom = 102.0
 grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_1ubwj")
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel"]
 layout_mode = 1

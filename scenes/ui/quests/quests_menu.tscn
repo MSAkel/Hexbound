@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=3 uid="uid://dtamn2cc6wba"]
+
+[ext_resource type="Script" uid="uid://ibtatfo2s1j3" path="res://scenes/ui/quests/quests_menu.gd" id="1_kycjg"]
+[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="2_7shw0"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_x0b7a"]
+texture = ExtResource("2_7shw0")
+
+[node name="QuestsPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -478.0
+offset_top = -262.0
+offset_right = 478.0
+offset_bottom = 262.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kycjg")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_x0b7a")
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -50.0
+offset_bottom = 31.0
+grow_horizontal = 0
+text = "Close"
+
+[node name="VBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 87.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]

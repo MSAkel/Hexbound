@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://cjc15mdf1smci"]
+[gd_scene load_steps=3 format=3 uid="uid://cjc15mdf1smci"]
 
 [ext_resource type="Script" uid="uid://dva4ricpy060v" path="res://camera.gd" id="1_q64wr"]
+[ext_resource type="AudioStream" uid="uid://3fjfjumjxyl3" path="res://assets/audio/sfx/zoom_in.mp3" id="2_fombx"]
 
 [node name="Camera" type="Camera2D"]
 script = ExtResource("1_q64wr")
+
+[node name="ZoomSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_fombx")
