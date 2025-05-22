@@ -6,16 +6,14 @@ extends Control
 @onready var description: Label = $Container/DescriptionPanel/VBoxContainer/Description
 @onready var explore_button: Button = $Container/DescriptionPanel/VBoxContainer/ExploreButton
 @onready var description_panel: Panel = $Container/DescriptionPanel
+@onready var ruins_button: TextureButton = $Container/RuinsButton
 
 var map: HexTileMap
 var center_coordinates: Vector2i
 var tile: Hex
-var ruins: Ruins
+var ruins: Ruins = null
 
-func _ready() -> void:
-	pass
-
-func _on_ruins_icon_button_pressed() -> void:
+func _on_ruins_button_pressed() -> void:
 	description_panel.show()
 
 func _on_close_button_pressed() -> void:

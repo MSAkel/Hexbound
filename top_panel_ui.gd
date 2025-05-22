@@ -17,26 +17,29 @@ extends Control
 @onready var double_game_speed_button: Button = $GameSpeedContainer/DoubleGameSpeedButton
 @onready var triple_game_speed_button: Button = $GameSpeedContainer/TripleGameSpeedButton
 
-@onready var end_turn_audio: AudioStreamPlayer2D = $EndTurnAudio
+const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
 	year_label.text = "Year: %s" % [GameManager.current_year]
+	Events.turn_started.connect(_update_ui)
 
 func _on_end_turn_button_pressed() -> void:
-	GameManager.turn_ended.emit()
-	end_turn_audio.play()
-	year_label.text = "Year: %s" % [GameManager.current_year]
+	Events.turn_ended.emit()
+	AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
+	pass
+
+func _update_ui() -> void:
 	nature_essence_count.text = "%s" % [GameManager.nature_essence]
 	fire_essence_count.text = "%s" % [GameManager.fire_essence]
 	frost_essence_count.text = "%s" % [GameManager.frost_essence]
 	storm_essence_count.text = "%s" % [GameManager.storm_essence]
 
+	year_label.text = "Year: %s" % [GameManager.current_year]
+
 	gold_count.text = "%s" % [GameManager.gold_count]
 	food_count.text = "%s" % [GameManager.food_count]
-
-
 
 func _on_regular_game_speed_button_pressed() -> void:
 	GameManager.set_game_speed(1.0)

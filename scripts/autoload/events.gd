@@ -6,6 +6,7 @@ signal game_paused  # Emitted when game is paused
 signal game_resumed  # Emitted when game is resumed
 signal game_ended  # Emitted when game ends
 signal turn_ended  # Emitted when a turn ends
+signal turn_started  # Emitted when a turn starts
 
 # Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes

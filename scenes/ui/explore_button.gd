@@ -9,8 +9,8 @@ func _ready() -> void:
 	audio_stream_player_2d.pitch_scale = 1.5
 	text = "Explore (%s)" % GameManager.available_explores
 	update_visibility()
-	# Connect to the turn_ended signal to show button when explores reset
-	GameManager.turn_ended.connect(update_visibility)
+	# Connect to the turn_started signal to show button when explores reset
+	Events.turn_started.connect(update_visibility)
 
 func update_visibility() -> void:
 	visible = GameManager.available_explores > 0

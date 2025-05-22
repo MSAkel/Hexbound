@@ -34,13 +34,17 @@ var terrain_textures: Dictionary = {
 
 func _ready() -> void:
 	generate_terrain()
-	GameManager.turn_ended.connect(on_turn_ended)
+	Events.turn_ended.connect(on_turn_ended)
 	GameManager.tile_explored.connect(explore_tile)
 	# Add initial explore button after terrain generation is complete
 	update_explore_buttons()
 
 # Handles listening to tile clicks and selection
 func _unhandled_input(event: InputEvent) -> void:
+	# Skip input handling if turn is being processed
+	if GameManager.is_processing_turn:
+		return
+		
 	# only detect input if it hasn't already been consumed
 	if event is InputEventMouseButton:
 		var map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
@@ -220,3 +224,6 @@ func on_turn_ended():
 			await get_tree().create_timer(delay_interval).timeout
 		
 		vertical_offset = 0
+	
+	# Signal that turn processing is complete
+	GameManager.finish_turn_processing()

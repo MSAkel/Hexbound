@@ -125,6 +125,9 @@ func explore() -> void:
 		
 		if curse != null:
 			curse.curse_button.disabled = false
+		
+		if ruins != null:
+			ruins.ruins_button.disabled = false
 			
 		for mineral in minerals:
 			mineral.show()
@@ -144,6 +147,7 @@ func create_resource_animation(resource_type: String, amount: int, vertical_offs
 	sprite.region_rect = atlas_source.get_tile_texture_region(tile_id)
 	sprite.position = tile_pos
 	sprite.centered = true
+	sprite.self_modulate.a = 0.5
 	map.base_layer.add_sibling(sprite, true)
 	
 	# Calculate animation duration based on current game speed
@@ -152,7 +156,7 @@ func create_resource_animation(resource_type: String, amount: int, vertical_offs
 	map.create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [amount, resource_type], resource_type == "gold")
 
 func create_scale_animation(sprite: Sprite2D, duration: float) -> void:
-	var tween = create_tween()
+	var tween = sprite.create_tween()
 	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), duration)
 	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), duration)
 	tween.tween_callback(sprite.queue_free)

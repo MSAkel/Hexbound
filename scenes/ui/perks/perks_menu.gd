@@ -7,7 +7,7 @@ extends Control
 var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_gui.tscn")
 
 func _ready() -> void:
-	hide()  # Start hidden
+	hide()
 	UiManager.show_perks_panel.connect(_on_show_panel)
 	reroll_button.text = "Reroll (%s)" % GameManager.available_perk_rerolls
 	if GameManager.available_perk_rerolls < 1:
@@ -15,6 +15,7 @@ func _ready() -> void:
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
+	instantiate_perk_choices()
 
 func _on_close_button_pressed() -> void:
 	hide()
@@ -23,13 +24,14 @@ func _on_reroll_button_pressed() -> void:
 	if GameManager.available_perk_rerolls < 1:
 		return
 
+	await clear_choices()
 	reroll_button.disabled = true
 	GameManager.available_perk_rerolls -= 1
 	GameManager.perks_pack.clear()
 	GameManager.create_perks_pack()
 	reroll_button.text = "Reroll (%s)" % GameManager.available_perk_rerolls
-	# TODO: Implement perk reroll logic
 	reroll_button.disabled = false
+	instantiate_perk_choices()
 
 func instantiate_perk_choices() -> void:
 	if choices_container.get_child_count() == 0:

@@ -1,10 +1,9 @@
 extends Node
 
-signal turn_ended()
 signal tile_explored(hex: Hex)
 signal game_speed_changed(new_speed: float)
 
-# Game constants
+
 const BASE_EXPLORES_PER_TURN := 1
 const MAX_EXPLORES := 3
 
@@ -13,6 +12,7 @@ var _gold_count := 0
 var _food_count := 25
 var _available_explores: int = 0
 var _game_speed: float = 1.0  # 1.0 is normal speed, 2.0 is double, 3.0 is triple
+var _is_processing_turn: bool = false  # Block input processing while turn is being processed
 
 var explored_tiles: Array[Hex] = []
 
@@ -122,6 +122,11 @@ var storm_essence: int:
 	set(value):
 		_storm_essence = max(0, value)
 
+# Add a getter for the processing state
+var is_processing_turn: bool:
+	get:
+		return _is_processing_turn
+
 func _ready() -> void:
 	# Initialize available explores
 	_available_explores = BASE_EXPLORES_PER_TURN
@@ -146,13 +151,18 @@ func _ready() -> void:
 	create_buildings_pack()
 	create_perks_pack()
 
-	turn_ended.connect(end_turn)
+	Events.turn_ended.connect(end_turn)
 
 func end_turn() -> void:
+	_is_processing_turn = true
+
+func finish_turn_processing() -> void:
+	_is_processing_turn = false
 	_current_year += 1
 	available_perks += 1
 	available_building_packs += 1
 	_available_explores = BASE_EXPLORES_PER_TURN
+	Events.turn_started.emit()
 
 func update_explored_tiles_list(h: Hex) -> void:
 	explored_tiles.append(h)
