@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Rune" load_steps=3 format=3 uid="uid://c7c2eo74m8q0l"]
+
+[ext_resource type="Texture2D" uid="uid://7d8obw85xman" path="res://assets/icons/runes/bounty_rune.png" id="1_ghh1x"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/rune.gd" id="2_2afof"]
+
+[resource]
+script = ExtResource("2_2afof")
+id = "bounty_rune"
+name = "Bounty Rune"
+icon = ExtResource("1_ghh1x")
+description = "Infuses the land with abundance, amplifying its natural rewards. Increase all yields on this tile by 25%"
+selected = false
+rarity = 0
+fire_essence_cost = 0
+nature_essence_cost = 1
+frost_essence_cost = 0
+storm_essence_cost = 0
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

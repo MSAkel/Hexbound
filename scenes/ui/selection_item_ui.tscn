@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://3m8epxmk57a1"]
 
-[ext_resource type="Script" uid="uid://bwcids34r7ffl" path="res://scenes/ui/selection_item_gui.gd" id="1_s45ql"]
+[ext_resource type="Script" uid="uid://bwcids34r7ffl" path="res://scenes/ui/selection_item_ui.gd" id="1_3vtem"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_s45ql"]
 
@@ -8,7 +8,7 @@
 custom_minimum_size = Vector2(250, 0)
 offset_right = 40.0
 offset_bottom = 40.0
-script = ExtResource("1_s45ql")
+script = ExtResource("1_3vtem")
 
 [node name="IconPanel" type="Panel" parent="."]
 custom_minimum_size = Vector2(200, 200)

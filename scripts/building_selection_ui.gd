@@ -4,7 +4,7 @@ extends Control
 @onready var choices_container: HBoxContainer = $PanelContainer/Panel/ChoicesContainer
 @onready var reroll_button: Button = $PanelContainer/Panel/RerollButton
 
-var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_gui.tscn")
+var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_ui.tscn")
 
 func _ready() -> void:
 	reroll_button.text = "Reroll (%s)" % GameManager.building_reroll_cost

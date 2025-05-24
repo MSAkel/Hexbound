@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://bwra2pjfsb41i"]
+
+[ext_resource type="PackedScene" uid="uid://8kt0wxbq6esp" path="res://scenes/test/test_map_explored.tscn" id="1_test"]
+[ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="2_test"]
+[ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_lpkca"]
+
+[node name="TestScene" type="Node2D"]
+
+[node name="MainUI" parent="." instance=ExtResource("2_test")]
+
+[node name="TestMap" parent="." groups=["hex_map_group"] instance=ExtResource("1_test")]
+
+[node name="Camera" parent="." instance=ExtResource("3_lpkca")]

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Rune" load_steps=3 format=3 uid="uid://75r28cr8odvi"]
+
+[ext_resource type="Texture2D" uid="uid://dn712qvjmb5oi" path="res://assets/icons/runes/cascade_rune.png" id="1_vdtdr"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/rune.gd" id="2_326wg"]
+
+[resource]
+script = ExtResource("2_326wg")
+id = "cascade_rune"
+name = "Cascade Rune"
+icon = ExtResource("1_vdtdr")
+description = "Trigger the next tile twice (excluding rune effects)"
+selected = false
+rarity = 0
+fire_essence_cost = 1
+nature_essence_cost = 1
+frost_essence_cost = 0
+storm_essence_cost = 0
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -4,9 +4,9 @@ extends Control
 # signal for reparenting the card
 signal reparent_requested(which_card_ui: CardUI)
 
-const BASE_STYLEBOX := preload("res://scenes/ui/card_base_stylebox.tres")
-const HOVER_STYLEBOX := preload("res://scenes/ui/card_hover_stylebox.tres")
-const DRAG_STYLEBOX := preload("res://scenes/ui/card_drag_stylebox.tres")
+const BASE_STYLEBOX := preload("res://themes/card_base_stylebox.tres")
+const HOVER_STYLEBOX := preload("res://themes/card_hover_stylebox.tres")
+const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 
 @export var card: Card : set = _set_card
 

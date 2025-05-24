@@ -8,8 +8,8 @@ const BASE_EXPLORES_PER_TURN := 1
 const MAX_EXPLORES := 3
 
 var _current_year := 1
-var _gold_count := 0
-var _food_count := 25
+var _gold_count := 500
+var _food_count := 0
 var _available_explores: int = 0
 var _game_speed: float = 1.0  # 1.0 is normal speed, 2.0 is double, 3.0 is triple
 var _is_processing_turn: bool = false  # Block input processing while turn is being processed

@@ -4,7 +4,7 @@ extends Control
 @onready var choices_container: HBoxContainer = $Panel/ChoicesContainer
 @onready var reroll_button: Button = $Panel/RerollButton
 
-var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_gui.tscn")
+var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_ui.tscn")
 
 func _ready() -> void:
 	hide()

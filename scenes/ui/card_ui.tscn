@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://b4k5fq6ran8f5"]
 
-[ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://main_theme.tres" id="1_s55cg"]
+[ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_s55cg"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scripts/card_ui.gd" id="2_1kpl7"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="3_fbbsm"]
 [ext_resource type="Texture2D" uid="uid://dyi1pvyw82jdt" path="res://assets/cards/berries.png" id="3_im7p3"]

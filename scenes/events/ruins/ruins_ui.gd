@@ -21,4 +21,4 @@ func _on_close_button_pressed() -> void:
 
 # Deducts the gold cost and sets the ruins as complete. This should open a new panel displaying the results
 func _on_explore_button_pressed() -> void:
-	pass # Replace with function body.
+	GameManager.gold -= ruins.gold_cost
