@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://bif4cx5edh2ng"]
+[gd_scene load_steps=4 format=3 uid="uid://bif4cx5edh2ng"]
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/terrain_tile_ui.gd" id="1_h2p2k"]
 [ext_resource type="Texture2D" uid="uid://r4el2w4g2am" path="res://assets/background/fields.png" id="2_bcbo3"]
-[ext_resource type="Texture2D" uid="uid://b7krqyb0k5usu" path="res://assets/icons/minerals/berries.png" id="3_bcbo3"]
 [ext_resource type="Texture2D" uid="uid://bubvyeaiw0hss" path="res://assets/cards/farm.png" id="3_d4ddw"]
 
 [node name="TerrainTileUi" type="Control"]
@@ -46,27 +45,18 @@ offset_right = 77.0
 offset_bottom = 32.0
 text = "Terrian"
 
-[node name="Minerals" type="Label" parent="."]
-layout_mode = 0
-offset_left = 13.0
-offset_top = 55.0
-offset_right = 93.0
-offset_bottom = 78.0
-text = "Minerals"
-
 [node name="BuildingsPanel" type="Panel" parent="."]
 layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.672
-anchor_bottom = 0.672
-offset_left = -1.0
-offset_top = -177.024
-offset_right = 817.0
-offset_bottom = 176.976
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -408.0
+offset_top = 47.0
+offset_right = 410.0
+offset_bottom = 401.0
 grow_horizontal = 2
-grow_vertical = 0
 
-[node name="Buildings" type="Label" parent="BuildingsPanel"]
+[node name="Building" type="Label" parent="BuildingsPanel"]
 layout_mode = 1
 offset_left = 14.0
 offset_top = 7.0
@@ -74,7 +64,7 @@ offset_right = 85.0
 offset_bottom = 30.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
-text = "Buildings"
+text = "Building"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="BuildingsPanel"]
 layout_mode = 1
@@ -103,59 +93,14 @@ grow_vertical = 2
 texture = ExtResource("3_d4ddw")
 expand_mode = 1
 
-[node name="BuildingPanel2" type="Panel" parent="BuildingsPanel/HBoxContainer"]
-custom_minimum_size = Vector2(200, 250)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="BuildingTexture2" type="TextureRect" parent="BuildingsPanel/HBoxContainer/BuildingPanel2"]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("3_d4ddw")
-expand_mode = 1
-
-[node name="Production" type="Label" parent="."]
-layout_mode = 0
-offset_left = 17.0
-offset_top = 169.0
-offset_right = 103.0
-offset_bottom = 192.0
-text = "Production"
-
-[node name="ProductionText1" type="Label" parent="."]
-layout_mode = 0
-offset_left = 17.0
-offset_top = 196.0
-offset_right = 103.0
-offset_bottom = 219.0
-text = "item 1"
-
-[node name="ProductionText2" type="Label" parent="."]
-layout_mode = 0
-offset_left = 18.0
-offset_top = 234.0
-offset_right = 104.0
-offset_bottom = 257.0
-text = "item 2"
-
 [node name="Rune" type="Panel" parent="."]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.668
-anchor_top = 0.22
-anchor_right = 0.668
-anchor_bottom = 0.22
-offset_left = -156.088
-offset_top = -115.24
-offset_right = 264.912
-offset_bottom = 109.76
-grow_horizontal = 0
-grow_vertical = 2
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -225.0
+offset_right = 421.0
+grow_vertical = 0
 
 [node name="RuneLabel" type="Label" parent="Rune"]
 layout_mode = 1
@@ -205,17 +150,21 @@ text = "Remove"
 
 [node name="RunesListContainer" type="VBoxContainer" parent="Rune"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 153.0
-offset_top = 40.0
-grow_horizontal = 2
+anchor_bottom = 0.5
+offset_left = -263.0
+offset_top = -67.5
+offset_bottom = 108.5
+grow_horizontal = 0
 grow_vertical = 2
 theme_override_constants/separation = 8
 
 [node name="RuneListGrid" type="GridContainer" parent="Rune/RunesListContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 columns = 7
 
 [node name="RuneDescription" type="Label" parent="Rune/RunesListContainer"]
@@ -226,25 +175,8 @@ layout_mode = 2
 
 [node name="InsertRuneButton" type="Button" parent="Rune/RunesListContainer"]
 layout_mode = 2
+size_flags_vertical = 8
 text = "Insert"
-
-[node name="MineralIcon1" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 93.0
-offset_right = 56.0
-offset_bottom = 133.0
-texture = ExtResource("3_bcbo3")
-expand_mode = 1
-
-[node name="MineralIcon2" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 79.0
-offset_top = 92.0
-offset_right = 119.0
-offset_bottom = 132.0
-texture = ExtResource("3_bcbo3")
-expand_mode = 1
 
 [node name="CloseButton" type="Button" parent="."]
 modulate = Color(0.917332, 0.299453, 0.346819, 1)
@@ -256,6 +188,11 @@ offset_left = -31.0
 offset_bottom = 31.0
 grow_horizontal = 0
 text = "x"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [connection signal="pressed" from="Rune/ActiveRuneContainer/RemoveRuneButton" to="." method="_on_remove_rune_button_pressed"]
 [connection signal="pressed" from="Rune/RunesListContainer/InsertRuneButton" to="." method="_on_insert_rune_button_pressed"]

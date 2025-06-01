@@ -108,6 +108,7 @@ text = "25"
 horizontal_alignment = 1
 
 [node name="EssencesContainer" type="HBoxContainer" parent="Panel/MarginContainer"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 4

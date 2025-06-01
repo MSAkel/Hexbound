@@ -17,12 +17,12 @@ static func get_all_boons() -> Array[Boon]:
 	boon.effect_type = "gold"
 	boons.append(boon)
 	
-	boon = Boon.new()
-	boon.name = "Essence Boost"
-	boon.description = "Start with 1 of x essence"
-	boon.cost = 1
-	boon.effect_type = "essence"
-	boons.append(boon)
+	# boon = Boon.new()
+	# boon.name = "Essence Boost"
+	# boon.description = "Start with 1 of x essence"
+	# boon.cost = 1
+	# boon.effect_type = "essence"
+	# boons.append(boon)
 	
 	boon = Boon.new()
 	boon.name = "Common Perk"
@@ -38,12 +38,12 @@ static func get_all_boons() -> Array[Boon]:
 	boon.effect_type = "perk"
 	boons.append(boon)
 	
-	boon = Boon.new()
-	boon.name = "Essence Generator"
-	boon.description = "Starting tile generates an additional essence"
-	boon.cost = 1
-	boon.effect_type = "essence_gen"
-	boons.append(boon)
+	# boon = Boon.new()
+	# boon.name = "Essence Generator"
+	# boon.description = "Starting tile generates an additional essence"
+	# boon.cost = 1
+	# boon.effect_type = "essence_gen"
+	# boons.append(boon)
 	
 	boon = Boon.new()
 	boon.name = "Food Supply"

@@ -1,0 +1,91 @@
+[gd_scene load_steps=7 format=3 uid="uid://oe2tv6wcbxiy"]
+
+[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="1_0flov"]
+[ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="2_010mc"]
+[ext_resource type="Texture2D" uid="uid://stolrlq7n6y7" path="res://assets/gui/button_oval.png" id="3_phvgw"]
+[ext_resource type="Texture2D" uid="uid://eeanmr4v8i8i" path="res://assets/icons/building_icon.png" id="4_yjuds"]
+[ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/glyph_icon.png" id="5_pe02v"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_010mc"]
+texture = ExtResource("1_0flov")
+
+[node name="BottomPanel" type="Control"]
+custom_minimum_size = Vector2(600, 125)
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(600, 125)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -125.0
+offset_right = 300.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_010mc")
+
+[node name="CardsHand" parent="Panel" instance=ExtResource("2_010mc")]
+layout_mode = 1
+
+[node name="BuildingsPanelButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = -25.0
+offset_top = -27.0
+offset_right = 45.0
+offset_bottom = 43.0
+texture_normal = ExtResource("3_phvgw")
+
+[node name="TextureRect" type="TextureRect" parent="BuildingsPanelButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -23.0
+offset_right = 20.0
+offset_bottom = 17.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_yjuds")
+expand_mode = 1
+
+[node name="GlyphsPanelButton" type="TextureButton" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -46.0
+offset_top = -32.0
+offset_right = 24.0
+offset_bottom = 38.0
+grow_horizontal = 0
+texture_normal = ExtResource("3_phvgw")
+
+[node name="TextureRect" type="TextureRect" parent="GlyphsPanelButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_pe02v")
+expand_mode = 1

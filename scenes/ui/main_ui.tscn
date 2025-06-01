@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://clbo25fmtd5ba"]
+[gd_scene load_steps=12 format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/active_perks.tscn" id="1_hcnxy"]
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://dtamn2cc6wba" path="res://scenes/ui/quests/quests_menu.tscn" id="8_yc0ux"]
 [ext_resource type="PackedScene" uid="uid://c8cjskufdru2i" path="res://scenes/ui/runes/runes_menu.tscn" id="9_b65ll"]
 [ext_resource type="PackedScene" uid="uid://clcafvhour5gy" path="res://scenes/ui/top_right_ui.tscn" id="9_yc0ux"]
+[ext_resource type="PackedScene" uid="uid://b2xkqcci7v7vd" path="res://scenes/ui/outpost/outpost.tscn" id="10_b65ll"]
+[ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/bottom_panel/bottom_panel.tscn" id="11_oi40j"]
 
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_l8t6x")
@@ -21,6 +23,7 @@ visible = false
 [node name="TopPanelUI" parent="." groups=["main_ui"] instance=ExtResource("4_travt")]
 
 [node name="BuildingSelectionUi" parent="." instance=ExtResource("5_46cp5")]
+visible = false
 
 [node name="TopRightUI" parent="." instance=ExtResource("9_yc0ux")]
 
@@ -32,3 +35,12 @@ visible = false
 
 [node name="RunesMenuUI" parent="." instance=ExtResource("9_b65ll")]
 visible = false
+
+[node name="Outpost" parent="." instance=ExtResource("10_b65ll")]
+visible = false
+
+[node name="BottomPanel" parent="." instance=ExtResource("11_oi40j")]
+offset_left = -300.0
+offset_top = -126.0
+offset_right = 300.0
+offset_bottom = -1.0

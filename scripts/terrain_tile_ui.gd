@@ -5,11 +5,11 @@ var hex: Hex = null
 var selected_rune: Rune = null
 
 @onready var terrainLabel = $TerrianLabel
-@onready var production_1_text = $ProductionText1
-@onready var production_2_text = $ProductionText2
+#@onready var production_1_text = $ProductionText1
+#@onready var production_2_text = $ProductionText2
 @onready var terrain_background_image = $BackgroundImage
-@onready var mineral_1_icon = $MineralIcon1
-@onready var mineral_2_icon = $MineralIcon2
+#@onready var mineral_1_icon = $MineralIcon1
+#@onready var mineral_2_icon = $MineralIcon2
 @onready var rune_icon: TextureRect = $Rune/ActiveRuneContainer/RuneIcon
 @onready var rune_list_grid: GridContainer = $Rune/RunesListContainer/RuneListGrid
 @onready var rune_description: Label = $Rune/RunesListContainer/RuneDescription
@@ -26,9 +26,9 @@ func _ready() -> void:
 
 func set_hex(h: Hex) -> void:
 	hex = h
-	print(h)
-	mineral_1_icon.texture = h.minerals[0].icon
-	mineral_2_icon.texture = h.minerals[1].icon
+	#print(h)
+	#mineral_1_icon.texture = h.minerals[0].icon
+	#mineral_2_icon.texture = h.minerals[1].icon
 	
 	# Reset rune UI state
 	selected_rune = null
@@ -70,29 +70,29 @@ func on_rune_selected(rune: Rune) -> void:
 		rune_requirements.add_theme_color_override("font_color", Color.RED)
 
 func _on_insert_rune_button_pressed() -> void:
-	if hex.active_rune:
-		GameManager.fire_essence += hex.active_rune.fire_essence_cost
-		GameManager.nature_essence += hex.active_rune.nature_essence_cost
-		GameManager.frost_essence += hex.active_rune.frost_essence_cost
-		GameManager.storm_essence += hex.active_rune.storm_essence_cost
+	# if hex.active_rune:
+	# 	GameManager.fire_essence += hex.active_rune.fire_essence_cost
+	# 	GameManager.nature_essence += hex.active_rune.nature_essence_cost
+	# 	GameManager.frost_essence += hex.active_rune.frost_essence_cost
+	# 	GameManager.storm_essence += hex.active_rune.storm_essence_cost
 		
 	hex.active_rune = selected_rune
 	rune_icon.texture = selected_rune.icon
 	# Deduct essence costs
-	GameManager.fire_essence -= selected_rune.fire_essence_cost
-	GameManager.nature_essence -= selected_rune.nature_essence_cost
-	GameManager.frost_essence -= selected_rune.frost_essence_cost
-	GameManager.storm_essence -= selected_rune.storm_essence_cost
+	# GameManager.fire_essence -= selected_rune.fire_essence_cost
+	# GameManager.nature_essence -= selected_rune.nature_essence_cost
+	# GameManager.frost_essence -= selected_rune.frost_essence_cost
+	# GameManager.storm_essence -= selected_rune.storm_essence_cost
 	
 	remove_rune_button.show()
 	remove_rune_button.disabled = false
 
 
 func _on_remove_rune_button_pressed() -> void:
-	GameManager.fire_essence += hex.active_rune.fire_essence_cost
-	GameManager.nature_essence += hex.active_rune.nature_essence_cost
-	GameManager.frost_essence += hex.active_rune.frost_essence_cost
-	GameManager.storm_essence += hex.active_rune.storm_essence_cost
+	# GameManager.fire_essence += hex.active_rune.fire_essence_cost
+	# GameManager.nature_essence += hex.active_rune.nature_essence_cost
+	# GameManager.frost_essence += hex.active_rune.frost_essence_cost
+	# GameManager.storm_essence += hex.active_rune.storm_essence_cost
 	
 	hex.active_rune = null
 	rune_icon.texture = null

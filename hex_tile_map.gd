@@ -4,19 +4,23 @@ extends Node2D
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var fog_overlay_layer: TileMapLayer = $FogOverlayLayer
+@onready var card_drop_overlay_layer: TileMapLayer = $CardDropOverlayLayer
 
 # Map size
 @export var width: int
 @export var height: int
 
-@export var minerals: Array[Mineral] = []
+# @export var minerals: Array[Mineral] = []
 @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUi"
 
-const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
+# const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
 const EXPLORE_BUTTON: PackedScene = preload("res://scenes/ui/explore_button.tscn")
 # Special events UI
 var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
+
+# Shader for fog effect
+const FOG_SHADER = preload("res://shaders/fog_overlay.gdshader")
 
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
@@ -38,6 +42,11 @@ func _ready() -> void:
 	GameManager.tile_explored.connect(explore_tile)
 	# Add initial explore button after terrain generation is complete
 	update_explore_buttons()
+	
+	# Apply fog shader
+	var shader_material = ShaderMaterial.new()
+	shader_material.shader = FOG_SHADER
+	fog_overlay_layer.material = shader_material
 
 # Handles listening to tile clicks and selection
 func _unhandled_input(event: InputEvent) -> void:
@@ -142,7 +151,7 @@ func generate_terrain() -> void:
 	for x in width:
 		for y in height:
 			var h := Hex.new(Vector2i(x, y))
-			h.setup(self, MINERAL_UI)
+			h.setup(self, null)  # Pass self as the map reference
 			var noise_value: float = noise_map[x][y]
 			
 			for r in terrain_ranges:
@@ -159,10 +168,10 @@ func generate_terrain() -> void:
 			
 			base_layer.set_cell(Vector2i(x, y), 0, terrain_textures[h.terrain_type])
 			fog_overlay_layer.set_cell(Vector2i(x, y), 0, Vector2i(0,0))
-			h.generate_minerals(minerals)
+			# h.generate_minerals(minerals)
 		
 			if x == x_center and y == y_center:
-				explore_tile(h)
+				var center_hex = h
 			elif h.terrain_type != hex.TerrainType.WATER:
 				var containsEvent = randi_range(0, 6)
 				if containsEvent == 1:
@@ -171,6 +180,10 @@ func generate_terrain() -> void:
 				elif containsEvent == 2:
 					h.special_state = hex.SpecialTileState.RUINS
 					h.apply_special_state()
+
+	# Explore center and surrounding tiles after all tiles are generated
+	var center_hex = map_data[Vector2i(x_center, y_center)]
+	explore_tile(center_hex)
 
 func update_explore_buttons() -> void:
 	# Remove all existing explore buttons
@@ -193,6 +206,16 @@ func update_explore_buttons() -> void:
 func explore_tile(h: Hex) -> void:
 	fog_overlay_layer.set_cell(h._coordinates, -1)
 	h.explore()
+	
+	# Explore surrounding tiles
+	var surrounding_tiles = base_layer.get_surrounding_cells(h.coordinates)
+	for coords in surrounding_tiles:
+		if map_data.has(coords):
+			var surrounding_hex = map_data[coords]
+			if not surrounding_hex.explored:
+				fog_overlay_layer.set_cell(surrounding_hex._coordinates, -1)
+				surrounding_hex.explore()
+	
 	update_explore_buttons()
 
 func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
@@ -217,11 +240,11 @@ func on_turn_ended():
 		vertical_offset += 20
 		await get_tree().create_timer(delay_interval).timeout
 
-		for mineral_ui in tile.minerals:
-			var mineral_amount = tile.produce_mineral(mineral_ui)
-			tile.create_resource_animation(mineral_ui.mineral.name, mineral_amount, vertical_offset)
-			vertical_offset += 20
-			await get_tree().create_timer(delay_interval).timeout
+		# for mineral_ui in tile.minerals:
+		# 	var mineral_amount = tile.produce_mineral(mineral_ui)
+		# 	tile.create_resource_animation(mineral_ui.mineral.name, mineral_amount, vertical_offset)
+		# 	vertical_offset += 20
+		# 	await get_tree().create_timer(delay_interval).timeout
 		
 		vertical_offset = 0
 	

@@ -1,0 +1,50 @@
+[gd_scene load_steps=4 format=3 uid="uid://ctxjopaym03xl"]
+
+[ext_resource type="Script" uid="uid://bvjm52w84qccf" path="res://scenes/ui/hq/hq.gd" id="1_yhnrs"]
+[ext_resource type="Texture2D" uid="uid://stolrlq7n6y7" path="res://assets/gui/button_oval.png" id="2_xjt5e"]
+[ext_resource type="Texture2D" uid="uid://dt4p4cylx1l7x" path="res://assets/icons/buildings/hq.png" id="3_yhnrs"]
+
+[node name="HQ" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_yhnrs")
+
+[node name="TextureButton" type="TextureButton" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -41.0
+offset_top = -41.0
+offset_right = 41.0
+offset_bottom = 41.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("2_xjt5e")
+stretch_mode = 0
+
+[node name="TextureRect" type="TextureRect" parent="TextureButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 19.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_yhnrs")
+expand_mode = 1
+
+[connection signal="pressed" from="TextureButton" to="." method="_on_texture_button_pressed"]

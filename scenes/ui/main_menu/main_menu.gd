@@ -37,12 +37,8 @@ func _on_play_pressed() -> void:
 
 
 func _on_options_pressed() -> void:
-	# Play UI sound for opening settings
 	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
-	
-	# Instantiate and add settings scene
-	var settings = settings_scene.instantiate()
-	add_child(settings)
+	get_tree().change_scene_to_packed(settings_scene)
 
 
 func _on_exit_pressed() -> void:

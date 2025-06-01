@@ -5,6 +5,7 @@ const MAX_SLOTS = 4
 const BOON_ITEM = preload("res://scenes/ui/boons_selection/boon_item.tscn")
 const BOON = preload("res://scripts/resources/boon.gd")
 const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
+const GRAMPS_SOUND = preload("res://assets/audio/gramps.wav")
 
 var main_scene = load("res://scenes/main.tscn")
 var main_menu_scene = load("res://scenes/ui/main_menu/main_menu.tscn")
@@ -18,6 +19,7 @@ var selected_boons: Array[BOON] = []
 var current_slots_used: int = 0
 # Array to keep track of all boon item instances
 var boon_items: Array[Node] = []
+var is_playing: bool = false
 
 func _ready() -> void:
 	# Load all available boons and create UI items for them

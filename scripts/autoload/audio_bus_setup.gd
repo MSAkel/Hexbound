@@ -7,9 +7,9 @@ const SFX_BUS = 2
 const UI_BUS = 3
 
 # Default volume levels (in decibels)
-const DEFAULT_MUSIC_VOLUME = -6.0  # -6 dB for music
-const DEFAULT_SFX_VOLUME = 0.0     # 0 dB for sound effects
-const DEFAULT_UI_VOLUME = -3.0     # -3 dB for UI sounds
+const DEFAULT_MUSIC_VOLUME = 0.0
+const DEFAULT_SFX_VOLUME = 0.0
+const DEFAULT_UI_VOLUME = 0.0
 
 func _ready() -> void:
 	setup_audio_buses()

@@ -34,10 +34,10 @@ var _building_reroll_cost: int = 0 # cost to reroll the building pack, should in
 var selected_boons: Array[Boon] = []
 
 # Essence, each tile gives 1 essence of a specific type
-var _nature_essence: int = 0
-var _fire_essence: int = 0
-var _frost_essence: int = 0
-var _storm_essence: int = 0
+# var _nature_essence: int = 0
+# var _fire_essence: int = 0
+# var _frost_essence: int = 0
+# var _storm_essence: int = 0
 
 # Core game state getters and setters
 var current_year: int:
@@ -98,29 +98,29 @@ var building_reroll_cost: int:
 		_building_reroll_cost = max(0, value)
 
 # Essence getters and setters
-var nature_essence: int:
-	get:
-		return _nature_essence
-	set(value):
-		_nature_essence = max(0, value)
+# var nature_essence: int:
+# 	get:
+# 		return _nature_essence
+# 	set(value):
+# 		_nature_essence = max(0, value)
 
-var fire_essence: int:
-	get:
-		return _fire_essence
-	set(value):
-		_fire_essence = max(0, value)
+# var fire_essence: int:
+# 	get:
+# 		return _fire_essence
+# 	set(value):
+# 		_fire_essence = max(0, value)
 
-var frost_essence: int:
-	get:
-		return _frost_essence
-	set(value):
-		_frost_essence = max(0, value)
+# var frost_essence: int:
+# 	get:
+# 		return _frost_essence
+# 	set(value):
+# 		_frost_essence = max(0, value)
 
-var storm_essence: int:
-	get:
-		return _storm_essence
-	set(value):
-		_storm_essence = max(0, value)
+# var storm_essence: int:
+# 	get:
+# 		return _storm_essence
+# 	set(value):
+# 		_storm_essence = max(0, value)
 
 # Add a getter for the processing state
 var is_processing_turn: bool:

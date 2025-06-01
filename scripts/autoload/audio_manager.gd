@@ -11,7 +11,6 @@ var ui_player: AudioStreamPlayer
 var sfx_players: Array[AudioStreamPlayer] = []
 const MAX_SFX_PLAYERS = 8
 
-# Current music track
 var current_music: AudioStream
 var music_volume: float = 1.0
 var sfx_volume: float = 1.0

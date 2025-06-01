@@ -71,7 +71,7 @@ theme_override_constants/margin_bottom = 24
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
-text = "Hexbound"
+text = "10 Katantros"
 label_settings = SubResource("LabelSettings_m1kxf")
 
 [node name="MenuItemsContainer" type="VBoxContainer" parent="Container"]

@@ -1,0 +1,109 @@
+[gd_scene load_steps=14 format=3 uid="uid://b4k5fq6ran8f5"]
+
+[ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
+[ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
+[ext_resource type="Texture2D" uid="uid://ciq6s7cv7ulak" path="res://assets/icons/buildings/farm.png" id="3_o6pyt"]
+[ext_resource type="Texture2D" uid="uid://b30toi1ahc1f" path="res://assets/gui/card.png" id="3_usd0r"]
+[ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
+[ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
+[ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
+[ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
+[ext_resource type="Script" uid="uid://lhyqf0q0f5ko" path="res://scenes/cards/card states/card_released_state.gd" id="8_o6pyt"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5jwxg"]
+texture = ExtResource("3_usd0r")
+
+[sub_resource type="LabelSettings" id="LabelSettings_o6pyt"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_usd0r"]
+font_size = 14
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
+size = Vector2(135, 206)
+
+[node name="CardUI" type="Control"]
+custom_minimum_size = Vector2(135, 206)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 135.0
+offset_bottom = 206.0
+mouse_filter = 1
+theme = ExtResource("1_o6pyt")
+script = ExtResource("2_usd0r")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5jwxg")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 6.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardName" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 2
+text = "Name"
+label_settings = SubResource("LabelSettings_o6pyt")
+horizontal_alignment = 1
+
+[node name="Icon" type="TextureRect" parent="VBoxContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+mouse_filter = 2
+texture = ExtResource("3_o6pyt")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CardDescription" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+text = "Description"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="DropPointArea" type="Area2D" parent="."]
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea"]
+position = Vector2(67.5, 103)
+shape = SubResource("RectangleShape2D_s55cg")
+
+[node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+script = ExtResource("4_nmvtt")
+initial_state = NodePath("CardBaseState")
+
+[node name="CardBaseState" type="Node" parent="CardStateMachine"]
+script = ExtResource("5_onxhv")
+
+[node name="CardClickedState" type="Node" parent="CardStateMachine"]
+script = ExtResource("6_7xb4v")
+state = 1
+
+[node name="CardDraggingState" type="Node" parent="CardStateMachine"]
+script = ExtResource("7_y3v36")
+state = 2
+
+[node name="CardReleasedState" type="Node" parent="CardStateMachine"]
+script = ExtResource("8_o6pyt")
+state = 3
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
+[connection signal="area_entered" from="DropPointArea" to="." method="_on_drop_point_area_area_entered"]
+[connection signal="area_exited" from="DropPointArea" to="." method="_on_drop_point_area_area_exited"]

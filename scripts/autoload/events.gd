@@ -14,3 +14,5 @@ signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 # Merchant signals
 signal merchant_item_purchased(item_type: String)  # Emitted when an item is purchased
 signal merchant_discount_changed(new_discount: float)  # Emitted when merchant discount changes
+
+signal card_played(card_ui: CardUI)  # Emitted when a card is played

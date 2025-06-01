@@ -1,13 +1,9 @@
-[gd_scene load_steps=16 format=3 uid="uid://cpvr3k1luft0f"]
+[gd_scene load_steps=14 format=3 uid="uid://cpvr3k1luft0f"]
 
 [ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://hex_tile_map.gd" id="1_d5c3r"]
-[ext_resource type="Script" uid="uid://cnbs0ekyu3tkp" path="res://scripts/resources/mineral.gd" id="2_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://xyr8ssa54dw4" path="res://assets/tilesets/base_hex_tiles.png" id="2_c0fpv"]
-[ext_resource type="Resource" uid="uid://8slf12t7lne6" path="res://resources/minerals/berries.tres" id="3_b6nmi"]
 [ext_resource type="Texture2D" uid="uid://bgme2susi6nhr" path="res://assets/tilesets/selected_tile_overlay.png" id="3_c0fpv"]
-[ext_resource type="Resource" uid="uid://upewdosmftp2" path="res://resources/minerals/sheep.tres" id="4_4rcl8"]
-[ext_resource type="Resource" uid="uid://dmo8iuvkajm6p" path="res://resources/minerals/stone.tres" id="5_xmj4m"]
-[ext_resource type="Resource" uid="uid://dpig8u2yptoeu" path="res://resources/minerals/wood.tres" id="6_o8iio"]
+[ext_resource type="Texture2D" uid="uid://cvx6147u3jysj" path="res://assets/tilesets/card_drop_area_overlay.png" id="5_ekk8a"]
 [ext_resource type="Texture2D" uid="uid://b1l1imm0jdaes" path="res://assets/tilesets/fog_overlay.png" id="9_tt7jl"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xmj4m"]
@@ -45,11 +41,20 @@ tile_shape = 3
 tile_size = Vector2i(256, 256)
 sources/0 = SubResource("TileSetAtlasSource_4rcl8")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8rbqn"]
+texture = ExtResource("5_ekk8a")
+texture_region_size = Vector2i(256, 256)
+0:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_047vf"]
+tile_shape = 3
+tile_size = Vector2i(256, 256)
+sources/0 = SubResource("TileSetAtlasSource_8rbqn")
+
 [node name="HexTileMap" type="Node2D"]
 script = ExtResource("1_d5c3r")
 width = 9
 height = 9
-minerals = Array[ExtResource("2_8rbqn")]([ExtResource("3_b6nmi"), ExtResource("4_4rcl8"), ExtResource("5_xmj4m"), ExtResource("6_o8iio")])
 
 [node name="BaseLayer" type="TileMapLayer" parent="." groups=["hex_map_group"]]
 tile_set = SubResource("TileSet_ekk8a")
@@ -59,3 +64,6 @@ tile_set = SubResource("TileSet_3rbfx")
 
 [node name="FogOverlayLayer" type="TileMapLayer" parent="."]
 tile_set = SubResource("TileSet_xmj4m")
+
+[node name="CardDropOverlayLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_047vf")

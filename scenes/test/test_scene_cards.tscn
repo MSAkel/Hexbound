@@ -1,22 +1,25 @@
-[gd_scene load_steps=3 format=3 uid="uid://pmd7yvxmfr8m"]
+[gd_scene load_steps=4 format=3 uid="uid://pmd7yvxmfr8m"]
 
 [ext_resource type="Texture2D" uid="uid://ignkxt8bgyps" path="res://assets/background/natureBG.png" id="1_4infj"]
-[ext_resource type="PackedScene" uid="uid://b4k5fq6ran8f5" path="res://scenes/ui/card_ui.tscn" id="2_3kpom"]
+[ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="3_4infj"]
+[ext_resource type="PackedScene" uid="uid://dvclsca8njca3" path="res://scenes/components/dropAreaComponent.tscn" id="3_hgm18"]
 
 [node name="TestSceneCardDropArea" type="Node2D"]
-position = Vector2(578, 301)
 
 [node name="Background" type="Sprite2D" parent="."]
-position = Vector2(0.58588, 23.5)
+position = Vector2(583, 324)
 scale = Vector2(0.446824, 0.481399)
 texture = ExtResource("1_4infj")
 
 [node name="InteractionUI" type="CanvasLayer" parent="." groups=["ui_layer"]]
 
+[node name="CardDropArea" parent="." instance=ExtResource("3_hgm18")]
+position = Vector2(511, 223)
+
 [node name="UnassociatedCards" type="Node" parent="." groups=["ui_layer"]]
 
-[node name="CardUI" parent="UnassociatedCards" instance=ExtResource("2_3kpom")]
-offset_left = 455.0
-offset_top = 324.0
-offset_right = -639.0
-offset_bottom = -247.0
+[node name="CardsHand" parent="." instance=ExtResource("3_4infj")]
+offset_left = 589.0
+offset_top = 650.0
+offset_right = 589.0
+offset_bottom = 650.0

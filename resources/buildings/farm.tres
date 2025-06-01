@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3 uid="uid://b2nwfgiyeutiw"]
 
 [ext_resource type="Texture2D" uid="uid://ciq6s7cv7ulak" path="res://assets/icons/buildings/farm.png" id="1_41sb5"]
-[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building_data.gd" id="1_r6675"]
+[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building.gd" id="1_r6675"]
 
 [resource]
 script = ExtResource("1_r6675")
 id = "farm"
-label = "Farm"
+name = "Farm"
 icon = ExtResource("1_41sb5")
 description = "Increased food production within the tile it is placed in by 5"
 type = 0
