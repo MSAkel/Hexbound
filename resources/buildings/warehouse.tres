@@ -1,12 +1,12 @@
-[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3 uid="uid://dy308xnaekq4s"]
+[gd_resource type="Resource" script_class="Building" load_steps=3 format=3 uid="uid://dy308xnaekq4s"]
 
 [ext_resource type="Texture2D" uid="uid://cx6ylqxhlrr7r" path="res://assets/icons/buildings/warehouse.png" id="1_gb5vi"]
-[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building.gd" id="2_1a1p6"]
+[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building.gd" id="2_gb5vi"]
 
 [resource]
-script = ExtResource("2_1a1p6")
+script = ExtResource("2_gb5vi")
 id = "warehouse"
-name = "Warehouse"
+name = ""
 icon = ExtResource("1_gb5vi")
 description = "Increased resource production within the tile it is placed in and all adjacent tiles by 20%"
 type = 1

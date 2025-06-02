@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://bif4cx5edh2ng"]
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/terrain_tile_ui.gd" id="1_h2p2k"]
-[ext_resource type="Texture2D" uid="uid://r4el2w4g2am" path="res://assets/background/fields.png" id="2_bcbo3"]
-[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/close_button_normal.png" id="4_d4ddw"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_bcbo3"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="4_d4ddw"]
 
 [node name="TerrainTileUi" type="Control"]
 z_index = 1
@@ -13,8 +13,8 @@ anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -816.0
-offset_top = -346.0
-offset_bottom = 197.0
+offset_top = -271.5
+offset_bottom = 271.5
 grow_horizontal = 0
 grow_vertical = 2
 script = ExtResource("1_h2p2k")
@@ -28,7 +28,6 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="BackgroundImage" type="TextureRect" parent="."]
-modulate = Color(0.266575, 0.266575, 0.266575, 1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -40,11 +39,15 @@ texture = ExtResource("2_bcbo3")
 expand_mode = 1
 
 [node name="TerrianLabel" type="Label" parent="."]
-layout_mode = 0
-offset_left = 21.0
-offset_top = 9.0
-offset_right = 77.0
-offset_bottom = 32.0
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -27.0
+offset_top = 29.5
+offset_right = 29.0
+offset_bottom = 52.5
+grow_horizontal = 2
 text = "Terrian"
 
 [node name="BuildingsPanel" type="Panel" parent="."]
@@ -52,18 +55,16 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -408.0
-offset_top = 47.0
-offset_right = 410.0
-offset_bottom = 300.0
+offset_left = -383.0
+offset_top = 73.0
+offset_right = 368.0
+offset_bottom = 301.0
 grow_horizontal = 2
 
 [node name="Building" type="Label" parent="BuildingsPanel"]
-layout_mode = 1
-offset_left = 14.0
-offset_top = 7.0
-offset_right = 85.0
-offset_bottom = 30.0
+layout_mode = 2
+offset_right = 64.0
+offset_bottom = 22.3333
 size_flags_horizontal = 0
 size_flags_vertical = 0
 text = "Building"
@@ -74,9 +75,9 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 15.0
-offset_top = -213.0
+offset_top = -199.0
 offset_right = 381.0
-offset_bottom = -2.0
+offset_bottom = -1.0
 grow_vertical = 0
 theme_override_constants/separation = 16
 
@@ -99,8 +100,10 @@ layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
+offset_left = 37.0
 offset_top = -225.0
-offset_right = 421.0
+offset_right = 493.0
+offset_bottom = -36.0
 grow_vertical = 0
 
 [node name="RuneLabel" type="Label" parent="Rune"]

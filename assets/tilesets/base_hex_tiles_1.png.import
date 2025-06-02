@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1hft8pw2cwci"
-path="res://.godot/imported/close_button_hover.png-1d28bcd1bdd46975d25eb18f6a1578db.ctex"
+uid="uid://byi8cc5cebs8e"
+path="res://.godot/imported/base_hex_tiles_1.png-5c6488ebb2025c32585324bdde8a4569.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/close_button_hover.png"
-dest_files=["res://.godot/imported/close_button_hover.png-1d28bcd1bdd46975d25eb18f6a1578db.ctex"]
+source_file="res://assets/tilesets/base_hex_tiles_1.png"
+dest_files=["res://.godot/imported/base_hex_tiles_1.png-5c6488ebb2025c32585324bdde8a4569.ctex"]
 
 [params]
 

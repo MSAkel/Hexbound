@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://bkyj5id0pr10q"]
+[gd_scene load_steps=5 format=3 uid="uid://bkyj5id0pr10q"]
 
 [ext_resource type="Script" uid="uid://gm0hxgclp8pl" path="res://scripts/perks/perk_ui.gd" id="1_ac3sv"]
 [ext_resource type="Texture2D" uid="uid://dv33v70ofgm00" path="res://assets/icons/perks/elemntal_affinity.png" id="1_kh0m4"]
 [ext_resource type="Resource" uid="uid://rd58q063ak7h" path="res://resources/perks/elemental_affinity.tres" id="2_7ocbg"]
+[ext_resource type="Texture2D" uid="uid://dnn6eox3kyyy5" path="res://assets/gui/frames/frame_square.png" id="3_2g1qw"]
 
 [node name="PerkUI" type="Control"]
 custom_minimum_size = Vector2(32, 32)
@@ -11,11 +12,27 @@ anchors_preset = 0
 script = ExtResource("1_ac3sv")
 perk = ExtResource("2_7ocbg")
 
-[node name="Icon" type="TextureRect" parent="."]
+[node name="Frame" type="TextureRect" parent="."]
+layout_mode = 1
+offset_right = 34.0
+offset_bottom = 34.0
+texture = ExtResource("3_2g1qw")
+expand_mode = 1
+
+[node name="Icon" type="TextureRect" parent="Frame"]
 custom_minimum_size = Vector2(32, 32)
-layout_mode = 0
-offset_right = 24.0
-offset_bottom = 24.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+grow_horizontal = 2
+grow_vertical = 2
 pivot_offset = Vector2(12, 12)
 texture = ExtResource("1_kh0m4")
 expand_mode = 1

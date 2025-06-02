@@ -1,16 +1,16 @@
 [gd_scene load_steps=6 format=3 uid="uid://clcafvhour5gy"]
 
 [ext_resource type="Script" uid="uid://7st7tt2f54u4" path="res://scenes/ui/top_right_ui.gd" id="1_8pf6h"]
-[ext_resource type="Texture2D" uid="uid://2lcbgkqeo8fr" path="res://assets/gui/icon_container_image.png" id="1_673ta"]
+[ext_resource type="Texture2D" uid="uid://b23i08rqs0d52" path="res://assets/gui/buttons/button_round.png" id="2_673ta"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5hda3"]
-atlas = ExtResource("1_673ta")
+atlas = ExtResource("2_673ta")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_oa5en"]
-atlas = ExtResource("1_673ta")
+atlas = ExtResource("2_673ta")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kknu3"]
-atlas = ExtResource("1_673ta")
+atlas = ExtResource("2_673ta")
 
 [node name="TopRightUI" type="Control"]
 layout_mode = 3
@@ -29,8 +29,8 @@ offset_left = -200.0
 offset_bottom = 64.0
 grow_horizontal = 0
 theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 24
 
 [node name="GridContainer" type="GridContainer" parent="MarginContainer"]

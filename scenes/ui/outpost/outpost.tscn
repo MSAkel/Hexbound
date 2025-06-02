@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://b2xkqcci7v7vd"]
 
 [ext_resource type="Script" uid="uid://c1orx2wdmy2k2" path="res://scenes/ui/outpost/outpost.gd" id="1_017wt"]
-[ext_resource type="Texture2D" uid="uid://stolrlq7n6y7" path="res://assets/gui/button_oval.png" id="1_y8w2t"]
+[ext_resource type="Texture2D" uid="uid://stolrlq7n6y7" path="res://assets/gui/buttons/button_oval.png" id="1_y8w2t"]
 [ext_resource type="Texture2D" uid="uid://c7irx1x3u4pnc" path="res://assets/icons/buildings/outpost.png" id="2_017wt"]
 
 [node name="Outpost" type="Control"]

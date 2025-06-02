@@ -1,10 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://3pwk1tu6fo3o"]
+[gd_scene load_steps=7 format=3 uid="uid://3pwk1tu6fo3o"]
 
 [ext_resource type="Script" uid="uid://n4q4nrxyxrki" path="res://scenes/ui/perks/perks_menu.gd" id="1_qs381"]
-[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="2_c5x41"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_giwpn"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="3_4fq3l"]
+[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="4_4fq3l"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_giwpn"]
-texture = ExtResource("2_c5x41")
+texture = ExtResource("2_giwpn")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3iut3"]
+texture = ExtResource("4_4fq3l")
 
 [node name="PerksMenuUI" type="Control"]
 custom_minimum_size = Vector2(64, 64)
@@ -45,28 +50,31 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 64
 
-[node name="CloseButton" type="Button" parent="Panel"]
+[node name="CloseButton" type="TextureButton" parent="Panel"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -8.0
-offset_bottom = 8.0
+offset_left = -33.0
+offset_right = 1.0
+offset_bottom = 32.0
 grow_horizontal = 0
-text = "Close"
+texture_normal = ExtResource("3_4fq3l")
 
 [node name="RerollButton" type="Button" parent="Panel"]
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -4.0
-offset_top = -8.0
-offset_right = 4.0
-grow_horizontal = 2
+offset_left = -161.0
+offset_top = -88.0
+offset_right = -51.0
+offset_bottom = -53.0
+grow_horizontal = 0
 grow_vertical = 0
+theme_override_styles/normal = SubResource("StyleBoxTexture_3iut3")
 text = "Reroll (1)"
 
 [connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]

@@ -1,12 +1,16 @@
-[gd_scene load_steps=6 format=3 uid="uid://dme0eav2550e7"]
+[gd_scene load_steps=8 format=3 uid="uid://dme0eav2550e7"]
 
 [ext_resource type="Script" uid="uid://nriqkn24o42m" path="res://scenes/ui/runes/rune_selection_ui.gd" id="1_e7vfp"]
-[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="2_5ua0j"]
-[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/close_button_normal.png" id="3_rgcjf"]
-[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/close_button_hover.png" id="4_lqce7"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_bvuok"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="3_rgcjf"]
+[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="4_lqce7"]
+[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="5_2hgda"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_swbo7"]
-texture = ExtResource("2_5ua0j")
+texture = ExtResource("2_bvuok")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jpxjh"]
+texture = ExtResource("5_2hgda")
 
 [node name="RuneSelectionUI" type="Control"]
 layout_mode = 3
@@ -22,8 +26,8 @@ script = ExtResource("1_e7vfp")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 2
-offset_left = -533.0
-offset_top = -258.0
+offset_left = -574.0
+offset_top = -365.0
 offset_right = 534.0
 offset_bottom = 258.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_swbo7")
@@ -67,12 +71,13 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -124.0
-offset_top = -53.0
-offset_right = -25.0
-offset_bottom = -22.0
+offset_left = -158.0
+offset_top = -78.0
+offset_right = -40.0
+offset_bottom = -38.0
 grow_horizontal = 0
 grow_vertical = 0
+theme_override_styles/normal = SubResource("StyleBoxTexture_jpxjh")
 text = "Reroll (free)"
 
 [connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]

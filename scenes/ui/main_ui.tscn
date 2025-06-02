@@ -17,6 +17,7 @@
 script = ExtResource("1_l8t6x")
 
 [node name="ActivePerks" parent="." instance=ExtResource("1_hcnxy")]
+offset_bottom = 54.0
 
 [node name="TopPanelUI" parent="." groups=["main_ui"] instance=ExtResource("4_travt")]
 

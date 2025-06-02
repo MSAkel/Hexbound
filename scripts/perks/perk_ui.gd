@@ -3,7 +3,7 @@ extends Control
 
 @export var perk: Perk : set = set_perk 
 
-@onready var icon: TextureRect = $Icon
+@onready var icon: TextureRect = $Frame/Icon
 
 func set_perk(new_perk: Perk) -> void:
 	if not is_node_ready():

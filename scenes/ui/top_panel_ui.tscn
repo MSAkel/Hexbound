@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://cm3sdx2an61fm"]
 
 [ext_resource type="Script" uid="uid://d26ag2i5t0ue2" path="res://top_panel_ui.gd" id="1_er6pf"]
-[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="2_1d8jj"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_1d8jj"]
 [ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currencies/coin.png" id="2_ftuxj"]
 [ext_resource type="Texture2D" uid="uid://8nbekdcvjsn7" path="res://assets/icons/essences/nature.png" id="4_3dad6"]
 [ext_resource type="Texture2D" uid="uid://dag1bs72vfv70" path="res://assets/icons/currencies/favor_icon.png" id="5_1ubwj"]
@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://bjbdx2d4b8ss4" path="res://assets/icons/currencies/insight_icon.png" id="6_6h7a3"]
 [ext_resource type="Texture2D" uid="uid://6h6yad1x5yco" path="res://assets/icons/essences/frost.png" id="6_sab0e"]
 [ext_resource type="Texture2D" uid="uid://pi1uppa3jgya" path="res://assets/icons/essences/lightning.png" id="7_1d8jj"]
-[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/button_rect.png" id="9_wn18o"]
+[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="9_wn18o"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1ubwj"]
 texture = ExtResource("2_1d8jj")

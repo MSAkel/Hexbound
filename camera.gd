@@ -22,10 +22,10 @@ func _ready() -> void:
 	var maps = get_tree().get_nodes_in_group("hex_map_group")
 	if maps.size() > 0:
 		map = maps[0] as HexTileMap
-	left_boundary = to_global(map.map_to_local(Vector2i(0,0))).x + 50
-	right_boundary = to_global(map.map_to_local(Vector2i(map.width,0))).x - 50 
-	top_boundary = to_global(map.map_to_local(Vector2i(0,0))).y + 50 
-	bottom_boundary = to_global(map.map_to_local(Vector2i(0, map.height))).y - 50 
+	left_boundary = to_global(map.map_to_local(Vector2i(0,0))).x
+	right_boundary = to_global(map.map_to_local(Vector2i(map.width,0))).x 
+	top_boundary = to_global(map.map_to_local(Vector2i(0,0))).y
+	bottom_boundary = to_global(map.map_to_local(Vector2i(0, map.height))).y
 	
 	# Start with a zoomed out view
 	zoom = Vector2(0.2, 0.2)

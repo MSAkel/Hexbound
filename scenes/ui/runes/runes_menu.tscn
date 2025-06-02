@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://c8cjskufdru2i"]
 
 [ext_resource type="Script" uid="uid://b4rnj3xgifmuj" path="res://scenes/ui/runes/runes_menu.gd" id="1_fj8ui"]
-[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="2_urlrl"]
+[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panels/panel.png" id="2_urlrl"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h41ld"]
 texture = ExtResource("2_urlrl")

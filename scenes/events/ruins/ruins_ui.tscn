@@ -6,26 +6,22 @@
 [sub_resource type="AtlasTexture" id="AtlasTexture_0nadc"]
 atlas = ExtResource("2_316ux")
 
-[node name="RuinsUi" type="Control"]
+[node name="RuinsUI" type="Control"]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
 script = ExtResource("1_mmsej")
 
 [node name="Container" type="Panel" parent="."]
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 1
-offset_right = 408.0
-offset_bottom = 426.0
+offset_right = 400.0
+offset_bottom = 425.0
 mouse_filter = 2
 
 [node name="RuinsButton" type="TextureButton" parent="Container"]
 layout_mode = 1
-offset_right = 64.0
-offset_bottom = 64.0
+offset_right = 60.0
+offset_bottom = 60.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 disabled = true
