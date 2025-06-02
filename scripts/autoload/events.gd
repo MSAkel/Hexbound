@@ -8,6 +8,9 @@ signal game_ended  # Emitted when game ends
 signal turn_ended  # Emitted when a turn ends
 signal turn_started  # Emitted when a turn starts
 
+signal card_drag_started(card: CardUI)
+signal card_drag_ended()
+
 # Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 

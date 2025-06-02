@@ -36,6 +36,13 @@ var terrain_textures: Dictionary = {
 	hex.TerrainType.WATER: Vector2i(5,0),
 }
 
+# Track if a card is being dragged
+var is_card_dragging: bool = false
+# Track the last tile we showed the overlay on
+var last_hovered_tile: Vector2i = Vector2i(-1, -1)
+# Reference to the card being dragged
+var dragged_card: CardUI = null
+
 func _ready() -> void:
 	generate_terrain()
 	Events.turn_ended.connect(on_turn_ended)
@@ -47,7 +54,14 @@ func _ready() -> void:
 	var shader_material = ShaderMaterial.new()
 	shader_material.shader = FOG_SHADER
 	fog_overlay_layer.material = shader_material
+	
+	# Connect to card drag signals
+	Events.card_drag_started.connect(_on_card_drag_started)
+	Events.card_drag_ended.connect(_on_card_drag_ended)
 
+
+#_unhandled_input only receives events that haven't been handled by other nodes
+#_input receives all input events, regardless of whether they've been handled by other nodes
 # Handles listening to tile clicks and selection
 func _unhandled_input(event: InputEvent) -> void:
 	# Skip input handling if turn is being processed
@@ -74,6 +88,50 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			# Deselect active cell on clicking outside the map
 			selection_overlay_layer.set_cell(selected_cell, -1)
+			
+# Handle card drag and drop
+func _input(event: InputEvent) -> void:
+	if is_card_dragging:
+		if event is InputEventMouseButton and not event.pressed and is_card_dragging:
+			var dragged_over_map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
+			if dragged_over_map_coords.x >= 0 && dragged_over_map_coords.x < width && dragged_over_map_coords.y >= 0 && dragged_over_map_coords.y < height:
+				var h: Hex = map_data[dragged_over_map_coords]
+				if h.explored and h.terrain_type != hex.TerrainType.WATER:
+					# Check card type and handle accordingly
+					if dragged_card != null:
+						match dragged_card.get_card_type():
+							CardUI.CardType.BUILDING:
+								h.place_building(dragged_card.card)
+								dragged_card.queue_free()
+							CardUI.CardType.RUNE:
+								h.place_rune(dragged_card.card)
+								dragged_card.queue_free()
+					
+					dragged_card = null
+					is_card_dragging = false
+					# Clear overlays
+					for x in width:
+						for y in height:
+							card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
+					last_hovered_tile = Vector2i(-1, -1)
+
+		var map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
+			
+		# Clear overlay from previous tile if we've moved to a new tile
+		if last_hovered_tile != map_coords:
+			card_drop_overlay_layer.set_cell(last_hovered_tile, -1)
+			last_hovered_tile = map_coords
+		
+		if is_card_dragging and map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
+			var h: Hex = map_data[map_coords]
+			if h.explored and h.terrain_type != hex.TerrainType.WATER:
+				card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+			else:
+				card_drop_overlay_layer.set_cell(map_coords, -1)
+		else:
+			# Clear overlay when not hovering over valid tile
+			card_drop_overlay_layer.set_cell(map_coords, -1)
+
 
 func generate_terrain() -> void:
 	# Initialize noise maps for terrain features
@@ -145,13 +203,15 @@ func generate_terrain() -> void:
 		{ "min": noise_max / 10.0 * 5, "max": noise_max + 0.05, "type": hex.TerrainType.FOREST }
 	]
 	
+	@warning_ignore("integer_division")
 	var x_center = width / 2
+	@warning_ignore("integer_division")
 	var y_center = height / 2
 
 	for x in width:
 		for y in height:
 			var h := Hex.new(Vector2i(x, y))
-			h.setup(self, null)  # Pass self as the map reference
+			h.setup(self)  # Pass self as the map reference
 			var noise_value: float = noise_map[x][y]
 			
 			for r in terrain_ranges:
@@ -170,9 +230,9 @@ func generate_terrain() -> void:
 			fog_overlay_layer.set_cell(Vector2i(x, y), 0, Vector2i(0,0))
 			# h.generate_minerals(minerals)
 		
-			if x == x_center and y == y_center:
-				var center_hex = h
-			elif h.terrain_type != hex.TerrainType.WATER:
+			#if x == x_center and y == y_center:
+				#var center_hex = h
+			if h.terrain_type != hex.TerrainType.WATER:
 				var containsEvent = randi_range(0, 6)
 				if containsEvent == 1:
 					h.special_state = hex.SpecialTileState.CURSED
@@ -239,14 +299,23 @@ func on_turn_ended():
 		tile.create_resource_animation("gold", tile.generate_gold(), vertical_offset)
 		vertical_offset += 20
 		await get_tree().create_timer(delay_interval).timeout
-
-		# for mineral_ui in tile.minerals:
-		# 	var mineral_amount = tile.produce_mineral(mineral_ui)
-		# 	tile.create_resource_animation(mineral_ui.mineral.name, mineral_amount, vertical_offset)
-		# 	vertical_offset += 20
-		# 	await get_tree().create_timer(delay_interval).timeout
 		
 		vertical_offset = 0
 	
 	# Signal that turn processing is complete
 	GameManager.finish_turn_processing()
+
+# Signal handler for when a card starts being dragged
+func _on_card_drag_started(card: CardUI) -> void:
+	is_card_dragging = true
+	dragged_card = card
+
+# Signal handler for when a card stops being dragged
+func _on_card_drag_ended() -> void:
+	is_card_dragging = false
+	# Clear any remaining card drop overlays
+	for x in width:
+		for y in height:
+			card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
+	last_hovered_tile = Vector2i(-1, -1)
+	dragged_card = null

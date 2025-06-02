@@ -13,6 +13,8 @@ enum TerrainType { FIELDS, FOREST, MOUNTAIN, SNOW, WATER, SWAMP }
 # Special events UI
 var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
+const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
+
 const UNEXPLORED_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/unexplored_poi.png")
 const CURSE_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/curse.png")
 const RUINS_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/ruins.png")
@@ -23,7 +25,8 @@ var ruins: RuinsUI
 var terrain_type: TerrainType
 var _coordinates: Vector2i = Vector2i(0, 0)
 var explored: bool = false
-var active_rune: Rune
+var active_rune: Rune = null
+var active_building: Building = null
 var special_state: SpecialTileState = SpecialTileState.NONE
 # var minerals: Array[MineralUI] = []
 
@@ -39,7 +42,7 @@ var coordinates: Vector2i:
 func _init(coords: Vector2i) -> void:
 	_coordinates = coords
 
-func setup(map_ref: Node2D, mineral_scene: PackedScene) -> void:
+func setup(map_ref: Node2D) -> void:
 	map = map_ref
 	#mineral_ui_scene = mineral_scene
 
@@ -56,47 +59,23 @@ func on_explore() -> void:
 			#TerrainType.SNOW:
 				#GameManager.ice_essence += 1
 
-func generate_gold() -> int:
-	const BASE_GOLD_PRODUCTION: int = 5
-	GameManager.gold_count += BASE_GOLD_PRODUCTION
-	return BASE_GOLD_PRODUCTION
+func place_building(building: Building) -> void:
+	active_building = building
 
-# func produce_mineral(mineral_ui: MineralUI) -> int:
-# 	if mineral_ui.mineral.type == Mineral.Type.BERRIES:
-# 		return 5
-# 	elif mineral_ui.mineral.type == Mineral.Type.WOOL:
-# 		return 3
-# 	elif mineral_ui.mineral.type == Mineral.Type.STONE:
-# 		return 3
-# 	elif mineral_ui.mineral.type == Mineral.Type.WOOD:
-# 		return 5
-	
-# 	return 5
+func place_rune(rune: Rune) -> void:
+	active_rune = rune
+	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
+	new_rune_instance.map = map
+	new_rune_instance.tile = self
+	new_rune_instance.center_coordinates = coordinates
 
-# Generate minerals UI scene which will be available and displayed on the tile
-# func generate_minerals(available_minerals: Array[Mineral]) -> void:
-# 	if terrain_type == TerrainType.WATER:
-# 		return
-		
-# 	available_minerals.shuffle()
-# 	var tile_minerals: Array[Mineral] = available_minerals.slice(0, 2)
+	new_rune_instance.setup(rune)
 	
-# 	for i in tile_minerals.size():
-# 		var mineral = tile_minerals[i]
-# 		var mineral_ui: MineralUI = mineral_ui_scene.instantiate() as MineralUI
-# 		mineral_ui.map = map
-# 		mineral_ui.center_coordinates = coordinates
-# 		mineral_ui.tile = self
-# 		minerals.append(mineral_ui)
-		
-# 		# Base position on the tile
-# 		var base_pos = map.base_layer.map_to_local(coordinates)
-# 		var offset = Vector2((i - (tile_minerals.size() - 1) / 2.0) * 72, -32)
-# 		mineral_ui.position = base_pos + offset
-		
-# 		mineral_ui.set_mineral(mineral)
-# 		map.add_child(mineral_ui)
-# 		mineral_ui.hide()
+	new_rune_instance.position = map.base_layer.map_to_local(coordinates)
+	map.add_child(new_rune_instance)
+	
+
+
 
 func apply_special_state() -> void:
 	match special_state:
@@ -178,3 +157,46 @@ func create_scale_animation(sprite: Sprite2D, duration: float) -> void:
 	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), duration)
 	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), duration)
 	tween.tween_callback(sprite.queue_free)
+
+func generate_gold() -> int:
+	const BASE_GOLD_PRODUCTION: int = 5
+	GameManager.gold_count += BASE_GOLD_PRODUCTION
+	return BASE_GOLD_PRODUCTION
+
+
+# func produce_mineral(mineral_ui: MineralUI) -> int:
+# 	if mineral_ui.mineral.type == Mineral.Type.BERRIES:
+# 		return 5
+# 	elif mineral_ui.mineral.type == Mineral.Type.WOOL:
+# 		return 3
+# 	elif mineral_ui.mineral.type == Mineral.Type.STONE:
+# 		return 3
+# 	elif mineral_ui.mineral.type == Mineral.Type.WOOD:
+# 		return 5
+	
+# 	return 5
+
+# Generate minerals UI scene which will be available and displayed on the tile
+# func generate_minerals(available_minerals: Array[Mineral]) -> void:
+# 	if terrain_type == TerrainType.WATER:
+# 		return
+		
+# 	available_minerals.shuffle()
+# 	var tile_minerals: Array[Mineral] = available_minerals.slice(0, 2)
+	
+# 	for i in tile_minerals.size():
+# 		var mineral = tile_minerals[i]
+# 		var mineral_ui: MineralUI = mineral_ui_scene.instantiate() as MineralUI
+# 		mineral_ui.map = map
+# 		mineral_ui.center_coordinates = coordinates
+# 		mineral_ui.tile = self
+# 		minerals.append(mineral_ui)
+		
+# 		# Base position on the tile
+# 		var base_pos = map.base_layer.map_to_local(coordinates)
+# 		var offset = Vector2((i - (tile_minerals.size() - 1) / 2.0) * 72, -32)
+# 		mineral_ui.position = base_pos + offset
+		
+# 		mineral_ui.set_mineral(mineral)
+# 		map.add_child(mineral_ui)
+# 		mineral_ui.hide()

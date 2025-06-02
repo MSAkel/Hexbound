@@ -1,9 +1,22 @@
 class_name RuneUI
-extends Button
+extends Control
 
-var rune: Rune
+@onready var ruins_button: TextureButton = $Container/RuinsButton
 
-signal rune_selected(rune: Rune)
+var map: HexTileMap
+var tile: Hex
+var center_coordinates: Vector2i
 
-func _on_pressed() -> void:
-	rune_selected.emit(rune)
+func _on_ruins_button_pressed() -> void:
+	pass
+
+
+func setup(rune: Rune) -> void:
+	if not is_node_ready():
+		await ready
+	
+	ruins_button.texture_normal = rune.icon
+	
+	
+	
+	

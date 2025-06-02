@@ -10,7 +10,7 @@ const MINE_RESOURCE := preload("res://resources/buildings/mine.tres")
 
 # Reparent cards to hand when they are dragged or released
 func _ready() -> void:
-	Events.card_played.connect(func(card_ui: CardUI):
+	Events.card_played.connect(func(_card_ui: CardUI):
 		cards_played += 1
 	)
 

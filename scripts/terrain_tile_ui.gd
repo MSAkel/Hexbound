@@ -17,7 +17,7 @@ var selected_rune: Rune = null
 @onready var insert_rune_button: Button = $Rune/RunesListContainer/InsertRuneButton
 @onready var remove_rune_button: Button = $Rune/ActiveRuneContainer/RemoveRuneButton
 
-const RUNE_UI = preload("res://scenes/ui/runes/rune_ui.tscn")
+const RUNE_BUTTON = preload("res://scenes/ui/runes/rune_button.tscn")
 
 func _ready() -> void:
 	populate_rune_list(GameManager.runes_pool)
@@ -42,7 +42,7 @@ func set_hex(h: Hex) -> void:
 	if h.active_rune:
 		selected_rune = h.active_rune
 		rune_icon.texture = h.active_rune.icon
-		rune_requirements.text = h.active_rune.get_essence_requirements_text()
+		#rune_requirements.text = h.active_rune.get_essence_requirements_text()
 		remove_rune_button.show()
 		remove_rune_button.disabled = false
 	else:
@@ -52,7 +52,7 @@ func set_hex(h: Hex) -> void:
 
 func populate_rune_list(runes: Array[Rune]) -> void:
 	for rune in runes:
-		var rune_button: RuneUI = RUNE_UI.instantiate() as RuneUI
+		var rune_button: RuneButton = RUNE_BUTTON.instantiate()
 		rune_button.rune = rune
 		rune_button.icon = rune.icon
 		rune_button.rune_selected.connect(on_rune_selected)
@@ -60,7 +60,7 @@ func populate_rune_list(runes: Array[Rune]) -> void:
 
 func on_rune_selected(rune: Rune) -> void:
 	selected_rune = rune
-	rune_requirements.text = rune.get_essence_requirements_text()
+	#rune_requirements.text = rune.get_essence_requirements_text()
 	
 	if rune.can_activate():
 		insert_rune_button.disabled = false
@@ -99,5 +99,5 @@ func _on_remove_rune_button_pressed() -> void:
 	remove_rune_button.hide()
 	remove_rune_button.disabled = true
 
-func _on_button_pressed() -> void:
+func _on_close_button_pressed() -> void:
 	hide()

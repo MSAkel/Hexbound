@@ -3,12 +3,12 @@ extends CardState
 var placed: bool
 
 func enter() -> void:
+	Events.card_drag_ended.emit()
 	placed = false
-	
 	if not card_ui.targets.is_empty():
 		placed = true
 
-func on_input(event: InputEvent) -> void:
+func on_input(_event: InputEvent) -> void:
 	if placed:
 		return
 	# transition back to base state if not released on a card slot area

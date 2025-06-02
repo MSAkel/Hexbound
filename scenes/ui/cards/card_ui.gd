@@ -17,6 +17,14 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @onready var targets: Array[Node] = []
 @onready var starting_hand_position := self.get_index()
 
+enum CardType {
+	BUILDING,
+	RUNE,
+}
+
+var card = null
+var card_type: CardType
+
 func _ready() -> void:
 	card_state_machine.init(self)
 	
@@ -36,15 +44,26 @@ func set_card(data) -> void:
 	if not is_node_ready():
 		await ready
 	
-	#card = data
+	card = data
 	card_name.text = data.name
 	icon.texture = data.icon
 	card_description.text = data.description
 	
-func _on_drop_point_area_area_entered(area: Area2D) -> void:
+	# Determine card type based on the data
+	if data is Building:
+		card_type = CardType.BUILDING
+	elif data is Rune:
+		card_type = CardType.RUNE
+	else:
+		push_error("Unknown card type for data: ", data)
+
+func get_card_type() -> CardType:
+	return card_type
+
+func _on_drop_point_area_entered(area: Area2D) -> void:
 	if not targets.has(area):
 		targets.append(area)
 
 
-func _on_drop_point_area_area_exited(area: Area2D) -> void:
+func _on_drop_point_area_exited(area: Area2D) -> void:
 	targets.erase(area)

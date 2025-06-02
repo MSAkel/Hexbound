@@ -1,12 +1,42 @@
-[gd_scene load_steps=2 format=3 uid="uid://rcyes7mmxlg0"]
+[gd_scene load_steps=4 format=3 uid="uid://b2u0uxxntwomn"]
 
-[ext_resource type="Script" uid="uid://c0mnuq8yskmnc" path="res://scenes/ui/runes/rune_ui.gd" id="1_ncwa2"]
+[ext_resource type="Script" uid="uid://cvrhe05ck15tj" path="res://scenes/ui/runes/rune_ui.gd" id="1_ncwa2"]
+[ext_resource type="Texture2D" uid="uid://j7ewxkg3i3qk" path="res://assets/icons/runes/frostlink_rune.png" id="2_gx0vj"]
 
-[node name="RuneButton" type="Button"]
-custom_minimum_size = Vector2(32, 32)
-offset_right = 32.0
-offset_bottom = 32.0
-expand_icon = true
+[sub_resource type="AtlasTexture" id="AtlasTexture_0nadc"]
+atlas = ExtResource("2_gx0vj")
+
+[node name="RuneUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1339.0
+offset_bottom = -739.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_ncwa2")
 
-[connection signal="pressed" from="." to="." method="_on_pressed"]
+[node name="Container" type="Panel" parent="."]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+offset_right = 63.0
+offset_bottom = 62.0
+scale = Vector2(1.00413, 1)
+mouse_filter = 2
+
+[node name="RuinsButton" type="TextureButton" parent="Container"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+disabled = true
+texture_normal = SubResource("AtlasTexture_0nadc")
+ignore_texture_size = true
+stretch_mode = 0
+
+[connection signal="pressed" from="Container/RuinsButton" to="." method="_on_ruins_button_pressed"]
