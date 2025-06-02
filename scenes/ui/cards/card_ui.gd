@@ -32,7 +32,7 @@ func _on_mouse_entered() -> void:
 func _on_mouse_exited() -> void:
 	card_state_machine.on_mouse_exited()
 
-func _set_card(data) -> void:
+func set_card(data) -> void:
 	if not is_node_ready():
 		await ready
 	

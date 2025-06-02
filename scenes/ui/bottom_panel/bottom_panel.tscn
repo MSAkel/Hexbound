@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://oe2tv6wcbxiy"]
+[gd_scene load_steps=9 format=3 uid="uid://oe2tv6wcbxiy"]
 
 [ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="1_0flov"]
+[ext_resource type="Script" uid="uid://dbvnt7qskwg4s" path="res://scenes/ui/bottom_panel/bottom_panel.gd" id="1_pe02v"]
 [ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="2_010mc"]
 [ext_resource type="Texture2D" uid="uid://stolrlq7n6y7" path="res://assets/gui/button_oval.png" id="3_phvgw"]
 [ext_resource type="Texture2D" uid="uid://eeanmr4v8i8i" path="res://assets/icons/building_icon.png" id="4_yjuds"]
@@ -8,6 +9,9 @@
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_010mc"]
 texture = ExtResource("1_0flov")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0l5nl"]
+texture = ExtResource("3_phvgw")
 
 [node name="BottomPanel" type="Control"]
 custom_minimum_size = Vector2(600, 125)
@@ -17,36 +21,33 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
+offset_left = -483.0
+offset_top = -125.0
+offset_right = 462.0
 grow_horizontal = 2
 grow_vertical = 0
+script = ExtResource("1_pe02v")
 
 [node name="Panel" type="Panel" parent="."]
 custom_minimum_size = Vector2(600, 125)
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -300.0
-offset_top = -125.0
-offset_right = 300.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_010mc")
 
 [node name="CardsHand" parent="Panel" instance=ExtResource("2_010mc")]
 layout_mode = 1
 
 [node name="BuildingsPanelButton" type="TextureButton" parent="."]
-layout_mode = 0
-offset_left = -25.0
-offset_top = -27.0
-offset_right = 45.0
-offset_bottom = 43.0
+layout_mode = 1
+offset_right = 70.0
+offset_bottom = 70.0
 texture_normal = ExtResource("3_phvgw")
 
-[node name="TextureRect" type="TextureRect" parent="BuildingsPanelButton"]
+[node name="BuildingIcon" type="TextureRect" parent="BuildingsPanelButton"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -62,19 +63,42 @@ grow_vertical = 2
 texture = ExtResource("4_yjuds")
 expand_mode = 1
 
-[node name="GlyphsPanelButton" type="TextureButton" parent="."]
+[node name="BuildingCounterPanel" type="Panel" parent="BuildingsPanelButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -26.0
+offset_top = -29.0
+offset_right = -8.0
+offset_bottom = -11.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_0l5nl")
+
+[node name="BuildingCountLabel" type="Label" parent="BuildingsPanelButton/BuildingCounterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0"
+horizontal_alignment = 1
+
+[node name="RunesPanelButton" type="TextureButton" parent="."]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -46.0
-offset_top = -32.0
-offset_right = 24.0
-offset_bottom = 38.0
+offset_left = -70.0
+offset_bottom = 70.0
 grow_horizontal = 0
 texture_normal = ExtResource("3_phvgw")
 
-[node name="TextureRect" type="TextureRect" parent="GlyphsPanelButton"]
+[node name="RuneIcon" type="TextureRect" parent="RunesPanelButton"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -89,3 +113,31 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("5_pe02v")
 expand_mode = 1
+
+[node name="RuneCounterPanel" type="Panel" parent="RunesPanelButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -26.0
+offset_top = -29.0
+offset_right = -8.0
+offset_bottom = -11.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_0l5nl")
+
+[node name="RuneCountLabel" type="Label" parent="RunesPanelButton/RuneCounterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="BuildingsPanelButton" to="." method="_on_buildings_panel_button_pressed"]
+[connection signal="pressed" from="RunesPanelButton" to="." method="_on_runes_panel_button_pressed"]

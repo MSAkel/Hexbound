@@ -8,15 +8,26 @@ const BASE_EXPLORES_PER_TURN := 1
 const MAX_EXPLORES := 3
 
 var _current_year := 1
+
 var _gold_count := 500
-var _food_count := 0
+var _favor_count := 0
+var _insight_count := 0
+
 var _available_explores: int = 0
-var _game_speed: float = 1.0  # 1.0 is normal speed, 2.0 is double, 3.0 is triple
+var _game_speed: float = 1.0
 var _is_processing_turn: bool = false  # Block input processing while turn is being processed
 
 var explored_tiles: Array[Hex] = []
 
+var buildings_pool: Array[Building] = [] # All buildings available in the game
+var buildings_pack: Array[Building] = [] # Buildings available for selection on the buildings selection menu
+var _available_building_packs: int = 1 # increment by 1 on turn end
+var _building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
+
 var runes_pool: Array[Rune] = []
+var runes_pack: Array[Rune] = []
+var _available_runes_packs: int = 1
+var _runes_reroll_cost: int = 0
 var active_runes: Array[Rune] = []
 
 var perks_pool: Array[Perk] = []
@@ -25,19 +36,8 @@ var active_perks: Array[Perk] = []
 var perks_pack: Array[Perk] = [] # Perks available for selection on the perks selection menu
 var _available_perk_rerolls: int = 1
 
-var buildings_pool: Array[BuildingData] = [] # All buildings available in the game
-var buildings_pack: Array[BuildingData] = [] # Buildings available for selection on the buildings selection menu
-var selected_building: Array[CardUI] = [] # The building selected by the player
-var _available_building_packs: int = 0 # increment by 1 on turn end
-var _building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
 
 var selected_boons: Array[Boon] = []
-
-# Essence, each tile gives 1 essence of a specific type
-# var _nature_essence: int = 0
-# var _fire_essence: int = 0
-# var _frost_essence: int = 0
-# var _storm_essence: int = 0
 
 # Core game state getters and setters
 var current_year: int:
@@ -53,11 +53,17 @@ var gold_count: int:
 		_gold_count = max(0, value)
 		# look for potential perks/runes which could impact gold production or adding signals here if needed
 
-var food_count: int:
+var favor_count: int:
 	get:
-		return _food_count
+		return _favor_count
 	set(value):
-		_food_count = max(0, value) 
+		_favor_count = max(0, value) 
+
+var insight_count: int:
+	get:
+		return _insight_count
+	set(value):
+		_insight_count = max(0, value)
 
 var available_explores: int:
 	get:
@@ -72,19 +78,7 @@ var game_speed: float:
 		_game_speed = clamp(value, 1, 3.0)  # Limit speed between 1x and 3x
 		game_speed_changed.emit(_game_speed)
 
-# Perk and building related getters and setters
-var available_perks: int:
-	get:
-		return _available_perks
-	set(value):
-		_available_perks = max(0, value)
-
-var available_perk_rerolls: int:
-	get:
-		return _available_perk_rerolls
-	set(value):
-		_available_perk_rerolls = max(0, value)
-
+# Buildings
 var available_building_packs: int:
 	get:
 		return _available_building_packs
@@ -97,30 +91,33 @@ var building_reroll_cost: int:
 	set(value):
 		_building_reroll_cost = max(0, value)
 
-# Essence getters and setters
-# var nature_essence: int:
-# 	get:
-# 		return _nature_essence
-# 	set(value):
-# 		_nature_essence = max(0, value)
 
-# var fire_essence: int:
-# 	get:
-# 		return _fire_essence
-# 	set(value):
-# 		_fire_essence = max(0, value)
+# Runes
+var available_runes_packs: int:
+	get:
+		return _available_runes_packs
+	set(value):
+		_available_runes_packs = max(0, value)
 
-# var frost_essence: int:
-# 	get:
-# 		return _frost_essence
-# 	set(value):
-# 		_frost_essence = max(0, value)
+var runes_reroll_cost: int:
+	get:
+		return _runes_reroll_cost
+	set(value):
+		_runes_reroll_cost = max(0, value)
 
-# var storm_essence: int:
-# 	get:
-# 		return _storm_essence
-# 	set(value):
-# 		_storm_essence = max(0, value)
+# Perks
+var available_perks: int:
+	get:
+		return _available_perks
+	set(value):
+		_available_perks = max(0, value)
+
+var available_perk_rerolls: int:
+	get:
+		return _available_perk_rerolls
+	set(value):
+		_available_perk_rerolls = max(0, value)
+
 
 # Add a getter for the processing state
 var is_processing_turn: bool:
@@ -149,6 +146,7 @@ func _ready() -> void:
 		buildings_pool.append(building)
 
 	create_buildings_pack()
+	create_runes_pack()
 	create_perks_pack()
 
 	Events.turn_ended.connect(end_turn)
@@ -161,6 +159,7 @@ func finish_turn_processing() -> void:
 	_current_year += 1
 	available_perks += 1
 	available_building_packs += 1
+	available_runes_packs += 1
 	_available_explores = BASE_EXPLORES_PER_TURN
 	Events.turn_started.emit()
 
@@ -184,6 +183,13 @@ func create_buildings_pack() -> void:
 		for i in 3:
 			buildings_pack.append(shuffled_pool[i])
 
+func create_runes_pack() -> void:
+	if runes_pack.size() == 0:
+		var shuffled_pool := runes_pool.duplicate()
+		shuffled_pool.shuffle()
+
+		for i in 3:
+			runes_pack.append(shuffled_pool[i])
 
 func create_perks_pack() -> void:
 	if perks_pack.size() == 0:

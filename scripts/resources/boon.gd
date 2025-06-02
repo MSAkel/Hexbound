@@ -46,10 +46,10 @@ static func get_all_boons() -> Array[Boon]:
 	# boons.append(boon)
 	
 	boon = Boon.new()
-	boon.name = "Food Supply"
-	boon.description = "Start with 25 food"
+	boon.name = "Fan Favorite"
+	boon.description = "Start with 5 favor"
 	boon.cost = 1
-	boon.effect_type = "food"
+	boon.effect_type = "favor"
 	boons.append(boon)
 	
 	boon = Boon.new()

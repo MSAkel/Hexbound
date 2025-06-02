@@ -1,17 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://3m8epxmk57a1"]
+[gd_scene load_steps=3 format=3 uid="uid://bvgpjn58s2oj2"]
 
-[ext_resource type="Script" uid="uid://bwcids34r7ffl" path="res://scenes/ui/selection_item_ui.gd" id="1_3vtem"]
+[ext_resource type="Script" uid="uid://cf4yvi7qve36n" path="res://scenes/ui/perks/perk_selection_item.gd" id="1_7vmci"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_s45ql"]
 
-[node name="selectionItemGui" type="VBoxContainer"]
+[node name="PerkSelectionItem" type="VBoxContainer"]
 custom_minimum_size = Vector2(250, 0)
-offset_right = 40.0
-offset_bottom = 40.0
-script = ExtResource("1_3vtem")
+offset_right = 250.0
+offset_bottom = 441.0
+script = ExtResource("1_7vmci")
 
 [node name="IconPanel" type="Panel" parent="."]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(200, 150)
 layout_mode = 2
 
 [node name="Icon" type="TextureRect" parent="IconPanel"]
@@ -33,7 +33,7 @@ expand_mode = 1
 stretch_mode = 4
 
 [node name="TextPanel" type="Panel" parent="."]
-custom_minimum_size = Vector2(0, 300)
+custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TextPanel"]

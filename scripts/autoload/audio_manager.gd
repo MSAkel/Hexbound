@@ -12,9 +12,9 @@ var sfx_players: Array[AudioStreamPlayer] = []
 const MAX_SFX_PLAYERS = 8
 
 var current_music: AudioStream
-var music_volume: float = 1.0
-var sfx_volume: float = 1.0
-var ui_volume: float = 1.0
+var music_volume: float = 0.35
+var sfx_volume: float = 0.35
+var ui_volume: float = 0.35
 
 # Crossfade settings
 const CROSSFADE_DURATION = 1.0
@@ -115,19 +115,19 @@ func save_volume_settings() -> void:
 		"sfx_volume": sfx_volume,
 		"ui_volume": ui_volume
 	}
-	var save_file = FileAccess.open("user://audio_settings.save", FileAccess.WRITE)
+	var save_file = FileAccess.open("res://audio_settings.save", FileAccess.WRITE)
 	save_file.store_var(settings)
 
 # Load volume settings
 func load_volume_settings() -> void:
-	if FileAccess.file_exists("user://audio_settings.save"):
-		var save_file = FileAccess.open("user://audio_settings.save", FileAccess.READ)
+	if FileAccess.file_exists("res://audio_settings.save"):
+		var save_file = FileAccess.open("res://audio_settings.save", FileAccess.READ)
 		var settings = save_file.get_var()
 		
 		if settings is Dictionary:
-			music_volume = settings.get("music_volume", 1.0)
-			sfx_volume = settings.get("sfx_volume", 1.0)
-			ui_volume = settings.get("ui_volume", 1.0)
+			music_volume = settings.get("music_volume", 0.35)  # Use new defaults
+			sfx_volume = settings.get("sfx_volume", 0.35)     # Use new defaults
+			ui_volume = settings.get("ui_volume", 0.35)       # Use new defaults
 			
 			# Apply loaded settings
 			set_music_volume(music_volume)

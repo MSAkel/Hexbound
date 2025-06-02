@@ -4,7 +4,7 @@ extends Control
 @onready var choices_container: HBoxContainer = $Panel/ChoicesContainer
 @onready var reroll_button: Button = $Panel/RerollButton
 
-var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_ui.tscn")
+const PERK_SELECTION_ITEM = preload("res://scenes/ui/perks/perk_selection_item.tscn")
 
 func _ready() -> void:
 	hide()
@@ -36,7 +36,7 @@ func _on_reroll_button_pressed() -> void:
 func instantiate_perk_choices() -> void:
 	if choices_container.get_child_count() == 0:
 		for perk in GameManager.perks_pack:
-			var selectionItem: SelectionItemGui = selection_item_scene.instantiate() as SelectionItemGui
+			var selectionItem: PerkSelectionItem = PERK_SELECTION_ITEM.instantiate()
 			selectionItem.find_child("Icon").texture = perk.icon
 			selectionItem.find_child("Label").text = perk.perk_name
 			selectionItem.find_child("Description").text = perk.description

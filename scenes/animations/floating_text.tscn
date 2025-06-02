@@ -74,7 +74,7 @@ offset_right = 58.0
 offset_bottom = 22.3333
 grow_horizontal = 2
 grow_vertical = 2
-text = "+5 food"
+text = "+5 favor"
 
 [node name="Timer" type="Timer" parent="."]
 one_shot = true

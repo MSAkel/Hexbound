@@ -1,4 +1,4 @@
-class_name BuildingData
+class_name Building
 extends Resource
 
 enum BuildingType { FARM, WAREHOUSE, MINE, WINDMILL }

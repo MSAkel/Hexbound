@@ -1,56 +1,44 @@
-[gd_scene load_steps=2 format=3 uid="uid://dr6tgv52a40ou"]
+[gd_scene load_steps=6 format=3 uid="uid://dr6tgv52a40ou"]
 
-[ext_resource type="Script" uid="uid://of3a6xlmc8m0" path="res://scripts/building_selection_ui.gd" id="1_y7yt6"]
+[ext_resource type="Script" uid="uid://of3a6xlmc8m0" path="res://scenes/ui/buildings/building_selection_ui.gd" id="1_vx024"]
+[ext_resource type="Texture2D" uid="uid://wahnh8hhg3td" path="res://assets/gui/panel.png" id="2_vmd1t"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/close_button_normal.png" id="3_b3rtc"]
+[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/close_button_hover.png" id="4_i5tai"]
 
-[node name="BuildingSelectionUi" type="Control"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_swbo7"]
+texture = ExtResource("2_vmd1t")
+
+[node name="BuildingSelectionUI" type="Control"]
+z_index = 1
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 8
-mouse_filter = 2
-script = ExtResource("1_y7yt6")
-
-[node name="openBuildingSelectionButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -59.0
-offset_right = 222.0
-grow_vertical = 0
-text = "Select New Building"
+script = ExtResource("1_vx024")
 
 [node name="PanelContainer" type="MarginContainer" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -560.5
-offset_top = -315.0
-offset_right = 560.5
-offset_bottom = 315.0
+offset_left = -533.0
+offset_top = -258.0
+offset_right = 534.0
+offset_bottom = 258.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
 
 [node name="Panel" type="Panel" parent="PanelContainer"]
 layout_mode = 2
-
-[node name="TitleLabel" type="Label" parent="PanelContainer/Panel"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -43.0
-offset_right = 43.0
-offset_bottom = 22.3333
-grow_horizontal = 2
-text = "Select Building"
+theme_override_styles/panel = SubResource("StyleBoxTexture_swbo7")
 
 [node name="ChoicesContainer" type="HBoxContainer" parent="PanelContainer/Panel"]
 layout_mode = 1
@@ -67,15 +55,16 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 64
 
-[node name="CloseButton" type="Button" parent="PanelContainer/Panel"]
+[node name="CloseButton" type="TextureButton" parent="PanelContainer/Panel"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -8.0
-offset_bottom = 8.0
+offset_left = -32.0
+offset_bottom = 32.0
 grow_horizontal = 0
-text = "Close"
+texture_normal = ExtResource("3_b3rtc")
+texture_hover = ExtResource("4_i5tai")
 
 [node name="RerollButton" type="Button" parent="PanelContainer/Panel"]
 layout_mode = 1
@@ -84,13 +73,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -4.0
-offset_top = -8.0
-offset_right = 4.0
+offset_left = -47.5
+offset_top = -46.0
+offset_right = 51.5
+offset_bottom = -15.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Reroll (free)"
 
-[connection signal="pressed" from="openBuildingSelectionButton" to="." method="_on_open_building_selection_button_pressed"]
 [connection signal="pressed" from="PanelContainer/Panel/CloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="PanelContainer/Panel/RerollButton" to="." method="_on_reroll_button_pressed"]

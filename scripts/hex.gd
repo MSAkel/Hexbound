@@ -25,11 +25,11 @@ var _coordinates: Vector2i = Vector2i(0, 0)
 var explored: bool = false
 var active_rune: Rune
 var special_state: SpecialTileState = SpecialTileState.NONE
-var minerals: Array[MineralUI] = []
+# var minerals: Array[MineralUI] = []
 
 # References to UI elements
-var mineral_ui_scene: PackedScene
-var map: Node2D  # Reference to the HexTileMap
+# var mineral_ui_scene: PackedScene
+var map: HexTileMap
 
 
 var coordinates: Vector2i:
@@ -41,7 +41,7 @@ func _init(coords: Vector2i) -> void:
 
 func setup(map_ref: Node2D, mineral_scene: PackedScene) -> void:
 	map = map_ref
-	mineral_ui_scene = mineral_scene
+	#mineral_ui_scene = mineral_scene
 
 func on_explore() -> void:
 	pass
@@ -147,8 +147,8 @@ func explore() -> void:
 			# Update ruins button texture to show actual ruins icon
 			ruins.ruins_button.texture_normal = RUINS_POI_TEXTURE
 			
-		for mineral in minerals:
-			mineral.show()
+		#for mineral in minerals:
+			#mineral.show()
 			
 		GameManager.update_explored_tiles_list(self)
 

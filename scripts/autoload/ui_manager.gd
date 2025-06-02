@@ -3,6 +3,8 @@ extends CanvasLayer
 signal show_perks_panel
 signal show_runes_panel
 signal show_quests_panel
+signal show_buildings_choice_panel
+signal show_runes_choice_panel
 
 var active_panel: Control = null
 

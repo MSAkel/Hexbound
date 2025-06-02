@@ -1,26 +1,32 @@
 extends Control
 
-@onready var panel_container: MarginContainer = $PanelContainer
 @onready var choices_container: HBoxContainer = $PanelContainer/Panel/ChoicesContainer
 @onready var reroll_button: Button = $PanelContainer/Panel/RerollButton
 
-var selection_item_scene: PackedScene = preload("res://scenes/ui/selection_item_ui.tscn")
+const BUILDING_SELECTION_ITEM = preload("res://scenes/ui/buildings/building_selection_item.tscn")
 
 func _ready() -> void:
+	hide()
+	
+	UiManager.show_buildings_choice_panel.connect(_on_show_panel)
+	
+
 	reroll_button.text = "Reroll (%s)" % GameManager.building_reroll_cost
 	if GameManager.building_reroll_cost > GameManager.gold_count:
 		reroll_button.disabled = true
 	else:
 		reroll_button.disabled = false
-
-
-func _on_open_building_selection_button_pressed() -> void:
-	panel_container.show()
-	instantiate_building_choices()
 	
+	Events.building_selected.connect(func(_building: Building):
+		hide()	
+	)
+
+func _on_show_panel() -> void:
+	UiManager.show_panel(self)
+	instantiate_building_choices()
 
 func _on_close_button_pressed() -> void:
-	panel_container.hide()
+	hide()
 
 
 func _on_reroll_button_pressed() -> void:
@@ -41,10 +47,8 @@ func _on_reroll_button_pressed() -> void:
 func instantiate_building_choices() -> void:
 	if choices_container.get_child_count() == 0:
 		for building in GameManager.buildings_pack:
-			var selectionItem: SelectionItemGui = selection_item_scene.instantiate() as SelectionItemGui
-			selectionItem.find_child("Icon").texture = building.icon
-			selectionItem.find_child("Label").text = building.label
-			selectionItem.find_child("Description").text = building.description
+			var selectionItem: BuildingSelectionItem = BUILDING_SELECTION_ITEM.instantiate()
+			selectionItem.set_item(building)
 			choices_container.add_child(selectionItem)
 
 func clear_choices() -> void:

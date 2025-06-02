@@ -1,16 +1,24 @@
-class_name SelectionItemGui
+class_name RuneSelectionItem
 extends VBoxContainer
 
 @onready var icon: TextureRect = $IconPanel/Icon
 @onready var label: Label = $TextPanel/VBoxContainer/Label
 @onready var description: Label = $TextPanel/VBoxContainer/Description
 
-func set_item(item: Dictionary) -> void:
+var rune: Rune
+
+func set_item(item: Rune) -> void:
+	rune = item
+	
+	if not is_node_ready():
+		await ready
+
 	icon.texture = item.icon
-	label.text = item.label
+	label.text = item.name
 	description.text = item.description
 
+
 func _on_select_button_pressed() -> void:
-	GameManager.available_buidling_packs -= 1
-	# TODO instantiate building card
-	GameManager.buildings_pack.clear()
+	GameManager.available_runes_packs -= 1
+	GameManager.runes_pack.clear()
+	Events.rune_selected.emit(rune)

@@ -1,0 +1,70 @@
+extends Control
+
+@onready var choices_container: HBoxContainer = $Panel/MarginPanel/ChoicesContainer
+@onready var reroll_button: Button = $Panel/RerollButton
+
+
+const RUNE_SELECTION_ITEM = preload("res://scenes/ui/runes/rune_selection_item.tscn")
+
+func _ready() -> void:
+	hide()
+	
+	UiManager.show_runes_choice_panel.connect(_on_show_panel)
+	
+
+	reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
+	if GameManager.runes_reroll_cost > GameManager.gold_count:
+		reroll_button.disabled = true
+	else:
+		reroll_button.disabled = false
+	
+	Events.rune_selected.connect(func(_rune: Rune):
+		hide()	
+	)
+
+func _on_show_panel() -> void:
+	UiManager.show_panel(self)
+	instantiate_rune_choices()
+
+func _on_close_button_pressed() -> void:
+	hide()
+
+
+func _on_reroll_button_pressed() -> void:
+	if GameManager.runes_reroll_cost > GameManager.gold_count:
+		return
+
+	reroll_button.disabled = true
+	
+	await clear_choices()
+	GameManager.runes_pack.clear()
+	GameManager.create_runes_pack()
+	GameManager.runes_reroll_cost += 5
+	reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
+	instantiate_rune_choices()
+	
+	reroll_button.disabled = false
+
+func instantiate_rune_choices() -> void:
+	if choices_container.get_child_count() == 0:
+		for rune in GameManager.runes_pack:
+			var selectionItem: RuneSelectionItem = RUNE_SELECTION_ITEM.instantiate()
+			selectionItem.set_item(rune)
+			choices_container.add_child(selectionItem)
+
+func clear_choices() -> void:
+	for node in choices_container.get_children():
+		animate_and_free(node)
+
+	# Ensure the node queue is flushed before continuing.
+	while choices_container.get_child_count() > 0:
+		await get_tree().process_frame
+
+func animate_and_free(node: Node) -> void:
+	if node.has_method("fade_out"):
+		node.fade_out()
+	else:
+		node.modulate = Color(1, 1, 1, 1)
+		var tween := create_tween()
+		tween.tween_property(node, "modulate:a", 0.0, 0.3)
+		tween.tween_callback(Callable(node, "queue_free"))
