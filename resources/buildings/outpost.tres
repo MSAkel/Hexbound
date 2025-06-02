@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Building" load_steps=3 format=3 uid="uid://bprl1w1vg13sh"]
+
+[ext_resource type="Texture2D" uid="uid://c7irx1x3u4pnc" path="res://assets/icons/buildings/outpost.png" id="1_28qev"]
+[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building.gd" id="2_r3ho6"]
+
+[resource]
+script = ExtResource("2_r3ho6")
+id = "outpost"
+name = "Outpost"
+icon = ExtResource("1_28qev")
+description = "Increase available explores by 1 per turn"
+type = 2
+metadata/_custom_type_script = "uid://byuy57newj5vi"

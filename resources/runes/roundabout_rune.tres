@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Rune" load_steps=3 format=3 uid="uid://bm8aa53wj5x6e"]
+
+[ext_resource type="Texture2D" uid="uid://j7ewxkg3i3qk" path="res://assets/icons/runes/frostlink_rune.png" id="1_51moe"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/rune.gd" id="2_7aq06"]
+
+[resource]
+script = ExtResource("2_7aq06")
+id = "roundabout_rune"
+name = "Roundabout Rune"
+icon = ExtResource("1_51moe")
+description = "Triggers all adjacent tiles"
+selected = false
+rarity = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

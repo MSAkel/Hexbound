@@ -5,14 +5,10 @@
 
 [resource]
 script = ExtResource("2_2afof")
-id = "bounty_rune"
-name = "Bounty Rune"
+id = "basic_run"
+name = "Basic Rune"
 icon = ExtResource("1_ghh1x")
-description = "Infuses the land with abundance, amplifying its natural rewards. Increase all yields on this tile by 25%"
+description = "Triggers the tile which it is placed on once."
 selected = false
 rarity = 0
-fire_essence_cost = 0
-nature_essence_cost = 1
-frost_essence_cost = 0
-storm_essence_cost = 0
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

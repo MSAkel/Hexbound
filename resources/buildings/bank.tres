@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Building" load_steps=3 format=3 uid="uid://deb1u0q0rx5rn"]
+
+[ext_resource type="Texture2D" uid="uid://hbjc4ga56goh" path="res://assets/icons/buildings/bank.png" id="1_vvlop"]
+[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building.gd" id="2_gbapa"]
+
+[resource]
+script = ExtResource("2_gbapa")
+id = "bank"
+name = "Bank"
+icon = ExtResource("1_vvlop")
+description = "Generates 5 gold on trigger"
+type = 2
+metadata/_custom_type_script = "uid://byuy57newj5vi"

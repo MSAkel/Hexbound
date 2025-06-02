@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Building" load_steps=3 format=3 uid="uid://kfn8nsp26ycc"]
+
+[ext_resource type="Texture2D" uid="uid://b7ficn0l1sjo3" path="res://assets/icons/buildings/library.png" id="1_p7mja"]
+[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building.gd" id="2_5o4iu"]
+
+[resource]
+script = ExtResource("2_5o4iu")
+id = "library"
+name = "Library"
+icon = ExtResource("1_p7mja")
+description = "Generates 3 insight on trigger"
+type = 2
+metadata/_custom_type_script = "uid://byuy57newj5vi"

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://63hun0yuf2p6"
-path="res://.godot/imported/windmill.png-6dd491bc186ed27b46b0941743230247.ctex"
+uid="uid://b4uuh6c13coyt"
+path="res://.godot/imported/vault.png-966ba75fbf2b27ed3041c9429c971cee.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/buildings/windmill.png"
-dest_files=["res://.godot/imported/windmill.png-6dd491bc186ed27b46b0941743230247.ctex"]
+source_file="res://assets/icons/buildings/vault.png"
+dest_files=["res://.godot/imported/vault.png-966ba75fbf2b27ed3041c9429c971cee.ctex"]
 
 [params]
 

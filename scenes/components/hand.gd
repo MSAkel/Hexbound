@@ -5,8 +5,8 @@ extends HBoxContainer
 var cards_played := 0
 
 const CARD_UI_SCENE := preload("res://scenes/ui/cards/card_ui.tscn")
-const FARM_RESOURCE := preload("res://resources/buildings/farm.tres")
-const MINE_RESOURCE := preload("res://resources/buildings/mine.tres")
+const BANK = preload("res://resources/buildings/bank.tres")
+const MINE = preload("res://resources/buildings/mine.tres")
 
 # Reparent cards to hand when they are dragged or released
 func _ready() -> void:
@@ -14,8 +14,8 @@ func _ready() -> void:
 		cards_played += 1
 	)
 
-	add_building_card(FARM_RESOURCE)
-	add_building_card(MINE_RESOURCE)
+	add_building_card(BANK)
+	add_building_card(MINE)
 
 	var random_rune: Rune = GameManager.runes_pool.pick_random() as Rune
 	add_rune_card(random_rune)

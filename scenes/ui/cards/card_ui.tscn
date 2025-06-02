@@ -2,7 +2,6 @@
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
-[ext_resource type="Texture2D" uid="uid://ciq6s7cv7ulak" path="res://assets/icons/buildings/farm.png" id="3_o6pyt"]
 [ext_resource type="Texture2D" uid="uid://b30toi1ahc1f" path="res://assets/gui/card.png" id="3_usd0r"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
@@ -14,6 +13,9 @@
 texture = ExtResource("3_usd0r")
 
 [sub_resource type="LabelSettings" id="LabelSettings_o6pyt"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_o6pyt"]
+load_path = "res://.godot/imported/farm.png-e62703ed1667b07b74ed84065e4ebec5.ctex"
 
 [sub_resource type="LabelSettings" id="LabelSettings_usd0r"]
 font_size = 14
@@ -63,7 +65,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
 mouse_filter = 2
-texture = ExtResource("3_o6pyt")
+texture = SubResource("CompressedTexture2D_o6pyt")
 expand_mode = 1
 stretch_mode = 5
 

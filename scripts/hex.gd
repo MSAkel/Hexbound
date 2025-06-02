@@ -56,18 +56,6 @@ func setup(map_ref: Node2D) -> void:
 	items_grid.add_theme_constant_override("separation", 12)  # Add spacing between items
 	map.add_child(items_grid)
 
-func on_explore() -> void:
-	pass
-	#if explored:
-		#match terrain_type:
-			#TerrainType.FIELDS:
-				#GameManager.fire_essence += 1
-			#TerrainType.FOREST:
-				#GameManager.nature_essence += 1
-			#TerrainType.MOUNTAIN:
-				#GameManager.storm_essence += 1
-			#TerrainType.SNOW:
-				#GameManager.ice_essence += 1
 
 func place_building(building: Building) -> void:
 	active_building = building
@@ -168,6 +156,7 @@ func _reposition_items() -> void:
 	# Position items in a center-out pattern
 	for i in range(items.size()):
 		var item = items[i]
+		@warning_ignore("integer_division")
 		var row = i / 2
 		var col = i % 2
 		
@@ -176,6 +165,7 @@ func _reposition_items() -> void:
 		var y_offset = (row - 0.5) * (item_size + spacing)
 		
 		# Set the item's position
+		@warning_ignore("integer_division")
 		item.position = Vector2(
 			center_x + x_offset - item_size/2,
 			center_y + y_offset - item_size/2
@@ -184,7 +174,7 @@ func _reposition_items() -> void:
 func explore() -> void:
 	if not explored:
 		explored = true
-		on_explore()
+		#on_explore()
 		
 		if curse != null:
 			curse.curse_button.disabled = false
@@ -232,6 +222,19 @@ func generate_gold() -> int:
 	const BASE_GOLD_PRODUCTION: int = 5
 	GameManager.gold_count += BASE_GOLD_PRODUCTION
 	return BASE_GOLD_PRODUCTION
+
+
+# func on_explore() -> void:
+	#if explored:
+		#match terrain_type:
+			#TerrainType.FIELDS:
+				#GameManager.fire_essence += 1
+			#TerrainType.FOREST:
+				#GameManager.nature_essence += 1
+			#TerrainType.MOUNTAIN:
+				#GameManager.storm_essence += 1
+			#TerrainType.SNOW:
+				#GameManager.ice_essence += 1
 
 
 # func produce_mineral(mineral_ui: MineralUI) -> int:

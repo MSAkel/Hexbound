@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cx6ylqxhlrr7r"
-path="res://.godot/imported/warehouse.png-0373ff367a73a7ffeb09586fdc3543e3.ctex"
+uid="uid://hbjc4ga56goh"
+path="res://.godot/imported/bank.png-e762c7d6d6e4357e629fee5ec3fa9bb0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/buildings/warehouse.png"
-dest_files=["res://.godot/imported/warehouse.png-0373ff367a73a7ffeb09586fdc3543e3.ctex"]
+source_file="res://assets/icons/buildings/bank.png"
+dest_files=["res://.godot/imported/bank.png-e762c7d6d6e4357e629fee5ec3fa9bb0.ctex"]
 
 [params]
 
