@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://bx41mm8c4uc65"]
+
+[ext_resource type="Texture2D" uid="uid://byn3oom4bieln" path="res://assets/icons/events/unexplored_poi.png" id="1_w1csy"]
+[ext_resource type="Script" uid="uid://tikps2crwy1r" path="res://scenes/events/unexplored_poi.gd" id="1_wnn05"]
+
+[node name="UnexploredPOI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wnn05")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+custom_minimum_size = Vector2(45, 45)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Icon" type="TextureRect" parent="CenterContainer"]
+layout_mode = 2
+texture = ExtResource("1_w1csy")

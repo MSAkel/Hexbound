@@ -10,4 +10,5 @@ name = "Outpost"
 icon = ExtResource("1_28qev")
 description = "Increase available explores by 1 per turn"
 type = 2
+generation_amount = 0
 metadata/_custom_type_script = "uid://byuy57newj5vi"

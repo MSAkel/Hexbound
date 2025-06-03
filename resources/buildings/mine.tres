@@ -9,5 +9,6 @@ id = "mine"
 name = "Mine"
 icon = ExtResource("1_l7pyc")
 description = "Generates3 minerals on trigger"
-type = 2
+type = 0
+generation_amount = 0
 metadata/_custom_type_script = "uid://byuy57newj5vi"

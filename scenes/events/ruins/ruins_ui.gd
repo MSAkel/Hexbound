@@ -1,11 +1,10 @@
 class_name RuinsUI
 extends Control
 
-@onready var ruins_name: Label = $Container/DescriptionPanel/VBoxContainer/RuinsName
-@onready var icon: TextureRect = $Container/DescriptionPanel/VBoxContainer/Icon
-@onready var description: Label = $Container/DescriptionPanel/VBoxContainer/Description
-@onready var explore_button: Button = $Container/DescriptionPanel/VBoxContainer/ExploreButton
 @onready var description_panel: Panel = $Container/DescriptionPanel
+@onready var ruins_name: Label = $Container/DescriptionPanel/MarginContainer/VBoxContainer/RuinsName
+@onready var description: Label = $Container/DescriptionPanel/MarginContainer/VBoxContainer/Description
+@onready var explore_button: Button = $Container/DescriptionPanel/MarginContainer/VBoxContainer/ExploreButton
 @onready var ruins_button: TextureButton = $Container/RuinsButton
 
 var map: HexTileMap

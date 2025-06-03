@@ -15,6 +15,9 @@ func _ready() -> void:
 	Events.building_selected.connect(update_buildings_count)
 	Events.rune_selected.connect(update_runes_count)
 
+	# Events.turn_started.connect(update_buildings_count)
+	# Events.turn_started.connect(update_runes_count)
+
 func _on_buildings_panel_button_pressed() -> void:
 	UiManager.show_buildings_choice_panel.emit()
 

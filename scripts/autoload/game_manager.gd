@@ -5,11 +5,11 @@ signal game_speed_changed(new_speed: float)
 
 
 const BASE_EXPLORES_PER_TURN := 1
-const MAX_EXPLORES := 3
+const MAX_EXPLORES := 5
 
 var _current_year := 1
 
-var _gold_count := 500
+var _gold_count := 0
 var _favor_count := 0
 var _insight_count := 0
 
@@ -168,7 +168,10 @@ func update_explored_tiles_list(h: Hex) -> void:
 	explored_tiles.sort_custom(func(a, b):
 		var ca = a._coordinates
 		var cb = b._coordinates
-		return ca.y == cb.y if ca.x < cb.x else ca.y < cb.y
+		# First sort by y (row), then by x (column)
+		if ca.y != cb.y:
+			return ca.y < cb.y
+		return ca.x < cb.x
 	)
 
 

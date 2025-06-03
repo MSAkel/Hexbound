@@ -1,8 +1,8 @@
 class_name CurseUI
 extends Control
 
-@onready var curse_panel: Panel = $HBoxContainer/CursePanel
-@onready var curse_button: TextureButton = $HBoxContainer/CurseButton
+@onready var curse_panel: Panel = $Container/CursePanel
+@onready var curse_button: TextureButton = $Container/CurseButton
 
 var map: HexTileMap
 var center_coordinates: Vector2i

@@ -1,33 +1,34 @@
-[gd_scene load_steps=4 format=3 uid="uid://kpxwpid0wq2v"]
+[gd_scene load_steps=10 format=3 uid="uid://kpxwpid0wq2v"]
 
 [ext_resource type="Script" uid="uid://h4dr23y4fi1k" path="res://scenes/events/curse/curse_ui.gd" id="1_blmy0"]
+[ext_resource type="Texture2D" uid="uid://dnn6eox3kyyy5" path="res://assets/gui/frames/frame_square.png" id="2_75vbr"]
 [ext_resource type="Texture2D" uid="uid://cadutpr4x30t0" path="res://assets/icons/events/curse.png" id="2_bh7aq"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="3_7srij"]
+[ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="3_oqb85"]
+[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="4_h0fn2"]
+[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="5_oqb85"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fnxol"]
-atlas = ExtResource("2_bh7aq")
+atlas = ExtResource("2_75vbr")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7srij"]
+texture = ExtResource("5_oqb85")
 
 [node name="CurseUI" type="Control"]
 layout_mode = 3
+anchors_preset = 0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 script = ExtResource("1_blmy0")
-metadata/_edit_use_anchors_ = true
 
-[node name="HBoxContainer" type="Panel" parent="."]
+[node name="Container" type="Panel" parent="."]
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
 offset_right = 400.0
 offset_bottom = 425.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
 
-[node name="CurseButton" type="TextureButton" parent="HBoxContainer"]
+[node name="CurseButton" type="TextureButton" parent="Container"]
 layout_mode = 1
 offset_right = 60.0
 offset_bottom = 60.0
@@ -38,45 +39,81 @@ texture_normal = SubResource("AtlasTexture_fnxol")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="CursePanel" type="Panel" parent="HBoxContainer"]
-visible = false
-z_index = 1
-custom_minimum_size = Vector2(200, 200)
-layout_mode = 2
-offset_left = 76.0
-offset_right = 276.0
-offset_bottom = 100.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/CursePanel"]
+[node name="Background" type="TextureRect" parent="Container/CurseButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
 grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_oqb85")
+expand_mode = 1
+
+[node name="Icon" type="TextureRect" parent="Container/CurseButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -27.0
+offset_top = -27.0
+offset_right = 27.0
+offset_bottom = 27.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bh7aq")
+expand_mode = 1
+
+[node name="CursePanel" type="Panel" parent="Container"]
+visible = false
+z_index = 1
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -337.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_7srij")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Container/CursePanel"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -321.0
+offset_top = 22.0
+offset_right = -23.0
+offset_bottom = -26.0
+grow_horizontal = 0
 grow_vertical = 2
 theme_override_constants/separation = 16
 
-[node name="Name" type="Label" parent="HBoxContainer/CursePanel/VBoxContainer"]
+[node name="Name" type="Label" parent="Container/CursePanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Description" type="Label" parent="Container/CursePanel/VBoxContainer"]
 layout_mode = 2
 
-[node name="Icon" type="TextureRect" parent="HBoxContainer/CursePanel/VBoxContainer"]
-custom_minimum_size = Vector2(32, 32)
-layout_mode = 2
-size_flags_horizontal = 4
-expand_mode = 1
-
-[node name="Description" type="Label" parent="HBoxContainer/CursePanel/VBoxContainer"]
-layout_mode = 2
-
-[node name="CloseButton" type="Button" parent="HBoxContainer/CursePanel"]
+[node name="CloseButton" type="TextureButton" parent="Container/CursePanel"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -8.0
-offset_bottom = 8.0
+offset_left = -32.0
+offset_bottom = 32.0
 grow_horizontal = 0
-text = "Close"
+texture_normal = ExtResource("3_7srij")
+texture_hover = ExtResource("4_h0fn2")
 
-[connection signal="pressed" from="HBoxContainer/CurseButton" to="." method="_on_curse_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/CursePanel/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="Container/CurseButton" to="." method="_on_curse_button_pressed"]
+[connection signal="pressed" from="Container/CursePanel/CloseButton" to="." method="_on_close_button_pressed"]

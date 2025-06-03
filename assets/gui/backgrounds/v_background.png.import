@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cf4flimdwgrgo"
-path="res://.godot/imported/square_borderless.png-ee9fd0388fcf333ad51387c2e355e0d2.ctex"
+uid="uid://dg40s04djnxbs"
+path="res://.godot/imported/v_background.png-6798937ea166fa7ee4384c53026cf7e4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/panels/square_borderless.png"
-dest_files=["res://.godot/imported/square_borderless.png-ee9fd0388fcf333ad51387c2e355e0d2.ctex"]
+source_file="res://assets/gui/backgrounds/v_background.png"
+dest_files=["res://.godot/imported/v_background.png-6798937ea166fa7ee4384c53026cf7e4.ctex"]
 
 [params]
 

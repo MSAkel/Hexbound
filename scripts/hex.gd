@@ -15,6 +15,7 @@ var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
 const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 const BUILDING_UI: PackedScene = preload("res://scenes/ui/buildings/building_ui.tscn")
+const UNEXPLORED_POI: PackedScene = preload("res://scenes/events/unexplored_poi.tscn")
 
 const UNEXPLORED_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/unexplored_poi.png")
 const CURSE_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/curse.png")
@@ -113,8 +114,13 @@ func apply_special_state() -> void:
 			
 			# Set unexplored POI texture if tile is not explored
 			if not explored:
-				curse_instance.curse_button.texture_normal = UNEXPLORED_POI_TEXTURE
-				curse_instance.curse_button.disabled = true
+				var unexplore_poi: UnexploredPOI = UNEXPLORED_POI.instantiate()
+				unexplore_poi.map = map
+				unexplore_poi.center_coordinates = coordinates
+				unexplore_poi.tile = self
+				unexplore_poi.position = map.base_layer.map_to_local(coordinates)
+				map.add_child(unexplore_poi)
+				curse_instance.curse_button.hide()
 		# SpecialTileState.ENCAMPMENT:
 		# 	# TODO: Implement encampment logic
 		# 	pass
@@ -136,8 +142,13 @@ func apply_special_state() -> void:
 			
 			# Set unexplored POI texture if tile is not explored
 			if not explored:
-				ruins_instance.ruins_button.texture_normal = UNEXPLORED_POI_TEXTURE
-				ruins_instance.ruins_button.disabled = true
+				var unexplore_poi: UnexploredPOI = UNEXPLORED_POI.instantiate()
+				unexplore_poi.map = map
+				unexplore_poi.center_coordinates = coordinates
+				unexplore_poi.tile = self
+				unexplore_poi.position = map.base_layer.map_to_local(coordinates)
+				map.add_child(unexplore_poi)
+				ruins_instance.ruins_button.hide()
 
 # Helper function to reposition items in a center-out pattern
 func _reposition_items() -> void:
@@ -176,15 +187,18 @@ func explore() -> void:
 		explored = true
 		#on_explore()
 		
+		# Remove any unexplored POI
+		for child in map.get_children():
+			if child is UnexploredPOI and child.tile == self:
+				child.queue_free()
+		
 		if curse != null:
 			curse.curse_button.disabled = false
-			# Update curse button texture to show actual curse icon
-			curse.curse_button.texture_normal = CURSE_POI_TEXTURE
+			curse.curse_button.show()
 		
 		if ruins != null:
 			ruins.ruins_button.disabled = false
-			# Update ruins button texture to show actual ruins icon
-			ruins.ruins_button.texture_normal = RUINS_POI_TEXTURE
+			ruins.ruins_button.show()
 			
 		#for mineral in minerals:
 			#mineral.show()

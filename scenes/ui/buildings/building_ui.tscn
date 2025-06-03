@@ -1,12 +1,14 @@
-[gd_scene load_steps=4 format=3 uid="uid://cnjgxekb2mmyq"]
+[gd_scene load_steps=6 format=3 uid="uid://cnjgxekb2mmyq"]
 
 [ext_resource type="Script" uid="uid://4kh42kgoojvu" path="res://scenes/ui/buildings/building_ui.gd" id="1_knqie"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_hqma5"]
+[ext_resource type="Texture2D" uid="uid://7ll5nygn8c60" path="res://assets/icons/buildings/mine.png" id="2_knqie"]
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_o6pyt"]
-load_path = "res://.godot/imported/farm.png-e62703ed1667b07b74ed84065e4ebec5.ctex"
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ogpk8"]
+texture = ExtResource("2_hqma5")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0nadc"]
-atlas = SubResource("CompressedTexture2D_o6pyt")
+atlas = ExtResource("2_knqie")
 
 [node name="BuildingUI" type="Control"]
 layout_mode = 3
@@ -20,18 +22,22 @@ grow_vertical = 2
 script = ExtResource("1_knqie")
 
 [node name="Container" type="Panel" parent="."]
-self_modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 offset_right = 63.0
 offset_bottom = 62.0
 scale = Vector2(1.00413, 1)
 mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_ogpk8")
 
 [node name="BuildingButton" type="TextureButton" parent="Container"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 0

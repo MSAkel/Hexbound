@@ -9,5 +9,6 @@ id = "library"
 name = "Library"
 icon = ExtResource("1_p7mja")
 description = "Generates 3 insight on trigger"
-type = 2
+type = 1
+generation_amount = 3
 metadata/_custom_type_script = "uid://byuy57newj5vi"
