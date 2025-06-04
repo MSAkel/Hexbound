@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://75r28cr8odvi"]
+
+[ext_resource type="Texture2D" uid="uid://dn712qvjmb5oi" path="res://assets/icons/runes/endless_banks_rune.png" id="1_vbiyf"]
+[ext_resource type="Script" uid="uid://ce7pua8a2fky1" path="res://resources/runes/endless_banks_rune.gd" id="2_2gapd"]
+
+[resource]
+script = ExtResource("2_2gapd")
+id = "endless_banks_rune"
+name = "Endless Banks Rune"
+icon = ExtResource("1_vbiyf")
+description = "Triggers every adjacent tile with a bank. Does not trigger the tile it is placed on"
+selected = false
+rarity = 0
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

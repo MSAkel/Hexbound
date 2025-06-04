@@ -22,3 +22,4 @@ func _on_select_button_pressed() -> void:
 	GameManager.available_building_packs -= 1
 	GameManager.buildings_pack.clear()
 	Events.building_selected.emit(building)
+	Events.building_pack_count_changed.emit()

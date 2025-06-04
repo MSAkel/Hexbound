@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="Rune" load_steps=3 format=3 uid="uid://c6166vff2aceq"]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://c6166vff2aceq"]
 
-[ext_resource type="Texture2D" uid="uid://c5ycbh2munv3d" path="res://assets/icons/runes/vault_rune.png" id="1_633p5"]
-[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/rune.gd" id="2_4mh2v"]
+[ext_resource type="Texture2D" uid="uid://c5ycbh2munv3d" path="res://assets/icons/runes/library_rune.png" id="1_633p5"]
+[ext_resource type="Script" uid="uid://c1tf3dt2yq0t2" path="res://resources/runes/library_rune.gd" id="2_4mh2v"]
 
 [resource]
 script = ExtResource("2_4mh2v")
-id = "library_run"
+id = "library_rune"
 name = "Library Rune"
 icon = ExtResource("1_633p5")
-description = "Triggers the tile which it is placed if it has a library on it. Causes the library on this tile to generate an additional Insight"
+description = "Triggers the tile which it is placed if it has a library. Causes the library on this tile to generate an additional Insight"
 selected = false
 rarity = 0
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

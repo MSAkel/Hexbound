@@ -5,9 +5,6 @@ extends Node
 # ENCAMPMENT: Occupoed by a camp. Can be resolved through bargain
 # RUINS: ?
 enum SpecialTileState { NONE, CURSED, ENCAMPMENT, RUINS }
-# Instead of the map being a mix of tiles of types, the terrian type would determine the entire map type
-# which would determine what resources appear on the map
-# Example: Forest map would have a high wood weight
 enum TerrainType { FIELDS, FOREST, MOUNTAIN, SNOW, WATER, SWAMP }
 
 # Special events UI
@@ -44,6 +41,7 @@ var coordinates: Vector2i:
 func _init(coords: Vector2i) -> void:
 	_coordinates = coords
 
+
 func setup(map_ref: Node2D) -> void:
 	map = map_ref
 	# Create grid container for items
@@ -76,6 +74,10 @@ func place_building(building: Building) -> void:
 	items_grid.add_child(new_building_instance)
 	_reposition_items()
 
+	if building.passive:
+		building.activate_passive()
+
+
 func place_rune(rune: Rune) -> void:
 	active_rune = rune
 	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
@@ -93,6 +95,7 @@ func place_rune(rune: Rune) -> void:
 	# Add to grid instead of directly to map
 	items_grid.add_child(new_rune_instance)
 	_reposition_items()
+
 
 func apply_special_state() -> void:
 	match special_state:
@@ -182,6 +185,7 @@ func _reposition_items() -> void:
 			center_y + y_offset - item_size/2
 		)
 
+
 func explore() -> void:
 	if not explored:
 		explored = true
@@ -199,15 +203,19 @@ func explore() -> void:
 		if ruins != null:
 			ruins.ruins_button.disabled = false
 			ruins.ruins_button.show()
-			
-		#for mineral in minerals:
-			#mineral.show()
-			
+
 		GameManager.update_explored_tiles_list(self)
 
-func create_resource_animation(resource_type: String, amount: int, vertical_offset: int) -> void:
+
+func _create_scale_animation(sprite: Sprite2D, duration: float) -> void:
+	var tween = sprite.create_tween()
+	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), duration)
+	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), duration)
+	tween.tween_callback(sprite.queue_free)
+
+
+func _create_resource_animation(resource_type: String, amount: int, vertical_offset: int) -> void:
 	var tile_pos = map.base_layer.map_to_local(coordinates)
-	
 	# Create and animate tile sprite
 	var sprite = Sprite2D.new()
 	var atlas_source = map.base_layer.tile_set.get_source(0) as TileSetAtlasSource
@@ -220,70 +228,19 @@ func create_resource_animation(resource_type: String, amount: int, vertical_offs
 	sprite.centered = true
 	sprite.self_modulate.a = 0.5
 	map.base_layer.add_sibling(sprite, true)
-	
+
 	# Calculate animation duration based on current game speed
 	var animation_duration := 0.1 / GameManager.game_speed
-	create_scale_animation(sprite, animation_duration)
-	map.create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [amount, resource_type], resource_type == "gold")
-
-func create_scale_animation(sprite: Sprite2D, duration: float) -> void:
-	var tween = sprite.create_tween()
-	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), duration)
-	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), duration)
-	tween.tween_callback(sprite.queue_free)
-
-func generate_gold() -> int:
-	const BASE_GOLD_PRODUCTION: int = 5
-	GameManager.gold_count += BASE_GOLD_PRODUCTION
-	return BASE_GOLD_PRODUCTION
-
-
-# func on_explore() -> void:
-	#if explored:
-		#match terrain_type:
-			#TerrainType.FIELDS:
-				#GameManager.fire_essence += 1
-			#TerrainType.FOREST:
-				#GameManager.nature_essence += 1
-			#TerrainType.MOUNTAIN:
-				#GameManager.storm_essence += 1
-			#TerrainType.SNOW:
-				#GameManager.ice_essence += 1
-
-
-# func produce_mineral(mineral_ui: MineralUI) -> int:
-# 	if mineral_ui.mineral.type == Mineral.Type.BERRIES:
-# 		return 5
-# 	elif mineral_ui.mineral.type == Mineral.Type.WOOL:
-# 		return 3
-# 	elif mineral_ui.mineral.type == Mineral.Type.STONE:
-# 		return 3
-# 	elif mineral_ui.mineral.type == Mineral.Type.WOOD:
-# 		return 5
+	_create_scale_animation(sprite, animation_duration)
+	map.create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [amount, resource_type], resource_type == "Gold")
 	
-# 	return 5
+# Called by the rune after its effect is triggered
+func trigger_building_generation() -> void:
+	for resource in active_building.resource_type:
+		var total_amount = active_building.generation_amount + active_building.temporary_boost
+		_create_resource_animation(resource, total_amount, 0)
+	active_building.trigger_building()
 
-# Generate minerals UI scene which will be available and displayed on the tile
-# func generate_minerals(available_minerals: Array[Mineral]) -> void:
-# 	if terrain_type == TerrainType.WATER:
-# 		return
-		
-# 	available_minerals.shuffle()
-# 	var tile_minerals: Array[Mineral] = available_minerals.slice(0, 2)
-	
-# 	for i in tile_minerals.size():
-# 		var mineral = tile_minerals[i]
-# 		var mineral_ui: MineralUI = mineral_ui_scene.instantiate() as MineralUI
-# 		mineral_ui.map = map
-# 		mineral_ui.center_coordinates = coordinates
-# 		mineral_ui.tile = self
-# 		minerals.append(mineral_ui)
-		
-# 		# Base position on the tile
-# 		var base_pos = map.base_layer.map_to_local(coordinates)
-# 		var offset = Vector2((i - (tile_minerals.size() - 1) / 2.0) * 72, -32)
-# 		mineral_ui.position = base_pos + offset
-		
-# 		mineral_ui.set_mineral(mineral)
-# 		map.add_child(mineral_ui)
-# 		mineral_ui.hide()
+
+func trigger_rune_activation() -> void:
+	active_rune.activate_rune(self)

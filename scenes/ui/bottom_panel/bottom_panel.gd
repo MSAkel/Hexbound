@@ -12,16 +12,13 @@ func _ready() -> void:
 	building_count_label.text = str(GameManager.available_building_packs)
 	rune_count_label.text = str(GameManager.available_runes_packs)
 
-	Events.building_selected.connect(update_buildings_count)
-	Events.rune_selected.connect(update_runes_count)
-
-	# Events.turn_started.connect(update_buildings_count)
-	# Events.turn_started.connect(update_runes_count)
+	Events.building_pack_count_changed.connect(_update_buildings_count)
+	Events.rune_pack_count_changed.connect(_update_runes_count)
 
 func _on_buildings_panel_button_pressed() -> void:
 	UiManager.show_buildings_choice_panel.emit()
 
-func update_buildings_count(_building: Building) -> void:
+func _update_buildings_count() -> void:
 	building_count_label.text = str(GameManager.available_building_packs)
 
 	if GameManager.available_building_packs > 0:
@@ -30,13 +27,14 @@ func update_buildings_count(_building: Building) -> void:
 		buildings_panel_button.disabled = true
 
 
-func _on_runes_panel_button_pressed() -> void:
-	UiManager.show_runes_choice_panel.emit()
-
-func update_runes_count(_rune: Rune) -> void:
+func _update_runes_count() -> void:
 	rune_count_label.text = str(GameManager.available_runes_packs)
 
 	if GameManager.available_runes_packs > 0:
 		runes_panel_button.disabled = false
 	else:
 		runes_panel_button.disabled = true
+
+
+func _on_runes_panel_button_pressed() -> void:
+	UiManager.show_runes_choice_panel.emit()

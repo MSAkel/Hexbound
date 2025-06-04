@@ -290,67 +290,19 @@ func map_to_local(coords: Vector2i) -> Vector2i:
 
 func on_turn_ended():
 	var base_delay_interval := 0.5
-	var vertical_offset := 0
 
 	# Process rune effects first, one tile at a time
 	for tile in GameManager.explored_tiles:
 		if tile.active_rune != null:
 			# Calculate delay interval for each tile to respect current game speed
 			var delay_interval := base_delay_interval / GameManager.game_speed
-			
-			# Process rune effect based on rune type
-			match tile.active_rune.id:
-				"basic_run":
-					# Basic rune triggers its own tile
-					if tile.active_building != null:
-						_process_building_generation(tile, vertical_offset)
-						await get_tree().create_timer(delay_interval).timeout
-				"roundabout_rune":
-					# Roundabout rune triggers all adjacent tiles
-					var surrounding_tiles = base_layer.get_surrounding_cells(tile.coordinates)
-					for coords in surrounding_tiles:
-						if map_data.has(coords):
-							var surrounding_hex = map_data[coords]
-							if surrounding_hex.active_building != null:
-								_process_building_generation(surrounding_hex, vertical_offset)
-								await get_tree().create_timer(delay_interval).timeout
-				"library_run":
-					# Library rune triggers library buildings
-					if tile.active_building != null and tile.active_building.type == Building.BuildingType.LIBRARY:
-						_process_building_generation(tile, vertical_offset)
-						await get_tree().create_timer(delay_interval).timeout
-				"endless_vaults_rune":
-					# Endless vaults rune triggers adjacent vaults
-					var surrounding_tiles = base_layer.get_surrounding_cells(tile.coordinates)
-					for coords in surrounding_tiles:
-						if map_data.has(coords):
-							var surrounding_hex = map_data[coords]
-							if surrounding_hex.active_building != null and surrounding_hex.active_building.type == Building.BuildingType.VAULT:
-								_process_building_generation(surrounding_hex, vertical_offset)
-								await get_tree().create_timer(delay_interval).timeout
-			
-			# Reset vertical offset after each tile's effects are complete
-			vertical_offset = 0
-	
+
+			tile.trigger_rune_activation()
+			await get_tree().create_timer(delay_interval).timeout
+					
 	# Signal that turn processing is complete
 	GameManager.finish_turn_processing()
 
-# Helper function to process building generation
-func _process_building_generation(tile: Hex, vertical_offset: int) -> void:
-	match tile.active_building.type:
-		Building.BuildingType.MINE:
-			tile.create_resource_animation("minerals", tile.active_building.generation_amount, vertical_offset)
-		Building.BuildingType.LIBRARY:
-			tile.create_resource_animation("insight", tile.active_building.generation_amount, vertical_offset)
-			GameManager.insight_count += tile.active_building.generation_amount
-		Building.BuildingType.BANK:
-			tile.create_resource_animation("gold", tile.active_building.generation_amount, vertical_offset)
-			GameManager.gold_count += tile.active_building.generation_amount
-		Building.BuildingType.VAULT:
-			tile.create_resource_animation("gold", tile.active_building.generation_amount, vertical_offset)
-			GameManager.gold_count += tile.active_building.generation_amount
-		Building.BuildingType.OUTPOST:
-			GameManager.available_explores += tile.active_building.generation_amount
 
 # Signal handler for when a card starts being dragged
 func _on_card_drag_started(card: CardUI) -> void:

@@ -1,14 +1,16 @@
-[gd_resource type="Resource" script_class="Building" load_steps=3 format=3 uid="uid://db6mcuxlla6lm"]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://db6mcuxlla6lm"]
 
 [ext_resource type="Texture2D" uid="uid://7ll5nygn8c60" path="res://assets/icons/buildings/mine.png" id="1_l7pyc"]
-[ext_resource type="Script" uid="uid://byuy57newj5vi" path="res://scripts/resources/building.gd" id="2_l7pyc"]
+[ext_resource type="Script" uid="uid://b0oav1h0ls43w" path="res://resources/buildings/mine.gd" id="2_l7pyc"]
 
 [resource]
 script = ExtResource("2_l7pyc")
 id = "mine"
 name = "Mine"
 icon = ExtResource("1_l7pyc")
-description = "Generates3 minerals on trigger"
 type = 0
-generation_amount = 0
+generation_amount = 3
+resource_type = Array[String](["Minerals"])
+description = "Generates 3 minerals on trigger"
+tooltip = ""
 metadata/_custom_type_script = "uid://byuy57newj5vi"

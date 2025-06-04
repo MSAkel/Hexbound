@@ -4,8 +4,7 @@ signal tile_explored(hex: Hex)
 signal game_speed_changed(new_speed: float)
 
 
-const BASE_EXPLORES_PER_TURN := 1
-const MAX_EXPLORES := 5
+var explores_per_turn := 1
 
 var _current_year := 1
 
@@ -51,6 +50,7 @@ var gold_count: int:
 		return _gold_count
 	set(value):
 		_gold_count = max(0, value)
+		Events.gold_changed.emit(_gold_count)
 		# look for potential perks/runes which could impact gold production or adding signals here if needed
 
 var favor_count: int:
@@ -69,7 +69,9 @@ var available_explores: int:
 	get:
 		return _available_explores
 	set(value):
-		_available_explores = clamp(value, 0, MAX_EXPLORES)
+		_available_explores = clamp(value, 0, 50)
+		Events.explore_count_changed.emit()
+
 
 var game_speed: float:
 	get:
@@ -84,6 +86,7 @@ var available_building_packs: int:
 		return _available_building_packs
 	set(value):
 		_available_building_packs = max(0, value)
+		Events.building_pack_count_changed.emit()
 
 var building_reroll_cost: int:
 	get:
@@ -98,6 +101,7 @@ var available_runes_packs: int:
 		return _available_runes_packs
 	set(value):
 		_available_runes_packs = max(0, value)
+
 
 var runes_reroll_cost: int:
 	get:
@@ -126,24 +130,27 @@ var is_processing_turn: bool:
 
 func _ready() -> void:
 	# Initialize available explores
-	_available_explores = BASE_EXPLORES_PER_TURN
+	_available_explores = explores_per_turn
 	
 	# Load the runes from the resources directory
 	var runes_directory = DirAccess.open("res://resources/runes/")
 	for file in runes_directory.get_files():
-		var rune = load("res://resources/runes/" + file)
-		runes_pool.append(rune)
+		if file.ends_with(".tres"):
+			var rune = load("res://resources/runes/" + file)
+			runes_pool.append(rune)
 	
 	# Load the perks from the resources directory
 	var perks_directory = DirAccess.open("res://resources/perks/")
 	for file in perks_directory.get_files():
-		var perk = load("res://resources/perks/" + file)
-		perks_pool.append(perk)
+		if file.ends_with(".tres"):
+			var perk = load("res://resources/perks/" + file)
+			perks_pool.append(perk)
 
 	var buildings_directory = DirAccess.open("res://resources/buildings/")
 	for file in buildings_directory.get_files():
-		var building = load("res://resources/buildings/" + file)
-		buildings_pool.append(building)
+		if file.ends_with(".tres"):
+			var building = load("res://resources/buildings/" + file)
+			buildings_pool.append(building)
 
 	create_buildings_pack()
 	create_runes_pack()
@@ -160,7 +167,7 @@ func finish_turn_processing() -> void:
 	available_perks += 1
 	available_building_packs += 1
 	available_runes_packs += 1
-	_available_explores = BASE_EXPLORES_PER_TURN
+	_available_explores = explores_per_turn
 	Events.turn_started.emit()
 
 func update_explored_tiles_list(h: Hex) -> void:

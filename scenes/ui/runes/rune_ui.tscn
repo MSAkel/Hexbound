@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://b2u0uxxntwomn"]
 
 [ext_resource type="Script" uid="uid://cvrhe05ck15tj" path="res://scenes/ui/runes/rune_ui.gd" id="1_ncwa2"]
-[ext_resource type="Texture2D" uid="uid://j7ewxkg3i3qk" path="res://assets/icons/runes/frostlink_rune.png" id="2_gx0vj"]
+[ext_resource type="Texture2D" uid="uid://j7ewxkg3i3qk" path="res://assets/icons/runes/roundabout_rune.png" id="2_gx0vj"]
 [ext_resource type="Texture2D" uid="uid://b23i08rqs0d52" path="res://assets/gui/buttons/button_round.png" id="2_j3x5t"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cf0v2"]

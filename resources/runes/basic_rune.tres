@@ -1,13 +1,13 @@
-[gd_resource type="Resource" script_class="Rune" load_steps=3 format=3 uid="uid://c7c2eo74m8q0l"]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://c7c2eo74m8q0l"]
 
-[ext_resource type="Texture2D" uid="uid://7d8obw85xman" path="res://assets/icons/runes/bounty_rune.png" id="1_ghh1x"]
-[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/rune.gd" id="2_2afof"]
+[ext_resource type="Texture2D" uid="uid://7d8obw85xman" path="res://assets/icons/runes/basic_rune.png" id="1_ayjfw"]
+[ext_resource type="Script" uid="uid://cc6ehbquhicml" path="res://resources/runes/basic_rune.gd" id="2_qvrl4"]
 
 [resource]
-script = ExtResource("2_2afof")
+script = ExtResource("2_qvrl4")
 id = "basic_run"
 name = "Basic Rune"
-icon = ExtResource("1_ghh1x")
+icon = ExtResource("1_ayjfw")
 description = "Triggers the tile which it is placed on once."
 selected = false
 rarity = 0

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7d8obw85xman"
-path="res://.godot/imported/bounty_rune.png-579e164df2bbac0206332fcd707c77df.ctex"
+uid="uid://j7ewxkg3i3qk"
+path="res://.godot/imported/roundabout_rune.png-e69f30f7ae088a46c01afccac6496e95.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/bounty_rune.png"
-dest_files=["res://.godot/imported/bounty_rune.png-579e164df2bbac0206332fcd707c77df.ctex"]
+source_file="res://assets/icons/runes/roundabout_rune.png"
+dest_files=["res://.godot/imported/roundabout_rune.png-e69f30f7ae088a46c01afccac6496e95.ctex"]
 
 [params]
 

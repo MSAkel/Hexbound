@@ -22,3 +22,8 @@ signal card_played(card_ui: CardUI)  # Emitted when a card is played
 
 signal building_selected(building: Building)
 signal rune_selected(rune: Rune)
+
+signal building_pack_count_changed()
+signal rune_pack_count_changed()
+
+signal explore_count_changed()

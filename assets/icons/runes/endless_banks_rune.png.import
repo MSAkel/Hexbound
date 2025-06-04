@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c5ycbh2munv3d"
-path="res://.godot/imported/vault_rune.png-7ebac3d264384858fe3741e5cbf8ba55.ctex"
+uid="uid://dn712qvjmb5oi"
+path="res://.godot/imported/endless_banks_rune.png-3c6980fb4d35d38871fb102ce52bbe07.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/vault_rune.png"
-dest_files=["res://.godot/imported/vault_rune.png-7ebac3d264384858fe3741e5cbf8ba55.ctex"]
+source_file="res://assets/icons/runes/endless_banks_rune.png"
+dest_files=["res://.godot/imported/endless_banks_rune.png-3c6980fb4d35d38871fb102ce52bbe07.ctex"]
 
 [params]
 

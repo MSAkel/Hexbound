@@ -22,3 +22,4 @@ func _on_select_button_pressed() -> void:
 	GameManager.available_runes_packs -= 1
 	GameManager.runes_pack.clear()
 	Events.rune_selected.emit(rune)
+	Events.rune_pack_count_changed.emit()

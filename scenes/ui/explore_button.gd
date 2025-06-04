@@ -11,6 +11,7 @@ func _ready() -> void:
 	update_visibility()
 	# Connect to the turn_started signal to show button when explores reset
 	Events.turn_started.connect(update_visibility)
+	Events.explore_count_changed.connect(update_visibility)
 
 func update_visibility() -> void:
 	visible = GameManager.available_explores > 0
