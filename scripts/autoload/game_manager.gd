@@ -3,14 +3,9 @@ extends Node
 signal tile_explored(hex: Hex)
 signal game_speed_changed(new_speed: float)
 
-
 var explores_per_turn := 1
 
 var _current_year := 1
-
-var _gold_count := 0
-var _favor_count := 0
-var _insight_count := 0
 
 var _available_explores: int = 0
 var _game_speed: float = 1.0
@@ -44,26 +39,6 @@ var current_year: int:
 		return _current_year
 	set(value):
 		_current_year = max(1, value)
-
-var gold_count: int:
-	get:
-		return _gold_count
-	set(value):
-		_gold_count = max(0, value)
-		Events.gold_changed.emit(_gold_count)
-		# look for potential perks/runes which could impact gold production or adding signals here if needed
-
-var favor_count: int:
-	get:
-		return _favor_count
-	set(value):
-		_favor_count = max(0, value) 
-
-var insight_count: int:
-	get:
-		return _insight_count
-	set(value):
-		_insight_count = max(0, value)
 
 var available_explores: int:
 	get:

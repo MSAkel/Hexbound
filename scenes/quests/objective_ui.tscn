@@ -1,0 +1,103 @@
+[gd_scene load_steps=11 format=3 uid="uid://cmoudd5li104t"]
+
+[ext_resource type="Texture2D" uid="uid://cpwtqpg5yteku" path="res://assets/gui/frames/frame_square_double.png" id="1_fo8s2"]
+[ext_resource type="Script" uid="uid://bxgmbh1q2wcai" path="res://scenes/quests/objective_ui.gd" id="2_d3tsn"]
+[ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="2_qltsf"]
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/goods/coin.png" id="3_d3tsn"]
+[ext_resource type="Texture2D" uid="uid://utbe38j7rp8n" path="res://assets/gui/frames/frame_rect.png" id="4_jpbjn"]
+[ext_resource type="Texture2D" uid="uid://ch0g260oqw5c" path="res://assets/gui/backgrounds/h_background.png" id="5_7kbn7"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5ku4l"]
+texture = ExtResource("1_fo8s2")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fgf2w"]
+texture = ExtResource("2_qltsf")
+modulate_color = Color(0.113801, 0.833623, 0.981323, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_djn0t"]
+texture = ExtResource("4_jpbjn")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gt25p"]
+texture = ExtResource("5_7kbn7")
+modulate_color = Color(0.622512, 0.849606, 0.609691, 1)
+
+[node name="ObjectiveUI" type="Panel"]
+z_index = 1
+custom_minimum_size = Vector2(40, 40)
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_5ku4l")
+script = ExtResource("2_d3tsn")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_fgf2w")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Icon" type="TextureRect" parent="CenterContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+texture = ExtResource("3_d3tsn")
+expand_mode = 1
+
+[node name="ProgressContainer" type="Panel" parent="."]
+custom_minimum_size = Vector2(20, 15)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -21.0
+offset_top = -7.0
+offset_right = 21.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_djn0t")
+
+[node name="Background" type="Panel" parent="ProgressContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_gt25p")
+
+[node name="ProgressLabel" type="Label" parent="ProgressContainer"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -12.0
+offset_top = -14.0
+offset_right = 12.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 9
+text = "0/15"
+horizontal_alignment = 1

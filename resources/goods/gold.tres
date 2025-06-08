@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Good" load_steps=3 format=3 uid="uid://cyvpqw0ddxiqn"]
+
+[ext_resource type="Script" uid="uid://dpl021dtl47jo" path="res://scripts/resources/good.gd" id="1_66fsn"]
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/goods/coin.png" id="1_wuxc7"]
+
+[resource]
+script = ExtResource("1_66fsn")
+id = "gold"
+name = "Gold"
+description = "G"
+icon = ExtResource("1_wuxc7")

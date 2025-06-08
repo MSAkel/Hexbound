@@ -1,7 +1,7 @@
 extends Control
 
 @onready var panel: Panel = $Panel
-@onready var v_box_container: HBoxContainer = $Panel/VBoxContainer
+@onready var quests_grid_container: GridContainer = $Panel/QuestsGridContainer
 
 func _ready() -> void:
 	hide()  # Start hidden

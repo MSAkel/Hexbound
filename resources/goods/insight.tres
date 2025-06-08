@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Good" load_steps=3 format=3 uid="uid://cau2a0lnb282r"]
+
+[ext_resource type="Texture2D" uid="uid://bjbdx2d4b8ss4" path="res://assets/icons/goods/insight.png" id="1_ixhil"]
+[ext_resource type="Script" uid="uid://dpl021dtl47jo" path="res://scripts/resources/good.gd" id="2_60v4r"]
+
+[resource]
+script = ExtResource("2_60v4r")
+id = "insight"
+name = "Insight"
+description = "I"
+icon = ExtResource("1_ixhil")

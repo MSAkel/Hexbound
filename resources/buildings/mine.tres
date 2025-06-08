@@ -11,6 +11,7 @@ icon = ExtResource("1_l7pyc")
 type = 0
 generation_amount = 3
 resource_type = Array[String](["Minerals"])
+passive = false
 description = "Generates 3 minerals on trigger"
 tooltip = ""
 metadata/_custom_type_script = "uid://byuy57newj5vi"

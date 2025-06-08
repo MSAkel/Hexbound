@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfywryg0fsnw0"
-path="res://.godot/imported/forest.png-d7bac9e50c39f0a2c4aa2de8d298c0d2.ctex"
+uid="uid://2dlo0dauhj4t"
+path="res://.godot/imported/coin.png-e1506a8b9f33fe2ae0fd658ee47ce560.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/background/forest.png"
-dest_files=["res://.godot/imported/forest.png-d7bac9e50c39f0a2c4aa2de8d298c0d2.ctex"]
+source_file="res://assets/icons/goods/coin.png"
+dest_files=["res://.godot/imported/coin.png-e1506a8b9f33fe2ae0fd658ee47ce560.ctex"]
 
 [params]
 

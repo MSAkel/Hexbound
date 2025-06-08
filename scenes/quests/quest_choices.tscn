@@ -1,0 +1,79 @@
+[gd_scene load_steps=7 format=3 uid="uid://bffdg8qop7xrg"]
+
+[ext_resource type="Script" uid="uid://bglftbtdxmenn" path="res://scenes/quests/quest_choices.gd" id="1_mkf58"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="1_uhcov"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="2_ahm4y"]
+[ext_resource type="PackedScene" uid="uid://bixb37ar03u1y" path="res://scenes/quests/quest_ui.tscn" id="2_sa5mk"]
+[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="3_sa5mk"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sa5mk"]
+texture = ExtResource("1_uhcov")
+
+[node name="QuestChoices" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 449.0
+offset_top = 235.0
+offset_right = -449.0
+offset_bottom = -253.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mkf58")
+
+[node name="Container" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_sa5mk")
+
+[node name="MarginContainer" type="MarginContainer" parent="Container"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 32
+
+[node name="Label" type="Label" parent="Container/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 22
+text = "Quests for my Quesadilla ( Choose 1)"
+
+[node name="QuestOptions" type="HBoxContainer" parent="Container/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 13
+
+[node name="QuestUI" parent="Container/MarginContainer/QuestOptions" instance=ExtResource("2_sa5mk")]
+layout_mode = 2
+
+[node name="QuestUI3" parent="Container/MarginContainer/QuestOptions" instance=ExtResource("2_sa5mk")]
+layout_mode = 2
+
+[node name="QuestUI2" parent="Container/MarginContainer/QuestOptions" instance=ExtResource("2_sa5mk")]
+layout_mode = 2
+
+[node name="CloseButton" type="TextureButton" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -33.0
+offset_bottom = 32.0
+grow_horizontal = 0
+texture_normal = ExtResource("2_ahm4y")
+texture_hover = ExtResource("3_sa5mk")
+
+[connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]

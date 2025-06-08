@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bjbdx2d4b8ss4"
-path="res://.godot/imported/insight_icon.png-f67ccdc88f1c307f6afc0d8ad1c0ffc2.ctex"
+uid="uid://cpwtqpg5yteku"
+path="res://.godot/imported/frame_square_double.png-49a056d1a867bab88ab64f3fc9ad151a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/currencies/insight_icon.png"
-dest_files=["res://.godot/imported/insight_icon.png-f67ccdc88f1c307f6afc0d8ad1c0ffc2.ctex"]
+source_file="res://assets/gui/frames/frame_square_double.png"
+dest_files=["res://.godot/imported/frame_square_double.png-49a056d1a867bab88ab64f3fc9ad151a.ctex"]
 
 [params]
 

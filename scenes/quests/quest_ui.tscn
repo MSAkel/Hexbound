@@ -1,0 +1,98 @@
+[gd_scene load_steps=8 format=3 uid="uid://bixb37ar03u1y"]
+
+[ext_resource type="Script" uid="uid://dubms8ihbp0rm" path="res://scenes/quests/quest_ui.gd" id="1_dfri7"]
+[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="1_ubyec"]
+[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="3_1ceyf"]
+[ext_resource type="PackedScene" uid="uid://cmoudd5li104t" path="res://scenes/quests/objective_ui.tscn" id="3_efemy"]
+[ext_resource type="PackedScene" uid="uid://cfo4gpycs0j8u" path="res://scenes/quests/reward_ui.tscn" id="4_efemy"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_efemy"]
+texture = ExtResource("1_ubyec")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hh0ek"]
+texture = ExtResource("3_1ceyf")
+
+[node name="QuestUI" type="Panel"]
+custom_minimum_size = Vector2(232, 373)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1688.0
+offset_bottom = -707.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_efemy")
+script = ExtResource("1_dfri7")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="QuestName" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Quest Name"
+horizontal_alignment = 1
+
+[node name="ObjectivesContainer" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="ObjectivesLable" type="Label" parent="MarginContainer/VBoxContainer/ObjectivesContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Objective"
+horizontal_alignment = 1
+
+[node name="ObjectivesContainter" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ObjectivesContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
+[node name="ObjectiveUI" parent="MarginContainer/VBoxContainer/ObjectivesContainer/ObjectivesContainter" instance=ExtResource("3_efemy")]
+layout_mode = 2
+
+[node name="ObjectiveUI2" parent="MarginContainer/VBoxContainer/ObjectivesContainer/ObjectivesContainter" instance=ExtResource("3_efemy")]
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="RewardsLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Rewards"
+horizontal_alignment = 1
+
+[node name="RewardsContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
+[node name="RewardUI" parent="MarginContainer/VBoxContainer/PanelContainer/RewardsContainer" instance=ExtResource("4_efemy")]
+layout_mode = 2
+
+[node name="RewardUI2" parent="MarginContainer/VBoxContainer/PanelContainer/RewardsContainer" instance=ExtResource("4_efemy")]
+layout_mode = 2
+
+[node name="SelectQuestButton" type="Button" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 10
+theme_override_styles/normal = SubResource("StyleBoxTexture_hh0ek")
+text = "Select"
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/SelectQuestButton" to="." method="_on_select_quest_button_pressed"]

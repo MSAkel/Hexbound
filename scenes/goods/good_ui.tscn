@@ -1,0 +1,105 @@
+[gd_scene load_steps=11 format=3 uid="uid://dk3bsvpgwbwau"]
+
+[ext_resource type="Texture2D" uid="uid://dnn6eox3kyyy5" path="res://assets/gui/frames/frame_square.png" id="1_njb7s"]
+[ext_resource type="Script" uid="uid://de10rse16bsoj" path="res://scenes/goods/good_ui.gd" id="2_tkj2i"]
+[ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="3_bqxqm"]
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/goods/coin.png" id="4_ooyqb"]
+[ext_resource type="Texture2D" uid="uid://utbe38j7rp8n" path="res://assets/gui/frames/frame_rect.png" id="5_r0ghc"]
+[ext_resource type="Texture2D" uid="uid://ch0g260oqw5c" path="res://assets/gui/backgrounds/h_background.png" id="6_yjy6h"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5ku4l"]
+texture = ExtResource("1_njb7s")
+modulate_color = Color(1, 1, 0.294118, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fgf2w"]
+texture = ExtResource("3_bqxqm")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_djn0t"]
+texture = ExtResource("5_r0ghc")
+modulate_color = Color(0.957619, 0.804666, 0.396759, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gt25p"]
+texture = ExtResource("6_yjy6h")
+region_rect = Rect2(21, 19, 2002, 986)
+
+[node name="GoodUI" type="Panel"]
+custom_minimum_size = Vector2(40, 40)
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxTexture_5ku4l")
+script = ExtResource("2_tkj2i")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_fgf2w")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Icon" type="TextureRect" parent="CenterContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+texture = ExtResource("4_ooyqb")
+expand_mode = 1
+
+[node name="AmountContainer" type="Panel" parent="."]
+custom_minimum_size = Vector2(20, 15)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -12.0
+offset_top = -7.0
+offset_right = 12.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_djn0t")
+
+[node name="Background" type="Panel" parent="AmountContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_gt25p")
+
+[node name="AmountLabel" type="Label" parent="AmountContainer"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -11.0
+offset_top = -14.0
+offset_right = 11.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 9
+text = "0"
+horizontal_alignment = 1

@@ -2,5 +2,4 @@ extends Building
 
 
 func trigger_building() -> void:
-    GameManager.gold_count += generation_amount
-    
+	GoodsManager.add_good(generated_good, generation_amount)

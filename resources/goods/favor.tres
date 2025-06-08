@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Good" load_steps=3 format=3 uid="uid://dinl60w5u8hq8"]
+
+[ext_resource type="Texture2D" uid="uid://dag1bs72vfv70" path="res://assets/icons/goods/favor.png" id="1_5uvbv"]
+[ext_resource type="Script" uid="uid://dpl021dtl47jo" path="res://scripts/resources/good.gd" id="2_7eps2"]
+
+[resource]
+script = ExtResource("2_7eps2")
+id = "favor"
+name = "Favor"
+description = "Fav"
+icon = ExtResource("1_5uvbv")

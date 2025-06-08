@@ -1,5 +1,6 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://kfn8nsp26ycc"]
+[gd_resource type="Resource" load_steps=4 format=3 uid="uid://kfn8nsp26ycc"]
 
+[ext_resource type="Resource" uid="uid://cau2a0lnb282r" path="res://resources/goods/insight.tres" id="1_5o4iu"]
 [ext_resource type="Texture2D" uid="uid://b7ficn0l1sjo3" path="res://assets/icons/buildings/library.png" id="1_p7mja"]
 [ext_resource type="Script" uid="uid://d1upj2v8o0s3g" path="res://resources/buildings/library.gd" id="2_p7mja"]
 
@@ -10,7 +11,8 @@ name = "Library"
 icon = ExtResource("1_p7mja")
 type = 1
 generation_amount = 3
-resource_type = Array[String](["Insight"])
+generated_good = ExtResource("1_5o4iu")
+passive = false
 description = "Generates 3 insight on trigger"
 tooltip = ""
 metadata/_custom_type_script = "uid://byuy57newj5vi"

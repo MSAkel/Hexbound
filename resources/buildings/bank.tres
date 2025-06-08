@@ -1,7 +1,8 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://deb1u0q0rx5rn"]
+[gd_resource type="Resource" load_steps=4 format=3 uid="uid://deb1u0q0rx5rn"]
 
 [ext_resource type="Texture2D" uid="uid://hbjc4ga56goh" path="res://assets/icons/buildings/bank.png" id="1_vvlop"]
 [ext_resource type="Script" uid="uid://cyrnpri2ywe55" path="res://resources/buildings/bank.gd" id="2_vvlop"]
+[ext_resource type="Resource" uid="uid://cyvpqw0ddxiqn" path="res://resources/goods/gold.tres" id="3_urtbp"]
 
 [resource]
 script = ExtResource("2_vvlop")
@@ -10,7 +11,8 @@ name = "Bank"
 icon = ExtResource("1_vvlop")
 type = 2
 generation_amount = 5
-resource_type = Array[String](["Gold"])
+generated_good = ExtResource("3_urtbp")
+passive = false
 description = "Generates 5 gold on trigger"
 tooltip = ""
 metadata/_custom_type_script = "uid://byuy57newj5vi"

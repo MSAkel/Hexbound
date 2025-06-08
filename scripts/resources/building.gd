@@ -14,7 +14,7 @@ enum BuildingType {
 @export var icon: Texture2D
 @export var type: BuildingType
 @export var generation_amount: int
-@export var resource_type: Array[String]
+@export var generated_good: Good
 @export var passive: bool = false
 @export_multiline var description: String
 @export_multiline var tooltip: String
