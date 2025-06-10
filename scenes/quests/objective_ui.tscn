@@ -24,8 +24,8 @@ modulate_color = Color(0.622512, 0.849606, 0.609691, 1)
 [node name="ObjectiveUI" type="Panel"]
 z_index = 1
 custom_minimum_size = Vector2(40, 40)
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 54.0
+offset_bottom = 54.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_5ku4l")
 script = ExtResource("2_d3tsn")
 
@@ -34,10 +34,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 1.0
-offset_top = 1.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = 4.0
+offset_top = 3.0
+offset_right = -4.0
+offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_fgf2w")

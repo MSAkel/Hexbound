@@ -1,7 +1,16 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://wgkmgeouqucy"]
+[gd_resource type="Resource" script_class="Quest" load_steps=6 format=3 uid="uid://wgkmgeouqucy"]
 
 [ext_resource type="Script" uid="uid://cng4yn5p5gg2" path="res://scripts/resources/quest.gd" id="1_18oyr"]
+[ext_resource type="Script" uid="uid://dlfkoeoa3qm45" path="res://scripts/resources/objective.gd" id="1_tv5du"]
+[ext_resource type="Script" uid="uid://dqe653cdc0nw8" path="res://scripts/resources/reward.gd" id="2_4f3fd"]
+[ext_resource type="Resource" uid="uid://bpwkmdukqghj5" path="res://resources/quests/objectives/generate_insight.tres" id="2_cdukr"]
+[ext_resource type="Resource" uid="uid://cmdu4meiiagj6" path="res://resources/quests/rewards/gold_reward.tres" id="4_cdukr"]
 
 [resource]
 script = ExtResource("1_18oyr")
+id = "power_in_knowledge"
+name = "Power In Knowledge"
+objective = Array[ExtResource("1_tv5du")]([ExtResource("2_cdukr")])
+rewards = Array[ExtResource("2_4f3fd")]([ExtResource("4_cdukr")])
+tier = 2
 metadata/_custom_type_script = "uid://cng4yn5p5gg2"

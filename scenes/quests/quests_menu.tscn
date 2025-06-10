@@ -28,6 +28,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -76.0
+offset_bottom = 76.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_x0b7a")
@@ -64,29 +66,36 @@ year_available = 2
 [node name="QuestSlot2" parent="Panel/QuestsGridContainer" instance=ExtResource("4_ig4xi")]
 layout_mode = 2
 year_available = 2
+quest_tier = 1
 
 [node name="QuestSlot3" parent="Panel/QuestsGridContainer" instance=ExtResource("4_ig4xi")]
 layout_mode = 2
 year_available = 8
+quest_tier = 2
 
 [node name="QuestSlot4" parent="Panel/QuestsGridContainer" instance=ExtResource("4_ig4xi")]
 layout_mode = 2
 year_available = 8
+quest_tier = 3
 
 [node name="QuestSlot5" parent="Panel/QuestsGridContainer" instance=ExtResource("4_ig4xi")]
 layout_mode = 2
 year_available = 15
+quest_tier = 4
 
 [node name="QuestSlot6" parent="Panel/QuestsGridContainer" instance=ExtResource("4_ig4xi")]
 layout_mode = 2
 year_available = 15
+quest_tier = 5
 
 [node name="QuestSlot7" parent="Panel/QuestsGridContainer" instance=ExtResource("4_ig4xi")]
 layout_mode = 2
 year_available = 25
+quest_tier = 6
 
 [node name="QuestSlot8" parent="Panel/QuestsGridContainer" instance=ExtResource("4_ig4xi")]
 layout_mode = 2
 year_available = 25
+quest_tier = 6
 
 [connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Delivery" load_steps=3 format=3 uid="uid://clh1xwb2gfm3b"]
+
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/goods/coin.png" id="1_5cct6"]
+[ext_resource type="Script" uid="uid://df0q6kf6f6757" path="res://resources/quests/objectives/delivery.gd" id="2_2pkso"]
+
+[resource]
+script = ExtResource("2_2pkso")
+good_type = 0
+requirement = "Gather gold"
+icon = ExtResource("1_5cct6")
+objective_type = 4
+amount_required = 15
+metadata/_custom_type_script = "uid://dlfkoeoa3qm45"

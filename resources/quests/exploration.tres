@@ -1,7 +1,17 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://dijkytapois87"]
+[gd_resource type="Resource" script_class="Quest" load_steps=7 format=3 uid="uid://dijkytapois87"]
 
+[ext_resource type="Script" uid="uid://dlfkoeoa3qm45" path="res://scripts/resources/objective.gd" id="1_6ncmu"]
 [ext_resource type="Script" uid="uid://cng4yn5p5gg2" path="res://scripts/resources/quest.gd" id="1_knpud"]
+[ext_resource type="Resource" uid="uid://y7x8ml47miah" path="res://resources/quests/objectives/exploration_i.tres" id="2_lu2km"]
+[ext_resource type="Script" uid="uid://dqe653cdc0nw8" path="res://scripts/resources/reward.gd" id="2_q3jvd"]
+[ext_resource type="Resource" uid="uid://cco5ka1pjk712" path="res://resources/quests/rewards/bank_reward.tres" id="4_7bbbf"]
+[ext_resource type="Resource" uid="uid://cmdu4meiiagj6" path="res://resources/quests/rewards/gold_reward.tres" id="5_m7xir"]
 
 [resource]
 script = ExtResource("1_knpud")
+id = "exploration"
+name = "Exploration"
+objective = Array[ExtResource("1_6ncmu")]([ExtResource("2_lu2km")])
+rewards = Array[ExtResource("2_q3jvd")]([ExtResource("4_7bbbf"), ExtResource("5_m7xir")])
+tier = 0
 metadata/_custom_type_script = "uid://cng4yn5p5gg2"

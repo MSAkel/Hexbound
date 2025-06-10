@@ -219,7 +219,7 @@ layout_mode = 2
 text = "0"
 horizontal_alignment = 1
 
-[node name="VictoryPoints" type="Label" parent="Panel/MarginContainer"]
+[node name="InfluenceProgress" type="Label" parent="Panel/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
 text = "Influence: 0/15"

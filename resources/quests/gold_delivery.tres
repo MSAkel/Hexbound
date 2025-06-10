@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=6 format=3 uid="uid://bj5hdp8sobrb8"]
+
+[ext_resource type="Script" uid="uid://dlfkoeoa3qm45" path="res://scripts/resources/objective.gd" id="1_dnrcg"]
+[ext_resource type="Script" uid="uid://cng4yn5p5gg2" path="res://scripts/resources/quest.gd" id="1_lxbc8"]
+[ext_resource type="Resource" uid="uid://clh1xwb2gfm3b" path="res://resources/quests/objectives/deliver_gold.tres" id="1_tj3hh"]
+[ext_resource type="Resource" uid="uid://cco5ka1pjk712" path="res://resources/quests/rewards/bank_reward.tres" id="2_24pms"]
+[ext_resource type="Script" uid="uid://dqe653cdc0nw8" path="res://scripts/resources/reward.gd" id="3_36r31"]
+
+[resource]
+script = ExtResource("1_lxbc8")
+id = "gold_delivery_i"
+name = "Gold Delivery"
+objective = Array[ExtResource("1_dnrcg")]([ExtResource("1_tj3hh")])
+rewards = Array[ExtResource("3_36r31")]([ExtResource("2_24pms")])
+tier = 1
+metadata/_custom_type_script = "uid://cng4yn5p5gg2"

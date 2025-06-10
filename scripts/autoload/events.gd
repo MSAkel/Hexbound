@@ -14,6 +14,11 @@ signal card_drag_ended()
 # Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 
+signal influence_changed()
+
+
+signal quest_progress_updated()
+
 # Merchant signals
 signal merchant_item_purchased(item_type: String)  # Emitted when an item is purchased
 signal merchant_discount_changed(new_discount: float)  # Emitted when merchant discount changes

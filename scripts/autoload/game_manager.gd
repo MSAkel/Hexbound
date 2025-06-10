@@ -33,7 +33,17 @@ var _available_perk_rerolls: int = 1
 
 var selected_boons: Array[Boon] = []
 
+var influence_required: int = 15
+var _influence_progress: int = 0
+
 # Core game state getters and setters
+var influence_progress: int:
+	get:
+		return _influence_progress
+	set(value):
+		_influence_progress = clamp(value, 0, influence_required)
+		Events.influence_changed.emit()
+
 var current_year: int:
 	get:
 		return _current_year

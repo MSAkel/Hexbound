@@ -11,9 +11,9 @@ texture = ExtResource("1_x30ek")
 texture = ExtResource("3_lxlrr")
 
 [node name="QuestSlot" type="Panel"]
-custom_minimum_size = Vector2(162, 273)
-offset_right = 162.0
-offset_bottom = 273.0
+custom_minimum_size = Vector2(235, 375)
+offset_right = 235.0
+offset_bottom = 375.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_sluug")
 script = ExtResource("2_pdjgo")
 
@@ -49,4 +49,6 @@ offset_bottom = 15.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxTexture_a0l6y")
-text = "Select"
+text = "Reveal Quest"
+
+[connection signal="pressed" from="SelectNewQuestButton" to="." method="_on_select_new_quest_button_pressed"]

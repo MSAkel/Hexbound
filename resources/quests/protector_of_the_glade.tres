@@ -1,7 +1,0 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://c63735g21bdw3"]
-
-[ext_resource type="Script" uid="uid://cng4yn5p5gg2" path="res://scripts/resources/quest.gd" id="1_d3nsl"]
-
-[resource]
-script = ExtResource("1_d3nsl")
-metadata/_custom_type_script = "uid://cng4yn5p5gg2"

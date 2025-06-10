@@ -22,8 +22,8 @@ region_rect = Rect2(21, 19, 2002, 986)
 
 [node name="RewardUI" type="Panel"]
 custom_minimum_size = Vector2(40, 40)
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 55.0
+offset_bottom = 55.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_5ku4l")
 script = ExtResource("2_w312u")
 

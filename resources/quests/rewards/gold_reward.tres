@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Reward" load_steps=3 format=3 uid="uid://cmdu4meiiagj6"]
+
+[ext_resource type="Resource" uid="uid://cyvpqw0ddxiqn" path="res://resources/goods/gold.tres" id="1_7xrdr"]
+[ext_resource type="Script" uid="uid://dqe653cdc0nw8" path="res://scripts/resources/reward.gd" id="1_nbed2"]
+
+[resource]
+script = ExtResource("1_nbed2")
+reward = ExtResource("1_7xrdr")
+amount = 25
+type = 1
+description = ""
+metadata/_custom_type_script = "uid://dqe653cdc0nw8"

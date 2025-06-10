@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://y7x8ml47miah"]
+
+[ext_resource type="Script" uid="uid://b27wwtrvp82f2" path="res://resources/quests/objectives/exploration.gd" id="1_gf1qx"]
+[ext_resource type="Texture2D" uid="uid://b3a2vxp2u637k" path="res://assets/icons/objectives/monocular.png" id="1_mjcai"]
+
+[resource]
+script = ExtResource("1_gf1qx")
+requirement = "Explore the map"
+icon = ExtResource("1_mjcai")
+objective_type = 0
+amount_required = 25
+progress = 0
+completed = false
+metadata/_custom_type_script = "uid://dlfkoeoa3qm45"
