@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dlcicwjgb6qkv" path="res://scenes/events/ruins/ruins_ui.gd" id="1_mmsej"]
 [ext_resource type="Texture2D" uid="uid://dnn6eox3kyyy5" path="res://assets/gui/frames/frame_square.png" id="2_0ukg7"]
-[ext_resource type="Texture2D" uid="uid://dt5nw0ptq83f7" path="res://assets/icons/events/ruins.png" id="2_316ux"]
+[ext_resource type="Texture2D" uid="uid://dt5nw0ptq83f7" path="res://assets/icons/poi/ruins.png" id="2_316ux"]
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="3_1frj6"]
 [ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="3_2jeeq"]
 [ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="3_50icf"]
@@ -16,6 +16,7 @@ texture = ExtResource("3_50icf")
 texture = ExtResource("3_1frj6")
 
 [node name="RuinsUI" type="Control"]
+z_index = 7
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_mmsej")
@@ -104,13 +105,28 @@ layout_mode = 2
 text = "The Ruins of the Duck Lord are ancient, moss-covered remnants of a forgotten kingdom once ruled by the legendary Duck Lord. Nestled in a misty marsh or hidden deep within enchanted forests, these crumbling stone structures echo with whispers of avian power and long-lost rituals. Strange carvings of ducks and mysterious glyphs hint at a civilization that revered their feathery monarch, leaving behind relics said to possess quirky but potent magic."
 autowrap_mode = 3
 
-[node name="ExploreButton" type="Button" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(135, 40)
+[node name="ButtonsContainer" type="HBoxContainer" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="ExploreButton" type="Button" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer"]
+custom_minimum_size = Vector2(145, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 theme_override_styles/normal = SubResource("StyleBoxTexture_ctvfw")
 text = "Explore (50g)"
+icon_alignment = 2
+expand_icon = true
+
+[node name="LootButton" type="Button" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer"]
+custom_minimum_size = Vector2(145, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_styles/normal = SubResource("StyleBoxTexture_ctvfw")
+text = "Loot"
 icon_alignment = 2
 expand_icon = true
 
@@ -128,5 +144,6 @@ texture_normal = ExtResource("4_1frj6")
 texture_hover = ExtResource("5_ctvfw")
 
 [connection signal="pressed" from="Container/RuinsButton" to="." method="_on_ruins_button_pressed"]
-[connection signal="pressed" from="Container/DescriptionPanel/MarginContainer/VBoxContainer/ExploreButton" to="." method="_on_explore_button_pressed"]
+[connection signal="pressed" from="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/ExploreButton" to="." method="_on_explore_button_pressed"]
+[connection signal="pressed" from="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/LootButton" to="." method="_on_loot_button_pressed"]
 [connection signal="pressed" from="Container/DescriptionPanel/CloseButton" to="." method="_on_close_button_pressed"]

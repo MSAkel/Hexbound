@@ -1,15 +1,15 @@
 [gd_scene load_steps=12 format=3 uid="uid://clbo25fmtd5ba"]
 
-[ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/active_perks.tscn" id="1_hcnxy"]
+[ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/perks/active_perks.tscn" id="1_hcnxy"]
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_l8t6x"]
-[ext_resource type="PackedScene" uid="uid://cm3sdx2an61fm" path="res://scenes/ui/top_panel_ui.tscn" id="4_travt"]
+[ext_resource type="PackedScene" uid="uid://cm3sdx2an61fm" path="res://scenes/ui/top_panels/top_panel_ui.tscn" id="4_travt"]
 [ext_resource type="PackedScene" uid="uid://dr6tgv52a40ou" path="res://scenes/ui/buildings/building_selection_ui.tscn" id="5_46cp5"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://3pwk1tu6fo3o" path="res://scenes/ui/perks/perks_menu.tscn" id="6_t0li6"]
 [ext_resource type="PackedScene" uid="uid://dtamn2cc6wba" path="res://scenes/quests/quests_menu.tscn" id="8_yc0ux"]
 [ext_resource type="PackedScene" uid="uid://c8cjskufdru2i" path="res://scenes/ui/runes/runes_menu.tscn" id="9_b65ll"]
-[ext_resource type="PackedScene" uid="uid://clcafvhour5gy" path="res://scenes/ui/top_right_ui.tscn" id="9_yc0ux"]
+[ext_resource type="PackedScene" uid="uid://clcafvhour5gy" path="res://scenes/ui/top_panels/top_right_ui.tscn" id="9_yc0ux"]
 [ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/bottom_panel/bottom_panel.tscn" id="11_oi40j"]
 
 [node name="MainUI" type="CanvasLayer"]

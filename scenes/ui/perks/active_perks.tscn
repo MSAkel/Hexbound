@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://6quv54inxx4v"]
+
+[ext_resource type="PackedScene" uid="uid://bkyj5id0pr10q" path="res://scenes/ui/perks/perk_ui.tscn" id="1_aqwe1"]
+[ext_resource type="Script" uid="uid://brc5yty1tkrix" path="res://scenes/ui/perks/perk_manager.gd" id="1_yhbqg"]
+
+[node name="ActivePerks" type="MarginContainer" groups=["main_ui"]]
+offset_right = 180.0
+offset_bottom = 50.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+script = ExtResource("1_yhbqg")
+
+[node name="PerksGrid" type="GridContainer" parent="."]
+custom_minimum_size = Vector2(164, 34)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+columns = 6
+
+[node name="PerkUI" parent="PerksGrid" instance=ExtResource("1_aqwe1")]
+layout_mode = 2

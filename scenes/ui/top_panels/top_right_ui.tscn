@@ -1,0 +1,108 @@
+[gd_scene load_steps=6 format=3 uid="uid://clcafvhour5gy"]
+
+[ext_resource type="Script" uid="uid://7st7tt2f54u4" path="res://scenes/ui/top_panels/top_right_ui.gd" id="1_8pf6h"]
+[ext_resource type="Texture2D" uid="uid://b23i08rqs0d52" path="res://assets/gui/buttons/button_round.png" id="2_673ta"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5hda3"]
+atlas = ExtResource("2_673ta")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_oa5en"]
+atlas = ExtResource("2_673ta")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kknu3"]
+atlas = ExtResource("2_673ta")
+
+[node name="TopRightUI" type="Control"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+grow_horizontal = 0
+script = ExtResource("1_8pf6h")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_bottom = 64.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 24
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer"]
+layout_mode = 2
+columns = 4
+
+[node name="PerksButton" type="TextureButton" parent="MarginContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = SubResource("AtlasTexture_5hda3")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="MarginContainer/GridContainer/PerksButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.1667
+offset_right = 20.0
+offset_bottom = 11.1667
+grow_horizontal = 2
+grow_vertical = 2
+text = "Perks"
+
+[node name="RunesButton" type="TextureButton" parent="MarginContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = SubResource("AtlasTexture_oa5en")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="MarginContainer/GridContainer/RunesButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.1667
+offset_right = 20.0
+offset_bottom = 11.1667
+grow_horizontal = 2
+grow_vertical = 2
+text = "Runes"
+
+[node name="QuestsButton" type="TextureButton" parent="MarginContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = SubResource("AtlasTexture_kknu3")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="MarginContainer/GridContainer/QuestsButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.1667
+offset_right = 20.0
+offset_bottom = 11.1667
+grow_horizontal = 2
+grow_vertical = 2
+text = "Quests"
+
+[connection signal="pressed" from="MarginContainer/GridContainer/PerksButton" to="." method="_on_perks_button_pressed"]
+[connection signal="pressed" from="MarginContainer/GridContainer/RunesButton" to="." method="_on_runes_button_pressed"]
+[connection signal="pressed" from="MarginContainer/GridContainer/QuestsButton" to="." method="_on_quests_button_pressed"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=16 format=3 uid="uid://cpvr3k1luft0f"]
 
-[ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://hex_tile_map.gd" id="1_d5c3r"]
+[ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://scripts/hex_tile_map.gd" id="1_d5c3r"]
 [ext_resource type="Texture2D" uid="uid://byi8cc5cebs8e" path="res://assets/tilesets/base_hex_tiles_1.png" id="2_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://xyr8ssa54dw4" path="res://assets/tilesets/base_hex_tiles.png" id="2_c0fpv"]
 [ext_resource type="Texture2D" uid="uid://bgme2susi6nhr" path="res://assets/tilesets/selected_tile_overlay.png" id="3_c0fpv"]
@@ -9,14 +9,16 @@
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3rbfx"]
 texture = ExtResource("2_8rbqn")
-texture_region_size = Vector2i(256, 351)
+texture_region_size = Vector2i(256, 347)
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
+2:0/0/z_index = 1
 3:0/0 = 0
 4:0/0 = 0
 5:0/0 = 0
 6:0/0 = 0
+6:0/0/z_index = 1
 7:0/0 = 0
 8:0/0 = 0
 
@@ -40,6 +42,7 @@ sources/0 = SubResource("TileSetAtlasSource_3rbfx")
 texture = ExtResource("3_c0fpv")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
+0:0/0/z_index = 2
 
 [sub_resource type="TileSet" id="TileSet_3rbfx"]
 tile_shape = 3
@@ -50,6 +53,7 @@ sources/0 = SubResource("TileSetAtlasSource_tt7jl")
 texture = ExtResource("9_tt7jl")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
+0:0/0/z_index = 1
 
 [sub_resource type="TileSet" id="TileSet_xmj4m"]
 tile_shape = 3
@@ -60,6 +64,7 @@ sources/0 = SubResource("TileSetAtlasSource_4rcl8")
 texture = ExtResource("5_ekk8a")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
+0:0/0/z_index = 3
 
 [sub_resource type="TileSet" id="TileSet_047vf"]
 tile_shape = 3

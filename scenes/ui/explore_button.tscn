@@ -4,6 +4,7 @@
 [ext_resource type="AudioStream" uid="uid://dhba2e6ec1471" path="res://assets/audio/air-woosh.wav" id="2_px1ja"]
 
 [node name="Button" type="Button"]
+z_index = 5
 offset_right = 8.0
 offset_bottom = 8.0
 text = "Explore (1)"

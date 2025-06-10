@@ -4,8 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="2_010mc"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_pe02v"]
 [ext_resource type="Texture2D" uid="uid://b23i08rqs0d52" path="res://assets/gui/buttons/button_round.png" id="4_pe02v"]
-[ext_resource type="Texture2D" uid="uid://eeanmr4v8i8i" path="res://assets/icons/building_icon.png" id="4_yjuds"]
-[ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/glyph_icon.png" id="5_pe02v"]
+[ext_resource type="Texture2D" uid="uid://eeanmr4v8i8i" path="res://assets/icons/others/building_icon.png" id="4_yjuds"]
+[ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/others/glyph_icon.png" id="5_pe02v"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vlavl"]
 texture = ExtResource("2_pe02v")
@@ -21,9 +21,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -472.5
-offset_top = -125.0
-offset_right = 472.5
+offset_left = -472.0
+offset_top = -161.0
+offset_right = 473.0
 grow_horizontal = 2
 grow_vertical = 0
 script = ExtResource("1_pe02v")

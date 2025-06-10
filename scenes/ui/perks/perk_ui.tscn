@@ -1,16 +1,29 @@
-[gd_scene load_steps=5 format=3 uid="uid://bkyj5id0pr10q"]
+[gd_scene load_steps=7 format=3 uid="uid://bkyj5id0pr10q"]
 
 [ext_resource type="Script" uid="uid://gm0hxgclp8pl" path="res://scripts/perks/perk_ui.gd" id="1_ac3sv"]
-[ext_resource type="Texture2D" uid="uid://dv33v70ofgm00" path="res://assets/icons/perks/elemntal_affinity.png" id="1_kh0m4"]
-[ext_resource type="Resource" uid="uid://rd58q063ak7h" path="res://resources/perks/elemental_affinity.tres" id="2_7ocbg"]
+[ext_resource type="Script" uid="uid://c7a8r2og86kxl" path="res://scripts/resources/perk.gd" id="2_2g1qw"]
 [ext_resource type="Texture2D" uid="uid://dnn6eox3kyyy5" path="res://assets/gui/frames/frame_square.png" id="3_2g1qw"]
+[ext_resource type="Texture2D" uid="uid://bid7ix2ewqka3" path="res://assets/icons/perks/treasury_perk.png" id="4_2g1qw"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_norw6"]
+load_path = "res://.godot/imported/elemntal_affinity.png-ff069a52ab749884719d9789a643ab36.ctex"
+
+[sub_resource type="Resource" id="Resource_3wxkr"]
+script = ExtResource("2_2g1qw")
+id = "elemental_affnity"
+perk_name = "Elemntal Affinity"
+icon = SubResource("CompressedTexture2D_norw6")
+type = 3
+rarity = 1
+description = "Adds 1 type of each essence"
+metadata/_custom_type_script = "uid://c7a8r2og86kxl"
 
 [node name="PerkUI" type="Control"]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_ac3sv")
-perk = ExtResource("2_7ocbg")
+perk = SubResource("Resource_3wxkr")
 
 [node name="Frame" type="TextureRect" parent="."]
 layout_mode = 1
@@ -34,7 +47,7 @@ offset_bottom = 16.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(12, 12)
-texture = ExtResource("1_kh0m4")
+texture = ExtResource("4_2g1qw")
 expand_mode = 1
 stretch_mode = 5
 

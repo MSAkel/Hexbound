@@ -14,10 +14,6 @@ const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 const BUILDING_UI: PackedScene = preload("res://scenes/ui/buildings/building_ui.tscn")
 const UNEXPLORED_POI: PackedScene = preload("res://scenes/events/unexplored_poi.tscn")
 
-const UNEXPLORED_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/unexplored_poi.png")
-const CURSE_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/curse.png")
-const RUINS_POI_TEXTURE: Texture2D = preload("res://assets/icons/events/ruins.png")
-
 var curse: CurseUI
 var ruins: RuinsUI
 

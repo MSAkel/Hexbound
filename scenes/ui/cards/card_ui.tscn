@@ -19,14 +19,14 @@ texture = ExtResource("3_usd0r")
 font_size = 14
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
-size = Vector2(135, 206)
+size = Vector2(169, 259)
 
 [node name="CardUI" type="Control"]
 custom_minimum_size = Vector2(135, 206)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 135.0
-offset_bottom = 206.0
+offset_right = 171.0
+offset_bottom = 261.0
 mouse_filter = 1
 theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
@@ -45,8 +45,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 6.0
-offset_bottom = -4.0
+offset_left = 7.0
+offset_top = 13.0
+offset_right = -7.0
+offset_bottom = -9.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -80,7 +82,7 @@ collision_mask = 2
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea"]
-position = Vector2(67.5, 103)
+position = Vector2(84.5, 129.5)
 shape = SubResource("RectangleShape2D_s55cg")
 
 [node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]

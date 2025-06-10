@@ -27,10 +27,6 @@ func _on_button_hover() -> void:
 func _on_focus_entered() -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
 
-func _on_continue_pressed() -> void:
-	pass # Replace with function body.
-
-
 func _on_play_pressed() -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
 	get_tree().change_scene_to_packed(boons_selection_scene)

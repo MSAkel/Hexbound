@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="TileEventData" load_steps=3 format=3 uid="uid://btdt6m2vpfp8d"]
 
-[ext_resource type="Script" path="res://scripts/resources/event_data.gd" id="1_ujvas"]
-[ext_resource type="Texture2D" uid="uid://cadutpr4x30t0" path="res://assets/icons/events/curse.png" id="1_xqtql"]
+[ext_resource type="Script" uid="uid://b7a4u7a3vrx0k" path="res://scripts/resources/event_data.gd" id="1_ujvas"]
+[ext_resource type="Texture2D" uid="uid://cadutpr4x30t0" path="res://assets/icons/poi/curse.png" id="1_xqtql"]
 
 [resource]
 script = ExtResource("1_ujvas")
