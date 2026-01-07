@@ -62,7 +62,7 @@ offset_bottom = 301.0
 grow_horizontal = 2
 
 [node name="Building" type="Label" parent="BuildingsPanel"]
-layout_mode = 2
+layout_mode = 0
 offset_right = 64.0
 offset_bottom = 22.3333
 size_flags_horizontal = 0
@@ -96,6 +96,7 @@ grow_vertical = 2
 expand_mode = 1
 
 [node name="Rune" type="Panel" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0

@@ -27,14 +27,14 @@ font = SubResource("SystemFont_5jwxg")
 font_size = 14
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
-size = Vector2(169, 259)
+size = Vector2(169, 304)
 
 [node name="CardUI" type="Control"]
 custom_minimum_size = Vector2(171, 261)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 171.0
-offset_bottom = 261.0
+offset_bottom = 305.0
 mouse_filter = 1
 theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
@@ -60,13 +60,6 @@ offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CardName" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 2
-text = "Name"
-label_settings = SubResource("LabelSettings_o6pyt")
-horizontal_alignment = 1
-
 [node name="Icon" type="TextureRect" parent="VBoxContainer"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
@@ -77,10 +70,26 @@ texture = ExtResource("4_usd0r")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="CardName" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 2
+text = "Name"
+label_settings = SubResource("LabelSettings_o6pyt")
+horizontal_alignment = 1
+
 [node name="CardDescription" type="Label" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 text = "Description"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ActivationCost" type="Label" parent="VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+text = "Activation Cost"
 label_settings = SubResource("LabelSettings_usd0r")
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -90,7 +99,7 @@ collision_mask = 2
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea"]
-position = Vector2(84.5, 129.5)
+position = Vector2(84.5, 152)
 shape = SubResource("RectangleShape2D_s55cg")
 
 [node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]

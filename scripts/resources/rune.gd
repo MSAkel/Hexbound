@@ -14,19 +14,38 @@ enum RuneRarity {
 @export_multiline var description: String
 @export var selected: bool
 @export var rarity: RuneRarity
-@export var trigger_cost: Dictionary = {
+@export var activation_cost: Dictionary = {
 	"gold": 0,
 	"favor": 0,
 	"insight": 0,
 	"minerals": 0,
 }
-
-# func get_trigger_cost_text() -> String:
-#     var text = ""
-#     for good in trigger_cost:
-#         text += "%s: %d\n" % [good, trigger_cost[good]]
-#     return text
+@export var activation_cost_text: String
 
 func activate_rune(tile: Hex) -> void:
-	if tile.active_building.passive:
-		return
+	# if tile.active_building.passive:
+	# 	return
+	if can_activate():
+		deduct_activation_cost()
+		_on_activate_rune(tile)
+	else:
+		var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
+		floating_text.set_text("Insufficient resources", false)
+		tile.map.add_child(floating_text)
+		floating_text.position = tile.map.base_layer.map_to_local(tile.coordinates) + Vector2(-120, -60)
+
+
+func _on_activate_rune(tile: Hex) -> void:
+	pass
+
+func can_activate() -> bool:
+	if GoodsManager.get_good_amount(GoodType.Type.GOLD) >= activation_cost["gold"] and GoodsManager.get_good_amount(GoodType.Type.FAVOR) >= activation_cost["favor"] and GoodsManager.get_good_amount(GoodType.Type.INSIGHT) >= activation_cost["insight"] and GoodsManager.get_good_amount(GoodType.Type.MINERALS) >= activation_cost["minerals"]:
+		return true
+
+	return false
+
+func deduct_activation_cost() -> void:
+	GoodsManager.remove_good(GoodType.Type.GOLD, activation_cost["gold"])
+	GoodsManager.remove_good(GoodType.Type.FAVOR, activation_cost["favor"])
+	GoodsManager.remove_good(GoodType.Type.INSIGHT, activation_cost["insight"])
+	GoodsManager.remove_good(GoodType.Type.MINERALS, activation_cost["minerals"])

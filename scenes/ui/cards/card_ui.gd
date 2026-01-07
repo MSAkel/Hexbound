@@ -11,6 +11,7 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @onready var card_name: Label = $VBoxContainer/CardName
 @onready var icon: TextureRect = $VBoxContainer/Icon
 @onready var card_description: Label = $VBoxContainer/CardDescription
+@onready var activation_cost: Label = $VBoxContainer/ActivationCost
 
 @onready var drop_point_area: Area2D = $DropPointArea
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
@@ -54,6 +55,12 @@ func set_card(data) -> void:
 		card_type = CardType.BUILDING
 	elif data is Rune:
 		card_type = CardType.RUNE
+		activation_cost.show()
+		var text = ""
+		for good in data.activation_cost:
+			if data.activation_cost[good] > 0:
+				text += "%s: %d\n" % [good, data.activation_cost[good]]
+		activation_cost.text = text
 	else:
 		push_error("Unknown card type for data: ", data)
 

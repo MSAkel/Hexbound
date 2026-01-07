@@ -10,10 +10,10 @@ name = "Endless Banks Rune"
 icon = ExtResource("1_vbiyf")
 description = "Triggers every adjacent tile with a bank. Does not trigger the tile it is placed on"
 selected = true
-trigger_cost = {
+activation_cost = {
 "favor": 0,
 "gold": 3,
 "insight": 0,
-"minerals": 0
+"minerals": 3
 }
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

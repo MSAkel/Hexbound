@@ -1,6 +1,6 @@
 extends Rune
 
-func activate_rune(tile: Hex) -> void:
+func _on_activate_rune(tile: Hex) -> void:
 	var surrounding_tiles = tile.map.base_layer.get_surrounding_cells(tile.coordinates)
 	for coords in surrounding_tiles:
 		if tile.map.map_data.has(coords):

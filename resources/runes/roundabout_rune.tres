@@ -10,10 +10,10 @@ name = "Roundabout Rune"
 icon = ExtResource("1_51moe")
 description = "Triggers all adjacent tiles"
 rarity = 1
-trigger_cost = {
+activation_cost = {
 "favor": 0,
-"gold": 3,
-"insight": 0,
-"minerals": 0
+"gold": 2,
+"insight": 3,
+"minerals": 3
 }
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
