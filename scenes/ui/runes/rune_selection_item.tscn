@@ -17,18 +17,19 @@ texture = ExtResource("3_l8lgd")
 texture = ExtResource("4_mps3j")
 
 [node name="RuneSelectionItem" type="VBoxContainer"]
-custom_minimum_size = Vector2(250, 0)
+custom_minimum_size = Vector2(200, 0)
 offset_right = 250.0
-offset_bottom = 431.0
+offset_bottom = 308.0
 script = ExtResource("1_sk65c")
 
 [node name="IconPanel" type="Panel" parent="."]
-custom_minimum_size = Vector2(200, 150)
+custom_minimum_size = Vector2(75, 75)
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxTexture_l8lgd")
 
 [node name="Icon" type="TextureRect" parent="IconPanel"]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(75, 75)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -46,7 +47,7 @@ expand_mode = 1
 stretch_mode = 4
 
 [node name="TextPanel" type="Panel" parent="."]
-custom_minimum_size = Vector2(0, 250)
+custom_minimum_size = Vector2(0, 185)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_mps3j")
 

@@ -38,7 +38,6 @@ layout_mode = 2
 columns = 4
 
 [node name="PerksButton" type="TextureButton" parent="MarginContainer/GridContainer"]
-visible = false
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 texture_normal = SubResource("AtlasTexture_5hda3")

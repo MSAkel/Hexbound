@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://clbo25fmtd5ba"]
+[gd_scene load_steps=13 format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/perks/active_perks.tscn" id="1_hcnxy"]
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://c8cjskufdru2i" path="res://scenes/ui/runes/runes_menu.tscn" id="9_b65ll"]
 [ext_resource type="PackedScene" uid="uid://clcafvhour5gy" path="res://scenes/ui/top_panels/top_right_ui.tscn" id="9_yc0ux"]
 [ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/bottom_panel/bottom_panel.tscn" id="11_oi40j"]
+[ext_resource type="PackedScene" uid="uid://dfcucutqumd5a" path="res://scenes/ui/cards/card_selection_ui.tscn" id="12_aa6wj"]
 
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_l8t6x")
@@ -26,6 +27,9 @@ offset_bottom = 54.0
 visible = false
 
 [node name="RuneSelectionUI" parent="." instance=ExtResource("6_aa6wj")]
+visible = false
+
+[node name="CardSelectionUI" parent="." instance=ExtResource("12_aa6wj")]
 visible = false
 
 [node name="TopRightUI" parent="." instance=ExtResource("9_yc0ux")]

@@ -12,8 +12,8 @@ description = "Triggers all adjacent tiles"
 rarity = 1
 activation_cost = {
 "favor": 0,
-"gold": 2,
-"insight": 3,
-"minerals": 3
+"gold": 4,
+"insight": 1,
+"minerals": 1
 }
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

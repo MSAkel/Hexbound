@@ -19,14 +19,6 @@ grow_horizontal = 0
 grow_vertical = 2
 script = ExtResource("1_h2p2k")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
 [node name="BackgroundImage" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -38,30 +30,38 @@ grow_vertical = 2
 texture = ExtResource("2_bcbo3")
 expand_mode = 1
 
-[node name="TerrianLabel" type="Label" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -27.0
-offset_top = 29.5
-offset_right = 29.0
-offset_bottom = 52.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="TerrianLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
 text = "Terrian"
 
-[node name="BuildingsPanel" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -383.0
-offset_top = 73.0
-offset_right = 368.0
-offset_bottom = 301.0
-grow_horizontal = 2
+[node name="TerrianDescription" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Description"
 
-[node name="Building" type="Label" parent="BuildingsPanel"]
+[node name="BuildingsPanel" type="Panel" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+
+[node name="Building" type="Label" parent="MarginContainer/VBoxContainer/BuildingsPanel"]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 22.3333
@@ -69,7 +69,7 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 text = "Building"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="BuildingsPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildingsPanel"]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -81,11 +81,11 @@ offset_bottom = -1.0
 grow_vertical = 0
 theme_override_constants/separation = 16
 
-[node name="BuildingPanel" type="Panel" parent="BuildingsPanel/HBoxContainer"]
+[node name="BuildingPanel" type="Panel" parent="MarginContainer/VBoxContainer/BuildingsPanel/HBoxContainer"]
 custom_minimum_size = Vector2(150, 175)
 layout_mode = 2
 
-[node name="BuildingTexture" type="TextureRect" parent="BuildingsPanel/HBoxContainer/BuildingPanel"]
+[node name="BuildingTexture" type="TextureRect" parent="MarginContainer/VBoxContainer/BuildingsPanel/HBoxContainer/BuildingPanel"]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -192,11 +192,6 @@ offset_left = -31.0
 offset_bottom = 31.0
 grow_horizontal = 0
 icon = ExtResource("4_d4ddw")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
 
 [connection signal="pressed" from="Rune/ActiveRuneContainer/RemoveRuneButton" to="." method="_on_remove_rune_button_pressed"]
 [connection signal="pressed" from="Rune/RunesListContainer/InsertRuneButton" to="." method="_on_insert_rune_button_pressed"]

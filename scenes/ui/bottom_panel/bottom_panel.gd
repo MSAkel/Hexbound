@@ -16,7 +16,7 @@ func _ready() -> void:
 	Events.rune_pack_count_changed.connect(_update_runes_count)
 
 func _on_buildings_panel_button_pressed() -> void:
-	UiManager.show_buildings_choice_panel.emit()
+	UiManager.show_cards_choice_panel.emit()
 
 func _update_buildings_count() -> void:
 	building_count_label.text = str(GameManager.available_building_packs)
@@ -37,4 +37,4 @@ func _update_runes_count() -> void:
 
 
 func _on_runes_panel_button_pressed() -> void:
-	UiManager.show_runes_choice_panel.emit()
+	UiManager.show_cards_choice_panel.emit()

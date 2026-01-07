@@ -25,9 +25,9 @@ anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -350.0
+offset_left = -419.0
 offset_top = -151.0
-offset_bottom = 118.0
+offset_bottom = 177.0
 grow_horizontal = 0
 grow_vertical = 2
 script = ExtResource("1_8xteq")
@@ -58,7 +58,7 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="Panel" type="Panel" parent="Panel/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
@@ -69,7 +69,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_bottom = 2.0
+offset_top = 3.0
+offset_bottom = 12.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 8
@@ -86,10 +87,17 @@ size_flags_horizontal = 4
 text = "Title"
 
 [node name="Description" type="Label" parent="Panel/MarginContainer/VBoxContainer/Panel/MarginContainer/VBoxContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(350, 75)
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_stretch_ratio = 0.0
 theme_override_font_sizes/font_size = 10
-text = "Description"
+text = "Abandoned ruins, very spooky. Who knows what you might find in there? 
+Carefully explore to find some treasure or loot the ruines to gain riches and risk angering the spirits. 
+Muahahaha"
+autowrap_mode = 3
+uppercase = true
 
 [node name="RewardsContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
 layout_mode = 2

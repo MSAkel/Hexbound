@@ -4,7 +4,7 @@ extends Control
 var hex: Hex = null
 var selected_rune: Rune = null
 
-@onready var terrainLabel = $TerrianLabel
+@onready var terrian_label: Label = $MarginContainer/VBoxContainer/TerrianLabel
 #@onready var production_1_text = $ProductionText1
 #@onready var production_2_text = $ProductionText2
 @onready var terrain_background_image = $BackgroundImage
