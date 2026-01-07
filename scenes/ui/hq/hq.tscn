@@ -16,7 +16,6 @@ texture = ExtResource("2_67mrc")
 texture = ExtResource("5_c67yf")
 
 [node name="HQ" type="Control"]
-z_index = 7
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -69,8 +68,13 @@ horizontal_alignment = 1
 
 [node name="Description" type="Label" parent="HQPanel/MarginContainer/VBoxContainer2/VBoxContainer"]
 layout_mode = 2
-text = "THe Headquarters can be upgraded by Increasing influence
-and spending gold or something idk"
+text = "Triggers every building within its influence area and 
+passively generates gold.
+
+THe Headquarters can be upgraded by Increasing influence
+and spending gold or something idk.
+
+"
 
 [node name="Generations" type="Label" parent="HQPanel/MarginContainer/VBoxContainer2/VBoxContainer"]
 layout_mode = 2

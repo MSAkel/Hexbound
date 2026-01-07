@@ -16,7 +16,6 @@ var map: HexTileMap
 var tile: Hex
 var center_coordinates: Vector2i
 
-#TODO have the goods type linked to enum to avoid unintended values
 func _ready() -> void:
 	Events.turn_ended.connect(on_turn_ended)
 	generated_goods["gold"] = 5
@@ -24,13 +23,33 @@ func _ready() -> void:
 		generations.text = "%s: %d" % [good, generated_goods[good]]
 
 func on_turn_ended() -> void:
+	# Show floating text for generated goods and add them to inventory
+	var tile_pos = map.base_layer.map_to_local(center_coordinates)
+	var vertical_offset = 0
+	
 	for good_id in generated_goods:
 		# Convert string good ID to GoodType.Type enum
 		var good_type = get_good_type_from_id(good_id)
 		if good_type != null:
 			var amount: int = int(generated_goods[good_id])
 			GoodsManager.add_good(good_type, amount)
+			
+			# Show floating text for this good
+			var is_gold = good_id.to_lower() == "gold"
+			map.create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [amount, good_id.capitalize()], is_gold)
+			vertical_offset -= 20  # Offset multiple goods vertically
+	
+	# Trigger buildings on adjacent tiles
+	var surrounding_tiles = map.base_layer.get_surrounding_cells(center_coordinates)
+	for coords in surrounding_tiles:
+		if map.map_data.has(coords):
+			var surrounding_hex = map.map_data[coords]
+			if surrounding_hex.active_building != null:
+				surrounding_hex.trigger_building_generation()
+	
 	temporary_boost = 0
+
+	
 
 # Helper function to convert string good ID to GoodType.Type enum
 func get_good_type_from_id(good_id: String):
