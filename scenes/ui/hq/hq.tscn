@@ -1,10 +1,22 @@
-[gd_scene load_steps=4 format=3 uid="uid://ctxjopaym03xl"]
+[gd_scene load_steps=11 format=3 uid="uid://ctxjopaym03xl"]
 
 [ext_resource type="Script" uid="uid://bvjm52w84qccf" path="res://scenes/ui/hq/hq.gd" id="1_yhnrs"]
+[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="2_67mrc"]
 [ext_resource type="Texture2D" uid="uid://stolrlq7n6y7" path="res://assets/gui/buttons/button_oval.png" id="2_xjt5e"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="3_f4vjk"]
 [ext_resource type="Texture2D" uid="uid://dt4p4cylx1l7x" path="res://assets/icons/buildings/hq.png" id="3_yhnrs"]
+[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="4_acu3j"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="5_c67yf"]
+[ext_resource type="PackedScene" uid="uid://cfo4gpycs0j8u" path="res://scenes/quests/reward_ui.tscn" id="6_esida"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_idvkv"]
+texture = ExtResource("2_67mrc")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_k1t6e"]
+texture = ExtResource("5_c67yf")
 
 [node name="HQ" type="Control"]
+z_index = 7
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -15,7 +27,119 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yhnrs")
 
-[node name="TextureButton" type="TextureButton" parent="."]
+[node name="HQPanel" type="Panel" parent="."]
+visible = false
+z_index = 1
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -269.0
+offset_top = -283.5
+offset_right = 269.0
+offset_bottom = 283.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_idvkv")
+
+[node name="MarginContainer" type="MarginContainer" parent="HQPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="HQPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HQPanel/MarginContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HQPanel/MarginContainer/VBoxContainer2/VBoxContainer"]
+layout_mode = 2
+text = "HEADQUARTERS"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="HQPanel/MarginContainer/VBoxContainer2/VBoxContainer"]
+layout_mode = 2
+text = "THe Headquarters can be upgraded by Increasing influence
+and spending gold or something idk"
+
+[node name="Generations" type="Label" parent="HQPanel/MarginContainer/VBoxContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="HQPanel/MarginContainer/VBoxContainer2"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxTexture_k1t6e")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HQPanel/MarginContainer/VBoxContainer2/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="HQPanel/MarginContainer/VBoxContainer2/Panel/VBoxContainer"]
+layout_mode = 2
+text = "HQ level 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="HQPanel/MarginContainer/VBoxContainer2/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Upgrade requirements"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HQPanel/MarginContainer/VBoxContainer2/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="ExploreRewardsContainer" type="HBoxContainer" parent="HQPanel/MarginContainer/VBoxContainer2/Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="RewardUI" parent="HQPanel/MarginContainer/VBoxContainer2/Panel/VBoxContainer/HBoxContainer/ExploreRewardsContainer" instance=ExtResource("6_esida")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="ExploreRewardsContainer" type="HBoxContainer" parent="HQPanel/MarginContainer/VBoxContainer2/Panel/VBoxContainer/HBoxContainer/ExploreRewardsContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="RewardUI" parent="HQPanel/MarginContainer/VBoxContainer2/Panel/VBoxContainer/HBoxContainer/ExploreRewardsContainer/ExploreRewardsContainer" instance=ExtResource("6_esida")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="CloseButton" type="TextureButton" parent="HQPanel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -32.0
+offset_bottom = 32.0
+grow_horizontal = 0
+size_flags_horizontal = 8
+size_flags_vertical = 0
+texture_normal = ExtResource("3_f4vjk")
+texture_hover = ExtResource("4_acu3j")
+
+[node name="HQButton" type="TextureButton" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -31,7 +155,7 @@ grow_vertical = 2
 texture_normal = ExtResource("2_xjt5e")
 stretch_mode = 0
 
-[node name="TextureRect" type="TextureRect" parent="TextureButton"]
+[node name="Icon" type="TextureRect" parent="HQButton"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -47,4 +171,5 @@ grow_vertical = 2
 texture = ExtResource("3_yhnrs")
 expand_mode = 1
 
-[connection signal="pressed" from="TextureButton" to="." method="_on_texture_button_pressed"]
+[connection signal="pressed" from="HQPanel/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="HQButton" to="." method="_on_hq_button_pressed"]

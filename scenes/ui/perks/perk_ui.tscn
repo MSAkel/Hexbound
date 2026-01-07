@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://bid7ix2ewqka3" path="res://assets/icons/perks/treasury_perk.png" id="4_2g1qw"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_norw6"]
-load_path = "res://.godot/imported/elemntal_affinity.png-ff069a52ab749884719d9789a643ab36.ctex"
 
 [sub_resource type="Resource" id="Resource_3wxkr"]
 script = ExtResource("2_2g1qw")

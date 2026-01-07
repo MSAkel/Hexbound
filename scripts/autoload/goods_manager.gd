@@ -21,8 +21,9 @@ func get_good_amount(type: GoodType.Type) -> int:
 	return 0
 
 
-func add_good(good: Good, amount: int) -> void:
-	if amounts.has(good):
+func add_good(type: GoodType.Type, amount: int) -> void:
+	var good = goods_by_type.get(type)
+	if good:
 		amounts[good] += amount
 		good_amount_changed.emit(good, amounts[good])
 	else:

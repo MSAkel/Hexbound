@@ -1,8 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://b4k5fq6ran8f5"]
+[gd_scene load_steps=16 format=3 uid="uid://b4k5fq6ran8f5"]
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
-[ext_resource type="Texture2D" uid="uid://b30toi1ahc1f" path="res://assets/gui/card.png" id="3_usd0r"]
+[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="3_usd0r"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Texture2D" uid="uid://b7ficn0l1sjo3" path="res://assets/icons/buildings/library.png" id="4_usd0r"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
@@ -13,16 +13,24 @@
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5jwxg"]
 texture = ExtResource("3_usd0r")
 
+[sub_resource type="SystemFont" id="SystemFont_usd0r"]
+subpixel_positioning = 0
+
 [sub_resource type="LabelSettings" id="LabelSettings_o6pyt"]
+font = SubResource("SystemFont_usd0r")
+
+[sub_resource type="SystemFont" id="SystemFont_5jwxg"]
+subpixel_positioning = 0
 
 [sub_resource type="LabelSettings" id="LabelSettings_usd0r"]
+font = SubResource("SystemFont_5jwxg")
 font_size = 14
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
 size = Vector2(169, 259)
 
 [node name="CardUI" type="Control"]
-custom_minimum_size = Vector2(135, 206)
+custom_minimum_size = Vector2(171, 261)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 171.0
@@ -46,9 +54,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 7.0
-offset_top = 13.0
+offset_top = 20.0
 offset_right = -7.0
-offset_bottom = -9.0
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -60,7 +68,7 @@ label_settings = SubResource("LabelSettings_o6pyt")
 horizontal_alignment = 1
 
 [node name="Icon" type="TextureRect" parent="VBoxContainer"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
@@ -70,7 +78,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="CardDescription" type="Label" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 110)
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 text = "Description"
 label_settings = SubResource("LabelSettings_usd0r")

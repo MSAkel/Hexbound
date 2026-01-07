@@ -45,3 +45,29 @@ void fragment() {
         COLOR = vec4(0.0);
     }
 } 
+
+
+// shader_type canvas_item;
+
+// uniform sampler2D fog_tex : hint_albedo;
+// uniform vec4 fog_color : source_color = vec4(0.7, 0.7, 0.8, 0.7);
+// uniform float fog_opacity : hint_range(0.0, 1.0) = 0.7;
+// uniform float fog_speed : hint_range(0.0, 2.0) = 0.1;
+// uniform float fog_scale : hint_range(0.1, 5.0) = 1.5;
+
+// void fragment() {
+//     vec2 uv1 = UV * fog_scale + vec2(TIME * fog_speed, 0.0);
+//     vec2 uv2 = UV * (fog_scale * 0.7) - vec2(0.0, TIME * fog_speed * 0.5);
+
+//     float fog1 = texture(fog_tex, uv1).a;
+//     float fog2 = texture(fog_tex, uv2).a;
+
+//     float fog = mix(fog1, fog2, 0.5);
+
+//     vec4 base_color = texture(TEXTURE, UV);
+//     vec4 final_fog = fog_color;
+//     final_fog.a *= fog * fog_opacity;
+
+//     // Blend fog only where the base texture is visible
+//     COLOR = mix(base_color, final_fog, final_fog.a);
+// } 

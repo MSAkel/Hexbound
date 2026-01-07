@@ -1,0 +1,106 @@
+[gd_scene load_steps=9 format=3 uid="uid://cduqfwc6ck3gs"]
+
+[ext_resource type="Script" uid="uid://bgrvm0y6ikphn" path="res://scenes/ui/results/results_panel.gd" id="1_7vt7i"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="1_chxfk"]
+[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="2_f2o0u"]
+[ext_resource type="Texture2D" uid="uid://ci6kenab3l10p" path="res://assets/icons/others/treasure_chest.png" id="3_7vt7i"]
+[ext_resource type="Theme" uid="uid://d2qm4n05j7qhs" path="res://themes/button.tres" id="4_f2o0u"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_l2im5"]
+texture = ExtResource("1_chxfk")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4cf0m"]
+atlas = ExtResource("2_f2o0u")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5rxni"]
+atlas = ExtResource("3_7vt7i")
+
+[node name="ResultsPanel" type="Control"]
+custom_minimum_size = Vector2(500, 175)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -125.0
+offset_right = 250.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7vt7i")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_l2im5")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="IconBackground" type="TextureRect" parent="Panel/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(74, 74)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+texture = SubResource("AtlasTexture_4cf0m")
+expand_mode = 1
+
+[node name="Icon" type="TextureRect" parent="Panel/MarginContainer/HBoxContainer/IconBackground"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+texture = SubResource("AtlasTexture_5rxni")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Title"
+
+[node name="Description" type="Label" parent="Panel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Description"
+
+[node name="RewardsContainer" type="HBoxContainer" parent="Panel/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="Panel/MarginContainer"]
+custom_minimum_size = Vector2(85, 35)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme = ExtResource("4_f2o0u")
+text = "Confirm"

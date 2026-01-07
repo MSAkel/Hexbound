@@ -1,0 +1,34 @@
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://d2qm4n05j7qhs"]
+
+[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="1_dpjbf"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_s8pfl"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+texture = ExtResource("1_dpjbf")
+modulate_color = Color(0.493545, 0.493546, 0.493546, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xnr13"]
+atlas = ExtResource("1_dpjbf")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q8uvm"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+texture = SubResource("AtlasTexture_xnr13")
+modulate_color = Color(0.82606, 0.82606, 0.82606, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7vt7i"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+texture = ExtResource("1_dpjbf")
+
+[resource]
+Button/styles/disabled = SubResource("StyleBoxTexture_s8pfl")
+Button/styles/hover = SubResource("StyleBoxTexture_q8uvm")
+Button/styles/normal = SubResource("StyleBoxTexture_7vt7i")

@@ -9,3 +9,4 @@ id = "insight"
 name = "Insight"
 description = "I"
 icon = ExtResource("1_ixhil")
+type = 2

@@ -9,6 +9,10 @@ id = "basic_run"
 name = "Basic Rune"
 icon = ExtResource("1_ayjfw")
 description = "Triggers the tile which it is placed on once."
-selected = false
-rarity = 0
+trigger_cost = {
+"favor": 0,
+"gold": 3,
+"insight": 0,
+"minerals": 0
+}
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

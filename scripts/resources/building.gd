@@ -15,15 +15,18 @@ enum BuildingType {
 @export var type: BuildingType
 @export var generation_amount: int
 @export var generated_good: Good
-@export var passive: bool = false
+## If true, the building will be activated once and not triggered by runes
+@export var passive: bool = false 
 @export_multiline var description: String
 @export_multiline var tooltip: String
 
 var temporary_boost: int = 0
 
+# Currently only gets fired by runes
 func trigger_building() -> void:
     # if a building is passive, it will be activated once and not triggered by runes
     if passive:
+        activate_passive()
         return
 
 

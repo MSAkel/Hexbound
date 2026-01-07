@@ -232,6 +232,9 @@ func _create_resource_animation(resource_type: String, amount: int, vertical_off
 	
 # Called by the rune after its effect is triggered
 func trigger_building_generation() -> void:
+	if active_building.generated_good == null:
+		return
+
 	# for resource in active_building.generated_good:
 	var total_amount = active_building.generation_amount + active_building.temporary_boost
 	# _create_resource_animation(resource, total_amount, 0)

@@ -9,6 +9,11 @@ id = "roundabout_rune"
 name = "Roundabout Rune"
 icon = ExtResource("1_51moe")
 description = "Triggers all adjacent tiles"
-selected = false
 rarity = 1
+trigger_cost = {
+"favor": 0,
+"gold": 3,
+"insight": 0,
+"minerals": 0
+}
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

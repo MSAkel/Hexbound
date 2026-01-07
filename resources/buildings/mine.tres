@@ -1,6 +1,7 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://db6mcuxlla6lm"]
+[gd_resource type="Resource" load_steps=4 format=3 uid="uid://db6mcuxlla6lm"]
 
 [ext_resource type="Texture2D" uid="uid://7ll5nygn8c60" path="res://assets/icons/buildings/mine.png" id="1_l7pyc"]
+[ext_resource type="Resource" uid="uid://df7hl7e17dn7p" path="res://resources/goods/minerals.tres" id="1_mfnvy"]
 [ext_resource type="Script" uid="uid://b0oav1h0ls43w" path="res://resources/buildings/mine.gd" id="2_l7pyc"]
 
 [resource]
@@ -10,6 +11,7 @@ name = "Mine"
 icon = ExtResource("1_l7pyc")
 type = 0
 generation_amount = 3
+generated_good = ExtResource("1_mfnvy")
 passive = false
 description = "Generates 3 minerals on trigger"
 tooltip = ""

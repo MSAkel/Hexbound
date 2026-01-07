@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Good" load_steps=3 format=3 uid="uid://df7hl7e17dn7p"]
+
+[ext_resource type="Texture2D" uid="uid://bll015iabyn6x" path="res://assets/icons/goods/minerals.png" id="1_o0frh"]
+[ext_resource type="Script" uid="uid://dpl021dtl47jo" path="res://scripts/resources/good.gd" id="2_brvwk"]
+
+[resource]
+script = ExtResource("2_brvwk")
+id = "minerals"
+name = "Minerals"
+description = "I"
+icon = ExtResource("1_o0frh")
+type = 3

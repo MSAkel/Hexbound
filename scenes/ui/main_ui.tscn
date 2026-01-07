@@ -21,10 +21,6 @@ offset_bottom = 54.0
 [node name="TopPanelUI" parent="." groups=["main_ui"] instance=ExtResource("4_travt")]
 
 [node name="BottomPanel" parent="." instance=ExtResource("11_oi40j")]
-offset_left = -470.0
-offset_top = -126.0
-offset_right = 470.0
-offset_bottom = -1.0
 
 [node name="BuildingSelectionUi" parent="." instance=ExtResource("5_46cp5")]
 visible = false

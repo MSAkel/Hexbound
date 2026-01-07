@@ -19,7 +19,7 @@ func process_rewards() -> void:
 		Reward.RewardType.INFLUENCE:
 			GameManager.influence_progress += amount
 		Reward.RewardType.GOOD:
-			GoodsManager.add_good(reward, amount)
+			GoodsManager.add_good(reward.type, amount)
 		Reward.RewardType.BUILDING:
 			Events.building_selected.emit(reward as Building)
 		Reward.RewardType.RUNE:

@@ -9,7 +9,6 @@ extends Node2D
 # Map size
 @export var width: int
 @export var height: int
-
 # @export var minerals: Array[Mineral] = []
 @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUi"
 
@@ -18,6 +17,9 @@ const EXPLORE_BUTTON: PackedScene = preload("res://scenes/ui/explore_button.tscn
 # Special events UI
 var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
+
+#The starting Building
+const HQ = preload("uid://ctxjopaym03xl")
 
 # Shader for fog effect
 const FOG_SHADER = preload("res://shaders/fog_overlay.gdshader")
@@ -242,9 +244,8 @@ func generate_terrain() -> void:
 			fog_overlay_layer.set_cell(Vector2i(x, y), 0, Vector2i(0,0))
 			# h.generate_minerals(minerals)
 		
-			#if x == x_center and y == y_center:
-				#var center_hex = h
-			if h.terrain_type != hex.TerrainType.WATER:
+			# Generate special events on tiles. Exclude the center tile and water tiles
+			if h.terrain_type != hex.TerrainType.WATER and (x != x_center and y != y_center):
 				var containsEvent = randi_range(0, 6)
 				if containsEvent == 1:
 					h.special_state = hex.SpecialTileState.CURSED
@@ -253,9 +254,28 @@ func generate_terrain() -> void:
 					h.special_state = hex.SpecialTileState.RUINS
 					h.apply_special_state()
 
+	on_game_started(x_center, y_center)
+
+# Handle game start events
+func on_game_started(x_center: int, y_center: int) -> void:
 	# Explore center and surrounding tiles after all tiles are generated
 	var center_hex = map_data[Vector2i(x_center, y_center)]
 	explore_tile(center_hex)
+	
+	# Place HQ building instance on the center tile
+	var hq_instance: Headquarters = HQ.instantiate()
+	hq_instance.map = self
+	hq_instance.tile = center_hex
+	hq_instance.center_coordinates = center_hex.coordinates
+	
+	# Set size for the HQ instance
+	hq_instance.custom_minimum_size = Vector2(100, 100)
+	hq_instance.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	hq_instance.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	
+	# Add to grid instead of directly to map
+	center_hex.items_grid.add_child(hq_instance)
+	center_hex._reposition_items()
 
 func update_explore_buttons() -> void:
 	# Remove all existing explore buttons
@@ -273,13 +293,15 @@ func update_explore_buttons() -> void:
 					var explore_button = EXPLORE_BUTTON.instantiate()
 					explore_button.hex = h
 					explore_button.position = base_layer.map_to_local(coords)
+					# Center the button on the tile
+					explore_button.position -= explore_button.size / 2
 					add_child(explore_button)
 
 func explore_tile(h: Hex) -> void:
 	fog_overlay_layer.set_cell(h._coordinates, -1)
 	h.explore()
 	
-	# Explore surrounding tiles
+	# Explore surrounding tiles on initial load and exploration
 	var surrounding_tiles = base_layer.get_surrounding_cells(h.coordinates)
 	for coords in surrounding_tiles:
 		if map_data.has(coords):
@@ -314,7 +336,6 @@ func on_turn_ended():
 					
 	# Signal that turn processing is complete
 	GameManager.finish_turn_processing()
-
 
 # Signal handler for when a card starts being dragged
 func _on_card_drag_started(card: CardUI) -> void:

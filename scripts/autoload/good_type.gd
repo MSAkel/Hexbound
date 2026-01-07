@@ -4,7 +4,8 @@ extends RefCounted
 enum Type {
 	GOLD,
 	FAVOR,
-	INSIGHT
+	INSIGHT,
+	MINERALS,
 }
 
 # const GOOD_PATHS = {
@@ -16,7 +17,8 @@ enum Type {
 const GOOD_IDS = {
 	Type.GOLD: "gold",
 	Type.FAVOR: "favor",
-	Type.INSIGHT: "insight"
+	Type.INSIGHT: "insight",
+	Type.MINERALS: "minerals",
 }
 
 # static func get_good_path(type: Type) -> String:

@@ -86,6 +86,7 @@ var available_runes_packs: int:
 		return _available_runes_packs
 	set(value):
 		_available_runes_packs = max(0, value)
+		Events.rune_pack_count_changed.emit()
 
 
 var runes_reroll_cost: int:
@@ -119,27 +120,40 @@ func _ready() -> void:
 	
 	# Load the runes from the resources directory
 	var runes_directory = DirAccess.open("res://resources/runes/")
-	for file in runes_directory.get_files():
-		if file.ends_with(".tres"):
-			var rune = load("res://resources/runes/" + file)
-			runes_pool.append(rune)
+	if runes_directory:
+		for file in runes_directory.get_files():
+			if file.ends_with(".tres"):
+				var rune = load("res://resources/runes/" + file)
+				if rune:
+					runes_pool.append(rune)
+				else:
+					push_error("Failed to load rune: " + file)
+	else:
+		push_error("Failed to open runes directory")
 	
-	# Load the perks from the resources directory
-	var perks_directory = DirAccess.open("res://resources/perks/")
-	for file in perks_directory.get_files():
-		if file.ends_with(".tres"):
-			var perk = load("res://resources/perks/" + file)
-			perks_pool.append(perk)
-
+	# Load the buildings from the resources directory
 	var buildings_directory = DirAccess.open("res://resources/buildings/")
-	for file in buildings_directory.get_files():
-		if file.ends_with(".tres"):
-			var building = load("res://resources/buildings/" + file)
-			buildings_pool.append(building)
+	if buildings_directory:
+		for file in buildings_directory.get_files():
+			if file.ends_with(".tres"):
+				var building = load("res://resources/buildings/" + file)
+				if building:
+					buildings_pool.append(building)
+				else:
+					push_error("Failed to load building: " + file)
+	else:
+		push_error("Failed to open buildings directory")
 
-	create_buildings_pack()
-	create_runes_pack()
-	create_perks_pack()
+	# Only create packs if we have items in the pools
+	if buildings_pool.size() > 0:
+		create_buildings_pack()
+	else:
+		push_error("No buildings loaded into pool")
+		
+	if runes_pool.size() > 0:
+		create_runes_pack()
+	else:
+		push_error("No runes loaded into pool")
 
 	Events.turn_ended.connect(end_turn)
 
@@ -186,13 +200,13 @@ func create_runes_pack() -> void:
 		for i in 3:
 			runes_pack.append(shuffled_pool[i])
 
-func create_perks_pack() -> void:
-	if perks_pack.size() == 0:
-		var shuffled_pool := perks_pool.duplicate()
-		shuffled_pool.shuffle()
+# func create_perks_pack() -> void:
+# 	if perks_pack.size() == 0:
+# 		var shuffled_pool := perks_pool.duplicate()
+# 		shuffled_pool.shuffle()
 
-		for i in 3:
-			perks_pack.append(shuffled_pool[i])
+# 		for i in 3:
+# 			perks_pack.append(shuffled_pool[i])
 
 func set_game_speed(speed: float) -> void:
 	_game_speed = speed

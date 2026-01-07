@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://nl761od8nnm8"]
+[gd_scene load_steps=12 format=3 uid="uid://nl761od8nnm8"]
 
 [ext_resource type="Script" uid="uid://dlcicwjgb6qkv" path="res://scenes/events/ruins/ruins_ui.gd" id="1_mmsej"]
 [ext_resource type="Texture2D" uid="uid://dnn6eox3kyyy5" path="res://assets/gui/frames/frame_square.png" id="2_0ukg7"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="3_50icf"]
 [ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="4_1frj6"]
 [ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="5_ctvfw"]
+[ext_resource type="PackedScene" uid="uid://wxhh35phpvvy" path="res://scenes/ui/results/ruins_details_panel.tscn" id="9_2jeeq"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0ukg7"]
 texture = ExtResource("3_50icf")
@@ -69,7 +70,7 @@ texture = ExtResource("2_316ux")
 visible = false
 z_index = 1
 custom_minimum_size = Vector2(200, 200)
-layout_mode = 2
+layout_mode = 0
 offset_left = 76.0
 offset_right = 424.0
 offset_bottom = 441.0
@@ -142,6 +143,16 @@ size_flags_horizontal = 8
 size_flags_vertical = 0
 texture_normal = ExtResource("4_1frj6")
 texture_hover = ExtResource("5_ctvfw")
+
+[node name="RuinsDetailsPanel" parent="Container" instance=ExtResource("9_2jeeq")]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_top = 0.0
+offset_bottom = 269.0
+grow_vertical = 1
 
 [connection signal="pressed" from="Container/RuinsButton" to="." method="_on_ruins_button_pressed"]
 [connection signal="pressed" from="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/ExploreButton" to="." method="_on_explore_button_pressed"]
