@@ -232,13 +232,24 @@ func _create_resource_animation(resource_type: String, amount: int, vertical_off
 	
 # Called by the rune after its effect is triggered
 func trigger_building_generation() -> void:
-	if active_building.generated_good == null:
+	if active_building == null:
+		return
+	
+	# Check if building generates any goods
+	if active_building.generated_goods.is_empty():
+		active_building.trigger_building()
 		return
 
-	# for resource in active_building.generated_good:
-	var total_amount = active_building.generation_amount + active_building.temporary_boost
-	# _create_resource_animation(resource, total_amount, 0)
-	_create_resource_animation(active_building.generated_good.id, total_amount, 0)
+	# Create animations for all goods that will be generated
+	var vertical_offset = 0
+	for good_id in active_building.generated_goods:
+		var amount = int(active_building.generated_goods[good_id])
+		var total_amount = amount + active_building.temporary_boost
+		# Show animation if the final amount will be positive
+		if total_amount > 0:
+			_create_resource_animation(good_id, total_amount, vertical_offset)
+			vertical_offset -= 20  # Offset multiple goods vertically
+	
 	active_building.trigger_building()
 
 

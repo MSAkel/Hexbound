@@ -1,0 +1,22 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://drq26msk16hqy"]
+
+[ext_resource type="Texture2D" uid="uid://di7dxd824l5pt" path="res://assets/icons/buildings/paper_mill.svg" id="1_i412u"]
+[ext_resource type="Script" uid="uid://2ajl3rdvn4r6" path="res://resources/buildings/paper_mill.gd" id="2_i412u"]
+
+[resource]
+script = ExtResource("2_i412u")
+id = "paper_mill"
+name = "Paper Mill"
+icon = ExtResource("1_i412u")
+type = 7
+generated_goods = {
+"favor": 0,
+"food": 0,
+"gold": 0,
+"insight": 1,
+"minerals": 0,
+"stone": 0,
+"wood": 0
+}
+description = "Converts 3 gold into 1 insight"
+metadata/_custom_type_script = "uid://byuy57newj5vi"

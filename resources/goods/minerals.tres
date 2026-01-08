@@ -9,4 +9,4 @@ id = "minerals"
 name = "Minerals"
 description = "I"
 icon = ExtResource("1_o0frh")
-type = 3
+type = 6

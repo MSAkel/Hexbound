@@ -33,11 +33,11 @@ var _available_perk_rerolls: int = 1
 
 var selected_boons: Array[Boon] = []
 
-var influence_required: int = 15
-var _influence_progress: int = 0
+var influence_required: float = 15
+var _influence_progress: float = 0
 
 # Core game state getters and setters
-var influence_progress: int:
+var influence_progress: float:
 	get:
 		return _influence_progress
 	set(value):

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://deb1u0q0rx5rn"]
+
+[ext_resource type="Texture2D" uid="uid://hbjc4ga56goh" path="res://assets/icons/buildings/bank.png" id="2_kcvql"]
+[ext_resource type="Script" uid="uid://cyrnpri2ywe55" path="res://resources/buildings/minting_facility.gd" id="3_eeyu7"]
+
+[resource]
+script = ExtResource("3_eeyu7")
+id = "mintingFacility"
+name = "Minting Facility"
+icon = ExtResource("2_kcvql")
+type = 5
+generated_goods = {
+"favor": 0,
+"food": 0,
+"gold": 4,
+"insight": 0,
+"minerals": 0,
+"stone": 0,
+"wood": 0
+}
+description = "Generates 5 gold on trigger"
+metadata/_custom_type_script = "uid://byuy57newj5vi"

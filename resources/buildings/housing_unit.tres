@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://c0xyaaasebnyn"]
+
+[ext_resource type="Texture2D" uid="uid://by618cslypx5g" path="res://assets/icons/buildings/housing_unit.svg" id="1_e5w2m"]
+[ext_resource type="Script" uid="uid://dstuxwxjprlr5" path="res://resources/buildings/housing_unit.gd" id="2_e5w2m"]
+
+[resource]
+script = ExtResource("2_e5w2m")
+id = "housing_unit"
+name = "Housing Unit"
+icon = ExtResource("1_e5w2m")
+type = 9
+passive = true
+description = "Passivly generates 0.1 influence per turn, consumes 3 food per turn."
+metadata/_custom_type_script = "uid://byuy57newj5vi"

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Good" load_steps=3 format=3 uid="uid://vtuqgveud21"]
+
+[ext_resource type="Texture2D" uid="uid://ch0ivm031l0nk" path="res://assets/icons/goods/stone.png" id="1_eq4ej"]
+[ext_resource type="Script" uid="uid://dpl021dtl47jo" path="res://scripts/resources/good.gd" id="2_3tewr"]
+
+[resource]
+script = ExtResource("2_3tewr")
+id = "stone"
+name = "Stone"
+description = "Used for constructing buildings, roads and POI events"
+icon = ExtResource("1_eq4ej")
+type = 3

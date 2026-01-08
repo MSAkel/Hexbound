@@ -1,9 +1,12 @@
-[gd_scene load_steps=11 format=3 uid="uid://cm3sdx2an61fm"]
+[gd_scene load_steps=14 format=3 uid="uid://cm3sdx2an61fm"]
 
 [ext_resource type="Script" uid="uid://d26ag2i5t0ue2" path="res://scripts/top_panel_ui.gd" id="1_er6pf"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_1d8jj"]
+[ext_resource type="Resource" uid="uid://chx3cg65sb5et" path="res://resources/goods/food.tres" id="5_anpm2"]
 [ext_resource type="PackedScene" uid="uid://dk3bsvpgwbwau" path="res://scenes/goods/good_ui.tscn" id="6_1ubwj"]
+[ext_resource type="Resource" uid="uid://btn74mirktsx1" path="res://resources/goods/wood.tres" id="6_4r2dq"]
 [ext_resource type="Resource" uid="uid://cyvpqw0ddxiqn" path="res://resources/goods/gold.tres" id="7_6h7a3"]
+[ext_resource type="Resource" uid="uid://vtuqgveud21" path="res://resources/goods/stone.tres" id="7_7foy0"]
 [ext_resource type="Resource" uid="uid://df7hl7e17dn7p" path="res://resources/goods/minerals.tres" id="7_boc20"]
 [ext_resource type="Resource" uid="uid://dinl60w5u8hq8" path="res://resources/goods/favor.tres" id="8_skw6e"]
 [ext_resource type="Resource" uid="uid://cau2a0lnb282r" path="res://resources/goods/insight.tres" id="9_7memu"]
@@ -28,8 +31,8 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -284.0
-offset_right = 284.0
+offset_left = -486.0
+offset_right = 486.0
 offset_bottom = 102.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_1ubwj")
@@ -39,8 +42,8 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -281.0
-offset_right = 284.0
+offset_left = -463.0
+offset_right = 466.0
 offset_bottom = 101.0
 grow_horizontal = 2
 mouse_filter = 0
@@ -56,6 +59,18 @@ theme_override_constants/separation = 10
 [node name="GoldUI" parent="Panel/MarginContainer/GoodsContainer" instance=ExtResource("6_1ubwj")]
 layout_mode = 2
 good_type = ExtResource("7_6h7a3")
+
+[node name="FoodUI" parent="Panel/MarginContainer/GoodsContainer" instance=ExtResource("6_1ubwj")]
+layout_mode = 2
+good_type = ExtResource("5_anpm2")
+
+[node name="WoodUI" parent="Panel/MarginContainer/GoodsContainer" instance=ExtResource("6_1ubwj")]
+layout_mode = 2
+good_type = ExtResource("6_4r2dq")
+
+[node name="StoneUI" parent="Panel/MarginContainer/GoodsContainer" instance=ExtResource("6_1ubwj")]
+layout_mode = 2
+good_type = ExtResource("7_7foy0")
 
 [node name="FavorUI" parent="Panel/MarginContainer/GoodsContainer" instance=ExtResource("6_1ubwj")]
 layout_mode = 2

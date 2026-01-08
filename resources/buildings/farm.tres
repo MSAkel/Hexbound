@@ -1,0 +1,22 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dgo4id0ggu2an"]
+
+[ext_resource type="Texture2D" uid="uid://l3u27d6w56a7" path="res://assets/icons/buildings/corn.svg" id="1_ylvhy"]
+[ext_resource type="Script" uid="uid://1igl6jhe3teo" path="res://resources/buildings/excavation_site.gd" id="2_ylvhy"]
+
+[resource]
+script = ExtResource("2_ylvhy")
+id = "farm"
+name = "Farm"
+icon = ExtResource("1_ylvhy")
+type = 10
+generated_goods = {
+"favor": 0,
+"food": 3,
+"gold": 0,
+"insight": 0,
+"minerals": 0,
+"stone": 0,
+"wood": 0
+}
+description = "Generates 3 food on trigger"
+metadata/_custom_type_script = "uid://byuy57newj5vi"

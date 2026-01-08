@@ -1,0 +1,22 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://q830kt50p7jk"]
+
+[ext_resource type="Texture2D" uid="uid://dif7c3uxotlkx" path="res://assets/icons/buildings/lumber_camp.svg" id="1_g1vro"]
+[ext_resource type="Script" uid="uid://cd58ee5vmqaud" path="res://resources/buildings/lumber_camp.gd" id="2_g1vro"]
+
+[resource]
+script = ExtResource("2_g1vro")
+id = "lumber_camp"
+name = "Lumber Camp"
+icon = ExtResource("1_g1vro")
+type = 3
+generated_goods = {
+"favor": 0,
+"food": 0,
+"gold": 0,
+"insight": 0,
+"minerals": 0,
+"stone": 0,
+"wood": 3
+}
+description = "Generates 3 wood on trigger"
+metadata/_custom_type_script = "uid://byuy57newj5vi"

@@ -9,4 +9,4 @@ id = "favor"
 name = "Favor"
 description = "Fav"
 icon = ExtResource("1_5uvbv")
-type = 1
+type = 4

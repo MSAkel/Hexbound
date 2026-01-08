@@ -1,0 +1,22 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dhfbw1ndh5jr"]
+
+[ext_resource type="Texture2D" uid="uid://l3u27d6w56a7" path="res://assets/icons/buildings/corn.svg" id="1_41sb5"]
+[ext_resource type="Script" uid="uid://bd7yywvrt34y3" path="res://resources/buildings/farm.gd" id="2_41sb5"]
+
+[resource]
+script = ExtResource("2_41sb5")
+id = "excavation_site"
+name = "Excavation Site"
+icon = ExtResource("1_41sb5")
+type = 2
+generated_goods = {
+"favor": 0,
+"food": 0,
+"gold": 1,
+"insight": 0,
+"minerals": 1,
+"stone": 1,
+"wood": 0
+}
+description = "Randomly generates at least 1 gold/mineral/stone with a chance to generate an additiona 1-2 resource"
+metadata/_custom_type_script = "uid://byuy57newj5vi"
