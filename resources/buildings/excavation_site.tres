@@ -1,13 +1,13 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dhfbw1ndh5jr"]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dgo4id0ggu2an"]
 
-[ext_resource type="Texture2D" uid="uid://l3u27d6w56a7" path="res://assets/icons/buildings/corn.svg" id="1_41sb5"]
-[ext_resource type="Script" uid="uid://bd7yywvrt34y3" path="res://resources/buildings/farm.gd" id="2_41sb5"]
+[ext_resource type="Texture2D" uid="uid://b7ey3vvadp50f" path="res://assets/icons/buildings/excavation_site.svg" id="1_ylvhy"]
+[ext_resource type="Script" uid="uid://bd7yywvrt34y3" path="res://resources/buildings/farm.gd" id="2_h8k5j"]
 
 [resource]
-script = ExtResource("2_41sb5")
+script = ExtResource("2_h8k5j")
 id = "excavation_site"
 name = "Excavation Site"
-icon = ExtResource("1_41sb5")
+icon = ExtResource("1_ylvhy")
 type = 2
 generated_goods = {
 "favor": 0,

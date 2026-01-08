@@ -103,3 +103,6 @@ grow_vertical = 0
 theme_override_font_sizes/font_size = 9
 text = "0"
 horizontal_alignment = 1
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

@@ -181,9 +181,9 @@ func update_explored_tiles_list(h: Hex) -> void:
 	)
 
 
-# This function is called when the end turns.
+# This function is called when the turn ends.
 # it will go through the buildings list and randomly select 3 buildings to be available for selection
-# Can be staccked on ending turn without selecting a building 
+# Can be stacked on ending turn without selecting a building 
 func create_buildings_pack() -> void:
 	if buildings_pack.size() == 0:
 		var shuffled_pool := buildings_pool.duplicate()
@@ -192,6 +192,9 @@ func create_buildings_pack() -> void:
 		for i in 3:
 			buildings_pack.append(shuffled_pool[i])
 
+# This function is called when the turn ends.
+# it will go through the runes list and randomly select 3 runes to be available for selection
+# Can be stacked on ending turn without selecting a rune
 func create_runes_pack() -> void:
 	if runes_pack.size() == 0:
 		var shuffled_pool := runes_pool.duplicate()

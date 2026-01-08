@@ -33,3 +33,5 @@ signal building_pack_count_changed()
 signal rune_pack_count_changed()
 
 signal explore_count_changed()
+
+signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)

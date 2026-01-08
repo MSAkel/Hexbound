@@ -167,6 +167,6 @@ grow_horizontal = 0
 texture_normal = ExtResource("3_xrq3n")
 texture_hover = ExtResource("4_xb34p")
 
-[connection signal="pressed" from="PanelContainer/Panel/MarginContainer/VBoxContainer/BuildingsPanel/BuildingRerollButton" to="." method="_on_reroll_button_pressed"]
-[connection signal="pressed" from="PanelContainer/Panel/MarginContainer/VBoxContainer/RunesPanel/RuneRerollButton" to="." method="_on_reroll_button_pressed"]
+[connection signal="pressed" from="PanelContainer/Panel/MarginContainer/VBoxContainer/BuildingsPanel/BuildingRerollButton" to="." method="_on_building_reroll_button_pressed"]
+[connection signal="pressed" from="PanelContainer/Panel/MarginContainer/VBoxContainer/RunesPanel/RuneRerollButton" to="." method="_on_rune_reroll_button_pressed"]
 [connection signal="pressed" from="PanelContainer/Panel/CloseButton" to="." method="_on_close_button_pressed"]

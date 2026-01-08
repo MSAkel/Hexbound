@@ -7,6 +7,6 @@
 script = ExtResource("2_brvwk")
 id = "minerals"
 name = "Minerals"
-description = "I"
+description = "Consumed by runes to activate them"
 icon = ExtResource("1_o0frh")
 type = 6

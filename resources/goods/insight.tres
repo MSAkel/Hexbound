@@ -7,6 +7,6 @@
 script = ExtResource("2_60v4r")
 id = "insight"
 name = "Insight"
-description = "I"
+description = "Consumed by runes to activate them"
 icon = ExtResource("1_ixhil")
 type = 5

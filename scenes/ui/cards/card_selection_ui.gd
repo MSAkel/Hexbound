@@ -22,9 +22,9 @@ func _ready() -> void:
 	else:
 		building_reroll_button.disabled = false
 	
-	Events.building_selected.connect(func(_building: Building):
-		buildings_panel.hide()
-	)
+	# Events.building_selected.connect(func(_building: Building):
+	# 	buildings_panel.hide()
+	# )
 
 	rune_reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
 	if GameManager.runes_reroll_cost > GoodsManager.get_good_amount(GoodType.Type.GOLD):
@@ -32,9 +32,9 @@ func _ready() -> void:
 	else:
 		rune_reroll_button.disabled = false
 	
-	Events.rune_selected.connect(func(_rune: Rune):
-		runes_panel.hide()	
-	)
+	# Events.rune_selected.connect(func(_rune: Rune):
+	# 	runes_panel.hide()	
+	# )
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
@@ -45,7 +45,9 @@ func _on_close_button_pressed() -> void:
 	hide()
 
 
-func _on_reroll_buildings_button_pressed() -> void:
+# Signal handler for the building reroll button
+# reroll cost if free for inital reroll, cost increases by 5 gold after each reroll, cost goes up with turns
+func _on_building_reroll_button_pressed() -> void:
 	if GameManager.building_reroll_cost > GoodsManager.get_good_amount(GoodType.Type.GOLD):
 		return
 
@@ -64,7 +66,8 @@ func _on_reroll_buildings_button_pressed() -> void:
 	else:
 		building_reroll_button.disabled = false
 
-func _on_reroll_runes_button_pressed() -> void:
+
+func _on_rune_reroll_button_pressed() -> void:
 	if GameManager.runes_reroll_cost > GoodsManager.get_good_amount(GoodType.Type.GOLD):
 		return
 
@@ -76,8 +79,11 @@ func _on_reroll_runes_button_pressed() -> void:
 	GameManager.runes_reroll_cost += 5
 	rune_reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
 	instantiate_rune_choices()
-	
-	rune_reroll_button.disabled = false
+	GoodsManager.remove_good(GoodType.Type.GOLD, GameManager.runes_reroll_cost)
+	if GameManager.runes_reroll_cost > GoodsManager.get_good_amount(GoodType.Type.GOLD):
+		rune_reroll_button.disabled = true
+	else:
+		rune_reroll_button.disabled = false
 
 func instantiate_building_choices() -> void:
 	if building_choices_container.get_child_count() == 0:

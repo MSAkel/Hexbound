@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://oe2tv6wcbxiy"]
+[gd_scene load_steps=11 format=3 uid="uid://oe2tv6wcbxiy"]
 
 [ext_resource type="Script" uid="uid://dbvnt7qskwg4s" path="res://scenes/ui/bottom_panel/bottom_panel.gd" id="1_pe02v"]
 [ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="2_010mc"]
@@ -6,9 +6,18 @@
 [ext_resource type="Texture2D" uid="uid://b23i08rqs0d52" path="res://assets/gui/buttons/button_round.png" id="4_pe02v"]
 [ext_resource type="Texture2D" uid="uid://eeanmr4v8i8i" path="res://assets/icons/others/building_icon.png" id="4_yjuds"]
 [ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/others/glyph_icon.png" id="5_pe02v"]
+[ext_resource type="Texture2D" uid="uid://da68q1s2m373t" path="res://assets/particles/circle_01.png" id="5_vlavl"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vlavl"]
 texture = ExtResource("2_pe02v")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_0l5nl"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+radial_accel_min = 9.999997
+radial_accel_max = 9.999997
+scale_min = 0.0
+scale_max = 0.19999999
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0l5nl"]
 texture = ExtResource("4_pe02v")
@@ -21,9 +30,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -472.0
-offset_top = -161.0
-offset_right = 473.0
+offset_left = -739.0
+offset_top = -249.0
+offset_right = 740.0
 grow_horizontal = 2
 grow_vertical = 0
 script = ExtResource("1_pe02v")
@@ -50,6 +59,12 @@ offset_bottom = 42.0
 texture_normal = ExtResource("4_pe02v")
 ignore_texture_size = true
 stretch_mode = 0
+
+[node name="buildingIconParticles" type="GPUParticles2D" parent="BuildingsPanelButton"]
+modulate = Color(0.99609786, 0.9999998, 0.8566333, 0.58431375)
+position = Vector2(35, 36)
+texture = ExtResource("5_vlavl")
+process_material = SubResource("ParticleProcessMaterial_0l5nl")
 
 [node name="BuildingIcon" type="TextureRect" parent="BuildingsPanelButton"]
 layout_mode = 1
@@ -91,7 +106,6 @@ text = "0"
 horizontal_alignment = 1
 
 [node name="RunesPanelButton" type="TextureButton" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -104,6 +118,12 @@ grow_horizontal = 0
 texture_normal = ExtResource("4_pe02v")
 ignore_texture_size = true
 stretch_mode = 0
+
+[node name="RuneIconParticles" type="GPUParticles2D" parent="RunesPanelButton"]
+modulate = Color(0.99609786, 0.9999998, 0.8566333, 0.58431375)
+position = Vector2(35, 35)
+texture = ExtResource("5_vlavl")
+process_material = SubResource("ParticleProcessMaterial_0l5nl")
 
 [node name="RuneIcon" type="TextureRect" parent="RunesPanelButton"]
 layout_mode = 1
