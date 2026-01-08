@@ -23,6 +23,7 @@ func _ready() -> void:
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
+	GameManager.create_buildings_pack()
 	instantiate_building_choices()
 
 func _on_close_button_pressed() -> void:
@@ -36,7 +37,7 @@ func _on_reroll_button_pressed() -> void:
 	reroll_button.disabled = true
 	
 	await clear_choices()
-	GameManager.buildings_pack.clear()
+	GameManager.buildings_pack.clear()  # Clear the pack before creating a new one
 	GameManager.create_buildings_pack()
 	GameManager.building_reroll_cost += 5
 	reroll_button.text = "Reroll (%s)" % GameManager.building_reroll_cost
@@ -49,11 +50,19 @@ func _on_reroll_button_pressed() -> void:
 		reroll_button.disabled = false
 
 func instantiate_building_choices() -> void:
-	if choices_container.get_child_count() == 0:
-		for building in GameManager.buildings_pack:
-			var selectionItem: BuildingSelectionItem = BUILDING_SELECTION_ITEM.instantiate()
-			selectionItem.set_item(building)
-			choices_container.add_child(selectionItem)
+	# Always clear existing choices first to ensure fresh display
+	for node in choices_container.get_children():
+		node.queue_free()
+	
+	# Wait one frame to ensure nodes are freed
+	await get_tree().process_frame
+	
+	# Now create new choices from the current buildings_pack
+	for building in GameManager.buildings_pack:
+		print(building.name)
+		var selectionItem: BuildingSelectionItem = BUILDING_SELECTION_ITEM.instantiate()
+		selectionItem.set_item(building)
+		choices_container.add_child(selectionItem)
 
 
 func clear_choices() -> void:

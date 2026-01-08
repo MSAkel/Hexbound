@@ -24,6 +24,7 @@ func _ready() -> void:
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
+	GameManager.create_runes_pack()
 	instantiate_rune_choices()
 
 func _on_close_button_pressed() -> void:
@@ -46,11 +47,19 @@ func _on_reroll_button_pressed() -> void:
 	reroll_button.disabled = false
 
 func instantiate_rune_choices() -> void:
-	if choices_container.get_child_count() == 0:
-		for rune in GameManager.runes_pack:
-			var selectionItem: RuneSelectionItem = RUNE_SELECTION_ITEM.instantiate()
-			selectionItem.set_item(rune)
-			choices_container.add_child(selectionItem)
+
+	# Always clear existing choices first to ensure fresh display
+	for node in choices_container.get_children():
+		node.queue_free()
+	
+	# Wait one frame to ensure nodes are freed
+	await get_tree().process_frame
+	
+	# Now create new choices from the current runes_pack
+	for rune in GameManager.runes_pack:
+		var selectionItem: RuneSelectionItem = RUNE_SELECTION_ITEM.instantiate()
+		selectionItem.set_item(rune)
+		choices_container.add_child(selectionItem)
 
 func clear_choices() -> void:
 	for node in choices_container.get_children():

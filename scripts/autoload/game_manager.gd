@@ -188,7 +188,6 @@ func create_buildings_pack() -> void:
 	if buildings_pack.size() == 0:
 		var shuffled_pool := buildings_pool.duplicate()
 		shuffled_pool.shuffle()
-
 		for i in 3:
 			buildings_pack.append(shuffled_pool[i])
 

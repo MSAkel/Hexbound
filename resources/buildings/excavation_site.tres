@@ -8,7 +8,7 @@ script = ExtResource("2_h8k5j")
 id = "excavation_site"
 name = "Excavation Site"
 icon = ExtResource("1_ylvhy")
-type = 2
+type = 10
 generated_goods = {
 "favor": 0,
 "food": 0,

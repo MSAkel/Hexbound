@@ -20,7 +20,7 @@ func _on_amount_changed(good: Good, new_amount: int) -> void:
 
 
 func _on_mouse_entered() -> void:
-	# Formats its own tooltip string and passes it to the generic signal:
+	# Formats its own tooltip string and passes it to the generic signal
 	var text := good_type.name
 	if good_type.description != "":
 		text += "\n" + good_type.description
