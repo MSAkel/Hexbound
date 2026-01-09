@@ -101,6 +101,7 @@ func _input(event: InputEvent) -> void:
 				for x in width:
 					for y in height:
 						card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
+				card_drop_overlay_layer.modulate = Color.WHITE
 				last_hovered_tile = Vector2i(-1, -1)
 				dragged_card = null
 				is_card_dragging = false
@@ -109,42 +110,84 @@ func _input(event: InputEvent) -> void:
 			# Handle left click placement
 			if event.button_index == MOUSE_BUTTON_LEFT:
 				var dragged_over_map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
+				var placement_successful: bool = false
+				
 				if dragged_over_map_coords.x >= 0 && dragged_over_map_coords.x < width && dragged_over_map_coords.y >= 0 && dragged_over_map_coords.y < height:
 					var h: Hex = map_data[dragged_over_map_coords]
 					if h.explored and h.terrain_type != hex.TerrainType.WATER:
-						# Check card type and handle accordingly
+						# Check card type and validate placement
 						if dragged_card != null:
+							var can_place: bool = false
 							match dragged_card.get_card_type():
 								CardUI.CardType.BUILDING:
-									h.place_building(dragged_card.card)
-									dragged_card.queue_free()
+									can_place = h.active_building == null
+									if can_place:
+										h.place_building(dragged_card.card)
+										dragged_card.queue_free()
+										placement_successful = true
 								CardUI.CardType.RUNE:
-									h.place_rune(dragged_card.card)
-									dragged_card.queue_free()
-						
-						dragged_card = null
-						is_card_dragging = false
-						# Clear overlays
-						for x in width:
-							for y in height:
-								card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
-						last_hovered_tile = Vector2i(-1, -1)
+									can_place = h.active_rune == null
+									if can_place:
+										h.place_rune(dragged_card.card)
+										dragged_card.queue_free()
+										placement_successful = true
+							
+							# If placement failed, return card to hand
+							if not placement_successful:
+								# Transition card back to BASE state so it returns to hand properly
+								if dragged_card.card_state_machine:
+									dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
+					else:
+						# Clicked on invalid tile (water/unexplored), return card to hand
+						if dragged_card != null and dragged_card.card_state_machine:
+							dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
+				else:
+					# Clicked outside map, return card to hand
+					if dragged_card != null and dragged_card.card_state_machine:
+						dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
+				
+				dragged_card = null
+				is_card_dragging = false
+				# Clear overlays
+				for x in width:
+					for y in height:
+						card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
+				card_drop_overlay_layer.modulate = Color.WHITE
+				last_hovered_tile = Vector2i(-1, -1)
 		var map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
 			
 		# Clear overlay from previous tile if we've moved to a new tile
 		if last_hovered_tile != map_coords:
 			card_drop_overlay_layer.set_cell(last_hovered_tile, -1)
+			card_drop_overlay_layer.modulate = Color.WHITE
 			last_hovered_tile = map_coords
 		
 		if is_card_dragging and map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
 			var h: Hex = map_data[map_coords]
 			if h.explored and h.terrain_type != hex.TerrainType.WATER:
-				card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+				# Check if placement is valid based on card type
+				var is_valid: bool = false
+				if dragged_card != null:
+					match dragged_card.get_card_type():
+						CardUI.CardType.BUILDING:
+							is_valid = h.active_building == null
+						CardUI.CardType.RUNE:
+							is_valid = h.active_rune == null
+				
+				if is_valid:
+					card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+					card_drop_overlay_layer.modulate = Color.WHITE
+				else:
+					# Show red overlay for invalid placement
+					card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+					card_drop_overlay_layer.modulate = Color.RED
 			else:
 				card_drop_overlay_layer.set_cell(map_coords, -1)
+				card_drop_overlay_layer.modulate = Color.WHITE
 		else:
 			# Clear overlay when not hovering over valid tile
 			card_drop_overlay_layer.set_cell(map_coords, -1)
+			card_drop_overlay_layer.modulate = Color.WHITE
 
 
 func generate_terrain() -> void:
@@ -349,5 +392,6 @@ func _on_card_drag_ended() -> void:
 	for x in width:
 		for y in height:
 			card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
+	card_drop_overlay_layer.modulate = Color.WHITE
 	last_hovered_tile = Vector2i(-1, -1)
 	dragged_card = null

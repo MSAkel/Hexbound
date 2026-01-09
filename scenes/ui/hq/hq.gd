@@ -29,8 +29,8 @@ func on_turn_ended() -> void:
 	
 	for good_id in generated_goods:
 		# Convert string good ID to GoodType.Type enum
-		var good_type = get_good_type_from_id(good_id)
-		if good_type != null:
+		if GoodType.ID_TO_TYPE.has(good_id.to_lower()):
+			var good_type = GoodType.get_type_from_id(good_id)
 			var amount: int = int(generated_goods[good_id])
 			GoodsManager.add_good(good_type, amount)
 			
@@ -48,15 +48,6 @@ func on_turn_ended() -> void:
 				surrounding_hex.trigger_building_generation()
 	
 	temporary_boost = 0
-
-	
-
-# Helper function to convert string good ID to GoodType.Type enum
-func get_good_type_from_id(good_id: String):
-	for type in GoodType.GOOD_IDS:
-		if GoodType.GOOD_IDS[type] == good_id:
-			return type
-	return null  # Return null if good ID not found
 
 
 func _on_hq_button_pressed() -> void:

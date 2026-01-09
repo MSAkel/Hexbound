@@ -53,6 +53,10 @@ func setup(map_ref: Node2D) -> void:
 
 
 func place_building(building: Building) -> void:
+	# Prevent placing a building if one already exists
+	if active_building != null:
+		return
+	
 	active_building = building
 	var new_building_instance: BuildingUI = BUILDING_UI.instantiate()
 	new_building_instance.map = map
@@ -75,6 +79,10 @@ func place_building(building: Building) -> void:
 
 
 func place_rune(rune: Rune) -> void:
+	# Prevent placing a rune if one already exists
+	if active_rune != null:
+		return
+	
 	active_rune = rune
 	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
 	new_rune_instance.map = map

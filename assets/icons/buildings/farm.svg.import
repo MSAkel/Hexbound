@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://l3u27d6w56a7"
-path="res://.godot/imported/corn.svg-b23914aca0599c502f2fffc1efa49a8f.ctex"
+path="res://.godot/imported/farm.svg-a6b14780f744d83bc842b41289d47f2e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/buildings/corn.svg"
-dest_files=["res://.godot/imported/corn.svg-b23914aca0599c502f2fffc1efa49a8f.ctex"]
+source_file="res://assets/icons/buildings/farm.svg"
+dest_files=["res://.godot/imported/farm.svg-a6b14780f744d83bc842b41289d47f2e.ctex"]
 
 [params]
 

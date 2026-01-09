@@ -1,6 +1,8 @@
 class_name Building
 extends Resource
 
+# Why is this enum necessary?
+# Doesn't appear to be used anywhere.
 enum BuildingType { 
 	## Generates minerals on trigger
 	MINE, 
@@ -38,15 +40,7 @@ enum BuildingType {
 @export var name: String
 @export var icon: Texture2D
 @export var type: BuildingType
-@export var generated_goods: Dictionary = {
-	"gold": 0,
-	"food": 0,
-	"wood": 0,
-	"stone": 0,
-	"insight": 0,
-	"minerals": 0,
-	"favor": 0,
-}
+@export var generated_goods: Dictionary = GoodType.get_default_goods_dict()
 ## If true, the building will be activated once and not triggered by runes
 @export var passive: bool = false 
 @export_multiline var description: String
@@ -67,16 +61,10 @@ func trigger_building() -> void:
 		var amount = int(generated_goods[good])
 		var final_amount = amount
 		if final_amount > 0:
-			var good_type = get_good_type_from_id(good)
-			if good_type != null:
+			var good_type = GoodType.get_type_from_id(good)
+			# Only add if the good_id was valid (check if it exists in ID_TO_TYPE)
+			if GoodType.ID_TO_TYPE.has(good.to_lower()):
 				GoodsManager.add_good(good_type, final_amount)
-
-
-func get_good_type_from_id(good: String):
-	for type in GoodType.GOOD_IDS:
-		if GoodType.GOOD_IDS[type] == good:
-			return type
-	return null
 
 func get_tooltip() -> String:
 	return tooltip

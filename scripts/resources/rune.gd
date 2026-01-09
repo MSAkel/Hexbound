@@ -16,7 +16,6 @@ enum RuneRarity {
 @export var rarity: RuneRarity
 @export var activation_cost: Dictionary = {
 	"gold": 0,
-	"favor": 0,
 	"insight": 0,
 	"minerals": 0,
 }
@@ -39,13 +38,12 @@ func _on_activate_rune(tile: Hex) -> void:
 	pass
 
 func can_activate() -> bool:
-	if GoodsManager.get_good_amount(GoodType.Type.GOLD) >= activation_cost["gold"] and GoodsManager.get_good_amount(GoodType.Type.FAVOR) >= activation_cost["favor"] and GoodsManager.get_good_amount(GoodType.Type.INSIGHT) >= activation_cost["insight"] and GoodsManager.get_good_amount(GoodType.Type.MINERALS) >= activation_cost["minerals"]:
+	if GoodsManager.get_good_amount(GoodType.Type.GOLD) >= activation_cost["gold"] and GoodsManager.get_good_amount(GoodType.Type.INSIGHT) >= activation_cost["insight"] and GoodsManager.get_good_amount(GoodType.Type.MINERALS) >= activation_cost["minerals"]:
 		return true
 
 	return false
 
 func deduct_activation_cost() -> void:
 	GoodsManager.remove_good(GoodType.Type.GOLD, activation_cost["gold"])
-	GoodsManager.remove_good(GoodType.Type.FAVOR, activation_cost["favor"])
 	GoodsManager.remove_good(GoodType.Type.INSIGHT, activation_cost["insight"])
 	GoodsManager.remove_good(GoodType.Type.MINERALS, activation_cost["minerals"])

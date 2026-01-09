@@ -52,3 +52,18 @@ func _on_transition_requested(from: CardState, to: CardState.State) -> void:
 		
 	new_state.enter()
 	current_state = new_state
+
+# Public method to transition to a specific state (used for external state changes)
+func transition_to_state(to: CardState.State) -> void:
+	if not current_state:
+		return
+	
+	var new_state: CardState = states[to]
+	if not new_state:
+		return
+	
+	if current_state:
+		current_state.exit()
+		
+	new_state.enter()
+	current_state = new_state
