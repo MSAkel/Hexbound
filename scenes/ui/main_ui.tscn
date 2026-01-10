@@ -36,7 +36,7 @@ visible = false
 
 [node name="TopRightUI" parent="." instance=ExtResource("9_yc0ux")]
 
-[node name="TerrainTileUi" parent="." instance=ExtResource("2_l8t6x")]
+[node name="TerrainTileUI" parent="." instance=ExtResource("2_l8t6x")]
 visible = false
 
 [node name="PerksMenuUI" parent="." instance=ExtResource("6_t0li6")]

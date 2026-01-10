@@ -1,16 +1,22 @@
-[gd_scene load_steps=16 format=3 uid="uid://b4k5fq6ran8f5"]
+[gd_scene load_steps=22 format=3 uid="uid://b4k5fq6ran8f5"]
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
 [ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="3_usd0r"]
+[ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="4_5jwxg"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
+[ext_resource type="Texture2D" uid="uid://ch0g260oqw5c" path="res://assets/gui/backgrounds/h_background.png" id="4_onxhv"]
 [ext_resource type="Texture2D" uid="uid://b7ficn0l1sjo3" path="res://assets/icons/buildings/library.png" id="4_usd0r"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
 [ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
 [ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
 [ext_resource type="Script" uid="uid://lhyqf0q0f5ko" path="res://scenes/cards/card states/card_released_state.gd" id="8_o6pyt"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="9_l4s6v"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5jwxg"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
 texture = ExtResource("3_usd0r")
 
 [sub_resource type="SystemFont" id="SystemFont_usd0r"]
@@ -19,6 +25,14 @@ subpixel_positioning = 0
 [sub_resource type="LabelSettings" id="LabelSettings_o6pyt"]
 font = SubResource("SystemFont_usd0r")
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7xb4v"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+texture = ExtResource("4_onxhv")
+modulate_color = Color(1, 1, 0, 1)
+
 [sub_resource type="SystemFont" id="SystemFont_5jwxg"]
 subpixel_positioning = 0
 
@@ -26,15 +40,29 @@ subpixel_positioning = 0
 font = SubResource("SystemFont_5jwxg")
 font_size = 14
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nmvtt"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+texture = ExtResource("4_5jwxg")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q2j25"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+texture = ExtResource("9_l4s6v")
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
-size = Vector2(171, 304)
+size = Vector2(198, 317)
 
 [node name="CardUI" type="Control"]
 custom_minimum_size = Vector2(171, 261)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 171.0
-offset_bottom = 305.0
+offset_right = 198.0
+offset_bottom = 317.0
 mouse_filter = 1
 theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
@@ -50,32 +78,71 @@ theme_override_styles/panel = SubResource("StyleBoxTexture_5jwxg")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 7.0
-offset_top = 20.0
-offset_right = -7.0
-offset_bottom = -12.0
+offset_bottom = 315.0
 grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Icon" type="TextureRect" parent="VBoxContainer"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 0
-mouse_filter = 2
-texture = ExtResource("4_usd0r")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="CardName" type="Label" parent="VBoxContainer"]
+visible = false
 layout_mode = 2
 size_flags_vertical = 2
 text = "Name"
 label_settings = SubResource("LabelSettings_o6pyt")
 horizontal_alignment = 1
+
+[node name="NameContainer" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_7xb4v")
+
+[node name="CardName" type="Label" parent="VBoxContainer/NameContainer"]
+layout_mode = 2
+text = "Name"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+
+[node name="IconContainer" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 125)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_nmvtt")
+
+[node name="Icon" type="TextureRect" parent="VBoxContainer/IconContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_usd0r")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CardTypeLabel" type="Label" parent="VBoxContainer/IconContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 6
+theme_override_styles/normal = SubResource("StyleBoxTexture_q2j25")
+text = "Type"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+
+[node name="ActivationCost" type="Label" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Cost"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+
+[node name="ResourceCostContainer" type="HBoxContainer" parent="VBoxContainer"]
+z_index = 1
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="CostContainer" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
 
 [node name="CardDescription" type="Label" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 130)
@@ -85,21 +152,12 @@ label_settings = SubResource("LabelSettings_usd0r")
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="ActivationCost" type="Label" parent="VBoxContainer"]
-visible = false
-custom_minimum_size = Vector2(0, 75)
-layout_mode = 2
-text = "Activation Cost"
-label_settings = SubResource("LabelSettings_usd0r")
-horizontal_alignment = 1
-autowrap_mode = 3
-
 [node name="DropPointArea" type="Area2D" parent="."]
 collision_mask = 2
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea"]
-position = Vector2(85.5, 152)
+position = Vector2(99, 158.5)
 shape = SubResource("RectangleShape2D_s55cg")
 
 [node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]

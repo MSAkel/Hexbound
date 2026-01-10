@@ -21,8 +21,12 @@ enum RuneRarity {
 }
 @export var activation_cost_text: String
 @export var boosted_generation_amount: int = 0
+var is_active: bool = true
 
 func activate_rune(tile: Hex) -> void:
+	if not is_active:
+		return
+	
 	# if tile.active_building.passive:
 	# 	return
 	if can_activate():

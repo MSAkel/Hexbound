@@ -29,3 +29,11 @@ func on_input(event: InputEvent) -> void:
 	elif minimum_drag_time_elapsed and confirm:
 		get_viewport().set_input_as_handled() # Set input as handled to prevent accidental card drag
 		transition_requested.emit(self, CardState.State.RELEASED)
+
+func on_mouse_entered() -> void:
+	# Ignore mouse entered events while dragging (prevent elevation)
+	pass
+
+func on_mouse_exited() -> void:
+	# Ignore mouse exited events while dragging (prevent elevation reset)
+	pass

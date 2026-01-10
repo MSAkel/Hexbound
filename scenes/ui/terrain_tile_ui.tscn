@@ -1,10 +1,31 @@
-[gd_scene load_steps=4 format=3 uid="uid://bif4cx5edh2ng"]
+[gd_scene load_steps=10 format=3 uid="uid://bif4cx5edh2ng"]
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/terrain_tile_ui.gd" id="1_h2p2k"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_bcbo3"]
+[ext_resource type="Texture2D" uid="uid://ch0g260oqw5c" path="res://assets/gui/backgrounds/h_background.png" id="3_q21in"]
+[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="4_0eu1h"]
 [ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="4_d4ddw"]
 
-[node name="TerrainTileUi" type="Control"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0reax"]
+content_margin_left = 42.0
+content_margin_top = 42.0
+content_margin_right = 42.0
+content_margin_bottom = 42.0
+texture = ExtResource("2_bcbo3")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2ni6t"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6kn4t"]
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+texture = ExtResource("3_q21in")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q5skc"]
+texture = ExtResource("4_0eu1h")
+
+[node name="TerrainTileUI" type="Control"]
 z_index = 1
 layout_mode = 3
 anchors_preset = 6
@@ -12,81 +33,160 @@ anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -816.0
-offset_top = -271.5
-offset_bottom = 271.5
+offset_left = -761.0
+offset_top = -424.3125
+offset_bottom = 295.0
 grow_horizontal = 0
 grow_vertical = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
 script = ExtResource("1_h2p2k")
 
-[node name="BackgroundImage" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_bottom = 5.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2_bcbo3")
-expand_mode = 1
-
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 32
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 32
+theme_override_styles/panel = SubResource("StyleBoxTexture_0reax")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TileDetailsContainer" type="PanelContainer" parent="PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 
-[node name="TerrianLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/TileDetailsContainer"]
 layout_mode = 2
+
+[node name="TerrianLabel" type="Label" parent="PanelContainer/VBoxContainer/TileDetailsContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 0
 text = "Terrian"
 
-[node name="TerrianDescription" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="TerrianDescription" type="Label" parent="PanelContainer/VBoxContainer/TileDetailsContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 0
 size_flags_vertical = 0
 text = "Description"
 
-[node name="BuildingsPanel" type="Panel" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 250)
+[node name="CorruptionLevelLabel" type="Label" parent="PanelContainer/VBoxContainer/TileDetailsContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
-size_flags_vertical = 8
+size_flags_vertical = 0
+text = "Corruption Level: 0"
 
-[node name="Building" type="Label" parent="MarginContainer/VBoxContainer/BuildingsPanel"]
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 22.3333
+[node name="BuildingPanel" type="Panel" parent="PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 225)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2ni6t")
+
+[node name="BuildingPanelContainer" type="PanelContainer" parent="PanelContainer/VBoxContainer/BuildingPanel"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -99.0
+offset_bottom = 99.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxTexture_6kn4t")
+
+[node name="BuildingHBox" type="HBoxContainer" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="BuildingIconPanel" type="Panel" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="BuildingIcon" type="TextureRect" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox/BuildingIconPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="BuildingVBox" type="VBoxContainer" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox"]
+layout_mode = 2
+
+[node name="BuildingNameLabel" type="Label" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox/BuildingVBox"]
+layout_mode = 2
+text = "Empty building slot"
+
+[node name="BuildingDescriptionLabel" type="Label" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox/BuildingVBox"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "-"
+
+[node name="BuildingProdutionLabel" type="Label" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox/BuildingVBox"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Production"
+
+[node name="DestructBuildingButton" type="Button" parent="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox/BuildingVBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_styles/normal = SubResource("StyleBoxTexture_q5skc")
+text = "Destruct"
+
+[node name="BuildingLabel" type="Label" parent="PanelContainer/VBoxContainer/BuildingPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -32.0
+offset_right = 32.0
+offset_bottom = 22.333344
+grow_horizontal = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 text = "Building"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildingsPanel"]
+[node name="RunePanel" type="Panel" parent="PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 225)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2ni6t")
+
+[node name="RunePanelContainer" type="PanelContainer" parent="PanelContainer/VBoxContainer/RunePanel"]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = -199.0
-offset_right = 381.0
-offset_bottom = -1.0
-grow_vertical = 0
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -99.0
+offset_bottom = 99.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxTexture_6kn4t")
+
+[node name="RuneHBox" type="HBoxContainer" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer"]
+layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="BuildingPanel" type="Panel" parent="MarginContainer/VBoxContainer/BuildingsPanel/HBoxContainer"]
-custom_minimum_size = Vector2(150, 175)
+[node name="RuneIconPanel" type="Panel" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox"]
+custom_minimum_size = Vector2(150, 150)
 layout_mode = 2
 
-[node name="BuildingTexture" type="TextureRect" parent="MarginContainer/VBoxContainer/BuildingsPanel/HBoxContainer/BuildingPanel"]
-visible = false
+[node name="RuneIcon" type="TextureRect" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox/RuneIconPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -95,93 +195,46 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Rune" type="Panel" parent="."]
+[node name="RuneVBox" type="VBoxContainer" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox"]
+layout_mode = 2
+
+[node name="RuneNameLabel" type="Label" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox/RuneVBox"]
+layout_mode = 2
+text = "Empty rune slot"
+
+[node name="RuneDescriptionLabel" type="Label" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox/RuneVBox"]
 visible = false
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 37.0
-offset_top = -225.0
-offset_right = 493.0
-offset_bottom = -36.0
-grow_vertical = 0
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Description"
 
-[node name="RuneLabel" type="Label" parent="Rune"]
-layout_mode = 1
-offset_right = 91.0
-offset_bottom = 23.0
-text = "Rune"
-
-[node name="ActiveRuneContainer" type="Panel" parent="Rune"]
-layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_top = -74.0
-offset_right = 148.0
-offset_bottom = 74.0
-grow_vertical = 2
-
-[node name="RuneIcon" type="TextureRect" parent="Rune/ActiveRuneContainer"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="ActiveRuneIcon" type="TextureRect" parent="Rune/ActiveRuneContainer"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="RemoveRuneButton" type="Button" parent="Rune/ActiveRuneContainer"]
+[node name="RemoveRuneButton" type="Button" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox/RuneVBox"]
 visible = false
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -31.0
-grow_horizontal = 2
-grow_vertical = 0
-disabled = true
-text = "Remove"
-
-[node name="RunesListContainer" type="VBoxContainer" parent="Rune"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -263.0
-offset_top = -67.5
-offset_bottom = 108.5
-grow_horizontal = 0
-grow_vertical = 2
-theme_override_constants/separation = 8
-
-[node name="RuneListGrid" type="GridContainer" parent="Rune/RunesListContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-columns = 7
-
-[node name="RuneDescription" type="Label" parent="Rune/RunesListContainer"]
-layout_mode = 2
-
-[node name="RuneRequirements" type="Label" parent="Rune/RunesListContainer"]
-layout_mode = 2
-
-[node name="InsertRuneButton" type="Button" parent="Rune/RunesListContainer"]
 layout_mode = 2
 size_flags_vertical = 8
-text = "Insert"
+theme_override_styles/normal = SubResource("StyleBoxTexture_q5skc")
+text = "Destruct"
+
+[node name="ToggleRuneButton" type="Button" parent="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox/RuneVBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_styles/normal = SubResource("StyleBoxTexture_q5skc")
+text = "Disable"
+
+[node name="RuneLabel" type="Label" parent="PanelContainer/VBoxContainer/RunePanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -32.0
+offset_right = 32.0
+offset_bottom = 22.333344
+grow_horizontal = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Rune"
 
 [node name="CloseButton" type="Button" parent="."]
 layout_mode = 1
@@ -193,6 +246,7 @@ offset_bottom = 31.0
 grow_horizontal = 0
 icon = ExtResource("4_d4ddw")
 
-[connection signal="pressed" from="Rune/ActiveRuneContainer/RemoveRuneButton" to="." method="_on_remove_rune_button_pressed"]
-[connection signal="pressed" from="Rune/RunesListContainer/InsertRuneButton" to="." method="_on_insert_rune_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/BuildingPanel/BuildingPanelContainer/BuildingHBox/BuildingVBox/DestructBuildingButton" to="." method="_on_destruct_building_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox/RuneVBox/RemoveRuneButton" to="." method="_on_remove_rune_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/RunePanel/RunePanelContainer/RuneHBox/RuneVBox/ToggleRuneButton" to="." method="_on_toggle_rune_button_pressed"]
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]

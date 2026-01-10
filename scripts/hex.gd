@@ -25,6 +25,9 @@ var active_building: Building = null
 var special_state: SpecialTileState = SpecialTileState.NONE
 # var minerals: Array[MineralUI] = []
 
+## Not implemented yet
+var corruption_level: int = 0
+
 # References to UI elements
 # var mineral_ui_scene: PackedScene
 var map: HexTileMap
@@ -234,7 +237,7 @@ func _create_resource_animation(resource_type: String, amount: int, vertical_off
 	map.base_layer.add_sibling(sprite, true)
 
 	# Calculate animation duration based on current game speed
-	var animation_duration := 0.1 / GameManager.game_speed
+	var animation_duration := 1 / GameManager.game_speed
 	_create_scale_animation(sprite, animation_duration)
 	map.create_floating_text(tile_pos + Vector2(0, vertical_offset), "+%s %s" % [amount, resource_type], resource_type == "Gold")
 	
@@ -256,7 +259,7 @@ func trigger_building_generation() -> void:
 		# Show animation if the final amount will be positive
 		if total_amount > 0:
 			_create_resource_animation(good_id, total_amount, vertical_offset)
-			vertical_offset -= 20  # Offset multiple goods vertically
+			vertical_offset -= 30  # Offset multiple goods vertically
 	
 	active_building.trigger_building()
 

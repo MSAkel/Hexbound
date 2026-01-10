@@ -11,7 +11,7 @@ icon = ExtResource("1_41sb5")
 generated_goods = {
 "favor": 0,
 "food": 3,
-"gold": 2,
+"gold": 0,
 "insight": 0,
 "minerals": 0,
 "stone": 0,

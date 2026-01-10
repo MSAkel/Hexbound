@@ -31,7 +31,7 @@ var runes_pack: Array[Rune] = []
 var _available_runes_packs: int = 0
 var _runes_reroll_cost: int = 0
 # Runes that are currently active on the map
-var active_runes: Array[Rune] = []
+# var active_runes: Array[Rune] = []
 
 # All perks available in the game
 var perks_pool: Array[Perk] = []

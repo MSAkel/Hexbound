@@ -10,7 +10,7 @@ extends Node2D
 @export var width: int
 @export var height: int
 # @export var minerals: Array[Mineral] = []
-@onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUi"
+@onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUI"
 
 # const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
 const EXPLORE_BUTTON: PackedScene = preload("res://scenes/ui/explore_button.tscn")

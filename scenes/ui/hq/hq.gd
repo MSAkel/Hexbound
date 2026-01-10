@@ -22,6 +22,9 @@ func _ready() -> void:
 	for good in generated_goods:
 		generations.text = "%s: %d" % [good, generated_goods[good]]
 
+#TODO HQ generation should be activated prior to rune activation
+# One possible solution is to activate the HQ generation prior to the rune activation.
+# Another approach is to add a priority rune specific to HQ generation.
 func on_turn_ended() -> void:
 	# Show floating text for generated goods and add them to inventory
 	var tile_pos = map.base_layer.map_to_local(center_coordinates)
@@ -40,14 +43,14 @@ func on_turn_ended() -> void:
 			vertical_offset -= 20  # Offset multiple goods vertically
 	
 	# Trigger buildings on adjacent tiles
-	var surrounding_tiles = map.base_layer.get_surrounding_cells(center_coordinates)
-	for coords in surrounding_tiles:
-		if map.map_data.has(coords):
-			var surrounding_hex = map.map_data[coords]
-			if surrounding_hex.active_building != null:
-				surrounding_hex.trigger_building_generation()
+	# var surrounding_tiles = map.base_layer.get_surrounding_cells(center_coordinates)
+	# for coords in surrounding_tiles:
+	# 	if map.map_data.has(coords):
+	# 		var surrounding_hex = map.map_data[coords]
+	# 		if surrounding_hex.active_building != null:
+	# 			surrounding_hex.trigger_building_generation()
 	
-	temporary_boost = 0
+	# temporary_boost = 0
 
 
 func _on_hq_button_pressed() -> void:

@@ -1,15 +1,42 @@
-[gd_scene load_steps=6 format=3 uid="uid://clcafvhour5gy"]
+[gd_scene load_steps=15 format=3 uid="uid://clcafvhour5gy"]
 
 [ext_resource type="Script" uid="uid://7st7tt2f54u4" path="res://scenes/ui/top_panels/top_right_ui.gd" id="1_8pf6h"]
 [ext_resource type="Texture2D" uid="uid://b23i08rqs0d52" path="res://assets/gui/buttons/button_round.png" id="2_673ta"]
+[ext_resource type="Texture2D" uid="uid://da68q1s2m373t" path="res://assets/particles/circle_01.png" id="3_jkv5i"]
+[ext_resource type="Texture2D" uid="uid://eeanmr4v8i8i" path="res://assets/icons/others/building_icon.png" id="4_fyrhh"]
+[ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/others/glyph_icon.png" id="5_o4j6q"]
+[ext_resource type="Texture2D" uid="uid://dg2uyrkbbkkum" path="res://assets/icons/others/crown.png" id="6_o4j6q"]
+[ext_resource type="Texture2D" uid="uid://ckconci53sby1" path="res://assets/icons/others/pouch.png" id="7_fkrwe"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fkrwe"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+radial_accel_min = 9.999997
+radial_accel_max = 9.999997
+scale_min = 0.0
+scale_max = 0.19999999
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wcux4"]
+texture = ExtResource("2_673ta")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3uceg"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+radial_accel_min = 9.999997
+radial_accel_max = 9.999997
+scale_min = 0.0
+scale_max = 0.19999999
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8buv0"]
+texture = ExtResource("2_673ta")
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5hda3"]
 atlas = ExtResource("2_673ta")
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_oa5en"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_kknu3"]
 atlas = ExtResource("2_673ta")
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_kknu3"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_oa5en"]
 atlas = ExtResource("2_673ta")
 
 [node name="TopRightUI" type="Control"]
@@ -37,6 +64,113 @@ theme_override_constants/margin_bottom = 24
 layout_mode = 2
 columns = 4
 
+[node name="BuildingsButton" type="TextureButton" parent="MarginContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 0
+texture_normal = ExtResource("2_673ta")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="buildingIconParticles" type="GPUParticles2D" parent="MarginContainer/GridContainer/BuildingsButton"]
+modulate = Color(0.99609786, 0.9999998, 0.8566333, 0.58431375)
+position = Vector2(32, 32)
+emitting = false
+texture = ExtResource("3_jkv5i")
+process_material = SubResource("ParticleProcessMaterial_fkrwe")
+
+[node name="BuildingIcon" type="TextureRect" parent="MarginContainer/GridContainer/BuildingsButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -23.0
+offset_right = 20.0
+offset_bottom = 17.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_fyrhh")
+expand_mode = 1
+
+[node name="BuildingCounterPanel" type="Panel" parent="MarginContainer/GridContainer/BuildingsButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -18.0
+offset_top = -18.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_wcux4")
+
+[node name="BuildingCountLabel" type="Label" parent="MarginContainer/GridContainer/BuildingsButton/BuildingCounterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0"
+horizontal_alignment = 1
+
+[node name="RunesButton" type="TextureButton" parent="MarginContainer/GridContainer"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = ExtResource("2_673ta")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="RuneIconParticles" type="GPUParticles2D" parent="MarginContainer/GridContainer/RunesButton"]
+modulate = Color(0.99609786, 0.9999998, 0.8566333, 0.58431375)
+position = Vector2(32, 32)
+emitting = false
+texture = ExtResource("3_jkv5i")
+process_material = SubResource("ParticleProcessMaterial_3uceg")
+
+[node name="RuneIcon" type="TextureRect" parent="MarginContainer/GridContainer/RunesButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_o4j6q")
+expand_mode = 1
+
+[node name="RuneCounterPanel" type="Panel" parent="MarginContainer/GridContainer/RunesButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -18.0
+offset_top = -18.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_8buv0")
+
+[node name="RuneCountLabel" type="Label" parent="MarginContainer/GridContainer/RunesButton/RuneCounterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0"
+horizontal_alignment = 1
+
 [node name="PerksButton" type="TextureButton" parent="MarginContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
@@ -44,7 +178,24 @@ texture_normal = SubResource("AtlasTexture_5hda3")
 ignore_texture_size = true
 stretch_mode = 0
 
+[node name="PerksIcon" type="TextureRect" parent="MarginContainer/GridContainer/PerksButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_o4j6q")
+expand_mode = 1
+
 [node name="Label" type="Label" parent="MarginContainer/GridContainer/PerksButton"]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -59,29 +210,6 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Perks"
 
-[node name="RunesButton" type="TextureButton" parent="MarginContainer/GridContainer"]
-visible = false
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-texture_normal = SubResource("AtlasTexture_oa5en")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="Label" type="Label" parent="MarginContainer/GridContainer/RunesButton"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.1667
-offset_right = 20.0
-offset_bottom = 11.1667
-grow_horizontal = 2
-grow_vertical = 2
-text = "Runes"
-
 [node name="QuestsButton" type="TextureButton" parent="MarginContainer/GridContainer"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
@@ -89,7 +217,24 @@ texture_normal = SubResource("AtlasTexture_kknu3")
 ignore_texture_size = true
 stretch_mode = 0
 
+[node name="QuestsIcon" type="TextureRect" parent="MarginContainer/GridContainer/QuestsButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("7_fkrwe")
+expand_mode = 1
+
 [node name="Label" type="Label" parent="MarginContainer/GridContainer/QuestsButton"]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -104,6 +249,38 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Quests"
 
-[connection signal="pressed" from="MarginContainer/GridContainer/PerksButton" to="." method="_on_perks_button_pressed"]
+[node name="_RunesButton3" type="TextureButton" parent="MarginContainer/GridContainer"]
+visible = false
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = SubResource("AtlasTexture_oa5en")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="MarginContainer/GridContainer/_RunesButton3"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.1667
+offset_right = 20.0
+offset_bottom = 11.1667
+grow_horizontal = 2
+grow_vertical = 2
+text = "Runes"
+
+[connection signal="mouse_entered" from="MarginContainer/GridContainer/BuildingsButton" to="." method="_on_buildings_button_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/GridContainer/BuildingsButton" to="." method="_on_buildings_button_mouse_exited"]
+[connection signal="pressed" from="MarginContainer/GridContainer/BuildingsButton" to="." method="_on_buildings_button_pressed"]
+[connection signal="mouse_entered" from="MarginContainer/GridContainer/RunesButton" to="." method="_on_runes_button_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/GridContainer/RunesButton" to="." method="_on_runes_button_mouse_exited"]
 [connection signal="pressed" from="MarginContainer/GridContainer/RunesButton" to="." method="_on_runes_button_pressed"]
+[connection signal="mouse_entered" from="MarginContainer/GridContainer/PerksButton" to="." method="_on_perks_button_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/GridContainer/PerksButton" to="." method="_on_perks_button_mouse_exited"]
+[connection signal="pressed" from="MarginContainer/GridContainer/PerksButton" to="." method="_on_perks_button_pressed"]
+[connection signal="mouse_entered" from="MarginContainer/GridContainer/QuestsButton" to="." method="_on_quests_button_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/GridContainer/QuestsButton" to="." method="_on_quests_button_mouse_exited"]
 [connection signal="pressed" from="MarginContainer/GridContainer/QuestsButton" to="." method="_on_quests_button_pressed"]
