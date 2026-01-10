@@ -20,6 +20,7 @@ enum RuneRarity {
 	"minerals": 0,
 }
 @export var activation_cost_text: String
+@export var boosted_generation_amount: int = 0
 
 func activate_rune(tile: Hex) -> void:
 	# if tile.active_building.passive:

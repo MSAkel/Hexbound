@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://cmoab120yadji"]
+
+[ext_resource type="Texture2D" uid="uid://d2isq4wkastvr" path="res://assets/icons/runes/mountain_rune.svg" id="1_ma01a"]
+[ext_resource type="Script" uid="uid://02nux64tyrt0" path="res://resources/runes/mountain_rune.gd" id="2_gyhr5"]
+
+[resource]
+script = ExtResource("2_gyhr5")
+id = "mountain_rune"
+name = "Mountain Rune"
+icon = ExtResource("1_ma01a")
+description = "if placed on a mountains terrain, triggers the building on the tile and generates 1 mineral or 2 stone depending on what building is on the tile."
+activation_cost = {
+"favor": 0,
+"gold": 4,
+"insight": 1,
+"minerals": 0
+}
+boosted_generation_amount = 2
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

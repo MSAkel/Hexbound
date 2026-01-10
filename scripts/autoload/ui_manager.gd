@@ -6,6 +6,7 @@ signal show_quests_panel
 signal show_buildings_choice_panel
 signal show_runes_choice_panel
 signal show_cards_choice_panel
+signal show_warning_panel
 
 var active_panel: Control = null
 

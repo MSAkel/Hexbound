@@ -22,8 +22,13 @@ func _ready() -> void:
 	Events.influence_changed.connect(_update_influence_progress)
 
 func _on_end_turn_button_pressed() -> void:
+	if GameManager.available_explores > 0:
+		UiManager.show_warning_panel.emit()
+		return
+
 	Events.turn_ended.emit()
 	AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
+
 
 func _update_ui() -> void:
 	year_label.text = "Year: %s" % [GameManager.current_year]

@@ -20,6 +20,8 @@ const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
 
 #The starting Building
 const HQ = preload("uid://ctxjopaym03xl")
+#The starting Rune
+# const ROUNDABOUT_RUNE = preload("res://resources/runes/roundabout_rune.tres")
 
 # Shader for fog effect
 const FOG_SHADER = preload("res://shaders/fog_overlay.gdshader")
@@ -109,7 +111,22 @@ func _input(event: InputEvent) -> void:
 				
 			# Handle left click placement
 			if event.button_index == MOUSE_BUTTON_LEFT:
-				var dragged_over_map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
+				# Use card center position for placement consistency
+				var card_center_screen: Vector2 = dragged_card.global_position + dragged_card.size / 2.0
+				var viewport: Viewport = get_viewport()
+				var camera: Camera2D = viewport.get_camera_2d()
+				
+				var card_center_world: Vector2
+				if camera:
+					var mouse_screen: Vector2 = viewport.get_mouse_position()
+					var mouse_world: Vector2 = camera.get_global_mouse_position()
+					var offset_screen: Vector2 = card_center_screen - mouse_screen
+					var offset_world: Vector2 = offset_screen / camera.zoom
+					card_center_world = mouse_world + offset_world
+				else:
+					card_center_world = card_center_screen
+				
+				var dragged_over_map_coords: Vector2i = base_layer.local_to_map(to_local(card_center_world))
 				var placement_successful: bool = false
 				
 				if dragged_over_map_coords.x >= 0 && dragged_over_map_coords.x < width && dragged_over_map_coords.y >= 0 && dragged_over_map_coords.y < height:
@@ -154,40 +171,72 @@ func _input(event: InputEvent) -> void:
 						card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
 				card_drop_overlay_layer.modulate = Color.WHITE
 				last_hovered_tile = Vector2i(-1, -1)
-		var map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
-			
-		# Clear overlay from previous tile if we've moved to a new tile
-		if last_hovered_tile != map_coords:
-			card_drop_overlay_layer.set_cell(last_hovered_tile, -1)
-			card_drop_overlay_layer.modulate = Color.WHITE
-			last_hovered_tile = map_coords
 		
-		if is_card_dragging and map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
-			var h: Hex = map_data[map_coords]
-			if h.explored and h.terrain_type != hex.TerrainType.WATER:
-				# Check if placement is valid based on card type
-				var is_valid: bool = false
-				if dragged_card != null:
-					match dragged_card.get_card_type():
-						CardUI.CardType.BUILDING:
-							is_valid = h.active_building == null
-						CardUI.CardType.RUNE:
-							is_valid = h.active_rune == null
+		# Update highlighting on mouse motion when dragging
+		if is_card_dragging and event is InputEventMouseMotion:
+			if dragged_card != null:
+				# Get the card's center position in screen/viewport coordinates
+				var card_center_screen: Vector2 = dragged_card.global_position + dragged_card.size / 2.0
 				
-				if is_valid:
-					card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
-					card_drop_overlay_layer.modulate = Color.WHITE
+				# Convert screen coordinates to world coordinates
+				# The card is in a CanvasLayer (UI space), so we need to convert to world space
+				var viewport: Viewport = get_viewport()
+				var camera: Camera2D = viewport.get_camera_2d()
+				
+				var card_center_world: Vector2
+				if camera:
+					# Get mouse position in screen coordinates (from viewport)
+					var mouse_screen: Vector2 = viewport.get_mouse_position()
+					# Get mouse position in world coordinates
+					var mouse_world: Vector2 = camera.get_global_mouse_position()
+					
+					# Calculate offset from mouse to card center in screen space
+					var offset_screen: Vector2 = card_center_screen - mouse_screen
+					
+					# Convert screen offset to world offset using camera zoom
+					# Screen pixels to world units conversion depends on zoom
+					var offset_world: Vector2 = offset_screen / camera.zoom
+					
+					# Card center in world coordinates
+					card_center_world = mouse_world + offset_world
 				else:
-					# Show red overlay for invalid placement
-					card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
-					card_drop_overlay_layer.modulate = Color.RED
-			else:
-				card_drop_overlay_layer.set_cell(map_coords, -1)
-				card_drop_overlay_layer.modulate = Color.WHITE
-		else:
-			# Clear overlay when not hovering over valid tile
-			card_drop_overlay_layer.set_cell(map_coords, -1)
-			card_drop_overlay_layer.modulate = Color.WHITE
+					# Fallback: assume screen and world are the same (no camera)
+					card_center_world = card_center_screen
+				
+				# Convert world position to map coordinates
+				var map_coords: Vector2i = base_layer.local_to_map(to_local(card_center_world))
+				
+				# Clear overlay from previous tile if we've moved to a new tile
+				if last_hovered_tile != map_coords:
+					card_drop_overlay_layer.set_cell(last_hovered_tile, -1)
+					card_drop_overlay_layer.modulate = Color.WHITE
+					last_hovered_tile = map_coords
+				
+				if map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
+					var h: Hex = map_data[map_coords]
+					if h.explored and h.terrain_type != hex.TerrainType.WATER:
+						# Check if placement is valid based on card type
+						var is_valid: bool = false
+						match dragged_card.get_card_type():
+							CardUI.CardType.BUILDING:
+								is_valid = h.active_building == null
+							CardUI.CardType.RUNE:
+								is_valid = h.active_rune == null
+						
+						if is_valid:
+							card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+							card_drop_overlay_layer.modulate = Color.WHITE
+						else:
+							# Show red overlay for invalid placement
+							card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+							card_drop_overlay_layer.modulate = Color.RED
+					else:
+						card_drop_overlay_layer.set_cell(map_coords, -1)
+						card_drop_overlay_layer.modulate = Color.WHITE
+				else:
+					# Clear overlay when not hovering over valid tile
+					card_drop_overlay_layer.set_cell(map_coords, -1)
+					card_drop_overlay_layer.modulate = Color.WHITE
 
 
 func generate_terrain() -> void:
@@ -264,6 +313,12 @@ func generate_terrain() -> void:
 	var x_center = width / 2
 	@warning_ignore("integer_division")
 	var y_center = height / 2
+	
+	# Get protected tiles (center + adjacent tiles) that should not be mountains
+	var center_coords = Vector2i(x_center, y_center)
+	var protected_tiles: Array[Vector2i] = [center_coords]
+	var surrounding_center = base_layer.get_surrounding_cells(center_coords)
+	protected_tiles.append_array(surrounding_center)
 
 	for x in width:
 		for y in height:
@@ -280,8 +335,15 @@ func generate_terrain() -> void:
 			
 			# Outer Water tiles generation
 			var border_thickness := 1
+			var is_water_tile: bool = false
 			if x < border_thickness or x >= width - border_thickness or y < border_thickness or y >= height - border_thickness:
 				h.terrain_type = hex.TerrainType.WATER
+				is_water_tile = true
+			
+			# Prevent mountains on starting tile and adjacent tiles (but not water tiles)
+			var current_coords = Vector2i(x, y)
+			if not is_water_tile and current_coords in protected_tiles and h.terrain_type == hex.TerrainType.MOUNTAIN:
+				h.terrain_type = hex.TerrainType.FIELDS
 			
 			base_layer.set_cell(Vector2i(x, y), 0, terrain_textures[h.terrain_type])
 			fog_overlay_layer.set_cell(Vector2i(x, y), 0, Vector2i(0,0))
@@ -319,6 +381,9 @@ func on_game_started(x_center: int, y_center: int) -> void:
 	# Add to grid instead of directly to map
 	center_hex.items_grid.add_child(hq_instance)
 	center_hex._reposition_items()
+	
+	# Place roundabout rune on the center tile
+	# center_hex.place_rune(ROUNDABOUT_RUNE)
 
 func update_explore_buttons() -> void:
 	# Remove all existing explore buttons
@@ -366,9 +431,10 @@ func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
 
 func on_turn_ended():
+	# delay between each rune activation
 	var base_delay_interval := 0.5
 
-	# Process rune effects first, one tile at a time
+	# Process rune effects, one tile at a time
 	for tile in GameManager.explored_tiles:
 		if tile.active_rune != null:
 			# Calculate delay interval for each tile to respect current game speed

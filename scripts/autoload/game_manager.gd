@@ -9,25 +9,36 @@ var _current_year := 1
 
 var _available_explores: int = 0
 var _game_speed: float = 1.0
-var _is_processing_turn: bool = false  # Block input processing while turn is being processed
+# Block input processing while turn is being processed
+var _is_processing_turn: bool = false  
 
 var explored_tiles: Array[Hex] = []
 
-var buildings_pool: Array[Building] = [] # All buildings available in the game
-var buildings_pack: Array[Building] = [] # Buildings available for selection on the buildings selection menu
-var _available_building_packs: int = 1 # increment by 1 on turn end
-var _building_reroll_cost: int = 0 # cost to reroll the building pack, should increment by 5 on each reroll
+# All buildings available in the game
+var buildings_pool: Array[Building] = []
+# Buildings available for selection on the buildings selection menu
+var buildings_pack: Array[Building] = []
+# increment by 1 on turn end
+var _available_building_packs: int = 0 
+ # cost to reroll the building pack, should increment by 5 on each reroll
+var _building_reroll_cost: int = 0
 
+# All runes available in the game
 var runes_pool: Array[Rune] = []
+# Runes available for selection on the runes selection menu
 var runes_pack: Array[Rune] = []
-var _available_runes_packs: int = 1
+# increment by 1 on turn end
+var _available_runes_packs: int = 0
 var _runes_reroll_cost: int = 0
+# Runes that are currently active on the map
 var active_runes: Array[Rune] = []
 
+# All perks available in the game
 var perks_pool: Array[Perk] = []
 var _available_perks: int
 var active_perks: Array[Perk] = []
-var perks_pack: Array[Perk] = [] # Perks available for selection on the perks selection menu
+# Perks available for selection on the perks selection menu
+var perks_pack: Array[Perk] = [] 
 var _available_perk_rerolls: int = 1
 
 

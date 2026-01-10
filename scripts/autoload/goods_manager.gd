@@ -14,6 +14,22 @@ func _ready() -> void:
 			goods_by_type[type] = good
 			amounts[good] = 0
 
+	#wait for the good_ui to be ready
+	await get_tree().process_frame
+	# for good_ui in get_tree().get_nodes_in_group("good_ui"):
+	# 	good_ui.queue_free()
+	_set_starting_goods_amounts()
+
+
+func _set_starting_goods_amounts() -> void:
+	add_good(GoodType.Type.GOLD, 10)
+	add_good(GoodType.Type.FOOD, 10)
+	add_good(GoodType.Type.WOOD, 5)
+	add_good(GoodType.Type.STONE, 5)
+	add_good(GoodType.Type.FAVOR, 0)
+	add_good(GoodType.Type.INSIGHT, 0)
+	add_good(GoodType.Type.MINERALS, 0)
+
 func get_good_amount(type: GoodType.Type) -> int:
 	var good = goods_by_type.get(type)
 	if good:

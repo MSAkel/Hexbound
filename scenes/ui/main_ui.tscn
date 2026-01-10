@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://clbo25fmtd5ba"]
+[gd_scene load_steps=15 format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="PackedScene" uid="uid://6quv54inxx4v" path="res://scenes/ui/perks/active_perks.tscn" id="1_hcnxy"]
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/bottom_panel/bottom_panel.tscn" id="11_oi40j"]
 [ext_resource type="PackedScene" uid="uid://dfcucutqumd5a" path="res://scenes/ui/cards/card_selection_ui.tscn" id="12_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
+[ext_resource type="PackedScene" uid="uid://oegpdc2o442e" path="res://scenes/ui/warning_panel/warning_panel.tscn" id="14_8s2gp"]
 
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_l8t6x")
@@ -48,3 +49,6 @@ visible = false
 visible = false
 
 [node name="Tooltip" parent="." instance=ExtResource("13_tooltip")]
+
+[node name="WarningPanel" parent="." instance=ExtResource("14_8s2gp")]
+visible = false

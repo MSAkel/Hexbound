@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvwoi0gbmuacq"
-path="res://.godot/imported/abstract-002.svg-debde1cb2be7d9411fca8d976bbdad06.ctex"
+uid="uid://d2isq4wkastvr"
+path="res://.godot/imported/mountain_rune.svg-d0636bbc914b40a006c010a394f2a87f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/abstract-002.svg"
-dest_files=["res://.godot/imported/abstract-002.svg-debde1cb2be7d9411fca8d976bbdad06.ctex"]
+source_file="res://assets/icons/runes/mountain_rune.svg"
+dest_files=["res://.godot/imported/mountain_rune.svg-d0636bbc914b40a006c010a394f2a87f.ctex"]
 
 [params]
 

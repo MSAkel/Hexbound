@@ -63,6 +63,7 @@ stretch_mode = 0
 [node name="buildingIconParticles" type="GPUParticles2D" parent="BuildingsPanelButton"]
 modulate = Color(0.99609786, 0.9999998, 0.8566333, 0.58431375)
 position = Vector2(35, 36)
+emitting = false
 texture = ExtResource("5_vlavl")
 process_material = SubResource("ParticleProcessMaterial_0l5nl")
 
@@ -122,6 +123,7 @@ stretch_mode = 0
 [node name="RuneIconParticles" type="GPUParticles2D" parent="RunesPanelButton"]
 modulate = Color(0.99609786, 0.9999998, 0.8566333, 0.58431375)
 position = Vector2(35, 35)
+emitting = false
 texture = ExtResource("5_vlavl")
 process_material = SubResource("ParticleProcessMaterial_0l5nl")
 

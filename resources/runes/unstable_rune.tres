@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://c7rmc5vwsxtky"]
+
+[ext_resource type="Texture2D" uid="uid://b2bginph4fl45" path="res://assets/icons/runes/unstable_rune.svg" id="1_8y5q4"]
+[ext_resource type="Script" uid="uid://bkse354muydcr" path="res://resources/runes/unstable_rune.gd" id="2_ql6yn"]
+
+[resource]
+script = ExtResource("2_ql6yn")
+id = "unstable_rune"
+name = "Unstable Rune"
+icon = ExtResource("1_8y5q4")
+description = "Doubles the building production on the tile it is on, has a 33% to be destroyed on activation."
+rarity = 2
+activation_cost = {
+"favor": 0,
+"gold": 4,
+"insight": 1,
+"minerals": 1
+}
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

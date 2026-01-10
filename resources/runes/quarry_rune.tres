@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://c3et5k2fps6y4"]
+
+[ext_resource type="Texture2D" uid="uid://cqpdhclhkiuuf" path="res://assets/icons/runes/quarry_rune.svg" id="1_5t60a"]
+[ext_resource type="Script" uid="uid://k1k80i5tvppb" path="res://resources/runes/quarry_rune.gd" id="2_5t60a"]
+
+[resource]
+script = ExtResource("2_5t60a")
+id = "quarry_rune"
+name = "Quarry Rune"
+icon = ExtResource("1_5t60a")
+description = "Triggers the tile which it is placed if it has a Quarry. The Quarry  on this tile  generates an additional Stone"
+activation_cost = {
+"favor": 0,
+"gold": 2,
+"insight": 0,
+"minerals": 0
+}
+boosted_generation_amount = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

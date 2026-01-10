@@ -27,7 +27,7 @@ font = SubResource("SystemFont_5jwxg")
 font_size = 14
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
-size = Vector2(169, 304)
+size = Vector2(171, 304)
 
 [node name="CardUI" type="Control"]
 custom_minimum_size = Vector2(171, 261)
@@ -99,7 +99,7 @@ collision_mask = 2
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea"]
-position = Vector2(84.5, 152)
+position = Vector2(85.5, 152)
 shape = SubResource("RectangleShape2D_s55cg")
 
 [node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]

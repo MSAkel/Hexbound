@@ -18,6 +18,8 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @onready var targets: Array[Node] = []
 @onready var starting_hand_position := self.get_index()
 
+@onready var panel: Panel = $Panel
+
 enum CardType {
 	BUILDING,
 	RUNE,
@@ -37,6 +39,8 @@ func _on_gui_input(event: InputEvent) -> void:
 
 func _on_mouse_entered() -> void:
 	card_state_machine.on_mouse_entered()
+	#Move the card slightly up using tween
+	
 
 func _on_mouse_exited() -> void:
 	card_state_machine.on_mouse_exited()
@@ -53,8 +57,10 @@ func set_card(data) -> void:
 	# Determine card type based on the data
 	if data is Building:
 		card_type = CardType.BUILDING
+		panel.modulate = Color.BLUE
 	elif data is Rune:
 		card_type = CardType.RUNE
+		panel.modulate = Color.GREEN
 		activation_cost.show()
 		var text = ""
 		for good in data.activation_cost:

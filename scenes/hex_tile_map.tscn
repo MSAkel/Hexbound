@@ -78,8 +78,8 @@ sources/0 = SubResource("TileSetAtlasSource_8rbqn")
 
 [node name="HexTileMap" type="Node2D"]
 script = ExtResource("1_d5c3r")
-width = 9
-height = 9
+width = 15
+height = 13
 
 [node name="BaseLayer" type="TileMapLayer" parent="." groups=["hex_map_group"]]
 tile_set = SubResource("TileSet_ekk8a")

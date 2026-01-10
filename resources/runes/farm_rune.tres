@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://w4jnxu0fi1nd"]
+
+[ext_resource type="Texture2D" uid="uid://vxopacktaq77" path="res://assets/icons/runes/farm_rune.svg" id="1_d8k30"]
+[ext_resource type="Script" uid="uid://dxiso53gc1tkj" path="res://resources/runes/farm_rune.gd" id="2_v7twt"]
+
+[resource]
+script = ExtResource("2_v7twt")
+id = "farm_rune"
+name = "Farm Rune"
+icon = ExtResource("1_d8k30")
+description = "Triggers the tile which it is placed if it has a Farm. The Farm  on this tile  generates an additional Food"
+activation_cost = {
+"favor": 0,
+"gold": 2,
+"insight": 0,
+"minerals": 0
+}
+boosted_generation_amount = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

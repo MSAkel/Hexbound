@@ -9,7 +9,7 @@ id = "roundabout_rune"
 name = "Roundabout Rune"
 icon = ExtResource("1_51moe")
 description = "Triggers all adjacent tiles"
-rarity = 1
+rarity = 2
 activation_cost = {
 "favor": 0,
 "gold": 4,
