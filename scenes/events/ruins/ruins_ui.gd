@@ -1,15 +1,15 @@
 class_name RuinsUI
 extends Control
 
-@onready var description_panel: Panel = $Container/DescriptionPanel
-@onready var ruins_name: Label = $Container/DescriptionPanel/MarginContainer/VBoxContainer/RuinsName
-@onready var description: Label = $Container/DescriptionPanel/MarginContainer/VBoxContainer/Description
+#@onready var description_panel: Panel = $Container/DescriptionPanel
+#@onready var ruins_name: Label = $Container/DescriptionPanel/MarginContainer/VBoxContainer/RuinsName
+#@onready var description: Label = $Container/DescriptionPanel/MarginContainer/VBoxContainer/Description
 @onready var ruins_button: TextureButton = $Container/RuinsButton
 
-@onready var explore_button: Button = $Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/ExploreButton
-@onready var loot_button: Button = $Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/LootButton
+#@onready var explore_button: Button = $Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/ExploreButton
+#@onready var loot_button: Button = $Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/LootButton
 
-@onready var ruins_details_panel: Control = $Container/RuinsDetailsPanel
+#@onready var ruins_details_panel: Control = $Container/RuinsDetailsPanel
 
 # @onready var results_panel: Panel = $Container/ResultsPanel
 # @onready var results_label: Label = $Container/ResultsPanel/MarginContainer/VBoxContainer/ResultsLabel
@@ -25,37 +25,38 @@ func _ready() -> void:
 	# results_panel.hide()
 
 func _on_ruins_button_pressed() -> void:
-	ruins_details_panel.show()
-
-func _on_close_button_pressed() -> void:
-	description_panel.hide()
-
-func _on_explore_button_pressed() -> void:
-	if GoodsManager.get_good_amount(GoodType.Type.GOLD) < ruins.exploration_cost:
-		# TODO: Show "not enough gold" message
-		return
+	#ruins_details_panel.show()
+	pass
+#
+#func _on_close_button_pressed() -> void:
+	#description_panel.hide()
+#
+#func _on_explore_button_pressed() -> void:
+	#if GoodsManager.get_good_amount(GoodType.Type.GOLD) < ruins.exploration_cost:
+		## TODO: Show "not enough gold" message
+		#return
 		
-	GoodsManager.remove_good(GoodType.Type.GOLD, ruins.exploration_cost)
-	var rewards = ruins.get_exploration_rewards()
+	#GoodsManager.remove_good(GoodType.Type.GOLD, ruins.exploration_cost)
+	#var rewards = ruins.get_exploration_rewards()
 	
-	for reward in rewards:
-		match reward.type:
-			"gold":
-				GoodsManager.add_good(GoodType.Type.GOLD, reward.amount)
-				# result_text += "Found %d gold!\n" % reward.amount
-			"insight":
-				GoodsManager.add_good(GoodType.Type.INSIGHT, reward.amount)
-				# result_text += "Gained %d insight!\n" % reward.amount
-			"rune":
-				pass
-				# TODO: Implement rune reward
-				# result_text += "Found a mysterious rune!\n"
-			"perk":
-				pass
-				# TODO: Implement perk reward
-				# result_text += "Discovered a new perk!\n"
-			"curse":
-				pass
+	#for reward in rewards:
+		#match reward.type:
+			#"gold":
+				#GoodsManager.add_good(GoodType.Type.GOLD, reward.amount)
+				## result_text += "Found %d gold!\n" % reward.amount
+			#"insight":
+				#GoodsManager.add_good(GoodType.Type.INSIGHT, reward.amount)
+				## result_text += "Gained %d insight!\n" % reward.amount
+			#"rune":
+				#pass
+				## TODO: Implement rune reward
+				## result_text += "Found a mysterious rune!\n"
+			#"perk":
+				#pass
+				## TODO: Implement perk reward
+				## result_text += "Discovered a new perk!\n"
+			#"curse":
+				#pass
 				# TODO: Implement curse system
 				# result_text += "A curse has been placed upon you!\n"
 	

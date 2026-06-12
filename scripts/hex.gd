@@ -196,13 +196,13 @@ func _reposition_items() -> void:
 func explore() -> void:
 	if not explored:
 		explored = true
-		#on_explore()
 		
-		# Remove any unexplored POI
+		# Remove any unexplored POI icons
 		for child in map.get_children():
 			if child is UnexploredPOI and child.tile == self:
 				child.queue_free()
 		
+		# Enable curse and ruins buttons if they exist
 		if curse != null:
 			curse.curse_button.disabled = false
 			curse.curse_button.show()

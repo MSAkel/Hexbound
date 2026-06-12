@@ -9,6 +9,7 @@ id = "housing_unit"
 name = "Housing Unit"
 icon = ExtResource("1_e5w2m")
 type = 9
+generated_goods = null
 passive = true
 description = "Passivly generates 0.1 influence per turn, consumes 3 food per turn."
 metadata/_custom_type_script = "uid://byuy57newj5vi"

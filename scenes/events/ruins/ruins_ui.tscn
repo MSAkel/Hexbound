@@ -1,20 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://nl761od8nnm8"]
+[gd_scene load_steps=5 format=3 uid="uid://nl761od8nnm8"]
 
 [ext_resource type="Script" uid="uid://dlcicwjgb6qkv" path="res://scenes/events/ruins/ruins_ui.gd" id="1_mmsej"]
 [ext_resource type="Texture2D" uid="uid://dnn6eox3kyyy5" path="res://assets/gui/frames/frame_square.png" id="2_0ukg7"]
 [ext_resource type="Texture2D" uid="uid://dt5nw0ptq83f7" path="res://assets/icons/poi/ruins.png" id="2_316ux"]
-[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="3_1frj6"]
 [ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="3_2jeeq"]
-[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="3_50icf"]
-[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="4_1frj6"]
-[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="5_ctvfw"]
-[ext_resource type="PackedScene" uid="uid://wxhh35phpvvy" path="res://scenes/ui/results/ruins_details_panel.tscn" id="9_2jeeq"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0ukg7"]
-texture = ExtResource("3_50icf")
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ctvfw"]
-texture = ExtResource("3_1frj6")
 
 [node name="RuinsUI" type="Control"]
 z_index = 7
@@ -66,95 +55,4 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_316ux")
 
-[node name="DescriptionPanel" type="Panel" parent="Container"]
-visible = false
-z_index = 1
-custom_minimum_size = Vector2(200, 200)
-layout_mode = 0
-offset_left = 76.0
-offset_right = 424.0
-offset_bottom = 441.0
-theme_override_styles/panel = SubResource("StyleBoxTexture_0ukg7")
-
-[node name="MarginContainer" type="MarginContainer" parent="Container/DescriptionPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 2.0
-offset_top = 9.0
-offset_right = 2.0
-offset_bottom = -14.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Container/DescriptionPanel/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="RuinsName" type="Label" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "Ruins of the Duck Lord"
-
-[node name="Description" type="Label" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(100, 150)
-layout_mode = 2
-text = "The Ruins of the Duck Lord are ancient, moss-covered remnants of a forgotten kingdom once ruled by the legendary Duck Lord. Nestled in a misty marsh or hidden deep within enchanted forests, these crumbling stone structures echo with whispers of avian power and long-lost rituals. Strange carvings of ducks and mysterious glyphs hint at a civilization that revered their feathery monarch, leaving behind relics said to possess quirky but potent magic."
-autowrap_mode = 3
-
-[node name="ButtonsContainer" type="HBoxContainer" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="ExploreButton" type="Button" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer"]
-custom_minimum_size = Vector2(145, 40)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-theme_override_styles/normal = SubResource("StyleBoxTexture_ctvfw")
-text = "Explore (50g)"
-icon_alignment = 2
-expand_icon = true
-
-[node name="LootButton" type="Button" parent="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer"]
-custom_minimum_size = Vector2(145, 40)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-theme_override_styles/normal = SubResource("StyleBoxTexture_ctvfw")
-text = "Loot"
-icon_alignment = 2
-expand_icon = true
-
-[node name="CloseButton" type="TextureButton" parent="Container/DescriptionPanel"]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -32.0
-offset_bottom = 32.0
-grow_horizontal = 0
-size_flags_horizontal = 8
-size_flags_vertical = 0
-texture_normal = ExtResource("4_1frj6")
-texture_hover = ExtResource("5_ctvfw")
-
-[node name="RuinsDetailsPanel" parent="Container" instance=ExtResource("9_2jeeq")]
-visible = false
-layout_mode = 1
-anchors_preset = 1
-anchor_top = 0.0
-anchor_bottom = 0.0
-offset_top = 0.0
-offset_bottom = 269.0
-grow_vertical = 1
-
 [connection signal="pressed" from="Container/RuinsButton" to="." method="_on_ruins_button_pressed"]
-[connection signal="pressed" from="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/ExploreButton" to="." method="_on_explore_button_pressed"]
-[connection signal="pressed" from="Container/DescriptionPanel/MarginContainer/VBoxContainer/ButtonsContainer/LootButton" to="." method="_on_loot_button_pressed"]
-[connection signal="pressed" from="Container/DescriptionPanel/CloseButton" to="." method="_on_close_button_pressed"]

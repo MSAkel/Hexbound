@@ -28,6 +28,7 @@ const FOG_SHADER = preload("res://shaders/fog_overlay.gdshader")
 
 var hex: Hex
 var selected_cell: Vector2i = Vector2i(-1, -1)
+var hovered_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>
 var map_data: Dictionary = {}
 # Based off the tilemap textures order. If changed, update the dictionary.
@@ -40,12 +41,8 @@ var terrain_textures: Dictionary = {
 	hex.TerrainType.WATER: Vector2i(5,0),
 }
 
-# Track if a card is being dragged
-var is_card_dragging: bool = false
-# Track the last tile we showed the overlay on
-var last_hovered_tile: Vector2i = Vector2i(-1, -1)
-# Reference to the card being dragged
-var dragged_card: CardUI = null
+# Card placement handler
+var card_placement_handler: CardPlacementHandler
 
 func _ready() -> void:
 	generate_terrain()
@@ -59,9 +56,10 @@ func _ready() -> void:
 	shader_material.shader = FOG_SHADER
 	fog_overlay_layer.material = shader_material
 	
-	# Connect to card drag signals
-	Events.card_drag_started.connect(_on_card_drag_started)
-	Events.card_drag_ended.connect(_on_card_drag_ended)
+	# Create and setup card placement handler
+	card_placement_handler = CardPlacementHandler.new()
+	card_placement_handler.tile_map = self
+	add_child(card_placement_handler)
 
 
 #_unhandled_input only receives events that haven't been handled by other nodes
@@ -71,6 +69,31 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Skip input handling if turn is being processed
 	if GameManager.is_processing_turn:
 		return
+		
+	# Handle mouse motion for hover highlighting (only when not dragging cards)
+	if not card_placement_handler.is_card_dragging and event is InputEventMouseMotion:
+		var map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
+		# Check if mouse is within terrain boundaries
+		if map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
+			# Only update hover if we've moved to a different tile
+			if map_coords != hovered_cell:
+				# Clear previous hover (if it existed and wasn't selected)
+				if hovered_cell != Vector2i(-1, -1) and hovered_cell != selected_cell:
+					selection_overlay_layer.set_cell(hovered_cell, -1)
+				
+				hovered_cell = map_coords
+				var h: Hex = map_data[map_coords]
+				# Apply hover highlight only on explored tiles (not water, not selected)
+				if h.explored and h.terrain_type != hex.TerrainType.WATER and map_coords != selected_cell:
+					selection_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+				# If hovering over selected tile, don't show hover (selection overlay is already showing)
+				elif map_coords == selected_cell:
+					hovered_cell = Vector2i(-1, -1)
+		else:
+			# Clear hover when mouse leaves the map (if not selected)
+			if hovered_cell != Vector2i(-1, -1) and hovered_cell != selected_cell:
+				selection_overlay_layer.set_cell(hovered_cell, -1)
+				hovered_cell = Vector2i(-1, -1)
 		
 	# only detect input if it hasn't already been consumed
 	if event is InputEventMouseButton:
@@ -85,160 +108,20 @@ func _unhandled_input(event: InputEvent) -> void:
 					# Remove the current overlay texture on selecting a different tile
 					if map_coords != selected_cell:
 						selection_overlay_layer.set_cell(selected_cell, -1)
+					
+					# Clear hover if it's on the tile we're selecting
+					if hovered_cell == map_coords:
+						selection_overlay_layer.set_cell(hovered_cell, -1)
+						hovered_cell = Vector2i(-1, -1)
 						
-					# Apply overlay tile on selecting a tile
-					selection_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
+					# Apply overlay tile on selecting a tile (use source 2 for selection)
+					selection_overlay_layer.set_cell(map_coords, 2, Vector2i(0,0))
 					selected_cell = map_coords
 		else:
 			# Deselect active cell on clicking outside the map
 			selection_overlay_layer.set_cell(selected_cell, -1)
+			selected_cell = Vector2i(-1, -1)
 			
-# Handle card drag and drop
-func _input(event: InputEvent) -> void:
-	if is_card_dragging:
-		if event is InputEventMouseButton and not event.pressed:
-			# Handle right click cancellation first
-			if event.button_index == MOUSE_BUTTON_RIGHT:
-				# Clear overlays
-				for x in width:
-					for y in height:
-						card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
-				card_drop_overlay_layer.modulate = Color.WHITE
-				last_hovered_tile = Vector2i(-1, -1)
-				dragged_card = null
-				is_card_dragging = false
-				return
-				
-			# Handle left click placement
-			if event.button_index == MOUSE_BUTTON_LEFT:
-				# Use card center position for placement consistency
-				var card_center_screen: Vector2 = dragged_card.global_position + dragged_card.size / 2.0
-				var viewport: Viewport = get_viewport()
-				var camera: Camera2D = viewport.get_camera_2d()
-				
-				var card_center_world: Vector2
-				if camera:
-					var mouse_screen: Vector2 = viewport.get_mouse_position()
-					var mouse_world: Vector2 = camera.get_global_mouse_position()
-					var offset_screen: Vector2 = card_center_screen - mouse_screen
-					var offset_world: Vector2 = offset_screen / camera.zoom
-					card_center_world = mouse_world + offset_world
-				else:
-					card_center_world = card_center_screen
-				
-				var dragged_over_map_coords: Vector2i = base_layer.local_to_map(to_local(card_center_world))
-				var placement_successful: bool = false
-				
-				if dragged_over_map_coords.x >= 0 && dragged_over_map_coords.x < width && dragged_over_map_coords.y >= 0 && dragged_over_map_coords.y < height:
-					var h: Hex = map_data[dragged_over_map_coords]
-					if h.explored and h.terrain_type != hex.TerrainType.WATER:
-						# Check card type and validate placement
-						if dragged_card != null:
-							var can_place: bool = false
-							match dragged_card.get_card_type():
-								CardUI.CardType.BUILDING:
-									can_place = h.active_building == null
-									if can_place:
-										h.place_building(dragged_card.card)
-										dragged_card.queue_free()
-										placement_successful = true
-								CardUI.CardType.RUNE:
-									can_place = h.active_rune == null
-									if can_place:
-										h.place_rune(dragged_card.card)
-										dragged_card.queue_free()
-										placement_successful = true
-							
-							# If placement failed, return card to hand
-							if not placement_successful:
-								# Transition card back to BASE state so it returns to hand properly
-								if dragged_card.card_state_machine:
-									dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
-					else:
-						# Clicked on invalid tile (water/unexplored), return card to hand
-						if dragged_card != null and dragged_card.card_state_machine:
-							dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
-				else:
-					# Clicked outside map, return card to hand
-					if dragged_card != null and dragged_card.card_state_machine:
-						dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
-				
-				dragged_card = null
-				is_card_dragging = false
-				# Clear overlays
-				for x in width:
-					for y in height:
-						card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
-				card_drop_overlay_layer.modulate = Color.WHITE
-				last_hovered_tile = Vector2i(-1, -1)
-		
-		# Update highlighting on mouse motion when dragging
-		if is_card_dragging and event is InputEventMouseMotion:
-			if dragged_card != null:
-				# Get the card's center position in screen/viewport coordinates
-				var card_center_screen: Vector2 = dragged_card.global_position + dragged_card.size / 2.0
-				
-				# Convert screen coordinates to world coordinates
-				# The card is in a CanvasLayer (UI space), so we need to convert to world space
-				var viewport: Viewport = get_viewport()
-				var camera: Camera2D = viewport.get_camera_2d()
-				
-				var card_center_world: Vector2
-				if camera:
-					# Get mouse position in screen coordinates (from viewport)
-					var mouse_screen: Vector2 = viewport.get_mouse_position()
-					# Get mouse position in world coordinates
-					var mouse_world: Vector2 = camera.get_global_mouse_position()
-					
-					# Calculate offset from mouse to card center in screen space
-					var offset_screen: Vector2 = card_center_screen - mouse_screen
-					
-					# Convert screen offset to world offset using camera zoom
-					# Screen pixels to world units conversion depends on zoom
-					var offset_world: Vector2 = offset_screen / camera.zoom
-					
-					# Card center in world coordinates
-					card_center_world = mouse_world + offset_world
-				else:
-					# Fallback: assume screen and world are the same (no camera)
-					card_center_world = card_center_screen
-				
-				# Convert world position to map coordinates
-				var map_coords: Vector2i = base_layer.local_to_map(to_local(card_center_world))
-				
-				# Clear overlay from previous tile if we've moved to a new tile
-				if last_hovered_tile != map_coords:
-					card_drop_overlay_layer.set_cell(last_hovered_tile, -1)
-					card_drop_overlay_layer.modulate = Color.WHITE
-					last_hovered_tile = map_coords
-				
-				if map_coords.x >= 0 && map_coords.x < width && map_coords.y >= 0 && map_coords.y < height:
-					var h: Hex = map_data[map_coords]
-					if h.explored and h.terrain_type != hex.TerrainType.WATER:
-						# Check if placement is valid based on card type
-						var is_valid: bool = false
-						match dragged_card.get_card_type():
-							CardUI.CardType.BUILDING:
-								is_valid = h.active_building == null
-							CardUI.CardType.RUNE:
-								is_valid = h.active_rune == null
-						
-						if is_valid:
-							card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
-							card_drop_overlay_layer.modulate = Color.WHITE
-						else:
-							# Show red overlay for invalid placement
-							card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
-							card_drop_overlay_layer.modulate = Color.RED
-					else:
-						card_drop_overlay_layer.set_cell(map_coords, -1)
-						card_drop_overlay_layer.modulate = Color.WHITE
-				else:
-					# Clear overlay when not hovering over valid tile
-					card_drop_overlay_layer.set_cell(map_coords, -1)
-					card_drop_overlay_layer.modulate = Color.WHITE
-
-
 func generate_terrain() -> void:
 	# Initialize noise maps for terrain features
 	var noise_map := []
@@ -445,19 +328,3 @@ func on_turn_ended():
 					
 	# Signal that turn processing is complete
 	GameManager.finish_turn_processing()
-
-# Signal handler for when a card starts being dragged
-func _on_card_drag_started(card: CardUI) -> void:
-	is_card_dragging = true
-	dragged_card = card
-
-# Signal handler for when a card stops being dragged
-func _on_card_drag_ended() -> void:
-	is_card_dragging = false
-	# Clear any remaining card drop overlays
-	for x in width:
-		for y in height:
-			card_drop_overlay_layer.set_cell(Vector2i(x, y), -1)
-	card_drop_overlay_layer.modulate = Color.WHITE
-	last_hovered_tile = Vector2i(-1, -1)
-	dragged_card = null

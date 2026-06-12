@@ -1,8 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://wxhh35phpvvy"]
+[gd_scene load_steps=9 format=3 uid="uid://wxhh35phpvvy"]
 
 [ext_resource type="Script" uid="uid://tk72g6po4ikw" path="res://scenes/ui/results/ruins_details_panel.gd" id="1_8xteq"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="1_a546i"]
-[ext_resource type="PackedScene" uid="uid://cfo4gpycs0j8u" path="res://scenes/quests/reward_ui.tscn" id="2_8xteq"]
 [ext_resource type="Theme" uid="uid://d2qm4n05j7qhs" path="res://themes/button.tres" id="3_yoffs"]
 [ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="4_ja3u4"]
 [ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="5_cxt0x"]
@@ -11,9 +10,17 @@
 texture = ExtResource("1_a546i")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ntygd"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
 texture = ExtResource("1_a546i")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i7ma5"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
 texture = ExtResource("1_a546i")
 
 [node name="RuinsDetailsPanel" type="Control"]
@@ -26,8 +33,8 @@ anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -419.0
-offset_top = -151.0
-offset_bottom = 177.0
+offset_top = -236.0
+offset_bottom = 236.0
 grow_horizontal = 0
 grow_vertical = 2
 script = ExtResource("1_8xteq")
@@ -41,136 +48,154 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_l2im5")
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
-layout_mode = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 395.0
+offset_bottom = 457.0
 theme_override_constants/separation = 16
 
-[node name="Panel" type="Panel" parent="Panel/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 150)
+[node name="DescriptionContainer" type="PanelContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxTexture_ntygd")
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel/MarginContainer/VBoxContainer/Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 3.0
-offset_bottom = 12.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/Panel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/DescriptionContainer"]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Panel/MarginContainer/VBoxContainer/Panel/MarginContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="Panel/VBoxContainer/DescriptionContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Title"
+text = "Abandoned Ruins"
 
-[node name="Description" type="Label" parent="Panel/MarginContainer/VBoxContainer/Panel/MarginContainer/VBoxContainer"]
+[node name="Description" type="Label" parent="Panel/VBoxContainer/DescriptionContainer/VBoxContainer"]
 clip_contents = true
-custom_minimum_size = Vector2(350, 75)
+custom_minimum_size = Vector2(350, 50)
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 1
 size_flags_stretch_ratio = 0.0
-theme_override_font_sizes/font_size = 10
-text = "Abandoned ruins, very spooky. Who knows what you might find in there? 
-Carefully explore to find some treasure or loot the ruines to gain riches and risk angering the spirits. 
-Muahahaha"
+theme_override_font_sizes/font_size = 12
+text = "The remains of a ruined structure used by ancient civilizations, who knows what secrets we might find?"
+horizontal_alignment = 1
 autowrap_mode = 3
-uppercase = true
 
-[node name="RewardsContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
+[node name="CostVBox" type="VBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
-[node name="FirstOptionPanel" type="Panel" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer"]
+[node name="CostLabel" type="Label" parent="Panel/VBoxContainer/CostVBox"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Cost"
+horizontal_alignment = 1
+
+[node name="CostContainer" type="HBoxContainer" parent="Panel/VBoxContainer/CostVBox"]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="ExploreCostPanel" type="PanelContainer" parent="Panel/VBoxContainer/CostVBox/CostContainer"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxTexture_i7ma5")
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/FirstOptionPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+[node name="HBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/CostVBox/CostContainer/ExploreCostPanel"]
+layout_mode = 2
 
-[node name="ExploreRewardsContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/FirstOptionPanel/MarginContainer"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/CostVBox/CostContainer/ExploreCostPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "EXPLORE"
+horizontal_alignment = 1
+
+[node name="ExploreCostContainer" type="HBoxContainer" parent="Panel/VBoxContainer/CostVBox/CostContainer/ExploreCostPanel/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 0
-
-[node name="RewardUI" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/FirstOptionPanel/MarginContainer/ExploreRewardsContainer" instance=ExtResource("2_8xteq")]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 0
-
-[node name="ExploreButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/FirstOptionPanel/MarginContainer"]
-custom_minimum_size = Vector2(85, 30)
-layout_mode = 2
 size_flags_vertical = 8
-theme = ExtResource("3_yoffs")
-text = "Explore"
 
-[node name="SecondOptionPanel" type="Panel" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer"]
+[node name="SecondOptionPanel" type="PanelContainer" parent="Panel/VBoxContainer/CostVBox/CostContainer"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxTexture_i7ma5")
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/SecondOptionPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+[node name="HBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/CostVBox/CostContainer/SecondOptionPanel"]
+layout_mode = 2
 
-[node name="LootRewardsContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/SecondOptionPanel/MarginContainer"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/CostVBox/CostContainer/SecondOptionPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "LOOT"
+horizontal_alignment = 1
+
+[node name="LootCostContainer" type="HBoxContainer" parent="Panel/VBoxContainer/CostVBox/CostContainer/SecondOptionPanel/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 0
+size_flags_vertical = 8
 
-[node name="RewardUI" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/SecondOptionPanel/MarginContainer/LootRewardsContainer" instance=ExtResource("2_8xteq")]
+[node name="RewardsVBox" type="VBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 0
 
-[node name="LootButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/RewardsContainer/SecondOptionPanel/MarginContainer"]
-custom_minimum_size = Vector2(85, 30)
+[node name="RewardsLabel" type="Label" parent="Panel/VBoxContainer/RewardsVBox"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Rewards"
+horizontal_alignment = 1
+
+[node name="RewardsContainer" type="HBoxContainer" parent="Panel/VBoxContainer/RewardsVBox"]
 layout_mode = 2
 size_flags_vertical = 8
+
+[node name="ExploreRewardPanel" type="PanelContainer" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxTexture_i7ma5")
+
+[node name="HBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer/ExploreRewardPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer/ExploreRewardPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "EXPLORE"
+horizontal_alignment = 1
+
+[node name="ExploreRewardsContainer" type="HBoxContainer" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer/ExploreRewardPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
+[node name="LootRewardPanel" type="PanelContainer" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxTexture_i7ma5")
+
+[node name="HBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer/LootRewardPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer/LootRewardPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "LOOT"
+horizontal_alignment = 1
+
+[node name="LootRewardsContainer" type="HBoxContainer" parent="Panel/VBoxContainer/RewardsVBox/RewardsContainer/LootRewardPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
+[node name="ConfirmButton" type="Button" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(85, 30)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 theme = ExtResource("3_yoffs")
-text = "Loot"
+disabled = true
+text = "CONFIRM"
 
 [node name="CloseButton" type="TextureButton" parent="Panel"]
 layout_mode = 1
@@ -185,6 +210,5 @@ texture_hover = ExtResource("5_cxt0x")
 ignore_texture_size = true
 stretch_mode = 0
 
-[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/RewardsContainer/FirstOptionPanel/MarginContainer/ExploreButton" to="." method="_on_explore_button_pressed"]
-[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/RewardsContainer/SecondOptionPanel/MarginContainer/LootButton" to="." method="_on_loot_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ConfirmButton" to="." method="_on_explore_button_pressed"]
 [connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]
