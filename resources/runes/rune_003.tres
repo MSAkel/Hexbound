@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://bp1tk0ukiucl1"]
+
+[ext_resource type="Texture2D" uid="uid://dopgj6k404kmj" path="res://assets/icons/runes/divided-square.svg" id="1_xoy1l"]
+[ext_resource type="Script" uid="uid://r030evn6g2pr" path="res://resources/runes/5_marks_the_spot.gd" id="2_tglpx"]
+
+[resource]
+script = ExtResource("2_tglpx")
+id = "rune_003"
+name = "Rune 003"
+icon = ExtResource("1_xoy1l")
+description = "Generates 200 points, increasing by 5 per turn. Has a 50% chance to DESTROY an unused adjacent tile."
+rarity = 2
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

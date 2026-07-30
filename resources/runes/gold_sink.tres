@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://oh25j7sj0pf0"]
+
+[ext_resource type="Texture2D" uid="uid://c7vapd2sa72n5" path="res://assets/icons/runes/gilded_rune.png" id="1_ynd4p"]
+[ext_resource type="Script" uid="uid://r030evn6g2pr" path="res://resources/runes/5_marks_the_spot.gd" id="2_02ere"]
+
+[resource]
+script = ExtResource("2_02ere")
+id = "gold_sink"
+name = "Gold Sink"
+icon = ExtResource("1_ynd4p")
+description = "Consumes 1 gold. consume an additional 1 gold for every 4 activated runes prior to this one. At the end of the round (or turn?), something something based on the amount of gold cosumed."
+rarity = 1
+activation_cost = {
+"gold": 1
+}
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

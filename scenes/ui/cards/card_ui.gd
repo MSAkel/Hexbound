@@ -26,7 +26,6 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @onready var panel: Panel = $Panel
 
 enum CardType {
-	BUILDING,
 	RUNE,
 }
 
@@ -58,21 +57,10 @@ func set_card(data) -> void:
 	icon.texture = data.icon
 	card_description.text = data.description
 	
-	# Determine card type based on the data
-	if data is Building:
-		card_type = CardType.BUILDING
-		card_type_label.text = "Building"
-		panel.modulate = Color.BLUE
-	elif data is Rune:
+	if data is Rune:
 		card_type = CardType.RUNE
 		card_type_label.text = "Rune"
 		panel.modulate = Color.GREEN
-		#activation_cost.show()
-		var text = ""
-		#for good in data.activation_cost:
-			#if data.activation_cost[good] > 0:
-				#text += "%s: %d\n" % [good, data.activation_cost[good]]
-		#activation_cost.text = text
 	else:
 		push_error("Unknown card type for data: ", data)
 

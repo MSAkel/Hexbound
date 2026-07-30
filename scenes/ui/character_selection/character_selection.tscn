@@ -1,0 +1,167 @@
+[gd_scene format=3 uid="uid://bydk46w3lnoju"]
+
+[ext_resource type="Script" uid="uid://6n3v47jlsp0s" path="res://scenes/ui/character_selection/character_selection.gd" id="1_qkry7"]
+[ext_resource type="Texture2D" uid="uid://jgmv1d02181a" path="res://assets/gui/main_menu_background.png" id="2_1dsk2"]
+[ext_resource type="Texture2D" uid="uid://c5alidf51u62n" path="res://assets/characters/the_peasant.png" id="3_1dsk2"]
+[ext_resource type="Texture2D" uid="uid://dv7ik3li2xvp" path="res://assets/characters/the_greedy_lord.jpg" id="4_5vvnq"]
+
+[sub_resource type="Gradient" id="Gradient_fe2o3"]
+colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1g8jr"]
+gradient = SubResource("Gradient_fe2o3")
+width = 50
+
+[sub_resource type="LabelSettings" id="LabelSettings_m1kxf"]
+font_size = 64
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x2yvf"]
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(5, 5, 0)
+emission_shape_scale = Vector3(5, 5, 1)
+emission_shape = 1
+emission_sphere_radius = 128.0
+angle_min = -118.5
+angle_max = 62.6
+gravity = Vector3(0, 98, 0)
+scale_max = 3.0
+
+[node name="CharacterSelection" type="Control" unique_id=2011532295]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_qkry7")
+
+[node name="Background" type="TextureRect" parent="." unique_id=435190877]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_1dsk2")
+expand_mode = 1
+
+[node name="Foreground" type="TextureRect" parent="." unique_id=1573575630]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture1D_1g8jr")
+
+[node name="Container" type="MarginContainer" parent="." unique_id=104067726]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Label" type="Label" parent="Container" unique_id=742822795]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+text = "Character Select"
+label_settings = SubResource("LabelSettings_m1kxf")
+
+[node name="Character" type="VBoxContainer" parent="Container" unique_id=1464495916]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="CharactersContainer" type="GridContainer" parent="Container/Character" unique_id=861178460]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme_override_constants/h_separation = 24
+columns = 5
+
+[node name="ThePeasant" type="VBoxContainer" parent="Container/Character/CharactersContainer" unique_id=2017713146]
+layout_mode = 2
+
+[node name="CharacterName" type="Label" parent="Container/Character/CharactersContainer/ThePeasant" unique_id=1057721904]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "The Peasant"
+horizontal_alignment = 1
+
+[node name="CharacterImage" type="TextureRect" parent="Container/Character/CharactersContainer/ThePeasant" unique_id=77200064]
+custom_maximum_size = Vector2(400, 500)
+layout_mode = 2
+texture = ExtResource("3_1dsk2")
+
+[node name="CharacterDescription" type="Label" parent="Container/Character/CharactersContainer/ThePeasant" unique_id=641546701]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Starting hand:
+2x Basic Rune
+3x Random common Rune
+
+\"But m'lord...yes m'lord\""
+
+[node name="TheGreedyLord" type="VBoxContainer" parent="Container/Character/CharactersContainer" unique_id=2071523794]
+layout_mode = 2
+
+[node name="CharacterName" type="Label" parent="Container/Character/CharactersContainer/TheGreedyLord" unique_id=195843294]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "The Greedy Lord"
+horizontal_alignment = 1
+
+[node name="CharacterImage" type="TextureRect" parent="Container/Character/CharactersContainer/TheGreedyLord" unique_id=631677673]
+custom_maximum_size = Vector2(400, 500)
+layout_mode = 2
+texture = ExtResource("4_5vvnq")
+
+[node name="CharacterDescription" type="Label" parent="Container/Character/CharactersContainer/TheGreedyLord" unique_id=1853604437]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Starts with 25 gold
+Taxing the poor nets him 15 gold at the 
+end of every phase
+Starting hand:
+2x Basic Rune
+2x Gold Sink
+1x Random common Rune
+
+His greed blinds him: Destroy a random
+active rune at the start of every phase"
+
+[node name="StartButton" type="Button" parent="Container" unique_id=1811051619]
+custom_minimum_size = Vector2(100, 42)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 24
+text = "Start"
+
+[node name="BackButton" type="Button" parent="Container" unique_id=435385287]
+custom_minimum_size = Vector2(100, 42)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 24
+text = "Back"
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1126406687]
+modulate = Color(0.747408, 0.580086, 1, 1)
+position = Vector2(977, 175)
+rotation = -3.14027
+amount = 10
+sub_emitter = NodePath(".")
+lifetime = 3.0
+speed_scale = 0.2
+randomness = 1.0
+process_material = SubResource("ParticleProcessMaterial_x2yvf")
+
+[connection signal="pressed" from="Container/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="Container/BackButton" to="." method="_on_back_button_pressed"]

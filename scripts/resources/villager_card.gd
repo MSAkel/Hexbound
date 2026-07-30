@@ -1,7 +1,7 @@
 class_name VillagerCard
 extends Card
 
-enum Target {BUILDING, RUINS}
+enum Target { RUINS }
 enum Type {VILLAGER, GATHERER, HUNTER, WARRIOR, EXPLORER}
 
 @export_group("Card Attributes")
@@ -19,9 +19,6 @@ enum Type {VILLAGER, GATHERER, HUNTER, WARRIOR, EXPLORER}
 #@export_multiline var tooltip_text: String
 
 #var assigned_cards: Array[Node] = []
-
-func is_targeting_building() -> bool:
-	return target == Target.BUILDING
 
 func on_specialize_vilalger(specialization: Type) -> void:
 	if !specialization:

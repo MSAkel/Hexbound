@@ -16,22 +16,15 @@ signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 
 signal influence_changed()
 
-
-signal quest_progress_updated()
-
 # Merchant signals
 signal merchant_item_purchased(item_type: String)  # Emitted when an item is purchased
 signal merchant_discount_changed(new_discount: float)  # Emitted when merchant discount changes
 
 signal card_played(card_ui: CardUI)  # Emitted when a card is played
 
-signal building_selected(building: Building)
 signal rune_selected(rune: Rune)
 signal card_selected(card: CardUI)
 
-signal building_pack_count_changed()
 signal rune_pack_count_changed()
-
-signal explore_count_changed()
 
 signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)

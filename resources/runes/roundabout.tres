@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://dpu8gj3ofb5dy"]
+
+[ext_resource type="Texture2D" uid="uid://j7ewxkg3i3qk" path="res://assets/icons/runes/roundabout_rune.png" id="1_hthtt"]
+[ext_resource type="Script" uid="uid://r030evn6g2pr" path="res://resources/runes/5_marks_the_spot.gd" id="2_clj0g"]
+
+[resource]
+script = ExtResource("2_clj0g")
+id = "roundabout"
+name = "Roundabout"
+icon = ExtResource("1_hthtt")
+description = "Triggers every adjacent rune. There is a 15% chance that this rune will be destroyed if there is at least 1 adjacent rune. This increases by 10% for each additional adjacent rune."
+rarity = 2
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

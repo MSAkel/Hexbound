@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://dar7bvc231xx"]
+
+[node name="GameSpeedUI" type="HBoxContainer" unique_id=283889066]
+offset_right = 153.0
+offset_bottom = 42.0
+theme_override_constants/separation = 16
+
+[node name="RegularGameSpeedButton" type="Button" parent="." unique_id=831090714]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "x1"
+
+[node name="DoubleGameSpeedButton" type="Button" parent="." unique_id=930312563]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "x2"
+
+[node name="TripleGameSpeedButton" type="Button" parent="." unique_id=389381147]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "x3"

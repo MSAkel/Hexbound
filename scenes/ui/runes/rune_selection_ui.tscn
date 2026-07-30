@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://dme0eav2550e7"]
+[gd_scene format=3 uid="uid://dme0eav2550e7"]
 
 [ext_resource type="Script" uid="uid://nriqkn24o42m" path="res://scenes/ui/runes/rune_selection_ui.gd" id="1_e7vfp"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_bvuok"]
@@ -12,7 +12,7 @@ texture = ExtResource("2_bvuok")
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jpxjh"]
 texture = ExtResource("5_2hgda")
 
-[node name="RuneSelectionUI" type="Control"]
+[node name="RuneSelectionUI" type="Control" unique_id=1995601468]
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -24,15 +24,15 @@ grow_vertical = 2
 size_flags_vertical = 8
 script = ExtResource("1_e7vfp")
 
-[node name="Panel" type="Panel" parent="."]
-layout_mode = 2
+[node name="Panel" type="Panel" parent="." unique_id=2007156627]
+layout_mode = 0
 offset_left = -574.0
 offset_top = -365.0
 offset_right = 534.0
 offset_bottom = 258.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_swbo7")
 
-[node name="MarginPanel" type="MarginContainer" parent="Panel"]
+[node name="MarginPanel" type="MarginContainer" parent="Panel" unique_id=670077628]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -48,12 +48,12 @@ grow_vertical = 2
 mouse_filter = 0
 theme_override_constants/margin_top = 16
 
-[node name="ChoicesContainer" type="HBoxContainer" parent="Panel/MarginPanel"]
+[node name="ChoicesContainer" type="HBoxContainer" parent="Panel/MarginPanel" unique_id=1118305739]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 64
 
-[node name="CloseButton" type="TextureButton" parent="Panel"]
+[node name="CloseButton" type="TextureButton" parent="Panel" unique_id=1173032380]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -64,7 +64,7 @@ grow_horizontal = 0
 texture_normal = ExtResource("3_rgcjf")
 texture_hover = ExtResource("4_lqce7")
 
-[node name="RerollButton" type="Button" parent="Panel"]
+[node name="RerollButton" type="Button" parent="Panel" unique_id=16000875]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0

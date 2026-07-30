@@ -3,7 +3,7 @@ extends Control
 const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
-var boons_selection_scene = load("res://scenes/ui/boons_selection/boons_selection.tscn")
+var character_selection_scene = load("res://scenes/ui/character_selection/character_selection.tscn")
 var settings_scene = load("res://scenes/ui/settings/settings.tscn")
 
 func _ready() -> void:
@@ -29,7 +29,7 @@ func _on_focus_entered() -> void:
 
 func _on_play_pressed() -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_packed(boons_selection_scene)
+	get_tree().change_scene_to_packed(character_selection_scene)
 
 
 func _on_options_pressed() -> void:

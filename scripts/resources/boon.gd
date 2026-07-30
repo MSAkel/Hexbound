@@ -24,39 +24,18 @@ static func get_all_boons() -> Array[Boon]:
 	# boon.effect_type = "essence"
 	# boons.append(boon)
 	
-	boon = Boon.new()
-	boon.name = "Common Perk"
-	boon.description = "Get a random common perk at run start"
-	boon.cost = 1
-	boon.effect_type = "perk"
-	boons.append(boon)
-	
-	boon = Boon.new()
-	boon.name = "Uncommon Perk"
-	boon.description = "Start with a random uncommon perk"
-	boon.cost = 2
-	boon.effect_type = "perk"
-	boons.append(boon)
-	
 	# boon = Boon.new()
-	# boon.name = "Essence Generator"
+	# boon.name = "Essence Boost"
 	# boon.description = "Starting tile generates an additional essence"
 	# boon.cost = 1
 	# boon.effect_type = "essence_gen"
 	# boons.append(boon)
 	
 	boon = Boon.new()
-	boon.name = "Fan Favorite"
-	boon.description = "Start with 5 favor"
+	boon.name = "Head Start"
+	boon.description = "Start with 2 influence progress"
 	boon.cost = 1
-	boon.effect_type = "favor"
-	boons.append(boon)
-	
-	boon = Boon.new()
-	boon.name = "Building Boost"
-	boon.description = "Start with x building"
-	boon.cost = 3
-	boon.effect_type = "building"
+	boon.effect_type = "influence"
 	boons.append(boon)
 	
 	boon = Boon.new()
@@ -71,13 +50,6 @@ static func get_all_boons() -> Array[Boon]:
 	boon.description = "Reduce cost of merchant items by 15%"
 	boon.cost = 3
 	boon.effect_type = "merchant"
-	boons.append(boon)
-	
-	boon = Boon.new()
-	boon.name = "Explorer"
-	boon.description = "Start with 2 explored adjacent tiles"
-	boon.cost = 2
-	boon.effect_type = "exploration"
 	boons.append(boon)
 	
 	boon = Boon.new()

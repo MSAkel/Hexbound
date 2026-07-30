@@ -1,5 +1,0 @@
-[gd_scene format=3 uid="uid://nvagrtrn0tuh"]
-
-[node name="GoldUI" type="Panel"]
-offset_right = 56.0
-offset_bottom = 22.0

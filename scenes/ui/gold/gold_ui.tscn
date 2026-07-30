@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://dk3bsvpgwbwau"]
+
+[ext_resource type="Script" path="res://scenes/ui/gold/gold_ui.gd" id="1_gold_ui"]
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currency/coin.png" id="2_coin"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_h2pb3"]
+
+[node name="GoldUI" type="Panel" unique_id=1964645916]
+custom_minimum_size = Vector2(120, 40)
+offset_left = 31.0
+offset_top = 17.0
+offset_right = 151.0
+offset_bottom = 57.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxEmpty_h2pb3")
+script = ExtResource("1_gold_ui")
+
+[node name="Icon" type="TextureRect" parent="." unique_id=1517760293]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 36.0
+offset_bottom = 36.0
+texture = ExtResource("2_coin")
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="." unique_id=1712442370]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -23.0
+offset_top = -37.0
+offset_right = 46.0
+offset_bottom = -3.5
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_shadow_color = Color(0.047058824, 0.039215688, 0.05490196, 0.05490196)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = -2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 24
+text = "00000"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://gd4rito42dyr"]
+[gd_scene format=3 uid="uid://gd4rito42dyr"]
 
 [ext_resource type="Script" uid="uid://b6oc5xxbytb4f" path="res://scenes/ui/main_menu/main_menu.gd" id="1_fe2o3"]
 [ext_resource type="Texture2D" uid="uid://jgmv1d02181a" path="res://assets/gui/main_menu_background.png" id="1_sl1te"]
@@ -24,7 +24,7 @@ angle_max = 62.6
 gravity = Vector3(0, 98, 0)
 scale_max = 3.0
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=1635287758]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,7 +33,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fe2o3")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=842968339]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -43,7 +43,7 @@ grow_vertical = 2
 texture = ExtResource("1_sl1te")
 expand_mode = 1
 
-[node name="Foreground" type="TextureRect" parent="."]
+[node name="Foreground" type="TextureRect" parent="." unique_id=1115512543]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -52,7 +52,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture1D_1g8jr")
 
-[node name="Container" type="MarginContainer" parent="."]
+[node name="Container" type="MarginContainer" parent="." unique_id=1400102353]
 layout_mode = 1
 anchors_preset = 13
 anchor_left = 0.5
@@ -67,37 +67,41 @@ theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="Label" type="Label" parent="Container"]
+[node name="Label" type="Label" parent="Container" unique_id=1011051023]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
 text = "10 Katantros"
 label_settings = SubResource("LabelSettings_m1kxf")
 
-[node name="MenuItemsContainer" type="VBoxContainer" parent="Container"]
+[node name="MenuItemsContainer" type="VBoxContainer" parent="Container" unique_id=1878942114]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 8
 
-[node name="Continue" type="Button" parent="Container/MenuItemsContainer"]
+[node name="Continue" type="Button" parent="Container/MenuItemsContainer" unique_id=1924656440]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 24
 disabled = true
 text = "Continue"
 
-[node name="Play" type="Button" parent="Container/MenuItemsContainer"]
+[node name="Play" type="Button" parent="Container/MenuItemsContainer" unique_id=1907206783]
 layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "Play"
 
-[node name="Options" type="Button" parent="Container/MenuItemsContainer"]
+[node name="Options" type="Button" parent="Container/MenuItemsContainer" unique_id=1112534161]
 layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "Settings"
 
-[node name="Exit" type="Button" parent="Container/MenuItemsContainer"]
+[node name="Exit" type="Button" parent="Container/MenuItemsContainer" unique_id=1113969747]
 layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "Exit"
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1095667538]
 modulate = Color(0.747408, 0.580086, 1, 1)
 position = Vector2(977, 175)
 rotation = -3.14027

@@ -1,15 +1,32 @@
-[gd_scene load_steps=5 format=3 uid="uid://bpaabu6bfu0hv"]
+[gd_scene format=3 uid="uid://bpaabu6bfu0hv"]
 
 [ext_resource type="Script" uid="uid://cnndmv1aydlal" path="res://scenes/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="1_sugp2"]
 [ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="2_jyhfs"]
+[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/ChatGPT Image Jul 29, 2026, 09_24_17 PM.png" id="2_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" unique_id=1217909312]
 script = ExtResource("1_jyhfs")
 
-[node name="MainUI" parent="." instance=ExtResource("1_sugp2")]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1506549712]
+layer = -1
 
-[node name="HexTileMap" parent="." groups=["hex_map_group"] instance=ExtResource("2_jyhfs")]
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer" unique_id=160721250]
+z_index = -100
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -3.0
+offset_bottom = 3.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_tbgi4")
 
-[node name="Camera" parent="." instance=ExtResource("3_tbgi4")]
+[node name="MainUI" parent="." unique_id=629612813 instance=ExtResource("1_sugp2")]
+
+[node name="HexTileMap" parent="." unique_id=44134177 groups=["hex_map_group"] instance=ExtResource("2_jyhfs")]
+
+[node name="Camera" parent="." unique_id=321380676 instance=ExtResource("3_tbgi4")]
+position = Vector2(784, 868)
+zoom = Vector2(0.45, 0.45)

@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://d0n78c3k0qjw6"]
+
+[ext_resource type="Script" uid="uid://jgv0ox2e3y6q" path="res://scenes/character/character.gd" id="1_6nn2t"]
+
+[node name="Character" type="Control" unique_id=1929787057]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6nn2t")
+
+[node name="Panel" type="Panel" parent="." unique_id=1323280611]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=50303765]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CharacterImage" type="TextureRect" parent="Panel/VBoxContainer" unique_id=114524154]
+layout_mode = 2
+
+[node name="CharacterName" type="Label" parent="Panel/VBoxContainer" unique_id=187965445]
+layout_mode = 2
+
+[node name="CharacterDescription" type="Label" parent="Panel/VBoxContainer" unique_id=147765210]
+layout_mode = 2

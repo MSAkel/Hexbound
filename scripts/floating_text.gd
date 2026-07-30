@@ -14,10 +14,10 @@ func set_text(text: String, is_gold := true):
 		await ready
 	
 	label.text = text
-	label.add_theme_color_override("font_color", Color.GOLD if is_gold else Color.SKY_BLUE)
+	label.add_theme_color_override("font_color", Color.GOLD if is_gold else Color.WHITE)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 2)
-	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_constant_override("outline_size", 6)
+	label.add_theme_font_size_override("font_size", 52)
 
 	if is_gold:
 		audio_stream_player_2d.play()

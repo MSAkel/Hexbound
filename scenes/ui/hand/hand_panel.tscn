@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://oe2tv6wcbxiy"]
+
+[ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="2_50651"]
+
+[sub_resource type="GDScript" id="GDScript_pqjch"]
+script/source = "extends Control
+
+# Bottom panel currently hosts the card hand.
+"
+
+[node name="HandPanel" type="Control" unique_id=990194749]
+custom_minimum_size = Vector2(600, 125)
+layout_mode = 3
+anchor_left = 0.605
+anchor_top = 1.0
+anchor_right = 0.605
+anchor_bottom = 1.0
+offset_left = -694.6001
+offset_top = -249.0
+offset_right = 694.3999
+grow_horizontal = 2
+grow_vertical = 0
+script = SubResource("GDScript_pqjch")
+
+[node name="CardsHand" parent="." unique_id=1282489391 instance=ExtResource("2_50651")]
+layout_mode = 1

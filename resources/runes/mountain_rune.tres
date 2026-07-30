@@ -8,12 +8,9 @@ script = ExtResource("2_gyhr5")
 id = "mountain_rune"
 name = "Mountain Rune"
 icon = ExtResource("1_ma01a")
-description = "if placed on a mountains terrain, triggers the building on the tile and generates 1 mineral or 2 stone depending on what building is on the tile."
+description = "If placed on a mountain terrain, generates bonus gold."
 activation_cost = {
-"favor": 0,
-"gold": 4,
-"insight": 1,
-"minerals": 0
+"gold": 7
 }
 boosted_generation_amount = 2
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

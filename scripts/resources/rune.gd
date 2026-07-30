@@ -16,8 +16,6 @@ enum RuneRarity {
 @export var rarity: RuneRarity
 @export var activation_cost: Dictionary = {
 	"gold": 0,
-	"insight": 0,
-	"minerals": 0,
 }
 @export var activation_cost_text: String
 @export var boosted_generation_amount: int = 0
@@ -27,8 +25,6 @@ func activate_rune(tile: Hex) -> void:
 	if not is_active:
 		return
 	
-	# if tile.active_building.passive:
-	# 	return
 	if can_activate():
 		deduct_activation_cost()
 		_on_activate_rune(tile)
@@ -42,13 +38,11 @@ func activate_rune(tile: Hex) -> void:
 func _on_activate_rune(tile: Hex) -> void:
 	pass
 
-func can_activate() -> bool:
-	if GoodsManager.get_good_amount(GoodType.Type.GOLD) >= activation_cost["gold"] and GoodsManager.get_good_amount(GoodType.Type.INSIGHT) >= activation_cost["insight"] and GoodsManager.get_good_amount(GoodType.Type.MINERALS) >= activation_cost["minerals"]:
-		return true
+func get_gold_cost() -> int:
+	return activation_cost.get("gold", 0)
 
-	return false
+func can_activate() -> bool:
+	return GameManager.get_gold() >= get_gold_cost()
 
 func deduct_activation_cost() -> void:
-	GoodsManager.remove_good(GoodType.Type.GOLD, activation_cost["gold"])
-	GoodsManager.remove_good(GoodType.Type.INSIGHT, activation_cost["insight"])
-	GoodsManager.remove_good(GoodType.Type.MINERALS, activation_cost["minerals"])
+	GameManager.remove_gold(get_gold_cost())

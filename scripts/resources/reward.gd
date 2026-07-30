@@ -3,8 +3,7 @@ extends Resource
 
 enum RewardType {
 	INFLUENCE,
-	GOOD,
-	BUILDING,
+	GOLD,
 	RUNE,
 }
 
@@ -18,9 +17,7 @@ func process_rewards() -> void:
 	match type:
 		Reward.RewardType.INFLUENCE:
 			GameManager.influence_progress += amount
-		Reward.RewardType.GOOD:
-			GoodsManager.add_good(reward.type, amount)
-		Reward.RewardType.BUILDING:
-			Events.building_selected.emit(reward as Building)
+		Reward.RewardType.GOLD:
+			GameManager.add_gold(amount)
 		Reward.RewardType.RUNE:
 			Events.rune_selected.emit(reward as Rune)

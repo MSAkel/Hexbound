@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://br3dhulnhrxyl"]
+
+[ext_resource type="Script" uid="uid://16ej6vcxnuhw" path="res://scenes/ui/pause_menu/pause_menu.gd" id="1_kgchh"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
+bg_color = Color(0.21176471, 0.21176471, 0.21176471, 0.77254903)
+
+[node name="PauseMenu" type="Control" unique_id=1402050020]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kgchh")
+
+[node name="Panel" type="Panel" parent="." unique_id=1227509587]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_riqys")
+
+[node name="MenuItemsContainer" type="VBoxContainer" parent="Panel" unique_id=1426800841]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -238.0
+offset_top = -74.0
+offset_right = 238.0
+offset_bottom = 74.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="Continue" type="Button" parent="Panel/MenuItemsContainer" unique_id=2074081055]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Continue"
+
+[node name="Options" type="Button" parent="Panel/MenuItemsContainer" unique_id=1838627620]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+disabled = true
+text = "Settings"
+
+[node name="MainMenu" type="Button" parent="Panel/MenuItemsContainer" unique_id=847775209]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+disabled = true
+text = "Main Menu"
+
+[node name="Exit" type="Button" parent="Panel/MenuItemsContainer" unique_id=662622565]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Exit To Desktop"
+
+[connection signal="pressed" from="Panel/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="Panel/MenuItemsContainer/Options" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="Panel/MenuItemsContainer/MainMenu" to="." method="_on_main_menu_pressed"]
+[connection signal="pressed" from="Panel/MenuItemsContainer/Exit" to="." method="_on_exit_pressed"]

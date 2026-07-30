@@ -1,27 +1,14 @@
 extends Node
 
-signal tile_explored(hex: Hex)
 signal game_speed_changed(new_speed: float)
 
-var explores_per_turn := 1
+const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
+
 
 var _current_year := 1
-
-var _available_explores: int = 0
 var _game_speed: float = 1.0
 # Block input processing while turn is being processed
 var _is_processing_turn: bool = false  
-
-var explored_tiles: Array[Hex] = []
-
-# All buildings available in the game
-var buildings_pool: Array[Building] = []
-# Buildings available for selection on the buildings selection menu
-var buildings_pack: Array[Building] = []
-# increment by 1 on turn end
-var _available_building_packs: int = 0 
- # cost to reroll the building pack, should increment by 5 on each reroll
-var _building_reroll_cost: int = 0
 
 # All runes available in the game
 var runes_pool: Array[Rune] = []
@@ -33,27 +20,27 @@ var _runes_reroll_cost: int = 0
 # Runes that are currently active on the map
 # var active_runes: Array[Rune] = []
 
-# All perks available in the game
-var perks_pool: Array[Perk] = []
-var _available_perks: int
-var active_perks: Array[Perk] = []
-# Perks available for selection on the perks selection menu
-var perks_pack: Array[Perk] = [] 
-var _available_perk_rerolls: int = 1
-
-
 var selected_boons: Array[Boon] = []
+# Character chosen on the character selection screen; affects starting hand
+var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.PEASANT
 
-var influence_required: float = 15
+var influence_required: float = 100
+var influence_required_multiplier: float = 1.75
 var _influence_progress: float = 0
+
+# Spendable gold for rune activation, rerolls, and quest delivery.
+var _gold: int = 0
 
 # Core game state getters and setters
 var influence_progress: float:
 	get:
 		return _influence_progress
 	set(value):
-		_influence_progress = clamp(value, 0, influence_required)
+		_influence_progress = value
 		Events.influence_changed.emit()
+		if _influence_progress >= influence_required:
+			influence_required = influence_required * influence_required_multiplier + 100
+		#TODO: Make something happen once influence required is reached. Signal => event => something happens.
 
 var current_year: int:
 	get:
@@ -61,34 +48,12 @@ var current_year: int:
 	set(value):
 		_current_year = max(1, value)
 
-var available_explores: int:
-	get:
-		return _available_explores
-	set(value):
-		_available_explores = clamp(value, 0, 50)
-		Events.explore_count_changed.emit()
-
-
 var game_speed: float:
 	get:
 		return _game_speed
 	set(value):
 		_game_speed = clamp(value, 1, 3.0)  # Limit speed between 1x and 3x
 		game_speed_changed.emit(_game_speed)
-
-# Buildings
-var available_building_packs: int:
-	get:
-		return _available_building_packs
-	set(value):
-		_available_building_packs = max(0, value)
-		Events.building_pack_count_changed.emit()
-
-var building_reroll_cost: int:
-	get:
-		return _building_reroll_cost
-	set(value):
-		_building_reroll_cost = max(0, value)
 
 
 # Runes
@@ -106,60 +71,43 @@ var runes_reroll_cost: int:
 	set(value):
 		_runes_reroll_cost = max(0, value)
 
-# Perks
-var available_perks: int:
-	get:
-		return _available_perks
-	set(value):
-		_available_perks = max(0, value)
-
-var available_perk_rerolls: int:
-	get:
-		return _available_perk_rerolls
-	set(value):
-		_available_perk_rerolls = max(0, value)
-
-
 # Add a getter for the processing state
 var is_processing_turn: bool:
 	get:
 		return _is_processing_turn
 
-func _ready() -> void:
-	# Initialize available explores
-	_available_explores = explores_per_turn
-	
-	# Load the runes from the resources directory
-	var runes_directory = DirAccess.open("res://resources/runes/")
-	if runes_directory:
-		for file in runes_directory.get_files():
-			if file.ends_with(".tres"):
-				var rune = load("res://resources/runes/" + file)
-				if rune:
-					runes_pool.append(rune)
-				else:
-					push_error("Failed to load rune: " + file)
-	else:
-		push_error("Failed to open runes directory")
-	
-	# Load the buildings from the resources directory
-	var buildings_directory = DirAccess.open("res://resources/buildings/")
-	if buildings_directory:
-		for file in buildings_directory.get_files():
-			if file.ends_with(".tres"):
-				var building = load("res://resources/buildings/" + file)
-				if building:
-					buildings_pool.append(building)
-				else:
-					push_error("Failed to load building: " + file)
-	else:
-		push_error("Failed to open buildings directory")
 
-	# Only create packs if we have items in the pools
-	if buildings_pool.size() > 0:
-		create_buildings_pack()
-	else:
-		push_error("No buildings loaded into pool")
+func reset_gold() -> void:
+	_gold = PlayerCharacter.get_starting_gold(selected_character)
+	Events.gold_changed.emit(_gold)
+
+
+func get_gold() -> int:
+	return _gold
+
+
+func add_gold(amount: int) -> void:
+	_gold += amount
+	Events.gold_changed.emit(_gold)
+
+
+func remove_gold(amount: int) -> void:
+	_gold -= amount
+	Events.gold_changed.emit(_gold)
+
+
+func _ready() -> void:
+	# Load runes from the resources directory.
+	const RUNES_DIR := "res://resources/runes/"
+	for file_name in ResourceLoader.list_directory(RUNES_DIR):
+		if file_name.ends_with("/"):
+			continue
+		if file_name.ends_with(".tres"):
+			var rune := ResourceLoader.load(RUNES_DIR.path_join(file_name)) as Rune
+			if rune:
+				runes_pool.append(rune)
+			else:
+				push_error("Failed to load rune: " + file_name)
 		
 	if runes_pool.size() > 0:
 		create_runes_pack()
@@ -174,33 +122,9 @@ func end_turn() -> void:
 func finish_turn_processing() -> void:
 	_is_processing_turn = false
 	_current_year += 1
-	available_perks += 1
-	available_building_packs += 1
 	available_runes_packs += 1
-	_available_explores = explores_per_turn
+	UiManager.show_runes_choice_panel.emit()
 	Events.turn_started.emit()
-
-func update_explored_tiles_list(h: Hex) -> void:
-	explored_tiles.append(h)
-	explored_tiles.sort_custom(func(a, b):
-		var ca = a._coordinates
-		var cb = b._coordinates
-		# First sort by y (row), then by x (column)
-		if ca.y != cb.y:
-			return ca.y < cb.y
-		return ca.x < cb.x
-	)
-
-
-# This function is called when the turn ends.
-# it will go through the buildings list and randomly select 3 buildings to be available for selection
-# Can be stacked on ending turn without selecting a building 
-func create_buildings_pack() -> void:
-	if buildings_pack.size() == 0:
-		var shuffled_pool := buildings_pool.duplicate()
-		shuffled_pool.shuffle()
-		for i in 3:
-			buildings_pack.append(shuffled_pool[i])
 
 # This function is called when the turn ends.
 # it will go through the runes list and randomly select 3 runes to be available for selection
@@ -213,14 +137,12 @@ func create_runes_pack() -> void:
 		for i in 3:
 			runes_pack.append(shuffled_pool[i])
 
-# func create_perks_pack() -> void:
-# 	if perks_pack.size() == 0:
-# 		var shuffled_pool := perks_pool.duplicate()
-# 		shuffled_pool.shuffle()
-
-# 		for i in 3:
-# 			perks_pack.append(shuffled_pool[i])
-
 func set_game_speed(speed: float) -> void:
 	_game_speed = speed
 	game_speed_changed.emit(_game_speed)
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("end_turn"):
+		Events.turn_ended.emit()
+		AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)

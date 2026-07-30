@@ -1,0 +1,97 @@
+[gd_scene format=3 uid="uid://clcafvhour5gy"]
+
+[ext_resource type="Script" uid="uid://7st7tt2f54u4" path="res://scenes/ui/runes/top_right_ui.gd" id="1_bvs0p"]
+[ext_resource type="Texture2D" uid="uid://b23i08rqs0d52" path="res://assets/gui/buttons/button_round.png" id="2_ahpih"]
+[ext_resource type="Texture2D" uid="uid://da68q1s2m373t" path="res://assets/particles/circle_01.png" id="3_m5abi"]
+[ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/others/glyph_icon.png" id="4_80v0l"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3uceg"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+radial_accel_min = 9.999997
+radial_accel_max = 9.999997
+scale_min = 0.0
+scale_max = 0.19999999
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8buv0"]
+texture = ExtResource("2_ahpih")
+
+[node name="TopRightUI" type="Control" unique_id=633658643]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+grow_horizontal = 0
+size_flags_horizontal = 8
+size_flags_vertical = 0
+script = ExtResource("1_bvs0p")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1206833958]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -104.0
+offset_bottom = 104.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 24
+
+[node name="RunesButton" type="TextureButton" parent="MarginContainer" unique_id=1788190741]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = ExtResource("2_ahpih")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="RuneIconParticles" type="GPUParticles2D" parent="MarginContainer/RunesButton" unique_id=1079984453]
+modulate = Color(0.99609786, 0.9999998, 0.8566333, 0.58431375)
+position = Vector2(32, 32)
+emitting = false
+texture = ExtResource("3_m5abi")
+process_material = SubResource("ParticleProcessMaterial_3uceg")
+
+[node name="RuneIcon" type="TextureRect" parent="MarginContainer/RunesButton" unique_id=2005645081]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_80v0l")
+expand_mode = 1
+
+[node name="RuneCounterPanel" type="Panel" parent="MarginContainer/RunesButton" unique_id=290995022]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -18.0
+offset_top = -18.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_8buv0")
+
+[node name="RuneCountLabel" type="Label" parent="MarginContainer/RunesButton/RuneCounterPanel" unique_id=1213823847]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "0"
+horizontal_alignment = 1
+
+[connection signal="mouse_entered" from="MarginContainer/RunesButton" to="." method="_on_runes_button_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/RunesButton" to="." method="_on_runes_button_mouse_exited"]
+[connection signal="pressed" from="MarginContainer/RunesButton" to="." method="_on_runes_button_pressed"]

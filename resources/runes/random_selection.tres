@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dfs3j40u078c6"]
+[gd_resource type="Resource" format=3 uid="uid://dfs3j40u078c6"]
 
 [ext_resource type="Texture2D" uid="uid://b3ytj6h83g00r" path="res://assets/icons/runes/random_selection.svg" id="1_ills5"]
 [ext_resource type="Script" uid="uid://bsv88h748mk6i" path="res://resources/runes/random_selection.gd" id="2_ills5"]
@@ -8,12 +8,9 @@ script = ExtResource("2_ills5")
 id = "random_selection"
 name = "Random Selection"
 icon = ExtResource("1_ills5")
-description = "Triggers a random tile with a building on the map, if there are at least 5 different buildings, generate 4 additional gold or 2 of any other resource."
+description = "Triggers two random active runes"
 rarity = 1
 activation_cost = {
-"favor": 0,
-"gold": 4,
-"insight": 1,
-"minerals": 0
+"gold": 7
 }
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

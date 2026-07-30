@@ -32,29 +32,25 @@ func _on_ruins_button_pressed() -> void:
 	#description_panel.hide()
 #
 #func _on_explore_button_pressed() -> void:
-	#if GoodsManager.get_good_amount(GoodType.Type.GOLD) < ruins.exploration_cost:
+	#if GameManager.get_gold() < ruins.exploration_cost:
 		## TODO: Show "not enough gold" message
-		#return
-		
-	#GoodsManager.remove_good(GoodType.Type.GOLD, ruins.exploration_cost)
+	#return
+
+	#GameManager.remove_gold(ruins.exploration_cost)
 	#var rewards = ruins.get_exploration_rewards()
 	
 	#for reward in rewards:
 		#match reward.type:
 			#"gold":
-				#GoodsManager.add_good(GoodType.Type.GOLD, reward.amount)
+				#GameManager.add_gold(reward.amount)
 				## result_text += "Found %d gold!\n" % reward.amount
-			#"insight":
-				#GoodsManager.add_good(GoodType.Type.INSIGHT, reward.amount)
-				## result_text += "Gained %d insight!\n" % reward.amount
+			#"influence":
+				#GameManager.influence_progress += reward.amount
+				## result_text += "Gained %d influence!\n" % reward.amount
 			#"rune":
 				#pass
 				## TODO: Implement rune reward
 				## result_text += "Found a mysterious rune!\n"
-			#"perk":
-				#pass
-				## TODO: Implement perk reward
-				## result_text += "Discovered a new perk!\n"
 			#"curse":
 				#pass
 				# TODO: Implement curse system

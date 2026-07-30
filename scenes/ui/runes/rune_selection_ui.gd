@@ -13,7 +13,7 @@ func _ready() -> void:
 	
 
 	reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
-	if GameManager.runes_reroll_cost > GoodsManager.get_good_amount(GoodType.Type.GOLD):
+	if GameManager.runes_reroll_cost > GameManager.get_gold():
 		reroll_button.disabled = true
 	else:
 		reroll_button.disabled = false
@@ -32,7 +32,7 @@ func _on_close_button_pressed() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if GameManager.runes_reroll_cost > GoodsManager.get_good_amount(GoodType.Type.GOLD):
+	if GameManager.runes_reroll_cost > GameManager.get_gold():
 		return
 
 	reroll_button.disabled = true

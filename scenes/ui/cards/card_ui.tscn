@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://b4k5fq6ran8f5"]
+[gd_scene format=3 uid="uid://b4k5fq6ran8f5"]
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="4_5jwxg"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Texture2D" uid="uid://ch0g260oqw5c" path="res://assets/gui/backgrounds/h_background.png" id="4_onxhv"]
-[ext_resource type="Texture2D" uid="uid://b7ficn0l1sjo3" path="res://assets/icons/buildings/library.png" id="4_usd0r"]
+[ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/others/glyph_icon.png" id="4_usd0r"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
 [ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
 [ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
@@ -57,7 +57,7 @@ texture = ExtResource("9_l4s6v")
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
 size = Vector2(198, 317)
 
-[node name="CardUI" type="Control"]
+[node name="CardUI" type="Control" unique_id=1998448617]
 custom_minimum_size = Vector2(171, 261)
 layout_mode = 3
 anchors_preset = 0
@@ -67,7 +67,7 @@ mouse_filter = 1
 theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=932652994]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -76,14 +76,14 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5jwxg")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=569885187]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 315.0
 grow_horizontal = 2
 
-[node name="CardName" type="Label" parent="VBoxContainer"]
+[node name="CardName" type="Label" parent="VBoxContainer" unique_id=877716726]
 visible = false
 layout_mode = 2
 size_flags_vertical = 2
@@ -91,26 +91,26 @@ text = "Name"
 label_settings = SubResource("LabelSettings_o6pyt")
 horizontal_alignment = 1
 
-[node name="NameContainer" type="PanelContainer" parent="VBoxContainer"]
+[node name="NameContainer" type="PanelContainer" parent="VBoxContainer" unique_id=322151785]
 layout_mode = 2
 size_flags_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_7xb4v")
 
-[node name="CardName" type="Label" parent="VBoxContainer/NameContainer"]
+[node name="CardName" type="Label" parent="VBoxContainer/NameContainer" unique_id=780871484]
 layout_mode = 2
 text = "Name"
 label_settings = SubResource("LabelSettings_usd0r")
 horizontal_alignment = 1
 
-[node name="IconContainer" type="PanelContainer" parent="VBoxContainer"]
+[node name="IconContainer" type="PanelContainer" parent="VBoxContainer" unique_id=1784689084]
 custom_minimum_size = Vector2(0, 125)
 layout_mode = 2
 size_flags_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_nmvtt")
 
-[node name="Icon" type="TextureRect" parent="VBoxContainer/IconContainer"]
+[node name="Icon" type="TextureRect" parent="VBoxContainer/IconContainer" unique_id=742371266]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 mouse_filter = 2
@@ -118,7 +118,8 @@ texture = ExtResource("4_usd0r")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CardTypeLabel" type="Label" parent="VBoxContainer/IconContainer"]
+[node name="CardTypeLabel" type="Label" parent="VBoxContainer/IconContainer" unique_id=1751951717]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
@@ -128,23 +129,23 @@ text = "Type"
 label_settings = SubResource("LabelSettings_usd0r")
 horizontal_alignment = 1
 
-[node name="ActivationCost" type="Label" parent="VBoxContainer"]
+[node name="ActivationCost" type="Label" parent="VBoxContainer" unique_id=730873009]
 visible = false
 layout_mode = 2
 text = "Cost"
 label_settings = SubResource("LabelSettings_usd0r")
 horizontal_alignment = 1
 
-[node name="ResourceCostContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ResourceCostContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1695431964]
 z_index = 1
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
 
-[node name="CostContainer" type="PanelContainer" parent="VBoxContainer"]
+[node name="CostContainer" type="PanelContainer" parent="VBoxContainer" unique_id=782001662]
 layout_mode = 2
 
-[node name="CardDescription" type="Label" parent="VBoxContainer"]
+[node name="CardDescription" type="Label" parent="VBoxContainer" unique_id=2119088894]
 custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 text = "Description"
@@ -152,30 +153,30 @@ label_settings = SubResource("LabelSettings_usd0r")
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="DropPointArea" type="Area2D" parent="."]
+[node name="DropPointArea" type="Area2D" parent="." unique_id=1910631185]
 collision_mask = 2
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea" unique_id=1742927811]
 position = Vector2(99, 158.5)
 shape = SubResource("RectangleShape2D_s55cg")
 
-[node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+[node name="CardStateMachine" type="Node" parent="." unique_id=471583580 node_paths=PackedStringArray("initial_state")]
 script = ExtResource("4_nmvtt")
 initial_state = NodePath("CardBaseState")
 
-[node name="CardBaseState" type="Node" parent="CardStateMachine"]
+[node name="CardBaseState" type="Node" parent="CardStateMachine" unique_id=958706433]
 script = ExtResource("5_onxhv")
 
-[node name="CardClickedState" type="Node" parent="CardStateMachine"]
+[node name="CardClickedState" type="Node" parent="CardStateMachine" unique_id=1165998655]
 script = ExtResource("6_7xb4v")
 state = 1
 
-[node name="CardDraggingState" type="Node" parent="CardStateMachine"]
+[node name="CardDraggingState" type="Node" parent="CardStateMachine" unique_id=2049395640]
 script = ExtResource("7_y3v36")
 state = 2
 
-[node name="CardReleasedState" type="Node" parent="CardStateMachine"]
+[node name="CardReleasedState" type="Node" parent="CardStateMachine" unique_id=706442126]
 script = ExtResource("8_o6pyt")
 state = 3
 
