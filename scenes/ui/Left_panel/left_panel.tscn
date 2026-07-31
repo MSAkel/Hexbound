@@ -1,13 +1,21 @@
 [gd_scene format=3 uid="uid://cm3sdx2an61fm"]
 
-[ext_resource type="Script" uid="uid://d26ag2i5t0ue2" path="res://scripts/top_panel_ui.gd" id="1_vrdif"]
-[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="2_i3bqn"]
+[ext_resource type="Script" uid="uid://d26ag2i5t0ue2" path="res://scripts/left_panel_ui.gd" id="1_vrdif"]
 [ext_resource type="PackedScene" uid="uid://dk3bsvpgwbwau" path="res://scenes/ui/gold/gold_ui.tscn" id="2_utgav"]
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="3_i3bqn"]
 [ext_resource type="PackedScene" uid="uid://dar7bvc231xx" path="res://scenes/ui/game_speed/game_speed_ui.tscn" id="4_i3bqn"]
+[ext_resource type="Theme" uid="uid://d2qm4n05j7qhs" path="res://themes/button.tres" id="5_404wr"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_utgav"]
-texture = ExtResource("2_i3bqn")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_404wr"]
+bg_color = Color(0.10320329, 0.013899398, 0.0010937232, 1)
+border_width_right = 3
+border_color = Color(0.3993729, 0.035911027, 0.39670682, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
+bg_color = Color(0.10622876, 0.07545223, 0.08137467, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bhunq"]
+bg_color = Color(0.025363795, 0.025363805, 0.02536378, 0.3529412)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_2ubwj"]
 texture = ExtResource("3_i3bqn")
@@ -29,7 +37,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxTexture_utgav")
+theme_override_styles/panel = SubResource("StyleBoxFlat_404wr")
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=2009317428]
 layout_mode = 1
@@ -46,6 +54,7 @@ theme_override_constants/margin_bottom = 32
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=378967061]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/separation = 24
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=396703782]
@@ -63,23 +72,108 @@ layout_mode = 2
 
 [node name="GameSpeed" parent="Panel/MarginContainer/VBoxContainer" unique_id=204174262 instance=ExtResource("4_i3bqn")]
 layout_mode = 2
+alignment = 1
+
+[node name="Spacer1" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=38281011]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="YearLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=745290470 groups=["main_ui"]]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Year 1"
+text = "Turn 1"
 
-[node name="RequiredInfluence" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=2013097160]
+[node name="RequiredScorePanel" type="Panel" parent="Panel/MarginContainer/VBoxContainer" unique_id=1918280766]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_riqys")
+
+[node name="RequiredScoreLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/RequiredScorePanel" unique_id=692144681 groups=["main_ui"]]
+layout_mode = 0
+offset_top = 24.0
+offset_right = 302.0
+offset_bottom = 53.3125
+theme_override_font_sizes/font_size = 21
+text = "Required Score:"
+
+[node name="RequiredScore" type="Label" parent="Panel/MarginContainer/VBoxContainer/RequiredScorePanel" unique_id=2013097160]
+layout_mode = 0
+offset_top = 78.0
+offset_right = 302.0
+offset_bottom = 111.5
+theme_override_font_sizes/font_size = 24
+text = "0000000000000"
+
+[node name="ScorePanel" type="Panel" parent="Panel/MarginContainer/VBoxContainer" unique_id=1391884517]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bhunq")
+
+[node name="TurnScoreContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScorePanel" unique_id=88462288]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -25.0
+offset_right = 25.0
+offset_bottom = 40.0
+grow_horizontal = 2
+
+[node name="TurnScore" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer" unique_id=1499130079]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "000"
+text = "0"
+horizontal_alignment = 1
 
-[node name="InfluenceProgress" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1551360484]
+[node name="x" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer" unique_id=2017152499]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "0000"
+text = "x"
+horizontal_alignment = 1
 
-[node name="Control" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=382486215]
+[node name="TurnMulti" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer" unique_id=27477957]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "1"
+horizontal_alignment = 1
+
+[node name="TotalScore" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScorePanel" unique_id=1551360484]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -151.0
+offset_top = -33.5
+offset_right = 151.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+
+[node name="Spacer2" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=382486215]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TriggerOrderText" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1217896879]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Tile trigger  order:"
+
+[node name="SelectedTriggerOrderLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1011045563]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Top-left → bottom-right"
+
+[node name="ChangeTriggerOrderButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=1758031328]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme = ExtResource("5_404wr")
+text = "Change Order"
+
+[node name="Spacer3" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=87443938]
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -93,4 +187,5 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_2ubwj")
 theme_override_styles/hover = SubResource("StyleBoxTexture_2ubwj")
 text = "End Turn"
 
+[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/ChangeTriggerOrderButton" to="." method="_on_change_trigger_order_button_pressed"]
 [connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/EndTurnButton" to="." method="_on_end_turn_button_pressed"]

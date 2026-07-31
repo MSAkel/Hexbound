@@ -44,9 +44,9 @@ func _on_ruins_button_pressed() -> void:
 			#"gold":
 				#GameManager.add_gold(reward.amount)
 				## result_text += "Found %d gold!\n" % reward.amount
-			#"influence":
-				#GameManager.influence_progress += reward.amount
-				## result_text += "Gained %d influence!\n" % reward.amount
+			#"score":
+				#GameManager.total_progress += reward.amount
+				## result_text += "Gained %d score!\n" % reward.amount
 			#"rune":
 				#pass
 				## TODO: Implement rune reward

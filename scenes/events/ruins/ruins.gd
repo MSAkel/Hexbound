@@ -9,14 +9,14 @@ extends Resource
 # should contain a list of potential rewards, each with a chance to be selected. some higher than the other
 # example rewards:
 # - gold
-# - influence
+# - score
 # - rune
 # - curse
 # - no reward
 
 # Reward weights (higher number = higher chance)
 @export var gold_weight: int = 100
-@export var influence_weight: int = 50
+@export var score_weight: int = 50
 @export var rune_weight: int = 25
 
 # Loot range for free looting
@@ -26,8 +26,8 @@ extends Resource
 # Exploration reward ranges
 @export var min_gold_reward: int = 50
 @export var max_gold_reward: int = 200
-@export var min_influence_reward: int = 1
-@export var max_influence_reward: int = 3
+@export var min_score_reward: int = 1
+@export var max_score_reward: int = 3
 
 # Chance to get a second reward (0.0 to 1.0)
 @export var second_reward_chance: float = 0.2
@@ -38,7 +38,7 @@ extends Resource
 
 func get_exploration_rewards() -> Array:
 	var rewards = []
-	var total_weight = gold_weight + influence_weight + rune_weight
+	var total_weight = gold_weight + score_weight + rune_weight
 	if can_give_curse:
 		total_weight += curse_weight
 	
@@ -51,12 +51,12 @@ func get_exploration_rewards() -> Array:
 			"type": "gold",
 			"amount": randi_range(min_gold_reward, max_gold_reward)
 		})
-	elif roll < gold_weight + influence_weight:
+	elif roll < gold_weight + score_weight:
 		rewards.append({
-			"type": "influence",
-			"amount": randi_range(min_influence_reward, max_influence_reward)
+			"type": "score",
+			"amount": randi_range(min_score_reward, max_score_reward)
 		})
-	elif roll < gold_weight + influence_weight + rune_weight:
+	elif roll < gold_weight + score_weight + rune_weight:
 		rewards.append({
 			"type": "rune",
 			"amount": 1
@@ -77,12 +77,12 @@ func get_exploration_rewards() -> Array:
 				"type": "gold",
 				"amount": randi_range(min_gold_reward, max_gold_reward)
 			})
-		elif roll < gold_weight + influence_weight:
+		elif roll < gold_weight + score_weight:
 			rewards.append({
-				"type": "influence",
-				"amount": randi_range(min_influence_reward, max_influence_reward)
+				"type": "score",
+				"amount": randi_range(min_score_reward, max_score_reward)
 			})
-		elif roll < gold_weight + influence_weight + rune_weight:
+		elif roll < gold_weight + score_weight + rune_weight:
 			rewards.append({
 				"type": "rune",
 				"amount": 1

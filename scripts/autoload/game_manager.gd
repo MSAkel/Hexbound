@@ -17,30 +17,56 @@ var runes_pack: Array[Rune] = []
 # increment by 1 on turn end
 var _available_runes_packs: int = 0
 var _runes_reroll_cost: int = 0
-# Runes that are currently active on the map
-# var active_runes: Array[Rune] = []
 
-var selected_boons: Array[Boon] = []
 # Character chosen on the character selection screen; affects starting hand
 var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.PEASANT
 
-var influence_required: float = 100
-var influence_required_multiplier: float = 1.75
-var _influence_progress: float = 0
+# Required score to advance to the next phase
+var required_score: int = 100
+# Multiplier for required score once required score is reached
+var required_score_multiplier: int = 2
+# Total score accumulated during the game
+var _total_score: int = 0
+
+# Score accumulated during the current turn
+var _turn_score: int = 0
+# Multiplier for turn score
+var _turn_multi: int = 1
 
 # Spendable gold for rune activation, rerolls, and quest delivery.
 var _gold: int = 0
 
+# Resets when a new turn begins; incremented as each rune activates during turn processing.
+var _runes_activated_this_turn: int = 0
+
+# Which tile order runes activate in when a turn ends.
+var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
+
 # Core game state getters and setters
-var influence_progress: float:
+var turn_score: int:
 	get:
-		return _influence_progress
+		return _turn_score
 	set(value):
-		_influence_progress = value
-		Events.influence_changed.emit()
-		if _influence_progress >= influence_required:
-			influence_required = influence_required * influence_required_multiplier + 100
-		#TODO: Make something happen once influence required is reached. Signal => event => something happens.
+		_turn_score = value
+		Events.turn_score_changed.emit()
+		
+var turn_multi: int:
+	get:
+		return _turn_multi
+	set(value):
+		_turn_multi = value
+		Events.turn_multi_changed.emit()
+
+var total_score: int:
+	get:
+		return _total_score
+	set(value):
+		_total_score = value
+		Events.total_score_changed.emit()
+		if _total_score >= required_score:
+			required_score = required_score * required_score_multiplier + 100
+			Events.required_score_changed.emit()
+		#TODO: Make something happen once score required is reached. Signal => event => something happens.
 
 var current_year: int:
 	get:
@@ -55,7 +81,6 @@ var game_speed: float:
 		_game_speed = clamp(value, 1, 3.0)  # Limit speed between 1x and 3x
 		game_speed_changed.emit(_game_speed)
 
-
 # Runes
 var available_runes_packs: int:
 	get:
@@ -63,7 +88,6 @@ var available_runes_packs: int:
 	set(value):
 		_available_runes_packs = max(0, value)
 		Events.rune_pack_count_changed.emit()
-
 
 var runes_reroll_cost: int:
 	get:
@@ -76,6 +100,14 @@ var is_processing_turn: bool:
 	get:
 		return _is_processing_turn
 
+var trigger_order: TriggerOrderType.Type:
+	get:
+		return _trigger_order
+	set(value):
+		if _trigger_order == value:
+			return
+		_trigger_order = value
+		Events.trigger_order_changed.emit(_trigger_order)
 
 func reset_gold() -> void:
 	_gold = PlayerCharacter.get_starting_gold(selected_character)
@@ -115,16 +147,34 @@ func _ready() -> void:
 		push_error("No runes loaded into pool")
 
 	Events.turn_ended.connect(end_turn)
+	Events.turn_started.connect(_on_turn_started)
 
 func end_turn() -> void:
 	_is_processing_turn = true
 
 func finish_turn_processing() -> void:
 	_is_processing_turn = false
+	total_score = total_score + (turn_score * turn_multi)
+	# Reset turn score and multiplier
+	turn_score = 0
+	turn_multi = 1
+
 	_current_year += 1
 	available_runes_packs += 1
 	UiManager.show_runes_choice_panel.emit()
 	Events.turn_started.emit()
+
+
+func _on_turn_started() -> void:
+	_runes_activated_this_turn = 0
+
+
+func get_runes_activated_this_turn() -> int:
+	return _runes_activated_this_turn
+
+
+func register_rune_activation() -> void:
+	_runes_activated_this_turn += 1
 
 # This function is called when the turn ends.
 # it will go through the runes list and randomly select 3 runes to be available for selection

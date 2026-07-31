@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://jgmv1d02181a" path="res://assets/gui/main_menu_background.png" id="2_1dsk2"]
 [ext_resource type="Texture2D" uid="uid://c5alidf51u62n" path="res://assets/characters/the_peasant.png" id="3_1dsk2"]
 [ext_resource type="Texture2D" uid="uid://dv7ik3li2xvp" path="res://assets/characters/the_greedy_lord.jpg" id="4_5vvnq"]
+[ext_resource type="PackedScene" uid="uid://cdi5v4a8f6h2x" path="res://scenes/ui/character_selection/selection_details.tscn" id="5_nbxll"]
 
 [sub_resource type="Gradient" id="Gradient_fe2o3"]
 colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
@@ -70,10 +71,11 @@ theme_override_constants/margin_bottom = 24
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
-text = "Character Select"
+text = "Selection 1"
 label_settings = SubResource("LabelSettings_m1kxf")
 
 [node name="Character" type="VBoxContainer" parent="Container" unique_id=1464495916]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -142,7 +144,7 @@ layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 8
 theme_override_font_sizes/font_size = 24
-text = "Start"
+text = "PLAY"
 
 [node name="BackButton" type="Button" parent="Container" unique_id=435385287]
 custom_minimum_size = Vector2(100, 42)
@@ -151,6 +153,9 @@ size_flags_horizontal = 0
 size_flags_vertical = 8
 theme_override_font_sizes/font_size = 24
 text = "Back"
+
+[node name="SelectionContainer" parent="Container" unique_id=581860497 instance=ExtResource("5_nbxll")]
+layout_mode = 2
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1126406687]
 modulate = Color(0.747408, 0.580086, 1, 1)

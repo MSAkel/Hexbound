@@ -2,7 +2,7 @@ class_name Reward
 extends Resource
 
 enum RewardType {
-	INFLUENCE,
+	SCORE,
 	GOLD,
 	RUNE,
 }
@@ -15,8 +15,8 @@ enum RewardType {
 
 func process_rewards() -> void:
 	match type:
-		Reward.RewardType.INFLUENCE:
-			GameManager.influence_progress += amount
+		Reward.RewardType.SCORE:
+			GameManager.turn_score += amount
 		Reward.RewardType.GOLD:
 			GameManager.add_gold(amount)
 		Reward.RewardType.RUNE:

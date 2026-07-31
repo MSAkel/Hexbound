@@ -1,0 +1,58 @@
+class_name TopPanelUi
+extends Control
+
+@onready var character_name: Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/CharacterName
+@onready var year_label: Label = $Panel/MarginContainer/VBoxContainer/YearLabel
+@onready var required_score: Label = $Panel/MarginContainer/VBoxContainer/RequiredScorePanel/RequiredScore
+@onready var turn_score: Label = $Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer/TurnScore
+@onready var turn_multi: Label = $Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer/TurnMulti
+@onready var total_score: Label = $Panel/MarginContainer/VBoxContainer/ScorePanel/TotalScore
+@onready var selected_trigger_order_label: Label = $Panel/MarginContainer/VBoxContainer/SelectedTriggerOrderLabel
+@onready var trigger_order_ui: Control = $"../TriggerOrderUI"
+
+const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
+
+func _ready() -> void:
+	year_label.text = "Year: %s" % [GameManager.current_year]
+	required_score.text = "%s" % [GameManager.required_score]
+	character_name.text = PlayerCharacter.get_character_name(GameManager.selected_character)
+	_update_trigger_order_label()
+	
+	Events.turn_started.connect(_update_ui)
+	Events.turn_score_changed.connect(_update_turn_score)
+	Events.turn_multi_changed.connect(_update_turn_multi)
+	Events.total_score_changed.connect(_update_total_score)
+	Events.required_score_changed.connect(_update_required_score)
+	Events.trigger_order_changed.connect(_on_trigger_order_changed)
+
+func _on_end_turn_button_pressed() -> void:
+	Events.turn_ended.emit()
+	AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
+
+
+func _update_ui() -> void:
+	year_label.text = "Year: %s" % [GameManager.current_year]
+
+func _update_turn_score() -> void:
+	turn_score.text = "%s" % [GameManager.turn_score]
+
+func _update_turn_multi() -> void:
+	turn_multi.text = "%s" % [GameManager.turn_multi]
+
+func _update_total_score() -> void:
+	total_score.text = "%s" % [GameManager.total_score]
+
+func _update_required_score() -> void:
+	required_score.text = "%s" % [GameManager.required_score]
+
+func _update_trigger_order_label() -> void:
+	selected_trigger_order_label.text = TriggerOrderType.get_display_name(GameManager.trigger_order)
+
+
+func _on_trigger_order_changed(_new_order: TriggerOrderType.Type) -> void:
+	_update_trigger_order_label()
+
+
+func _on_change_trigger_order_button_pressed() -> void:
+	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	UiManager.show_panel(trigger_order_ui)

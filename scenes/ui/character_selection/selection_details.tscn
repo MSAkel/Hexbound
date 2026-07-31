@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://cdi5v4a8f6h2x"]
+
+[ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/others/play.png" id="1_5oaiq"]
+[ext_resource type="Texture2D" uid="uid://d3xwg4yduohgp" path="res://assets/trigger_order/order_1.png" id="2_r7hje"]
+
+[node name="SelectionContainer" type="HBoxContainer" unique_id=581860497]
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 32
+
+[node name="PrevSelection" type="TextureRect" parent="." unique_id=2070495838]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture = ExtResource("1_5oaiq")
+stretch_mode = 3
+flip_h = true
+
+[node name="SlectionDetails" type="VBoxContainer" parent="." unique_id=1032022933]
+layout_mode = 2
+
+[node name="Passive" type="Label" parent="SlectionDetails" unique_id=755466706]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Gain 5 gold at the end of each round"
+
+[node name="SelectionRunes" type="GridContainer" parent="SlectionDetails" unique_id=5783186]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SlectionTriggerOrder" type="VBoxContainer" parent="." unique_id=155871284]
+layout_mode = 2
+
+[node name="TriggerOrder" type="Label" parent="SlectionTriggerOrder" unique_id=1609280158]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Top-left → Bottom-right"
+horizontal_alignment = 1
+
+[node name="TriggerOrderImage" type="TextureRect" parent="SlectionTriggerOrder" unique_id=1970264467]
+custom_maximum_size = Vector2(600, 500)
+layout_mode = 2
+texture = ExtResource("2_r7hje")
+
+[node name="NextSelection" type="TextureRect" parent="." unique_id=345559417]
+layout_mode = 2
+texture = ExtResource("1_5oaiq")
+stretch_mode = 3

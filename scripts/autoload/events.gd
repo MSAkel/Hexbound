@@ -14,7 +14,10 @@ signal card_drag_ended()
 # Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 
-signal influence_changed()
+signal total_score_changed()
+signal turn_score_changed()
+signal turn_multi_changed()
+signal required_score_changed()
 
 # Merchant signals
 signal merchant_item_purchased(item_type: String)  # Emitted when an item is purchased
@@ -26,5 +29,7 @@ signal rune_selected(rune: Rune)
 signal card_selected(card: CardUI)
 
 signal rune_pack_count_changed()
+
+signal trigger_order_changed(new_order: TriggerOrderType.Type)
 
 signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)

@@ -33,9 +33,9 @@ static func get_all_boons() -> Array[Boon]:
 	
 	boon = Boon.new()
 	boon.name = "Head Start"
-	boon.description = "Start with 2 influence progress"
+	boon.description = "Start with 2 	 progress"
 	boon.cost = 1
-	boon.effect_type = "influence"
+	boon.effect_type = "score"
 	boons.append(boon)
 	
 	boon = Boon.new()

@@ -5,8 +5,9 @@
 
 [resource]
 script = ExtResource("2_qvrl4")
-id = "basic_run"
+id = "basic_rune"
 name = "Basic Rune"
 icon = ExtResource("1_ayjfw")
-description = "Generates 20 points"
+score_value = 20
+description = "+20 points"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

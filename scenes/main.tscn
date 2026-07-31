@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cnndmv1aydlal" path="res://scenes/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="1_sugp2"]
 [ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="2_jyhfs"]
-[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/ChatGPT Image Jul 29, 2026, 09_24_17 PM.png" id="2_tbgi4"]
+[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background_image.png" id="2_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 
 [node name="Main" type="Node2D" unique_id=1217909312]

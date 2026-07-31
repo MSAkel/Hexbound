@@ -1,12 +1,9 @@
 [gd_scene format=3 uid="uid://b2u0uxxntwomn"]
 
 [ext_resource type="Script" uid="uid://cvrhe05ck15tj" path="res://scenes/ui/runes/rune_ui.gd" id="1_ncwa2"]
-[ext_resource type="Texture2D" uid="uid://j7ewxkg3i3qk" path="res://assets/icons/runes/roundabout_rune.png" id="2_gx0vj"]
+[ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/hex runes/basic_rune.png" id="2_gx0vj"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qvrl4"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_0nadc"]
-atlas = ExtResource("2_gx0vj")
 
 [node name="RuneUI" type="Control" unique_id=957735592]
 custom_minimum_size = Vector2(256, 256)
@@ -36,7 +33,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 disabled = true
-texture_normal = SubResource("AtlasTexture_0nadc")
+texture_normal = ExtResource("2_gx0vj")
 ignore_texture_size = true
 stretch_mode = 0
 

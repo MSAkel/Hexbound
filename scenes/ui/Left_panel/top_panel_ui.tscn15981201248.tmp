@@ -81,7 +81,7 @@ custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 text = "x3"
 
-[node name="InfluenceProgress" type="Label" parent="Panel/MarginContainer" unique_id=1551360484]
+[node name="ScoreProgress" type="Label" parent="Panel/MarginContainer" unique_id=1551360484]
 layout_mode = 2
 size_flags_horizontal = 8
 text = "Score: 0/15"
