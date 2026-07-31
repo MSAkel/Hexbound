@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" uid="uid://dk3bsvpgwbwau" path="res://scenes/ui/gold/gold_ui.tscn" id="2_utgav"]
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="3_i3bqn"]
 [ext_resource type="PackedScene" uid="uid://dar7bvc231xx" path="res://scenes/ui/game_speed/game_speed_ui.tscn" id="4_i3bqn"]
-[ext_resource type="Theme" uid="uid://d2qm4n05j7qhs" path="res://themes/button.tres" id="5_404wr"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_404wr"]
 bg_color = Color(0.10320329, 0.013899398, 0.0010937232, 1)
@@ -160,18 +159,12 @@ size_flags_vertical = 3
 [node name="TriggerOrderText" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1217896879]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Tile trigger  order:"
+text = "Tile trigger  order"
 
 [node name="SelectedTriggerOrderLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1011045563]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Top-left → bottom-right"
-
-[node name="ChangeTriggerOrderButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=1758031328]
-custom_minimum_size = Vector2(0, 45)
-layout_mode = 2
-theme = ExtResource("5_404wr")
-text = "Change Order"
 
 [node name="Spacer3" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=87443938]
 layout_mode = 2
@@ -187,5 +180,4 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_2ubwj")
 theme_override_styles/hover = SubResource("StyleBoxTexture_2ubwj")
 text = "End Turn"
 
-[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/ChangeTriggerOrderButton" to="." method="_on_change_trigger_order_button_pressed"]
 [connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/EndTurnButton" to="." method="_on_end_turn_button_pressed"]

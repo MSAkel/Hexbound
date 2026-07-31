@@ -1,18 +1,20 @@
 [gd_scene format=3 uid="uid://cdi5v4a8f6h2x"]
 
 [ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/others/play.png" id="1_5oaiq"]
+[ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection/selection_details.gd" id="1_r7hje"]
 [ext_resource type="Texture2D" uid="uid://d3xwg4yduohgp" path="res://assets/trigger_order/order_1.png" id="2_r7hje"]
 
-[node name="SelectionContainer" type="HBoxContainer" unique_id=581860497]
+[node name="SelectionDetails" type="HBoxContainer" unique_id=581860497]
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 32
+script = ExtResource("1_r7hje")
 
-[node name="PrevSelection" type="TextureRect" parent="." unique_id=2070495838]
+[node name="PrevSelection" type="TextureButton" parent="." unique_id=40130060]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
-texture = ExtResource("1_5oaiq")
+texture_normal = ExtResource("1_5oaiq")
 stretch_mode = 3
 flip_h = true
 
@@ -22,7 +24,7 @@ layout_mode = 2
 [node name="Passive" type="Label" parent="SlectionDetails" unique_id=755466706]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Gain 5 gold at the end of each round"
+text = "Passive ability: TBD"
 
 [node name="SelectionRunes" type="GridContainer" parent="SlectionDetails" unique_id=5783186]
 layout_mode = 2
@@ -42,7 +44,10 @@ custom_maximum_size = Vector2(600, 500)
 layout_mode = 2
 texture = ExtResource("2_r7hje")
 
-[node name="NextSelection" type="TextureRect" parent="." unique_id=345559417]
+[node name="NextSelection" type="TextureButton" parent="." unique_id=1177842379]
 layout_mode = 2
-texture = ExtResource("1_5oaiq")
+texture_normal = ExtResource("1_5oaiq")
 stretch_mode = 3
+
+[connection signal="pressed" from="PrevSelection" to="." method="_on_prev_selection_pressed"]
+[connection signal="pressed" from="NextSelection" to="." method="_on_next_selection_pressed"]

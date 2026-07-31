@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://y4red7h47dee"]
+
+[ext_resource type="Texture2D" uid="uid://ccewqo5pxkaxw" path="res://assets/icons/hex_runes/multi_002.png" id="1_dcmay"]
+[ext_resource type="Script" uid="uid://xas6lx7nsi1d" path="res://resources/runes/generations/basic_multi/basic_multi.gd" id="2_cat61"]
+
+[resource]
+script = ExtResource("2_cat61")
+id = "multi_002"
+name = "Multi 002"
+icon = ExtResource("1_dcmay")
+score_value = 3
+description = "+2 Multi 3 multi for each adjacent score rune. +15 multi if all adjacent tiles are score rune"
+rarity = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

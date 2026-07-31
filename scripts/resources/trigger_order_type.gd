@@ -27,3 +27,15 @@ static func get_all_types() -> Array[Type]:
 		Type.OUTER_RING_TO_INNER,
 		Type.CLOCKWISE_SPIRAL,
 	]
+
+
+static func get_preview_texture(order: Type) -> Texture2D:
+	match order:
+		Type.TOP_LEFT_TO_BOTTOM_RIGHT:
+			return preload("res://assets/trigger_order/order_1.png")
+		Type.OUTER_RING_TO_INNER:
+			return preload("res://assets/trigger_order/order_2.png")
+		Type.CLOCKWISE_SPIRAL:
+			return preload("res://assets/trigger_order/order_3.png")
+		_:
+			return preload("res://assets/trigger_order/order_1.png")

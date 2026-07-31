@@ -6,63 +6,57 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 var main_scene := load("res://scenes/main.tscn")
 var main_menu_scene := load("res://scenes/ui/main_menu/main_menu.tscn")
 
-@onready var the_peasant: VBoxContainer = $Container/Character/CharactersContainer/ThePeasant
-@onready var the_greedy_lord: VBoxContainer = $Container/Character/CharactersContainer/TheGreedyLord
+@onready var selection_title: Label = $Container/Label
+@onready var selection_details: SelectionDetails = $Container/SelectionContainer
 
-# Maps each character type to its selectable container
-var character_containers: Dictionary = {}
-# Only one character can be selected at a time
-var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.PEASANT
-
-const SELECTED_COLOR := Color(0.8, 1.0, 0.8)
-const UNSELECTED_COLOR := Color.WHITE
+# One selection per trigger order; only one is shown at a time.
+var selections: Array[PlayerCharacter.Type] = []
+var current_index: int = 0
 
 
 func _ready() -> void:
 	get_tree().paused = false
 
-	character_containers = {
-		PlayerCharacter.Type.PEASANT: the_peasant,
-		PlayerCharacter.Type.GREEDY_LORD: the_greedy_lord,
-	}
-
-	# Allow clicking each character panel to select it
-	for character_type: PlayerCharacter.Type in character_containers:
-		var container: VBoxContainer = character_containers[character_type]
-		container.mouse_filter = Control.MOUSE_FILTER_STOP
-		container.gui_input.connect(_on_character_gui_input.bind(character_type))
-
-	update_visuals()
+	selections = PlayerCharacter.get_all_types()
+	selection_details.prev_selection_pressed.connect(_on_prev_selection)
+	selection_details.next_selection_pressed.connect(_on_next_selection)
+	_update_display()
 
 	var music := SOUNDTRACK.get_music_for_scene(scene_file_path)
 	if music:
 		AudioManager.play_music(music)
 
 
-func _on_character_gui_input(event: InputEvent, character_type: PlayerCharacter.Type) -> void:
-	if event is InputEventMouseButton \
-			and event.pressed \
-			and event.button_index == MOUSE_BUTTON_LEFT:
-		select_character(character_type)
-		AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+func get_selected_character() -> PlayerCharacter.Type:
+	return selections[current_index]
 
 
-func select_character(character_type: PlayerCharacter.Type) -> void:
-	selected_character = character_type
-	update_visuals()
+func _on_prev_selection() -> void:
+	current_index = (current_index - 1 + selections.size()) % selections.size()
+	_update_display()
+	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
 
 
-# Highlight the selected character's container and reset the others
-func update_visuals() -> void:
-	for character_type: PlayerCharacter.Type in character_containers:
-		var container: VBoxContainer = character_containers[character_type]
-		container.modulate = SELECTED_COLOR if character_type == selected_character else UNSELECTED_COLOR
+func _on_next_selection() -> void:
+	current_index = (current_index + 1) % selections.size()
+	_update_display()
+	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+
+
+func _update_display() -> void:
+	var character_type: PlayerCharacter.Type = get_selected_character()
+	selection_title.text = PlayerCharacter.get_character_name(character_type)
+	selection_details.display_selection(character_type)
 
 
 func _on_start_button_pressed() -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
-	# Persist the choice so gameplay systems (like the hand) can read it
-	GameManager.selected_character = selected_character
+
+	var character_type: PlayerCharacter.Type = get_selected_character()
+	# Character choice locks in the trigger order for the entire run.
+	GameManager.selected_character = character_type
+	GameManager.trigger_order = PlayerCharacter.get_trigger_order(character_type)
+
 	get_tree().change_scene_to_packed(main_scene)
 
 

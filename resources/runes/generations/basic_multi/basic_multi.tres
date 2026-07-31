@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://1yngk6bgvs8i"]
+
+[ext_resource type="Texture2D" uid="uid://dtxf78ouio4em" path="res://assets/icons/hex_runes/multi_rune.png" id="1_weerr"]
+[ext_resource type="Script" uid="uid://xas6lx7nsi1d" path="res://resources/runes/generations/basic_multi/basic_multi.gd" id="2_ubapp"]
+
+[resource]
+script = ExtResource("2_ubapp")
+id = "basic_multi"
+name = "Multi"
+icon = ExtResource("1_weerr")
+score_value = 2
+description = "+2 Multi"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://dnv2j7w43hgq3"]
+
+[ext_resource type="Texture2D" uid="uid://bu7dnmfr74xue" path="res://assets/icons/hex_runes/copyious_spellus.png" id="1_h3egt"]
+[ext_resource type="Script" uid="uid://cuxinu630dsg1" path="res://resources/runes/support/copyious_spellus/copyious_spellus.gd" id="2_gdo0e"]
+
+[resource]
+script = ExtResource("2_gdo0e")
+id = "copyious_spellus"
+name = "Copyious Spellus"
+icon = ExtResource("1_h3egt")
+description = "Copies the effect of a random adjacent rune when placed."
+rarity = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

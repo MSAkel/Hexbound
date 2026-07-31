@@ -19,7 +19,7 @@ var _available_runes_packs: int = 0
 var _runes_reroll_cost: int = 0
 
 # Character chosen on the character selection screen; affects starting hand
-var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.PEASANT
+var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.SURVEYOR
 
 # Required score to advance to the next phase
 var required_score: int = 100

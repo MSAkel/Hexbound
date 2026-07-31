@@ -5,12 +5,12 @@ enum RuneRarity {
 	COMMON, 
 	UNCOMMON, 
 	RARE, 
-	LEGENDARY 
 }
 
 enum RuneType {
 	GENERATION,
-	EFFECT,
+	SUPPORT,
+	HYBRID
 }
 
 @export var id: String

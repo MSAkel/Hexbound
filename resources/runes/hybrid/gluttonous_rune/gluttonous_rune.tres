@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://dia2wi5j18o8g"]
+
+[ext_resource type="Texture2D" uid="uid://bpg7ltsn778y8" path="res://assets/icons/hex_runes/gluttonous_rune.png" id="1_mi1r8"]
+[ext_resource type="Script" uid="uid://r030evn6g2pr" path="res://resources/runes/generations/5_marks_the_spot/5_marks_the_spot.gd" id="2_5sl7f"]
+
+[resource]
+script = ExtResource("2_5sl7f")
+id = "gluttonous_rune"
+name = "Gluttonous Rune"
+icon = ExtResource("1_mi1r8")
+description = "+30 score. Consumes the next in order rune to permanently double it's score."
+rarity = 2
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"
