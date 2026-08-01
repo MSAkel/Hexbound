@@ -6,7 +6,7 @@ var cards_played := 0
 
 #TODO Max hand size
 
-const CARD_UI_SCENE = preload("uid://b4k5fq6ran8f5")
+const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
 
 # Reparent cards to hand when they are dragged or released
 func _ready() -> void:

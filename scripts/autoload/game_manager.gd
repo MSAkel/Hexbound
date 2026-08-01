@@ -43,6 +43,9 @@ var _activated_runes_this_turn: Array[Rune] = []
 # Which tile order runes activate in when a turn ends.
 var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
 
+# Set when a turn ends with total score meeting the phase goal; consumed when the merchant opens.
+var _pending_merchant_visit: bool = false
+
 # Core game state getters and setters
 var turn_score: int:
 	get:
@@ -66,13 +69,7 @@ var total_score: int:
 		Events.total_score_changed.emit()
 		if _total_score >= required_score:
 			required_score = required_score * required_score_multiplier + 1000
-
-			add_gold(20)
-			AudioManager.play_ui_sound(UI_SOUNDS.GOLD_GAINED)
-
-			current_year = 1
-			Events.year_changed.emit()
-			Events.required_score_changed.emit()
+			advance_phase()
 
 var current_year: int:
 	get:
@@ -193,7 +190,17 @@ func end_turn() -> void:
 
 func finish_turn_processing() -> void:
 	_is_processing_turn = false
-	total_score = total_score + (turn_score * turn_multi)
+
+	# Decide year advance before updating total_score. the setter resets the turn
+	# counter and raises required_score when the threshold is met this turn.
+	var pending_total_score := total_score + (turn_score * turn_multi)
+	var should_advance_year := not current_year > 5 and pending_total_score < required_score
+
+	# Merchant opens after rune selection when the phase goal was met this turn.
+	if pending_total_score >= required_score:
+		_pending_merchant_visit = true
+
+	total_score = pending_total_score
 	# Reset turn score and multiplier
 	turn_score = 0
 	turn_multi = 1
@@ -202,15 +209,29 @@ func finish_turn_processing() -> void:
 	available_runes_packs += 1
 	UiManager.show_runes_choice_panel.emit()
 	Events.turn_started.emit()
-	if not current_year > 5:
-		if not total_score >= required_score:
-			current_year += 1
-			Events.year_changed.emit()
+	if should_advance_year:
+		current_year += 1
+		Events.year_changed.emit()
 
 
 func _on_turn_started() -> void:
 	_runes_activated_this_turn = 0
 	_activated_runes_this_turn.clear()
+
+
+func consume_pending_merchant_visit() -> bool:
+	if not _pending_merchant_visit:
+		return false
+	_pending_merchant_visit = false
+	return true
+
+func advance_phase() -> void:
+	add_gold(20)
+	AudioManager.play_ui_sound(UI_SOUNDS.GOLD_GAINED)
+
+	current_year = 1
+	Events.year_changed.emit()
+	Events.required_score_changed.emit()
 
 
 func get_runes_activated_this_turn() -> int:

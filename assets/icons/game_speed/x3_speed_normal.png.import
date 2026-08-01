@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dv7ik3li2xvp"
-path="res://.godot/imported/the_greedy_lord.jpg-630120ea9b2b5690046e9b85ba3cca6c.ctex"
+uid="uid://bri5mrmyuv2r7"
+path="res://.godot/imported/x3_speed_normal.png-328ac998dd9d71f29eed9fd00aa5a900.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/characters/the_greedy_lord.jpg"
-dest_files=["res://.godot/imported/the_greedy_lord.jpg-630120ea9b2b5690046e9b85ba3cca6c.ctex"]
+source_file="res://assets/icons/game_speed/x3_speed_normal.png"
+dest_files=["res://.godot/imported/x3_speed_normal.png-328ac998dd9d71f29eed9fd00aa5a900.ctex"]
 
 [params]
 

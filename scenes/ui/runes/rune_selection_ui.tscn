@@ -1,36 +1,34 @@
 [gd_scene format=3 uid="uid://dme0eav2550e7"]
 
 [ext_resource type="Script" uid="uid://nriqkn24o42m" path="res://scenes/ui/runes/rune_selection_ui.gd" id="1_e7vfp"]
-[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_bvuok"]
 [ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="3_rgcjf"]
 [ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="4_lqce7"]
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="5_2hgda"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_swbo7"]
-texture = ExtResource("2_bvuok")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8btky"]
+bg_color = Color(0.31764707, 0.64705884, 0.77254903, 0.27058825)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jpxjh"]
 texture = ExtResource("5_2hgda")
 
 [node name="RuneSelectionUI" type="Control" unique_id=1995601468]
 layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 8
 script = ExtResource("1_e7vfp")
 
 [node name="Panel" type="Panel" parent="." unique_id=2007156627]
-layout_mode = 0
-offset_left = -574.0
-offset_top = -365.0
-offset_right = 534.0
-offset_bottom = 258.0
-theme_override_styles/panel = SubResource("StyleBoxTexture_swbo7")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_8btky")
 
 [node name="MarginPanel" type="MarginContainer" parent="Panel" unique_id=670077628]
 layout_mode = 1
@@ -54,6 +52,7 @@ size_flags_horizontal = 4
 theme_override_constants/separation = 64
 
 [node name="CloseButton" type="TextureButton" parent="Panel" unique_id=1173032380]
+visible = false
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -66,16 +65,16 @@ texture_hover = ExtResource("4_lqce7")
 
 [node name="RerollButton" type="Button" parent="Panel" unique_id=16000875]
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -158.0
-offset_top = -78.0
-offset_right = -40.0
-offset_bottom = -38.0
-grow_horizontal = 0
+offset_left = -59.0
+offset_top = -145.0
+offset_right = 59.0
+offset_bottom = -105.0
+grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/normal = SubResource("StyleBoxTexture_jpxjh")
 text = "Reroll (free)"

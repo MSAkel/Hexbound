@@ -8,7 +8,7 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_404wr"]
 bg_color = Color(0.10320329, 0.013899398, 0.0010937232, 1)
 border_width_right = 3
-border_color = Color(0.3993729, 0.035911027, 0.39670682, 1)
+border_color = Color(0.31754345, 0.007314713, 2.4065375e-08, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
 bg_color = Color(0.10622876, 0.07545223, 0.08137467, 1)
@@ -48,7 +48,7 @@ grow_vertical = 2
 mouse_filter = 0
 theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 32
-theme_override_constants/margin_right = 16
+theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 32
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=378967061]
@@ -173,6 +173,7 @@ size_flags_vertical = 3
 [node name="EndTurnButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=960022665 groups=["main_ui"]]
 custom_minimum_size = Vector2(200, 75)
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 8
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxTexture_2ubwj")

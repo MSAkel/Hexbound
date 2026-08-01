@@ -1,0 +1,159 @@
+[gd_scene format=3 uid="uid://b4k5fq6ran8f5"]
+
+[ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_euaf0"]
+[ext_resource type="Script" uid="uid://4ctck7li1fjt" path="res://scenes/ui/merchant/merchant_card.gd" id="2_4madk"]
+[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="3_7qlny"]
+[ext_resource type="Texture2D" uid="uid://ch0g260oqw5c" path="res://assets/gui/backgrounds/h_background.png" id="5_yo8cw"]
+[ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/hex_runes/basic_rune.png" id="6_13lfh"]
+[ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="6_d73v6"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="8_pqh8v"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5jwxg"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+texture = ExtResource("3_7qlny")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7xb4v"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+texture = ExtResource("5_yo8cw")
+modulate_color = Color(1, 1, 0, 1)
+
+[sub_resource type="SystemFont" id="SystemFont_5jwxg"]
+subpixel_positioning = 0
+
+[sub_resource type="LabelSettings" id="LabelSettings_usd0r"]
+font = SubResource("SystemFont_5jwxg")
+font_size = 14
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nmvtt"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+texture = ExtResource("6_d73v6")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q2j25"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+texture = ExtResource("8_pqh8v")
+
+[sub_resource type="FontVariation" id="FontVariation_m82f4"]
+
+[node name="MerchantCard" type="Control" unique_id=1998448617]
+custom_minimum_size = Vector2(171, 261)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 198.0
+offset_bottom = 317.0
+mouse_filter = 1
+theme = ExtResource("1_euaf0")
+script = ExtResource("2_4madk")
+
+[node name="Container" type="VBoxContainer" parent="." unique_id=835393904]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PriceLabel" type="Label" parent="Container" unique_id=1732701792]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "$100"
+horizontal_alignment = 1
+
+[node name="CardPanel" type="Panel" parent="Container" unique_id=932652994]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5jwxg")
+
+[node name="CardDetailsContainer" type="VBoxContainer" parent="Container/CardPanel" unique_id=569885187]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="NameContainer" type="PanelContainer" parent="Container/CardPanel/CardDetailsContainer" unique_id=322151785]
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_7xb4v")
+
+[node name="CardName" type="Label" parent="Container/CardPanel/CardDetailsContainer/NameContainer" unique_id=780871484]
+layout_mode = 2
+text = "Name"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+
+[node name="IconContainer" type="PanelContainer" parent="Container/CardPanel/CardDetailsContainer" unique_id=1784689084]
+custom_minimum_size = Vector2(0, 125)
+custom_maximum_size = Vector2(-1, 125)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_nmvtt")
+
+[node name="Icon" type="TextureRect" parent="Container/CardPanel/CardDetailsContainer/IconContainer" unique_id=742371266]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("6_13lfh")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="CardTypeLabel" type="Label" parent="Container/CardPanel/CardDetailsContainer/IconContainer" unique_id=1751951717]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 6
+theme_override_styles/normal = SubResource("StyleBoxTexture_q2j25")
+text = "Type"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+
+[node name="CardDescription" type="Label" parent="Container/CardPanel/CardDetailsContainer" unique_id=2119088894]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+text = "Description"
+label_settings = SubResource("LabelSettings_usd0r")
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="SoldOverlay" type="Panel" parent="Container/CardPanel" unique_id=993550490]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Container/CardPanel/SoldOverlay" unique_id=1355951540]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -30.0
+offset_right = 80.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -0.24842073
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_fonts/font = SubResource("FontVariation_m82f4")
+theme_override_font_sizes/font_size = 64
+text = "SOLD"

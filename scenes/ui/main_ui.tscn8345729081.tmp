@@ -17,13 +17,11 @@ script = ExtResource("1_l8t6x")
 [node name="LeftPanel" parent="." unique_id=438853374 groups=["main_ui"] instance=ExtResource("4_travt")]
 
 [node name="HandPanel" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
-rotation = 0.0016232448
 
 [node name="RuneSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
 
 [node name="TopRightUI" parent="." unique_id=851671720 instance=ExtResource("9_yc0ux")]
-visible = false
 
 [node name="TerrainTileUI" parent="." unique_id=289089864 instance=ExtResource("2_l8t6x")]
 visible = false
@@ -35,8 +33,5 @@ visible = false
 visible = false
 
 [node name="GameOverScreen" parent="." unique_id=725350368 instance=ExtResource("9_b65ll")]
-visible = false
 
 [node name="Merchant" parent="." unique_id=613414351 instance=ExtResource("10_b65ll")]
-visible = false
-rotation = -0.00022035485

@@ -1,30 +1,45 @@
 [gd_scene format=3 uid="uid://dar7bvc231xx"]
 
 [ext_resource type="Script" uid="uid://bwltwntiox151" path="res://scenes/ui/game_speed/game_speed_ui.gd" id="1_2ny8g"]
+[ext_resource type="Texture2D" uid="uid://cm6o08jbqwmxx" path="res://assets/icons/game_speed/x1_speed_normal.png" id="2_ymrcd"]
+[ext_resource type="Texture2D" uid="uid://cu0daacghcxww" path="res://assets/icons/game_speed/x1_speed_hover.png" id="3_ledki"]
+[ext_resource type="Texture2D" uid="uid://baidewum1k0bu" path="res://assets/icons/game_speed/x1_speed_focus.png" id="4_2bfej"]
+[ext_resource type="Texture2D" uid="uid://bptlmdkmb7ije" path="res://assets/icons/game_speed/x2_speed_normal.png" id="5_k2q18"]
+[ext_resource type="Texture2D" uid="uid://xdbd15fgxfjl" path="res://assets/icons/game_speed/x2_speed_hover.png" id="6_vg37d"]
+[ext_resource type="Texture2D" uid="uid://d05djmurve02q" path="res://assets/icons/game_speed/x2_speed_focus.png" id="7_sja7t"]
+[ext_resource type="Texture2D" uid="uid://bri5mrmyuv2r7" path="res://assets/icons/game_speed/x3_speed_normal.png" id="8_3rse5"]
+[ext_resource type="Texture2D" uid="uid://dkehhbtcqajq1" path="res://assets/icons/game_speed/x3_speed_hover.png" id="9_i0yd7"]
+[ext_resource type="Texture2D" uid="uid://dtgplxs4duaaj" path="res://assets/icons/game_speed/x3_speed_focus.png" id="10_xyp02"]
 
 [node name="GameSpeedUI" type="HBoxContainer" unique_id=283889066]
-offset_right = 153.0
-offset_bottom = 42.0
+offset_right = 289.0
+offset_bottom = 52.0
 theme_override_constants/separation = 16
 script = ExtResource("1_2ny8g")
 
-[node name="RegularGameSpeedButton" type="Button" parent="." unique_id=831090714]
+[node name="RegularGameSpeedButton" type="TextureButton" parent="." unique_id=1340528137]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "x1"
+texture_normal = ExtResource("2_ymrcd")
+texture_pressed = ExtResource("3_ledki")
+texture_hover = ExtResource("3_ledki")
+texture_focused = ExtResource("4_2bfej")
 
-[node name="DoubleGameSpeedButton" type="Button" parent="." unique_id=930312563]
+[node name="DoubleGameSpeedButton" type="TextureButton" parent="." unique_id=1594462364]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "x2"
+texture_normal = ExtResource("5_k2q18")
+texture_pressed = ExtResource("6_vg37d")
+texture_hover = ExtResource("6_vg37d")
+texture_focused = ExtResource("7_sja7t")
 
-[node name="TripleGameSpeedButton" type="Button" parent="." unique_id=389381147]
+[node name="TripleGameSpeedButton" type="TextureButton" parent="." unique_id=2133136321]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "x3"
+texture_normal = ExtResource("8_3rse5")
+texture_pressed = ExtResource("9_i0yd7")
+texture_hover = ExtResource("9_i0yd7")
+texture_focused = ExtResource("10_xyp02")
 
 [connection signal="pressed" from="RegularGameSpeedButton" to="." method="_on_regular_game_speed_button_pressed"]
 [connection signal="pressed" from="DoubleGameSpeedButton" to="." method="_on_double_game_speed_button_pressed"]

@@ -8,6 +8,7 @@ extends Control
 @onready var turn_multi: Label = $Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer/TurnMulti
 @onready var total_score: Label = $Panel/MarginContainer/VBoxContainer/ScorePanel/TotalScore
 @onready var selected_trigger_order_label: Label = $Panel/MarginContainer/VBoxContainer/SelectedTriggerOrderLabel
+@onready var end_turn_button: Button = $Panel/MarginContainer/VBoxContainer/EndTurnButton
 
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
@@ -22,11 +23,15 @@ func _ready() -> void:
 	Events.turn_multi_changed.connect(_update_turn_multi)
 	Events.total_score_changed.connect(_update_total_score)
 	Events.required_score_changed.connect(_update_required_score)
+	Events.turn_started.connect(_on_turn_started)
 
 func _on_end_turn_button_pressed() -> void:
 	Events.turn_ended.emit()
 	AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
+	end_turn_button.disabled = true
 
+func _on_turn_started() -> void:
+	end_turn_button.disabled = false
 
 func _update_year_label() -> void:
 	year_label.text = "Turn: %s/5" % [GameManager.current_year]

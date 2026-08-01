@@ -18,9 +18,15 @@ func _ready() -> void:
 	else:
 		reroll_button.disabled = false
 	
-	Events.rune_selected.connect(func(_rune: Rune):
-		hide()	
-	)
+	Events.rune_selected.connect(_on_rune_selected)
+
+func _on_rune_selected(_rune: Rune) -> void:
+	hide()
+
+	# Open the merchant only after a rune pick when the phase goal was met this turn.
+	if GameManager.consume_pending_merchant_visit():
+		UiManager.show_merchant_panel.emit()
+
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
