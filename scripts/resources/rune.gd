@@ -40,6 +40,7 @@ func activate_rune(tile: Hex, score_multiplier: float = 1.0, skip_cost: bool = f
 			deduct_activation_cost()
 		# Register before the effect so get_activations_this_turn() includes this rune.
 		GameManager.register_rune_activation(self)
+		Events.rune_activated.emit(self)
 		_activation_score_multiplier = score_multiplier
 		_on_activate_rune(tile)
 		_activation_score_multiplier = 1.0

@@ -7,6 +7,7 @@ signal game_resumed  # Emitted when game is resumed
 signal game_ended  # Emitted when game ends
 signal turn_ended  # Emitted when a turn ends
 signal turn_started  # Emitted when a turn starts
+signal year_changed
 
 signal card_drag_started(card: CardUI)
 signal card_drag_ended()
@@ -26,6 +27,7 @@ signal merchant_discount_changed(new_discount: float)  # Emitted when merchant d
 signal card_played(card_ui: CardUI)  # Emitted when a card is played
 
 signal rune_selected(rune: Rune)
+signal rune_activated(rune: Rune)  # Emitted when a rune successfully triggers its effect
 signal card_selected(card: CardUI)
 
 signal rune_pack_count_changed()

@@ -18,6 +18,10 @@ config/name="Game++"
 run/main_scene="uid://bpaabu6bfu0hv"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
+[audio]
+
+buses/default_bus_layout="uid://dvt12q5rvq0mh"
+
 [autoload]
 
 UiManager="*res://scripts/autoload/ui_manager.gd"

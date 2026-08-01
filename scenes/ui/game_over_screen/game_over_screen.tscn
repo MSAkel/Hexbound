@@ -1,0 +1,91 @@
+[gd_scene format=3 uid="uid://cylk7h6n211gc"]
+
+[ext_resource type="Script" uid="uid://cr8oh8plo07y7" path="res://scenes/ui/game_over_screen/game_over_screen.gd" id="1_bfo61"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bhunq"]
+bg_color = Color(0.5294118, 0.61960787, 0.64705884, 0.8901961)
+border_width_left = 2
+border_color = Color(0.74480915, 0.8426434, 0.60535055, 1)
+
+[node name="GameOverScreen" type="Control" unique_id=725350368]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bfo61")
+
+[node name="background" type="Panel" parent="." unique_id=1392681935]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_riqys")
+
+[node name="StatsPanel" type="Panel" parent="background" unique_id=882452997]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bhunq")
+
+[node name="MarginContainer" type="MarginContainer" parent="background/StatsPanel" unique_id=1579781]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 100
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 100
+
+[node name="VBoxContainer" type="VBoxContainer" parent="background/StatsPanel/MarginContainer" unique_id=1721345815]
+layout_mode = 2
+
+[node name="GameOverLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=121218275]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 32
+text = "Sux To Suck"
+horizontal_alignment = 1
+
+[node name="PlayedAsLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=41308403]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "<CharacterName>"
+horizontal_alignment = 1
+
+[node name="TurnsPlayedLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=797874721]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Turns Played: 1"
+
+[node name="GoldEarnedLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=1184859522]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Gold Earned: 0"
+
+[node name="CardsPlayedLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=674945790]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Cards Played: 0"
+
+[node name="Button" type="Button" parent="background/StatsPanel/MarginContainer" unique_id=1314082620]
+layout_mode = 2
+size_flags_vertical = 8
+text = "CONTINUE"
+
+[connection signal="pressed" from="background/StatsPanel/MarginContainer/Button" to="." method="_on_button_pressed"]

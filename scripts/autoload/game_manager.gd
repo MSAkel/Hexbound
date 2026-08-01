@@ -22,9 +22,9 @@ var _runes_reroll_cost: int = 0
 var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.SURVEYOR
 
 # Required score to advance to the next phase
-var required_score: int = 100
+var required_score: int = 500
 # Multiplier for required score once required score is reached
-var required_score_multiplier: int = 2
+var required_score_multiplier: int = 3
 # Total score accumulated during the game
 var _total_score: int = 0
 
@@ -65,15 +65,23 @@ var total_score: int:
 		_total_score = value
 		Events.total_score_changed.emit()
 		if _total_score >= required_score:
-			required_score = required_score * required_score_multiplier + 100
+			required_score = required_score * required_score_multiplier + 1000
+
+			add_gold(20)
+			AudioManager.play_ui_sound(UI_SOUNDS.GOLD_GAINED)
+
+			current_year = 1
+			Events.year_changed.emit()
 			Events.required_score_changed.emit()
-		#TODO: Make something happen once score required is reached. Signal => event => something happens.
 
 var current_year: int:
 	get:
 		return _current_year
 	set(value):
-		_current_year = max(1, value)
+		_current_year = value
+		print("Current year: ", _current_year)
+		if _current_year > 5:
+			Events.game_ended.emit()
 
 var game_speed: float:
 	get:
@@ -190,10 +198,14 @@ func finish_turn_processing() -> void:
 	turn_score = 0
 	turn_multi = 1
 
-	_current_year += 1
+
 	available_runes_packs += 1
 	UiManager.show_runes_choice_panel.emit()
 	Events.turn_started.emit()
+	if not current_year > 5:
+		if not total_score >= required_score:
+			current_year += 1
+			Events.year_changed.emit()
 
 
 func _on_turn_started() -> void:

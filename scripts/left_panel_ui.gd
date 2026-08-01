@@ -12,12 +12,12 @@ extends Control
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
-	year_label.text = "Year: %s" % [GameManager.current_year]
+	# year_label.text = "Turn: %s/5" % [GameManager.current_year]
 	required_score.text = "%s" % [GameManager.required_score]
 	character_name.text = PlayerCharacter.get_character_name(GameManager.selected_character)
 	_update_trigger_order_label()
 	
-	Events.turn_started.connect(_update_ui)
+	Events.year_changed.connect(_update_year_label)
 	Events.turn_score_changed.connect(_update_turn_score)
 	Events.turn_multi_changed.connect(_update_turn_multi)
 	Events.total_score_changed.connect(_update_total_score)
@@ -28,8 +28,8 @@ func _on_end_turn_button_pressed() -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
 
 
-func _update_ui() -> void:
-	year_label.text = "Year: %s" % [GameManager.current_year]
+func _update_year_label() -> void:
+	year_label.text = "Turn: %s/5" % [GameManager.current_year]
 
 func _update_turn_score() -> void:
 	turn_score.text = "%s" % [GameManager.turn_score]

@@ -30,8 +30,8 @@ const _HEX_NEIGHBORS: Array[TileSet.CellNeighbor] = [
 	TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE,
 	TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE,
 ]
-# @export var minerals: Array[Mineral] = []
-@onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUI"
+
+# @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUI"
 
 # Special events UI
 var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
@@ -108,7 +108,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if is_in_map(map_coords):
 			if event.button_mask == MOUSE_BUTTON_MASK_LEFT:
 				var h: Hex = map_data[map_coords]
-				terrain_tile_ui.set_hex(h)
+				# terrain_tile_ui.set_hex(h)
 				
 				# Remove the current overlay texture on selecting a different tile
 				if map_coords != selected_cell:

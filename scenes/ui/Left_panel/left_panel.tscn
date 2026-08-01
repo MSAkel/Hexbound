@@ -80,7 +80,7 @@ size_flags_vertical = 3
 [node name="YearLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=745290470 groups=["main_ui"]]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Turn 1"
+text = "Turn: 1/5"
 
 [node name="RequiredScorePanel" type="Panel" parent="Panel/MarginContainer/VBoxContainer" unique_id=1918280766]
 custom_minimum_size = Vector2(0, 150)
