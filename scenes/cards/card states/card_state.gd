@@ -13,8 +13,8 @@ var card_ui: CardUI
 func enter() -> void:
 	pass
 
-# called on existing a state
-func exit() -> void:
+# called on exiting a state; next_state is the state being entered.
+func exit(_next_state: State = State.BASE) -> void:
 	pass
 
 func on_input(_event: InputEvent) -> void:

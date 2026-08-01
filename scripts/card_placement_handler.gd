@@ -1,141 +1,161 @@
-# Handles the placement of cards on the hex tile map
+# Handles rune card selection and placement on the hex tile map.
 class_name CardPlacementHandler
 extends Node
 
-# Reference to the tile map
+const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
+
+# Reference to the tile map.
 var tile_map: HexTileMap
 
-# Track if a card is being dragged
-var is_card_dragging: bool = false
-# Track the last tile we showed the overlay on
+# True while a hand card is selected for placement.
+var is_card_selected: bool = false
+# Backwards-compatible alias used by HexTileMap hover logic.
+var is_card_dragging: bool:
+	get:
+		return is_card_selected
+
+var selected_card: CardUI = null
 var last_hovered_tile: Vector2i = Vector2i(-1, -1)
-# Reference to the card being dragged
-var dragged_card: CardUI = null
+var _rune_preview: Sprite2D
+# Prevents deselect cleanup when swapping from one selected card to another.
+var _switching_selection: bool = false
+
+const PREVIEW_ICON_SIZE := 200.0
+const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.55)
+const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
+
 
 func _ready() -> void:
-	# Connect to card drag signals
-	Events.card_drag_started.connect(_on_card_drag_started)
-	Events.card_drag_ended.connect(_on_card_drag_ended)
+	Events.card_drag_started.connect(_on_card_selected)
+	Events.card_drag_ended.connect(_on_card_deselected)
+	_setup_rune_preview()
 
-func _input(event: InputEvent) -> void:
-	if is_card_dragging:
-		if event is InputEventMouseButton and not event.pressed:
-			# Handle right click cancellation first
-			if event.button_index == MOUSE_BUTTON_RIGHT:
-				_clear_overlays()
-				_reset_state()
-				return
-				
-			# Handle left click placement
-			if event.button_index == MOUSE_BUTTON_LEFT:
-				_handle_card_placement()
-		
-		# Update highlighting on mouse motion when dragging
-		if is_card_dragging and event is InputEventMouseMotion:
-			_update_card_drag_highlight()
 
-func _on_card_drag_started(card: CardUI) -> void:
-	is_card_dragging = true
-	dragged_card = card
+func _setup_rune_preview() -> void:
+	_rune_preview = Sprite2D.new()
+	_rune_preview.centered = true
+	_rune_preview.visible = false
+	_rune_preview.z_index = 5
+	tile_map.add_child(_rune_preview)
 
-func _on_card_drag_ended() -> void:
-	is_card_dragging = false
-	_clear_overlays()
-	_reset_state()
 
-func _handle_card_placement() -> void:
-	if dragged_card == null:
+func _unhandled_input(event: InputEvent) -> void:
+	if not is_card_selected:
 		return
 	
-	# Use card center position for placement consistency
-	var card_center_screen: Vector2 = dragged_card.global_position + dragged_card.size / 2.0
-	var viewport: Viewport = get_viewport()
-	var camera: Camera2D = viewport.get_camera_2d()
+	if event is InputEventMouseMotion:
+		_update_rune_preview()
 	
-	var card_center_world: Vector2
-	if camera:
-		var mouse_screen: Vector2 = viewport.get_mouse_position()
-		var mouse_world: Vector2 = camera.get_global_mouse_position()
-		var offset_screen: Vector2 = card_center_screen - mouse_screen
-		var offset_world: Vector2 = offset_screen / camera.zoom
-		card_center_world = mouse_world + offset_world
-	else:
-		card_center_world = card_center_screen
-	
-	var dragged_over_map_coords: Vector2i = tile_map.base_layer.local_to_map(tile_map.to_local(card_center_world))
-	var placement_successful: bool = false
-	
-	if tile_map.is_in_map(dragged_over_map_coords):
-		var h: Hex = tile_map.map_data[dragged_over_map_coords]
-		if h.active_rune == null:
-			h.place_rune(dragged_card.card)
-			dragged_card.queue_free()
-			placement_successful = true
+	if event is InputEventMouseButton and not event.pressed:
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			_deselect_card()
+			get_viewport().set_input_as_handled()
+			return
 		
-		# If placement failed, return card to hand
-		if not placement_successful:
-			if dragged_card.card_state_machine:
-				dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
-	else:
-		# Clicked outside map, return card to hand
-		if dragged_card.card_state_machine:
-			dragged_card.card_state_machine.transition_to_state(CardState.State.BASE)
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			_try_place_card()
+			get_viewport().set_input_as_handled()
 	
-	_reset_state()
-	_clear_overlays()
+	if event.is_action_pressed("ui_cancel"):
+		_deselect_card()
+		get_viewport().set_input_as_handled()
 
-func _update_card_drag_highlight() -> void:
-	if dragged_card == null:
+
+func _on_card_selected(card: CardUI) -> void:
+	if selected_card != null and selected_card != card:
+		_switching_selection = true
+		selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
+		_switching_selection = false
+	
+	is_card_selected = true
+	selected_card = card
+	_update_preview_texture()
+	_update_rune_preview()
+
+
+func _on_card_deselected() -> void:
+	if _switching_selection:
+		return
+	_clear_preview()
+	_reset_state()
+
+
+func _deselect_card() -> void:
+	if selected_card and selected_card.card_state_machine:
+		selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
+
+
+func _update_preview_texture() -> void:
+	if selected_card == null or selected_card.card == null:
 		return
 	
-	# Get the card's center position in screen/viewport coordinates
-	var card_center_screen: Vector2 = dragged_card.global_position + dragged_card.size / 2.0
+	var icon: Texture2D = selected_card.card.icon
+	_rune_preview.texture = icon
+	if icon:
+		var tex_size := icon.get_size()
+		var scale_factor := PREVIEW_ICON_SIZE / maxf(tex_size.x, tex_size.y)
+		_rune_preview.scale = Vector2(scale_factor, scale_factor)
+
+
+func _update_rune_preview() -> void:
+	if selected_card == null:
+		return
 	
-	# Convert screen coordinates to world coordinates
-	var viewport: Viewport = get_viewport()
-	var camera: Camera2D = viewport.get_camera_2d()
-	
-	var card_center_world: Vector2
-	if camera:
-		var mouse_screen: Vector2 = viewport.get_mouse_position()
-		var mouse_world: Vector2 = camera.get_global_mouse_position()
-		var offset_screen: Vector2 = card_center_screen - mouse_screen
-		var offset_world: Vector2 = offset_screen / camera.zoom
-		card_center_world = mouse_world + offset_world
-	else:
-		card_center_world = card_center_screen
-	
-	# Convert world position to map coordinates
-	var map_coords: Vector2i = tile_map.base_layer.local_to_map(tile_map.to_local(card_center_world))
-	
-	# Clear overlay from previous tile if we've moved to a new tile
-	if last_hovered_tile != map_coords:
-		tile_map.card_drop_overlay_layer.set_cell(last_hovered_tile, -1)
-		tile_map.card_drop_overlay_layer.modulate = Color.WHITE
-		last_hovered_tile = map_coords
+	var map_coords := _get_mouse_map_coords()
+	last_hovered_tile = map_coords
 	
 	if tile_map.is_in_map(map_coords):
-		var h: Hex = tile_map.map_data[map_coords]
-		var is_valid: bool = h.active_rune == null
-		
-		if is_valid:
-			tile_map.card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
-			tile_map.card_drop_overlay_layer.modulate = Color.WHITE
-		else:
-			# Show red overlay for invalid placement
-			tile_map.card_drop_overlay_layer.set_cell(map_coords, 0, Vector2i(0,0))
-			tile_map.card_drop_overlay_layer.modulate = Color.RED
+		var hex: Hex = tile_map.map_data[map_coords]
+		var tile_center: Vector2 = tile_map.base_layer.map_to_local(map_coords)
+		_rune_preview.global_position = tile_map.to_global(tile_center)
+		_rune_preview.modulate = VALID_PREVIEW_COLOR if hex.active_rune == null else INVALID_PREVIEW_COLOR
+		_rune_preview.visible = true
 	else:
-		# Clear overlay when not hovering over valid tile
-		tile_map.card_drop_overlay_layer.set_cell(map_coords, -1)
-		tile_map.card_drop_overlay_layer.modulate = Color.WHITE
+		_rune_preview.visible = false
 
-func _clear_overlays() -> void:
+
+func _get_mouse_map_coords() -> Vector2i:
+	return tile_map.base_layer.local_to_map(
+		tile_map.to_local(tile_map.get_global_mouse_position())
+	)
+
+
+func _try_place_card() -> void:
+	if selected_card == null:
+		return
+	
+	var map_coords := _get_mouse_map_coords()
+	
+	if not tile_map.is_in_map(map_coords):
+		_deselect_card()
+		return
+	
+	var hex: Hex = tile_map.map_data[map_coords]
+	if hex.active_rune != null:
+		return
+	
+	hex.place_rune(selected_card.card)
+	Events.card_played.emit(selected_card)
+	AudioManager.play_sfx(UI_SOUNDS.GROUND_IMPACT)
+	
+	var card_to_remove := selected_card
+	_clear_preview()
+	_reset_state()
+	card_to_remove.queue_free()
+
+
+func _clear_preview() -> void:
+	_rune_preview.visible = false
+	last_hovered_tile = Vector2i(-1, -1)
+	_clear_drop_overlay()
+
+
+func _clear_drop_overlay() -> void:
 	for coords in tile_map.map_data:
 		tile_map.card_drop_overlay_layer.set_cell(coords, -1)
 	tile_map.card_drop_overlay_layer.modulate = Color.WHITE
 
+
 func _reset_state() -> void:
-	last_hovered_tile = Vector2i(-1, -1)
-	dragged_card = null
-	is_card_dragging = false
+	selected_card = null
+	is_card_selected = false

@@ -48,7 +48,7 @@ func _on_transition_requested(from: CardState, to: CardState.State) -> void:
 		return
 	
 	if current_state:
-		current_state.exit()
+		current_state.exit(to)
 		
 	new_state.enter()
 	current_state = new_state
@@ -63,7 +63,7 @@ func transition_to_state(to: CardState.State) -> void:
 		return
 	
 	if current_state:
-		current_state.exit()
+		current_state.exit(to)
 		
 	new_state.enter()
 	current_state = new_state

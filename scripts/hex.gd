@@ -75,6 +75,7 @@ func place_rune(rune: Rune) -> void:
 	
 	items_grid.add_child(new_rune_instance)
 	_reposition_items()
+	new_rune_instance.play_placement_animation()
 
 
 # Clear the placed rune from this tile and remove its map UI.

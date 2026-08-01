@@ -77,8 +77,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if GameManager.is_processing_turn:
 		return
 		
-	# Handle mouse motion for hover highlighting (only when not dragging cards)
-	if not card_placement_handler.is_card_dragging and event is InputEventMouseMotion:
+	# Handle mouse motion for hover highlighting (only when no card is selected for placement)
+	if not card_placement_handler.is_card_selected and event is InputEventMouseMotion:
 		var map_coords: Vector2i = base_layer.local_to_map(to_local(get_global_mouse_position()))
 		# Check if mouse is within the hexagon-shaped map
 		if is_in_map(map_coords):

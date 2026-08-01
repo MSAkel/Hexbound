@@ -12,7 +12,7 @@ var sfx_players: Array[AudioStreamPlayer] = []
 const MAX_SFX_PLAYERS = 8
 
 var current_music: AudioStream
-var music_volume: float = 0.35
+var music_volume: float = 0.20
 var sfx_volume: float = 0.35
 var ui_volume: float = 0.35
 
@@ -125,7 +125,7 @@ func load_volume_settings() -> void:
 		var settings = save_file.get_var()
 		
 		if settings is Dictionary:
-			music_volume = settings.get("music_volume", 0.35)  # Use new defaults
+			music_volume = settings.get("music_volume", 0.20)  # Use new defaults
 			sfx_volume = settings.get("sfx_volume", 0.35)     # Use new defaults
 			ui_volume = settings.get("ui_volume", 0.35)       # Use new defaults
 			

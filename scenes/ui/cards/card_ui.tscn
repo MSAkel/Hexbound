@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
 [ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="3_usd0r"]
 [ext_resource type="Texture2D" uid="uid://cf4flimdwgrgo" path="res://assets/gui/backgrounds/square_background.png" id="4_5jwxg"]
+[ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="4_7xb4v"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Texture2D" uid="uid://ch0g260oqw5c" path="res://assets/gui/backgrounds/h_background.png" id="4_onxhv"]
 [ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/others/glyph_icon.png" id="4_usd0r"]
@@ -75,6 +76,22 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5jwxg")
+
+[node name="SelectionGlow" type="Panel" parent="." unique_id=2130580828]
+visible = false
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("4_7xb4v")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=569885187]
 layout_mode = 1
