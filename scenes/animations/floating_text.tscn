@@ -64,6 +64,7 @@ _data = {
 }
 
 [node name="FloatingText" type="Node2D" unique_id=959195126]
+z_index = 10
 script = ExtResource("1_45khh")
 
 [node name="Label" type="Label" parent="." unique_id=448775708]

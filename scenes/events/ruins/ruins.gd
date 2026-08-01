@@ -44,7 +44,7 @@ func get_exploration_rewards() -> Array:
 	
 	# First reward
 	var roll = randf() * total_weight
-	var current_weight = 0
+	#var current_weight = 0
 	
 	if roll < gold_weight:
 		rewards.append({
@@ -70,7 +70,7 @@ func get_exploration_rewards() -> Array:
 	# Chance for second reward
 	if randf() < second_reward_chance:
 		roll = randf() * total_weight
-		current_weight = 0
+		#current_weight = 0
 		
 		if roll < gold_weight:
 			rewards.append({

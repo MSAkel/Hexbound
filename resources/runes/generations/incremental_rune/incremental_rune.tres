@@ -1,13 +1,13 @@
 [gd_resource type="Resource" format=3 uid="uid://vcdiatuy4rk0"]
 
 [ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/hex_runes/basic_rune.png" id="1_jkq41"]
-[ext_resource type="Script" uid="uid://cc6ehbquhicml" path="res://resources/runes/generations/basic_rune/basic_rune.gd" id="2_a2yvc"]
+[ext_resource type="Script" uid="uid://bgswu8hoi4irt" path="res://resources/runes/generations/incremental_rune/incremental_rune.gd" id="2_do01j"]
 
 [resource]
-script = ExtResource("2_a2yvc")
+script = ExtResource("2_do01j")
 id = "incremental"
 name = "Incremental"
 icon = ExtResource("1_jkq41")
-score_value = 20
+score_value = 5
 description = "+5 points increasing by 5 every 2 turns up to a maximum of 70"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

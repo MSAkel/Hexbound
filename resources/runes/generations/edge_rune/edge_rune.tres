@@ -1,12 +1,13 @@
 [gd_resource type="Resource" format=3 uid="uid://bp1tk0ukiucl1"]
 
-[ext_resource type="Texture2D" uid="uid://dopgj6k404kmj" path="res://assets/icons/runes/divided-square.svg" id="1_l32fg"]
-[ext_resource type="Script" uid="uid://r030evn6g2pr" path="res://resources/runes/generations/5_marks_the_spot/5_marks_the_spot.gd" id="2_3ujas"]
+[ext_resource type="Texture2D" uid="uid://0cuoko522r8m" path="res://assets/icons/hex_runes/edge_rune.png" id="1_l32fg"]
+[ext_resource type="Script" uid="uid://dxmj6xelyy45s" path="res://resources/runes/generations/edge_rune/edge_rune.gd" id="2_l32fg"]
 
 [resource]
-script = ExtResource("2_3ujas")
+script = ExtResource("2_l32fg")
 id = "edge_rune"
 name = "Edge Rune"
 icon = ExtResource("1_l32fg")
-description = "+40 score if placed on edge, otherwires +10 score."
+score_value = 40
+description = "+40 score. Must be placed on an edge tile."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

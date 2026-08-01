@@ -8,6 +8,5 @@ script = ExtResource("2_5xy55")
 id = "5_marks_the_spot"
 name = "5 Marks The Spot"
 icon = ExtResource("1_eaes1")
-description = "+5 gold if exactly 5 runes were activated so far this round
-"
+description = "+5 gold if this rune triggers after exactly 5 runes this round"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

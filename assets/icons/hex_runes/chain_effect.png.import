@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccewqo5pxkaxw"
-path="res://.godot/imported/multi_002.png-8d5c60df1654a67e17795aae11396c8a.ctex"
+uid="uid://c17a1xwfgbakg"
+path="res://.godot/imported/chain_effect.png-cd4d5092e2fc7fb0dfd2b4e839bf928f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/hex_runes/multi_002.png"
-dest_files=["res://.godot/imported/multi_002.png-8d5c60df1654a67e17795aae11396c8a.ctex"]
+source_file="res://assets/icons/hex_runes/chain_effect.png"
+dest_files=["res://.godot/imported/chain_effect.png-cd4d5092e2fc7fb0dfd2b4e839bf928f.ctex"]
 
 [params]
 

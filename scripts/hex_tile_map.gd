@@ -33,18 +33,17 @@ const _HEX_NEIGHBORS: Array[TileSet.CellNeighbor] = [
 # @export var minerals: Array[Mineral] = []
 @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUI"
 
-# const MINERAL_UI: PackedScene = preload("res://scenes/ui/minerals/mineral_ui.tscn")
 # Special events UI
 var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
 const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
 
-#The starting Rune
-# const ROUNDABOUT_RUNE = preload("res://resources/runes/roundabout_rune.tres")
 
 var selected_cell: Vector2i = Vector2i(-1, -1)
 var hovered_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>
 var map_data: Dictionary = {}
+# Extra rune activations queued by support runes; resolved before tile flow continues.
+var _pending_trigger_queue: Array[Dictionary] = []
 
 # Card placement handler
 var card_placement_handler: CardPlacementHandler
@@ -160,7 +159,7 @@ func get_all_placed_runes() -> Array[Rune]:
 	return runes
 
 
-# Hex tiles that currently hold a rune; useful when effects need coordinates too.
+# Hex tiles that currently hold a rune. Useful when effects need coordinates too
 func get_all_hexes_with_runes() -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	for hex: Hex in map_data.values():
@@ -196,14 +195,6 @@ func _place_hex_tile(offset: Vector2i) -> void:
 	map_data[offset] = h
 	base_layer.set_cell(offset, 0, BASE_TILE_ATLAS_COORDS)
 
-	# Roll optional special events on each tile
-	# var contains_event := randi_range(0, 6)
-	# if contains_event == 1:
-	# 	h.special_state = hex.SpecialTileState.CURSED
-	# 	h.apply_special_state()
-	# elif contains_event == 2:
-	# 	h.special_state = hex.SpecialTileState.RUINS
-	# 	h.apply_special_state()
 
 func generate_terrain() -> void:
 	map_data.clear()
@@ -356,6 +347,122 @@ func get_hexes_in_trigger_order() -> Array[Hex]:
 		hexes.append(map_data[coords])
 	return hexes
 
+
+func _build_runes_in_activation_order() -> Array[Rune]:
+	var runes_in_order: Array[Rune] = []
+	for hex: Hex in get_hexes_in_trigger_order():
+		if hex.active_rune != null:
+			runes_in_order.append(hex.active_rune)
+	return runes_in_order
+
+
+func _get_hex_trigger_order_index(current_tile: Hex) -> int:
+	var hexes := get_hexes_in_trigger_order()
+	for i in range(hexes.size()):
+		if hexes[i] == current_tile:
+			return i
+	return -1
+
+
+# Rune on the very next hex in trigger order (null when that hex is empty).
+func get_immediate_following_rune(current_tile: Hex) -> Rune:
+	var hexes := get_hexes_in_trigger_order()
+	var current_index := _get_hex_trigger_order_index(current_tile)
+	if current_index == -1 or current_index + 1 >= hexes.size():
+		return null
+	return hexes[current_index + 1].active_rune
+
+
+# True when the next hex in trigger order has a rune that is ready to be consumed.
+func can_consume_immediate_following_rune(current_tile: Hex) -> bool:
+	var hexes := get_hexes_in_trigger_order()
+	var current_index := _get_hex_trigger_order_index(current_tile)
+	if current_index == -1 or current_index + 1 >= hexes.size():
+		return false
+	
+	var following_rune := hexes[current_index + 1].active_rune
+	if following_rune == null:
+		return false
+	
+	# Every rune on earlier hexes must have already activated this turn.
+	for i in range(current_index):
+		var prior_rune := hexes[i].active_rune
+		if prior_rune != null and not GameManager.has_rune_activated_this_turn(prior_rune):
+			return false
+	
+	return not GameManager.has_rune_activated_this_turn(following_rune)
+
+
+# Runes that activate before/after current_tile in turn order (empty hexes are skipped).
+# Pass filter_type (e.g. Rune.RuneType.GENERATION) to skip non-matching runes while filling count.
+func get_runes_in_activation_order(
+	current_tile: Hex,
+	count: int = 1,
+	before: bool = false,
+	filter_type: Variant = null
+) -> Array[Rune]:
+	var runes_in_order := _build_runes_in_activation_order()
+	var current_index := -1
+	for i in range(runes_in_order.size()):
+		if runes_in_order[i] == current_tile.active_rune:
+			current_index = i
+			break
+
+	if current_index == -1:
+		return []
+
+	var result: Array[Rune] = []
+	if before:
+		# Closest preceding rune first (e.g. count=2 → [prev, prev-prev]).
+		for i in range(current_index - 1, -1, -1):
+			var rune := runes_in_order[i]
+			if filter_type != null and rune.type != filter_type:
+				continue
+			result.append(rune)
+			if result.size() >= count:
+				break
+	else:
+		# Closest following rune first (default: one rune after the current one).
+		for i in range(current_index + 1, runes_in_order.size()):
+			var rune := runes_in_order[i]
+			if filter_type != null and rune.type != filter_type:
+				continue
+			result.append(rune)
+			if result.size() >= count:
+				break
+	return result
+
+func get_hex_for_rune(rune: Rune) -> Hex:
+	for hex: Hex in map_data.values():
+		if hex.active_rune == rune:
+			return hex
+	return null
+
+
+# Remove a placed rune from its tile and cancel any queued triggers targeting it.
+func destroy_placed_rune(rune: Rune) -> void:
+	var hex := get_hex_for_rune(rune)
+	if hex == null:
+		return
+	
+	hex.remove_rune()
+	
+	for i in range(_pending_trigger_queue.size() - 1, -1, -1):
+		if _pending_trigger_queue[i]["rune"] == rune:
+			_pending_trigger_queue.remove_at(i)
+
+
+func queue_rune_triggers(runes: Array[Rune], score_multipliers: Array[float] = []) -> void:
+	for i in range(runes.size()):
+		var multiplier := 1.0
+		if i < score_multipliers.size():
+			multiplier = score_multipliers[i]
+		_pending_trigger_queue.append({
+			"rune": runes[i],
+			"score_multiplier": multiplier,
+		})
+
+
 func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
 	var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
 	floating_text.position = pos
@@ -366,18 +473,53 @@ func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
 
-func on_turn_ended():
-	# delay between each rune activation
+func on_turn_ended() -> void:
 	var base_delay_interval := 0.5
+	_pending_trigger_queue.clear()
 
-	# Process rune effects in the active trigger order
+	# Process rune effects in the active trigger order.
 	for tile: Hex in get_hexes_in_trigger_order():
-		if tile.active_rune != null:
-			# Calculate delay interval for each tile to respect current game speed
-			var delay_interval := base_delay_interval / GameManager.game_speed
+		if tile.active_rune == null:
+			continue
 
-			tile.trigger_rune_activation()
-			await get_tree().create_timer(delay_interval).timeout
-					
-	# Signal that turn processing is complete
+		var delay_interval := base_delay_interval / GameManager.game_speed
+		await _resolve_rune_activation(tile)
+		await get_tree().create_timer(delay_interval).timeout
+
 	GameManager.finish_turn_processing()
+
+
+# Resolve one tile: primary activation, then any queued secondary triggers.
+func _resolve_rune_activation(tile: Hex) -> void:
+	await _activate_rune_on_tile(tile)
+
+	while not _pending_trigger_queue.is_empty():
+		var entry: Dictionary = _pending_trigger_queue.pop_front()
+		var target_hex := get_hex_for_rune(entry["rune"])
+		if target_hex == null or target_hex.active_rune == null:
+			continue
+		await _activate_rune_on_tile(
+			target_hex,
+			entry["score_multiplier"],
+			true
+		)
+
+
+func _activate_rune_on_tile(
+	tile: Hex,
+	score_multiplier: float = 1.0,
+	skip_cost: bool = false
+) -> void:
+	if tile.active_rune == null:
+		return
+	
+	if tile.active_rune.is_active and (skip_cost or tile.active_rune.can_activate()):
+		tile.play_rune_activation_animation(skip_cost)
+		await _wait_for_activation_animation()
+	
+	tile.apply_rune_activation(score_multiplier, skip_cost)
+
+
+func _wait_for_activation_animation() -> void:
+	var duration := RuneUI.ACTIVATION_POP_DURATION + RuneUI.ACTIVATION_SETTLE_DURATION
+	await get_tree().create_timer(duration / GameManager.game_speed).timeout

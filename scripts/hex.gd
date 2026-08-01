@@ -16,6 +16,7 @@ var ruins: RuinsUI
 
 var _coordinates: Vector2i = Vector2i(0, 0)
 var active_rune: Rune = null
+var rune_ui: RuneUI = null
 var special_state: SpecialTileState = SpecialTileState.NONE
 # var minerals: Array[MineralUI] = []
 
@@ -56,8 +57,10 @@ func place_rune(rune: Rune) -> void:
 	if active_rune != null:
 		return
 	
-	active_rune = rune
+	# Each tile needs its own rune instance. hand/pool cards often share one .tres reference.
+	active_rune = rune.duplicate(true)
 	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
+	rune_ui = new_rune_instance
 	new_rune_instance.map = map
 	new_rune_instance.tile = self
 	new_rune_instance.center_coordinates = coordinates
@@ -74,41 +77,15 @@ func place_rune(rune: Rune) -> void:
 	_reposition_items()
 
 
-# func apply_special_state() -> void:
-# 	match special_state:
-# 		SpecialTileState.CURSED:
-# 			var curse_instance: CurseUI = CURSE_UI.instantiate()
-# 			curse_instance.map = map
-# 			curse_instance.tile = self
-# 			curse_instance.center_coordinates = coordinates
-# 			curse = curse_instance
-			
-# 			# Set size for the curse instance
-# 			curse_instance.custom_minimum_size = Vector2(60, 60)
-# 			curse_instance.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-# 			curse_instance.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			
-# 			# Add to grid instead of directly to map
-# 			items_grid.add_child(curse_instance)
-# 			_reposition_items()
-# 		# SpecialTileState.ENCAMPMENT:
-# 		# 	# TODO: Implement encampment logic
-# 		# 	pass
-# 		SpecialTileState.RUINS:
-# 			var ruins_instance: RuinsUI = RUINS_UI.instantiate() as RuinsUI
-# 			ruins_instance.map = map
-# 			ruins_instance.tile = self
-# 			ruins_instance.center_coordinates = coordinates
-# 			ruins = ruins_instance
-			
-# 			# Set size for the ruins instance
-# 			ruins_instance.custom_minimum_size = Vector2(60, 60)
-# 			ruins_instance.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-# 			ruins_instance.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			
-# 			# Add to grid instead of directly to map
-# 			items_grid.add_child(ruins_instance)
-# 			_reposition_items()
+# Clear the placed rune from this tile and remove its map UI.
+func remove_rune() -> void:
+	if active_rune == null:
+		return
+	
+	active_rune = null
+	if rune_ui != null:
+		rune_ui.queue_free()
+		rune_ui = null
 
 # Keep placed items aligned to the hex bounds
 func _reposition_items() -> void:
@@ -117,5 +94,18 @@ func _reposition_items() -> void:
 		item.size = HEX_TILE_SIZE
 
 
-func trigger_rune_activation() -> void:
-	active_rune.activate_rune(self)
+# Play the rune trigger animation without applying the effect.
+func play_rune_activation_animation(skip_cost: bool = false) -> void:
+	if active_rune == null or rune_ui == null:
+		return
+	
+	# Only animate successful activations so failed/inactive runes do not look triggered.
+	if active_rune.is_active and (skip_cost or active_rune.can_activate()):
+		rune_ui.play_activation_animation()
+
+
+func apply_rune_activation(score_multiplier: float = 1.0, skip_cost: bool = false) -> void:
+	if active_rune == null:
+		return
+	
+	active_rune.activate_rune(self, score_multiplier, skip_cost)

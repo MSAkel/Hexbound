@@ -27,16 +27,22 @@ enum RuneType {
 @export var activation_cost_text: String
 @export var boosted_generation_amount: int = 0
 var is_active: bool = true
+# Applied to score gained during this activation (e.g. chain effect penalties).
+var _activation_score_multiplier: float = 1.0
 
-func activate_rune(tile: Hex) -> void:
+func activate_rune(tile: Hex, score_multiplier: float = 1.0, skip_cost: bool = false) -> void:
 	if not is_active:
 		return
 	
-	if can_activate():
-		deduct_activation_cost()
+	var can_trigger := skip_cost or can_activate()
+	if can_trigger:
+		if not skip_cost:
+			deduct_activation_cost()
 		# Register before the effect so get_activations_this_turn() includes this rune.
-		GameManager.register_rune_activation()
+		GameManager.register_rune_activation(self)
+		_activation_score_multiplier = score_multiplier
 		_on_activate_rune(tile)
+		_activation_score_multiplier = 1.0
 	else:
 		var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
 		floating_text.set_text("Insufficient resources", false)
@@ -44,7 +50,7 @@ func activate_rune(tile: Hex) -> void:
 		floating_text.position = tile.map.base_layer.map_to_local(tile.coordinates) + Vector2(-120, -60)
 
 
-func _on_activate_rune(tile: Hex) -> void:
+func _on_activate_rune(_tile: Hex) -> void:
 	pass
 
 func get_gold_cost() -> int:
@@ -56,17 +62,30 @@ func can_activate() -> bool:
 func deduct_activation_cost() -> void:
 	GameManager.remove_gold(get_gold_cost())
 
+func create_floating_text(tile: Hex, text: String) -> void:
+	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
+	tile.map.create_floating_text(tile_pos, text, false)
+
+# Add score using any active activation multiplier and show text on the given tile.
+func add_score(tile: Hex, base_points: int) -> void:
+	var points := int(round(base_points * _activation_score_multiplier))
+	GameManager.turn_score += points
+	create_floating_text(tile, "+%d score" % points)
+
+# Queue extra rune activations to resolve before tile flow continues.
+func queue_rune_triggers(source_tile: Hex, runes: Array[Rune], score_multipliers: Array[float] = []) -> void:
+	source_tile.map.queue_rune_triggers(runes, score_multipliers)
 
 # --- Rune context helpers (turn + map queries for effect logic) ---
-
+# Counter for the number of runes activated this turn.
 func get_activations_this_turn() -> int:
 	return GameManager.get_runes_activated_this_turn()
 
-
+# Check if the tile is on the edge of the map.
 func is_on_map_edge(tile: Hex) -> bool:
 	return tile.map.is_edge_tile(tile.coordinates)
 
-
+# Get all runes placed on the map.
 func get_all_placed_runes(tile: Hex) -> Array[Rune]:
 	return tile.map.get_all_placed_runes()
 
@@ -74,7 +93,7 @@ func get_all_placed_runes(tile: Hex) -> Array[Rune]:
 func get_all_hexes_with_runes(tile: Hex) -> Array[Hex]:
 	return tile.map.get_all_hexes_with_runes()
 
-
+# Count the number of unoccupied adjacent tiles to the given tile.
 func get_unoccupied_adjacent_count(tile: Hex) -> int:
 	return tile.map.count_unoccupied_adjacent_hexes(tile.coordinates)
 
@@ -82,3 +101,29 @@ func get_unoccupied_adjacent_count(tile: Hex) -> int:
 # Pass Rune.RuneType.GENERATION, Rune.RuneType.EFFECT, or omit filter_type for all occupied neighbors.
 func get_occupied_adjacent_count(tile: Hex, filter_type: Variant = null) -> int:
 	return tile.map.count_occupied_adjacent_hexes(tile.coordinates, filter_type)
+
+
+# Runes that activate before/after this one in the current trigger order.
+# Pass filter_type (e.g. Rune.RuneType.GENERATION) to only include matching runes in the result.
+func get_runes_in_activation_order(
+	tile: Hex,
+	count: int = 1,
+	before: bool = false,
+	filter_type: Variant = null
+) -> Array[Rune]:
+	return tile.map.get_runes_in_activation_order(tile, count, before, filter_type)
+
+
+# The rune on the very next hex in trigger order (null when that hex is empty).
+func get_immediate_following_rune(tile: Hex) -> Rune:
+	return tile.map.get_immediate_following_rune(tile)
+
+
+# True when the immediate follower can be consumed (in-sequence, not yet activated).
+func can_consume_immediate_following_rune(tile: Hex) -> bool:
+	return tile.map.can_consume_immediate_following_rune(tile)
+
+
+# Remove a placed rune instance from the map (clears its tile and cancels queued triggers).
+func destroy_placed_rune(source_tile: Hex, rune: Rune) -> void:
+	source_tile.map.destroy_placed_rune(rune)

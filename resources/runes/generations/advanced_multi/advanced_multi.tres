@@ -1,14 +1,13 @@
 [gd_resource type="Resource" format=3 uid="uid://lujnlq33gvj4"]
 
-[ext_resource type="Texture2D" uid="uid://ccewqo5pxkaxw" path="res://assets/icons/hex_runes/multi_002.png" id="1_i50hc"]
-[ext_resource type="Script" uid="uid://xas6lx7nsi1d" path="res://resources/runes/generations/basic_multi/basic_multi.gd" id="2_huxd5"]
+[ext_resource type="Texture2D" uid="uid://ccewqo5pxkaxw" path="res://assets/icons/hex_runes/advanced_multi.png" id="1_i50hc"]
+[ext_resource type="Script" uid="uid://t464sweri7r2" path="res://resources/runes/generations/advanced_multi/advanced_multi.gd" id="2_huxd5"]
 
 [resource]
 script = ExtResource("2_huxd5")
-id = "multi_002"
-name = "Multi 002"
+id = "advanced_multi"
+name = "Advanced Multi"
 icon = ExtResource("1_i50hc")
 score_value = 3
-description = "+15 score for every adjacent score rune. +50 score if all adjacent tiles are score runes"
-rarity = 1
+description = "+3 multi for each adjacent score rune. +15 multi if all adjacent tiles are score rune"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

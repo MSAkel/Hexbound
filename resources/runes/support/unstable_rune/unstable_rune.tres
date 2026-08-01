@@ -1,13 +1,14 @@
 [gd_resource type="Resource" format=3 uid="uid://dpu8gj3ofb5dy"]
 
 [ext_resource type="Texture2D" uid="uid://b81wi1ou6v452" path="res://assets/icons/hex_runes/rune_006.png" id="1_210j2"]
-[ext_resource type="Script" uid="uid://r030evn6g2pr" path="res://resources/runes/generations/5_marks_the_spot/5_marks_the_spot.gd" id="2_t0sjk"]
+[ext_resource type="Script" uid="uid://fv5rajp1y0mq" path="res://resources/runes/support/unstable_rune/unstable_rune.gd" id="2_210j2"]
 
 [resource]
-script = ExtResource("2_t0sjk")
+script = ExtResource("2_210j2")
 id = "unstable_rune"
 name = "Unstable Rune"
 icon = ExtResource("1_210j2")
-description = "Triggers adjacent generation runes. There is a 15% chance that this rune will be destroyed for every adjacent rune"
+description = "Triggers adjacent generation runes, starting from the one next in trigger order. There is a 15% chance that this rune will be destroyed for every adjacent rune"
 rarity = 2
+type = 1
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

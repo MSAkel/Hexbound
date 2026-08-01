@@ -1,9 +1,12 @@
 [gd_scene format=3 uid="uid://dar7bvc231xx"]
 
+[ext_resource type="Script" uid="uid://bwltwntiox151" path="res://scenes/ui/game_speed/game_speed_ui.gd" id="1_2ny8g"]
+
 [node name="GameSpeedUI" type="HBoxContainer" unique_id=283889066]
 offset_right = 153.0
 offset_bottom = 42.0
 theme_override_constants/separation = 16
+script = ExtResource("1_2ny8g")
 
 [node name="RegularGameSpeedButton" type="Button" parent="." unique_id=831090714]
 custom_minimum_size = Vector2(24, 24)
@@ -22,3 +25,7 @@ custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "x3"
+
+[connection signal="pressed" from="RegularGameSpeedButton" to="." method="_on_regular_game_speed_button_pressed"]
+[connection signal="pressed" from="DoubleGameSpeedButton" to="." method="_on_double_game_speed_button_pressed"]
+[connection signal="pressed" from="TripleGameSpeedButton" to="." method="_on_triple_game_speed_button_pressed"]

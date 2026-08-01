@@ -38,6 +38,7 @@ var _gold: int = 0
 
 # Resets when a new turn begins; incremented as each rune activates during turn processing.
 var _runes_activated_this_turn: int = 0
+var _activated_runes_this_turn: Array[Rune] = []
 
 # Which tile order runes activate in when a turn ends.
 var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
@@ -109,6 +110,57 @@ var trigger_order: TriggerOrderType.Type:
 		_trigger_order = value
 		Events.trigger_order_changed.emit(_trigger_order)
 
+func _ready() -> void:
+	# Load every rune resource under the runes folder, including nested category folders.
+	_load_runes_from_directory("res://resources/runes/")
+
+	if runes_pool.size() > 0:
+		create_runes_pack()
+	else:
+		push_error("No runes loaded into pool")
+
+	Events.turn_ended.connect(end_turn)
+	Events.turn_started.connect(_on_turn_started)
+
+# Walk nested rune folders and add each .tres resource to the global pool.
+func _load_runes_from_directory(dir_path: String) -> void:
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		push_error("Failed to open runes directory: " + dir_path)
+		return
+
+	# Subfolders first so organized copies win if legacy root duplicates still exist.
+	for subdir in dir.get_directories():
+		_load_runes_from_directory(dir_path.path_join(subdir))
+
+	for file_name in dir.get_files():
+		if not file_name.ends_with(".tres"):
+			continue
+
+		var resource_path := dir_path.path_join(file_name)
+		var rune := ResourceLoader.load(resource_path) as Rune
+		if rune == null:
+			push_error("Failed to load rune: " + resource_path)
+			continue
+
+		if _has_rune_with_id(rune.id):
+			continue
+
+		runes_pool.append(rune)
+
+# Check if a rune with the given id is already in the pool
+func _has_rune_with_id(rune_id: String) -> bool:
+	for existing_rune in runes_pool:
+		if existing_rune.id == rune_id:
+			return true
+	return false
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("end_turn"):
+		Events.turn_ended.emit()
+		AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
+
+#region Gold
 func reset_gold() -> void:
 	_gold = PlayerCharacter.get_starting_gold(selected_character)
 	Events.gold_changed.emit(_gold)
@@ -126,28 +178,7 @@ func add_gold(amount: int) -> void:
 func remove_gold(amount: int) -> void:
 	_gold -= amount
 	Events.gold_changed.emit(_gold)
-
-
-func _ready() -> void:
-	# Load runes from the resources directory.
-	const RUNES_DIR := "res://resources/runes/"
-	for file_name in ResourceLoader.list_directory(RUNES_DIR):
-		if file_name.ends_with("/"):
-			continue
-		if file_name.ends_with(".tres"):
-			var rune := ResourceLoader.load(RUNES_DIR.path_join(file_name)) as Rune
-			if rune:
-				runes_pool.append(rune)
-			else:
-				push_error("Failed to load rune: " + file_name)
-		
-	if runes_pool.size() > 0:
-		create_runes_pack()
-	else:
-		push_error("No runes loaded into pool")
-
-	Events.turn_ended.connect(end_turn)
-	Events.turn_started.connect(_on_turn_started)
+#endregion Gold
 
 func end_turn() -> void:
 	_is_processing_turn = true
@@ -167,14 +198,20 @@ func finish_turn_processing() -> void:
 
 func _on_turn_started() -> void:
 	_runes_activated_this_turn = 0
+	_activated_runes_this_turn.clear()
 
 
 func get_runes_activated_this_turn() -> int:
 	return _runes_activated_this_turn
 
 
-func register_rune_activation() -> void:
+func has_rune_activated_this_turn(rune: Rune) -> bool:
+	return _activated_runes_this_turn.has(rune)
+
+
+func register_rune_activation(rune: Rune) -> void:
 	_runes_activated_this_turn += 1
+	_activated_runes_this_turn.append(rune)
 
 # This function is called when the turn ends.
 # it will go through the runes list and randomly select 3 runes to be available for selection
@@ -190,9 +227,3 @@ func create_runes_pack() -> void:
 func set_game_speed(speed: float) -> void:
 	_game_speed = speed
 	game_speed_changed.emit(_game_speed)
-
-
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("end_turn"):
-		Events.turn_ended.emit()
-		AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)

@@ -8,9 +8,7 @@ script = ExtResource("2_ills5")
 id = "random_selection"
 name = "Random Selection"
 icon = ExtResource("1_ills5")
-description = "Triggers two random active runes"
+description = "Triggers two random  runes"
 rarity = 1
-activation_cost = {
-"gold": 7
-}
+type = 1
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

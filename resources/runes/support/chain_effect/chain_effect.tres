@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://bms421c4eq14w"]
+
+[ext_resource type="Texture2D" uid="uid://c17a1xwfgbakg" path="res://assets/icons/hex_runes/chain_effect.png" id="1_sprk3"]
+[ext_resource type="Script" uid="uid://6h1bxcx3tjm8" path="res://resources/runes/support/chain_effect/chain_effect.gd" id="2_sprk3"]
+
+[resource]
+script = ExtResource("2_sprk3")
+id = "chain_effect"
+name = "Chain effect"
+icon = ExtResource("1_sprk3")
+description = "Triggers the next 3 generator runes in the trigger order, generated points reduced by 20% per jump"
+rarity = 1
+type = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"
