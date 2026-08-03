@@ -7,7 +7,7 @@ signal next_selection_pressed
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 
 @onready var character_name_label: Label = $SlectionDetails/CharacterNameLabel
-@onready var starting_hand_grid_container: GridContainer = $SlectionDetails/StartingHandPanel/StartingHandGridContainer
+@onready var starting_hand_grid_container: GridContainer = $SlectionDetails/HBoxContainer/StartingHandPanel/StartingHandGridContainer
 @onready var trigger_order_label: Label = $SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer/TriggerOrderLabel
 @onready var trigger_order_description: Label = $SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer/TriggerOrderDescription
 @onready var trigger_order_image: TextureRect = $SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer/TriggerOrderImage
@@ -26,7 +26,7 @@ func display_selection(character_type: PlayerCharacter.Type) -> void:
 
 	segment_label.text = PlayerCharacter.get_segment_passive_name(character_type)
 	segment_description.text = PlayerCharacter.get_segment_passive_description(character_type)
-	segment_image.texture = SegmentPassiveModifier.get_icon_for_character(character_type)
+	segment_image.texture = SegmentPassiveModifier.get_map_texture_for_character(character_type)
 
 
 # Rebuild the preview row whenever the player cycles characters.

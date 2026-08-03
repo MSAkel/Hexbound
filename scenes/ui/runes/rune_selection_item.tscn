@@ -71,6 +71,8 @@ horizontal_alignment = 1
 [node name="Description" type="Label" parent="TextPanel/VBoxContainer" unique_id=1578708201]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Description"
 horizontal_alignment = 1
 autowrap_mode = 2
 

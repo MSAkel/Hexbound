@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://hx6k31fyv1pv"
-path="res://.godot/imported/slow-blob.svg-52a196f796915dd597116b78d4291f45.ctex"
+uid="uid://b5ldwdtwix105"
+path="res://.godot/imported/incremental.png-58881bcd5cd39dac6e5b9735c09d1b44.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/slow-blob.svg"
-dest_files=["res://.godot/imported/slow-blob.svg-52a196f796915dd597116b78d4291f45.ctex"]
+source_file="res://assets/icons/hex_runes/incremental.png"
+dest_files=["res://.godot/imported/incremental.png-58881bcd5cd39dac6e5b9735c09d1b44.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

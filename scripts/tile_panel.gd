@@ -13,6 +13,9 @@ extends Control
 var hex: Hex = null
 var selected_rune: Rune = null
 
+func _ready() -> void:
+	Events.turn_ended.connect(_on_turn_ended)
+
 func set_hex(h: Hex) -> void:
 	hex = h
 	_set_tile_information()
@@ -49,14 +52,11 @@ func _set_rune_information() -> void:
 		rune_name.text = hex.active_rune.name
 		rune_description.text = hex.active_rune.description
 		remove_rune_button.disabled = false
-		# toggle_rune_button.show()
 	else:
 		rune_icon.texture = load("res://assets/tilesets/tile_dashed.png")
 		rune_name.text = "No Rune"
 		rune_description.text = ""
 		remove_rune_button.disabled = true
-		# toggle_rune_button.hide()
-
 
 func _on_close_button_pressed() -> void:
 	hide()
@@ -69,3 +69,6 @@ func _on_toggle_rune_button_pressed() -> void:
 	else:
 		hex.active_rune.is_active = true
 		toggle_rune_button.text = "Disable"
+
+func _on_turn_ended() -> void:
+	hide()

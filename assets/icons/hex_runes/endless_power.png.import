@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7gu4x5gbtlk5"
-path="res://.godot/imported/clover-spiked.svg-566aab91940453fd8922e519c6530f53.ctex"
+uid="uid://bpn13jy248op1"
+path="res://.godot/imported/endless_power.png-d55114ecdbd1b4309081465e7b5b6d42.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/clover-spiked.svg"
-dest_files=["res://.godot/imported/clover-spiked.svg-566aab91940453fd8922e519c6530f53.ctex"]
+source_file="res://assets/icons/hex_runes/endless_power.png"
+dest_files=["res://.godot/imported/endless_power.png-d55114ecdbd1b4309081465e7b5b6d42.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

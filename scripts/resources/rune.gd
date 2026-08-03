@@ -35,7 +35,7 @@ enum Product {
 var activation_count: int = 0
 var is_active: bool = true
 # empowered runes produce triple their production amount once on trigger.
-var is_empowered: bool = false
+var is_empowered: bool = true
 # Applied to score gained during this activation (e.g. chain effect penalties).
 var _activation_score_multiplier: float = 1.0
 # Applied to gold and multiplier output during this activation (e.g. empower).
@@ -86,8 +86,6 @@ func create_floating_text(tile: Hex, text: String) -> void:
 	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
 	tile.map.create_floating_text(tile_pos, text, false)
 
-# Add score using any active activation multiplier and show text on the given tile.
-# this function is only handling score, not gold or multiplier.
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_score_multiplier))
 	GameManager.turn_score += points
@@ -122,8 +120,8 @@ func is_on_map_edge(tile: Hex) -> bool:
 	return tile.map.is_edge_tile(tile.coordinates)
 
 # Get all runes placed on the map.
-func get_all_placed_runes(tile: Hex) -> Array[Rune]:
-	return tile.map.get_all_placed_runes()
+func get_all_placed_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return tile.map.get_all_placed_runes(filter_type)
 
 
 # Count placed producer runes whose product matches filter_product (e.g. Product.GOLD).

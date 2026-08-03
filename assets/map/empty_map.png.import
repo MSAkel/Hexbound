@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dftiwnk3satlk"
-path="res://.godot/imported/akhet.svg-7059899fc750ef69a2c67bb2055a9c47.ctex"
+uid="uid://jshatvpube4d"
+path="res://.godot/imported/empty_map.png-92f18b371ac8b3cc9f887975d30806e9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/akhet.svg"
-dest_files=["res://.godot/imported/akhet.svg-7059899fc750ef69a2c67bb2055a9c47.ctex"]
+source_file="res://assets/map/empty_map.png"
+dest_files=["res://.godot/imported/empty_map.png-92f18b371ac8b3cc9f887975d30806e9.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

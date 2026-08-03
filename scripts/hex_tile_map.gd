@@ -117,7 +117,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if is_in_map(map_coords):
 			if event.button_mask == MOUSE_BUTTON_MASK_LEFT:
 				var hex: Hex = map_data[map_coords]
-				tile_panel.set_hex(hex)
+				# do not open panel when placing a card
+				if not card_placement_handler.is_card_selected:
+					tile_panel.set_hex(hex)
 				
 				# Remove the current overlay texture on selecting a different tile
 				if map_coords != selected_cell:
@@ -129,12 +131,19 @@ func _unhandled_input(event: InputEvent) -> void:
 					hovered_cell = Vector2i(-1, -1)
 					
 				# Apply overlay tile on selecting a tile (use source 2 for selection)
-				selection_overlay_layer.set_cell(map_coords, 2, Vector2i(0,0))
-				selected_cell = map_coords
+				if not card_placement_handler.is_card_selected:
+					selection_overlay_layer.set_cell(map_coords, 2, Vector2i(0,0))
+					selected_cell = map_coords
 		else:
 			# Deselect active cell on clicking outside the map
 			selection_overlay_layer.set_cell(selected_cell, -1)
 			selected_cell = Vector2i(-1, -1)
+			tile_panel.hide()
+		
+		# Clear selection and panel on right click
+		if event.button_mask == MOUSE_BUTTON_MASK_RIGHT:
+			tile_panel.hide()
+			selection_overlay_layer.set_cell(selected_cell, -1)
 			
 func is_in_map(coords: Vector2i) -> bool:
 	return map_data.has(coords)
@@ -159,11 +168,11 @@ func is_edge_tile(coords: Vector2i) -> bool:
 	return false
 
 
-# Every rune currently placed on the map (order follows map generation).
-func get_all_placed_runes() -> Array[Rune]:
+# Every rune currently placed on the map (order follows map generation). Pass rune_type to filter by PRODUCER or SUPPORT.
+func get_all_placed_runes(rune_type: Variant = null) -> Array[Rune]:
 	var runes: Array[Rune] = []
 	for hex: Hex in map_data.values():
-		if hex.active_rune != null:
+		if hex.active_rune != null and hex.active_rune.type == rune_type:
 			runes.append(hex.active_rune)
 	return runes
 
@@ -172,7 +181,7 @@ func get_all_placed_runes() -> Array[Rune]:
 func get_all_hexes_with_runes() -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	for hex: Hex in map_data.values():
-		if hex.active_rune != null:
+		if hex.active_rune != null :
 			hexes.append(hex)
 	return hexes
 
@@ -186,7 +195,7 @@ func count_unoccupied_adjacent_hexes(coords: Vector2i) -> int:
 	return count
 
 
-# Adjacent map tiles occupied by a rune. Pass rune_type to filter by PRODUCER or EFFECT.
+# Adjacent map tiles occupied by a rune. Pass rune_type to filter by PRODUCER or SUPPORT.
 func count_occupied_adjacent_hexes(coords: Vector2i, rune_type: Variant = null) -> int:
 	var count := 0
 	for hex: Hex in get_adjacent_hexes(coords):

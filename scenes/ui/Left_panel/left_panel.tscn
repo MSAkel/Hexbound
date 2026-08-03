@@ -151,11 +151,13 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="TriggerOrderText" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1217896879]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Tile trigger  order"
 
 [node name="SelectedTriggerOrderLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1011045563]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Top-left → bottom-right"
