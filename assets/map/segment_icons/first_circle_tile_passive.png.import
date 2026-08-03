@@ -2,22 +2,24 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vbjsrbuaw4ge"
-path="res://.godot/imported/dungeon.png-77c5a25b7b0dde704c197e3aa5bc51e6.ctex"
+uid="uid://c8lewiayrer5i"
+path="res://.godot/imported/first_circle_tile_passive.png-3c8935af6d553e7db2bdfd0529dedef1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/poi/dungeon.png"
-dest_files=["res://.godot/imported/dungeon.png-77c5a25b7b0dde704c197e3aa5bc51e6.ctex"]
+source_file="res://assets/map/segment_icons/first_circle_tile_passive.png"
+dest_files=["res://.godot/imported/first_circle_tile_passive.png-3c8935af6d553e7db2bdfd0529dedef1.ctex"]
 
 [params]
 
 compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
@@ -25,6 +27,10 @@ mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
+process/channel_remap/red=0
+process/channel_remap/green=1
+process/channel_remap/blue=2
+process/channel_remap/alpha=3
 process/fix_alpha_border=true
 process/premult_alpha=false
 process/normal_map_invert_y=false

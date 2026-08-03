@@ -7,7 +7,7 @@ signal game_resumed  # Emitted when game is resumed
 signal game_ended  # Emitted when game ends
 signal turn_ended  # Emitted when a turn ends
 signal turn_started  # Emitted when a turn starts
-signal year_changed
+signal turn_changed
 
 signal card_drag_started(card: CardUI)
 signal card_drag_ended()

@@ -67,10 +67,10 @@ func _on_card_purchased(rune: Rune, merchant_card: MerchantCard) -> void:
 		return
 
 	var price := merchant_card.price
-	if GameManager.get_gold() < price:
+	if not GoldManager.can_afford(price):
 		return
 
-	GameManager.remove_gold(price)
+	GoldManager.remove(price)
 	merchant_card.mark_sold()
 	Events.rune_selected.emit(rune)
 	Events.merchant_item_purchased.emit("rune")
@@ -79,10 +79,10 @@ func _on_card_purchased(rune: Rune, merchant_card: MerchantCard) -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if GameManager.get_gold() < REROLL_COST:
+	if not GoldManager.can_afford(REROLL_COST):
 		return
 
-	GameManager.remove_gold(REROLL_COST)
+	GoldManager.remove(REROLL_COST)
 	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
 	await _refresh_merchant_cards()
 	_update_reroll_button()
@@ -109,4 +109,4 @@ func _on_merchant_discount_changed(new_discount: float) -> void:
 
 func _update_reroll_button() -> void:
 	reroll_button.text = "Reroll: $%d" % REROLL_COST
-	reroll_button.disabled = GameManager.get_gold() < REROLL_COST
+	reroll_button.disabled = not GoldManager.can_afford(REROLL_COST)

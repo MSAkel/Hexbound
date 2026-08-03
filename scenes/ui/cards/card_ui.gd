@@ -31,6 +31,8 @@ enum CardType {
 
 var card = null
 var card_type: CardType
+# Preview cards (e.g. character select) should not play hover elevation.
+var hover_enabled := true
 
 # Hand-slot elevation (kept on CardUI so layout reflows stay in sync).
 const HOVER_ELEVATION_OFFSET := -40.0
@@ -72,6 +74,10 @@ func is_hover_elevated() -> bool:
 
 
 func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
+	if not hover_enabled:
+		elevated = false
+		animate = false
+
 	if _elevation_tween:
 		_elevation_tween.kill()
 		_elevation_tween = null

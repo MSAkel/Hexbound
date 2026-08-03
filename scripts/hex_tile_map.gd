@@ -31,13 +31,6 @@ const _HEX_NEIGHBORS: Array[TileSet.CellNeighbor] = [
 	TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE,
 ]
 
-# @onready var terrain_tile_ui: TerrainTileUI = $"../MainUI/TerrainTileUI"
-
-# Special events UI
-var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
-const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
-
-
 var selected_cell: Vector2i = Vector2i(-1, -1)
 var hovered_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>

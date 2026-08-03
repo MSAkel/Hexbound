@@ -86,7 +86,7 @@ func apply_discount(discount: float) -> void:
 
 
 func _update_affordability() -> void:
-	var can_afford := GameManager.get_gold() >= price
+	var can_afford := GoldManager.can_afford(price)
 	# Price color communicates affordability; the card itself stays unchanged.
 	price_label.modulate = Color.WHITE if can_afford else Color.RED
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if can_afford else Control.CURSOR_ARROW
@@ -99,7 +99,7 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton \
 			and event.pressed \
 			and event.button_index == MOUSE_BUTTON_LEFT:
-		if GameManager.get_gold() < price:
+		if not GoldManager.can_afford(price):
 			return
 
 		purchased.emit(rune)

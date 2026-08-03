@@ -6,8 +6,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 var main_scene := load("res://scenes/main.tscn")
 var main_menu_scene := load("res://scenes/ui/main_menu/main_menu.tscn")
 
-@onready var selection_title: Label = $Container/Label
-@onready var selection_details: SelectionDetails = $Container/SelectionContainer
+@onready var selection_details: SelectionDetails = $Container/VBoxContainer/SelectionContainer
 
 # One selection per trigger order; only one is shown at a time.
 var selections: Array[PlayerCharacter.Type] = []
@@ -44,9 +43,8 @@ func _on_next_selection() -> void:
 
 
 func _update_display() -> void:
-	var character_type: PlayerCharacter.Type = get_selected_character()
-	selection_title.text = PlayerCharacter.get_character_name(character_type)
-	selection_details.display_selection(character_type)
+	# Character name, starting hand, and map details are shown inside SelectionDetails.
+	selection_details.display_selection(get_selected_character())
 
 
 func _on_start_button_pressed() -> void:

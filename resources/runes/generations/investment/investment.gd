@@ -4,5 +4,5 @@ extends Rune
 func _on_activate_rune(tile: Hex) -> void:
 	var gold_producers := get_producer_count(tile, Product.GOLD)
 	var gold_to_add := gold_producers * score_value
-	GameManager.add_gold(gold_to_add)
+	GoldManager.add(gold_to_add)
 	create_floating_text(tile, "+%d gold" % gold_to_add)

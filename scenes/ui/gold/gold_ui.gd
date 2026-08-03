@@ -4,7 +4,7 @@ extends Panel
 
 
 func _ready() -> void:
-	amount_label.text = str(GameManager.get_gold())
+	amount_label.text = str(GoldManager.amount)
 	Events.gold_changed.connect(_on_gold_changed)
 
 

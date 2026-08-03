@@ -77,7 +77,7 @@ alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="YearLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=745290470 groups=["main_ui"]]
+[node name="TurnLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=745290470 groups=["main_ui"]]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Turn: 1/5"

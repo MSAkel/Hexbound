@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("2_ubapp")
 id = "basic_multi"
-name = "Multi"
+name = "Multiplier"
 icon = ExtResource("1_weerr")
 score_value = 2
-description = "+2 Multi"
+description = "+2 Mult"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,30 +1,12 @@
 class_name Hex
 extends Node
 
-# CURSED: Timed event. Unresolved = bad. Resolved = good.
-# ENCAMPMENT: Occupoed by a camp. Can be resolved through bargain
-# RUINS: ?
-enum SpecialTileState { NONE, CURSED, ENCAMPMENT, RUINS }
-
-# Special events UI
-var CURSE_UI: PackedScene = preload("res://scenes/events/curse/curse_ui.tscn")
-const RUINS_UI: PackedScene = preload("res://scenes/events/ruins/ruins_ui.tscn")
 const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 
-var curse: CurseUI
-var ruins: RuinsUI
 
 var _coordinates: Vector2i = Vector2i(0, 0)
 var active_rune: Rune = null
 var rune_ui: RuneUI = null
-var special_state: SpecialTileState = SpecialTileState.NONE
-# var minerals: Array[MineralUI] = []
-
-## Not implemented yet
-var corruption_level: int = 0
-
-# References to UI elements
-# var mineral_ui_scene: PackedScene
 var map: HexTileMap
 var items_grid: GridContainer
 

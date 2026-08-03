@@ -18,6 +18,6 @@ func process_rewards() -> void:
 		Reward.RewardType.SCORE:
 			GameManager.turn_score += amount
 		Reward.RewardType.GOLD:
-			GameManager.add_gold(amount)
+			GoldManager.add(amount)
 		Reward.RewardType.RUNE:
 			Events.rune_selected.emit(reward as Rune)

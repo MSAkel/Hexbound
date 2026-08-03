@@ -2,7 +2,7 @@ class_name TopPanelUi
 extends Control
 
 @onready var character_name: Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/CharacterName
-@onready var year_label: Label = $Panel/MarginContainer/VBoxContainer/YearLabel
+@onready var turn_label: Label = $Panel/MarginContainer/VBoxContainer/TurnLabel
 @onready var required_score: Label = $Panel/MarginContainer/VBoxContainer/RequiredScorePanel/RequiredScore
 @onready var turn_score: Label = $Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer/TurnScore
 @onready var turn_multi: Label = $Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer/TurnMulti
@@ -13,12 +13,11 @@ extends Control
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
-	# year_label.text = "Turn: %s/5" % [GameManager.current_year]
 	required_score.text = "%s" % [GameManager.required_score]
 	character_name.text = PlayerCharacter.get_character_name(GameManager.selected_character)
 	_update_trigger_order_label()
 	
-	Events.year_changed.connect(_update_year_label)
+	Events.turn_changed.connect(_update_turn_label)
 	Events.turn_score_changed.connect(_update_turn_score)
 	Events.turn_multi_changed.connect(_update_turn_multi)
 	Events.total_score_changed.connect(_update_total_score)
@@ -33,8 +32,8 @@ func _on_end_turn_button_pressed() -> void:
 func _on_turn_started() -> void:
 	end_turn_button.disabled = false
 
-func _update_year_label() -> void:
-	year_label.text = "Turn: %s/5" % [GameManager.current_year]
+func _update_turn_label() -> void:
+	turn_label.text = "Turn: %s/5" % [GameManager.current_turn]
 
 func _update_turn_score() -> void:
 	turn_score.text = "%s" % [GameManager.turn_score]

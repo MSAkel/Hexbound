@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dypirhf6kwn5q"
-path="res://.godot/imported/order_2.png-a130c5e052157025294ea681262deae1.ctex"
+uid="uid://bd7vwhffd8iiy"
+path="res://.godot/imported/first_row_tile_passive.png-4ad3d716ba99733c904c2bd82da4f80b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/trigger_order/order_2.png"
-dest_files=["res://.godot/imported/order_2.png-a130c5e052157025294ea681262deae1.ctex"]
+source_file="res://assets/map/segment_icons/first_row_tile_passive.png"
+dest_files=["res://.godot/imported/first_row_tile_passive.png-4ad3d716ba99733c904c2bd82da4f80b.ctex"]
 
 [params]
 

@@ -6,5 +6,5 @@ func _on_activate_rune(tile: Hex) -> void:
 	if activation_count % 4 == 0:
 		add_score(tile, 300)
 		GameManager.turn_multi += 20
-		GameManager.add_gold(15)
+		GoldManager.add(15)
 		create_floating_text(tile, "Dividend!")
