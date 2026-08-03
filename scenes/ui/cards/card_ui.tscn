@@ -136,7 +136,6 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="CardTypeLabel" type="Label" parent="VBoxContainer/IconContainer" unique_id=1751951717]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8

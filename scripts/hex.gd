@@ -92,3 +92,15 @@ func apply_rune_activation(score_multiplier: float = 1.0) -> void:
 		return
 	
 	active_rune.activate_rune(self, score_multiplier)
+
+
+func start_empower_flash() -> void:
+	if rune_ui == null:
+		return
+	rune_ui.start_empower_flash()
+
+
+func stop_empower_flash() -> void:
+	if rune_ui == null:
+		return
+	rune_ui.stop_empower_flash()

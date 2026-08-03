@@ -131,7 +131,8 @@ func set_card(data) -> void:
 	
 	if data is Rune:
 		card_type = CardType.RUNE
-		card_type_label.text = "Rune"
+		# E 0:00:02:617   CardUI.set_card: Invalid call. Nonexistent function 'to_string' in base 'int'.
+		card_type_label.text = Rune.RuneType.keys()[data.type]
 		panel.modulate = Color.GREEN
 	else:
 		push_error("Unknown card type for data: ", data)

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://crr0eet3p824c"
-path="res://.godot/imported/basic_rune_hex-3.png-7c84de380e8379048388ef7dfe967d02.ctex"
+path="res://.godot/imported/imprint.png-f3eccda034a521f9774cba115e23e43a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/hex_runes/basic_rune_hex-3.png"
-dest_files=["res://.godot/imported/basic_rune_hex-3.png-7c84de380e8379048388ef7dfe967d02.ctex"]
+source_file="res://assets/icons/hex_runes/imprint.png"
+dest_files=["res://.godot/imported/imprint.png-f3eccda034a521f9774cba115e23e43a.ctex"]
 
 [params]
 

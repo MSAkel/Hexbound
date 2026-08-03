@@ -10,6 +10,7 @@ var center_coordinates: Vector2i
 
 # Keeps activation tweens from stacking if triggers overlap.
 var _activation_tween: Tween
+var _empower_flash_tween: Tween
 
 # Pop scale and warm highlight tuned to fit within the turn-end delay interval.
 const ACTIVATION_PEAK_SCALE := Vector2(1.22, 1.22)
@@ -18,13 +19,14 @@ const ACTIVATION_POP_DURATION := 0.14
 const ACTIVATION_SETTLE_DURATION := 0.22
 const PLACEMENT_DROP_OFFSET := -72.0
 const PLACEMENT_DROP_DURATION := 0.28
+const EMPOWER_FLASH_HIGHLIGHT := Color(1.45, 1.35, 0.15, 1.0)
+const EMPOWER_FLASH_DURATION := 0.45
 
 func setup(rune: Rune) -> void:
 	if not is_node_ready():
 		await ready
 	
 	rune_button.texture_normal = rune.icon
-
 
 # Drop-in animation when a rune is first placed on a tile.
 func play_placement_animation() -> void:
@@ -50,6 +52,8 @@ func play_placement_animation() -> void:
 
 # Brief scale pulse + warm flash so the active rune reads clearly during turn resolution.
 func play_activation_animation() -> void:
+	stop_empower_flash()
+	
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
 	
@@ -96,3 +100,33 @@ func play_activation_animation() -> void:
 		z_index = original_z_index
 		_activation_tween = null
 	)
+
+
+# Looping yellow pulse while a rune waits to trigger its empowered production.
+func start_empower_flash() -> void:
+	stop_empower_flash()
+	
+	_empower_flash_tween = create_tween()
+	_empower_flash_tween.set_loops()
+	_empower_flash_tween.tween_property(
+		_anim_target,
+		"modulate",
+		EMPOWER_FLASH_HIGHLIGHT,
+		EMPOWER_FLASH_DURATION
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_empower_flash_tween.tween_property(
+		_anim_target,
+		"modulate",
+		Color.WHITE,
+		EMPOWER_FLASH_DURATION
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func stop_empower_flash() -> void:
+	if _empower_flash_tween != null and _empower_flash_tween.is_valid():
+		_empower_flash_tween.kill()
+	_empower_flash_tween = null
+	
+	# Only reset modulate when activation animation is not driving it.
+	if _activation_tween == null or not _activation_tween.is_valid():
+		_anim_target.modulate = Color.WHITE

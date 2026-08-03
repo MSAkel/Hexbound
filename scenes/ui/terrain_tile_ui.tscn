@@ -25,7 +25,7 @@ texture = ExtResource("3_q21in")
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q5skc"]
 texture = ExtResource("4_0eu1h")
 
-[node name="TerrainTileUI" type="Control" unique_id=882335406]
+[node name="TilePanel" type="Control" unique_id=882335406]
 z_index = 1
 layout_mode = 3
 anchors_preset = 6

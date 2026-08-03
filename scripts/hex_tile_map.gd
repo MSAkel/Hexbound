@@ -1,6 +1,8 @@
 class_name  HexTileMap
 extends Node2D
 
+const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
+
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var card_drop_overlay_layer: TileMapLayer = $CardDropOverlayLayer
@@ -45,6 +47,8 @@ func _ready() -> void:
 	_apply_tile_spacing()
 	generate_terrain()
 	Events.turn_ended.connect(on_turn_ended)
+	Events.rune_empowered.connect(_on_rune_empowered)
+	Events.rune_empower_consumed.connect(_on_rune_empower_consumed)
 	
 	# Create and setup card placement handler
 	card_placement_handler = CardPlacementHandler.new()
@@ -180,6 +184,33 @@ func count_occupied_adjacent_hexes(coords: Vector2i, rune_type: Variant = null) 
 			continue
 		count += 1
 	return count
+
+
+# Occupied runes on map-adjacent hexes around tile.
+func get_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	var result: Array[Rune] = []
+	for hex: Hex in get_adjacent_hexes(tile.coordinates):
+		if hex.active_rune == null:
+			continue
+		if filter_type != null and hex.active_rune.type != filter_type:
+			continue
+		result.append(hex.active_rune)
+	return result
+
+
+# Adjacent runes sorted in the map's global trigger order.
+func get_adjacent_runes_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	var result: Array[Rune] = []
+	var neighbors := get_adjacent_hexes(tile.coordinates)
+	for hex: Hex in get_hexes_in_trigger_order():
+		if hex.active_rune == null:
+			continue
+		if not neighbors.has(hex):
+			continue
+		if filter_type != null and hex.active_rune.type != filter_type:
+			continue
+		result.append(hex.active_rune)
+	return result
 
 
 func _place_hex_tile(offset: Vector2i) -> void:
@@ -320,6 +351,201 @@ func _get_order_clockwise_spiral() -> Array[Vector2i]:
 		var start_tile: Vector2i = _find_ne_start_tile(ring_tiles)
 		coords.append_array(_sort_ring_clockwise(ring_tiles, start_tile))
 	return coords
+
+
+# Map center tile; used by Spiralist's center-tile segment passive.
+func get_map_center() -> Vector2i:
+	return _hex_center
+
+
+func is_center_tile(coords: Vector2i) -> bool:
+	return coords == _hex_center
+
+
+# Ring index from the map center (0 = center, hex_size = outer edge).
+func get_tile_ring_distance(coords: Vector2i) -> int:
+	return _ring_distances.get(coords, -1)
+
+
+func get_tiles_in_ring(ring: int) -> Array[Vector2i]:
+	return _get_tiles_in_ring(ring)
+
+
+# First tile in a horizontal row segment for Surveyor's row passive.
+# Rows follow screen-space Y from the top-left → bottom-right trigger order.
+func is_first_tile_of_row_segment(coords: Vector2i) -> bool:
+	var row_y := _get_screen_position(coords).y
+	var first_coords := coords
+
+	for other_coords: Vector2i in map_data.keys():
+		var other_y := _get_screen_position(other_coords).y
+		if not is_equal_approx(other_y, row_y):
+			continue
+
+		var other_x := _get_screen_position(other_coords).x
+		var first_x := _get_screen_position(first_coords).x
+		if other_x < first_x:
+			first_coords = other_coords
+
+	return first_coords == coords
+
+
+# First tile in a ring segment for Encircler's circle passive.
+# Matches the starting tile used by the outer-ring → inner trigger order.
+func is_first_tile_of_ring_segment(coords: Vector2i) -> bool:
+	var ring := get_tile_ring_distance(coords)
+	if ring < 0:
+		return false
+
+	return coords == _get_first_tile_of_ring(ring)
+
+
+#region --- Segment queries ---
+# Segment grouping follows the active character's trigger order:
+#   Surveyor  → horizontal rows
+#   Encircler → concentric rings (outer → inner)
+#   Spiralist → concentric rings (center → outer)
+
+
+# Value that identifies which segment a tile belongs to for the active character.
+func _get_segment_key(coords: Vector2i) -> Variant:
+	match GameManager.selected_character:
+		PlayerCharacter.Type.SURVEYOR:
+			return _get_screen_position(coords).y
+		PlayerCharacter.Type.ENCIRCLER, PlayerCharacter.Type.SPIRALIST:
+			return get_tile_ring_distance(coords)
+		_:
+			return _get_screen_position(coords).y
+
+
+func _segment_keys_equal(a: Variant, b: Variant) -> bool:
+	if a is float and b is float:
+		return is_equal_approx(a, b)
+	return a == b
+
+
+# All map segments as tile lists in trigger order (each list is one segment).
+func _build_segments() -> Array[Array]:
+	var segments: Array[Array] = []
+	var current_segment: Array[Vector2i] = []
+	var current_key: Variant = null
+
+	for coords: Vector2i in get_coords_in_trigger_order():
+		var key: Variant = _get_segment_key(coords)
+		if current_key != null and not _segment_keys_equal(key, current_key):
+			segments.append(current_segment)
+			current_segment = []
+		current_key = key
+		current_segment.append(coords)
+
+	if not current_segment.is_empty():
+		segments.append(current_segment)
+	return segments
+
+
+func get_segment_index(coords: Vector2i) -> int:
+	var target_key: Variant = _get_segment_key(coords)
+	var segments := _build_segments()
+	for i in range(segments.size()):
+		var segment: Array = segments[i]
+		if segment.is_empty():
+			continue
+		if _segment_keys_equal(_get_segment_key(segment[0]), target_key):
+			return i
+	return -1
+
+
+func get_tiles_in_segment(coords: Vector2i) -> Array[Vector2i]:
+	var index := get_segment_index(coords)
+	if index == -1:
+		return []
+	return _build_segments()[index]
+
+
+func get_runes_on_same_segment_as(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return get_runes_on_segment(get_segment_index(tile.coordinates), filter_type)
+
+
+func get_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
+	var segments := _build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return []
+
+	var result: Array[Rune] = []
+	for coords: Vector2i in segments[segment_index]:
+		var hex: Hex = map_data[coords]
+		if hex.active_rune == null:
+			continue
+		if filter_type != null and hex.active_rune.type != filter_type:
+			continue
+		result.append(hex.active_rune)
+	return result
+
+
+# Rune on the first/last tile of every segment (null when that tile has no rune).
+func get_runes_on_first_tile_of_each_segment(filter_type: Variant = null) -> Array[Rune]:
+	var result: Array[Rune] = []
+	for segment: Array in _build_segments():
+		var rune: Rune = _get_rune_on_coords(segment[0], filter_type)
+		result.append(rune)
+	return result
+
+
+func get_runes_on_last_tile_of_each_segment(filter_type: Variant = null) -> Array[Rune]:
+	var result: Array[Rune] = []
+	for segment: Array in _build_segments():
+		var rune: Rune = _get_rune_on_coords(segment[segment.size() - 1], filter_type)
+		result.append(rune)
+	return result
+
+
+# First or last occupied rune within a segment, in that segment's trigger order.
+# segment_offset: 0 = current, -1 = previous, 1 = next (relative to tile's segment).
+func get_first_or_last_rune_in_segment(
+	tile: Hex,
+	segment_offset: int,
+	first: bool,
+	filter_type: Variant = null
+) -> Rune:
+	var segment_index := get_segment_index(tile.coordinates) + segment_offset
+	var segments := _build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return null
+
+	var segment: Array = segments[segment_index]
+	if first:
+		for coords: Vector2i in segment:
+			var rune := _get_rune_on_coords(coords, filter_type)
+			if rune != null:
+				return rune
+	else:
+		for i in range(segment.size() - 1, -1, -1):
+			var rune := _get_rune_on_coords(segment[i], filter_type)
+			if rune != null:
+				return rune
+	return null
+
+
+func _get_rune_on_coords(coords: Vector2i, filter_type: Variant = null) -> Rune:
+	var hex: Hex = map_data.get(coords)
+	if hex == null or hex.active_rune == null:
+		return null
+	if filter_type != null and hex.active_rune.type != filter_type:
+		return null
+	return hex.active_rune
+#endregion --- Segment queries ---
+
+
+func _get_screen_position(coords: Vector2i) -> Vector2:
+	return base_layer.map_to_local(coords)
+
+
+func _get_first_tile_of_ring(ring: int) -> Vector2i:
+	if ring == 0:
+		return _hex_center
+
+	var ring_tiles := _get_tiles_in_ring(ring)
+	return _find_top_left_tile(ring_tiles)
 
 
 func get_coords_in_trigger_order() -> Array[Vector2i]:
@@ -466,6 +692,19 @@ func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
 
+func _on_rune_empowered(rune: Rune) -> void:
+	AudioManager.play_sfx(UI_SOUNDS.EMPOWER)
+	var hex := get_hex_for_rune(rune)
+	if hex != null:
+		hex.start_empower_flash()
+
+
+func _on_rune_empower_consumed(rune: Rune) -> void:
+	var hex := get_hex_for_rune(rune)
+	if hex != null:
+		hex.stop_empower_flash()
+
+
 func on_turn_ended() -> void:
 	var base_delay_interval := 0.5
 	_pending_trigger_queue.clear()
@@ -503,12 +742,21 @@ func _activate_rune_on_tile(
 ) -> void:
 	if tile.active_rune == null:
 		return
-	
-	if tile.active_rune.is_active:
-		tile.play_rune_activation_animation()
-		await _wait_for_activation_animation()
-	
-	tile.apply_rune_activation(score_multiplier)
+
+	# Apply the selected character's segment passive before resolving the rune.
+	score_multiplier *= SegmentPassive.get_score_multiplier(tile)
+	var activation_count: int = SegmentPassive.get_activation_count(tile)
+
+	for _activation_index in activation_count:
+		if tile.active_rune == null:
+			return
+
+		if tile.active_rune.is_active:
+			tile.play_rune_activation_animation()
+			await _wait_for_activation_animation()
+
+		tile.apply_rune_activation(score_multiplier)
+		SegmentPassive.apply_post_activation_effects(tile)
 
 
 func _wait_for_activation_animation() -> void:

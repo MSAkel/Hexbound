@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://ccpwrc5puerq0"]
+
+[ext_resource type="Script" uid="uid://wnec5k631fuo" path="res://resources/runes/support/wildspark/wildspark.gd" id="1_km4p2"]
+[ext_resource type="Texture2D" uid="uid://cdk8i7jc2pfx5" path="res://assets/icons/hex_runes/wildspark.png" id="1_sfxj2"]
+
+[resource]
+script = ExtResource("1_km4p2")
+id = "wildspark"
+name = "Wildspark"
+icon = ExtResource("1_sfxj2")
+description = "Triggers a random adjacent rune, if all adjacent tiles contain a different rune, triggers 3 instead."
+type = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

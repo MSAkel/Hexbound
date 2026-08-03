@@ -12,6 +12,13 @@ const BASIC_RUNE := preload("uid://c7c2eo74m8q0l")
 const CHAIN_EFFECT = preload("uid://bms421c4eq14w")
 const BASIC_MULTI = preload("uid://1yngk6bgvs8i")
 const INCREMENTAL_RUNE = preload("uid://vcdiatuy4rk0")
+#const ENCORE = preload("uid://bxt6uqis2wnh0")
+#const CATALYST = preload("uid://tgx0mcgx7sat")
+const COPYIOUS_SPELLUS = preload("uid://dnv2j7w43hgq3")
+const UNSTABLE_RUNE = preload("uid://dpu8gj3ofb5dy")
+const IMPRINT = preload("uid://tw8bqkd3qe16")
+const WILDSPARK = preload("uid://ccpwrc5puerq0")
+const OVERDRIVE = preload("uid://mrygcev1ywy4")
 
 static func get_all_types() -> Array[Type]:
 	return [
@@ -45,6 +52,11 @@ static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 			hand.append(INCREMENTAL_RUNE)
 			hand.append(BASIC_MULTI)
 			hand.append(CHAIN_EFFECT)
+			hand.append(COPYIOUS_SPELLUS)
+			hand.append(UNSTABLE_RUNE)
+			hand.append(IMPRINT)
+			hand.append(WILDSPARK)
+			hand.append(OVERDRIVE)
 
 	return hand
 
@@ -115,7 +127,7 @@ static func get_segment_passive_description(character_type: Type) -> String:
 		Type.SURVEYOR:
 			return "Every production rune on the first tile of a row segment has double production."
 		Type.ENCIRCLER:
-			return "If the first rune on a circle segment is a support rune, the rune gains a 10% chance to trigger each prod rune on the same segment."
+			return "If the first rune on a circle segment is a support rune, the rune gains a 15% chance to trigger each prod rune on the same segment."
 		Type.SPIRALIST:
 			return "Rune in the center tile triggers thrice, including support runes."
 

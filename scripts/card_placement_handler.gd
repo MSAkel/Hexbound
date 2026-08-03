@@ -108,7 +108,7 @@ func _update_rune_preview() -> void:
 		var hex: Hex = tile_map.map_data[map_coords]
 		var tile_center: Vector2 = tile_map.base_layer.map_to_local(map_coords)
 		_rune_preview.global_position = tile_map.to_global(tile_center)
-		_rune_preview.modulate = VALID_PREVIEW_COLOR if hex.active_rune == null else INVALID_PREVIEW_COLOR
+		_rune_preview.modulate = VALID_PREVIEW_COLOR if _can_place_on_hex(hex) else INVALID_PREVIEW_COLOR
 		_rune_preview.visible = true
 	else:
 		_rune_preview.visible = false
@@ -131,10 +131,13 @@ func _try_place_card() -> void:
 		return
 	
 	var hex: Hex = tile_map.map_data[map_coords]
-	if hex.active_rune != null:
+	if not _can_place_on_hex(hex):
 		return
 	
-	hex.place_rune(selected_card.card)
+	if selected_card.card.type == Rune.RuneType.MODIFIER:
+		selected_card.card.apply_on_placement(hex)
+	else:
+		hex.place_rune(selected_card.card)
 	Events.card_played.emit(selected_card)
 	AudioManager.play_sfx(UI_SOUNDS.GROUND_IMPACT)
 	
@@ -159,3 +162,14 @@ func _clear_drop_overlay() -> void:
 func _reset_state() -> void:
 	selected_card = null
 	is_card_selected = false
+
+
+# Modifiers attach to occupied tiles; all other runes require an empty tile.
+func _can_place_on_hex(hex: Hex) -> bool:
+	if selected_card == null or selected_card.card == null:
+		return false
+	
+	if selected_card.card.type == Rune.RuneType.MODIFIER:
+		return hex.active_rune != null
+	
+	return hex.active_rune == null
