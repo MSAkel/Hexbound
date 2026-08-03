@@ -3,12 +3,19 @@ extends Node
 
 const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 
-
 var _coordinates: Vector2i = Vector2i(0, 0)
 var active_rune: Rune = null
 var rune_ui: RuneUI = null
+
+# Character segment passive, stamped at run start on fixed tiles. Cannot be changed or overridden.
+var segment_passive_modifier: SegmentPassiveModifier = null
+# Future player-applied modifier. Only allowed on tiles without a segment passive.
+var tile_modifier: TileModifier = null
+
+var segment_passive_icon: TextureRect = null
 var map: HexTileMap
 var items_grid: GridContainer
+var _segment_passive_overlay_visible: bool = false
 
 # Match the dashed hex art size so runes align with the tile texture
 const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE, HexTileMap.HEX_TEXTURE_SIZE)
@@ -32,6 +39,14 @@ func setup(map_ref: Node2D) -> void:
 	items_grid.position = map.base_layer.map_to_local(coordinates) - HEX_TILE_HALF
 	items_grid.add_theme_constant_override("separation", 0)
 	map.add_child(items_grid)
+
+
+func is_reserved_for_segment_passive() -> bool:
+	return segment_passive_modifier != null
+
+
+func can_receive_tile_modifier() -> bool:
+	return TileModifier.can_replace_on(self)
 
 
 func place_rune(rune: Rune) -> void:
@@ -58,6 +73,61 @@ func place_rune(rune: Rune) -> void:
 	items_grid.add_child(new_rune_instance)
 	_reposition_items()
 	new_rune_instance.play_placement_animation()
+	_apply_display_mode()
+
+
+# Stamp the character's segment passive onto this tile (run start only).
+func set_segment_passive_modifier(modifier: SegmentPassiveModifier) -> void:
+	segment_passive_modifier = modifier
+
+	if modifier == null:
+		if segment_passive_icon != null:
+			segment_passive_icon.queue_free()
+			segment_passive_icon = null
+		return
+
+	if segment_passive_icon == null:
+		segment_passive_icon = TextureRect.new()
+		segment_passive_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		segment_passive_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		segment_passive_icon.custom_minimum_size = HEX_TILE_SIZE
+		segment_passive_icon.size = HEX_TILE_SIZE
+		segment_passive_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		items_grid.add_child(segment_passive_icon)
+
+	segment_passive_icon.texture = modifier.icon
+	_reposition_items()
+	_apply_display_mode()
+
+
+# Apply a run-time tile modifier. Returns false on segment-passive or occupied tiles.
+func try_apply_tile_modifier(modifier: TileModifier) -> bool:
+	if not TileModifier.can_replace_on(self):
+		return false
+
+	tile_modifier = modifier
+	# Future: add tile_modifier_icon UI when this mechanic is implemented.
+	return true
+
+
+func clear_tile_modifier() -> void:
+	tile_modifier = null
+	# Future: remove tile_modifier_icon when that UI exists.
+
+
+# Toggle segment-passive map overlay (Ctrl-held map display).
+func set_segment_passive_overlay_visible(show_overlay: bool) -> void:
+	_segment_passive_overlay_visible = show_overlay
+	_apply_display_mode()
+
+
+func _apply_display_mode() -> void:
+	if segment_passive_icon != null:
+		segment_passive_icon.visible = (
+			_segment_passive_overlay_visible and segment_passive_modifier != null
+		)
+	if rune_ui != null:
+		rune_ui.visible = not _segment_passive_overlay_visible
 
 
 # Clear the placed rune from this tile and remove its map UI.
@@ -69,6 +139,7 @@ func remove_rune() -> void:
 	if rune_ui != null:
 		rune_ui.queue_free()
 		rune_ui = null
+	_apply_display_mode()
 
 # Keep placed items aligned to the hex bounds
 func _reposition_items() -> void:

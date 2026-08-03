@@ -5,11 +5,6 @@
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="3_i3bqn"]
 [ext_resource type="PackedScene" uid="uid://dar7bvc231xx" path="res://scenes/ui/game_speed/game_speed_ui.tscn" id="4_i3bqn"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_404wr"]
-bg_color = Color(0.10320329, 0.013899398, 0.0010937232, 1)
-border_width_right = 3
-border_color = Color(0.31754345, 0.007314713, 2.4065375e-08, 1)
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
 bg_color = Color(0.10622876, 0.07545223, 0.08137467, 1)
 
@@ -36,7 +31,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_404wr")
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=2009317428]
 layout_mode = 1

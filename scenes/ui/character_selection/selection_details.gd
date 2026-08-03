@@ -26,7 +26,7 @@ func display_selection(character_type: PlayerCharacter.Type) -> void:
 
 	segment_label.text = PlayerCharacter.get_segment_passive_name(character_type)
 	segment_description.text = PlayerCharacter.get_segment_passive_description(character_type)
-	segment_image.texture = PlayerCharacter.get_segment_passive_texture(character_type)
+	segment_image.texture = SegmentPassiveModifier.get_icon_for_character(character_type)
 
 
 # Rebuild the preview row whenever the player cycles characters.

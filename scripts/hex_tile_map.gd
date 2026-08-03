@@ -3,6 +3,7 @@ extends Node2D
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
+@onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var card_drop_overlay_layer: TileMapLayer = $CardDropOverlayLayer
@@ -42,6 +43,8 @@ var _pending_trigger_queue: Array[Dictionary] = []
 
 # Card placement handler
 var card_placement_handler: CardPlacementHandler
+# True while the player holds toggle_map_display (Ctrl) to show segment modifiers.
+var _modifier_overlay_visible: bool = false
 
 func _ready() -> void:
 	_apply_tile_spacing()
@@ -54,6 +57,15 @@ func _ready() -> void:
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
 	add_child(card_placement_handler)
+
+	set_process(true)
+
+
+func _process(_delta: float) -> void:
+	var should_show_modifiers := Input.is_action_pressed("toggle_map_display")
+	if should_show_modifiers == _modifier_overlay_visible:
+		return
+	_set_segment_passive_overlay_visible(should_show_modifiers)
 
 
 # Widen the hex grid cells while keeping 256px textures, creating visible gaps
@@ -104,8 +116,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Check if mouse click is within the hexagon-shaped map
 		if is_in_map(map_coords):
 			if event.button_mask == MOUSE_BUTTON_MASK_LEFT:
-				var h: Hex = map_data[map_coords]
-				# terrain_tile_ui.set_hex(h)
+				var hex: Hex = map_data[map_coords]
+				tile_panel.set_hex(hex)
 				
 				# Remove the current overlay texture on selecting a different tile
 				if map_coords != selected_cell:
@@ -244,6 +256,29 @@ func generate_terrain() -> void:
 		frontier = next_frontier
 
 	_compute_ring_distances()
+	_assign_segment_passive_modifiers()
+
+
+# Stamp each character's segment passive onto reserved map tiles at run start.
+func _assign_segment_passive_modifiers() -> void:
+	var modifier := SegmentPassiveModifier.create_for_character(GameManager.selected_character)
+
+	match GameManager.selected_character:
+		PlayerCharacter.Type.SURVEYOR, PlayerCharacter.Type.ENCIRCLER:
+			# First tile of every row (Surveyor) or ring (Encircler) segment.
+			for segment: Array in _build_segments():
+				if segment.is_empty():
+					continue
+				var hex: Hex = map_data[segment[0]]
+				hex.set_segment_passive_modifier(modifier)
+		PlayerCharacter.Type.SPIRALIST:
+			map_data[_hex_center].set_segment_passive_modifier(modifier)
+
+
+func _set_segment_passive_overlay_visible(show_overlay: bool) -> void:
+	_modifier_overlay_visible = show_overlay
+	for hex: Hex in map_data.values():
+		hex.set_segment_passive_overlay_visible(show_overlay)
 
 
 # Breadth-first ring index from the map center; reused by trigger-order sorting.

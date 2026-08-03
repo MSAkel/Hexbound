@@ -1,0 +1,201 @@
+[gd_scene format=3 uid="uid://bif4cx5edh2ng"]
+
+[ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/tile_panel.gd" id="1_0dxj0"]
+[ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="2_8qrfl"]
+[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="5_0wodj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k4ojh"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.48931384, 0.1846736, 0.20360148, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8qrfl"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.44527072, 0.16373295, 0.18195158, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f84w1"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.44527072, 0.16373295, 0.18195158, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0dxj0"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.12290869, 0.19797018, 0.21427926, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c0n6m"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.12290869, 0.19797018, 0.21427926, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8qrfl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_k4ojh"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f84w1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0dxj0"]
+
+[node name="TilePanel" type="Control" unique_id=882335406]
+z_index = 1
+layout_mode = 3
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = -175.0
+offset_bottom = 175.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+script = ExtResource("1_0dxj0")
+
+[node name="PanelContainer" type="Panel" parent="." unique_id=547690172]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1268365143]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=556707738]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TileDetailsContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=2121128724]
+layout_mode = 2
+
+[node name="TileModifierLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/TileDetailsContainer" unique_id=1640881143]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 16
+text = "Tile Modifier"
+
+[node name="ActiveTileModifier" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/TileDetailsContainer" unique_id=869168508]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 12
+text = "None"
+
+[node name="RunePanelContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=337661510]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="RuneIconPanel" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer" unique_id=750760654]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="RuneIcon" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneIconPanel" unique_id=108305046]
+layout_mode = 2
+texture = ExtResource("2_8qrfl")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="RuneVBox" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer" unique_id=2029008049]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RuneName" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=2066887061]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 16
+text = "No Rune"
+
+[node name="RuneDescription" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1044626882]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 12
+text = "Description"
+autowrap_mode = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=2002465609]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="RemoveRuneButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox/HBoxContainer" unique_id=895667932]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 8
+theme_override_styles/normal = SubResource("StyleBoxFlat_k4ojh")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_8qrfl")
+theme_override_styles/hover = SubResource("StyleBoxFlat_f84w1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_0dxj0")
+theme_override_styles/focus = SubResource("StyleBoxFlat_c0n6m")
+text = "Remove Rune"
+
+[node name="ToggleRuneButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox/HBoxContainer" unique_id=1598859267]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+text = "Disable"
+
+[node name="CloseButton" type="Button" parent="." unique_id=1070754519]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -32.0
+offset_bottom = 32.65625
+grow_horizontal = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_8qrfl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_k4ojh")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_f84w1")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0dxj0")
+icon = ExtResource("5_0wodj")
+
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox/HBoxContainer/RemoveRuneButton" to="." method="_on_remove_rune_button_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox/HBoxContainer/ToggleRuneButton" to="." method="_on_toggle_rune_button_pressed"]
+[connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]

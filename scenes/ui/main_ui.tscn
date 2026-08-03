@@ -1,15 +1,23 @@
 [gd_scene format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
-[ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/terrain_tile_ui.tscn" id="2_l8t6x"]
+[ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/tile_panel.tscn" id="2_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://cm3sdx2an61fm" path="res://scenes/ui/Left_panel/left_panel.tscn" id="4_travt"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://br3dhulnhrxyl" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="7_oxwcw"]
 [ext_resource type="PackedScene" uid="uid://cylk7h6n211gc" path="res://scenes/ui/game_over_screen/game_over_screen.tscn" id="9_b65ll"]
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="9_oi40j"]
 [ext_resource type="PackedScene" uid="uid://clcafvhour5gy" path="res://scenes/ui/runes/top_right_ui.tscn" id="9_yc0ux"]
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="10_b65ll"]
 [ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/hand/hand_panel.tscn" id="11_oi40j"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+texture = ExtResource("9_oi40j")
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -33,6 +41,10 @@ visible = false
 
 [node name="Tooltip" parent="." unique_id=430342025 instance=ExtResource("13_tooltip")]
 visible = false
+offset_right = 220.0
+offset_bottom = 120.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
 
 [node name="GameOverScreen" parent="." unique_id=725350368 instance=ExtResource("9_b65ll")]
 visible = false
