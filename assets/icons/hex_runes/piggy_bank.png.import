@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c25ot8dgtv7wt"
-path="res://.godot/imported/basic_rune_hex-6.png-231066b151bea2720291ae16567e1333.ctex"
+uid="uid://pg2goj2bnvbk"
+path="res://.godot/imported/piggy_bank.png-8a6e9242575efed89db10f7235f67e54.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/hex_runes/basic_rune_hex-6.png"
-dest_files=["res://.godot/imported/basic_rune_hex-6.png-231066b151bea2720291ae16567e1333.ctex"]
+source_file="res://assets/icons/hex_runes/piggy_bank.png"
+dest_files=["res://.godot/imported/piggy_bank.png-8a6e9242575efed89db10f7235f67e54.ctex"]
 
 [params]
 

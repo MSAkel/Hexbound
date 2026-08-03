@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cy7j0oi05u0sm"
-path="res://.godot/imported/basic_rune_hex-7.png-a507ac4b5d975109d8e2d898130a9b16.ctex"
+path="res://.godot/imported/golden_ratio.png-192007cd2db0f910195f54e024de2e53.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/hex_runes/basic_rune_hex-7.png"
-dest_files=["res://.godot/imported/basic_rune_hex-7.png-a507ac4b5d975109d8e2d898130a9b16.ctex"]
+source_file="res://assets/icons/hex_runes/golden_ratio.png"
+dest_files=["res://.godot/imported/golden_ratio.png-192007cd2db0f910195f54e024de2e53.ctex"]
 
 [params]
 

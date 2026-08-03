@@ -2,7 +2,7 @@ extends Rune
 
 # Triggers the next 3 generator runes in the trigger order, generated points reduced by 20% per jump
 func _on_activate_rune(tile: Hex) -> void:
-	var next_generators := get_runes_in_activation_order(tile, 3, false, Rune.RuneType.GENERATION)
+	var next_generators := get_runes_in_activation_order(tile, 3, false, Rune.RuneType.PRODUCER)
 	if next_generators.is_empty():
 		return
 	

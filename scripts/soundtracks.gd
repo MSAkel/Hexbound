@@ -2,7 +2,7 @@ extends Resource
 class_name Music
 
 # Preload all music tracks
-const MAIN_THEME = preload("res://assets/audio/music/gramps_techno.mp3")
+const MAIN_THEME = preload("res://assets/audio/music/main_theme.mp3")
 
 # Get the appropriate music for a scene
 static func get_music_for_scene(scene_path: String) -> AudioStream:

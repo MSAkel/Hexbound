@@ -96,17 +96,17 @@ func _reposition_items() -> void:
 
 
 # Play the rune trigger animation without applying the effect.
-func play_rune_activation_animation(skip_cost: bool = false) -> void:
+func play_rune_activation_animation() -> void:
 	if active_rune == null or rune_ui == null:
 		return
 	
-	# Only animate successful activations so failed/inactive runes do not look triggered.
-	if active_rune.is_active and (skip_cost or active_rune.can_activate()):
+	# Only animate active runes so inactive runes do not look triggered.
+	if active_rune.is_active:
 		rune_ui.play_activation_animation()
 
 
-func apply_rune_activation(score_multiplier: float = 1.0, skip_cost: bool = false) -> void:
+func apply_rune_activation(score_multiplier: float = 1.0) -> void:
 	if active_rune == null:
 		return
 	
-	active_rune.activate_rune(self, score_multiplier, skip_cost)
+	active_rune.activate_rune(self, score_multiplier)

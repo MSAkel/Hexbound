@@ -177,7 +177,7 @@ func count_unoccupied_adjacent_hexes(coords: Vector2i) -> int:
 	return count
 
 
-# Adjacent map tiles occupied by a rune. Pass rune_type to filter by GENERATION or EFFECT.
+# Adjacent map tiles occupied by a rune. Pass rune_type to filter by PRODUCER or EFFECT.
 func count_occupied_adjacent_hexes(coords: Vector2i, rune_type: Variant = null) -> int:
 	var count := 0
 	for hex: Hex in get_adjacent_hexes(coords):
@@ -394,7 +394,7 @@ func can_consume_immediate_following_rune(current_tile: Hex) -> bool:
 
 
 # Runes that activate before/after current_tile in turn order (empty hexes are skipped).
-# Pass filter_type (e.g. Rune.RuneType.GENERATION) to skip non-matching runes while filling count.
+# Pass filter_type (e.g. Rune.RuneType.PRODUCER) to skip non-matching runes while filling count.
 func get_runes_in_activation_order(
 	current_tile: Hex,
 	count: int = 1,
@@ -500,24 +500,22 @@ func _resolve_rune_activation(tile: Hex) -> void:
 			continue
 		await _activate_rune_on_tile(
 			target_hex,
-			entry["score_multiplier"],
-			true
+			entry["score_multiplier"]
 		)
 
 
 func _activate_rune_on_tile(
 	tile: Hex,
-	score_multiplier: float = 1.0,
-	skip_cost: bool = false
+	score_multiplier: float = 1.0
 ) -> void:
 	if tile.active_rune == null:
 		return
 	
-	if tile.active_rune.is_active and (skip_cost or tile.active_rune.can_activate()):
-		tile.play_rune_activation_animation(skip_cost)
+	if tile.active_rune.is_active:
+		tile.play_rune_activation_animation()
 		await _wait_for_activation_animation()
 	
-	tile.apply_rune_activation(score_multiplier, skip_cost)
+	tile.apply_rune_activation(score_multiplier)
 
 
 func _wait_for_activation_animation() -> void:

@@ -8,9 +8,18 @@ enum RuneRarity {
 }
 
 enum RuneType {
-	GENERATION,
+	PRODUCER,
 	SUPPORT,
-	HYBRID
+	HYBRID,
+	MODIFIER,
+}
+
+enum Product {
+	GOLD,
+	SCORE,
+	MULTIPLIER,
+	HYBRID,
+	NONE,
 }
 
 @export var id: String
@@ -18,56 +27,37 @@ enum RuneType {
 @export var icon: Texture2D
 @export var score_value: int = 0
 @export_multiline var description: String
-@export var selected: bool
 @export var rarity: RuneRarity
 @export var type: RuneType
-@export var activation_cost: Dictionary = {
-	"gold": 0,
-}
-@export var activation_cost_text: String
-@export var boosted_generation_amount: int = 0
+# @export var boosted_generation_amount: int = 0
+@export var product: Product = Product.NONE
+
+var activation_count: int = 0
 var is_active: bool = true
 # Applied to score gained during this activation (e.g. chain effect penalties).
 var _activation_score_multiplier: float = 1.0
 
-func activate_rune(tile: Hex, score_multiplier: float = 1.0, skip_cost: bool = false) -> void:
+func activate_rune(tile: Hex, score_multiplier: float = 1.0) -> void:
 	if not is_active:
 		return
 	
-	var can_trigger := skip_cost or can_activate()
-	if can_trigger:
-		if not skip_cost:
-			deduct_activation_cost()
-		# Register before the effect so get_activations_this_turn() includes this rune.
-		GameManager.register_rune_activation(self)
-		Events.rune_activated.emit(self)
-		_activation_score_multiplier = score_multiplier
-		_on_activate_rune(tile)
-		_activation_score_multiplier = 1.0
-	else:
-		var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
-		floating_text.set_text("Insufficient resources", false)
-		tile.map.add_child(floating_text)
-		floating_text.position = tile.map.base_layer.map_to_local(tile.coordinates) + Vector2(-120, -60)
+	# Register before the effect so get_activations_this_turn() includes this rune.
+	GameManager.register_rune_activation(self)
+	Events.rune_activated.emit(self)
+	_activation_score_multiplier = score_multiplier
+	_on_activate_rune(tile)
+	_activation_score_multiplier = 1.0
 
 
 func _on_activate_rune(_tile: Hex) -> void:
 	pass
-
-func get_gold_cost() -> int:
-	return activation_cost.get("gold", 0)
-
-func can_activate() -> bool:
-	return GameManager.get_gold() >= get_gold_cost()
-
-func deduct_activation_cost() -> void:
-	GameManager.remove_gold(get_gold_cost())
 
 func create_floating_text(tile: Hex, text: String) -> void:
 	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
 	tile.map.create_floating_text(tile_pos, text, false)
 
 # Add score using any active activation multiplier and show text on the given tile.
+# this function is only handling score, not gold or multiplier.
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_score_multiplier))
 	GameManager.turn_score += points
@@ -77,7 +67,7 @@ func add_score(tile: Hex, base_points: int) -> void:
 func queue_rune_triggers(source_tile: Hex, runes: Array[Rune], score_multipliers: Array[float] = []) -> void:
 	source_tile.map.queue_rune_triggers(runes, score_multipliers)
 
-# --- Rune context helpers (turn + map queries for effect logic) ---
+#region --- Rune context helpers ---
 # Counter for the number of runes activated this turn.
 func get_activations_this_turn() -> int:
 	return GameManager.get_runes_activated_this_turn()
@@ -91,6 +81,18 @@ func get_all_placed_runes(tile: Hex) -> Array[Rune]:
 	return tile.map.get_all_placed_runes()
 
 
+# Count placed producer runes whose product matches filter_product (e.g. Product.GOLD).
+func get_producer_count(tile: Hex, filter_product: Product) -> int:
+	var count := 0
+	for rune: Rune in get_all_placed_runes(tile):
+		if rune.type != RuneType.PRODUCER:
+			continue
+		if rune.product != filter_product:
+			continue
+		count += 1
+	return count
+
+
 func get_all_hexes_with_runes(tile: Hex) -> Array[Hex]:
 	return tile.map.get_all_hexes_with_runes()
 
@@ -99,13 +101,13 @@ func get_unoccupied_adjacent_count(tile: Hex) -> int:
 	return tile.map.count_unoccupied_adjacent_hexes(tile.coordinates)
 
 
-# Pass Rune.RuneType.GENERATION, Rune.RuneType.EFFECT, or omit filter_type for all occupied neighbors.
+# Pass Rune.RuneType.PRODUCER, Rune.RuneType.EFFECT, or omit filter_type for all occupied neighbors.
 func get_occupied_adjacent_count(tile: Hex, filter_type: Variant = null) -> int:
 	return tile.map.count_occupied_adjacent_hexes(tile.coordinates, filter_type)
 
 
 # Runes that activate before/after this one in the current trigger order.
-# Pass filter_type (e.g. Rune.RuneType.GENERATION) to only include matching runes in the result.
+# Pass filter_type (e.g. Rune.RuneType.PRODUCER) to only include matching runes in the result.
 func get_runes_in_activation_order(
 	tile: Hex,
 	count: int = 1,
@@ -128,3 +130,4 @@ func can_consume_immediate_following_rune(tile: Hex) -> bool:
 # Remove a placed rune instance from the map (clears its tile and cancels queued triggers).
 func destroy_placed_rune(source_tile: Hex, rune: Rune) -> void:
 	source_tile.map.destroy_placed_rune(rune)
+#endregion --- Rune context helpers ---

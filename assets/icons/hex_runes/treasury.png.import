@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cbp0djcek5xo6"
-path="res://.godot/imported/basic_rune_hex-1.png-a18aec0b957960d0a4c6937ebd9ed600.ctex"
+uid="uid://62jqqcmgcb3d"
+path="res://.godot/imported/treasury.png-3be12b7dabdec7eb62c62ff71941c33c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/hex_runes/basic_rune_hex-1.png"
-dest_files=["res://.godot/imported/basic_rune_hex-1.png-a18aec0b957960d0a4c6937ebd9ed600.ctex"]
+source_file="res://assets/icons/hex_runes/treasury.png"
+dest_files=["res://.godot/imported/treasury.png-3be12b7dabdec7eb62c62ff71941c33c.ctex"]
 
 [params]
 

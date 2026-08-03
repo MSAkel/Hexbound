@@ -121,8 +121,8 @@ func _on_mouse_exited() -> void:
 
 func _get_rune_type_label(rune_type: Rune.RuneType) -> String:
 	match rune_type:
-		Rune.RuneType.GENERATION:
-			return "Generation"
+		Rune.RuneType.PRODUCER:
+			return "Producer"
 		Rune.RuneType.SUPPORT:
 			return "Support"
 		Rune.RuneType.HYBRID:

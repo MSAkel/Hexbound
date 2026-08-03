@@ -46,6 +46,8 @@ var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BO
 # Set when a turn ends with total score meeting the phase goal; consumed when the merchant opens.
 var _pending_merchant_visit: bool = false
 
+var _gold_earned_this_turn: int = 0
+
 # Core game state getters and setters
 var turn_score: int:
 	get:
@@ -115,6 +117,12 @@ var trigger_order: TriggerOrderType.Type:
 		_trigger_order = value
 		Events.trigger_order_changed.emit(_trigger_order)
 
+var gold_earned_this_turn: int:
+	get:
+		return _gold_earned_this_turn
+	set(value):
+		_gold_earned_this_turn = value
+
 func _ready() -> void:
 	# Load every rune resource under the runes folder, including nested category folders.
 	_load_runes_from_directory("res://resources/runes/")
@@ -177,12 +185,14 @@ func get_gold() -> int:
 
 func add_gold(amount: int) -> void:
 	_gold += amount
+	_gold_earned_this_turn += amount
 	Events.gold_changed.emit(_gold)
 
 
 func remove_gold(amount: int) -> void:
 	_gold -= amount
 	Events.gold_changed.emit(_gold)
+
 #endregion Gold
 
 func end_turn() -> void:
@@ -217,6 +227,8 @@ func finish_turn_processing() -> void:
 func _on_turn_started() -> void:
 	_runes_activated_this_turn = 0
 	_activated_runes_this_turn.clear()
+	# Used for specific runes that rely on total gold earned per turn.
+	gold_earned_this_turn = 0
 
 
 func consume_pending_merchant_visit() -> bool:

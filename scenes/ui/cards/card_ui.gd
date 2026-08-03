@@ -13,8 +13,6 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 #@onready var icon: TextureRect = $VBoxContainer/Icon
 @onready var icon: TextureRect = $VBoxContainer/IconContainer/Icon
 @onready var card_description: Label = $VBoxContainer/CardDescription
-#@onready var activation_cost: Label = $VBoxContainer/ActivationCost
-#@onready var activation_cost: Label = $VBoxContainer/ActivationCost
 @onready var resource_cost_container: HBoxContainer = $VBoxContainer/ResourceCostContainer
 @onready var card_type_label: Label = $VBoxContainer/IconContainer/CardTypeLabel
 
