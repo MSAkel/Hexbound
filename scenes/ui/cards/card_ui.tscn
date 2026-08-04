@@ -163,7 +163,6 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="DropPointArea" type="Area2D" parent="." unique_id=1910631185]
-visible = false
 collision_mask = 2
 monitorable = false
 

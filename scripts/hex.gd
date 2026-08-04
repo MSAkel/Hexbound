@@ -116,6 +116,18 @@ func clear_tile_modifier() -> void:
 	# Future: remove tile_modifier_icon when that UI exists.
 
 
+# Attach an enhancement to the placed rune. Returns false when the tile is empty or already enhanced.
+func try_apply_enhancement(enhancement: Enhancement) -> bool:
+	if not Enhancement.can_apply_to(self):
+		return false
+
+	# Each placement needs its own instance so map state does not leak between cards.
+	active_rune.enhancement = enhancement.duplicate(true)
+	Events.enhancement_applied.emit(active_rune, active_rune.enhancement)
+	# Future: add enhancement_icon UI when that overlay is implemented.
+	return true
+
+
 # Hide or show rune icons while keeping segment-passive modifiers visible.
 func set_runes_hidden(hide_runes: bool) -> void:
 	_runes_hidden = hide_runes

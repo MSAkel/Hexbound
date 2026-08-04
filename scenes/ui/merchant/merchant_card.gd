@@ -1,7 +1,7 @@
 class_name MerchantCard
 extends Control
 
-signal purchased(rune: Rune)
+signal purchased(card: Resource)
 
 # Fallback prices when a rune has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -10,6 +10,7 @@ const BASE_PRICE_BY_RARITY := {
 	Rune.RuneRarity.RARE: 45,
 }
 const DEFAULT_PRICE := 10
+const ENHANCEMENT_BASE_PRICE := 30
 
 @onready var price_label: Label = $Container/PriceLabel
 @onready var card_name: Label = $Container/CardPanel/CardDetailsContainer/NameContainer/CardName
@@ -19,7 +20,7 @@ const DEFAULT_PRICE := 10
 @onready var sold_overlay: Panel = $Container/CardPanel/SoldOverlay
 @onready var card_panel: Panel = $Container/CardPanel
 
-var rune: Rune
+var card: Resource
 var price: int = 0
 
 var _is_sold := false
@@ -31,23 +32,36 @@ func _ready() -> void:
 	mouse_exited.connect(_on_mouse_exited)
 
 
-# Populate card visuals and compute the sale price for the given rune.
-func setup(card_rune: Rune, discount: float = 0.0) -> void:
+# Populate card visuals and compute the sale price for a rune or enhancement.
+func setup(card_data: Resource, discount: float = 0.0) -> void:
 	if not is_node_ready():
 		await ready
 
-	rune = card_rune
+	card = card_data
 	_discount = discount
 	_is_sold = false
 	sold_overlay.visible = false
 
-	card_name.text = rune.name
-	icon.texture = rune.icon
-	card_description.text = rune.description
-	card_type_label.text = _get_rune_type_label(rune.type)
-	card_type_label.visible = true
+	if card_data is Rune:
+		var rune := card_data as Rune
+		card_name.text = rune.name
+		icon.texture = rune.icon
+		card_description.text = rune.description
+		card_type_label.text = _get_rune_type_label(rune.type)
+		card_type_label.visible = true
+		price = get_price_for_rune(rune, discount)
+	elif card_data is Enhancement:
+		var enhancement := card_data as Enhancement
+		card_name.text = enhancement.name
+		icon.texture = enhancement.icon
+		card_description.text = enhancement.description
+		card_type_label.text = "Enhancement"
+		card_type_label.visible = true
+		price = get_price_for_enhancement(discount)
+	else:
+		push_error("MerchantCard.setup received unsupported resource type")
+		return
 
-	price = get_price_for_rune(rune, discount)
 	price_label.text = "$%d" % price
 	_update_affordability()
 
@@ -55,6 +69,10 @@ func setup(card_rune: Rune, discount: float = 0.0) -> void:
 static func get_price_for_rune(card_rune: Rune, discount: float = 0.0) -> int:
 	var base_price: int = BASE_PRICE_BY_RARITY.get(card_rune.rarity, DEFAULT_PRICE)
 	return maxi(1, int(round(base_price * (1.0 - discount))))
+
+
+static func get_price_for_enhancement(discount: float = 0.0) -> int:
+	return maxi(1, int(round(ENHANCEMENT_BASE_PRICE * (1.0 - discount))))
 
 
 func is_sold() -> bool:
@@ -80,7 +98,10 @@ func apply_discount(discount: float) -> void:
 		return
 
 	_discount = discount
-	price = get_price_for_rune(rune, _discount)
+	if card is Rune:
+		price = get_price_for_rune(card as Rune, _discount)
+	elif card is Enhancement:
+		price = get_price_for_enhancement(_discount)
 	price_label.text = "$%d" % price
 	_update_affordability()
 
@@ -102,7 +123,7 @@ func _gui_input(event: InputEvent) -> void:
 		if not GoldManager.can_afford(price):
 			return
 
-		purchased.emit(rune)
+		purchased.emit(card)
 		accept_event()
 
 

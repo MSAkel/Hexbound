@@ -27,6 +27,7 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 
 enum CardType {
 	RUNE,
+	ENHANCEMENT,
 }
 
 var card = null
@@ -132,6 +133,9 @@ func set_card(data) -> void:
 	if data is Rune:
 		card_type = CardType.RUNE
 		card_type_label.text = Rune.RuneType.keys()[data.type]
+	elif data is Enhancement:
+		card_type = CardType.ENHANCEMENT
+		card_type_label.text = "Enhancement"
 	else:
 		push_error("Unknown card type for data: ", data)
 

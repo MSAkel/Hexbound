@@ -75,6 +75,11 @@ visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="PhaseLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1773974022 groups=["main_ui"]]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Phase 1"
+
 [node name="TurnLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=745290470 groups=["main_ui"]]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
@@ -186,6 +191,7 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="EndTurnButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=960022665 groups=["main_ui"]]
+visible = false
 custom_minimum_size = Vector2(200, 75)
 layout_mode = 2
 size_flags_horizontal = 4

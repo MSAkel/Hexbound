@@ -30,6 +30,8 @@ signal rune_selected(rune: Rune)
 signal rune_activated(rune: Rune)  # Emitted when a rune successfully triggers its effect
 signal rune_empowered(rune: Rune)  # Emitted when a rune becomes empowered
 signal rune_empower_consumed(rune: Rune)  # Emitted when an empowered rune triggers and loses empower
+signal enhancement_selected(enhancement: Enhancement)  # Emitted when an enhancement card is added to hand
+signal enhancement_applied(rune: Rune, enhancement: Enhancement)  # Emitted when an enhancement is placed on a rune
 signal card_selected(card: CardUI)
 
 signal rune_pack_count_changed()

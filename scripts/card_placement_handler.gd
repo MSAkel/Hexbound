@@ -134,7 +134,9 @@ func _try_place_card() -> void:
 	if not _can_place_on_hex(hex):
 		return
 	
-	if selected_card.card.type == Rune.RuneType.MODIFIER:
+	if selected_card.card is Enhancement:
+		hex.try_apply_enhancement(selected_card.card)
+	elif selected_card.card.type == Rune.RuneType.MODIFIER:
 		selected_card.card.apply_on_placement(hex)
 	else:
 		hex.place_rune(selected_card.card)
@@ -164,12 +166,15 @@ func _reset_state() -> void:
 	is_card_selected = false
 
 
-# Modifiers attach to occupied tiles; all other runes require an empty tile.
+# Modifiers and enhancements attach to occupied tiles; all other runes require an empty tile.
 func _can_place_on_hex(hex: Hex) -> bool:
 	if selected_card == null or selected_card.card == null:
 		return false
-	
+
+	if selected_card.card is Enhancement:
+		return Enhancement.can_apply_to(hex)
+
 	if selected_card.card.type == Rune.RuneType.MODIFIER:
 		return hex.active_rune != null
-	
+
 	return hex.active_rune == null

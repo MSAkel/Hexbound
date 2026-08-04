@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="5_2hgda"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8btky"]
-bg_color = Color(0.31764707, 0.64705884, 0.77254903, 0.27058825)
+bg_color = Color(0.31764707, 0.64705884, 0.77254903, 0.70980394)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jpxjh"]
 texture = ExtResource("5_2hgda")
@@ -71,9 +71,9 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -59.0
-offset_top = -145.0
+offset_top = -249.0
 offset_right = 59.0
-offset_bottom = -105.0
+offset_bottom = -209.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/normal = SubResource("StyleBoxTexture_jpxjh")

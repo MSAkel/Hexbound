@@ -50,7 +50,15 @@ func _set_rune_information() -> void:
 	if hex.active_rune != null:
 		rune_icon.texture = hex.active_rune.icon
 		rune_name.text = hex.active_rune.name
-		rune_description.text = hex.active_rune.description
+		var description_lines: PackedStringArray = [hex.active_rune.description]
+		if hex.active_rune.enhancement != null:
+			description_lines.append(
+				"Enhancement: %s\n%s" % [
+					hex.active_rune.enhancement.name,
+					hex.active_rune.enhancement.description,
+				]
+			)
+		rune_description.text = "\n\n".join(description_lines)
 		remove_rune_button.disabled = false
 	else:
 		rune_icon.texture = load("res://assets/tilesets/tile_dashed.png")

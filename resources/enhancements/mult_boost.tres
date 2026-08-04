@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Enhancement" format=3 uid="uid://k8m6k7hfwy7j"]
+
+[ext_resource type="Texture2D" uid="uid://dtxf78ouio4em" path="res://assets/icons/hex_runes/multi_rune.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://d2gxyarqqp482" path="res://scripts/resources/enhancement.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "mult_boost"
+name = "Mult Boost"
+icon = ExtResource("1_icon")
+description = "+5 multiplier on the rune"
+mult_bonus = 5

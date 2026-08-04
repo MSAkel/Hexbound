@@ -39,20 +39,27 @@ theme_override_constants/margin_bottom = 75
 
 [node name="HBoxContainer" type="HBoxContainer" parent="ContainerPanel/MarginContainer" unique_id=2029895295]
 layout_mode = 2
-size_flags_horizontal = 4
 theme_override_constants/separation = 150
 
 [node name="CardsGridContainer" type="GridContainer" parent="ContainerPanel/MarginContainer/HBoxContainer" unique_id=120462758]
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 4
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 100
 columns = 3
 
+[node name="EnhancementGridContainer" type="GridContainer" parent="ContainerPanel/MarginContainer/HBoxContainer" unique_id=581522525]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 100
+columns = 2
+
 [node name="VBoxContainer" type="VBoxContainer" parent="ContainerPanel/MarginContainer/HBoxContainer" unique_id=1204375865]
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 8
 size_flags_vertical = 4
 
 [node name="MerchantLabel" type="Label" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=457340881]
@@ -83,3 +90,7 @@ text = "Leave"
 
 [node name="GoldUI" parent="ContainerPanel" unique_id=1964645916 instance=ExtResource("3_wha7e")]
 layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 120.0
+offset_bottom = 40.0

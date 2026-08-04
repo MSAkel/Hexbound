@@ -435,6 +435,24 @@ func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
 	get_tree().current_scene.add_child(floating_text)
 
 
+# Resolve enhancement output after a short pause so its floating text reads separately.
+const ENHANCEMENT_ACTIVATION_DELAY := 0.5
+
+
+func schedule_delayed_enhancement_activation(host_rune: Rune, tile: Hex, output_scale: float) -> void:
+	_play_delayed_enhancement_activation(host_rune, tile, output_scale)
+
+
+func _play_delayed_enhancement_activation(host_rune: Rune, tile: Hex, output_scale: float) -> void:
+	await get_tree().create_timer(ENHANCEMENT_ACTIVATION_DELAY / GameManager.game_speed).timeout
+	if tile.active_rune != host_rune or host_rune.enhancement == null:
+		return
+
+	host_rune._activation_output_scale = output_scale
+	host_rune.enhancement.activate(host_rune, tile)
+	host_rune._activation_output_scale = 1.0
+
+
 # Used for setting camera boundaries and other coordinate conversions.
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)

@@ -34,6 +34,8 @@ enum Product {
 
 var activation_count: int = 0
 var is_active: bool = true
+# Optional player-applied bonus resolved whenever this rune activates.
+var enhancement: Enhancement = null
 # Empowered runes triple their output once on trigger.
 var is_empowered: bool = false
 # Scales all rune output during this activation (score, gold, generated multiplier resource).
@@ -66,12 +68,19 @@ func activate_rune(tile: Hex, activation_scale: float = 1.0) -> void:
 	
 	_activation_output_scale = output_scale
 	_on_activate_rune(tile)
+	_schedule_enhancement_activation(tile)
 	_activation_output_scale = 1.0
 
 
 func _on_activate_rune(_tile: Hex) -> void:
 	pass
 
+
+# Brief pause so enhancement floating text does not sit on top of the rune's text.
+func _schedule_enhancement_activation(tile: Hex) -> void:
+	if enhancement == null:
+		return
+	tile.map.schedule_delayed_enhancement_activation(self, tile, _activation_output_scale)
 
 # Modifier cards resolve immediately on placement instead of occupying a tile.
 func apply_on_placement(_tile: Hex) -> void:

@@ -34,9 +34,9 @@ var is_processing_turn: bool:
 #region Score and phase progression
 
 # Score needed to complete the current phase and open the merchant.
-var required_score: int = 1000
+var required_score: int = 1100
 # Applied each time required_score is met to scale difficulty across phases.
-var required_score_multiplier: int = 3
+var required_score_multiplier: int = 2
 
 var _total_score: int = 0
 var _turn_score: int = 0
@@ -50,7 +50,7 @@ var total_score: int:
 		Events.total_score_changed.emit()
 		# Meeting the threshold advances the phase inside the setter.
 		if _total_score >= required_score:
-			required_score = required_score * required_score_multiplier + 1000
+			required_score = required_score * required_score_multiplier + 750
 			advance_phase()
 
 var turn_score: int:
@@ -73,6 +73,8 @@ var turn_multi: int:
 
 # Every rune resource loaded from disk at startup.
 var runes_pool: Array[Rune] = []
+# Every enhancement resource loaded from disk at startup.
+var enhancements_pool: Array[Enhancement] = []
 # The three runes currently offered on the post-turn selection panel.
 var runes_pack: Array[Rune] = []
 # How many rune packs are queued; incremented each turn and consumed when the panel opens.
@@ -135,11 +137,15 @@ var game_speed: float:
 
 func _ready() -> void:
 	_load_runes_from_directory("res://resources/runes/")
+	_load_enhancements_from_directory("res://resources/enhancements/")
 
 	if runes_pool.is_empty():
 		push_error("No runes loaded into pool")
 	else:
 		create_runes_pack()
+
+	if enhancements_pool.is_empty():
+		push_warning("No enhancements loaded into pool")
 
 	Events.turn_ended.connect(end_turn)
 	Events.turn_started.connect(_on_turn_started)
@@ -253,6 +259,42 @@ func _load_runes_from_directory(dir_path: String) -> void:
 func _has_rune_with_id(rune_id: String) -> bool:
 	for existing_rune in runes_pool:
 		if existing_rune.id == rune_id:
+			return true
+	return false
+
+
+# Load every .tres enhancement under the enhancements folder, skipping duplicate ids.
+func _load_enhancements_from_directory(dir_path: String) -> void:
+	var normalized_path := dir_path
+	if not normalized_path.ends_with("/"):
+		normalized_path += "/"
+
+	for entry in ResourceLoader.list_directory(normalized_path):
+		if entry == "./" or entry == "../":
+			continue
+
+		if entry.ends_with("/"):
+			_load_enhancements_from_directory(normalized_path.path_join(entry.trim_suffix("/")))
+			continue
+
+		if not entry.ends_with(".tres"):
+			continue
+
+		var resource_path := normalized_path.path_join(entry)
+		var enhancement := ResourceLoader.load(resource_path) as Enhancement
+		if enhancement == null:
+			push_error("Failed to load enhancement: " + resource_path)
+			continue
+
+		if _has_enhancement_with_id(enhancement.id):
+			continue
+
+		enhancements_pool.append(enhancement)
+
+
+func _has_enhancement_with_id(enhancement_id: String) -> bool:
+	for existing_enhancement in enhancements_pool:
+		if existing_enhancement.id == enhancement_id:
 			return true
 	return false
 
