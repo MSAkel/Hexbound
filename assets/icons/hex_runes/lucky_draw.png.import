@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bwsw4wvxg5mvl"
-path="res://.godot/imported/treasury.png-3be12b7dabdec7eb62c62ff71941c33c.ctex"
+uid="uid://lxv77i8fwjdl"
+path="res://.godot/imported/lucky_draw.png-210022fd358d9ae4fd665535be1f7054.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/hex_runes/treasury.png"
-dest_files=["res://.godot/imported/treasury.png-3be12b7dabdec7eb62c62ff71941c33c.ctex"]
+source_file="res://assets/icons/hex_runes/lucky_draw.png"
+dest_files=["res://.godot/imported/lucky_draw.png-210022fd358d9ae4fd665535be1f7054.ctex"]
 
 [params]
 

@@ -1,6 +1,6 @@
 extends Rune
 
-var score_multiplier: int = 1
+var score_bonus: int = 1
 
 # +30 score. Consumes the next adjacent rune in the trigger order to permanently double it's score.
 func _on_activate_rune(tile: Hex) -> void:
@@ -8,11 +8,11 @@ func _on_activate_rune(tile: Hex) -> void:
 	if can_consume_immediate_following_rune(tile):
 		var next_rune := get_immediate_following_rune(tile)
 		if next_rune != null:
-			score_multiplier += 1
+			score_bonus += 1
 			destroy_placed_rune(tile, next_rune)
 			AudioManager.play_ui_sound(UISounds.RUNE_BREAK)
 	
 
-	score_value *= score_multiplier
+	score_value *= score_bonus
 	GameManager.turn_score += score_value
 	add_score(tile, score_value)

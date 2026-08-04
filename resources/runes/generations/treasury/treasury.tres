@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://ddxi8oeodt0dx"]
 
 [ext_resource type="Script" uid="uid://dyiqu2ie2cyw0" path="res://resources/runes/generations/treasury/treasury.gd" id="1_ab01l"]
-[ext_resource type="Texture2D" uid="uid://62jqqcmgcb3d" path="res://assets/icons/hex_runes/treasury.png" id="1_mv8hq"]
+[ext_resource type="Texture2D" uid="uid://bwsw4wvxg5mvl" path="res://assets/icons/hex_runes/treasury.png" id="1_mv8hq"]
 
 [resource]
 script = ExtResource("1_ab01l")

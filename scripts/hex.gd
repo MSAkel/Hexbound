@@ -158,11 +158,11 @@ func play_rune_activation_animation() -> void:
 		rune_ui.play_activation_animation()
 
 
-func apply_rune_activation(score_multiplier: float = 1.0) -> void:
+func apply_rune_activation(activation_scale: float = 1.0) -> void:
 	if active_rune == null:
 		return
 	
-	active_rune.activate_rune(self, score_multiplier)
+	active_rune.activate_rune(self, activation_scale)
 
 
 func start_empower_flash() -> void:

@@ -7,9 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://br3dhulnhrxyl" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="7_oxwcw"]
 [ext_resource type="PackedScene" uid="uid://cylk7h6n211gc" path="res://scenes/ui/game_over_screen/game_over_screen.tscn" id="9_b65ll"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="9_oi40j"]
-[ext_resource type="PackedScene" uid="uid://clcafvhour5gy" path="res://scenes/ui/runes/top_right_ui.tscn" id="9_yc0ux"]
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="10_b65ll"]
 [ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/hand/hand_panel.tscn" id="11_oi40j"]
+[ext_resource type="PackedScene" uid="uid://b8ve8hecgnb8p" path="res://scenes/ui/round_complete_panel/round_complete_panel.tscn" id="12_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
@@ -28,9 +28,6 @@ script = ExtResource("1_l8t6x")
 rotation = 0.0016232448
 
 [node name="RuneSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
-visible = false
-
-[node name="TopRightUI" parent="." unique_id=851671720 instance=ExtResource("9_yc0ux")]
 visible = false
 
 [node name="TerrainTileUI" parent="." unique_id=289089864 instance=ExtResource("2_l8t6x")]
@@ -52,3 +49,17 @@ visible = false
 [node name="Merchant" parent="." unique_id=613414351 instance=ExtResource("10_b65ll")]
 visible = false
 rotation = -0.00022035485
+
+[node name="RoundCompletePanel" parent="." unique_id=54938198 instance=ExtResource("12_aa6wj")]
+visible = false
+custom_minimum_size = Vector2(400, 400)
+custom_maximum_size = Vector2(-1, 200)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0

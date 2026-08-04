@@ -715,14 +715,14 @@ func destroy_placed_rune(rune: Rune) -> void:
 			_pending_trigger_queue.remove_at(i)
 
 
-func queue_rune_triggers(runes: Array[Rune], score_multipliers: Array[float] = []) -> void:
+func queue_rune_triggers(runes: Array[Rune], activation_scales: Array[float] = []) -> void:
 	for i in range(runes.size()):
-		var multiplier := 1.0
-		if i < score_multipliers.size():
-			multiplier = score_multipliers[i]
+		var scale := 1.0
+		if i < activation_scales.size():
+			scale = activation_scales[i]
 		_pending_trigger_queue.append({
 			"rune": runes[i],
-			"score_multiplier": multiplier,
+			"activation_scale": scale,
 		})
 
 
@@ -776,19 +776,19 @@ func _resolve_rune_activation(tile: Hex) -> void:
 			continue
 		await _activate_rune_on_tile(
 			target_hex,
-			entry["score_multiplier"]
+			entry["activation_scale"]
 		)
 
 
 func _activate_rune_on_tile(
 	tile: Hex,
-	score_multiplier: float = 1.0
+	activation_scale: float = 1.0
 ) -> void:
 	if tile.active_rune == null:
 		return
 
 	# Apply the selected character's segment passive before resolving the rune.
-	score_multiplier *= SegmentPassive.get_score_multiplier(tile)
+	activation_scale *= SegmentPassive.get_activation_scale(tile)
 	var activation_count: int = SegmentPassive.get_activation_count(tile)
 
 	for _activation_index in activation_count:
@@ -799,7 +799,7 @@ func _activate_rune_on_tile(
 			tile.play_rune_activation_animation()
 			await _wait_for_activation_animation()
 
-		tile.apply_rune_activation(score_multiplier)
+		tile.apply_rune_activation(activation_scale)
 		SegmentPassive.apply_post_activation_effects(tile)
 
 

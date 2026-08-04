@@ -2,10 +2,10 @@ extends Rune
 
 # Triggers the effect of the next rune twice. works on support runes
 # Ignores any retrigger effects after the first activation each turn.
-func activate_rune(tile: Hex, score_multiplier: float = 1.0) -> void:
+func activate_rune(tile: Hex, activation_scale: float = 1.0) -> void:
 	if GameManager.has_rune_activated_this_turn(self):
 		return
-	super.activate_rune(tile, score_multiplier)
+	super.activate_rune(tile, activation_scale)
 
 
 func _on_activate_rune(tile: Hex) -> void:

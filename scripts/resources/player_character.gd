@@ -11,8 +11,9 @@ enum Type {
 const BASIC_RUNE := preload("uid://c7c2eo74m8q0l")
 const CHAIN_EFFECT = preload("uid://bms421c4eq14w")
 const BASIC_MULTI = preload("uid://1yngk6bgvs8i")
-const INCREMENTAL_RUNE = preload("uid://vcdiatuy4rk0")
-const ENDLESS_POWER = preload("uid://hhv7idvwhuq0")
+const BASIC_ALLOWANCE = preload("uid://dh6iq7pfm421c")
+const CATALYST = preload("uid://tgx0mcgx7sat")
+
 
 static func get_all_types() -> Array[Type]:
 	return [
@@ -43,10 +44,10 @@ static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 		Type.SURVEYOR, Type.ENCIRCLER, Type.SPIRALIST:
 			hand.append(BASIC_RUNE)
 			hand.append(BASIC_RUNE)
-			hand.append(INCREMENTAL_RUNE)
+			hand.append(BASIC_ALLOWANCE)
 			hand.append(BASIC_MULTI)
 			hand.append(CHAIN_EFFECT)
-			hand.append(ENDLESS_POWER)
+			hand.append(CATALYST)
 
 	return hand
 

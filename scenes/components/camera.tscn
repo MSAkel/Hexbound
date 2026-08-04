@@ -7,6 +7,7 @@
 zoom = Vector2(0.375, 0.375)
 script = ExtResource("1_q64wr")
 rune_shake_strength = 4.0
+rune_shake_duration = 0.2
 
 [node name="ZoomSound" type="AudioStreamPlayer2D" parent="." unique_id=5027154]
 stream = ExtResource("2_fombx")

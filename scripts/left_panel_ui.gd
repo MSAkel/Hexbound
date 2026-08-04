@@ -10,6 +10,8 @@ extends Control
 @onready var selected_trigger_order_label: Label = $Panel/MarginContainer/VBoxContainer/SelectedTriggerOrderLabel
 @onready var end_turn_button: Button = $Panel/MarginContainer/VBoxContainer/EndTurnButton
 
+@onready var triggers_counter_label: Label = $Panel/MarginContainer/VBoxContainer/TriggersCounterLabel
+
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
@@ -23,6 +25,7 @@ func _ready() -> void:
 	Events.total_score_changed.connect(_update_total_score)
 	Events.required_score_changed.connect(_update_required_score)
 	Events.turn_started.connect(_on_turn_started)
+	Events.rune_activated.connect(_on_rune_activated)
 
 func _on_end_turn_button_pressed() -> void:
 	Events.turn_ended.emit()
@@ -49,3 +52,6 @@ func _update_required_score() -> void:
 
 func _update_trigger_order_label() -> void:
 	selected_trigger_order_label.text = TriggerOrderType.get_display_name(GameManager.trigger_order)
+
+func _on_rune_activated(rune: Rune) -> void:
+	triggers_counter_label.text = "Triggers: %s" % [GameManager.get_runes_activated_this_turn()]

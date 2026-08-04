@@ -3,12 +3,12 @@ extends RefCounted
 
 # Gameplay effects for SegmentPassiveModifier tiles assigned at run start.
 
-const SURVEYOR_SCORE_MULTIPLIER := 2.0
+const SURVEYOR_ACTIVATION_SCALE := 2.0
 const ENCIRCLER_PROD_TRIGGER_CHANCE := 0.15
 const SPIRALIST_CENTER_ACTIVATION_COUNT := 3
 
 
-static func get_score_multiplier(tile: Hex) -> float:
+static func get_activation_scale(tile: Hex) -> float:
 	if tile.active_rune == null or tile.segment_passive_modifier == null:
 		return 1.0
 
@@ -17,7 +17,7 @@ static func get_score_multiplier(tile: Hex) -> float:
 	if tile.active_rune.type != Rune.RuneType.PRODUCER:
 		return 1.0
 
-	return SURVEYOR_SCORE_MULTIPLIER
+	return SURVEYOR_ACTIVATION_SCALE
 
 
 static func get_activation_count(tile: Hex) -> int:
