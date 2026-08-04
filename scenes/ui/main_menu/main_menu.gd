@@ -3,8 +3,17 @@ extends Control
 const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
+# Subtle hover pop: slight grow + warm brighten
+const HOVER_SCALE := Vector2(1.06, 1.06)
+const HOVER_MODULATE := Color(1.2, 1.15, 1.05, 1.0)
+const HOVER_DURATION := 0.12
+
 var character_selection_scene = load("res://scenes/ui/character_selection/character_selection.tscn")
 var settings_scene = load("res://scenes/ui/settings/settings.tscn")
+
+# Tracks in-flight hover tweens so rapid enter/exit does not stack.
+var _hover_tweens: Dictionary = {}
+
 
 func _ready() -> void:
 	# On game ending will pause the game, so we need to unpausse it
@@ -15,14 +24,46 @@ func _ready() -> void:
 	if music:
 		AudioManager.play_music(music)
 	
-	# Connect button hover/focus signals
+	# Connect button hover/focus signals and scale from button center
 	for button in $Container/MenuItemsContainer.get_children():
 		if button is Button:
-			button.mouse_entered.connect(_on_button_hover)
+			button.pivot_offset = button.size / 2.0
+			button.resized.connect(_on_button_resized.bind(button))
+			button.mouse_entered.connect(_on_button_hover.bind(button))
+			button.mouse_exited.connect(_on_button_unhover.bind(button))
 			button.focus_entered.connect(_on_focus_entered)
 
-func _on_button_hover() -> void:
+
+func _on_button_resized(button: Button) -> void:
+	# Keep scale origin centered when layout settles or size changes.
+	button.pivot_offset = button.size / 2.0
+
+
+func _on_button_hover(button: Button) -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+	_animate_button_hover(button, true)
+
+
+func _on_button_unhover(button: Button) -> void:
+	_animate_button_hover(button, false)
+
+
+func _animate_button_hover(button: Button, hovered: bool) -> void:
+	# Cancel any previous tween on this button so enters/exits stay snappy.
+	if _hover_tweens.has(button):
+		var previous: Tween = _hover_tweens[button]
+		if previous.is_valid():
+			previous.kill()
+	
+	button.pivot_offset = button.size / 2.0
+	var tween := create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.set_parallel(true)
+	tween.tween_property(button, "scale", HOVER_SCALE if hovered else Vector2.ONE, HOVER_DURATION)
+	tween.tween_property(button, "modulate", HOVER_MODULATE if hovered else Color.WHITE, HOVER_DURATION)
+	_hover_tweens[button] = tween
+
 
 func _on_focus_entered() -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)

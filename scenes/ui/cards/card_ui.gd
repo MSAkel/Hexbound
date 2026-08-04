@@ -35,7 +35,7 @@ var card_type: CardType
 var hover_enabled := true
 
 # Hand-slot elevation (kept on CardUI so layout reflows stay in sync).
-const HOVER_ELEVATION_OFFSET := -40.0
+const HOVER_ELEVATION_OFFSET := -60.0
 const HOVER_ANIMATION_DURATION := 0.2
 var _hand_slot_position := Vector2.ZERO
 var _is_hover_elevated := false
@@ -131,9 +131,7 @@ func set_card(data) -> void:
 	
 	if data is Rune:
 		card_type = CardType.RUNE
-		# E 0:00:02:617   CardUI.set_card: Invalid call. Nonexistent function 'to_string' in base 'int'.
 		card_type_label.text = Rune.RuneType.keys()[data.type]
-		panel.modulate = Color.GREEN
 	else:
 		push_error("Unknown card type for data: ", data)
 
@@ -153,10 +151,7 @@ func show_selection_glow() -> void:
 
 func hide_selection_glow() -> void:
 	selection_glow.visible = false
-	if card is Rune:
-		panel.modulate = Color.GREEN
-	else:
-		panel.modulate = Color.WHITE
+	panel.modulate = Color.WHITE
 
 func _on_drop_point_area_entered(area: Area2D) -> void:
 	if not targets.has(area):
