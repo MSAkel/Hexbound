@@ -53,5 +53,5 @@ func _update_required_score() -> void:
 func _update_trigger_order_label() -> void:
 	selected_trigger_order_label.text = TriggerOrderType.get_display_name(GameManager.trigger_order)
 
-func _on_rune_activated(rune: Rune) -> void:
+func _on_rune_activated(_rune: Rune) -> void:
 	triggers_counter_label.text = "Triggers: %s" % [GameManager.get_runes_activated_this_turn()]

@@ -14,8 +14,8 @@ func _ready() -> void:
 	z_index = 100
 
 
-func _on_toggle_tooltip(visible: bool, text: String, element_rect: Rect2 = Rect2()) -> void:
-	if visible and text != "":
+func _on_toggle_tooltip(is_tooltip_visible: bool, text: String, element_rect: Rect2 = Rect2()) -> void:
+	if is_tooltip_visible and text != "":
 		target_rect = element_rect
 		_update_content(text)
 		_update_position()

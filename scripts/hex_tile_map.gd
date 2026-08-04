@@ -43,8 +43,8 @@ var _pending_trigger_queue: Array[Dictionary] = []
 
 # Card placement handler
 var card_placement_handler: CardPlacementHandler
-# True while the player holds toggle_map_display (Ctrl) to show segment modifiers.
-var _modifier_overlay_visible: bool = false
+# True while the player holds toggle_map_display (Ctrl) to hide rune icons.
+var _runes_hidden: bool = false
 
 func _ready() -> void:
 	_apply_tile_spacing()
@@ -62,10 +62,10 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var should_show_modifiers := Input.is_action_pressed("toggle_map_display")
-	if should_show_modifiers == _modifier_overlay_visible:
+	var should_hide_runes := Input.is_action_pressed("toggle_map_display")
+	if should_hide_runes == _runes_hidden:
 		return
-	_set_segment_passive_overlay_visible(should_show_modifiers)
+	_set_runes_hidden(should_hide_runes)
 
 
 # Widen the hex grid cells while keeping 256px textures, creating visible gaps
@@ -284,10 +284,10 @@ func _assign_segment_passive_modifiers() -> void:
 			map_data[_hex_center].set_segment_passive_modifier(modifier)
 
 
-func _set_segment_passive_overlay_visible(show_overlay: bool) -> void:
-	_modifier_overlay_visible = show_overlay
+func _set_runes_hidden(hide_runes: bool) -> void:
+	_runes_hidden = hide_runes
 	for hex: Hex in map_data.values():
-		hex.set_segment_passive_overlay_visible(show_overlay)
+		hex.set_runes_hidden(hide_runes)
 
 
 # Breadth-first ring index from the map center; reused by trigger-order sorting.
@@ -717,12 +717,12 @@ func destroy_placed_rune(rune: Rune) -> void:
 
 func queue_rune_triggers(runes: Array[Rune], activation_scales: Array[float] = []) -> void:
 	for i in range(runes.size()):
-		var scale := 1.0
+		var scale_rune := 1.0
 		if i < activation_scales.size():
-			scale = activation_scales[i]
+			scale_rune = activation_scales[i]
 		_pending_trigger_queue.append({
 			"rune": runes[i],
-			"activation_scale": scale,
+			"activation_scale": scale_rune,
 		})
 
 

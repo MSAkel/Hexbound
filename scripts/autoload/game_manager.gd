@@ -34,7 +34,7 @@ var is_processing_turn: bool:
 #region Score and phase progression
 
 # Score needed to complete the current phase and open the merchant.
-var required_score: int = 500
+var required_score: int = 1000
 # Applied each time required_score is met to scale difficulty across phases.
 var required_score_multiplier: int = 3
 
@@ -220,21 +220,25 @@ func register_rune_activation(rune: Rune) -> void:
 #region Runes pool loading and pack creation
 
 # Recursively load every .tres rune under the runes folder, skipping duplicate ids.
+# ResourceLoader.list_directory works in exported builds; DirAccess only sees .gd files in PCK.
 func _load_runes_from_directory(dir_path: String) -> void:
-	var dir := DirAccess.open(dir_path)
-	if dir == null:
-		push_error("Failed to open runes directory: " + dir_path)
-		return
+	var normalized_path := dir_path
+	if not normalized_path.ends_with("/"):
+		normalized_path += "/"
 
-	# Visit subfolders first so organized copies win over legacy root duplicates.
-	for subdir in dir.get_directories():
-		_load_runes_from_directory(dir_path.path_join(subdir))
-
-	for file_name in dir.get_files():
-		if not file_name.ends_with(".tres"):
+	for entry in ResourceLoader.list_directory(normalized_path):
+		if entry == "./" or entry == "../":
 			continue
 
-		var resource_path := dir_path.path_join(file_name)
+		if entry.ends_with("/"):
+			# Visit subfolders first so organized copies win over legacy root duplicates.
+			_load_runes_from_directory(normalized_path.path_join(entry.trim_suffix("/")))
+			continue
+
+		if not entry.ends_with(".tres"):
+			continue
+
+		var resource_path := normalized_path.path_join(entry)
 		var rune := ResourceLoader.load(resource_path) as Rune
 		if rune == null:
 			push_error("Failed to load rune: " + resource_path)
@@ -256,12 +260,18 @@ func _has_rune_with_id(rune_id: String) -> bool:
 # Pick three random runes for the selection panel.
 # Only fills an empty pack so multiple end-turns can stack packs without overwriting.
 func create_runes_pack() -> void:
-	if runes_pack.is_empty():
-		var shuffled_pool := runes_pool.duplicate()
-		shuffled_pool.shuffle()
+	if not runes_pack.is_empty():
+		return
 
-		for i in RUNES_PACK_SIZE:
-			runes_pack.append(shuffled_pool[i])
+	if runes_pool.is_empty():
+		push_error("Cannot create runes pack: runes pool is empty")
+		return
+
+	var shuffled_pool := runes_pool.duplicate()
+	shuffled_pool.shuffle()
+
+	for i in mini(RUNES_PACK_SIZE, shuffled_pool.size()):
+		runes_pack.append(shuffled_pool[i])
 
 #endregion
 

@@ -5,9 +5,9 @@ signal purchased(rune: Rune)
 
 # Fallback prices when a rune has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
-	Rune.RuneRarity.COMMON: 10,
-	Rune.RuneRarity.UNCOMMON: 25,
-	Rune.RuneRarity.RARE: 30,
+	Rune.RuneRarity.COMMON: 15,
+	Rune.RuneRarity.UNCOMMON: 30,
+	Rune.RuneRarity.RARE: 45,
 }
 const DEFAULT_PRICE := 10
 

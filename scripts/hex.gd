@@ -15,7 +15,8 @@ var tile_modifier: TileModifier = null
 var segment_passive_icon: TextureRect = null
 var map: HexTileMap
 var items_grid: GridContainer
-var _segment_passive_overlay_visible: bool = false
+# True while toggle_map_display is held to hide rune icons on the map.
+var _runes_hidden: bool = false
 
 # Match the dashed hex art size so runes align with the tile texture
 const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE, HexTileMap.HEX_TEXTURE_SIZE)
@@ -115,19 +116,22 @@ func clear_tile_modifier() -> void:
 	# Future: remove tile_modifier_icon when that UI exists.
 
 
-# Toggle segment-passive map overlay (Ctrl-held map display).
-func set_segment_passive_overlay_visible(show_overlay: bool) -> void:
-	_segment_passive_overlay_visible = show_overlay
+# Hide or show rune icons while keeping segment-passive modifiers visible.
+func set_runes_hidden(hide_runes: bool) -> void:
+	_runes_hidden = hide_runes
 	_apply_display_mode()
 
 
 func _apply_display_mode() -> void:
+	var has_rune := rune_ui != null and active_rune != null
 	if segment_passive_icon != null:
+		# Modifiers are shown by default; a placed rune takes priority on the same tile.
 		segment_passive_icon.visible = (
-			_segment_passive_overlay_visible and segment_passive_modifier != null
+			segment_passive_modifier != null
+			and (not has_rune or _runes_hidden)
 		)
 	if rune_ui != null:
-		rune_ui.visible = not _segment_passive_overlay_visible
+		rune_ui.visible = has_rune and not _runes_hidden
 
 
 # Clear the placed rune from this tile and remove its map UI.
