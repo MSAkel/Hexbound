@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://4b51ctchdkwh"]
+
+[ext_resource type="Texture2D" uid="uid://b5hury7064svt" path="res://assets/icons/perks/merchant_discount.png" id="1_rlcu5"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_r6dd1"]
+
+[node name="PerkUI" type="PanelContainer" unique_id=814649563]
+offset_right = 176.0
+offset_bottom = 246.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_r6dd1")
+
+[node name="PerkContainer" type="VBoxContainer" parent="." unique_id=431241494]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PerkName" type="Label" parent="PerkContainer" unique_id=348889209]
+layout_mode = 2
+text = "Discount"
+horizontal_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="PerkContainer" unique_id=1163229695]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("1_rlcu5")
+stretch_mode = 2
+
+[node name="PerkDescription" type="Label" parent="PerkContainer" unique_id=802176711]
+layout_mode = 2
+text = "Reduces merchant cards 
+cost by 25%"
+horizontal_alignment = 1

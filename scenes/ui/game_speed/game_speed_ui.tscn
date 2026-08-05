@@ -12,34 +12,34 @@
 [ext_resource type="Texture2D" uid="uid://dtgplxs4duaaj" path="res://assets/icons/game_speed/x3_speed_focus.png" id="10_xyp02"]
 
 [node name="GameSpeedUI" type="HBoxContainer" unique_id=283889066]
-offset_right = 289.0
-offset_bottom = 52.0
+offset_right = 159.0
+offset_bottom = 26.0
 theme_override_constants/separation = 16
 script = ExtResource("1_2ny8g")
 
 [node name="RegularGameSpeedButton" type="TextureButton" parent="." unique_id=1340528137]
-custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 texture_normal = ExtResource("2_ymrcd")
 texture_pressed = ExtResource("3_ledki")
 texture_hover = ExtResource("3_ledki")
 texture_focused = ExtResource("4_2bfej")
+stretch_mode = 0
 
 [node name="DoubleGameSpeedButton" type="TextureButton" parent="." unique_id=1594462364]
-custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 texture_normal = ExtResource("5_k2q18")
 texture_pressed = ExtResource("6_vg37d")
 texture_hover = ExtResource("6_vg37d")
 texture_focused = ExtResource("7_sja7t")
+stretch_mode = 0
 
 [node name="TripleGameSpeedButton" type="TextureButton" parent="." unique_id=2133136321]
-custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 texture_normal = ExtResource("8_3rse5")
 texture_pressed = ExtResource("9_i0yd7")
 texture_hover = ExtResource("9_i0yd7")
 texture_focused = ExtResource("10_xyp02")
+stretch_mode = 0
 
 [connection signal="pressed" from="RegularGameSpeedButton" to="." method="_on_regular_game_speed_button_pressed"]
 [connection signal="pressed" from="DoubleGameSpeedButton" to="." method="_on_double_game_speed_button_pressed"]

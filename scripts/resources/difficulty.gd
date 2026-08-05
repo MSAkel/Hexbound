@@ -11,6 +11,10 @@ enum Level {
 	LEVEL_4,
 }
 
+# Other difficulty ideas:
+# level 6 - At the start of every new round, two production runes are cursed, 
+# Cursed runes produce negative values until the next round.
+
 const DIFFICULTY_INFO = {
 	Level.LEVEL_0: {
 		"name": "Level 1",
