@@ -42,6 +42,9 @@ content_margin_right = 2.0
 content_margin_bottom = 2.0
 texture = ExtResource("9_l4s6v")
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2hgda"]
+bg_color = Color(0.09019608, 0.09019608, 0.09019608, 0.5647059)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
 size = Vector2(198, 317)
 
@@ -60,10 +63,12 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -1.0
 offset_right = 2.0
-offset_bottom = -2.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
+offset_transform_enabled = true
 theme_override_styles/panel = SubResource("StyleBoxTexture_5jwxg")
 
 [node name="SelectionGlow" type="Panel" parent="." unique_id=2130580828]
@@ -91,6 +96,13 @@ offset_top = 6.0
 offset_right = -4.0
 offset_bottom = 310.0
 grow_horizontal = 2
+
+[node name="PriceLabel" type="Label" parent="VBoxContainer" unique_id=1732701792]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "$100"
+horizontal_alignment = 1
 
 [node name="CardName" type="Label" parent="VBoxContainer" unique_id=877716726]
 visible = false
@@ -162,7 +174,39 @@ label_settings = SubResource("LabelSettings_usd0r")
 horizontal_alignment = 1
 autowrap_mode = 3
 
+[node name="SoldOverlay" type="Panel" parent="." unique_id=993550490]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2hgda")
+
+[node name="Label" type="Label" parent="SoldOverlay" unique_id=1355951540]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -30.0
+offset_right = 80.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -0.24842073
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_font_sizes/font_size = 64
+text = "SOLD"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="DropPointArea" type="Area2D" parent="." unique_id=1910631185]
+visible = false
 collision_mask = 2
 monitorable = false
 

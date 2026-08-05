@@ -1,10 +1,11 @@
 extends Control
 
 @onready var choices_container: HBoxContainer = $Panel/MarginPanel/ChoicesContainer
-@onready var reroll_button: Button = $Panel/RerollButton
+@onready var reroll_button: Button = $Panel/MarginPanel/RerollButton
 
-
-const RUNE_SELECTION_ITEM = preload("res://scenes/ui/runes/rune_selection_item.tscn")
+const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
+const CHOICE_CARD_SCALE := 1.45
+const CHOICE_CARD_BASE_SIZE := Vector2(198, 317)
 
 func _ready() -> void:
 	hide()
@@ -63,9 +64,29 @@ func instantiate_rune_choices() -> void:
 	
 	# Now create new choices from the current runes_pack
 	for rune in GameManager.runes_pack:
-		var selectionItem: RuneSelectionItem = RUNE_SELECTION_ITEM.instantiate()
-		selectionItem.set_item(rune)
-		choices_container.add_child(selectionItem)
+		_create_choice_card(rune)
+
+
+func _create_choice_card(rune: Rune) -> void:
+	# Wrapper reserves scaled layout space; the card itself is visually scaled up.
+	var card_slot := Control.new()
+	card_slot.custom_minimum_size = CHOICE_CARD_BASE_SIZE * CHOICE_CARD_SCALE
+	choices_container.add_child(card_slot)
+
+	var card_ui: CardUI = CARD_UI_SCENE.instantiate()
+	card_slot.add_child(card_ui)
+	card_ui.scale = Vector2.ONE * CHOICE_CARD_SCALE
+	card_ui.configure_interaction(CardUI.InteractionMode.CHOICE)
+	card_ui.set_card(rune)
+	card_ui.action_requested.connect(_on_rune_choice_selected)
+
+
+func _on_rune_choice_selected(card_ui: CardUI) -> void:
+	var rune := card_ui.card as Rune
+	GameManager.available_runes_packs -= 1
+	GameManager.runes_pack.clear()
+	Events.rune_selected.emit(rune)
+	Events.rune_pack_count_changed.emit()
 
 func clear_choices() -> void:
 	for node in choices_container.get_children():

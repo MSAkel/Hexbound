@@ -1,6 +1,6 @@
 extends Control
 
-const MERCHANT_CARD_SCENE := preload("res://scenes/ui/merchant/merchant_card.tscn")
+const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const MERCHANT_CARD_COUNT := 6
 const MERCHANT_ENHANCMENT_COUNT := 2
 const REROLL_COST := 10
@@ -14,8 +14,8 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 # Runes and enhancements currently offered for purchase in the merchant grids.
 var merchant_inventory: Array[Rune] = []
 var merchant_enhancement_inventory: Array[Enhancement] = []
-var _displayed_cards: Array[MerchantCard] = []
-var _displayed_enhancement_cards: Array[MerchantCard] = []
+var _displayed_cards: Array[CardUI] = []
+var _displayed_enhancement_cards: Array[CardUI] = []
 var _merchant_discount := 0.0
 
 
@@ -56,7 +56,7 @@ func _refresh_merchant_cards() -> void:
 	await _display_merchant_cards()
 
 
-# Clear both grids and instantiate a MerchantCard for each offered item.
+# Clear both grids and instantiate a CardUI for each offered item.
 func _display_merchant_cards() -> void:
 	_displayed_cards.clear()
 	_displayed_enhancement_cards.clear()
@@ -70,31 +70,40 @@ func _display_merchant_cards() -> void:
 	await get_tree().process_frame
 
 	for rune in merchant_inventory:
-		var merchant_card: MerchantCard = MERCHANT_CARD_SCENE.instantiate()
-		cards_grid.add_child(merchant_card)
-		merchant_card.setup(rune, _merchant_discount)
-		merchant_card.purchased.connect(_on_merchant_card_purchased.bind(merchant_card))
-		_displayed_cards.append(merchant_card)
+		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
+		card_ui.configure_interaction(
+			CardUI.InteractionMode.MERCHANT,
+			{"discount": _merchant_discount}
+		)
+		cards_grid.add_child(card_ui)
+		card_ui.set_card(rune)
+		card_ui.action_requested.connect(_on_merchant_card_purchased)
+		_displayed_cards.append(card_ui)
 
 	for enhancement in merchant_enhancement_inventory:
-		var enhancement_card: MerchantCard = MERCHANT_CARD_SCENE.instantiate()
+		var enhancement_card: CardUI = CARD_UI_SCENE.instantiate()
+		enhancement_card.configure_interaction(
+			CardUI.InteractionMode.MERCHANT,
+			{"discount": _merchant_discount}
+		)
 		enhancements_grid.add_child(enhancement_card)
-		enhancement_card.setup(enhancement, _merchant_discount)
-		enhancement_card.purchased.connect(_on_merchant_card_purchased.bind(enhancement_card))
+		enhancement_card.set_card(enhancement)
+		enhancement_card.action_requested.connect(_on_merchant_card_purchased)
 		_displayed_enhancement_cards.append(enhancement_card)
 
 
-func _on_merchant_card_purchased(card: Resource, merchant_card: MerchantCard) -> void:
-	if merchant_card.is_sold():
+func _on_merchant_card_purchased(card_ui: CardUI) -> void:
+	if card_ui.is_sold():
 		return
 
-	var price := merchant_card.price
+	var price := card_ui.price
 	if not GoldManager.can_afford(price):
 		return
 
 	GoldManager.remove(price)
-	merchant_card.mark_sold()
+	card_ui.mark_sold()
 
+	var card : Resource = card_ui.card
 	if card is Rune:
 		Events.rune_selected.emit(card as Rune)
 		Events.merchant_item_purchased.emit("rune")
@@ -120,23 +129,24 @@ func _on_leave_button_pressed() -> void:
 	hide()
 	if UiManager.active_panel == self:
 		UiManager.active_panel = null
+	Events.merchant_closed.emit()
 
 
 func _on_gold_changed(_new_amount: int) -> void:
-	for merchant_card in _displayed_cards:
-		merchant_card.refresh_affordability()
-	for merchant_card in _displayed_enhancement_cards:
-		merchant_card.refresh_affordability()
+	for card_ui in _displayed_cards:
+		card_ui.refresh_affordability()
+	for card_ui in _displayed_enhancement_cards:
+		card_ui.refresh_affordability()
 	_update_reroll_button()
 
 
 func _on_merchant_discount_changed(new_discount: float) -> void:
 	_merchant_discount = clampf(new_discount, 0.0, 1.0)
 
-	for merchant_card in _displayed_cards:
-		merchant_card.apply_discount(_merchant_discount)
-	for merchant_card in _displayed_enhancement_cards:
-		merchant_card.apply_discount(_merchant_discount)
+	for card_ui in _displayed_cards:
+		card_ui.apply_discount(_merchant_discount)
+	for card_ui in _displayed_enhancement_cards:
+		card_ui.apply_discount(_merchant_discount)
 
 
 func _update_reroll_button() -> void:

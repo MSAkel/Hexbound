@@ -4,7 +4,9 @@
 [ext_resource type="Texture2D" uid="uid://u433044huqg5" path="res://assets/tilesets/tile_highlight.png" id="3_3rbfx"]
 [ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="3_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://bgme2susi6nhr" path="res://assets/tilesets/selected_tile_overlay.png" id="3_c0fpv"]
+[ext_resource type="Texture2D" uid="uid://d2i5udp267mcs" path="res://assets/tilesets/fading_sector_challenge_overlay.png" id="3_ekk8a"]
 [ext_resource type="Texture2D" uid="uid://cvx6147u3jysj" path="res://assets/tilesets/card_drop_area_overlay.png" id="5_ekk8a"]
+[ext_resource type="Texture2D" uid="uid://00t25k53gckj" path="res://assets/tilesets/disabled_tile_overlay.png" id="7_3rbfx"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4rcl8"]
 texture = ExtResource("3_8rbqn")
@@ -16,7 +18,7 @@ tile_shape = 3
 tile_size = Vector2i(272, 272)
 sources/0 = SubResource("TileSetAtlasSource_4rcl8")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_047vf"]
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hover"]
 texture = ExtResource("3_3rbfx")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
@@ -30,8 +32,8 @@ texture_region_size = Vector2i(256, 256)
 [sub_resource type="TileSet" id="TileSet_3rbfx"]
 tile_shape = 3
 tile_size = Vector2i(272, 272)
+sources/0 = SubResource("TileSetAtlasSource_hover")
 sources/2 = SubResource("TileSetAtlasSource_tt7jl")
-sources/0 = SubResource("TileSetAtlasSource_047vf")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_b6nmi"]
 texture = ExtResource("3_3rbfx")
@@ -50,6 +52,26 @@ tile_size = Vector2i(272, 272)
 sources/2 = SubResource("TileSetAtlasSource_8rbqn")
 sources/0 = SubResource("TileSetAtlasSource_b6nmi")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_047vf"]
+texture = ExtResource("7_3rbfx")
+texture_region_size = Vector2i(256, 256)
+0:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_r6dd1"]
+tile_shape = 3
+tile_size = Vector2i(272, 272)
+sources/0 = SubResource("TileSetAtlasSource_047vf")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xmj4m"]
+texture = ExtResource("3_ekk8a")
+texture_region_size = Vector2i(256, 256)
+0:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_7pmlo"]
+tile_shape = 3
+tile_size = Vector2i(272, 272)
+sources/0 = SubResource("TileSetAtlasSource_xmj4m")
+
 [node name="HexTileMap" type="Node2D" unique_id=1387675484]
 script = ExtResource("1_d5c3r")
 hex_size = 3
@@ -62,3 +84,9 @@ tile_set = SubResource("TileSet_3rbfx")
 
 [node name="CardDropOverlayLayer" type="TileMapLayer" parent="." unique_id=272160682]
 tile_set = SubResource("TileSet_047vf")
+
+[node name="DisabledTileOverlayLayer" type="TileMapLayer" parent="." unique_id=1424799643]
+tile_set = SubResource("TileSet_r6dd1")
+
+[node name="FadingSectorOverlayLayer" type="TileMapLayer" parent="." unique_id=1681598386]
+tile_set = SubResource("TileSet_7pmlo")

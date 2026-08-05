@@ -6,7 +6,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 var main_scene := load("res://scenes/main.tscn")
 var main_menu_scene := load("res://scenes/ui/main_menu/main_menu.tscn")
 
-@onready var selection_details: SelectionDetails = $Container/VBoxContainer/SelectionContainer
+@onready var selection_details: SelectionDetails = $Container/VBoxContainer/CharacterDetails
 
 # One selection per trigger order; only one is shown at a time.
 var selections: Array[PlayerCharacter.Type] = []
@@ -54,6 +54,7 @@ func _on_start_button_pressed() -> void:
 	# Character choice locks in the trigger order for the entire run.
 	GameManager.selected_character = character_type
 	GameManager.trigger_order = PlayerCharacter.get_trigger_order(character_type)
+	GameManager.selected_difficulty = selection_details.get_selected_difficulty()
 
 	get_tree().change_scene_to_packed(main_scene)
 

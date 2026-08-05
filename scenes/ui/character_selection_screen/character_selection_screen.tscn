@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://bydk46w3lnoju"]
 
-[ext_resource type="Script" uid="uid://6n3v47jlsp0s" path="res://scenes/ui/character_selection/character_selection.gd" id="1_qkry7"]
+[ext_resource type="Script" uid="uid://6n3v47jlsp0s" path="res://scenes/ui/character_selection_screen/character_selection_screen.gd" id="1_qkry7"]
 [ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="2_1dsk2"]
-[ext_resource type="PackedScene" uid="uid://cdi5v4a8f6h2x" path="res://scenes/ui/character_selection/selection_details.tscn" id="5_nbxll"]
+[ext_resource type="PackedScene" uid="uid://cdi5v4a8f6h2x" path="res://scenes/ui/character_selection_screen/character_details.tscn" id="5_nbxll"]
 
 [sub_resource type="Gradient" id="Gradient_fe2o3"]
 colors = PackedColorArray(0.07450981, 0.12941177, 0.14117648, 1, 0.047058824, 0.09019608, 0.09803922, 0.92156863)
@@ -11,7 +11,7 @@ colors = PackedColorArray(0.07450981, 0.12941177, 0.14117648, 1, 0.047058824, 0.
 gradient = SubResource("Gradient_fe2o3")
 width = 50
 
-[node name="CharacterSelection" type="Control" unique_id=2011532295]
+[node name="CharacterSelectionScreen" type="Control" unique_id=2011532295]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -47,35 +47,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 50
-theme_override_constants/margin_top = 24
+theme_override_constants/margin_top = 50
 theme_override_constants/margin_right = 50
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_bottom = 50
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Container" unique_id=851188894]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="ChracterSelectLabel" type="Label" parent="Container/VBoxContainer" unique_id=188932385]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Character Select"
-horizontal_alignment = 1
-
-[node name="SelectionContainer" parent="Container/VBoxContainer" unique_id=581860497 instance=ExtResource("5_nbxll")]
-layout_mode = 2
-size_flags_horizontal = 1
-size_flags_vertical = 3
-
-[node name="HBoxContainer" type="HBoxContainer" parent="Container/VBoxContainer" unique_id=785894464]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="Container/VBoxContainer/HBoxContainer" unique_id=1133800259]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 8
-theme_override_constants/margin_top = 16
-
-[node name="BackButton" type="Button" parent="Container/VBoxContainer/HBoxContainer/MarginContainer" unique_id=435385287]
+[node name="BackButton" type="Button" parent="Container/VBoxContainer" unique_id=435385287]
 custom_minimum_size = Vector2(100, 42)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -83,13 +63,21 @@ size_flags_vertical = 8
 theme_override_font_sizes/font_size = 24
 text = "BACK"
 
-[node name="StartButton" type="Button" parent="Container/VBoxContainer/HBoxContainer/MarginContainer" unique_id=1811051619]
+[node name="CharacterDetails" parent="Container/VBoxContainer" unique_id=581860497 instance=ExtResource("5_nbxll")]
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 3
+
+[node name="BottomContainer" type="HBoxContainer" parent="Container/VBoxContainer" unique_id=785894464]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="Container/VBoxContainer" unique_id=1811051619]
 custom_minimum_size = Vector2(100, 42)
 layout_mode = 2
-size_flags_horizontal = 10
-size_flags_vertical = 8
+size_flags_horizontal = 6
+size_flags_vertical = 4
 theme_override_font_sizes/font_size = 24
 text = "PLAY"
 
-[connection signal="pressed" from="Container/VBoxContainer/HBoxContainer/MarginContainer/BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="pressed" from="Container/VBoxContainer/HBoxContainer/MarginContainer/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="Container/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="Container/VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]

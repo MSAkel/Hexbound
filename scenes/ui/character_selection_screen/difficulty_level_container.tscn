@@ -1,0 +1,87 @@
+[gd_scene format=3 uid="uid://ln018toeb6p5"]
+
+[ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/others/play.png" id="1_fkq7y"]
+[ext_resource type="Script" uid="uid://ca47lh6e1ysqu" path="res://scenes/ui/character_selection_screen/difficulty_level_container.gd" id="1_uu1md"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_72tkk"]
+bg_color = Color(0.07450981, 0.12941177, 0.14117648, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="DifficultyLevelContainer" type="HBoxContainer" unique_id=1240284962]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -150.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 16
+script = ExtResource("1_uu1md")
+
+[node name="PrevSelection" type="TextureButton" parent="." unique_id=1043424517]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture_normal = ExtResource("1_fkq7y")
+stretch_mode = 3
+flip_h = true
+
+[node name="DifficultyLevelPanel" type="Panel" parent="." unique_id=825910168]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_72tkk")
+
+[node name="MarginContainer" type="MarginContainer" parent="DifficultyLevelPanel" unique_id=1732778070]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DifficultyLevelPanel/MarginContainer" unique_id=2098114582]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DifficultyLevel" type="Label" parent="DifficultyLevelPanel/MarginContainer/VBoxContainer" unique_id=68529099]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Level 1"
+horizontal_alignment = 1
+
+[node name="DifficultyInfo" type="Label" parent="DifficultyLevelPanel/MarginContainer/VBoxContainer" unique_id=1600304068]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
+text = "No changes to the game"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NextSelection" type="TextureButton" parent="." unique_id=770637684]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+texture_normal = ExtResource("1_fkq7y")
+stretch_mode = 3
+
+[node name="Container" type="Control" parent="." unique_id=714684029]
+visible = false
+layout_mode = 2
+size_flags_vertical = 8
+
+[connection signal="pressed" from="PrevSelection" to="." method="_on_prev_selection_pressed"]
+[connection signal="pressed" from="NextSelection" to="." method="_on_next_selection_pressed"]

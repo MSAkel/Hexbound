@@ -10,6 +10,10 @@ const MAX_TURNS_PER_PHASE := 5
 
 # Set when a turn ends with enough score to meet the phase goal; consumed after rune selection.
 var _pending_merchant_visit := false
+# After the final-challenge victory screen, rune pick and merchant happen before phase 13.
+var _pending_post_victory_phase_advance := false
+
+var current_phase: int = 1
 
 #region Turn state
 
@@ -22,7 +26,7 @@ var current_turn: int:
 		return _current_turn
 	set(value):
 		_current_turn = value
-		if _current_turn > MAX_TURNS_PER_PHASE:
+		if _current_turn > get_max_turns_per_phase():
 			Events.game_ended.emit()
 
 var is_processing_turn: bool:
@@ -34,7 +38,7 @@ var is_processing_turn: bool:
 #region Score and phase progression
 
 # Score needed to complete the current phase and open the merchant.
-var required_score: int = 1100
+var required_score: int = 1500
 # Applied each time required_score is met to scale difficulty across phases.
 var required_score_multiplier: int = 2
 
@@ -48,10 +52,8 @@ var total_score: int:
 	set(value):
 		_total_score = value
 		Events.total_score_changed.emit()
-		# Meeting the threshold advances the phase inside the setter.
 		if _total_score >= required_score:
-			required_score = required_score * required_score_multiplier + 750
-			advance_phase()
+			_complete_current_phase()
 
 var turn_score: int:
 	get:
@@ -109,6 +111,7 @@ var _activated_runes_this_turn: Array[Rune] = []
 
 # Chosen on the character selection screen; drives starting gold, hand, and trigger order.
 var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.SURVEYOR
+var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
 var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
 
 var trigger_order: TriggerOrderType.Type:
@@ -149,12 +152,7 @@ func _ready() -> void:
 
 	Events.turn_ended.connect(end_turn)
 	Events.turn_started.connect(_on_turn_started)
-
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("end_turn"):
-		Events.turn_ended.emit()
-		AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
-
+	Events.merchant_closed.connect(_on_merchant_closed)
 #region Turn flow
 
 func end_turn() -> void:
@@ -166,9 +164,15 @@ func finish_turn_processing() -> void:
 
 	# Score the turn before advancing counters so phase logic sees this turn's contribution.
 	var pending_total_score := total_score + (turn_score * turn_multi)
-	var should_advance_turn := current_turn <= MAX_TURNS_PER_PHASE and pending_total_score < required_score
+	var should_advance_turn := current_turn <= get_max_turns_per_phase() and pending_total_score < required_score
 
 	if pending_total_score >= required_score:
+		if ChallengeManager.is_completing_final_challenge_phase():
+			total_score = pending_total_score
+			turn_score = 0
+			turn_multi = 1
+			Events.turn_started.emit()
+			return
 		_pending_merchant_visit = true
 
 	total_score = pending_total_score
@@ -197,12 +201,52 @@ func consume_pending_merchant_visit() -> bool:
 	return true
 
 
+func is_in_post_victory_transition() -> bool:
+	return _pending_post_victory_phase_advance
+
+
+func continue_run_after_victory() -> void:
+	_pending_merchant_visit = true
+	_pending_post_victory_phase_advance = true
+	available_runes_packs += 1
+	UiManager.show_runes_choice_panel.emit()
+	Events.turn_started.emit()
+
+
+func _on_merchant_closed() -> void:
+	if not _pending_post_victory_phase_advance:
+		return
+
+	_pending_post_victory_phase_advance = false
+	advance_phase()
+	Events.turn_started.emit()
+
+
+func get_max_turns_per_phase() -> int:
+	return ChallengeManager.get_max_turns_per_phase()
+
+
+func _complete_current_phase() -> void:
+	required_score = required_score * required_score_multiplier + 750
+	Events.required_score_changed.emit()
+
+	if ChallengeManager.is_completing_final_challenge_phase():
+		Events.challenge_banner_hidden.emit()
+		Events.all_challenges_completed.emit()
+		return
+
+	advance_phase()
+
+
 func advance_phase() -> void:
+	current_phase += 1
 	GoldManager.add(20)
 	AudioManager.play_ui_sound(UI_SOUNDS.GOLD_GAINED)
 
 	current_turn = 1
+	ChallengeManager.on_phase_advanced(current_phase)
 	Events.turn_changed.emit()
+	Events.phase_changed.emit(current_phase)
 	Events.required_score_changed.emit()
 
 #endregion
@@ -312,7 +356,8 @@ func create_runes_pack() -> void:
 	var shuffled_pool := runes_pool.duplicate()
 	shuffled_pool.shuffle()
 
-	for i in mini(RUNES_PACK_SIZE, shuffled_pool.size()):
+	var pack_size := ChallengeManager.get_runes_pack_size()
+	for i in mini(pack_size, shuffled_pool.size()):
 		runes_pack.append(shuffled_pool[i])
 
 #endregion

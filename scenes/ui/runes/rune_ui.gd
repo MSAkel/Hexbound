@@ -11,6 +11,8 @@ var center_coordinates: Vector2i
 # Keeps activation tweens from stacking if triggers overlap.
 var _activation_tween: Tween
 var _empower_flash_tween: Tween
+# Resting color when no activation or empower tween is running.
+var _resting_modulate := Color.WHITE
 
 # Pop scale and warm highlight tuned to fit within the turn-end delay interval.
 const ACTIVATION_PEAK_SCALE := Vector2(1.22, 1.22)
@@ -45,9 +47,28 @@ func play_placement_animation() -> void:
 	placement_tween.parallel().tween_property(
 		_anim_target,
 		"modulate",
-		Color.WHITE,
+		_resting_modulate,
 		PLACEMENT_DROP_DURATION * 0.8
 	)
+
+
+func apply_resting_modulate(color: Color) -> void:
+	_resting_modulate = color
+	if _can_apply_resting_modulate():
+		_anim_target.modulate = color
+
+
+func _can_apply_resting_modulate() -> bool:
+	if _activation_tween != null and _activation_tween.is_valid():
+		return false
+	if _empower_flash_tween != null and _empower_flash_tween.is_valid():
+		return false
+	return true
+
+
+func _apply_resting_modulate() -> void:
+	if _can_apply_resting_modulate():
+		_anim_target.modulate = _resting_modulate
 
 
 # Brief scale pulse + warm flash so the active rune reads clearly during turn resolution.
@@ -57,7 +78,6 @@ func play_activation_animation() -> void:
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
 	
-	# Scale from the center of the hex-sized rune icon.
 	_anim_target.pivot_offset = _anim_target.size / 2
 	_anim_target.scale = Vector2.ONE
 	_anim_target.modulate = Color.WHITE
@@ -93,12 +113,13 @@ func play_activation_animation() -> void:
 	_activation_tween.parallel().tween_property(
 		_anim_target,
 		"modulate",
-		Color.WHITE,
+		_resting_modulate,
 		ACTIVATION_SETTLE_DURATION
 	)
 	_activation_tween.tween_callback(func() -> void:
 		z_index = original_z_index
 		_activation_tween = null
+		_apply_resting_modulate()
 	)
 
 
@@ -117,7 +138,7 @@ func start_empower_flash() -> void:
 	_empower_flash_tween.tween_property(
 		_anim_target,
 		"modulate",
-		Color.WHITE,
+		_resting_modulate,
 		EMPOWER_FLASH_DURATION
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
@@ -127,6 +148,4 @@ func stop_empower_flash() -> void:
 		_empower_flash_tween.kill()
 	_empower_flash_tween = null
 	
-	# Only reset modulate when activation animation is not driving it.
-	if _activation_tween == null or not _activation_tween.is_valid():
-		_anim_target.modulate = Color.WHITE
+	_apply_resting_modulate()

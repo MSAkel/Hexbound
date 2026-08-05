@@ -6,7 +6,7 @@ signal next_selection_pressed
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 
-@onready var character_name_label: Label = $SlectionDetails/CharacterNameLabel
+@onready var character_name_label: RichTextLabel = $SlectionDetails/CharacterNameLabel
 @onready var starting_hand_grid_container: GridContainer = $SlectionDetails/HBoxContainer/StartingHandPanel/StartingHandGridContainer
 @onready var trigger_order_label: Label = $SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer/TriggerOrderLabel
 @onready var trigger_order_description: Label = $SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer/TriggerOrderDescription
@@ -14,9 +14,10 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 @onready var segment_label: Label = $SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer/SegmentLabel
 @onready var segment_description: Label = $SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer/SegmentDescription
 @onready var segment_image: TextureRect = $SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer/SegmentImage
+@onready var difficulty_container: HBoxContainer = $SlectionDetails/DifficultyLevelContainer
 
 func display_selection(character_type: PlayerCharacter.Type) -> void:
-	character_name_label.text = PlayerCharacter.get_character_name(character_type)
+	character_name_label.text = "[wave amp=50 freq=2]%s[/wave]" %  PlayerCharacter.get_character_name(character_type)
 	_update_starting_hand(character_type)
 
 	var trigger_order: TriggerOrderType.Type = PlayerCharacter.get_trigger_order(character_type)
@@ -36,9 +37,7 @@ func _update_starting_hand(character_type: PlayerCharacter.Type) -> void:
 
 	for rune in PlayerCharacter.get_starting_hand_runes(character_type):
 		var card_ui := CARD_UI_SCENE.instantiate() as CardUI
-		# Character select cards are display-only; skip hover lift and clicks.
-		card_ui.hover_enabled = false
-		card_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW)
 		starting_hand_grid_container.add_child(card_ui)
 		card_ui.set_card(rune)
 
@@ -48,3 +47,7 @@ func _on_prev_selection_pressed() -> void:
 
 func _on_next_selection_pressed() -> void:
 	next_selection_pressed.emit()
+
+
+func get_selected_difficulty() -> Difficulty.Level:
+	return difficulty_container.get_selected_difficulty()

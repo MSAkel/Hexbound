@@ -11,16 +11,22 @@ var rune_ui: RuneUI = null
 var segment_passive_modifier: SegmentPassiveModifier = null
 # Future player-applied modifier. Only allowed on tiles without a segment passive.
 var tile_modifier: TileModifier = null
+# Permanently disabled by difficulty level 5; tile cannot be used for the run.
+var is_disabled_by_difficulty: bool = false
 
 var segment_passive_icon: TextureRect = null
 var map: HexTileMap
 var items_grid: GridContainer
+# Optional challenge tint layered on top of the normal active/inactive state.
+var _challenge_rune_modulate: Color = Color.WHITE
 # True while toggle_map_display is held to hide rune icons on the map.
 var _runes_hidden: bool = false
 
 # Match the dashed hex art size so runes align with the tile texture
 const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE, HexTileMap.HEX_TEXTURE_SIZE)
 const HEX_TILE_HALF := HEX_TILE_SIZE / 2
+const RUNE_INACTIVE_MODULATE := Color(0.35, 0.35, 0.42, 0.78)
+const RUNE_FADED_SECTOR_MODULATE := Color(0.58, 0.46, 0.34, 0.9)
 
 var coordinates: Vector2i:
 	get:
@@ -51,8 +57,8 @@ func can_receive_tile_modifier() -> bool:
 
 
 func place_rune(rune: Rune) -> void:
-	# Prevent placing a rune if one already exists
-	if active_rune != null:
+	# Prevent placing a rune if one already exists or the tile is disabled by difficulty.
+	if active_rune != null or is_disabled_by_difficulty:
 		return
 	
 	# Each tile needs its own rune instance. hand/pool cards often share one .tres reference.
@@ -75,6 +81,7 @@ func place_rune(rune: Rune) -> void:
 	_reposition_items()
 	new_rune_instance.play_placement_animation()
 	_apply_display_mode()
+	refresh_rune_visual_state()
 
 
 # Stamp the character's segment passive onto this tile (run start only).
@@ -103,6 +110,9 @@ func set_segment_passive_modifier(modifier: SegmentPassiveModifier) -> void:
 
 # Apply a run-time tile modifier. Returns false on segment-passive or occupied tiles.
 func try_apply_tile_modifier(modifier: TileModifier) -> bool:
+	if is_disabled_by_difficulty:
+		return false
+
 	if not TileModifier.can_replace_on(self):
 		return false
 
@@ -118,6 +128,9 @@ func clear_tile_modifier() -> void:
 
 # Attach an enhancement to the placed rune. Returns false when the tile is empty or already enhanced.
 func try_apply_enhancement(enhancement: Enhancement) -> bool:
+	if is_disabled_by_difficulty:
+		return false
+
 	if not Enhancement.can_apply_to(self):
 		return false
 
@@ -146,12 +159,36 @@ func _apply_display_mode() -> void:
 		rune_ui.visible = has_rune and not _runes_hidden
 
 
+func refresh_rune_visual_state() -> void:
+	if rune_ui == null or active_rune == null:
+		return
+
+	var target_modulate := Color.WHITE
+	if not active_rune.is_active:
+		target_modulate = RUNE_INACTIVE_MODULATE
+	elif _challenge_rune_modulate != Color.WHITE:
+		target_modulate = _challenge_rune_modulate
+
+	rune_ui.apply_resting_modulate(target_modulate)
+
+
+func set_rune_challenge_modulate(modulate: Color) -> void:
+	_challenge_rune_modulate = modulate
+	refresh_rune_visual_state()
+
+
+func clear_rune_challenge_modulate() -> void:
+	_challenge_rune_modulate = Color.WHITE
+	refresh_rune_visual_state()
+
+
 # Clear the placed rune from this tile and remove its map UI.
 func remove_rune() -> void:
 	if active_rune == null:
 		return
 	
 	active_rune = null
+	_challenge_rune_modulate = Color.WHITE
 	if rune_ui != null:
 		rune_ui.queue_free()
 		rune_ui = null

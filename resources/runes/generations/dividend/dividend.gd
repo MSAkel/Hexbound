@@ -5,6 +5,6 @@ func _on_activate_rune(tile: Hex) -> void:
 	activation_count += 1
 	if activation_count % 4 == 0:
 		add_score(tile, 300)
-		add_multiplier(tile, 20, "")
+		add_multiplier(tile, 20)
 		add_gold(tile, 15)
 		create_floating_text(tile, "Dividend!")

@@ -6,9 +6,10 @@ func _on_activate_rune(tile: Hex) -> void:
 	if next_generators.is_empty():
 		return
 	
+	create_floating_text(tile, "Zap!")
 	# 100%, 80%, 64% ... each jump applies another 20% reduction.
 	var activation_scales: Array[float] = []
 	for i in range(next_generators.size()):
 		activation_scales.append(pow(0.8, i))
-	
+		
 	queue_rune_triggers(tile, next_generators, activation_scales)

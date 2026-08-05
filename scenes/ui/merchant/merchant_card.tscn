@@ -1,7 +1,7 @@
-[gd_scene format=3 uid="uid://b4k5fq6ran8f5"]
+[gd_scene format=3 uid="uid://d2li3xbvap8gv"]
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_euaf0"]
-[ext_resource type="Script" uid="uid://4ctck7li1fjt" path="res://scenes/ui/merchant/merchant_card.gd" id="2_4madk"]
+[ext_resource type="Script" path="res://scenes/ui/merchant/merchant_card.gd" id="2_4madk"]
 [ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card_background.png" id="3_ot648"]
 [ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/hex_runes/basic_rune.png" id="6_13lfh"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="8_pqh8v"]

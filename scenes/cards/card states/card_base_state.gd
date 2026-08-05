@@ -17,7 +17,6 @@ func enter() -> void:
 	if generation != _enter_generation:
 		return
 	
-	card_ui.capture_hand_slot()
 	_refresh_hover_state()
 
 

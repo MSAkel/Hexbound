@@ -8,5 +8,5 @@ script = ExtResource("2_script")
 id = "mult_boost"
 name = "Mult Boost"
 icon = ExtResource("1_icon")
-description = "+5 multiplier on the rune"
+description = "+5 multiplier when the host rune activates."
 mult_bonus = 5

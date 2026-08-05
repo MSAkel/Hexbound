@@ -104,7 +104,7 @@ func _update_rune_preview() -> void:
 	var map_coords := _get_mouse_map_coords()
 	last_hovered_tile = map_coords
 	
-	if tile_map.is_in_map(map_coords):
+	if tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords):
 		var hex: Hex = tile_map.map_data[map_coords]
 		var tile_center: Vector2 = tile_map.base_layer.map_to_local(map_coords)
 		_rune_preview.global_position = tile_map.to_global(tile_center)
@@ -131,6 +131,8 @@ func _try_place_card() -> void:
 		return
 	
 	var hex: Hex = tile_map.map_data[map_coords]
+	if not tile_map.is_tile_interactable(map_coords):
+		return
 	if not _can_place_on_hex(hex):
 		return
 	
@@ -168,6 +170,9 @@ func _reset_state() -> void:
 
 # Modifiers and enhancements attach to occupied tiles; all other runes require an empty tile.
 func _can_place_on_hex(hex: Hex) -> bool:
+	if hex.is_disabled_by_difficulty:
+		return false
+
 	if selected_card == null or selected_card.card == null:
 		return false
 

@@ -5,6 +5,7 @@ const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
 func _ready() -> void:
 	# Set starting gold after character selection has chosen selected_character.
 	GoldManager.reset_for_character(GameManager.selected_character)
+	ChallengeManager.init_run()
 
 	# Check if music is playing and play if it's not
 	if not AudioManager.music_player.playing:

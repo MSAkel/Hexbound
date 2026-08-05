@@ -8,6 +8,15 @@ signal game_ended  # Emitted when game ends
 signal turn_ended  # Emitted when a turn ends
 signal turn_started  # Emitted when a turn starts
 signal turn_changed
+signal phase_changed(new_phase: int)
+
+# Challenge signals
+signal challenge_schedule_changed
+signal challenge_changed
+signal challenge_banner_shown(challenge_name: String)
+signal challenge_banner_hidden
+signal merchant_closed
+signal all_challenges_completed
 
 signal card_drag_started(card: CardUI)
 signal card_drag_ended()

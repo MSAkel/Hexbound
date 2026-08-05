@@ -49,6 +49,13 @@ static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 			hand.append(CHAIN_EFFECT)
 			hand.append(CATALYST)
 
+	# Drop card based on difficulty level
+	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
+	for _i in reduction:
+		if hand.is_empty():
+			break
+		hand.pop_back()
+
 	return hand
 
 
@@ -73,12 +80,7 @@ static func _get_random_common_runes(count: int) -> Array[Rune]:
 
 
 static func get_starting_gold(character_type: Type) -> int:
-	match character_type:
-		Type.SURVEYOR, Type.ENCIRCLER, Type.SPIRALIST:
-			return 10
-
-	return 10
-
+	return Difficulty.get_starting_gold(GameManager.selected_difficulty)
 
 static func get_character_name(character_type: Type) -> String:
 	match character_type:

@@ -1,27 +1,27 @@
-[gd_scene format=3 uid="uid://cylk7h6n211gc"]
+[gd_scene format=3 uid="uid://cmhitn3d5i88l"]
 
-[ext_resource type="Script" uid="uid://cr8oh8plo07y7" path="res://scenes/ui/game_over_screen/game_over_screen.gd" id="1_bfo61"]
+[ext_resource type="Script" uid="uid://puk4cteawq6c" path="res://scenes/ui/victory_screen/victory_screen.gd" id="1_victory"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_m82f4"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8ym52"]
 
 [sub_resource type="Gradient" id="Gradient_fe2o3"]
-colors = PackedColorArray(0.3246351, 0.1879023, 0.21975893, 0.580392, 0.10845249, 0.044458404, 0.047823526, 0.7764706)
+colors = PackedColorArray(0.127457, 0.249696, 0.321985, 0.580392, 0.02745098, 0.07450981, 0.08235294, 0.7764706)
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_bfo61"]
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_p4b2q"]
 gradient = SubResource("Gradient_fe2o3")
 width = 50
 
-[node name="GameOverScreen" type="Control" unique_id=725350368]
+[node name="VictoryScreen" type="Control" unique_id=725350368]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_bfo61")
+script = ExtResource("1_victory")
 
 [node name="background" type="Panel" parent="." unique_id=1392681935]
 layout_mode = 1
@@ -39,18 +39,22 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -499.0
+offset_top = 1.0
+offset_right = 1.0
+offset_bottom = 1.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_m82f4")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_8ym52")
 
-[node name="Foreground" type="TextureRect" parent="background/StatsPanel" unique_id=502120698]
+[node name="Foreground" type="TextureRect" parent="background/StatsPanel" unique_id=46358393]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("GradientTexture1D_bfo61")
+texture = SubResource("GradientTexture1D_p4b2q")
 
 [node name="MarginContainer" type="MarginContainer" parent="background/StatsPanel" unique_id=1579781]
 layout_mode = 1
@@ -71,7 +75,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_font_sizes/font_size = 32
-text = "Game Over"
+text = "Victory!"
 horizontal_alignment = 1
 
 [node name="PlayedAsLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=41308403]
@@ -96,9 +100,19 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Cards Played: 0"
 
-[node name="Button" type="Button" parent="background/StatsPanel/MarginContainer" unique_id=1314082620]
+[node name="Control" type="Control" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=491790094]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ContinueButton" type="Button" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=1314082620]
 layout_mode = 2
 size_flags_vertical = 8
-text = "CONTINUE"
+text = "CONTINUE RUN"
 
-[connection signal="pressed" from="background/StatsPanel/MarginContainer/Button" to="." method="_on_button_pressed"]
+[node name="EndlessModeButton" type="Button" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=1647789445]
+layout_mode = 2
+size_flags_vertical = 8
+text = "BACK TO MENU"
+
+[connection signal="pressed" from="background/StatsPanel/MarginContainer/VBoxContainer/ContinueButton" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="background/StatsPanel/MarginContainer/VBoxContainer/EndlessModeButton" to="." method="_on_main_menu_pressed"]

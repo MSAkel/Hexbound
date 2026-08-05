@@ -77,6 +77,7 @@ func _on_toggle_rune_button_pressed() -> void:
 	else:
 		hex.active_rune.is_active = true
 		toggle_rune_button.text = "Disable"
+	hex.refresh_rune_visual_state()
 
 func _on_turn_ended() -> void:
 	hide()

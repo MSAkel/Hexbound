@@ -1,21 +1,10 @@
 [gd_scene format=3 uid="uid://cdi5v4a8f6h2x"]
 
 [ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/others/play.png" id="1_5oaiq"]
-[ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection/selection_details.gd" id="1_r7hje"]
+[ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/character_details.gd" id="1_r7hje"]
 [ext_resource type="Texture2D" uid="uid://brk6a3m33m4fs" path="res://assets/map/trigger_order/encircler_trigger_order.png" id="2_r7hje"]
+[ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="3_1a3dm"]
 [ext_resource type="Texture2D" uid="uid://bas7sbrvyj4fr" path="res://assets/map/segment_passives/surveyor_segment_passive_map.png" id="4_72tkk"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_72tkk"]
-bg_color = Color(0.07450981, 0.12941177, 0.14117648, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1a3dm"]
 bg_color = Color(0.07450981, 0.12941177, 0.14117648, 1)
@@ -29,7 +18,7 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
-[node name="SelectionDetails" type="HBoxContainer" unique_id=581860497]
+[node name="CharacterDetails" type="HBoxContainer" unique_id=581860497]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -45,10 +34,13 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="CharacterNameLabel" type="Label" parent="SlectionDetails" unique_id=755466706]
+[node name="CharacterNameLabel" type="RichTextLabel" parent="SlectionDetails" unique_id=1947284594]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Character Name"
+theme_override_font_sizes/normal_font_size = 52
+bbcode_enabled = true
+text = "[wave amp=50 freq=2]Character Name[/wave]"
+fit_content = true
+autowrap_mode = 0
 horizontal_alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="SlectionDetails" unique_id=115256075]
@@ -90,19 +82,8 @@ size_flags_vertical = 4
 texture_normal = ExtResource("1_5oaiq")
 stretch_mode = 3
 
-[node name="DifficultyLevelPanel" type="Panel" parent="SlectionDetails" unique_id=1451301489]
-custom_minimum_size = Vector2(0, 150)
+[node name="DifficultyLevelContainer" parent="SlectionDetails" unique_id=1240284962 instance=ExtResource("3_1a3dm")]
 layout_mode = 2
-size_flags_vertical = 10
-theme_override_styles/panel = SubResource("StyleBoxFlat_72tkk")
-
-[node name="Label" type="Label" parent="SlectionDetails/DifficultyLevelPanel" unique_id=2130155605]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-theme_override_font_sizes/font_size = 24
-text = "Difficulty Level
-WIP"
 
 [node name="SlectionTriggerOrder" type="VBoxContainer" parent="." unique_id=155871284]
 layout_mode = 2

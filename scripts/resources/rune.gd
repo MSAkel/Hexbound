@@ -94,21 +94,18 @@ func create_floating_text(tile: Hex, text: String) -> void:
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_output_scale))
 	GameManager.turn_score += points
-	create_floating_text(tile, "+%d score" % points)
+	create_floating_text(tile, "+%d Score" % points)
 
 func add_gold(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))
 	GoldManager.add(amount)
-	create_floating_text(tile, "+%d gold" % amount)
+	create_floating_text(tile, "+%d Gold" % amount)
 
-# Adds to turn multiplier resource (unrelated to activation output scale).
-func add_multiplier(tile: Hex, base_amount: int, floating_text: String = "") -> void:
+# Adds to turn multiplier resource.
+func add_multiplier(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))
 	GameManager.turn_multi += amount
-	if floating_text.is_empty():
-		create_floating_text(tile, "+%d multiplier" % amount)
-	else:
-		create_floating_text(tile, floating_text)
+	create_floating_text(tile, "+%d Mult" % amount)
 
 # Queue extra rune activations to resolve before tile flow continues.
 func queue_rune_triggers(source_tile: Hex, runes: Array[Rune], activation_scales: Array[float] = []) -> void:

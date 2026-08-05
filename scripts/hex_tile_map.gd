@@ -7,6 +7,15 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var card_drop_overlay_layer: TileMapLayer = $CardDropOverlayLayer
+@onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
+@onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
+
+# Selection overlay uses source 0 for hover and source 2 for the locked selection.
+const HOVER_OVERLAY_SOURCE_ID := 0
+const SELECTED_OVERLAY_SOURCE_ID := 2
+const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
+# Disabled and fading-sector layers each expose a single tile on source 0.
+const OVERLAY_TILE_SOURCE_ID := 0
 
 # Hexagon radius — tiles from center to each outer edge (hex_size=2 → 19 tiles)
 @export_range(1, 20, 1) var hex_size: int = 2
@@ -32,6 +41,8 @@ var _layout: HexMapLayout
 var card_placement_handler: CardPlacementHandler
 # True while the player holds toggle_map_display (Ctrl) to hide rune icons.
 var _runes_hidden: bool = false
+var _challenge_highlighted_coords: Array[Vector2i] = []
+var _disabled_tile_coords: Array[Vector2i] = []
 
 
 func _ready() -> void:
@@ -63,7 +74,13 @@ func _apply_tile_spacing() -> void:
 		HEX_TEXTURE_SIZE + hex_tile_gap,
 		HEX_TEXTURE_SIZE + hex_tile_gap
 	)
-	for layer: TileMapLayer in [base_layer, selection_overlay_layer, card_drop_overlay_layer]:
+	for layer: TileMapLayer in [
+		base_layer,
+		selection_overlay_layer,
+		card_drop_overlay_layer,
+		disabled_tile_overlay_layer,
+		fading_sector_overlay_layer,
+	]:
 		layer.tile_set.tile_size = spaced_tile_size
 
 
@@ -86,7 +103,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _update_hover_highlight() -> void:
 	var map_coords: Vector2i = _mouse_map_coords()
-	if is_in_map(map_coords):
+	if is_in_map(map_coords) and is_tile_interactable(map_coords):
 		if map_coords == hovered_cell:
 			return
 
@@ -95,7 +112,11 @@ func _update_hover_highlight() -> void:
 
 		hovered_cell = map_coords
 		if map_coords != selected_cell:
-			selection_overlay_layer.set_cell(map_coords, 0, Vector2i.ZERO)
+			selection_overlay_layer.set_cell(
+				map_coords,
+				HOVER_OVERLAY_SOURCE_ID,
+				OVERLAY_TILE_ATLAS_COORDS
+			)
 		else:
 			# Selected tile already shows the selection overlay; skip hover.
 			hovered_cell = Vector2i(-1, -1)
@@ -106,7 +127,7 @@ func _update_hover_highlight() -> void:
 
 func _handle_left_click() -> void:
 	var map_coords: Vector2i = _mouse_map_coords()
-	if not is_in_map(map_coords):
+	if not is_in_map(map_coords) or not is_tile_interactable(map_coords):
 		_clear_selection()
 		return
 
@@ -121,7 +142,11 @@ func _handle_left_click() -> void:
 		hovered_cell = Vector2i(-1, -1)
 
 	if not card_placement_handler.is_card_selected:
-		selection_overlay_layer.set_cell(map_coords, 2, Vector2i.ZERO)
+		selection_overlay_layer.set_cell(
+			map_coords,
+			SELECTED_OVERLAY_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
 		selected_cell = map_coords
 
 
@@ -137,6 +162,13 @@ func _mouse_map_coords() -> Vector2i:
 
 func is_in_map(coords: Vector2i) -> bool:
 	return map_data.has(coords)
+
+
+# Disabled difficulty tiles exist on the map but cannot be selected, hovered, or played on.
+func is_tile_interactable(coords: Vector2i) -> bool:
+	if not is_in_map(coords):
+		return false
+	return not map_data[coords].is_disabled_by_difficulty
 
 
 # Returns map-adjacent hex tiles that exist on this map (0–6 neighbors).
@@ -236,6 +268,9 @@ func generate_terrain() -> void:
 	base_layer.clear()
 	selection_overlay_layer.clear()
 	card_drop_overlay_layer.clear()
+	disabled_tile_overlay_layer.clear()
+	fading_sector_overlay_layer.clear()
+	_disabled_tile_coords.clear()
 
 	var hex_center := Vector2i(hex_size, hex_size)
 	_place_hex_tile(hex_center)
@@ -255,6 +290,35 @@ func generate_terrain() -> void:
 
 	_layout.reset(hex_center)
 	_assign_segment_passive_modifiers()
+	_apply_difficulty_disabled_tiles()
+
+
+# Randomly disable tiles for difficulty level 5, excluding segment-passive tiles.
+func _apply_difficulty_disabled_tiles() -> void:
+	var disable_count := Difficulty.get_disabled_tile_count(GameManager.selected_difficulty)
+	if disable_count <= 0:
+		return
+
+	var candidates: Array[Vector2i] = []
+	for coords: Vector2i in map_data:
+		var hex: Hex = map_data[coords]
+		if hex.is_reserved_for_segment_passive():
+			continue
+		candidates.append(coords)
+
+	candidates.shuffle()
+	disable_count = mini(disable_count, candidates.size())
+
+	for i in disable_count:
+		var coords := candidates[i]
+		var hex: Hex = map_data[coords]
+		hex.is_disabled_by_difficulty = true
+		disabled_tile_overlay_layer.set_cell(
+			coords,
+			OVERLAY_TILE_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_disabled_tile_coords.append(coords)
 
 
 # Stamp each character's segment passive onto reserved map tiles at run start.
@@ -301,6 +365,43 @@ func get_runes_on_same_segment_as(tile: Hex, filter_type: Variant = null) -> Arr
 
 func get_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
 	return _layout.get_runes_on_segment(segment_index, filter_type)
+
+
+func get_segment_count() -> int:
+	return _layout.build_segments().size()
+
+
+func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
+	var hexes: Array[Hex] = []
+	if segment_index < 0:
+		return hexes
+
+	for hex: Hex in map_data.values():
+		if get_segment_index(hex.coordinates) == segment_index:
+			hexes.append(hex)
+	return hexes
+
+
+func highlight_challenge_segment(segment_index: int) -> void:
+	clear_challenge_segment_highlight()
+	if segment_index < 0:
+		return
+
+	for coords: Vector2i in map_data:
+		if get_segment_index(coords) != segment_index:
+			continue
+		fading_sector_overlay_layer.set_cell(
+			coords,
+			OVERLAY_TILE_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_challenge_highlighted_coords.append(coords)
+
+
+func clear_challenge_segment_highlight() -> void:
+	for coords: Vector2i in _challenge_highlighted_coords:
+		fading_sector_overlay_layer.set_cell(coords, -1)
+	_challenge_highlighted_coords.clear()
 
 
 func get_runes_on_first_tile_of_each_segment(filter_type: Variant = null) -> Array[Rune]:
@@ -488,21 +589,25 @@ func on_turn_ended() -> void:
 
 # Resolve one tile: primary activation, then any queued secondary triggers.
 func _resolve_rune_activation(tile: Hex) -> void:
-	await _activate_rune_on_tile(tile)
+	await _activate_rune_on_tile(tile, 1.0, false)
 
 	while not _pending_trigger_queue.is_empty():
 		var entry: Dictionary = _pending_trigger_queue.pop_front()
 		var target_hex := get_hex_for_rune(entry["rune"])
 		if target_hex == null or target_hex.active_rune == null:
 			continue
-		await _activate_rune_on_tile(target_hex, entry["activation_scale"])
+		await _activate_rune_on_tile(target_hex, entry["activation_scale"], true)
 
 
-func _activate_rune_on_tile(tile: Hex, activation_scale: float = 1.0) -> void:
-	if tile.active_rune == null:
+func _activate_rune_on_tile(tile: Hex, activation_scale: float = 1.0, from_trigger: bool = false) -> void:
+	if tile.active_rune == null or tile.is_disabled_by_difficulty:
+		return
+
+	if not from_trigger and ChallengeManager.should_skip_primary_producer_activation(tile.active_rune):
 		return
 
 	activation_scale *= SegmentPassive.get_activation_scale(tile)
+	activation_scale *= ChallengeManager.get_producer_output_multiplier(tile)
 	var activation_count: int = SegmentPassive.get_activation_count(tile)
 
 	for _activation_index in activation_count:

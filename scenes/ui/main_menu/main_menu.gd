@@ -8,7 +8,9 @@ const HOVER_SCALE := Vector2(1.06, 1.06)
 const HOVER_MODULATE := Color(1.2, 1.15, 1.05, 1.0)
 const HOVER_DURATION := 0.12
 
-var character_selection_scene = load("res://scenes/ui/character_selection/character_selection.tscn")
+@onready var game_version: Label = $GameVersion
+
+var character_selection_screen = load("res://scenes/ui/character_selection_screen/character_selection_screen.tscn")
 var settings_scene = load("res://scenes/ui/settings/settings.tscn")
 
 # Tracks in-flight hover tweens so rapid enter/exit does not stack.
@@ -18,6 +20,7 @@ var _hover_tweens: Dictionary = {}
 func _ready() -> void:
 	# On game ending will pause the game, so we need to unpausse it
 	get_tree().paused = false
+	game_version.text = ProjectSettings.get_setting("application/config/version")
 	
 	# Play main menu music
 	var music = SOUNDTRACK.get_music_for_scene(scene_file_path)
@@ -70,7 +73,7 @@ func _on_focus_entered() -> void:
 
 func _on_play_pressed() -> void:
 	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_packed(character_selection_scene)
+	get_tree().change_scene_to_packed(character_selection_screen)
 
 
 func _on_options_pressed() -> void:

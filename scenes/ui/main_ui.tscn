@@ -10,7 +10,9 @@
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="10_b65ll"]
 [ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/hand/hand_panel.tscn" id="11_oi40j"]
 [ext_resource type="PackedScene" uid="uid://b8ve8hecgnb8p" path="res://scenes/ui/round_complete_panel/round_complete_panel.tscn" id="12_aa6wj"]
+[ext_resource type="PackedScene" uid="uid://b04mnn3bt2r1e" path="res://scenes/ui/labels/challenge_label/phase_challenge_name_display.tscn" id="12_m82f4"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
+[ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
 content_margin_left = 12.0
@@ -23,6 +25,8 @@ texture = ExtResource("9_oi40j")
 script = ExtResource("1_l8t6x")
 
 [node name="LeftPanel" parent="." unique_id=438853374 groups=["main_ui"] instance=ExtResource("4_travt")]
+offset_left = -1.0
+offset_right = 349.0
 
 [node name="HandPanel" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
 rotation = 0.0016232448
@@ -44,7 +48,6 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
 
 [node name="GameOverScreen" parent="." unique_id=725350368 instance=ExtResource("9_b65ll")]
-visible = false
 
 [node name="Merchant" parent="." unique_id=613414351 instance=ExtResource("10_b65ll")]
 visible = false
@@ -63,3 +66,10 @@ offset_left = -150.0
 offset_top = -100.0
 offset_right = 150.0
 offset_bottom = 100.0
+
+[node name="PhaseChallengeNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
+visible = false
+
+[node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]
+visible = false
+script = null

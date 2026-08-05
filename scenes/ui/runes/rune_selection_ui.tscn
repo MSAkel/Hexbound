@@ -6,9 +6,13 @@
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="5_2hgda"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8btky"]
-bg_color = Color(0.31764707, 0.64705884, 0.77254903, 0.70980394)
+bg_color = Color(0.12614134, 0.32311276, 0.39601648, 0.70980394)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jpxjh"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
 texture = ExtResource("5_2hgda")
 
 [node name="RuneSelectionUI" type="Control" unique_id=1995601468]
@@ -49,7 +53,15 @@ theme_override_constants/margin_top = 16
 [node name="ChoicesContainer" type="HBoxContainer" parent="Panel/MarginPanel" unique_id=1118305739]
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 4
 theme_override_constants/separation = 64
+
+[node name="RerollButton" type="Button" parent="Panel/MarginPanel" unique_id=16000875]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_styles/normal = SubResource("StyleBoxTexture_jpxjh")
+text = "Reroll (free)"
 
 [node name="CloseButton" type="TextureButton" parent="Panel" unique_id=1173032380]
 visible = false
@@ -63,21 +75,5 @@ grow_horizontal = 0
 texture_normal = ExtResource("3_rgcjf")
 texture_hover = ExtResource("4_lqce7")
 
-[node name="RerollButton" type="Button" parent="Panel" unique_id=16000875]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -59.0
-offset_top = -249.0
-offset_right = 59.0
-offset_bottom = -209.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_styles/normal = SubResource("StyleBoxTexture_jpxjh")
-text = "Reroll (free)"
-
+[connection signal="pressed" from="Panel/MarginPanel/RerollButton" to="." method="_on_reroll_button_pressed"]
 [connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]
-[connection signal="pressed" from="Panel/RerollButton" to="." method="_on_reroll_button_pressed"]

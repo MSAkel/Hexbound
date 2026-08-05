@@ -124,7 +124,7 @@ grow_horizontal = 2
 [node name="TurnScore" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer" unique_id=1499130079]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.42381427, 0.6579759, 1, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 32
 text = "0"
 horizontal_alignment = 1
 
@@ -140,7 +140,7 @@ horizontal_alignment = 1
 [node name="TurnMulti" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScorePanel/TurnScoreContainer" unique_id=27477957]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8104063, 0.26136297, 0.35086894, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 32
 text = "1"
 horizontal_alignment = 1
 
@@ -156,7 +156,7 @@ offset_top = -33.5
 offset_right = 151.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 32
 text = "0"
 horizontal_alignment = 1
 
@@ -166,11 +166,13 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="TriggersCounterLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1779321402]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
 text = "Triggers: 0"
 
 [node name="TriggerRewardsLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=2110187727]
+visible = false
 layout_mode = 2
 text = "Triggers rewards: WIP?"
 
@@ -187,6 +189,7 @@ theme_override_font_sizes/font_size = 24
 text = "Top-left → bottom-right"
 
 [node name="Spacer3" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=87443938]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -201,5 +204,39 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_2ubwj")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_2ubwj")
 theme_override_styles/hover = SubResource("StyleBoxTexture_2ubwj")
 text = "End Turn"
+
+[node name="ChallengePanel" type="Panel" parent="Panel/MarginContainer/VBoxContainer" unique_id=854602928]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/MarginContainer/VBoxContainer/ChallengePanel" unique_id=2069907131]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ChallengePanel/MarginContainer" unique_id=963291256]
+layout_mode = 2
+
+[node name="NextChallengePhase" type="Label" parent="Panel/MarginContainer/VBoxContainer/ChallengePanel/MarginContainer/VBoxContainer" unique_id=1682163281]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Next Challenge: Phase 4"
+
+[node name="CurrentChallenge" type="Label" parent="Panel/MarginContainer/VBoxContainer/ChallengePanel/MarginContainer/VBoxContainer" unique_id=510581376]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "Challenge:"
+autowrap_mode = 2
+
+[node name="ChallengeDescription" type="Label" parent="Panel/MarginContainer/VBoxContainer/ChallengePanel/MarginContainer/VBoxContainer" unique_id=1874063107]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "WIP"
+autowrap_mode = 2
 
 [connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/EndTurnButton" to="." method="_on_end_turn_button_pressed"]
