@@ -13,7 +13,7 @@ enum Type {
 	FADING_SECTOR,
 }
 
-const CHALLENGE_PHASES := [1, 6, 9]
+const CHALLENGE_PHASES := [3, 6, 9]
 
 const ALL_CHALLENGES: Array[Type] = [
 	Type.BLACKOUT,
