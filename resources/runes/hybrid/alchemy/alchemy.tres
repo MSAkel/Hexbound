@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://c6s5pfat7vjqp"]
 
-[ext_resource type="Texture2D" uid="uid://dcg34mwql85a3" path="res://assets/icons/hex_runes/alchemy.png" id="1_7mm74"]
+[ext_resource type="Texture2D" uid="uid://dcg34mwql85a3" path="res://assets/icons/runes/alchemy.png" id="1_7mm74"]
 [ext_resource type="Script" uid="uid://duw8xttcfq0dh" path="res://resources/runes/hybrid/alchemy/alchemy.gd" id="1_sh6kq"]
 
 [resource]

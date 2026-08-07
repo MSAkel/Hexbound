@@ -104,7 +104,11 @@ func _update_rune_preview() -> void:
 	var map_coords := _get_mouse_map_coords()
 	last_hovered_tile = map_coords
 	
-	if tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords):
+	var over_valid_tile := tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords)
+	# Dip the selected card while aiming so it covers fewer bottom tiles.
+	selected_card.set_map_tile_hover_active(over_valid_tile)
+	
+	if over_valid_tile:
 		var hex: Hex = tile_map.map_data[map_coords]
 		var tile_center: Vector2 = tile_map.base_layer.map_to_local(map_coords)
 		_rune_preview.global_position = tile_map.to_global(tile_center)
@@ -152,6 +156,8 @@ func _try_place_card() -> void:
 
 
 func _clear_preview() -> void:
+	if selected_card != null:
+		selected_card.set_map_tile_hover_active(false, false)
 	_rune_preview.visible = false
 	last_hovered_tile = Vector2i(-1, -1)
 	_clear_drop_overlay()

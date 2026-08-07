@@ -1,15 +1,13 @@
 extends Rune
 
 # Triggers the effect of the next rune twice. works on support runes
-# Ignores any retrigger effects after the first activation each turn.
-func activate_rune(tile: Hex, activation_scale: float = 1.0) -> void:
-	if GameManager.has_rune_activated_this_turn(self):
-		return
-	super.activate_rune(tile, activation_scale)
-
+func _init() -> void:
+	single_activation_per_turn = true
 
 func _on_activate_rune(tile: Hex) -> void:
-	var next_rune: Rune = get_immediate_following_rune(tile)
+	var next_rune: Rune = _get_next_rune_in_trigger_order(tile)
 	if next_rune != null:
-		next_rune.activate_rune(tile)
-		next_rune.activate_rune(tile)
+		var retriggers: Array[Rune] = [next_rune, next_rune]
+		queue_rune_triggers(tile, retriggers)
+	else:
+		_create_floating_text(tile, "Failed")

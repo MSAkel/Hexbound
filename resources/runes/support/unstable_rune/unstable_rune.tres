@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://dpu8gj3ofb5dy"]
 
-[ext_resource type="Texture2D" uid="uid://p8867xlo2qt8" path="res://assets/icons/hex_runes/unstable_rune.png" id="1_210j2"]
+[ext_resource type="Texture2D" uid="uid://p8867xlo2qt8" path="res://assets/icons/runes/unstable_rune.png" id="1_210j2"]
 [ext_resource type="Script" uid="uid://fv5rajp1y0mq" path="res://resources/runes/support/unstable_rune/unstable_rune.gd" id="2_210j2"]
 
 [resource]

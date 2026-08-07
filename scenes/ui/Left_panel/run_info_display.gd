@@ -23,7 +23,7 @@ func _ready() -> void:
 	Events.turn_changed.connect(_update_turn_label)
 	Events.turn_score_changed.connect(_update_turn_score)
 	Events.turn_multi_changed.connect(_update_turn_multi)
-	Events.total_score_changed.connect(_update_total_score)
+	Events.total_round_score_changed.connect(_update_total_round_score)
 	Events.required_score_changed.connect(_update_required_score)
 	Events.turn_started.connect(_on_turn_started)
 	Events.phase_changed.connect(_update_challenge_preview)
@@ -78,8 +78,8 @@ func _update_turn_score() -> void:
 func _update_turn_multi() -> void:
 	turn_mult.text = "%s" % [GameManager.turn_multi]
 
-func _update_total_score() -> void:
-	score_this_round.text = "%s" % [GameManager.total_score]
+func _update_total_round_score() -> void:
+	score_this_round.text = "%s" % [GameManager.total_round_score]
 
 func _update_required_score() -> void:
 	required_score.text = "%s" % [GameManager.required_score]

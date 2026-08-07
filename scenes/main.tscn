@@ -13,6 +13,7 @@ script = ExtResource("1_jyhfs")
 layer = -1
 
 [node name="TextureRect" type="TextureRect" parent="CanvasLayer" unique_id=160721250]
+modulate = Color(0.95596343, 0.9559633, 0.95596343, 1)
 z_index = -100
 anchors_preset = 15
 anchor_right = 1.0

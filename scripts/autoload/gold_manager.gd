@@ -18,9 +18,10 @@ var earned_this_turn: int:
 		return _earned_this_turn
 
 
-# Set starting gold from the selected character and notify UI listeners.
-func reset_for_character(character_type: PlayerCharacter.Type) -> void:
-	_amount = PlayerCharacter.get_starting_gold(character_type)
+# Set starting gold for a new run based on difficulty and notify UI listeners.
+func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
+	_amount = Difficulty.get_starting_gold(difficulty)
+	_earned_this_turn = 0
 	Events.gold_changed.emit(_amount)
 
 

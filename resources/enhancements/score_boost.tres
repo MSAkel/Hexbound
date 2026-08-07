@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="Enhancement" format=3 uid="uid://dcn24d4g51dc6"]
 
-[ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/hex_runes/basic_rune.png" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://b7lrwp71sh2t2" path="res://assets/icons/enhancments/score_enhancment.png" id="1_einfm"]
 [ext_resource type="Script" uid="uid://d2gxyarqqp482" path="res://scripts/resources/enhancement.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 id = "score_boost"
 name = "Score Boost"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_einfm")
 description = "+40 score when the host rune activates."
 score_bonus = 40

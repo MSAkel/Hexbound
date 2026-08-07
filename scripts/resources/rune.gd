@@ -22,15 +22,7 @@ enum Product {
 	NONE,
 }
 
-@export var id: String
-@export var name: String
-@export var icon: Texture2D
-@export var score_value: int = 0
-@export_multiline var description: String
-@export var rarity: RuneRarity
-@export var type: RuneType
-# @export var boosted_generation_amount: int = 0
-@export var product: Product = Product.NONE
+const EMPOWER_OUTPUT_SCALE := 3.0
 
 var activation_count: int = 0
 var is_active: bool = true
@@ -41,17 +33,20 @@ var is_empowered: bool = false
 # Scales all rune output during this activation (score, gold, generated multiplier resource).
 var _activation_output_scale: float = 1.0
 
-const EMPOWER_OUTPUT_SCALE := 3.0
+@export var id: String
+@export var name: String
+@export var icon: Texture2D
+@export var base_production_amount: int = 0
+@export_multiline var description: String
+@export var rarity: RuneRarity
+@export var type: RuneType
+# @export var boosted_generation_amount: int = 0
+@export var product: Product = Product.NONE
+# only activates once per turn even if retriggered.
+@export var single_activation_per_turn: bool = false
 
 
-func empower() -> void:
-	if is_empowered:
-		return
-	
-	is_empowered = true
-	Events.rune_empowered.emit(self)
-
-
+# Entry point for rune activation. Mainly called by Hex.apply_rune_activation()
 func activate_rune(tile: Hex, activation_scale: float = 1.0) -> void:
 	if not is_active:
 		return
@@ -71,10 +66,45 @@ func activate_rune(tile: Hex, activation_scale: float = 1.0) -> void:
 	_schedule_enhancement_activation(tile)
 	_activation_output_scale = 1.0
 
+# Queue extra rune activations to resolve before tile flow continues.
+func queue_rune_triggers(source_tile: Hex, runes: Array[Rune], activation_scales: Array[float] = []) -> void:
+	source_tile.map.queue_rune_triggers(runes, activation_scales)
+
+# Modifier cards resolve immediately on placement instead of occupying a tile.
+func apply_on_placement(_tile: Hex) -> void:
+	pass
+
+#region --- Score, gold, and multiplier, and floating text helpers ---
+func add_score(tile: Hex, base_points: int) -> void:
+	var points := int(round(base_points * _activation_output_scale))
+	GameManager.turn_score += points
+	_create_floating_text(tile, "+%d Score" % points, Color.AQUA)
+
+func add_gold(tile: Hex, base_amount: int) -> void:
+	var amount := int(round(base_amount * _activation_output_scale))
+	GoldManager.add(amount)
+	_create_floating_text(tile, "+%d Gold" % amount, Color.GOLD)
+
+func add_multiplier(tile: Hex, base_amount: int) -> void:
+	var amount := int(round(base_amount * _activation_output_scale))
+	GameManager.turn_multi += amount
+	_create_floating_text(tile, "+%d Mult" % amount, Color.PLUM)
+
+func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE) -> void:
+	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
+	tile.map.create_floating_text(tile_pos, text, color)
+
+#endregion --- Score, gold, and multiplier, and floating text helpers ---
+
+func _empower() -> void:
+	if is_empowered:
+		return
+	
+	is_empowered = true
+	Events.rune_empowered.emit(self)
 
 func _on_activate_rune(_tile: Hex) -> void:
 	pass
-
 
 # Brief pause so enhancement floating text does not sit on top of the rune's text.
 func _schedule_enhancement_activation(tile: Hex) -> void:
@@ -82,52 +112,18 @@ func _schedule_enhancement_activation(tile: Hex) -> void:
 		return
 	tile.map.schedule_delayed_enhancement_activation(self, tile, _activation_output_scale)
 
-# Modifier cards resolve immediately on placement instead of occupying a tile.
-func apply_on_placement(_tile: Hex) -> void:
-	pass
-
-
-func create_floating_text(tile: Hex, text: String) -> void:
-	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
-	tile.map.create_floating_text(tile_pos, text, false)
-
-func add_score(tile: Hex, base_points: int) -> void:
-	var points := int(round(base_points * _activation_output_scale))
-	GameManager.turn_score += points
-	create_floating_text(tile, "+%d Score" % points)
-
-func add_gold(tile: Hex, base_amount: int) -> void:
-	var amount := int(round(base_amount * _activation_output_scale))
-	GoldManager.add(amount)
-	create_floating_text(tile, "+%d Gold" % amount)
-
-# Adds to turn multiplier resource.
-func add_multiplier(tile: Hex, base_amount: int) -> void:
-	var amount := int(round(base_amount * _activation_output_scale))
-	GameManager.turn_multi += amount
-	create_floating_text(tile, "+%d Mult" % amount)
-
-# Queue extra rune activations to resolve before tile flow continues.
-func queue_rune_triggers(source_tile: Hex, runes: Array[Rune], activation_scales: Array[float] = []) -> void:
-	source_tile.map.queue_rune_triggers(runes, activation_scales)
-
-#region --- Rune context helpers ---
-# Counter for the number of runes activated this turn.
-func get_activations_this_turn() -> int:
-	return GameManager.get_runes_activated_this_turn()
-
 # Check if the tile is on the edge of the map.
-func is_on_map_edge(tile: Hex) -> bool:
+func _is_on_map_edge(tile: Hex) -> bool:
 	return tile.map.is_edge_tile(tile.coordinates)
 
 # Get all runes placed on the map.
-func get_all_placed_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+func _get_all_placed_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	return tile.map.get_all_placed_runes(filter_type)
 
 # Count placed producer runes whose product matches filter_product (e.g. Product.GOLD).
-func get_producer_count(tile: Hex, filter_product: Product) -> int:
+func _get_producer_count_by_product_type(tile: Hex, filter_product: Product) -> int:
 	var count := 0
-	for rune: Rune in get_all_placed_runes(tile):
+	for rune: Rune in _get_all_placed_runes(tile):
 		if rune.type != RuneType.PRODUCER:
 			continue
 		if rune.product != filter_product:
@@ -135,66 +131,90 @@ func get_producer_count(tile: Hex, filter_product: Product) -> int:
 		count += 1
 	return count
 
-func get_all_hexes_with_runes(tile: Hex) -> Array[Hex]:
-	return tile.map.get_all_hexes_with_runes()
+#region --- Adjacent runes helpers ---
+# Counts all adjacent tiles occupied by a rune. Pass filter_type to filter by rune type.
+func _count_all_occupied_adjacent_runes(tile: Hex, filter_type: Variant = null) -> int:
+	return tile.map.count_all_occupied_adjacent_runes(tile.coordinates, filter_type)
 
-# Count the number of unoccupied adjacent tiles to the given tile.
-func get_unoccupied_adjacent_count(tile: Hex) -> int:
-	return tile.map.count_unoccupied_adjacent_hexes(tile.coordinates)
+# All runes on map-adjacent hexes around tile (unordered).
+func _get_all_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return tile.map.get_all_adjacent_runes(tile, filter_type)
 
-# Pass Rune.RuneType.PRODUCER, Rune.RuneType.EFFECT, or omit filter_type for all occupied neighbors.
-func get_occupied_adjacent_count(tile: Hex, filter_type: Variant = null) -> int:
-	return tile.map.count_occupied_adjacent_hexes(tile.coordinates, filter_type)
+#endregion --- Adjacent runes helpers ---
 
-# Occupied runes on map-adjacent hexes around tile.
-func get_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return tile.map.get_adjacent_runes(tile, filter_type)
+#region --- Trigger order helpers ---
+# All adjacent runes sorted in the map's global trigger order.
+func _get_all_adjacent_runes_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return tile.map.get_all_adjacent_runes_in_trigger_order(tile, filter_type)
 
-# Adjacent runes sorted in the map's global trigger order.
-func get_adjacent_runes_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return tile.map.get_adjacent_runes_in_trigger_order(tile, filter_type)
-
-# Runes that activate before/after this one in the current trigger order.
-# Pass filter_type (e.g. Rune.RuneType.PRODUCER) to only include matching runes in the result.
-func get_runes_in_activation_order(
+# Up to count runes that activate after this one in trigger order.
+func _get_next_runes_in_trigger_order(
 	tile: Hex,
 	count: int = 1,
-	before: bool = false,
 	filter_type: Variant = null
 ) -> Array[Rune]:
-	return tile.map.get_runes_in_activation_order(tile, count, before, filter_type)
+	return tile.map.get_next_runes_in_trigger_order(tile, count, filter_type)
 
-# The rune on the very next hex in trigger order (null when that hex is empty).
-func get_immediate_following_rune(tile: Hex) -> Rune:
-	return tile.map.get_immediate_following_rune(tile)
+# Up to count runes that activated before this one in trigger order.
+func _get_previous_runes_in_trigger_order(
+	tile: Hex,
+	count: int = 1,
+	filter_type: Variant = null
+) -> Array[Rune]:
+	return tile.map.get_previous_runes_in_trigger_order(tile, count, filter_type)
 
-# True when the immediate follower can be consumed (in-sequence, not yet activated).
-func can_consume_immediate_following_rune(tile: Hex) -> bool:
-	return tile.map.can_consume_immediate_following_rune(tile)
+# Rune on the next occupied hex in global trigger order (null when empty).
+func _get_next_rune_in_trigger_order(tile: Hex) -> Rune:
+	return tile.map.get_next_rune_in_trigger_order(tile)
 
-# Remove a placed rune instance from the map (clears its tile and cancels queued triggers).
-func destroy_placed_rune(source_tile: Hex, rune: Rune) -> void:
-	source_tile.map.destroy_placed_rune(rune)
+# True when the next rune in trigger order can be consumed in-sequence this turn.
+func _can_consume_next_rune_in_trigger_order(tile: Hex) -> bool:
+	return tile.map.can_consume_next_rune_in_trigger_order(tile)
+
+#endregion --- Trigger order helpers ---
+
+#region --- Segment helpers ---
+# Segments are character-specific groups of tiles (rows for Surveyor, rings for Encircler, etc.).
+# Each segment has an index: 0, 1, 2, ... following trigger order.
+
+# Segment index for tile under the active character grouping (-1 when unknown).
+func _get_segment_index(tile: Hex) -> int:
+	return tile.map.get_segment_index(tile.coordinates)
 
 # All placed runes on the same segment as tile (optional filter_type for Rune.RuneType).
-func get_runes_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return tile.map.get_runes_on_same_segment_as(tile, filter_type)
+func _get_all_runes_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return tile.map.get_all_runes_on_same_segment(tile, filter_type)
 
-# Rune on the first tile of each segment (null per segment when empty or filtered out).
-func get_runes_on_first_tile_of_each_segment(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return tile.map.get_runes_on_first_tile_of_each_segment(filter_type)
+func _get_all_runes_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return tile.map.get_all_runes_on_other_segments(tile, filter_type)
 
-# Rune on the last tile of each segment (null per segment when empty or filtered out).
-func get_runes_on_last_tile_of_each_segment(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return tile.map.get_runes_on_last_tile_of_each_segment(filter_type)
-
-# First or last occupied rune in a segment relative to tile's segment.
-# segment_offset: 0 = current, -1 = previous, 1 = next.
-func get_rune_in_segment(
+# Returns the first or last placed rune in a map segment near this tile.
+#
+# segment_index_offset picks which segment to search, relative to this tile's segment:
+#   0  → this tile's segment
+#   -1 → the segment immediately before this one
+#   -2 → two segments before this one
+#   +1 → the segment immediately after this one
+# Formula: target segment = this tile's segment index + segment_index_offset
+#
+# pick_first_in_segment:
+#   true  → return the first placed rune in that segment (trigger-order start)
+#   false → return the last placed rune in that segment (trigger-order end)
+func _get_first_or_last_rune_in_relative_segment(
 	tile: Hex,
-	segment_offset: int,
-	first: bool,
+	segment_index_offset: int,
+	pick_first_in_segment: bool,
 	filter_type: Variant = null
 ) -> Rune:
-	return tile.map.get_first_or_last_rune_in_segment(tile, segment_offset, first, filter_type)
-#endregion --- Rune context helpers ---
+	return tile.map.get_rune_in_relative_segment(
+		tile, segment_index_offset, pick_first_in_segment, filter_type
+	)
+
+#endregion --- Segment helpers ---
+
+#region --- Rune destruction helpers ---
+# Remove a placed rune instance from the map (clears its tile and cancels queued triggers).
+func _destroy_placed_rune(source_tile: Hex, rune: Rune) -> void:
+	source_tile.map.destroy_placed_rune(rune)
+
+#endregion --- Rune destruction helpers ---

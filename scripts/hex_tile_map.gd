@@ -1,6 +1,8 @@
 class_name HexTileMap
 extends Node2D
 
+# Live map state: tiles, runes, turn flow, UI
+
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
@@ -160,19 +162,20 @@ func _mouse_map_coords() -> Vector2i:
 	return base_layer.local_to_map(to_local(get_global_mouse_position()))
 
 
+## True when coords belong to a tile on this map.
 func is_in_map(coords: Vector2i) -> bool:
 	return map_data.has(coords)
 
 
-# Disabled difficulty tiles exist on the map but cannot be selected, hovered, or played on.
+## Disabled difficulty tiles exist on the map but cannot be selected, hovered, or played on.
 func is_tile_interactable(coords: Vector2i) -> bool:
 	if not is_in_map(coords):
 		return false
 	return not map_data[coords].is_disabled_by_difficulty
 
 
-# Returns map-adjacent hex tiles that exist on this map (0–6 neighbors).
-func get_adjacent_hexes(coords: Vector2i) -> Array[Hex]:
+## Returns map-adjacent hex tiles that exist on this map (up to six neighbors).
+func get_all_adjacent_hexes(coords: Vector2i) -> Array[Hex]:
 	var neighbors: Array[Hex] = []
 	for direction in HexMapLayout.NEIGHBORS:
 		var neighbor_coords: Vector2i = base_layer.get_neighbor_cell(coords, direction)
@@ -181,7 +184,7 @@ func get_adjacent_hexes(coords: Vector2i) -> Array[Hex]:
 	return neighbors
 
 
-# Outer ring tiles have at least one hex neighbor direction that leaves the map.
+## Outer ring tiles have at least one hex neighbor direction that leaves the map.
 func is_edge_tile(coords: Vector2i) -> bool:
 	for direction in HexMapLayout.NEIGHBORS:
 		var neighbor_coords: Vector2i = base_layer.get_neighbor_cell(coords, direction)
@@ -190,16 +193,19 @@ func is_edge_tile(coords: Vector2i) -> bool:
 	return false
 
 
-# Every rune currently placed on the map. Pass rune_type to filter by PRODUCER or SUPPORT.
+## Every rune currently placed on the map. Pass rune_type to filter by PRODUCER or SUPPORT.
 func get_all_placed_runes(rune_type: Variant = null) -> Array[Rune]:
 	var runes: Array[Rune] = []
 	for hex: Hex in map_data.values():
-		if hex.active_rune != null and hex.active_rune.type == rune_type:
-			runes.append(hex.active_rune)
+		if hex.active_rune == null:
+			continue
+		if rune_type != null and hex.active_rune.type != rune_type:
+			continue
+		runes.append(hex.active_rune)
 	return runes
 
 
-# Hex tiles that currently hold a rune.
+## Hex tiles that currently hold a rune.
 func get_all_hexes_with_runes() -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	for hex: Hex in map_data.values():
@@ -208,19 +214,10 @@ func get_all_hexes_with_runes() -> Array[Hex]:
 	return hexes
 
 
-# Adjacent map tiles with no rune placed on them.
-func count_unoccupied_adjacent_hexes(coords: Vector2i) -> int:
+## Counts all adjacent tiles occupied by a rune. Pass rune_type to filter by type.
+func count_all_occupied_adjacent_runes(coords: Vector2i, rune_type: Variant = null) -> int:
 	var count := 0
-	for hex: Hex in get_adjacent_hexes(coords):
-		if hex.active_rune == null:
-			count += 1
-	return count
-
-
-# Adjacent map tiles occupied by a rune. Pass rune_type to filter by PRODUCER or SUPPORT.
-func count_occupied_adjacent_hexes(coords: Vector2i, rune_type: Variant = null) -> int:
-	var count := 0
-	for hex: Hex in get_adjacent_hexes(coords):
+	for hex: Hex in get_all_adjacent_hexes(coords):
 		if hex.active_rune == null:
 			continue
 		if rune_type != null and hex.active_rune.type != rune_type:
@@ -229,10 +226,10 @@ func count_occupied_adjacent_hexes(coords: Vector2i, rune_type: Variant = null) 
 	return count
 
 
-# Occupied runes on map-adjacent hexes around tile.
-func get_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+## All runes on map-adjacent hexes around tile (unordered).
+func get_all_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	var result: Array[Rune] = []
-	for hex: Hex in get_adjacent_hexes(tile.coordinates):
+	for hex: Hex in get_all_adjacent_hexes(tile.coordinates):
 		if hex.active_rune == null:
 			continue
 		if filter_type != null and hex.active_rune.type != filter_type:
@@ -241,10 +238,10 @@ func get_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	return result
 
 
-# Adjacent runes sorted in the map's global trigger order.
-func get_adjacent_runes_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+## All adjacent runes sorted in the map's global trigger order.
+func get_all_adjacent_runes_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	var result: Array[Rune] = []
-	var neighbors := get_adjacent_hexes(tile.coordinates)
+	var neighbors := get_all_adjacent_hexes(tile.coordinates)
 	for hex: Hex in get_hexes_in_trigger_order():
 		if hex.active_rune == null:
 			continue
@@ -263,6 +260,7 @@ func _place_hex_tile(offset: Vector2i) -> void:
 	base_layer.set_cell(offset, 0, BASE_TILE_ATLAS_COORDS)
 
 
+## Builds the hex map from the center tile outward and assigns segment passives.
 func generate_terrain() -> void:
 	map_data.clear()
 	base_layer.clear()
@@ -342,35 +340,46 @@ func _set_runes_hidden(hide_runes: bool) -> void:
 		hex.set_runes_hidden(hide_runes)
 
 
-# Ring index from the map center (0 = center, hex_size = outer edge).
+## Ring index from the map center (0 = center, hex_size = outer edge).
 func get_tile_ring_distance(coords: Vector2i) -> int:
 	return _layout.get_ring_distance(coords)
 
 
+## All map coordinates sorted by the active trigger-order rule.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
 	return _layout.get_coords_in_trigger_order()
 
 
+## All map hex tiles in trigger order.
 func get_hexes_in_trigger_order() -> Array[Hex]:
 	return _layout.get_hexes_in_trigger_order()
 
 
+## Segment index for a tile under the active character grouping (-1 when unknown).
 func get_segment_index(coords: Vector2i) -> int:
 	return _layout.get_segment_index(coords)
 
 
-func get_runes_on_same_segment_as(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return _layout.get_runes_on_segment(get_segment_index(tile.coordinates), filter_type)
+## All placed runes on the same segment as tile, optionally filtered by rune type.
+func get_all_runes_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return _layout.get_all_runes_on_segment(get_segment_index(tile.coordinates), filter_type)
 
 
-func get_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
-	return _layout.get_runes_on_segment(segment_index, filter_type)
+## All placed runes on one segment by index, optionally filtered by rune type.
+func get_all_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
+	return _layout.get_all_runes_on_segment(segment_index, filter_type)
 
 
+## All placed runes on other segments, optionally filtered by rune type.
+func get_all_runes_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	return _layout.get_all_runes_on_other_segments(tile, filter_type)
+
+## Number of character-specific segments on the current map.
 func get_segment_count() -> int:
 	return _layout.build_segments().size()
 
 
+## All hex tiles belonging to one segment index.
 func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	if segment_index < 0:
@@ -382,6 +391,7 @@ func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 	return hexes
 
 
+## Overlays every tile in a segment for challenge UI highlighting.
 func highlight_challenge_segment(segment_index: int) -> void:
 	clear_challenge_segment_highlight()
 	if segment_index < 0:
@@ -398,30 +408,24 @@ func highlight_challenge_segment(segment_index: int) -> void:
 		_challenge_highlighted_coords.append(coords)
 
 
+## Clears the challenge segment overlay stamped by highlight_challenge_segment().
 func clear_challenge_segment_highlight() -> void:
 	for coords: Vector2i in _challenge_highlighted_coords:
 		fading_sector_overlay_layer.set_cell(coords, -1)
 	_challenge_highlighted_coords.clear()
 
 
-func get_runes_on_first_tile_of_each_segment(filter_type: Variant = null) -> Array[Rune]:
-	return _layout.get_runes_on_first_tile_of_each_segment(filter_type)
-
-
-func get_runes_on_last_tile_of_each_segment(filter_type: Variant = null) -> Array[Rune]:
-	return _layout.get_runes_on_last_tile_of_each_segment(filter_type)
-
-
-func get_first_or_last_rune_in_segment(
+## First or last placed rune in a segment relative to tile's segment. See HexMapLayout.get_rune_in_relative_segment().
+func get_rune_in_relative_segment(
 	tile: Hex,
-	segment_offset: int,
-	first: bool,
+	segment_index_offset: int,
+	pick_first_in_segment: bool,
 	filter_type: Variant = null
 ) -> Rune:
-	return _layout.get_first_or_last_rune_in_segment(tile, segment_offset, first, filter_type)
+	return _layout.get_rune_in_relative_segment(tile, segment_index_offset, pick_first_in_segment, filter_type)
 
 
-func _build_runes_in_activation_order() -> Array[Rune]:
+func _build_all_runes_in_trigger_order() -> Array[Rune]:
 	var runes_in_order: Array[Rune] = []
 	for hex: Hex in get_hexes_in_trigger_order():
 		if hex.active_rune != null:
@@ -437,8 +441,8 @@ func _get_hex_trigger_order_index(current_tile: Hex) -> int:
 	return -1
 
 
-# Rune on the very next hex in trigger order (null when that hex is empty).
-func get_immediate_following_rune(current_tile: Hex) -> Rune:
+## Rune on the next occupied hex in global trigger order (null when empty).
+func get_next_rune_in_trigger_order(current_tile: Hex) -> Rune:
 	var hexes := get_hexes_in_trigger_order()
 	var current_index := _get_hex_trigger_order_index(current_tile)
 	if current_index == -1 or current_index + 1 >= hexes.size():
@@ -446,15 +450,15 @@ func get_immediate_following_rune(current_tile: Hex) -> Rune:
 	return hexes[current_index + 1].active_rune
 
 
-# True when the next hex in trigger order has a rune that is ready to be consumed.
-func can_consume_immediate_following_rune(current_tile: Hex) -> bool:
+## True when the next rune in trigger order can be consumed in-sequence this turn.
+func can_consume_next_rune_in_trigger_order(current_tile: Hex) -> bool:
 	var hexes := get_hexes_in_trigger_order()
 	var current_index := _get_hex_trigger_order_index(current_tile)
 	if current_index == -1 or current_index + 1 >= hexes.size():
 		return false
 
-	var following_rune := hexes[current_index + 1].active_rune
-	if following_rune == null:
+	var next_rune := hexes[current_index + 1].active_rune
+	if next_rune == null:
 		return false
 
 	# Every rune on earlier hexes must have already activated this turn.
@@ -463,17 +467,34 @@ func can_consume_immediate_following_rune(current_tile: Hex) -> bool:
 		if prior_rune != null and not GameManager.has_rune_activated_this_turn(prior_rune):
 			return false
 
-	return not GameManager.has_rune_activated_this_turn(following_rune)
+	return not GameManager.has_rune_activated_this_turn(next_rune)
 
 
-# Runes that activate before/after current_tile in turn order (empty hexes are skipped).
-func get_runes_in_activation_order(
+## Up to count runes that activate after current_tile in trigger order.
+func get_next_runes_in_trigger_order(
 	current_tile: Hex,
 	count: int = 1,
-	before: bool = false,
 	filter_type: Variant = null
 ) -> Array[Rune]:
-	var runes_in_order := _build_runes_in_activation_order()
+	return _get_runes_relative_to_trigger_order(current_tile, count, false, filter_type)
+
+
+## Up to count runes that activated before current_tile in trigger order.
+func get_previous_runes_in_trigger_order(
+	current_tile: Hex,
+	count: int = 1,
+	filter_type: Variant = null
+) -> Array[Rune]:
+	return _get_runes_relative_to_trigger_order(current_tile, count, true, filter_type)
+
+
+func _get_runes_relative_to_trigger_order(
+	current_tile: Hex,
+	count: int,
+	previous: bool,
+	filter_type: Variant = null
+) -> Array[Rune]:
+	var runes_in_order := _build_all_runes_in_trigger_order()
 	var current_index := -1
 	for i in range(runes_in_order.size()):
 		if runes_in_order[i] == current_tile.active_rune:
@@ -484,9 +505,9 @@ func get_runes_in_activation_order(
 		return []
 
 	var result: Array[Rune] = []
-	var start := current_index - 1 if before else current_index + 1
-	var end := -1 if before else runes_in_order.size()
-	var step := -1 if before else 1
+	var start := current_index - 1 if previous else current_index + 1
+	var end := -1 if previous else runes_in_order.size()
+	var step := -1 if previous else 1
 
 	for i in range(start, end, step):
 		var rune := runes_in_order[i]
@@ -498,6 +519,7 @@ func get_runes_in_activation_order(
 	return result
 
 
+## Returns the hex tile that currently holds rune, or null when it is not placed.
 func get_hex_for_rune(rune: Rune) -> Hex:
 	for hex: Hex in map_data.values():
 		if hex.active_rune == rune:
@@ -505,7 +527,7 @@ func get_hex_for_rune(rune: Rune) -> Hex:
 	return null
 
 
-# Remove a placed rune from its tile and cancel any queued triggers targeting it.
+## Removes a placed rune from its tile and cancels queued triggers targeting it.
 func destroy_placed_rune(rune: Rune) -> void:
 	var hex := get_hex_for_rune(rune)
 	if hex == null:
@@ -518,6 +540,7 @@ func destroy_placed_rune(rune: Rune) -> void:
 			_pending_trigger_queue.remove_at(i)
 
 
+## Queues extra rune activations to resolve before the current tile flow continues.
 func queue_rune_triggers(runes: Array[Rune], activation_scales: Array[float] = []) -> void:
 	for i in range(runes.size()):
 		var scale_rune := 1.0
@@ -529,17 +552,18 @@ func queue_rune_triggers(runes: Array[Rune], activation_scales: Array[float] = [
 		})
 
 
-func create_floating_text(pos: Vector2, text: String, is_gold: bool) -> void:
+## Spawns floating combat text at a world position on the current scene.
+func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE) -> void:
 	var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
 	floating_text.position = pos
-	floating_text.set_text(text, is_gold)
+	floating_text.set_text(text, color)
 	get_tree().current_scene.add_child(floating_text)
 
 
-# Resolve enhancement output after a short pause so its floating text reads separately.
 const ENHANCEMENT_ACTIVATION_DELAY := 0.5
 
 
+## Delays enhancement resolution so its floating text does not overlap the host rune's text.
 func schedule_delayed_enhancement_activation(host_rune: Rune, tile: Hex, output_scale: float) -> void:
 	_play_delayed_enhancement_activation(host_rune, tile, output_scale)
 
@@ -554,7 +578,7 @@ func _play_delayed_enhancement_activation(host_rune: Rune, tile: Hex, output_sca
 	host_rune._activation_output_scale = 1.0
 
 
-# Used for setting camera boundaries and other coordinate conversions.
+## Converts map coordinates to local pixel position on the base tile layer.
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
 
@@ -572,6 +596,7 @@ func _on_rune_empower_consumed(rune: Rune) -> void:
 		hex.stop_empower_flash()
 
 
+## Resolves every placed rune in trigger order when the player ends the turn.
 func on_turn_ended() -> void:
 	var base_delay_interval := 0.5
 	_pending_trigger_queue.clear()

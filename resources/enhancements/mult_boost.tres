@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="Enhancement" format=3 uid="uid://k8m6k7hfwy7j"]
 
-[ext_resource type="Texture2D" uid="uid://dtxf78ouio4em" path="res://assets/icons/hex_runes/multi_rune.png" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://bd2vusl5q3lr4" path="res://assets/icons/enhancments/mult_enhancement.png" id="1_winum"]
 [ext_resource type="Script" uid="uid://d2gxyarqqp482" path="res://scripts/resources/enhancement.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 id = "mult_boost"
 name = "Mult Boost"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_winum")
 description = "+5 multiplier when the host rune activates."
 mult_bonus = 5

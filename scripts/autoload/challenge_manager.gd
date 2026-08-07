@@ -205,7 +205,7 @@ func _on_rune_activated(rune: Rune) -> void:
 		var hex := tile_map.get_hex_for_rune(rune)
 		if hex != null:
 			var tile_pos := tile_map.base_layer.map_to_local(hex.coordinates)
-			tile_map.create_floating_text(tile_pos, "-1 Gold", true)
+			tile_map.create_floating_text(tile_pos, "-1 Gold", Color.GOLD)
 
 
 func _on_merchant_closed() -> void:

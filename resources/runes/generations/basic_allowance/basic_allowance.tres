@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://dh6iq7pfm421c"]
 
-[ext_resource type="Texture2D" uid="uid://dkom4y611kpcr" path="res://assets/icons/hex_runes/basic_allowance.png" id="1_28b2w"]
+[ext_resource type="Texture2D" uid="uid://dkom4y611kpcr" path="res://assets/icons/runes/basic_allowance.png" id="1_28b2w"]
 [ext_resource type="Script" uid="uid://dsngm1kqddanj" path="res://resources/runes/generations/basic_allowance/basic_allowance.gd" id="2_28b2w"]
 
 [resource]
@@ -8,7 +8,7 @@ script = ExtResource("2_28b2w")
 id = "basic_allowance"
 name = "Basic Allowance"
 icon = ExtResource("1_28b2w")
-score_value = 2
+base_production_amount = 2
 description = "Gain 2 gold"
 product = 0
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

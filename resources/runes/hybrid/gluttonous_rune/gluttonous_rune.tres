@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://dia2wi5j18o8g"]
 
-[ext_resource type="Texture2D" uid="uid://bpg7ltsn778y8" path="res://assets/icons/hex_runes/gluttonous_rune.png" id="1_mi1r8"]
+[ext_resource type="Texture2D" uid="uid://bpg7ltsn778y8" path="res://assets/icons/runes/gluttonous_rune.png" id="1_mi1r8"]
 [ext_resource type="Script" uid="uid://bn2e4r844r0fo" path="res://resources/runes/hybrid/gluttonous_rune/gluttonous_rune.gd" id="2_41old"]
 
 [resource]
@@ -8,7 +8,7 @@ script = ExtResource("2_41old")
 id = "gluttonous_rune"
 name = "Gluttonous Rune"
 icon = ExtResource("1_mi1r8")
-score_value = 30
+base_production_amount = 30
 description = "+30 score. Consumes the next adjacent rune in the trigger order to permanently double it's score (stackable)"
 rarity = 2
 type = 2

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://bms421c4eq14w"]
 
-[ext_resource type="Texture2D" uid="uid://c17a1xwfgbakg" path="res://assets/icons/hex_runes/chain_effect.png" id="1_sprk3"]
+[ext_resource type="Texture2D" uid="uid://c17a1xwfgbakg" path="res://assets/icons/runes/chain_effect.png" id="1_sprk3"]
 [ext_resource type="Script" uid="uid://6h1bxcx3tjm8" path="res://resources/runes/support/chain_effect/chain_effect.gd" id="2_sprk3"]
 
 [resource]

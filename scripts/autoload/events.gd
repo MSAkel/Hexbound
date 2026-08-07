@@ -24,7 +24,7 @@ signal card_drag_ended()
 # Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 
-signal total_score_changed()
+signal total_round_score_changed()
 signal turn_score_changed()
 signal turn_multi_changed()
 signal required_score_changed()

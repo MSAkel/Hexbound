@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://mrygcev1ywy4"]
 
-[ext_resource type="Texture2D" uid="uid://b81wi1ou6v452" path="res://assets/icons/hex_runes/overdrive.png" id="1_42ohc"]
+[ext_resource type="Texture2D" uid="uid://b81wi1ou6v452" path="res://assets/icons/runes/overdrive.png" id="1_42ohc"]
 [ext_resource type="Script" uid="uid://c0o7t3pif5ffi" path="res://resources/runes/support/overdrive/overdrive.gd" id="1_an07q"]
 
 [resource]
@@ -8,6 +8,8 @@ script = ExtResource("1_an07q")
 id = "overdrive"
 name = "Overdrive"
 icon = ExtResource("1_42ohc")
-description = "Triggers the effect of the next rune twice. Cannot be retriggered"
+description = "Triggers the next adjacent rune twice. Can only be activated once"
+rarity = 1
 type = 1
+single_activation_per_turn = true
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

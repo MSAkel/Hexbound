@@ -65,7 +65,6 @@ corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-corner_detail = 4
 
 [sub_resource type="FontFile" id="FontFile_wt1dj"]
 cache/0/variation_coordinates = {}

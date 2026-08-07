@@ -42,17 +42,17 @@ var required_score: int = 1500
 # Applied each time required_score is met to scale difficulty across phases.
 var required_score_multiplier: int = 2
 
-var _total_score: int = 0
+var _total_round_score: int = 0
 var _turn_score: int = 0
 var _turn_multi: int = 1
 
-var total_score: int:
+var total_round_score: int:
 	get:
-		return _total_score
+		return _total_round_score
 	set(value):
-		_total_score = value
-		Events.total_score_changed.emit()
-		if _total_score >= required_score:
+		_total_round_score = value
+		Events.total_round_score_changed.emit()
+		if _total_round_score >= required_score:
 			_complete_current_phase()
 
 var turn_score: int:
@@ -81,8 +81,8 @@ var enhancements_pool: Array[Enhancement] = []
 var runes_pack: Array[Rune] = []
 # How many rune packs are queued; incremented each turn and consumed when the panel opens.
 var _available_runes_packs: int = 0
-# Gold cost to reroll the current pack; rises by 5 after each reroll.
-var _runes_reroll_cost: int = 0
+# Gold cost to reroll the current pack; rises by 10 after each reroll.
+var _runes_reroll_cost: int = 10
 
 var available_runes_packs: int:
 	get:
@@ -109,7 +109,7 @@ var _activated_runes_this_turn: Array[Rune] = []
 
 #region Character and trigger order
 
-# Chosen on the character selection screen; drives starting gold, hand, and trigger order.
+# Chosen on the character selection screen; drives starting hand and trigger order.
 var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.SURVEYOR
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
 var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
@@ -163,19 +163,19 @@ func finish_turn_processing() -> void:
 	_is_processing_turn = false
 
 	# Score the turn before advancing counters so phase logic sees this turn's contribution.
-	var pending_total_score := total_score + (turn_score * turn_multi)
-	var should_advance_turn := current_turn <= get_max_turns_per_phase() and pending_total_score < required_score
+	var pending_total_round_score := total_round_score + (turn_score * turn_multi)
+	var should_advance_turn := current_turn <= get_max_turns_per_phase() and pending_total_round_score < required_score
 
-	if pending_total_score >= required_score:
+	if pending_total_round_score >= required_score:
 		if ChallengeManager.is_completing_final_challenge_phase():
-			total_score = pending_total_score
+			total_round_score = pending_total_round_score
 			turn_score = 0
 			turn_multi = 1
 			Events.turn_started.emit()
 			return
 		_pending_merchant_visit = true
 
-	total_score = pending_total_score
+	total_round_score = pending_total_round_score
 	turn_score = 0
 	turn_multi = 1
 
@@ -228,6 +228,7 @@ func get_max_turns_per_phase() -> int:
 
 func _complete_current_phase() -> void:
 	required_score = required_score * required_score_multiplier + 750
+	total_round_score = 0
 	Events.required_score_changed.emit()
 
 	if ChallengeManager.is_completing_final_challenge_phase():

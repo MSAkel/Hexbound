@@ -1,14 +1,14 @@
 [gd_resource type="Resource" format=3 uid="uid://deg6qje1rx37t"]
 
 [ext_resource type="Script" uid="uid://dq3w854rkj4v6" path="res://resources/runes/generations/prosperity/properity.gd" id="1_6imw7"]
-[ext_resource type="Texture2D" uid="uid://ofyssvbjhkfw" path="res://assets/icons/hex_runes/properity.png" id="1_psaim"]
+[ext_resource type="Texture2D" uid="uid://ofyssvbjhkfw" path="res://assets/icons/runes/properity.png" id="1_psaim"]
 
 [resource]
 script = ExtResource("1_6imw7")
 id = "properity"
 name = "Properity"
 icon = ExtResource("1_psaim")
-score_value = 5
-description = "+5 score for every 1 gold earned this turn"
+base_production_amount = 4
+description = "+4 score for every 1 gold earned this turn"
 product = 1
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

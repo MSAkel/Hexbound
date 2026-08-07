@@ -1,14 +1,15 @@
 [gd_resource type="Resource" format=3 uid="uid://cbu6bejcytgld"]
 
 [ext_resource type="Script" uid="uid://c8j6gqh8kxfgf" path="res://resources/runes/generations/golden_ratio/golden_ratio.gd" id="1_bybwu"]
-[ext_resource type="Texture2D" uid="uid://cy7j0oi05u0sm" path="res://assets/icons/hex_runes/golden_ratio.png" id="1_no3ai"]
+[ext_resource type="Texture2D" uid="uid://cy7j0oi05u0sm" path="res://assets/icons/runes/golden_ratio.png" id="1_no3ai"]
 
 [resource]
 script = ExtResource("1_bybwu")
 id = "golden_ratio"
 name = "Golden Ratio"
 icon = ExtResource("1_no3ai")
-score_value = 1
+base_production_amount = 1
 description = "+1 mult for every 1 gold earned this turn"
+rarity = 1
 product = 2
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

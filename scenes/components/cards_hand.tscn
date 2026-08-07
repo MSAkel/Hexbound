@@ -1,18 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://ci2r1gwxv4fag"]
+[gd_scene format=3 uid="uid://ci2r1gwxv4fag"]
 
 [ext_resource type="Script" uid="uid://dokobqfpi35ci" path="res://scenes/components/hand.gd" id="1_0y3yv"]
 
-[node name="CardsHand" type="Control" groups=["ui_layer"]]
+[node name="CardsHand" type="Control" unique_id=19796645 groups=["ui_layer"]]
+custom_minimum_size = Vector2(600, 125)
 layout_mode = 3
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
+offset_left = -694.5
+offset_top = -249.0
+offset_right = 694.5
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Hand" type="HBoxContainer" parent="."]
+[node name="Hand" type="HBoxContainer" parent="." unique_id=1845998698]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -22,7 +26,7 @@ anchor_bottom = 1.0
 offset_left = -173.0
 offset_top = -217.0
 offset_right = 173.0
-offset_bottom = 44.0
+offset_bottom = 83.0
 grow_horizontal = 2
 grow_vertical = 0
 alignment = 1

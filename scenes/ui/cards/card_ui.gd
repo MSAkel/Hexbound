@@ -55,16 +55,24 @@ var interaction_mode: InteractionMode = InteractionMode.HAND
 var hover_enabled := true
 var price: int = 0
 
-const HAND_HOVER_ELEVATION_OFFSET := -60.0
+const HAND_HOVER_ELEVATION_OFFSET := -80.0
+# Lower lift while aiming at a tile so the selected card blocks fewer bottom hexes.
+const HAND_MAP_TILE_HOVER_ELEVATION_OFFSET := -20.0
+# Subtle pop when a hand card is hovered or selected.
+const HAND_HOVER_SCALE := 1.2
+const HAND_ELEVATED_Z_INDEX := 10
 const PANEL_HOVER_ELEVATION_OFFSET := -12.0
 const HOVER_ANIMATION_DURATION := 0.2
 var _is_hover_elevated := false
+var _map_tile_hover_active := false
+var _resting_z_index := 0
 var _elevation_tween: Tween
 var _is_sold := false
 var _discount := 0.0
 
 
 func _ready() -> void:
+	_resting_z_index = z_index
 	_apply_interaction_mode()
 
 
@@ -90,6 +98,8 @@ func _apply_interaction_mode() -> void:
 			_configure_click_routing(true)
 			price_label.visible = false
 			sold_overlay.visible = false
+			# Grow from the bottom edge so the card lifts and scales upward in the fan.
+			offset_transform_pivot_ratio = Vector2(0.5, 1.0)
 			card_state_machine.init(self)
 		InteractionMode.MERCHANT:
 			hover_enabled = true
@@ -108,6 +118,10 @@ func _apply_interaction_mode() -> void:
 			_configure_click_routing(false)
 			price_label.visible = false
 			sold_overlay.visible = false
+
+	# Hand cards animate scale via offset transform; other modes stay at default size.
+	if interaction_mode != InteractionMode.HAND:
+		offset_transform_scale = Vector2.ONE
 
 	drop_point_area.monitoring = false
 
@@ -135,11 +149,33 @@ func _set_controls_mouse_filter(node: Node, filter: Control.MouseFilter) -> void
 func _get_hover_elevation_offset() -> float:
 	match interaction_mode:
 		InteractionMode.HAND:
+			if _map_tile_hover_active:
+				return HAND_MAP_TILE_HOVER_ELEVATION_OFFSET
 			return HAND_HOVER_ELEVATION_OFFSET
 		InteractionMode.MERCHANT, InteractionMode.CHOICE:
 			return PANEL_HOVER_ELEVATION_OFFSET
 		_:
 			return 0.0
+
+
+func _should_apply_hand_hover_scale() -> bool:
+	return interaction_mode == InteractionMode.HAND
+
+
+func _get_hand_hover_scale() -> Vector2:
+	return Vector2.ONE * HAND_HOVER_SCALE
+
+
+func _is_hover_transform_at_target(
+	target_offset: Vector2,
+	target_scale: Vector2,
+	apply_hand_scale: bool
+) -> bool:
+	if offset_transform_position.distance_to(target_offset) >= 0.5:
+		return false
+	if not apply_hand_scale:
+		return true
+	return offset_transform_scale.distance_to(target_scale) < 0.01
 
 
 func _disable_state_machine() -> void:
@@ -149,6 +185,21 @@ func _disable_state_machine() -> void:
 
 func is_hover_elevated() -> bool:
 	return _is_hover_elevated
+
+
+# Selected cards dip slightly while the cursor aims at a map tile.
+func set_map_tile_hover_active(active: bool, animate: bool = true) -> void:
+	if _map_tile_hover_active == active:
+		return
+	_map_tile_hover_active = active
+	if _is_hover_elevated:
+		set_hover_elevated(true, animate)
+
+
+func _update_hand_z_index(elevated: bool) -> void:
+	if interaction_mode != InteractionMode.HAND:
+		return
+	z_index = HAND_ELEVATED_Z_INDEX if elevated else _resting_z_index
 
 
 func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
@@ -161,23 +212,36 @@ func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
 		_elevation_tween = null
 
 	_is_hover_elevated = elevated
+	_update_hand_z_index(elevated)
 	var target_offset := Vector2(0, _get_hover_elevation_offset()) if elevated else Vector2.ZERO
+	var apply_hand_scale := _should_apply_hand_hover_scale()
+	var target_scale := _get_hand_hover_scale() if elevated and apply_hand_scale else Vector2.ONE
 
-	if not animate or offset_transform_position.distance_to(target_offset) < 0.5:
+	if not animate or _is_hover_transform_at_target(target_offset, target_scale, apply_hand_scale):
 		offset_transform_enabled = true
 		offset_transform_position = target_offset
+		if apply_hand_scale:
+			offset_transform_scale = target_scale
 		return
 
 	offset_transform_enabled = true
 	_elevation_tween = create_tween()
-	_elevation_tween.set_ease(Tween.EASE_OUT if elevated else Tween.EASE_IN)
-	_elevation_tween.set_trans(Tween.TRANS_QUART)
+	_elevation_tween.set_parallel(true)
+	var ease_type := Tween.EASE_OUT if elevated else Tween.EASE_IN
 	_elevation_tween.tween_property(
 		self,
 		"offset_transform_position",
 		target_offset,
 		HOVER_ANIMATION_DURATION
-	)
+	).set_ease(ease_type).set_trans(Tween.TRANS_QUART)
+	if apply_hand_scale:
+		# Match the lift tween so hover and selection feel like one motion.
+		_elevation_tween.tween_property(
+			self,
+			"offset_transform_scale",
+			target_scale,
+			HOVER_ANIMATION_DURATION
+		).set_ease(ease_type).set_trans(Tween.TRANS_QUART)
 	_elevation_tween.finished.connect(func() -> void:
 		_elevation_tween = null
 	)
@@ -278,6 +342,7 @@ func show_selection_glow() -> void:
 func hide_selection_glow() -> void:
 	selection_glow.visible = false
 	panel.modulate = Color.WHITE
+	set_map_tile_hover_active(false, false)
 
 
 func is_sold() -> bool:

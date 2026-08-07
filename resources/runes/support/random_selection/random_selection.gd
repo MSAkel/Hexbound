@@ -1,18 +1,14 @@
 extends Rune
 
-# Triggers two random runes
+# Triggers two random runes on a different segment
 func _on_activate_rune(tile: Hex) -> void:
-	var candidates := get_all_placed_runes(tile)
-	candidates.erase(self)
-	if candidates.is_empty():
+	var other_segments_runes := _get_all_runes_on_other_segments(tile)
+	if other_segments_runes.is_empty():
 		return
 	
-	var picked: Array[Rune] = []
-	var pool := candidates.duplicate()
-	var pick_count := mini(2, pool.size())
-	for _i in range(pick_count):
-		var choice: Rune = pool.pick_random()
-		picked.append(choice)
-		pool.erase(choice)
+	var to_trigger: Array[Rune] = []
+	for _i in range(2):
+		to_trigger.append(other_segments_runes.pick_random())
 	
-	queue_rune_triggers(tile, picked)
+	queue_rune_triggers(tile, to_trigger)
+	

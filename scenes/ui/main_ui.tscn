@@ -3,13 +3,12 @@
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/Left_panel/RunInfoDisplay.tscn" id="2_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/tile_panel.tscn" id="2_l8t6x"]
-[ext_resource type="PackedScene" uid="uid://cm3sdx2an61fm" path="res://scenes/ui/Left_panel/left_panel.tscn" id="4_travt"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://br3dhulnhrxyl" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="7_oxwcw"]
 [ext_resource type="PackedScene" uid="uid://cylk7h6n211gc" path="res://scenes/ui/game_over_screen/game_over_screen.tscn" id="9_b65ll"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="9_oi40j"]
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="10_b65ll"]
-[ext_resource type="PackedScene" uid="uid://oe2tv6wcbxiy" path="res://scenes/ui/hand/hand_panel.tscn" id="11_oi40j"]
+[ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="11_oi40j"]
 [ext_resource type="PackedScene" uid="uid://b8ve8hecgnb8p" path="res://scenes/ui/round_complete_panel/round_complete_panel.tscn" id="12_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://b04mnn3bt2r1e" path="res://scenes/ui/labels/challenge_label/phase_challenge_name_display.tscn" id="12_m82f4"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
@@ -26,13 +25,13 @@ texture = ExtResource("9_oi40j")
 script = ExtResource("1_l8t6x")
 
 [node name="RunInfoUI" parent="." unique_id=237509013 instance=ExtResource("2_8s2gp")]
+scale = Vector2(0.9969174, 1)
 
-[node name="LeftPanel" parent="." unique_id=438853374 groups=["main_ui"] instance=ExtResource("4_travt")]
-visible = false
-offset_left = -1.0
-offset_right = 349.0
-
-[node name="HandPanel" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
+[node name="CardsHand" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
+custom_minimum_size = Vector2(0, 0)
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
 rotation = 0.0016232448
 
 [node name="RuneSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]

@@ -19,11 +19,12 @@ var _segments_cache: Array[Array] = []
 var _segments_cache_valid: bool = false
 
 
+## Binds this layout helper to a live map instance.
 func setup(map: HexTileMap) -> void:
 	_map = map
 
 
-# Rebuild layout data after terrain generation.
+## Rebuilds ring distances and clears the segment cache after terrain generation.
 func reset(hex_center: Vector2i) -> void:
 	_hex_center = hex_center
 	_ring_distances.clear()
@@ -31,14 +32,17 @@ func reset(hex_center: Vector2i) -> void:
 	_compute_ring_distances()
 
 
+## Map center tile used as the origin for ring distance calculations.
 func get_hex_center() -> Vector2i:
 	return _hex_center
 
 
+## Ring index from the map center (0 = center, outer ring = map hex_size).
 func get_ring_distance(coords: Vector2i) -> int:
 	return _ring_distances.get(coords, -1)
 
 
+## All map coordinates sorted by the active character trigger-order rule.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
 	match GameManager.trigger_order:
 		TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT:
@@ -51,6 +55,7 @@ func get_coords_in_trigger_order() -> Array[Vector2i]:
 			return _get_order_top_left_to_bottom_right()
 
 
+## All map hex tiles in the same order as get_coords_in_trigger_order().
 func get_hexes_in_trigger_order() -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	for coords: Vector2i in get_coords_in_trigger_order():
@@ -58,6 +63,7 @@ func get_hexes_in_trigger_order() -> Array[Hex]:
 	return hexes
 
 
+## Segment index for coords under the active character's row/ring grouping (-1 when unknown).
 func get_segment_index(coords: Vector2i) -> int:
 	var target_key: Variant = _get_segment_key(coords)
 	for i in range(build_segments().size()):
@@ -69,6 +75,7 @@ func get_segment_index(coords: Vector2i) -> int:
 	return -1
 
 
+## Character-specific segment groups (each segment is an ordered list of coordinates).
 func build_segments() -> Array[Array]:
 	if _segments_cache_valid:
 		return _segments_cache
@@ -78,7 +85,8 @@ func build_segments() -> Array[Array]:
 	return _segments_cache
 
 
-func get_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
+## All placed runes on one segment, optionally filtered by rune type.
+func get_all_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
 	var segments := build_segments()
 	if segment_index < 0 or segment_index >= segments.size():
 		return []
@@ -91,33 +99,43 @@ func get_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Ar
 	return result
 
 
-func get_runes_on_first_tile_of_each_segment(filter_type: Variant = null) -> Array[Rune]:
+## All placed runes on other segments, optionally filtered by rune type.
+func get_all_runes_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+	# Resolves the tile’s segment index (returns [] if unknown)
+	var tile_segment_index := get_segment_index(tile.coordinates)
+	if tile_segment_index < 0:
+		return []
+
 	var result: Array[Rune] = []
-	for segment: Array in build_segments():
-		result.append(_get_rune_on_coords(segment[0], filter_type))
+	var segments := build_segments()
+	# Walks every other segment in trigger order
+	for segment_index in range(segments.size()):
+		if segment_index == tile_segment_index:
+			continue
+		# Collects placed runes from each, applying filter_type when provided
+		for coords: Vector2i in segments[segment_index]:
+			var rune := _get_rune_on_coords(coords, filter_type)
+			if rune != null:
+				result.append(rune)
 	return result
 
 
-func get_runes_on_last_tile_of_each_segment(filter_type: Variant = null) -> Array[Rune]:
-	var result: Array[Rune] = []
-	for segment: Array in build_segments():
-		result.append(_get_rune_on_coords(segment[segment.size() - 1], filter_type))
-	return result
-
-
-func get_first_or_last_rune_in_segment(
+## First or last matching rune in a segment relative to tile's segment.
+## segment_index_offset is added to the tile's segment index (0 = same segment, -1 = previous, +1 = next).
+## pick_first_in_segment: true = first placed rune in segment, false = last placed rune in segment.
+func get_rune_in_relative_segment(
 	tile: Hex,
-	segment_offset: int,
-	first: bool,
+	segment_index_offset: int,
+	pick_first_in_segment: bool,
 	filter_type: Variant = null
 ) -> Rune:
-	var segment_index := get_segment_index(tile.coordinates) + segment_offset
+	var segment_index := get_segment_index(tile.coordinates) + segment_index_offset
 	var segments := build_segments()
 	if segment_index < 0 or segment_index >= segments.size():
 		return null
 
 	var segment: Array = segments[segment_index]
-	if first:
+	if pick_first_in_segment:
 		for coords: Vector2i in segment:
 			var rune := _get_rune_on_coords(coords, filter_type)
 			if rune != null:
@@ -130,11 +148,13 @@ func get_first_or_last_rune_in_segment(
 	return null
 
 
+## Clears cached segment groups so the next build_segments() call rebuilds them.
 func _invalidate_segments_cache() -> void:
 	_segments_cache_valid = false
 	_segments_cache.clear()
 
 
+## Breadth-first fill of ring distance from the map center tile.
 func _compute_ring_distances() -> void:
 	var queue: Array[Vector2i] = [_hex_center]
 	_ring_distances[_hex_center] = 0
@@ -149,6 +169,7 @@ func _compute_ring_distances() -> void:
 			queue.append(neighbor)
 
 
+## All map coordinates whose ring distance equals ring.
 func _get_tiles_in_ring(ring: int) -> Array[Vector2i]:
 	var tiles: Array[Vector2i] = []
 	for coords: Vector2i in _map.map_data.keys():
@@ -157,10 +178,12 @@ func _get_tiles_in_ring(ring: int) -> Array[Vector2i]:
 	return tiles
 
 
+## Screen-space pixel position for a map coordinate (used for sorting and segments).
 func _get_screen_position(coords: Vector2i) -> Vector2:
 	return _map.base_layer.map_to_local(coords)
 
 
+## Top-left tile in screen space from a set of coordinates.
 func _find_top_left_tile(cells: Array[Vector2i]) -> Vector2i:
 	var best: Vector2i = cells[0]
 	for cell: Vector2i in cells:
@@ -171,6 +194,7 @@ func _find_top_left_tile(cells: Array[Vector2i]) -> Vector2i:
 	return best
 
 
+## Tile closest to the northeast direction from the map center (spiral start tile).
 func _find_ne_start_tile(cells: Array[Vector2i]) -> Vector2i:
 	var center_pos: Vector2 = _get_screen_position(_hex_center)
 	const NE_ANGLE := -PI / 3.0
@@ -186,6 +210,7 @@ func _find_ne_start_tile(cells: Array[Vector2i]) -> Vector2i:
 	return best
 
 
+## Sorts ring tiles clockwise starting from start_tile around the map center.
 func _sort_ring_clockwise(cells: Array[Vector2i], start_tile: Vector2i) -> Array[Vector2i]:
 	var sorted_cells: Array[Vector2i] = cells.duplicate()
 	var center_pos: Vector2 = _get_screen_position(_hex_center)
@@ -204,6 +229,7 @@ func _sort_ring_clockwise(cells: Array[Vector2i], start_tile: Vector2i) -> Array
 	return sorted_cells
 
 
+## Trigger order: top-to-bottom rows, left-to-right within each row.
 func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
 	coords.assign(_map.map_data.keys())
@@ -217,6 +243,7 @@ func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
 	return coords
 
 
+## Trigger order: outer ring inward, each ring traversed clockwise.
 func _get_order_outer_to_inner() -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
 	for ring in range(_map.hex_size, -1, -1):
@@ -229,6 +256,7 @@ func _get_order_outer_to_inner() -> Array[Vector2i]:
 	return coords
 
 
+## Trigger order: center outward, each ring traversed clockwise from the northeast.
 func _get_order_clockwise_spiral() -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
 	for ring in range(_map.hex_size + 1):
@@ -241,6 +269,7 @@ func _get_order_clockwise_spiral() -> Array[Vector2i]:
 	return coords
 
 
+## Segment grouping key for the active character (row Y or ring index).
 func _get_segment_key(coords: Vector2i) -> Variant:
 	match GameManager.selected_character:
 		PlayerCharacter.Type.SURVEYOR:
@@ -251,12 +280,14 @@ func _get_segment_key(coords: Vector2i) -> Variant:
 			return _get_screen_position(coords).y
 
 
+## Compares segment keys, using approximate equality for float row positions.
 func _segment_keys_equal(a: Variant, b: Variant) -> bool:
 	if a is float and b is float:
 		return is_equal_approx(a, b)
 	return a == b
 
 
+## Splits the map into contiguous groups that share the same segment key in trigger order.
 func _build_segments_uncached() -> Array[Array]:
 	var segments: Array[Array] = []
 	var current_segment: Array[Vector2i] = []
@@ -275,6 +306,7 @@ func _build_segments_uncached() -> Array[Array]:
 	return segments
 
 
+## Returns the rune on coords when present and matching filter_type (or any type when null).
 func _get_rune_on_coords(coords: Vector2i, filter_type: Variant = null) -> Rune:
 	var hex: Hex = _map.map_data.get(coords)
 	if hex == null or hex.active_rune == null:

@@ -10,8 +10,8 @@ func _on_activate_rune(tile: Hex) -> void:
 		2:
 			add_gold(tile, randi_range(10, 20))
 		3:
-			var prior_runes := get_runes_in_activation_order(tile, 2, true)
+			var prior_runes := _get_previous_runes_in_trigger_order(tile, 2)
 			if prior_runes.is_empty():
 				return
 			queue_rune_triggers(tile, prior_runes)
-			create_floating_text(tile, "Trigger runes")
+			_create_floating_text(tile, "Trigger runes")

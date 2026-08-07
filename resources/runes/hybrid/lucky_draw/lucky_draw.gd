@@ -10,7 +10,7 @@ var current_chance: float = BASE_CHANCE
 # Spends 1 gold and gains a 3% stackable chance to either gain 500 score or 20 gold. Resets on generation
 func _on_activate_rune(tile: Hex) -> void:
 	if not GoldManager.can_afford(1):
-		create_floating_text(tile, "Insufficient gold")
+		_create_floating_text(tile, "Insufficient gold")
 		return
 
 	GoldManager.remove(1)

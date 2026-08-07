@@ -9,17 +9,11 @@ const CHOICE_CARD_BASE_SIZE := Vector2(198, 317)
 
 func _ready() -> void:
 	hide()
-	
-	UiManager.show_runes_choice_panel.connect(_on_show_panel)
-	
 
-	reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
-	if GameManager.runes_reroll_cost > GoldManager.amount:
-		reroll_button.disabled = true
-	else:
-		reroll_button.disabled = false
-	
+	UiManager.show_runes_choice_panel.connect(_on_show_panel)
+	Events.gold_changed.connect(_on_gold_changed)
 	Events.rune_selected.connect(_on_rune_selected)
+	_update_reroll_button()
 
 func _on_rune_selected(_rune: Rune) -> void:
 	hide()
@@ -31,6 +25,7 @@ func _on_rune_selected(_rune: Rune) -> void:
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
+	_update_reroll_button()
 	GameManager.create_runes_pack()
 	instantiate_rune_choices()
 
@@ -39,19 +34,28 @@ func _on_close_button_pressed() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if GameManager.runes_reroll_cost > GoldManager.amount:
+	if not GoldManager.can_afford(GameManager.runes_reroll_cost):
 		return
 
 	reroll_button.disabled = true
-	
+
 	await clear_choices()
 	GameManager.runes_pack.clear()
 	GameManager.create_runes_pack()
-	GameManager.runes_reroll_cost += 5
-	reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
+	GoldManager.remove(GameManager.runes_reroll_cost)
+	GameManager.runes_reroll_cost += 10
 	instantiate_rune_choices()
-	
-	reroll_button.disabled = false
+	_update_reroll_button()
+
+
+func _on_gold_changed(_new_amount: int) -> void:
+	_update_reroll_button()
+
+
+# Keep reroll label and disabled state in sync with the current gold balance.
+func _update_reroll_button() -> void:
+	reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
+	reroll_button.disabled = not GoldManager.can_afford(GameManager.runes_reroll_cost)
 
 func instantiate_rune_choices() -> void:
 

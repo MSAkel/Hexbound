@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://lujnlq33gvj4"]
+
+[ext_resource type="Texture2D" uid="uid://ccewqo5pxkaxw" path="res://assets/icons/runes/advanced_multi.png" id="1_rajw6"]
+[ext_resource type="Script" uid="uid://t464sweri7r2" path="res://resources/runes/generations/advanced_mult/advanced_mult.gd" id="2_5bxph"]
+
+[resource]
+script = ExtResource("2_5bxph")
+id = "advanced_mult"
+name = "Advanced Mult"
+icon = ExtResource("1_rajw6")
+base_production_amount = 4
+description = "+4 Mult increased by 1 for each Mult rune on the same segment"
+product = 2
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -2,9 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/others/play.png" id="1_5oaiq"]
 [ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/character_details.gd" id="1_r7hje"]
-[ext_resource type="Texture2D" uid="uid://brk6a3m33m4fs" path="res://assets/map/trigger_order/encircler_trigger_order.png" id="2_r7hje"]
+[ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/divivder.png" id="2_t3sbv"]
 [ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="3_1a3dm"]
 [ext_resource type="Texture2D" uid="uid://bas7sbrvyj4fr" path="res://assets/map/segment_passives/surveyor_segment_passive_map.png" id="4_72tkk"]
+[ext_resource type="Texture2D" uid="uid://ddi3bwc5uw3rp" path="res://assets/gui/frames/frame_1.png" id="4_br4kt"]
+[ext_resource type="Texture2D" uid="uid://dur4e51h5y1gq" path="res://assets/map/trigger_order/surveyor_trigger_order.png" id="4_iw7qv"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r6dd1"]
+texture = ExtResource("4_br4kt")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1a3dm"]
 bg_color = Color(0.07450981, 0.12941177, 0.14117648, 1)
@@ -24,6 +29,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.0023638, 1)
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 32
@@ -34,18 +40,31 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="CharacterNameLabel" type="RichTextLabel" parent="SlectionDetails" unique_id=1947284594]
+[node name="SelectYourPath" type="Label" parent="SlectionDetails" unique_id=1484975773]
 layout_mode = 2
-theme_override_font_sizes/normal_font_size = 52
-bbcode_enabled = true
-text = "[wave amp=50 freq=2]Character Name[/wave]"
-fit_content = true
-autowrap_mode = 0
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 32
+text = "SELECT YOUR PATH"
 horizontal_alignment = 1
+uppercase = true
+
+[node name="PathSubtitle" type="Label" parent="SlectionDetails" unique_id=790181717]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 32
+text = "Each path has a unique flow and
+way the land responds to your runes"
+horizontal_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="SlectionDetails" unique_id=190441139]
+layout_mode = 2
+texture = ExtResource("2_t3sbv")
+stretch_mode = 3
 
 [node name="HBoxContainer" type="HBoxContainer" parent="SlectionDetails" unique_id=115256075]
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 2
+theme_override_constants/separation = 21
 
 [node name="PrevSelection" type="TextureButton" parent="SlectionDetails/HBoxContainer" unique_id=40130060]
 layout_mode = 2
@@ -55,7 +74,26 @@ texture_normal = ExtResource("1_5oaiq")
 stretch_mode = 3
 flip_h = true
 
+[node name="Panel" type="PanelContainer" parent="SlectionDetails/HBoxContainer" unique_id=397528664]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxTexture_r6dd1")
+
+[node name="CharacterNameLabel" type="RichTextLabel" parent="SlectionDetails/HBoxContainer/Panel" unique_id=1947284594]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.6509804, 0.654902, 0.35686275, 1)
+theme_override_font_sizes/normal_font_size = 52
+bbcode_enabled = true
+text = "[wave amp=50 freq=2]Character Name[/wave]"
+fit_content = true
+autowrap_mode = 0
+horizontal_alignment = 1
+
 [node name="StartingHandPanel" type="VBoxContainer" parent="SlectionDetails/HBoxContainer" unique_id=326574285]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 6
@@ -69,6 +107,7 @@ text = "Starting Hand"
 horizontal_alignment = 1
 
 [node name="StartingHandGridContainer" type="GridContainer" parent="SlectionDetails/HBoxContainer/StartingHandPanel" unique_id=743940292]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/h_separation = 8
@@ -84,22 +123,17 @@ stretch_mode = 3
 
 [node name="DifficultyLevelContainer" parent="SlectionDetails" unique_id=1240284962 instance=ExtResource("3_1a3dm")]
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="SlectionTriggerOrder" type="VBoxContainer" parent="." unique_id=155871284]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="MapsLabel" type="Label" parent="SlectionTriggerOrder" unique_id=1220581385]
-visible = false
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Activation order and Passives"
-horizontal_alignment = 1
-
 [node name="triggerOrderPanel" type="Panel" parent="SlectionTriggerOrder" unique_id=1831653706]
 layout_mode = 2
 size_flags_vertical = 3
+size_flags_stretch_ratio = 1.5
 theme_override_styles/panel = SubResource("StyleBoxFlat_1a3dm")
 
 [node name="MarginContainer" type="MarginContainer" parent="SlectionTriggerOrder/triggerOrderPanel" unique_id=508952994]
@@ -109,6 +143,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.9780544, 0.99758)
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
@@ -116,9 +151,19 @@ theme_override_constants/margin_bottom = 16
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer" unique_id=2098114581]
 layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MapsLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer" unique_id=1220581385]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 21
+text = "Map plots trigger order"
+horizontal_alignment = 1
+uppercase = true
 
 [node name="TriggerOrderLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer" unique_id=1609280158]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 24
 text = "Top-left → Bottom-right"
 horizontal_alignment = 1
@@ -133,7 +178,7 @@ horizontal_alignment = 1
 custom_maximum_size = Vector2(400, 300)
 layout_mode = 2
 size_flags_horizontal = 4
-texture = ExtResource("2_r7hje")
+texture = ExtResource("4_iw7qv")
 
 [node name="SegmentsPanel" type="Panel" parent="SlectionTriggerOrder" unique_id=1467965942]
 custom_minimum_size = Vector2(400, 0)
@@ -166,6 +211,7 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(300, 0)
 propagate_maximum_size = true
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 16
 text = "Every starting rune on..."
 horizontal_alignment = 1

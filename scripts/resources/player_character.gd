@@ -8,11 +8,7 @@ enum Type {
 	SPIRALIST,
 }
 
-const BASIC_RUNE := preload("uid://c7c2eo74m8q0l")
-const CHAIN_EFFECT = preload("uid://bms421c4eq14w")
-const BASIC_MULTI = preload("uid://1yngk6bgvs8i")
-const BASIC_ALLOWANCE = preload("uid://dh6iq7pfm421c")
-const CATALYST = preload("uid://tgx0mcgx7sat")
+#const RANDOM_SELECTION = preload("uid://dfs3j40u078c6")
 
 
 static func get_all_types() -> Array[Type]:
@@ -36,18 +32,16 @@ static func get_trigger_order(character_type: Type) -> TriggerOrderType.Type:
 
 
 # Build the starting hand runes for the given character type.
-# Unique per-character rune sets are not finalized yet.
+# 5 random common cards: 3 production and 2 support.
 static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 	var hand: Array[Rune] = []
 
 	match character_type:
 		Type.SURVEYOR, Type.ENCIRCLER, Type.SPIRALIST:
-			hand.append(BASIC_RUNE)
-			hand.append(BASIC_RUNE)
-			hand.append(BASIC_ALLOWANCE)
-			hand.append(BASIC_MULTI)
-			hand.append(CHAIN_EFFECT)
-			hand.append(CATALYST)
+			hand.append_array(_get_random_common_runes(3, Rune.RuneType.PRODUCER))
+			hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
+			#hand.append(RANDOM_SELECTION)
+			hand.shuffle()
 
 	# Drop card based on difficulty level
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
@@ -59,16 +53,16 @@ static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 	return hand
 
 
-# Pick random common runes from the pool, excluding character-specific starter cards.
-static func _get_random_common_runes(count: int) -> Array[Rune]:
-	var excluded_ids := [BASIC_RUNE.id]
+# Pick random common runes of the given type from the pool.
+static func _get_random_common_runes(count: int, rune_type: Rune.RuneType) -> Array[Rune]:
 	var pool: Array[Rune] = []
 
 	for rune in GameManager.runes_pool:
-		if rune.id in excluded_ids:
+		if rune.rarity != Rune.RuneRarity.COMMON:
 			continue
-		if rune.rarity == Rune.RuneRarity.COMMON:
-			pool.append(rune)
+		if rune.type != rune_type:
+			continue
+		pool.append(rune)
 
 	pool.shuffle()
 
@@ -77,10 +71,6 @@ static func _get_random_common_runes(count: int) -> Array[Rune]:
 		result.append(pool[i])
 
 	return result
-
-
-static func get_starting_gold(character_type: Type) -> int:
-	return Difficulty.get_starting_gold(GameManager.selected_difficulty)
 
 static func get_character_name(character_type: Type) -> String:
 	match character_type:

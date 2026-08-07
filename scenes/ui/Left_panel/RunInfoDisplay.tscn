@@ -146,7 +146,7 @@ alignment = 1
 
 [node name="TurnScore" type="Label" parent="HBoxContainer/LeftContainer/VBoxContainer/Panel/MarginContainer/VBoxContainer/ScoreContainer/TurnScoreContainer" unique_id=1352287968]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.42381427, 0.6579759, 1, 1)
+theme_override_colors/font_color = Color(0.109955765, 0.734845, 0.7540369, 1)
 theme_override_font_sizes/font_size = 32
 text = "0"
 horizontal_alignment = 1
@@ -162,7 +162,7 @@ horizontal_alignment = 1
 
 [node name="TurnMult" type="Label" parent="HBoxContainer/LeftContainer/VBoxContainer/Panel/MarginContainer/VBoxContainer/ScoreContainer/TurnScoreContainer" unique_id=2126756402]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8104063, 0.26136297, 0.35086894, 1)
+theme_override_colors/font_color = Color(0.84126085, 0.0011946053, 0.929531, 1)
 theme_override_font_sizes/font_size = 32
 text = "1"
 horizontal_alignment = 1

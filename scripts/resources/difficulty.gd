@@ -14,11 +14,11 @@ enum Level {
 # Other difficulty ideas:
 # level 6 - At the start of every new round, two production runes are cursed, 
 # Cursed runes produce negative values until the next round.
-
+# each turn, a card in your hand becomes unplayable
 const DIFFICULTY_INFO = {
 	Level.LEVEL_0: {
 		"name": "Level 1",
-		"info": "No changes to the game",
+		"info": "Base difficulty",
 	},
 	Level.LEVEL_1: {
 		"name": "Level 2",

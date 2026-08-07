@@ -5,9 +5,9 @@
 [ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card_background.png" id="3_nmvtt"]
 [ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="4_7xb4v"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
-[ext_resource type="Texture2D" uid="uid://dp5ol503ehyi2" path="res://assets/icons/others/glyph_icon.png" id="4_usd0r"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
 [ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
+[ext_resource type="Texture2D" uid="uid://c25ot8dgtv7wt" path="res://assets/icons/runes/dividend.png" id="6_nmvtt"]
 [ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
 [ext_resource type="Script" uid="uid://lhyqf0q0f5ko" path="res://scenes/cards/card states/card_released_state.gd" id="8_o6pyt"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="9_l4s6v"]
@@ -135,7 +135,7 @@ theme_override_styles/panel = SubResource("StyleBoxEmpty_vxwtt")
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("4_usd0r")
+texture = ExtResource("6_nmvtt")
 expand_mode = 1
 stretch_mode = 5
 
@@ -166,7 +166,7 @@ size_flags_vertical = 0
 layout_mode = 2
 
 [node name="CardDescription" type="Label" parent="VBoxContainer" unique_id=2119088894]
-custom_minimum_size = Vector2(0, 130)
+custom_minimum_size = Vector2(75, 130)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Description"

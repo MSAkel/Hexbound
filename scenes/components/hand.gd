@@ -48,16 +48,24 @@ func _add_card(data: Resource) -> void:
 	new_rune_card.set_card(data)
 	new_rune_card.reparent_requested.connect(func(child: CardUI):
 		child.reparent(self)
-		var new_index := clampi(child.starting_hand_position - cards_played, 0, get_child_count())
+		var new_index := clampi(child.starting_hand_position - cards_played, 0, _get_hand_card_count())
 		move_child.call_deferred(child, new_index)
 )
 
+# Guard against non-card children
+func _get_hand_card_count() -> int:
+	var count := 0
+	for child in get_children():
+		if child is CardUI:
+			count += 1
+	return count
+
+
 func _on_card_played(_card_ui: CardUI) -> void:
 	cards_played += 1
-	# Chck how many cards are in hand, if it less than 3, end the turn
-	# await on the next frame
+	# Wait for the played card's queue_free() before checking remaining hand size.
 	await get_tree().create_timer(0.1).timeout
-	if get_child_count() < 3:
+	if _get_hand_card_count() < 3:
 		Events.turn_ended.emit()
 		AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
 

@@ -43,7 +43,7 @@ static func _apply_encircler_post_activation(tile: Hex) -> void:
 		return
 
 	var triggered_producers: Array[Rune] = []
-	for rune: Rune in tile.map.get_runes_on_same_segment_as(tile, Rune.RuneType.PRODUCER):
+	for rune: Rune in tile.map.get_all_runes_on_same_segment(tile, Rune.RuneType.PRODUCER):
 		if randf() >= ENCIRCLER_PROD_TRIGGER_CHANCE:
 			continue
 		triggered_producers.append(rune)
