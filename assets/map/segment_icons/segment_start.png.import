@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dvu4jpgj2jlr6"
-path="res://.godot/imported/surveyor_trigger_order.png-7f47555d28ad296fda7f458c92c0988e.ctex"
+uid="uid://ll7d4y1b83sj"
+path="res://.godot/imported/segment_start.png-d853c0b5e078e84e693d596937dede1c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/trigger_order/surveyor_trigger_order.png"
-dest_files=["res://.godot/imported/surveyor_trigger_order.png-7f47555d28ad296fda7f458c92c0988e.ctex"]
+source_file="res://assets/map/segment_icons/segment_start.png"
+dest_files=["res://.godot/imported/segment_start.png-d853c0b5e078e84e693d596937dede1c.ctex"]
 
 [params]
 

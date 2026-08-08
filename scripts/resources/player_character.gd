@@ -38,8 +38,8 @@ static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 
 	match character_type:
 		Type.SURVEYOR, Type.ENCIRCLER, Type.SPIRALIST:
-			hand.append_array(_get_random_common_runes(3, Rune.RuneType.PRODUCER))
-			hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
+			hand.append_array(_get_random_common_runes(15, Rune.RuneType.PRODUCER))
+			hand.append_array(_get_random_common_runes(15, Rune.RuneType.SUPPORT))
 			#hand.append(RANDOM_SELECTION)
 			hand.shuffle()
 
@@ -91,39 +91,3 @@ static func get_passive_description(character_type: Type) -> String:
 			return "Passive ability: TBD"
 
 	return "Unknown"
-
-
-static func get_segment_passive_name(character_type: Type) -> String:
-	match character_type:
-		Type.SURVEYOR:
-			return "Row Passive"
-		Type.ENCIRCLER:
-			return "Circle Passive"
-		Type.SPIRALIST:
-			return "Center Tile Passive"
-
-	return "Unknown"
-
-
-static func get_segment_passive_description(character_type: Type) -> String:
-	match character_type:
-		Type.SURVEYOR:
-			return "Every production rune on the first tile of a row segment has double production."
-		Type.ENCIRCLER:
-			return "If the first rune on a circle segment is a support rune, the rune gains a 15% chance to trigger each prod rune on the same segment."
-		Type.SPIRALIST:
-			return "Rune in the center tile triggers thrice, including support runes."
-
-	return "Unknown"
-
-
-static func get_segment_passive_texture(character_type: Type) -> Texture2D:
-	match character_type:
-		Type.SURVEYOR:
-			return preload("res://assets/map/segment_passives/surveyor_segment_passive_map.png")
-		Type.ENCIRCLER:
-			return preload("res://assets/map/segment_passives/encricler_segment_passive_map.png")
-		Type.SPIRALIST:
-			return preload("res://assets/map/segment_passives/spiralist_segment_passive_map.png")
-
-	return preload("res://assets/map/segment_passives/surveyor_segment_passive_map.png")

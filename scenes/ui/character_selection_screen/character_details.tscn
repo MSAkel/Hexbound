@@ -4,14 +4,19 @@
 [ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/character_details.gd" id="1_r7hje"]
 [ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/divivder.png" id="2_t3sbv"]
 [ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="3_1a3dm"]
-[ext_resource type="Texture2D" uid="uid://bas7sbrvyj4fr" path="res://assets/map/segment_passives/surveyor_segment_passive_map.png" id="4_72tkk"]
 [ext_resource type="Texture2D" uid="uid://ddi3bwc5uw3rp" path="res://assets/gui/frames/frame_1.png" id="4_br4kt"]
-[ext_resource type="Texture2D" uid="uid://dur4e51h5y1gq" path="res://assets/map/trigger_order/surveyor_trigger_order.png" id="4_iw7qv"]
+[ext_resource type="Texture2D" uid="uid://dvu4jpgj2jlr6" path="res://assets/map/trigger_order/surveyor_trigger_order.png" id="4_iw7qv"]
+[ext_resource type="Texture2D" uid="uid://ll7d4y1b83sj" path="res://assets/map/segment_icons/segment_start.png" id="7_daqkf"]
+[ext_resource type="Texture2D" uid="uid://bgj3xo0w2i6gx" path="res://assets/map/segment_passives/first_in_segment.png" id="8_daqkf"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r6dd1"]
 texture = ExtResource("4_br4kt")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1a3dm"]
+content_margin_left = 25.0
+content_margin_top = 25.0
+content_margin_right = 25.0
+content_margin_bottom = 25.0
 bg_color = Color(0.07450981, 0.12941177, 0.14117648, 1)
 border_width_left = 2
 border_width_top = 2
@@ -130,55 +135,77 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="triggerOrderPanel" type="Panel" parent="SlectionTriggerOrder" unique_id=1831653706]
+[node name="triggerOrderPanel" type="PanelContainer" parent="SlectionTriggerOrder" unique_id=1740980350]
+clip_children = 2
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.5
 theme_override_styles/panel = SubResource("StyleBoxFlat_1a3dm")
 
-[node name="MarginContainer" type="MarginContainer" parent="SlectionTriggerOrder/triggerOrderPanel" unique_id=508952994]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(0.9780544, 0.99758)
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer" unique_id=2098114581]
+[node name="VBoxContainer" type="VBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel" unique_id=2098114581]
 layout_mode = 2
+size_flags_horizontal = 6
 theme_override_constants/separation = 12
 
-[node name="MapsLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer" unique_id=1220581385]
+[node name="MapsLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=1220581385]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
 text = "Map plots trigger order"
 horizontal_alignment = 1
 uppercase = true
 
-[node name="TriggerOrderLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer" unique_id=1609280158]
+[node name="TriggerOrderLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=1609280158]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 24
 text = "Top-left → Bottom-right"
 horizontal_alignment = 1
 
-[node name="TriggerOrderDescription" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer" unique_id=1541863406]
+[node name="TriggerOrderDescription" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=1541863406]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 16
 text = "Triggers starts from...end on..."
 horizontal_alignment = 1
 
-[node name="TriggerOrderImage" type="TextureRect" parent="SlectionTriggerOrder/triggerOrderPanel/MarginContainer/VBoxContainer" unique_id=1970264467]
-custom_maximum_size = Vector2(400, 300)
+[node name="HBoxContainer" type="HBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=92250150]
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 6
+theme_override_constants/separation = 24
+
+[node name="TriggerOrderImage" type="TextureRect" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer" unique_id=1970264467]
+custom_minimum_size = Vector2(400, 300)
+custom_maximum_size = Vector2(400, 300)
+layout_mode = 2
+size_flags_horizontal = 0
 texture = ExtResource("4_iw7qv")
+expand_mode = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer" unique_id=438270027]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 0
+
+[node name="SegmentStart" type="TextureRect" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer/HBoxContainer" unique_id=473648374]
+custom_minimum_size = Vector2(50, 50)
+custom_maximum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture = ExtResource("7_daqkf")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer/HBoxContainer" unique_id=1837626047]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 21
+text = "Segment Start"
 
 [node name="SegmentsPanel" type="Panel" parent="SlectionTriggerOrder" unique_id=1467965942]
 custom_minimum_size = Vector2(400, 0)
@@ -203,9 +230,20 @@ layout_mode = 2
 
 [node name="SegmentLabel" type="Label" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer" unique_id=1437331464]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 24
 text = "Segments Passive"
 horizontal_alignment = 1
+uppercase = true
+
+[node name="SegmentImage" type="TextureRect" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer" unique_id=1200120951]
+custom_minimum_size = Vector2(75, 75)
+custom_maximum_size = Vector2(75, 75)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+texture = ExtResource("8_daqkf")
+expand_mode = 1
 
 [node name="SegmentDescription" type="Label" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer" unique_id=1795182502]
 custom_minimum_size = Vector2(300, 0)
@@ -216,13 +254,6 @@ theme_override_font_sizes/font_size = 16
 text = "Every starting rune on..."
 horizontal_alignment = 1
 autowrap_mode = 3
-
-[node name="SegmentImage" type="TextureRect" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer" unique_id=1200120951]
-custom_maximum_size = Vector2(400, 300)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 6
-texture = ExtResource("4_72tkk")
 
 [connection signal="pressed" from="SlectionDetails/HBoxContainer/PrevSelection" to="." method="_on_prev_selection_pressed"]
 [connection signal="pressed" from="SlectionDetails/HBoxContainer/NextSelection" to="." method="_on_next_selection_pressed"]

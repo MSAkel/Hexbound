@@ -229,10 +229,12 @@ func _sort_ring_clockwise(cells: Array[Vector2i], start_tile: Vector2i) -> Array
 	return sorted_cells
 
 
-## Trigger order: top-to-bottom rows, left-to-right within each row.
+## Trigger order: top-to-bottom rows, zigzagging left/right within each row.
+## Even rows (0-based) go left → right; odd rows go right → left.
 func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
 	coords.assign(_map.map_data.keys())
+	# First pass: stable top-to-bottom, left-to-right so rows are contiguous.
 	coords.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
 		var pos_a: Vector2 = _get_screen_position(a)
 		var pos_b: Vector2 = _get_screen_position(b)
@@ -240,7 +242,24 @@ func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
 			return pos_a.y < pos_b.y
 		return pos_a.x < pos_b.x
 	)
-	return coords
+
+	# Reverse every other row so traversal zigzags across the map.
+	var ordered: Array[Vector2i] = []
+	var row_start: int = 0
+	var row_index: int = 0
+	while row_start < coords.size():
+		var row_y: float = _get_screen_position(coords[row_start]).y
+		var row_end: int = row_start + 1
+		while row_end < coords.size() and is_equal_approx(_get_screen_position(coords[row_end]).y, row_y):
+			row_end += 1
+		var row_slice: Array[Vector2i] = coords.slice(row_start, row_end)
+		# Odd rows traverse right → left.
+		if row_index % 2 == 1:
+			row_slice.reverse()
+		ordered.append_array(row_slice)
+		row_start = row_end
+		row_index += 1
+	return ordered
 
 
 ## Trigger order: outer ring inward, each ring traversed clockwise.
