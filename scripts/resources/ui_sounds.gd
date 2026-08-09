@@ -13,3 +13,4 @@ const MERCHANT_CARD_PURCHASED = preload("res://assets/audio/sfx/merchant_card_pu
 const EMPOWER = preload("res://assets/audio/sfx/empower.mp3")
 const MERCHANT_ENTRY = preload("uid://bygd475r8s4vx")
 const CHALLENGE_START = preload("res://assets/audio/sfx/Challenge_start.mp3")
+const SEGMENT_RESULT = preload("uid://dpmtpk2jh6urk")

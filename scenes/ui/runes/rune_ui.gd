@@ -19,6 +19,9 @@ const ACTIVATION_PEAK_SCALE := Vector2(1.22, 1.22)
 const ACTIVATION_HIGHLIGHT := Color(1.3, 1.15, 0.75, 1.0)
 const ACTIVATION_POP_DURATION := 0.14
 const ACTIVATION_SETTLE_DURATION := 0.22
+const SEGMENT_REVEAL_LIFT_OFFSET := -56.0
+const SEGMENT_REVEAL_LIFT_DURATION := 0.2
+const SEGMENT_REVEAL_SLAM_DURATION := 0.16
 const PLACEMENT_DROP_OFFSET := -72.0
 const PLACEMENT_DROP_DURATION := 0.28
 const EMPOWER_FLASH_HIGHLIGHT := Color(1.45, 1.35, 0.15, 1.0)
@@ -115,6 +118,54 @@ func play_activation_animation() -> void:
 		"modulate",
 		_resting_modulate,
 		ACTIVATION_SETTLE_DURATION
+	)
+	_activation_tween.tween_callback(func() -> void:
+		z_index = original_z_index
+		_activation_tween = null
+		_apply_resting_modulate()
+	)
+
+
+# Lift then slam back down when a segment's turn totals are revealed.
+func play_segment_result_animation() -> void:
+	stop_empower_flash()
+
+	if _activation_tween != null and _activation_tween.is_valid():
+		_activation_tween.kill()
+
+	_anim_target.pivot_offset = _anim_target.size / 2
+	_anim_target.scale = Vector2.ONE
+
+	var original_z_index := z_index
+	z_index = 10
+
+	_activation_tween = create_tween()
+	_activation_tween.tween_property(
+		_anim_target,
+		"position",
+		Vector2(0.0, SEGMENT_REVEAL_LIFT_OFFSET),
+		SEGMENT_REVEAL_LIFT_DURATION
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_activation_tween.parallel().tween_property(
+		_anim_target,
+		"modulate",
+		ACTIVATION_HIGHLIGHT,
+		SEGMENT_REVEAL_LIFT_DURATION
+	)
+	_activation_tween.tween_callback(func() -> void:
+		AudioManager.play_sfx(UISounds.SEGMENT_RESULT)
+	)
+	_activation_tween.parallel().tween_property(
+		_anim_target,
+		"position",
+		Vector2.ZERO,
+		SEGMENT_REVEAL_SLAM_DURATION
+	).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	_activation_tween.parallel().tween_property(
+		_anim_target,
+		"modulate",
+		_resting_modulate,
+		SEGMENT_REVEAL_SLAM_DURATION
 	)
 	_activation_tween.tween_callback(func() -> void:
 		z_index = original_z_index

@@ -16,7 +16,7 @@ var is_disabled_by_difficulty: bool = false
 
 var segment_passive_icon: TextureRect = null
 var map: HexTileMap
-var items_grid: GridContainer
+var items_grid: Control
 # Optional challenge tint layered on top of the normal active/inactive state.
 var _challenge_rune_modulate: Color = Color.WHITE
 # True while toggle_map_display is held to hide rune icons on the map.
@@ -25,6 +25,8 @@ var _runes_hidden: bool = false
 # Match the dashed hex art size so runes align with the tile texture
 const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE, HexTileMap.HEX_TEXTURE_SIZE)
 const HEX_TILE_HALF := HEX_TILE_SIZE / 2
+# Segment passive icons sit centered on the tile at half the hex size
+const SEGMENT_PASSIVE_ICON_SIZE := HEX_TILE_SIZE / 2
 const RUNE_INACTIVE_MODULATE := Color(0.35, 0.35, 0.42, 0.78)
 const RUNE_FADED_SECTOR_MODULATE := Color(0.58, 0.46, 0.34, 0.9)
 
@@ -39,12 +41,10 @@ func _init(coords: Vector2i) -> void:
 func setup(map_ref: Node2D) -> void:
 	map = map_ref
 	# Container sized to one hex; map_to_local returns the tile center
-	items_grid = GridContainer.new()
-	items_grid.columns = 1
+	items_grid = Control.new()
 	items_grid.custom_minimum_size = HEX_TILE_SIZE
 	items_grid.size = HEX_TILE_SIZE
 	items_grid.position = map.base_layer.map_to_local(coordinates) - HEX_TILE_HALF
-	items_grid.add_theme_constant_override("separation", 0)
 	map.add_child(items_grid)
 
 
@@ -70,15 +70,11 @@ func place_rune(rune: Rune) -> void:
 	new_rune_instance.center_coordinates = coordinates
 
 	new_rune_instance.setup(rune)
-	
-	# Fill the entire hex cell (256x256)
-	new_rune_instance.custom_minimum_size = HEX_TILE_SIZE
+	# Fixed size keeps runes aligned to the hex art
+	new_rune_instance.position = Vector2.ZERO
 	new_rune_instance.size = HEX_TILE_SIZE
-	new_rune_instance.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	new_rune_instance.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	
 	items_grid.add_child(new_rune_instance)
-	_reposition_items()
 	new_rune_instance.play_placement_animation()
 	_apply_display_mode()
 	refresh_rune_visual_state()
@@ -95,17 +91,39 @@ func set_segment_passive_modifier(modifier: SegmentPassiveModifier) -> void:
 		return
 
 	if segment_passive_icon == null:
-		segment_passive_icon = TextureRect.new()
-		segment_passive_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		segment_passive_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		segment_passive_icon.custom_minimum_size = HEX_TILE_SIZE
-		segment_passive_icon.size = HEX_TILE_SIZE
-		segment_passive_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		segment_passive_icon = _create_segment_passive_icon()
 		items_grid.add_child(segment_passive_icon)
 
 	segment_passive_icon.texture = modifier.icon
-	_reposition_items()
+	_refresh_segment_passive_icon_rotation()
 	_apply_display_mode()
+
+
+func _create_segment_passive_icon() -> TextureRect:
+	var icon := TextureRect.new()
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	# Anchor to tile center so the icon stays centered at a fixed size
+	icon.set_anchors_preset(Control.PRESET_CENTER)
+	var half_size := SEGMENT_PASSIVE_ICON_SIZE / 2
+	icon.offset_left = -half_size.x
+	icon.offset_top = -half_size.y
+	icon.offset_right = half_size.x
+	icon.offset_bottom = half_size.y
+	# Row-direction flips rotate around the icon center, not the top-left corner.
+	icon.pivot_offset = half_size
+	return icon
+
+
+func _refresh_segment_passive_icon_rotation() -> void:
+	if segment_passive_icon == null or segment_passive_modifier == null:
+		return
+	if segment_passive_modifier.modifier_type != SegmentPassiveModifier.Type.FIRST_ROW:
+		segment_passive_icon.rotation = 0.0
+		return
+
+	var row_index := map.get_segment_index(coordinates)
+	segment_passive_icon.rotation = PI if row_index % 2 == 1 else 0.0
 
 
 # Apply a run-time tile modifier. Returns false on segment-passive or occupied tiles.
@@ -194,12 +212,6 @@ func remove_rune() -> void:
 		rune_ui = null
 	_apply_display_mode()
 
-# Keep placed items aligned to the hex bounds
-func _reposition_items() -> void:
-	for item in items_grid.get_children():
-		item.position = Vector2.ZERO
-		item.size = HEX_TILE_SIZE
-
 
 # Play the rune trigger animation without applying the effect.
 func play_rune_activation_animation() -> void:
@@ -209,6 +221,13 @@ func play_rune_activation_animation() -> void:
 	# Only animate active runes so inactive runes do not look triggered.
 	if active_rune.is_active:
 		rune_ui.play_activation_animation()
+
+
+# Lift-and-slam animation used during the post-turn segment result reveal.
+func play_segment_result_animation() -> void:
+	if rune_ui == null:
+		return
+	rune_ui.play_segment_result_animation()
 
 
 func apply_rune_activation(activation_scale: float = 1.0) -> void:

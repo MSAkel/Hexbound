@@ -17,6 +17,9 @@ var _hex_center: Vector2i = Vector2i.ZERO
 var _ring_distances: Dictionary = {}
 var _segments_cache: Array[Array] = []
 var _segments_cache_valid: bool = false
+# Per-segment score and gold produced during the current turn resolution.
+var _segment_turn_scores: Array[int] = []
+var _segment_turn_gold: Array[int] = []
 
 
 ## Binds this layout helper to a live map instance.
@@ -146,6 +149,42 @@ func get_rune_in_relative_segment(
 			if rune != null:
 				return rune
 	return null
+
+
+## Clears per-segment turn totals so the next resolution starts from zero.
+func reset_turn_results() -> void:
+	var segment_count := build_segments().size()
+	_segment_turn_scores.resize(segment_count)
+	_segment_turn_gold.resize(segment_count)
+	for i in segment_count:
+		_segment_turn_scores[i] = 0
+		_segment_turn_gold[i] = 0
+
+
+## Adds score produced by a rune on the given segment index.
+func add_segment_turn_score(segment_index: int, amount: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_turn_scores.size():
+		return
+	_segment_turn_scores[segment_index] += amount
+
+
+## Adds gold produced by a rune on the given segment index.
+func add_segment_turn_gold(segment_index: int, amount: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_turn_gold.size():
+		return
+	_segment_turn_gold[segment_index] += amount
+
+
+func get_segment_turn_score(segment_index: int) -> int:
+	if segment_index < 0 or segment_index >= _segment_turn_scores.size():
+		return 0
+	return _segment_turn_scores[segment_index]
+
+
+func get_segment_turn_gold(segment_index: int) -> int:
+	if segment_index < 0 or segment_index >= _segment_turn_gold.size():
+		return 0
+	return _segment_turn_gold[segment_index]
 
 
 ## Clears cached segment groups so the next build_segments() call rebuilds them.

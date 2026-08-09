@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jrew33k514xw"
-path="res://.godot/imported/h_bar.png-b562bec02adfddef8da2bae3af8cfb64.ctex"
+uid="uid://yfia6ltx5gqr"
+path="res://.godot/imported/divider.png-45bbac6e3c8e5b8a35be3caffd3a0ddb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/panels/h_bar.png"
-dest_files=["res://.godot/imported/h_bar.png-b562bec02adfddef8da2bae3af8cfb64.ctex"]
+source_file="res://assets/gui/divider.png"
+dest_files=["res://.godot/imported/divider.png-45bbac6e3c8e5b8a35be3caffd3a0ddb.ctex"]
 
 [params]
 

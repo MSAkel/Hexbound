@@ -1,7 +1,6 @@
-extends Panel
-# No longer in use, moved to gold_container
-@onready var amount_label: Label = $AmountLabel
+extends PanelContainer
 
+@onready var amount_label: Label = $HBoxContainer/AmountLabel
 
 func _ready() -> void:
 	amount_label.text = str(GoldManager.amount)

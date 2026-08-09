@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://bj0bkesq2wj5x"]
+
+[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="1_pe4qh"]
+[ext_resource type="Script" uid="uid://5y8yi6vfkggb" path="res://scenes/ui/RunInfoDisplay/gold_container/gold_container.gd" id="2_i0xcj"]
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currency/coin.png" id="3_i0xcj"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r6dd1"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+texture = ExtResource("1_pe4qh")
+
+[node name="GoldContainer" type="PanelContainer" unique_id=2029786034]
+offset_right = 125.0
+offset_bottom = 49.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_r6dd1")
+script = ExtResource("2_i0xcj")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1551532218]
+layout_mode = 2
+
+[node name="GoldIcon" type="TextureRect" parent="HBoxContainer" unique_id=1517760293]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+texture = ExtResource("3_i0xcj")
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="HBoxContainer" unique_id=1712442370]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.047058824, 0.039215688, 0.05490196, 0.05490196)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = -2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 24
+text = "00000"

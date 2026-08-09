@@ -77,13 +77,13 @@ func apply_on_placement(_tile: Hex) -> void:
 #region --- Score, gold, and multiplier, and floating text helpers ---
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_output_scale))
-	GameManager.turn_score += points
+	tile.map.add_turn_score_for_tile(tile, points)
 	_create_floating_text(tile, "+%d Score" % points, Color.AQUA)
 
 func add_gold(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))
-	GoldManager.add(amount)
-	_create_floating_text(tile, "+%d Gold" % amount, Color.GOLD)
+	tile.map.add_turn_gold_for_tile(tile, amount)
+	_create_floating_text(tile, "+%d Gold" % amount, Color(1.0, 0.85, 0.2, 1.0))
 
 func add_multiplier(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))

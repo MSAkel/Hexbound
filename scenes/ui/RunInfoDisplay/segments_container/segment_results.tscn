@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://behfllgh3b7fc"]
+
+[ext_resource type="Script" uid="uid://cw5fm7tuluw1w" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.gd" id="1_bo2vp"]
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currency/coin.png" id="2_bp3vb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r6dd1"]
+content_margin_left = 16.0
+content_margin_right = 16.0
+bg_color = Color(0.10459473, 0.41231135, 0.36963555, 0.16078432)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+
+[node name="SegmentResults" type="PanelContainer" unique_id=1594320159]
+custom_minimum_size = Vector2(150, 35)
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_r6dd1")
+script = ExtResource("1_bo2vp")
+
+[node name="SegmentScore" type="Label" parent="." unique_id=577569526]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 21
+text = "0"
+
+[node name="GoldContainer" type="HBoxContainer" parent="." unique_id=267342223]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+
+[node name="TextureRect" type="TextureRect" parent="GoldContainer" unique_id=1980748549]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("2_bp3vb")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="SegmentGold" type="Label" parent="GoldContainer" unique_id=90959331]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 21
+text = "0"

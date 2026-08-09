@@ -2,15 +2,15 @@
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
-[ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card_background.png" id="3_nmvtt"]
+[ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card/card_background.png" id="3_nmvtt"]
 [ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="4_7xb4v"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
 [ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
 [ext_resource type="Texture2D" uid="uid://c25ot8dgtv7wt" path="res://assets/icons/runes/dividend.png" id="6_nmvtt"]
+[ext_resource type="Texture2D" uid="uid://o0ecdi1va3oj" path="res://assets/gui/card/card_divider.png" id="6_onxhv"]
 [ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
 [ext_resource type="Script" uid="uid://lhyqf0q0f5ko" path="res://scenes/cards/card states/card_released_state.gd" id="8_o6pyt"]
-[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="9_l4s6v"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5jwxg"]
 content_margin_left = 4.0
@@ -18,29 +18,27 @@ content_margin_top = 4.0
 content_margin_right = 4.0
 texture = ExtResource("3_nmvtt")
 
-[sub_resource type="SystemFont" id="SystemFont_usd0r"]
-subpixel_positioning = 0
-
-[sub_resource type="LabelSettings" id="LabelSettings_o6pyt"]
-font = SubResource("SystemFont_usd0r")
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rjgu6"]
 
 [sub_resource type="SystemFont" id="SystemFont_5jwxg"]
 subpixel_positioning = 0
 
-[sub_resource type="LabelSettings" id="LabelSettings_usd0r"]
+[sub_resource type="LabelSettings" id="LabelSettings_nmvtt"]
 font = SubResource("SystemFont_5jwxg")
 font_size = 14
+font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vxwtt"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q2j25"]
-content_margin_left = 2.0
-content_margin_top = 2.0
-content_margin_right = 2.0
-content_margin_bottom = 2.0
-texture = ExtResource("9_l4s6v")
+[sub_resource type="LabelSettings" id="LabelSettings_5jwxg"]
+font = SubResource("SystemFont_5jwxg")
+font_size = 12
+font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_onxhv"]
+font = SubResource("SystemFont_5jwxg")
+font_size = 14
+font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2hgda"]
 bg_color = Color(0.09019608, 0.09019608, 0.09019608, 0.5647059)
@@ -100,16 +98,9 @@ grow_horizontal = 2
 [node name="PriceLabel" type="Label" parent="VBoxContainer" unique_id=1732701792]
 visible = false
 layout_mode = 2
+theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
 theme_override_font_sizes/font_size = 32
 text = "$100"
-horizontal_alignment = 1
-
-[node name="CardName" type="Label" parent="VBoxContainer" unique_id=877716726]
-visible = false
-layout_mode = 2
-size_flags_vertical = 2
-text = "Name"
-label_settings = SubResource("LabelSettings_o6pyt")
 horizontal_alignment = 1
 
 [node name="NameContainer" type="PanelContainer" parent="VBoxContainer" unique_id=322151785]
@@ -120,12 +111,13 @@ theme_override_styles/panel = SubResource("StyleBoxEmpty_rjgu6")
 
 [node name="CardName" type="Label" parent="VBoxContainer/NameContainer" unique_id=780871484]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
 text = "Name"
-label_settings = SubResource("LabelSettings_usd0r")
+label_settings = SubResource("LabelSettings_nmvtt")
 horizontal_alignment = 1
 
 [node name="IconContainer" type="PanelContainer" parent="VBoxContainer" unique_id=1784689084]
-custom_minimum_size = Vector2(0, 125)
+custom_minimum_size = Vector2(0, 75)
 layout_mode = 2
 size_flags_vertical = 0
 mouse_filter = 2
@@ -139,22 +131,19 @@ texture = ExtResource("6_nmvtt")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CardTypeLabel" type="Label" parent="VBoxContainer/IconContainer" unique_id=1751951717]
+[node name="CardTypeLabel" type="Label" parent="VBoxContainer" unique_id=1751951717]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
-theme_override_font_sizes/font_size = 6
-theme_override_styles/normal = SubResource("StyleBoxTexture_q2j25")
+theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
+theme_override_font_sizes/font_size = 12
 text = "Type"
-label_settings = SubResource("LabelSettings_usd0r")
+label_settings = SubResource("LabelSettings_5jwxg")
 horizontal_alignment = 1
 
-[node name="ActivationCost" type="Label" parent="VBoxContainer" unique_id=730873009]
-visible = false
+[node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=222293325]
 layout_mode = 2
-text = "Cost"
-label_settings = SubResource("LabelSettings_usd0r")
-horizontal_alignment = 1
+texture = ExtResource("6_onxhv")
 
 [node name="ResourceCostContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1695431964]
 z_index = 1
@@ -168,9 +157,10 @@ layout_mode = 2
 [node name="CardDescription" type="Label" parent="VBoxContainer" unique_id=2119088894]
 custom_minimum_size = Vector2(75, 130)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "Description"
-label_settings = SubResource("LabelSettings_usd0r")
+label_settings = SubResource("LabelSettings_onxhv")
 horizontal_alignment = 1
 autowrap_mode = 3
 

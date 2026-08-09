@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bkx2mrktyw8dj"]
 
 [ext_resource type="Script" path="res://scenes/ui/runes/rune_selection_item.gd" id="1_sk65c"]
-[ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card_background.png" id="2_l8lgd"]
+[ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card/card_background.png" id="2_l8lgd"]
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="4_mps3j"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nmvtt"]

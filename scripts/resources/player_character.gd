@@ -38,8 +38,8 @@ static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 
 	match character_type:
 		Type.SURVEYOR, Type.ENCIRCLER, Type.SPIRALIST:
-			hand.append_array(_get_random_common_runes(15, Rune.RuneType.PRODUCER))
-			hand.append_array(_get_random_common_runes(15, Rune.RuneType.SUPPORT))
+			hand.append_array(_get_random_common_runes(3, Rune.RuneType.PRODUCER))
+			hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
 			#hand.append(RANDOM_SELECTION)
 			hand.shuffle()
 

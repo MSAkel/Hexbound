@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
-[ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/Left_panel/RunInfoDisplay.tscn" id="2_8s2gp"]
+[ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/RunInfoDisplay/RunInfoDisplay.tscn" id="2_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/tile_panel.tscn" id="2_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://br3dhulnhrxyl" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="7_oxwcw"]

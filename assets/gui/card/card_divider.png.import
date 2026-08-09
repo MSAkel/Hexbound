@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7jxu3jowc7c5"
-path="res://.godot/imported/card_background.png-4dd201836b0a8352a91d6f026a0bada1.ctex"
+uid="uid://o0ecdi1va3oj"
+path="res://.godot/imported/card_divider.png-d040cf015cc33ff8d5e8ae9fb0f5dd8a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/card_background.png"
-dest_files=["res://.godot/imported/card_background.png-4dd201836b0a8352a91d6f026a0bada1.ctex"]
+source_file="res://assets/gui/card/card_divider.png"
+dest_files=["res://.godot/imported/card_divider.png-d040cf015cc33ff8d5e8ae9fb0f5dd8a.ctex"]
 
 [params]
 

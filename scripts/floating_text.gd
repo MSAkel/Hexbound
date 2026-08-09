@@ -5,6 +5,8 @@ extends Node2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
 
+const TEXT_SIZE := 84
+
 func _ready() -> void:
 	timer.start()
 	animation_player.play("float")
@@ -17,7 +19,7 @@ func set_text(text: String, color: Color = Color.WHITE) -> void:
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", 12)
-	label.add_theme_font_size_override("font_size", 84)
+	label.add_theme_font_size_override("font_size", TEXT_SIZE)
 	audio_stream_player_2d.play()
 	
 

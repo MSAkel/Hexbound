@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://crffik30sf5rg"]
+
+[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="1_jevqn"]
+[ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="2_amxqk"]
+[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/divider.png" id="3_i0t37"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g5bg1"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+texture = ExtResource("1_jevqn")
+
+[node name="SegmentsContainer" type="PanelContainer" unique_id=1933303425]
+texture_filter = 1
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_g5bg1")
+script = ExtResource("2_amxqk")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1508546180]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="PhaseLabel" type="Label" parent="VBoxContainer" unique_id=49207560 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 21
+text = "Segments Results"
+horizontal_alignment = 1
+
+[node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=875436109]
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("3_i0t37")
+stretch_mode = 2
+
+[node name="SegmentResultsList" type="VBoxContainer" parent="VBoxContainer" unique_id=1045123781]
+layout_mode = 2
+theme_override_constants/separation = 4

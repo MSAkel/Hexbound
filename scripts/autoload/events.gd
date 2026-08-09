@@ -26,6 +26,10 @@ signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 
 signal total_round_score_changed()
 signal turn_score_changed()
+# Per-segment score and gold earned during the current turn resolution.
+signal segment_turn_results_changed(segment_index: int, score: int, gold: int)
+signal segment_turn_results_reset()
+# TODO: remove this signal eventually as multiplier is not displayed in the UI anymoew
 signal turn_multi_changed()
 signal required_score_changed()
 

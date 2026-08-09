@@ -22,7 +22,7 @@ const ENHANCEMENT_BASE_PRICE := 30
 @onready var icon: TextureRect = $VBoxContainer/IconContainer/Icon
 @onready var card_description: Label = $VBoxContainer/CardDescription
 @onready var resource_cost_container: HBoxContainer = $VBoxContainer/ResourceCostContainer
-@onready var card_type_label: Label = $VBoxContainer/IconContainer/CardTypeLabel
+@onready var card_type_label: Label = $VBoxContainer/CardTypeLabel
 @onready var price_label: Label = $VBoxContainer/PriceLabel
 
 @onready var drop_point_area: Area2D = $DropPointArea

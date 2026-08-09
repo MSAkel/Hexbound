@@ -45,6 +45,13 @@ var card_placement_handler: CardPlacementHandler
 var _runes_hidden: bool = false
 var _challenge_highlighted_coords: Array[Vector2i] = []
 var _disabled_tile_coords: Array[Vector2i] = []
+# Tiles currently lit during the post-turn segment result reveal.
+var _segment_reveal_glow_coords: Array[Vector2i] = []
+
+const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
+const SEGMENT_REVEAL_PAUSE := 0.35
+# Keep in sync with RuneUI segment reveal lift + slam durations.
+const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
 
 
 func _ready() -> void:
@@ -288,6 +295,7 @@ func generate_terrain() -> void:
 
 	_layout.reset(hex_center)
 	_assign_segment_passive_modifiers()
+	_layout.reset_turn_results()
 	_apply_difficulty_disabled_tiles()
 
 
@@ -322,6 +330,7 @@ func _apply_difficulty_disabled_tiles() -> void:
 # Stamp each character's segment passive onto reserved map tiles at run start.
 func _assign_segment_passive_modifiers() -> void:
 	var modifier := SegmentPassiveModifier.create_for_character(GameManager.selected_character)
+	
 
 	match GameManager.selected_character:
 		PlayerCharacter.Type.SURVEYOR, PlayerCharacter.Type.ENCIRCLER:
@@ -389,6 +398,50 @@ func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 		if get_segment_index(hex.coordinates) == segment_index:
 			hexes.append(hex)
 	return hexes
+
+
+## Clears per-segment turn totals at the start of turn resolution.
+func reset_segment_turn_results() -> void:
+	_layout.reset_turn_results()
+	Events.segment_turn_results_reset.emit()
+
+
+## Records score produced by a rune on its tile's segment and updates global turn score.
+func add_turn_score_for_tile(tile: Hex, amount: int) -> void:
+	if amount == 0:
+		return
+
+	var segment_index := get_segment_index(tile.coordinates)
+	_layout.add_segment_turn_score(segment_index, amount)
+	GameManager.turn_score += amount
+	Events.segment_turn_results_changed.emit(
+		segment_index,
+		_layout.get_segment_turn_score(segment_index),
+		_layout.get_segment_turn_gold(segment_index)
+	)
+
+
+## Records gold produced by a rune on its tile's segment and updates the gold pool.
+func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
+	if amount == 0:
+		return
+
+	var segment_index := get_segment_index(tile.coordinates)
+	_layout.add_segment_turn_gold(segment_index, amount)
+	GoldManager.add(amount)
+	Events.segment_turn_results_changed.emit(
+		segment_index,
+		_layout.get_segment_turn_score(segment_index),
+		_layout.get_segment_turn_gold(segment_index)
+	)
+
+
+func get_segment_turn_score(segment_index: int) -> int:
+	return _layout.get_segment_turn_score(segment_index)
+
+
+func get_segment_turn_gold(segment_index: int) -> int:
+	return _layout.get_segment_turn_gold(segment_index)
 
 
 ## Overlays every tile in a segment for challenge UI highlighting.
@@ -598,6 +651,8 @@ func _on_rune_empower_consumed(rune: Rune) -> void:
 
 ## Resolves every placed rune in trigger order when the player ends the turn.
 func on_turn_ended() -> void:
+	reset_segment_turn_results()
+
 	var base_delay_interval := 0.5
 	_pending_trigger_queue.clear()
 
@@ -609,6 +664,7 @@ func on_turn_ended() -> void:
 		await _resolve_rune_activation(tile)
 		await get_tree().create_timer(delay_interval).timeout
 
+	await _play_segment_turn_result_reveals()
 	GameManager.finish_turn_processing()
 
 
@@ -650,3 +706,77 @@ func _activate_rune_on_tile(tile: Hex, activation_scale: float = 1.0, from_trigg
 func _wait_for_activation_animation() -> void:
 	var duration := RuneUI.ACTIVATION_POP_DURATION + RuneUI.ACTIVATION_SETTLE_DURATION
 	await get_tree().create_timer(duration / GameManager.game_speed).timeout
+
+
+## Plays the end-of-turn reveal for each segment that produced score or gold this turn.
+func _play_segment_turn_result_reveals() -> void:
+	for segment_index in get_segment_count():
+		var score := get_segment_turn_score(segment_index)
+		var gold := get_segment_turn_gold(segment_index)
+		if score == 0 and gold == 0:
+			continue
+		await _play_single_segment_reveal(segment_index, score, gold)
+
+
+## Highlights one segment, animates its runes, then shows a combined floating total.
+func _play_single_segment_reveal(segment_index: int, score: int, gold: int) -> void:
+	_apply_segment_reveal_glow(segment_index)
+
+	for hex: Hex in get_hexes_in_segment(segment_index):
+		if hex.active_rune != null:
+			hex.play_segment_result_animation()
+
+	await get_tree().create_timer(
+		SEGMENT_REVEAL_ANIMATION_DURATION / GameManager.game_speed
+	).timeout
+
+	var summary_lines: PackedStringArray = []
+	if score > 0:
+		summary_lines.append("+%d Score" % score)
+	if gold > 0:
+		summary_lines.append("+%d Gold" % gold)
+	create_floating_text(
+		_get_segment_screen_center(segment_index),
+		"\n".join(summary_lines), 
+		Color(1.0, 0.85, 0.2, 1.0)
+	)
+
+	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
+	_clear_segment_reveal_glow()
+	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
+
+
+func _apply_segment_reveal_glow(segment_index: int) -> void:
+	_clear_segment_reveal_glow()
+	fading_sector_overlay_layer.modulate = SEGMENT_REVEAL_GLOW_COLOR
+
+	var segments := _layout.build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return
+
+	for coords: Vector2i in segments[segment_index]:
+		fading_sector_overlay_layer.set_cell(
+			coords,
+			OVERLAY_TILE_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_segment_reveal_glow_coords.append(coords)
+
+func _clear_segment_reveal_glow() -> void:
+	for coords: Vector2i in _segment_reveal_glow_coords:
+		fading_sector_overlay_layer.set_cell(coords, -1)
+	_segment_reveal_glow_coords.clear()
+	fading_sector_overlay_layer.modulate = Color.WHITE
+
+
+## Average tile position for segment-wide floating text placement.
+func _get_segment_screen_center(segment_index: int) -> Vector2:
+	var segments := _layout.build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return Vector2.ZERO
+
+	var center := Vector2.ZERO
+	var segment: Array = segments[segment_index]
+	for coords: Vector2i in segment:
+		center += base_layer.map_to_local(coords)
+	return center / segment.size()

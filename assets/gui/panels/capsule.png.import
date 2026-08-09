@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jrew33k514xw"
-path="res://.godot/imported/h_bar.png-b562bec02adfddef8da2bae3af8cfb64.ctex"
+uid="uid://sc5dnch42jxo"
+path="res://.godot/imported/capsule.png-c4745cbc91f4f3158a3b7c29653a3c3b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/panels/h_bar.png"
-dest_files=["res://.godot/imported/h_bar.png-b562bec02adfddef8da2bae3af8cfb64.ctex"]
+source_file="res://assets/gui/panels/capsule.png"
+dest_files=["res://.godot/imported/capsule.png-c4745cbc91f4f3158a3b7c29653a3c3b.ctex"]
 
 [params]
 

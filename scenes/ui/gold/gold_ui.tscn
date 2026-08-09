@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dk3bsvpgwbwau"]
 
-[ext_resource type="Script" path="res://scenes/ui/gold/gold_ui.gd" id="1_gold_ui"]
+[ext_resource type="Script" uid="uid://c25qnqws21kmn" path="res://scenes/ui/gold/gold_ui.gd" id="1_gold_ui"]
 [ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currency/coin.png" id="2_coin"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_h2pb3"]
@@ -19,24 +19,16 @@ script = ExtResource("1_gold_ui")
 [node name="Icon" type="TextureRect" parent="." unique_id=1517760293]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 36.0
-offset_bottom = 36.0
+offset_right = 120.0
+offset_bottom = 40.0
 texture = ExtResource("2_coin")
 expand_mode = 1
 
 [node name="AmountLabel" type="Label" parent="." unique_id=1712442370]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -23.0
-offset_top = -37.0
-offset_right = 46.0
-offset_bottom = -3.5
+layout_mode = 0
+offset_top = 3.0
+offset_right = 120.0
+offset_bottom = 36.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_shadow_color = Color(0.047058824, 0.039215688, 0.05490196, 0.05490196)
