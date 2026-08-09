@@ -67,7 +67,7 @@ func _on_card_played(_card_ui: CardUI) -> void:
 	await get_tree().create_timer(0.1).timeout
 	if _get_hand_card_count() < 3:
 		Events.turn_ended.emit()
-		AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
+		AudioManager.play_sfx(UI_SOUNDS.END_TURN)
 
 var _hand_slide_tween: Tween = null
 

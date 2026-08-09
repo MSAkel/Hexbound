@@ -7,6 +7,12 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CHOICE_CARD_SCALE := 1.45
 const CHOICE_CARD_BASE_SIZE := Vector2(198, 317)
 
+## List of rune choices for the current turn
+var runes_pack: Array[Rune] = []
+## Gold cost to reroll the current pack, rises by 10 after each reroll.
+var runes_reroll_cost: int = 10
+
+
 func _ready() -> void:
 	hide()
 
@@ -18,7 +24,7 @@ func _ready() -> void:
 func _on_rune_selected(_rune: Rune) -> void:
 	hide()
 
-	# Open the merchant only after a rune pick when the phase goal was met this turn.
+	## Open the merchant only after a rune pick when the phase goal was met this turn.
 	if GameManager.consume_pending_merchant_visit():
 		UiManager.show_merchant_panel.emit()
 
@@ -26,7 +32,7 @@ func _on_rune_selected(_rune: Rune) -> void:
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
 	_update_reroll_button()
-	GameManager.create_runes_pack()
+	create_runes_pack()
 	instantiate_rune_choices()
 
 func _on_close_button_pressed() -> void:
@@ -34,16 +40,16 @@ func _on_close_button_pressed() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if not GoldManager.can_afford(GameManager.runes_reroll_cost):
+	if not GoldManager.can_afford(runes_reroll_cost):
 		return
 
 	reroll_button.disabled = true
 
 	await clear_choices()
-	GameManager.runes_pack.clear()
-	GameManager.create_runes_pack()
-	GoldManager.remove(GameManager.runes_reroll_cost)
-	GameManager.runes_reroll_cost += 10
+	runes_pack.clear()
+	create_runes_pack()
+	GoldManager.remove(runes_reroll_cost)
+	runes_reroll_cost += 10
 	instantiate_rune_choices()
 	_update_reroll_button()
 
@@ -52,27 +58,26 @@ func _on_gold_changed(_new_amount: int) -> void:
 	_update_reroll_button()
 
 
-# Keep reroll label and disabled state in sync with the current gold balance.
+## Keep reroll label and disabled state in sync with the current gold balance.
 func _update_reroll_button() -> void:
-	reroll_button.text = "Reroll (%s)" % GameManager.runes_reroll_cost
-	reroll_button.disabled = not GoldManager.can_afford(GameManager.runes_reroll_cost)
+	reroll_button.text = "Reroll (%s)" % runes_reroll_cost
+	reroll_button.disabled = not GoldManager.can_afford(runes_reroll_cost)
 
 func instantiate_rune_choices() -> void:
-
-	# Always clear existing choices first to ensure fresh display
+	## Always clear existing choices first to ensure fresh display
 	for node in choices_container.get_children():
 		node.queue_free()
 	
-	# Wait one frame to ensure nodes are freed
+	## Wait one frame to ensure nodes are freed
 	await get_tree().process_frame
 	
-	# Now create new choices from the current runes_pack
-	for rune in GameManager.runes_pack:
+	## Now create new choices from the current runes_pack
+	for rune in runes_pack:
 		_create_choice_card(rune)
 
 
 func _create_choice_card(rune: Rune) -> void:
-	# Wrapper reserves scaled layout space; the card itself is visually scaled up.
+	## Wrapper reserves scaled layout space, the card itself is visually scaled up.
 	var card_slot := Control.new()
 	card_slot.custom_minimum_size = CHOICE_CARD_BASE_SIZE * CHOICE_CARD_SCALE
 	choices_container.add_child(card_slot)
@@ -87,16 +92,31 @@ func _create_choice_card(rune: Rune) -> void:
 
 func _on_rune_choice_selected(card_ui: CardUI) -> void:
 	var rune := card_ui.card as Rune
-	GameManager.available_runes_packs -= 1
-	GameManager.runes_pack.clear()
+	## Selecting a rune consumes the pack so a new one can be offered later.
+	runes_pack.clear()
 	Events.rune_selected.emit(rune)
-	Events.rune_pack_count_changed.emit()
+
+
+## Pick random runes for the selection panel from the shared pool.
+## Only fills an empty pack so an unconsumed offer cannot be overwritten.
+func create_runes_pack() -> void:
+	if not runes_pack.is_empty():
+		return
+
+	if GameManager.runes_pool.is_empty():
+		push_error("Cannot create runes pack: runes pool is empty")
+		return
+
+	# Rarity-weighted draft (common / uncommon / rare) from the shared pool.
+	var pack_size := ChallengeManager.get_runes_pack_size()
+	runes_pack = RuneLoot.draw_runes(pack_size, GameManager.runes_pool)
+
 
 func clear_choices() -> void:
 	for node in choices_container.get_children():
 		animate_and_free(node)
 
-	# Ensure the node queue is flushed before continuing.
+	## Ensure the node queue is flushed before continuing.
 	while choices_container.get_child_count() > 0:
 		await get_tree().process_frame
 

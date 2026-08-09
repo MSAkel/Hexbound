@@ -3,18 +3,15 @@ extends Node
 # Audio bus indices (matching audio_bus_setup.gd)
 const MUSIC_BUS = 1
 const SFX_BUS = 2
-const UI_BUS = 3
 
 # Audio players
 var music_player: AudioStreamPlayer
-var ui_player: AudioStreamPlayer
 var sfx_players: Array[AudioStreamPlayer] = []
 const MAX_SFX_PLAYERS = 8
 
 var current_music: AudioStream
 var music_volume: float = 0.20
 var sfx_volume: float = 0.35
-var ui_volume: float = 0.35
 
 # Crossfade settings
 const CROSSFADE_DURATION = 1.0
@@ -26,11 +23,7 @@ func _ready() -> void:
 	music_player.bus = "Music"
 	add_child(music_player)
 	
-	ui_player = AudioStreamPlayer.new()
-	ui_player.bus = "UI"
-	add_child(ui_player)
-	
-	# Create pool of SFX players
+	# Create pool of SFX players (also used for former UI sounds)
 	for i in range(MAX_SFX_PLAYERS):
 		var player = AudioStreamPlayer.new()
 		player.bus = "SFX"
@@ -64,7 +57,7 @@ func play_music(music: AudioStream, fade: bool = true) -> void:
 		music_player.volume_db = linear_to_db(music_volume)
 		music_player.play()
 
-# Play a sound effect
+# Play a sound effect (includes UI click/select and other feedback sounds)
 func play_sfx(sfx: AudioStream) -> void:
 	# Find an available player
 	var player = get_available_sfx_player()
@@ -72,12 +65,6 @@ func play_sfx(sfx: AudioStream) -> void:
 		player.stream = sfx
 		player.volume_db = linear_to_db(sfx_volume)
 		player.play()
-
-# Play a UI sound
-func play_ui_sound(sound: AudioStream) -> void:
-	ui_player.stream = sound
-	ui_player.volume_db = linear_to_db(ui_volume)
-	ui_player.play()
 
 # Get an available SFX player from the pool
 func get_available_sfx_player() -> AudioStreamPlayer:
@@ -101,19 +88,11 @@ func set_sfx_volume(volume: float) -> void:
 	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(volume))
 	save_volume_settings()
 
-# Set UI volume (0.0 to 1.0)
-func set_ui_volume(volume: float) -> void:
-	ui_volume = clamp(volume, 0.0, 1.0)
-	ui_player.volume_db = linear_to_db(ui_volume)
-	AudioServer.set_bus_volume_db(UI_BUS, linear_to_db(volume))
-	save_volume_settings()
-
 # Save volume settings
 func save_volume_settings() -> void:
 	var settings = {
 		"music_volume": music_volume,
-		"sfx_volume": sfx_volume,
-		"ui_volume": ui_volume
+		"sfx_volume": sfx_volume
 	}
 	var save_file = FileAccess.open("res://audio_settings.save", FileAccess.WRITE)
 	save_file.store_var(settings)
@@ -127,30 +106,25 @@ func load_volume_settings() -> void:
 		if settings is Dictionary:
 			music_volume = settings.get("music_volume", 0.20)  # Use new defaults
 			sfx_volume = settings.get("sfx_volume", 0.35)     # Use new defaults
-			ui_volume = settings.get("ui_volume", 0.35)       # Use new defaults
 			
 			# Apply loaded settings
 			set_music_volume(music_volume)
 			set_sfx_volume(sfx_volume)
-			set_ui_volume(ui_volume)
 
 # Stop all audio
 func stop_all() -> void:
 	music_player.stop()
-	ui_player.stop()
 	for player in sfx_players:
 		player.stop()
 
 # Pause all audio
 func pause_all() -> void:
 	music_player.stream_paused = true
-	ui_player.stream_paused = true
 	for player in sfx_players:
 		player.stream_paused = true
 
 # Resume all audio
 func resume_all() -> void:
 	music_player.stream_paused = false
-	ui_player.stream_paused = false
 	for player in sfx_players:
 		player.stream_paused = false

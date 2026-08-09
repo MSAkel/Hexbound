@@ -9,6 +9,9 @@ const HOVER_MODULATE := Color(1.2, 1.15, 1.05, 1.0)
 const HOVER_DURATION := 0.12
 
 @onready var game_version: Label = $GameVersion
+@onready var menu_container: MarginContainer = $MenuContainer
+@onready var settings_container: PanelContainer = $SettingsContainer
+
 
 var character_selection_screen = load("res://scenes/ui/character_selection_screen/character_selection_screen.tscn")
 var settings_scene = load("res://scenes/ui/settings/settings.tscn")
@@ -28,13 +31,15 @@ func _ready() -> void:
 		AudioManager.play_music(music)
 	
 	# Connect button hover/focus signals and scale from button center
-	for button in $Container/MenuItemsContainer.get_children():
+	for button in $MenuContainer/MenuItemsContainer.get_children():
 		if button is Button:
 			button.pivot_offset = button.size / 2.0
 			button.resized.connect(_on_button_resized.bind(button))
 			button.mouse_entered.connect(_on_button_hover.bind(button))
 			button.mouse_exited.connect(_on_button_unhover.bind(button))
 			button.focus_entered.connect(_on_focus_entered)
+	
+	settings_container.closed.connect(_on_settings_closed)
 
 
 func _on_button_resized(button: Button) -> void:
@@ -43,7 +48,7 @@ func _on_button_resized(button: Button) -> void:
 
 
 func _on_button_hover(button: Button) -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 	_animate_button_hover(button, true)
 
 
@@ -69,18 +74,22 @@ func _animate_button_hover(button: Button, hovered: bool) -> void:
 
 
 func _on_focus_entered() -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 
 func _on_play_pressed() -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	get_tree().change_scene_to_packed(character_selection_screen)
 
 
 func _on_options_pressed() -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_packed(settings_scene)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	menu_container.hide()
+	settings_container.show()
 
+func _on_settings_closed() -> void:
+	settings_container.hide()
+	menu_container.show()
 
 func _on_exit_pressed() -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	get_tree().quit()

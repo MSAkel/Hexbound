@@ -14,7 +14,7 @@ func _on_activate_rune(tile: Hex) -> void:
 	for _i in range(adjacent_producers.size()):
 		if randf() < DESTROY_CHANCE_PER_ADJACENT:
 			_destroy_placed_rune(tile, self)
-			AudioManager.play_ui_sound(UISounds.RUNE_BREAK)
+			AudioManager.play_sfx(UISounds.RUNE_BREAK)
 			break
 
 

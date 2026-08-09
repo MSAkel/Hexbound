@@ -17,7 +17,7 @@ func _ready() -> void:
 
 func _on_end_turn_button_pressed() -> void:
 	Events.turn_ended.emit()
-	AudioManager.play_ui_sound(UI_SOUNDS.END_TURN)
+	AudioManager.play_sfx(UI_SOUNDS.END_TURN)
 
 func _on_turn_started() -> void:
 	_update_phase_label()

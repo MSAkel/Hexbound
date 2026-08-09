@@ -74,6 +74,7 @@ func queue_rune_triggers(source_tile: Hex, runes: Array[Rune], activation_scales
 func apply_on_placement(_tile: Hex) -> void:
 	pass
 
+
 #region --- Score, gold, and multiplier, and floating text helpers ---
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_output_scale))
@@ -87,7 +88,7 @@ func add_gold(tile: Hex, base_amount: int) -> void:
 
 func add_multiplier(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))
-	GameManager.turn_multi += amount
+	tile.map.add_turn_multiplier_for_tile(tile, amount)
 	_create_floating_text(tile, "+%d Mult" % amount, Color.PLUM)
 
 func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE) -> void:

@@ -10,7 +10,7 @@ func _on_activate_rune(tile: Hex) -> void:
 		if next_rune != null:
 			score_bonus += 1
 			_destroy_placed_rune(tile, next_rune)
-			AudioManager.play_ui_sound(UISounds.RUNE_BREAK)
+			AudioManager.play_sfx(UISounds.RUNE_BREAK)
 	
 
 	base_production_amount *= score_bonus

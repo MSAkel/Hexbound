@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://b8ve8hecgnb8p" path="res://scenes/ui/round_complete_panel/round_complete_panel.tscn" id="12_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://b04mnn3bt2r1e" path="res://scenes/ui/labels/challenge_label/phase_challenge_name_display.tscn" id="12_m82f4"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
+[ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="14_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
@@ -77,3 +78,6 @@ visible = false
 [node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]
 visible = false
 script = null
+
+[node name="SettingsContainer" parent="." unique_id=897472805 instance=ExtResource("14_8s2gp")]
+visible = false

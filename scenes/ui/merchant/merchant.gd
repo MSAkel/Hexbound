@@ -33,18 +33,17 @@ func _ready() -> void:
 func open() -> void:
 	UiManager.show_panel(self)
 	await _refresh_merchant_cards()
-	AudioManager.play_ui_sound(UI_SOUNDS.MERCHANT_ENTRY)
+	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_ENTRY)
 
 
-# Shuffle both pools, pick runes and enhancements, then mix them in one grid.
+# Rarity-weighted rune draft plus random enhancements, then mix them in one grid.
 func _refresh_merchant_cards() -> void:
 	merchant_inventory.clear()
 
-	var shuffled_runes := GameManager.runes_pool.duplicate()
-	shuffled_runes.shuffle()
-
-	for i in mini(MERCHANT_RUNE_COUNT, shuffled_runes.size()):
-		merchant_inventory.append(shuffled_runes[i])
+	# Same loot table as rune selection so merchant rarity odds stay consistent.
+	var drafted_runes := RuneLoot.draw_runes(MERCHANT_RUNE_COUNT, GameManager.runes_pool)
+	for rune in drafted_runes:
+		merchant_inventory.append(rune)
 
 	var shuffled_enhancements := GameManager.enhancements_pool.duplicate()
 	shuffled_enhancements.shuffle()
@@ -97,7 +96,7 @@ func _on_merchant_card_purchased(card_ui: CardUI) -> void:
 		Events.enhancement_selected.emit(card as Enhancement)
 		Events.merchant_item_purchased.emit("enhancement")
 
-	AudioManager.play_ui_sound(UI_SOUNDS.MERCHANT_CARD_PURCHASED)
+	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_CARD_PURCHASED)
 	_update_reroll_button()
 
 
@@ -106,7 +105,7 @@ func _on_reroll_button_pressed() -> void:
 		return
 
 	GoldManager.remove(reroll_cost)
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	await _refresh_merchant_cards()
 	reroll_counter += 1
 	reroll_cost = BASE_REROLL_COST * reroll_counter

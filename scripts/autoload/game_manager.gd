@@ -1,6 +1,6 @@
 extends Node
 
-# Central coordinator for run flow: turns, scoring, phases, rune pools, and turn processing.
+## Central coordinator for run flow: turns, scoring, phases, resource pools, and turn processing.
 
 signal game_speed_changed(new_speed: float)
 
@@ -8,9 +8,9 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const RUNES_PACK_SIZE := 3
 const MAX_TURNS_PER_PHASE := 5
 
-# Set when a turn ends with enough score to meet the phase goal; consumed after rune selection.
+## Set when a turn ends with enough score to meet the phase goal
 var _pending_merchant_visit := false
-# After the final-challenge victory screen, rune pick and merchant happen before phase 13.
+## After the final-challenge victory screen, rune pick and merchant happen before phase 13.
 var _pending_post_victory_phase_advance := false
 
 var current_phase: int = 1
@@ -18,7 +18,7 @@ var current_phase: int = 1
 #region Turn state
 
 var _current_turn := 1
-# Blocks player input while runes are resolving after end turn.
+## Blocks player input while runes are resolving after end turn.
 var _is_processing_turn := false
 
 var current_turn: int:
@@ -37,14 +37,14 @@ var is_processing_turn: bool:
 
 #region Score and phase progression
 
-# Score needed to complete the current phase and open the merchant.
+## Score needed to complete the current phase and open the merchant.
 var required_score: int = 1500
-# Applied each time required_score is met to scale difficulty across phases.
+## Applied each time required_score is met to scale difficulty across phases.
 var required_score_multiplier: int = 2
 
 var _total_round_score: int = 0
 var _turn_score: int = 0
-var _turn_multi: int = 1
+var _turn_multiplier: int = 1
 
 var total_round_score: int:
 	get:
@@ -62,46 +62,27 @@ var turn_score: int:
 		_turn_score = value
 		Events.turn_score_changed.emit()
 
-var turn_multi: int:
+var turn_multiplier: int:
 	get:
-		return _turn_multi
+		return _turn_multiplier
 	set(value):
-		_turn_multi = value
-		Events.turn_multi_changed.emit()
+		_turn_multiplier = value
+		Events.turn_multiplier_changed.emit()
 
 #endregion
 
-#region Runes pool and selection pack
+#region Runes and enhancements pools
 
-# Every rune resource loaded from disk at startup.
+## Every rune resource loaded from disk at startup.
 var runes_pool: Array[Rune] = []
-# Every enhancement resource loaded from disk at startup.
+## Every enhancement resource loaded from disk at startup.
 var enhancements_pool: Array[Enhancement] = []
-# The three runes currently offered on the post-turn selection panel.
-var runes_pack: Array[Rune] = []
-# How many rune packs are queued; incremented each turn and consumed when the panel opens.
-var _available_runes_packs: int = 0
-# Gold cost to reroll the current pack; rises by 10 after each reroll.
-var _runes_reroll_cost: int = 10
-
-var available_runes_packs: int:
-	get:
-		return _available_runes_packs
-	set(value):
-		_available_runes_packs = max(0, value)
-		Events.rune_pack_count_changed.emit()
-
-var runes_reroll_cost: int:
-	get:
-		return _runes_reroll_cost
-	set(value):
-		_runes_reroll_cost = max(0, value)
 
 #endregion
 
 #region Rune activation tracking
 
-# Cleared at turn start; filled as each rune resolves during turn processing.
+## Cleared at turn start, filled as each rune resolves during turn processing.
 var _runes_activated_this_turn: int = 0
 var _activated_runes_this_turn: Array[Rune] = []
 
@@ -109,7 +90,7 @@ var _activated_runes_this_turn: Array[Rune] = []
 
 #region Character and trigger order
 
-# Chosen on the character selection screen; drives starting hand and trigger order.
+## Chosen on the character selection screen, drives starting hand and trigger order.
 var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.SURVEYOR
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
 var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
@@ -144,8 +125,6 @@ func _ready() -> void:
 
 	if runes_pool.is_empty():
 		push_error("No runes loaded into pool")
-	else:
-		create_runes_pack()
 
 	if enhancements_pool.is_empty():
 		push_warning("No enhancements loaded into pool")
@@ -162,24 +141,23 @@ func end_turn() -> void:
 func finish_turn_processing() -> void:
 	_is_processing_turn = false
 
-	# Score the turn before advancing counters so phase logic sees this turn's contribution.
-	var pending_total_round_score := total_round_score + (turn_score * turn_multi)
+	## Score the turn before advancing counters so phase logic sees this turn's contribution.
+	var pending_total_round_score := total_round_score + (turn_score * turn_multiplier)
 	var should_advance_turn := current_turn <= get_max_turns_per_phase() and pending_total_round_score < required_score
 
 	if pending_total_round_score >= required_score:
 		if ChallengeManager.is_completing_final_challenge_phase():
 			total_round_score = pending_total_round_score
 			turn_score = 0
-			turn_multi = 1
+			turn_multiplier = 1
 			Events.turn_started.emit()
 			return
 		_pending_merchant_visit = true
 
 	total_round_score = pending_total_round_score
 	turn_score = 0
-	turn_multi = 1
+	turn_multiplier = 1
 
-	available_runes_packs += 1
 	UiManager.show_runes_choice_panel.emit()
 	Events.turn_started.emit()
 
@@ -208,7 +186,7 @@ func is_in_post_victory_transition() -> bool:
 func continue_run_after_victory() -> void:
 	_pending_merchant_visit = true
 	_pending_post_victory_phase_advance = true
-	available_runes_packs += 1
+	# Choice of cards at the end of the turn
 	UiManager.show_runes_choice_panel.emit()
 	Events.turn_started.emit()
 
@@ -242,7 +220,7 @@ func _complete_current_phase() -> void:
 func advance_phase() -> void:
 	current_phase += 1
 	GoldManager.add(20)
-	AudioManager.play_ui_sound(UI_SOUNDS.GOLD_GAINED)
+	AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
 
 	current_turn = 1
 	ChallengeManager.on_phase_advanced(current_phase)
@@ -268,10 +246,10 @@ func register_rune_activation(rune: Rune) -> void:
 
 #endregion
 
-#region Runes pool loading and pack creation
+#region Runes and enhancements pool loading
 
-# Recursively load every .tres rune under the runes folder, skipping duplicate ids.
-# ResourceLoader.list_directory works in exported builds; DirAccess only sees .gd files in PCK.
+## Recursively load every .tres rune under the runes folder, skipping duplicate ids.
+## ResourceLoader.list_directory works in exported builds, DirAccess only sees .gd files in PCK.
 func _load_runes_from_directory(dir_path: String) -> void:
 	var normalized_path := dir_path
 	if not normalized_path.ends_with("/"):
@@ -308,7 +286,7 @@ func _has_rune_with_id(rune_id: String) -> bool:
 	return false
 
 
-# Load every .tres enhancement under the enhancements folder, skipping duplicate ids.
+## Load every .tres enhancement under the enhancements folder, skipping duplicate ids.
 func _load_enhancements_from_directory(dir_path: String) -> void:
 	var normalized_path := dir_path
 	if not normalized_path.ends_with("/"):
@@ -342,24 +320,6 @@ func _has_enhancement_with_id(enhancement_id: String) -> bool:
 		if existing_enhancement.id == enhancement_id:
 			return true
 	return false
-
-
-# Pick three random runes for the selection panel.
-# Only fills an empty pack so multiple end-turns can stack packs without overwriting.
-func create_runes_pack() -> void:
-	if not runes_pack.is_empty():
-		return
-
-	if runes_pool.is_empty():
-		push_error("Cannot create runes pack: runes pool is empty")
-		return
-
-	var shuffled_pool := runes_pool.duplicate()
-	shuffled_pool.shuffle()
-
-	var pack_size := ChallengeManager.get_runes_pack_size()
-	for i in mini(pack_size, shuffled_pool.size()):
-		runes_pack.append(shuffled_pool[i])
 
 #endregion
 

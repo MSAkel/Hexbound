@@ -1,9 +1,54 @@
 [gd_scene format=3 uid="uid://br3dhulnhrxyl"]
 
 [ext_resource type="Script" uid="uid://16ej6vcxnuhw" path="res://scenes/ui/pause_menu/pause_menu.gd" id="1_kgchh"]
+[ext_resource type="Texture2D" uid="uid://dinaslb47ov38" path="res://assets/gui/3 Aklatros.png" id="2_rbnsh"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
 bg_color = Color(0.21176471, 0.21176471, 0.21176471, 0.77254903)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_347px"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xgg5q"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.10377186, 0.17100239, 0.1886906, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rv5mv"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1172365, 0.18998262, 0.20912522, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2mh1u"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.12290869, 0.19797018, 0.21427926, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xtvdp"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.12290869, 0.19797018, 0.21427926, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
 
 [node name="PauseMenu" type="Control" unique_id=1402050020]
 layout_mode = 3
@@ -37,31 +82,53 @@ offset_bottom = 74.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 4
-theme_override_constants/separation = 8
+theme_override_constants/separation = 16
+
+[node name="TextureRect" type="TextureRect" parent="Panel/MenuItemsContainer" unique_id=799428981]
+layout_mode = 2
+texture = ExtResource("2_rbnsh")
 
 [node name="Continue" type="Button" parent="Panel/MenuItemsContainer" unique_id=2074081055]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Continue"
 
-[node name="Options" type="Button" parent="Panel/MenuItemsContainer" unique_id=1838627620]
+[node name="Settings" type="Button" parent="Panel/MenuItemsContainer" unique_id=1838627620]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-disabled = true
+theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Settings"
 
 [node name="MainMenu" type="Button" parent="Panel/MenuItemsContainer" unique_id=847775209]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-disabled = true
+theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Main Menu"
 
 [node name="Exit" type="Button" parent="Panel/MenuItemsContainer" unique_id=662622565]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Exit To Desktop"
 
 [connection signal="pressed" from="Panel/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
-[connection signal="pressed" from="Panel/MenuItemsContainer/Options" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="Panel/MenuItemsContainer/Settings" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/Exit" to="." method="_on_exit_pressed"]

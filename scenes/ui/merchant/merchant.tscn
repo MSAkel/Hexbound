@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://dhgcsvr4lsi58" path="res://scenes/ui/merchant/merchant.gd" id="1_wha7e"]
 [ext_resource type="Texture2D" uid="uid://fvko4m74t6xh" path="res://assets/characters/NPC_Gramps.png" id="2_b5a5w"]
-[ext_resource type="PackedScene" uid="uid://dk3bsvpgwbwau" path="res://scenes/ui/gold/gold_ui.tscn" id="3_wha7e"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aum3v"]
 bg_color = Color(0.05882353, 0.09803922, 0.14509805, 0.8666667)
@@ -72,11 +71,3 @@ layout_mode = 2
 size_flags_vertical = 8
 theme_override_font_sizes/font_size = 32
 text = "Leave"
-
-[node name="GoldUI" parent="ContainerPanel" unique_id=1964645916 instance=ExtResource("3_wha7e")]
-visible = false
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 120.0
-offset_bottom = 40.0

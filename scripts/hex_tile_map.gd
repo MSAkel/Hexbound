@@ -417,6 +417,22 @@ func add_turn_score_for_tile(tile: Hex, amount: int) -> void:
 	Events.segment_turn_results_changed.emit(
 		segment_index,
 		_layout.get_segment_turn_score(segment_index),
+		_layout.get_segment_turn_multiplier(segment_index),
+		_layout.get_segment_turn_gold(segment_index)
+	)
+
+## Records multiplier produced by a rune on its tile's segment and updates global turn multiplier.
+func add_turn_multiplier_for_tile(tile: Hex, amount: int) -> void:
+	if amount == 0:
+		return
+
+	var segment_index := get_segment_index(tile.coordinates)
+	_layout.add_segment_turn_multiplier(segment_index, amount)
+	GameManager.turn_multiplier += amount
+	Events.segment_turn_results_changed.emit(
+		segment_index,
+		_layout.get_segment_turn_score(segment_index),
+		_layout.get_segment_turn_multiplier(segment_index),
 		_layout.get_segment_turn_gold(segment_index)
 	)
 
@@ -432,6 +448,7 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	Events.segment_turn_results_changed.emit(
 		segment_index,
 		_layout.get_segment_turn_score(segment_index),
+		_layout.get_segment_turn_multiplier(segment_index),
 		_layout.get_segment_turn_gold(segment_index)
 	)
 
@@ -439,6 +456,9 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 func get_segment_turn_score(segment_index: int) -> int:
 	return _layout.get_segment_turn_score(segment_index)
 
+
+func get_segment_turn_multiplier(segment_index: int) -> int:
+	return _layout.get_segment_turn_multiplier(segment_index)
 
 func get_segment_turn_gold(segment_index: int) -> int:
 	return _layout.get_segment_turn_gold(segment_index)
@@ -708,18 +728,19 @@ func _wait_for_activation_animation() -> void:
 	await get_tree().create_timer(duration / GameManager.game_speed).timeout
 
 
-## Plays the end-of-turn reveal for each segment that produced score or gold this turn.
+## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
 func _play_segment_turn_result_reveals() -> void:
 	for segment_index in get_segment_count():
 		var score := get_segment_turn_score(segment_index)
+		var multiplier := get_segment_turn_multiplier(segment_index)
 		var gold := get_segment_turn_gold(segment_index)
 		if score == 0 and gold == 0:
 			continue
-		await _play_single_segment_reveal(segment_index, score, gold)
+		await _play_single_segment_reveal(segment_index, score, multiplier, gold)
 
 
 ## Highlights one segment, animates its runes, then shows a combined floating total.
-func _play_single_segment_reveal(segment_index: int, score: int, gold: int) -> void:
+func _play_single_segment_reveal(segment_index: int, score: int, multiplier: int, gold: int) -> void:
 	_apply_segment_reveal_glow(segment_index)
 
 	for hex: Hex in get_hexes_in_segment(segment_index):
@@ -733,6 +754,8 @@ func _play_single_segment_reveal(segment_index: int, score: int, gold: int) -> v
 	var summary_lines: PackedStringArray = []
 	if score > 0:
 		summary_lines.append("+%d Score" % score)
+	if multiplier > 0:
+		summary_lines.append("+%d Mult" % multiplier)
 	if gold > 0:
 		summary_lines.append("+%d Gold" % gold)
 	create_floating_text(

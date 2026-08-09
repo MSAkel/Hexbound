@@ -33,13 +33,13 @@ func get_selected_character() -> PlayerCharacter.Type:
 func _on_prev_selection() -> void:
 	current_index = (current_index - 1 + selections.size()) % selections.size()
 	_update_display()
-	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 
 
 func _on_next_selection() -> void:
 	current_index = (current_index + 1) % selections.size()
 	_update_display()
-	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 
 
 func _update_display() -> void:
@@ -48,7 +48,7 @@ func _update_display() -> void:
 
 
 func _on_start_button_pressed() -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 
 	var character_type: PlayerCharacter.Type = get_selected_character()
 	# Character choice locks in the trigger order for the entire run.
@@ -60,5 +60,5 @@ func _on_start_button_pressed() -> void:
 
 
 func _on_back_button_pressed() -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	get_tree().change_scene_to_packed(main_menu_scene)

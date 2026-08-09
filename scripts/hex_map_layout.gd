@@ -19,6 +19,7 @@ var _segments_cache: Array[Array] = []
 var _segments_cache_valid: bool = false
 # Per-segment score and gold produced during the current turn resolution.
 var _segment_turn_scores: Array[int] = []
+var _segment_turn_multiplier: Array[int] = []
 var _segment_turn_gold: Array[int] = []
 
 
@@ -151,22 +152,29 @@ func get_rune_in_relative_segment(
 	return null
 
 
-## Clears per-segment turn totals so the next resolution starts from zero.
+# Clears per-segment turn totals so the next resolution starts from zero.
 func reset_turn_results() -> void:
 	var segment_count := build_segments().size()
 	_segment_turn_scores.resize(segment_count)
+	_segment_turn_multiplier.resize(segment_count)
 	_segment_turn_gold.resize(segment_count)
 	for i in segment_count:
 		_segment_turn_scores[i] = 0
+		_segment_turn_multiplier[i] = 0
 		_segment_turn_gold[i] = 0
 
 
-## Adds score produced by a rune on the given segment index.
+# Adds score produced by a rune on the given segment index.
 func add_segment_turn_score(segment_index: int, amount: int) -> void:
 	if segment_index < 0 or segment_index >= _segment_turn_scores.size():
 		return
 	_segment_turn_scores[segment_index] += amount
 
+
+func add_segment_turn_multiplier(segment_index: int, amount: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_turn_multiplier.size():
+		return
+	_segment_turn_multiplier[segment_index] += amount
 
 ## Adds gold produced by a rune on the given segment index.
 func add_segment_turn_gold(segment_index: int, amount: int) -> void:
@@ -180,6 +188,10 @@ func get_segment_turn_score(segment_index: int) -> int:
 		return 0
 	return _segment_turn_scores[segment_index]
 
+func get_segment_turn_multiplier(segment_index: int) -> int:
+	if segment_index < 0 or segment_index >= _segment_turn_multiplier.size():
+		return 0
+	return _segment_turn_multiplier[segment_index]
 
 func get_segment_turn_gold(segment_index: int) -> int:
 	if segment_index < 0 or segment_index >= _segment_turn_gold.size():

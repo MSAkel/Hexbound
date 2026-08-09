@@ -15,4 +15,4 @@ func _on_button_pressed() -> void:
 
 func _on_game_ended() -> void:
 	UiManager.show_panel(self)
-	AudioManager.play_ui_sound(UI_SOUNDS.GAME_OVER)
+	AudioManager.play_sfx(UI_SOUNDS.GAME_OVER)

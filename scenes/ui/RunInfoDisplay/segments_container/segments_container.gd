@@ -8,6 +8,7 @@ const SEGMENT_RESULTS_SCENE := preload(
 
 
 func _ready() -> void:
+	## Delay execution until the end of the current frame
 	call_deferred("_build_segment_rows")
 
 

@@ -25,10 +25,10 @@ func _on_continue_pressed() -> void:
 	hide()
 	if UiManager.active_panel == self:
 		UiManager.active_panel = null
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	GameManager.continue_run_after_victory()
 
 
 func _on_main_menu_pressed() -> void:
-	AudioManager.play_ui_sound(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")

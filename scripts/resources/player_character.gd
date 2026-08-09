@@ -55,22 +55,12 @@ static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
 
 # Pick random common runes of the given type from the pool.
 static func _get_random_common_runes(count: int, rune_type: Rune.RuneType) -> Array[Rune]:
-	var pool: Array[Rune] = []
-
-	for rune in GameManager.runes_pool:
-		if rune.rarity != Rune.RuneRarity.COMMON:
-			continue
-		if rune.type != rune_type:
-			continue
-		pool.append(rune)
-
-	pool.shuffle()
-
-	var result: Array[Rune] = []
-	for i in mini(count, pool.size()):
-		result.append(pool[i])
-
-	return result
+	return RuneLoot.draw_filtered(
+		count,
+		GameManager.runes_pool,
+		Rune.RuneRarity.COMMON,
+		rune_type
+	)
 
 static func get_character_name(character_type: Type) -> String:
 	match character_type:

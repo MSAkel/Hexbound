@@ -39,7 +39,7 @@ func _on_prev_selection_pressed() -> void:
 	_current_index -= 1
 	_update_display()
 	prev_difficulty_level_pressed.emit()
-	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 
 
 func _on_next_selection_pressed() -> void:
@@ -49,7 +49,7 @@ func _on_next_selection_pressed() -> void:
 	_current_index += 1
 	_update_display()
 	next_difficulty_level_pressed.emit()
-	AudioManager.play_ui_sound(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 
 
 # Refresh the name and description labels for the current difficulty.
