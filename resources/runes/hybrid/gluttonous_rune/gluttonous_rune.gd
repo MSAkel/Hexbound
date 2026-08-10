@@ -12,7 +12,6 @@ func _on_activate_rune(tile: Hex) -> void:
 			_destroy_placed_rune(tile, next_rune)
 			AudioManager.play_sfx(UISounds.RUNE_BREAK)
 	
-
-	base_production_amount *= score_bonus
-	GameManager.turn_score += base_production_amount
-	add_score(tile, base_production_amount)
+	var prod_amount = _get_production_amount()
+	prod_amount *= score_bonus
+	add_score(tile, prod_amount)

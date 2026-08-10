@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://1yngk6bgvs8i"]
+
+[ext_resource type="Texture2D" uid="uid://6uvjailc28lb" path="res://assets/icons/runes/production/basic_mult.png" id="1_pj818"]
+[ext_resource type="Script" uid="uid://xas6lx7nsi1d" path="res://resources/runes/generations/basic_mult/basic_mult.gd" id="2_ubapp"]
+
+[resource]
+script = ExtResource("2_ubapp")
+id = "basic_multi"
+name = "Multiplier"
+icon = ExtResource("1_pj818")
+base_production_amount = 2
+description = "+2 Mult"
+product = 2
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

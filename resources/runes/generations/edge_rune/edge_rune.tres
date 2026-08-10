@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://bp1tk0ukiucl1"]
 
-[ext_resource type="Texture2D" uid="uid://0cuoko522r8m" path="res://assets/icons/runes/edge_rune.png" id="1_l32fg"]
+[ext_resource type="Texture2D" uid="uid://0cuoko522r8m" path="res://assets/icons/runes/production/edge_rune.png" id="1_l32fg"]
 [ext_resource type="Script" uid="uid://dxmj6xelyy45s" path="res://resources/runes/generations/edge_rune/edge_rune.gd" id="2_l32fg"]
 
 [resource]
@@ -11,4 +11,5 @@ icon = ExtResource("1_l32fg")
 base_production_amount = 40
 description = "+40 score. Must be placed on an edge tile."
 product = 1
+placement_restriction = 1
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

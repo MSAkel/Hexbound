@@ -8,7 +8,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 @onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
-@onready var card_drop_overlay_layer: TileMapLayer = $CardDropOverlayLayer
+@onready var rune_highlight_overlay_layer: TileMapLayer = $RuneHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
 
@@ -16,6 +16,8 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const HOVER_OVERLAY_SOURCE_ID := 0
 const SELECTED_OVERLAY_SOURCE_ID := 2
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
+# Rune placement / trigger preview overlay on RuneHighlightOverlayLayer.
+const RUNE_HIGHLIGHT_SOURCE_ID := 0
 # Disabled and fading-sector layers each expose a single tile on source 0.
 const OVERLAY_TILE_SOURCE_ID := 0
 
@@ -50,8 +52,9 @@ var _segment_reveal_glow_coords: Array[Vector2i] = []
 
 const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
 const SEGMENT_REVEAL_PAUSE := 0.35
-# Keep in sync with RuneUI segment reveal lift + slam durations.
+# Keep in sync with RuneUI segment reveal highlight + fade durations.
 const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
+
 
 
 func _ready() -> void:
@@ -86,7 +89,7 @@ func _apply_tile_spacing() -> void:
 	for layer: TileMapLayer in [
 		base_layer,
 		selection_overlay_layer,
-		card_drop_overlay_layer,
+		rune_highlight_overlay_layer,
 		disabled_tile_overlay_layer,
 		fading_sector_overlay_layer,
 	]:
@@ -272,7 +275,7 @@ func generate_terrain() -> void:
 	map_data.clear()
 	base_layer.clear()
 	selection_overlay_layer.clear()
-	card_drop_overlay_layer.clear()
+	rune_highlight_overlay_layer.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
 	_disabled_tile_coords.clear()
@@ -367,6 +370,26 @@ func get_hexes_in_trigger_order() -> Array[Hex]:
 ## Segment index for a tile under the active character grouping (-1 when unknown).
 func get_segment_index(coords: Vector2i) -> int:
 	return _layout.get_segment_index(coords)
+
+
+## True when coords is the first tile in its segment (trigger-order start).
+func is_first_tile_in_segment(coords: Vector2i) -> bool:
+	return _layout.is_first_tile_in_segment(coords)
+
+
+## True when coords is the last tile in its segment (trigger-order end).
+func is_last_tile_in_segment(coords: Vector2i) -> bool:
+	return _layout.is_last_tile_in_segment(coords)
+
+
+## First tile coordinates in a segment, or Vector2i(-1, -1) when the index is invalid.
+func get_first_tile_coords_in_segment(segment_index: int) -> Vector2i:
+	return _layout.get_first_tile_coords_in_segment(segment_index)
+
+
+## Last tile coordinates in a segment, or Vector2i(-1, -1) when the index is invalid.
+func get_last_tile_coords_in_segment(segment_index: int) -> Vector2i:
+	return _layout.get_last_tile_coords_in_segment(segment_index)
 
 
 ## All placed runes on the same segment as tile, optionally filtered by rune type.
@@ -498,14 +521,6 @@ func get_rune_in_relative_segment(
 	return _layout.get_rune_in_relative_segment(tile, segment_index_offset, pick_first_in_segment, filter_type)
 
 
-func _build_all_runes_in_trigger_order() -> Array[Rune]:
-	var runes_in_order: Array[Rune] = []
-	for hex: Hex in get_hexes_in_trigger_order():
-		if hex.active_rune != null:
-			runes_in_order.append(hex.active_rune)
-	return runes_in_order
-
-
 func _get_hex_trigger_order_index(current_tile: Hex) -> int:
 	var hexes := get_hexes_in_trigger_order()
 	for i in range(hexes.size()):
@@ -567,23 +582,21 @@ func _get_runes_relative_to_trigger_order(
 	previous: bool,
 	filter_type: Variant = null
 ) -> Array[Rune]:
-	var runes_in_order := _build_all_runes_in_trigger_order()
-	var current_index := -1
-	for i in range(runes_in_order.size()):
-		if runes_in_order[i] == current_tile.active_rune:
-			current_index = i
-			break
-
+	# Walk hexes in trigger order so previews work on empty placement tiles too.
+	var hexes := get_hexes_in_trigger_order()
+	var current_index := _get_hex_trigger_order_index(current_tile)
 	if current_index == -1:
 		return []
 
 	var result: Array[Rune] = []
 	var start := current_index - 1 if previous else current_index + 1
-	var end := -1 if previous else runes_in_order.size()
+	var end := -1 if previous else hexes.size()
 	var step := -1 if previous else 1
 
 	for i in range(start, end, step):
-		var rune := runes_in_order[i]
+		var rune := hexes[i].active_rune
+		if rune == null:
+			continue
 		if filter_type != null and rune.type != filter_type:
 			continue
 		result.append(rune)

@@ -2,5 +2,9 @@ extends Rune
 
 # +4 Mult increased by 1 for each Mult rune on the same segment
 func _on_activate_rune(_tile: Hex) -> void:
-	var producer_count = _get_all_runes_on_same_segment(_tile, Rune.RuneType.PRODUCER).size()
-	add_multiplier(_tile, producer_count + base_production_amount)
+	var mult_count := _get_all_runes_on_same_segment_by_product(_tile, Product.MULTIPLIER).size()
+	add_multiplier(_tile, mult_count + _get_production_amount())
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_same_segment_runes_by_product(hover_tile, Product.MULTIPLIER)

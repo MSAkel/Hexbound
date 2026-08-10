@@ -15,3 +15,8 @@ func _on_activate_rune(tile: Hex) -> void:
 				return
 			queue_rune_triggers(tile, prior_runes)
 			_create_floating_text(tile, "Trigger runes")
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	var prior_runes := _get_previous_runes_in_trigger_order(hover_tile, 2)
+	return _coords_for_placed_runes(hover_tile, prior_runes)

@@ -16,3 +16,7 @@ func _on_activate_rune(tile: Hex) -> void:
 			activation_count = 0
 	else:
 		_create_floating_text(tile, "+1 Catalyst")
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_same_segment_runes(hover_tile, RuneType.PRODUCER)

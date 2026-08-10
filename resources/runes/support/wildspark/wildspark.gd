@@ -20,6 +20,10 @@ func _on_activate_rune(tile: Hex) -> void:
 	_create_floating_text(tile, "Triggered %s runes" % trigger_count)
 
 
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_placed_runes(hover_tile, _get_all_adjacent_runes(hover_tile))
+
+
 # Bonus when every map neighbor is occupied and each adjacent rune has a unique id.
 func _all_adjacent_tiles_have_unique_runes(tile: Hex, adjacent_runes: Array[Rune]) -> bool:
 	var adjacent_hexes := tile.map.get_all_adjacent_hexes(tile.coordinates)

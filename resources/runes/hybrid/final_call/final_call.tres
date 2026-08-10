@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://m4eyn4yp1ps5"]
 
-[ext_resource type="Texture2D" uid="uid://clptv6kwiait6" path="res://assets/icons/runes/final_call.png" id="1_1w7xl"]
+[ext_resource type="Texture2D" uid="uid://clptv6kwiait6" path="res://assets/icons/runes/hybrid/final_call.png" id="1_1w7xl"]
 [ext_resource type="Script" uid="uid://dqo8ywfiy3piw" path="res://resources/runes/hybrid/final_call/final_call.gd" id="1_p73ke"]
 
 [resource]

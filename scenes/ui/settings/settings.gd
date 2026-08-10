@@ -47,3 +47,10 @@ func _on_back_button_pressed() -> void:
 
 func _on_back_button_mouse_entered() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+
+
+func _on_v_sync_check_box_toggled(toggled_on: bool) -> void:
+	if toggled_on: 
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED) 
+	else:
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)

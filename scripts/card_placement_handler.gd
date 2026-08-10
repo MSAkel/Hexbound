@@ -19,6 +19,12 @@ var last_hovered_tile: Vector2i = Vector2i(-1, -1)
 var _rune_preview: Sprite2D
 # Prevents deselect cleanup when swapping from one selected card to another.
 var _switching_selection: bool = false
+# Tiles temporarily marked invalid while placing a restricted rune card.
+var _restricted_invalid_coords: Array[Vector2i] = []
+# Tile currently targeted for placement while hovering.
+var _placement_target_coord: Vector2i = Vector2i(-1, -1)
+# Tiles currently showing trigger-effect preview highlights.
+var _effect_preview_coords: Array[Vector2i] = []
 
 const PREVIEW_ICON_SIZE := 200.0
 const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.55)
@@ -70,6 +76,7 @@ func _on_card_selected(card: CardUI) -> void:
 	is_card_selected = true
 	selected_card = card
 	_update_preview_texture()
+	_update_placement_overlays()
 	_update_rune_preview()
 
 
@@ -104,18 +111,22 @@ func _update_rune_preview() -> void:
 	var map_coords := _get_mouse_map_coords()
 	last_hovered_tile = map_coords
 	
-	var over_valid_tile := tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords)
-	# Dip the selected card while aiming so it covers fewer bottom tiles.
+	var hex: Hex = tile_map.map_data.get(map_coords) if tile_map.is_in_map(map_coords) else null
+	var over_valid_tile := hex != null \
+		and tile_map.is_tile_interactable(map_coords) \
+		and _can_place_on_hex(hex)
+	# Dip the selected card while it covers fewer bottom tiles.
 	selected_card.set_map_tile_hover_active(over_valid_tile)
 	
 	if over_valid_tile:
-		var hex: Hex = tile_map.map_data[map_coords]
 		var tile_center: Vector2 = tile_map.base_layer.map_to_local(map_coords)
 		_rune_preview.global_position = tile_map.to_global(tile_center)
-		_rune_preview.modulate = VALID_PREVIEW_COLOR if _can_place_on_hex(hex) else INVALID_PREVIEW_COLOR
+		_rune_preview.modulate = VALID_PREVIEW_COLOR
 		_rune_preview.visible = true
+		_update_hover_highlights(hex)
 	else:
 		_rune_preview.visible = false
+		_clear_hover_highlights()
 
 
 func _get_mouse_map_coords() -> Vector2i:
@@ -160,18 +171,116 @@ func _clear_preview() -> void:
 		selected_card.set_map_tile_hover_active(false, false)
 	_rune_preview.visible = false
 	last_hovered_tile = Vector2i(-1, -1)
-	_clear_drop_overlay()
+	_clear_placement_overlays()
 
 
-func _clear_drop_overlay() -> void:
-	for coords in tile_map.map_data:
-		tile_map.card_drop_overlay_layer.set_cell(coords, -1)
-	tile_map.card_drop_overlay_layer.modulate = Color.WHITE
+func _clear_placement_overlays() -> void:
+	_clear_hover_highlights()
+	_clear_restriction_overlays()
+	tile_map.rune_highlight_overlay_layer.modulate = Color.WHITE
+
+
+func _clear_restriction_overlays() -> void:
+	for coords: Vector2i in _restricted_invalid_coords:
+		if tile_map.map_data[coords].is_disabled_by_difficulty:
+			continue
+		tile_map.disabled_tile_overlay_layer.set_cell(coords, -1)
+	_restricted_invalid_coords.clear()
+
+
+func _clear_hover_highlights() -> void:
+	_clear_rune_highlights_at(_effect_preview_coords)
+	_effect_preview_coords.clear()
+	if _placement_target_coord != Vector2i(-1, -1):
+		_clear_rune_highlight_at(_placement_target_coord)
+		_placement_target_coord = Vector2i(-1, -1)
+
+
+func _clear_rune_highlights_at(coords_list: Array[Vector2i]) -> void:
+	for coords: Vector2i in coords_list:
+		_clear_rune_highlight_at(coords)
+
+
+func _clear_rune_highlight_at(coords: Vector2i) -> void:
+	tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
+
+
+func _stamp_rune_highlight(coords: Vector2i) -> void:
+	tile_map.rune_highlight_overlay_layer.set_cell(
+		coords,
+		tile_map.RUNE_HIGHLIGHT_SOURCE_ID,
+		tile_map.OVERLAY_TILE_ATLAS_COORDS
+	)
 
 
 func _reset_state() -> void:
 	selected_card = null
 	is_card_selected = false
+
+
+# Disables invalid tiles for runes with placement restrictions.
+func _update_placement_overlays() -> void:
+	_clear_placement_overlays()
+	
+	var rune := _get_selected_rune()
+	if rune == null or not rune.has_placement_restriction():
+		return
+	
+	for coords: Vector2i in tile_map.map_data:
+		var hex: Hex = tile_map.map_data[coords]
+		if not _is_placement_candidate(hex):
+			continue
+		
+		if rune.can_place_on_tile(hex):
+			continue
+		
+		_restricted_invalid_coords.append(coords)
+		if not hex.is_disabled_by_difficulty:
+			tile_map.disabled_tile_overlay_layer.set_cell(
+				coords,
+				tile_map.OVERLAY_TILE_SOURCE_ID,
+				tile_map.OVERLAY_TILE_ATLAS_COORDS
+			)
+
+
+# Highlights the hovered placement tile and any tiles its effect would impact.
+func _update_hover_highlights(hover_hex: Hex) -> void:
+	_clear_hover_highlights()
+	
+	_placement_target_coord = hover_hex.coordinates
+	_stamp_rune_highlight(_placement_target_coord)
+	
+	var rune := _get_selected_rune()
+	if rune == null:
+		return
+	
+	for coords: Vector2i in rune.get_trigger_preview_coords(hover_hex):
+		if not tile_map.is_in_map(coords):
+			continue
+		if coords == _placement_target_coord:
+			continue
+		_stamp_rune_highlight(coords)
+		_effect_preview_coords.append(coords)
+
+
+func _get_selected_rune() -> Rune:
+	if selected_card == null or not (selected_card.card is Rune):
+		return null
+	return selected_card.card as Rune
+
+
+# Tiles that can receive the currently selected card before restriction checks.
+func _is_placement_candidate(hex: Hex) -> bool:
+	if selected_card == null or selected_card.card == null:
+		return false
+	if hex.is_disabled_by_difficulty:
+		return false
+	
+	if selected_card.card is Enhancement:
+		return Enhancement.can_apply_to(hex)
+	if selected_card.card.type == Rune.RuneType.MODIFIER:
+		return hex.active_rune != null
+	return hex.active_rune == null
 
 
 # Modifiers and enhancements attach to occupied tiles; all other runes require an empty tile.
@@ -188,4 +297,11 @@ func _can_place_on_hex(hex: Hex) -> bool:
 	if selected_card.card.type == Rune.RuneType.MODIFIER:
 		return hex.active_rune != null
 
-	return hex.active_rune == null
+	if hex.active_rune != null:
+		return false
+	
+	var rune := _get_selected_rune()
+	if rune != null and not rune.can_place_on_tile(hex):
+		return false
+
+	return true

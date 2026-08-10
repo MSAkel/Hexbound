@@ -8,3 +8,7 @@ func _on_activate_rune(_tile: Hex) -> void:
 		if adjacent_generators_count == 5:
 			score_to_add += 50
 		add_score(_tile, score_to_add)
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_adjacent_producers_by_product(hover_tile, Product.SCORE)

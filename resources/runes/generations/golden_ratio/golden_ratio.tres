@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://cbu6bejcytgld"]
 
 [ext_resource type="Script" uid="uid://c8j6gqh8kxfgf" path="res://resources/runes/generations/golden_ratio/golden_ratio.gd" id="1_bybwu"]
-[ext_resource type="Texture2D" uid="uid://cy7j0oi05u0sm" path="res://assets/icons/runes/golden_ratio.png" id="1_no3ai"]
+[ext_resource type="Texture2D" uid="uid://cy7j0oi05u0sm" path="res://assets/icons/runes/production/golden_ratio.png" id="1_no3ai"]
 
 [resource]
 script = ExtResource("1_bybwu")

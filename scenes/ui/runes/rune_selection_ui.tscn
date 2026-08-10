@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://dme0eav2550e7"]
 
 [ext_resource type="Script" uid="uid://nriqkn24o42m" path="res://scenes/ui/runes/rune_selection_ui.gd" id="1_e7vfp"]
-[ext_resource type="Texture2D" uid="uid://dp5bl36r00tky" path="res://assets/gui/buttons/close_button_normal.png" id="3_rgcjf"]
-[ext_resource type="Texture2D" uid="uid://b1hft8pw2cwci" path="res://assets/gui/buttons/close_button_hover.png" id="4_lqce7"]
+[ext_resource type="PackedScene" uid="uid://dt0t3awb0mejg" path="res://scenes/ui/cards/card_ui.tscn" id="2_kwqlr"]
 [ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="5_2hgda"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8btky"]
+content_margin_top = 150.0
 bg_color = Color(0.12614134, 0.32311276, 0.39601648, 0.70980394)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jpxjh"]
@@ -34,46 +34,53 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_8btky")
 
-[node name="MarginPanel" type="MarginContainer" parent="Panel" unique_id=670077628]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=367279326]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -533.5
-offset_top = -258.0
-offset_right = 533.5
-offset_bottom = 258.0
+offset_left = -335.0
+offset_top = -171.5
+offset_right = 335.0
+offset_bottom = 171.5
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HideButton" type="Button" parent="Panel/VBoxContainer" unique_id=1440697406]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Hide"
+
+[node name="MarginPanel" type="MarginContainer" parent="Panel/VBoxContainer" unique_id=670077628]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 mouse_filter = 0
 theme_override_constants/margin_top = 16
 
-[node name="ChoicesContainer" type="HBoxContainer" parent="Panel/MarginPanel" unique_id=1118305739]
+[node name="ChoicesContainer" type="HBoxContainer" parent="Panel/VBoxContainer/MarginPanel" unique_id=1118305739]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 64
 
-[node name="RerollButton" type="Button" parent="Panel/MarginPanel" unique_id=16000875]
+[node name="CardUI" parent="Panel/VBoxContainer/MarginPanel/ChoicesContainer" unique_id=1998448617 instance=ExtResource("2_kwqlr")]
+layout_mode = 2
+
+[node name="CardUI2" parent="Panel/VBoxContainer/MarginPanel/ChoicesContainer" unique_id=1575724808 instance=ExtResource("2_kwqlr")]
+layout_mode = 2
+
+[node name="CardUI3" parent="Panel/VBoxContainer/MarginPanel/ChoicesContainer" unique_id=1104419234 instance=ExtResource("2_kwqlr")]
+layout_mode = 2
+
+[node name="RerollButton" type="Button" parent="Panel/VBoxContainer" unique_id=16000875]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 theme_override_styles/normal = SubResource("StyleBoxTexture_jpxjh")
 text = "Reroll (free)"
 
-[node name="CloseButton" type="TextureButton" parent="Panel" unique_id=1173032380]
-visible = false
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -32.0
-offset_bottom = 32.0
-grow_horizontal = 0
-texture_normal = ExtResource("3_rgcjf")
-texture_hover = ExtResource("4_lqce7")
-
-[connection signal="pressed" from="Panel/MarginPanel/RerollButton" to="." method="_on_reroll_button_pressed"]
-[connection signal="pressed" from="Panel/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/RerollButton" to="." method="_on_reroll_button_pressed"]

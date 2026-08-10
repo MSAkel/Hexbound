@@ -11,4 +11,7 @@ func _on_activate_rune(tile: Hex) -> void:
 		to_trigger.append(other_segments_runes.pick_random())
 	
 	queue_rune_triggers(tile, to_trigger)
-	
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_placed_runes(hover_tile, _get_all_runes_on_other_segments(hover_tile))

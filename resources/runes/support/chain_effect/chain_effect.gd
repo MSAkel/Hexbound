@@ -13,3 +13,10 @@ func _on_activate_rune(tile: Hex) -> void:
 		activation_scales.append(pow(0.8, i))
 		
 	queue_rune_triggers(tile, next_generators, activation_scales)
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	var next_generators := _get_next_runes_in_trigger_order(
+		hover_tile, 3, Rune.RuneType.PRODUCER
+	)
+	return _coords_for_placed_runes(hover_tile, next_generators)

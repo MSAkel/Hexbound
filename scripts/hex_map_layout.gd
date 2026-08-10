@@ -79,6 +79,46 @@ func get_segment_index(coords: Vector2i) -> int:
 	return -1
 
 
+## True when coords is the first tile in its segment (trigger-order start).
+func is_first_tile_in_segment(coords: Vector2i) -> bool:
+	var segment_index := get_segment_index(coords)
+	if segment_index < 0:
+		return false
+	var segment: Array = build_segments()[segment_index]
+	return not segment.is_empty() and segment[0] == coords
+
+
+## True when coords is the last tile in its segment (trigger-order end).
+func is_last_tile_in_segment(coords: Vector2i) -> bool:
+	var segment_index := get_segment_index(coords)
+	if segment_index < 0:
+		return false
+	var segment: Array = build_segments()[segment_index]
+	return not segment.is_empty() and segment[segment.size() - 1] == coords
+
+
+## First tile coordinates in a segment, or Vector2i(-1, -1) when the index is invalid.
+func get_first_tile_coords_in_segment(segment_index: int) -> Vector2i:
+	var segments := build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return Vector2i(-1, -1)
+	var segment: Array = segments[segment_index]
+	if segment.is_empty():
+		return Vector2i(-1, -1)
+	return segment[0]
+
+
+## Last tile coordinates in a segment, or Vector2i(-1, -1) when the index is invalid.
+func get_last_tile_coords_in_segment(segment_index: int) -> Vector2i:
+	var segments := build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return Vector2i(-1, -1)
+	var segment: Array = segments[segment_index]
+	if segment.is_empty():
+		return Vector2i(-1, -1)
+	return segment[segment.size() - 1]
+
+
 ## Character-specific segment groups (each segment is an ordered list of coordinates).
 func build_segments() -> Array[Array]:
 	if _segments_cache_valid:

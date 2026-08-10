@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://lfcsls8o48lq"]
 
-[ext_resource type="Texture2D" uid="uid://cbp0djcek5xo6" path="res://assets/icons/runes/turn_up.png" id="1_eh6vm"]
+[ext_resource type="Texture2D" uid="uid://cbp0djcek5xo6" path="res://assets/icons/runes/production/turn_up.png" id="1_eh6vm"]
 [ext_resource type="Script" uid="uid://y2wmhpw1imld" path="res://resources/runes/generations/turn_up/turn_up.gd" id="2_eh6vm"]
 
 [resource]

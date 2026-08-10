@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://cdr6jp1cayaal"]
 
-[ext_resource type="Texture2D" uid="uid://iaca3uhdlky2" path="res://assets/icons/runes/unstable_concoction.png" id="1_jjxmo"]
+[ext_resource type="Texture2D" uid="uid://iaca3uhdlky2" path="res://assets/icons/runes/hybrid/unstable_concoction.png" id="1_jjxmo"]
 [ext_resource type="Script" uid="uid://fqp1bledi1hh" path="res://resources/runes/hybrid/unstable_concoction/unstable_concoction.gd" id="1_stady"]
 
 [resource]

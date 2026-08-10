@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://cpvr3k1luft0f"]
 
 [ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://scripts/hex_tile_map.gd" id="1_d5c3r"]
-[ext_resource type="Texture2D" uid="uid://u433044huqg5" path="res://assets/tilesets/tile_highlight.png" id="3_3rbfx"]
+[ext_resource type="Texture2D" uid="uid://u433044huqg5" path="res://assets/tilesets/tile_hover_highlight.png" id="3_3rbfx"]
 [ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="3_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://bgme2susi6nhr" path="res://assets/tilesets/selected_tile_overlay.png" id="3_c0fpv"]
 [ext_resource type="Texture2D" uid="uid://d2i5udp267mcs" path="res://assets/tilesets/fading_sector_challenge_overlay.png" id="3_ekk8a"]
-[ext_resource type="Texture2D" uid="uid://cvx6147u3jysj" path="res://assets/tilesets/card_drop_area_overlay.png" id="5_ekk8a"]
+[ext_resource type="Texture2D" uid="uid://d2bvb5fboq3n8" path="res://assets/tilesets/rune_highlight_overlay.png" id="5_3rbfx"]
 [ext_resource type="Texture2D" uid="uid://00t25k53gckj" path="res://assets/tilesets/disabled_tile_overlay.png" id="7_3rbfx"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4rcl8"]
@@ -35,13 +35,8 @@ tile_size = Vector2i(272, 272)
 sources/0 = SubResource("TileSetAtlasSource_hover")
 sources/2 = SubResource("TileSetAtlasSource_tt7jl")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_b6nmi"]
-texture = ExtResource("3_3rbfx")
-texture_region_size = Vector2i(256, 256)
-0:0/0 = 0
-
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8rbqn"]
-texture = ExtResource("5_ekk8a")
+texture = ExtResource("5_3rbfx")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
 0:0/0/z_index = 3
@@ -49,8 +44,7 @@ texture_region_size = Vector2i(256, 256)
 [sub_resource type="TileSet" id="TileSet_047vf"]
 tile_shape = 3
 tile_size = Vector2i(272, 272)
-sources/2 = SubResource("TileSetAtlasSource_8rbqn")
-sources/0 = SubResource("TileSetAtlasSource_b6nmi")
+sources/0 = SubResource("TileSetAtlasSource_8rbqn")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_047vf"]
 texture = ExtResource("7_3rbfx")
@@ -82,7 +76,7 @@ tile_set = SubResource("TileSet_ekk8a")
 [node name="SelectionOverlayLayer" type="TileMapLayer" parent="." unique_id=591519296]
 tile_set = SubResource("TileSet_3rbfx")
 
-[node name="CardDropOverlayLayer" type="TileMapLayer" parent="." unique_id=272160682]
+[node name="RuneHighlightOverlayLayer" type="TileMapLayer" parent="." unique_id=272160682]
 tile_set = SubResource("TileSet_047vf")
 
 [node name="DisabledTileOverlayLayer" type="TileMapLayer" parent="." unique_id=1424799643]

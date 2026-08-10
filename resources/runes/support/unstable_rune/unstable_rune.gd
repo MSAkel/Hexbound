@@ -18,6 +18,10 @@ func _on_activate_rune(tile: Hex) -> void:
 			break
 
 
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_placed_runes(hover_tile, _get_adjacent_producers_from_trigger_order(hover_tile))
+
+
 # Adjacent producers in trigger order, rotated to start at the next rune in sequence.
 func _get_adjacent_producers_from_trigger_order(tile: Hex) -> Array[Rune]:
 	var ordered := _get_all_adjacent_runes_in_trigger_order(tile, Rune.RuneType.PRODUCER)

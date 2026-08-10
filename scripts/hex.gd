@@ -223,7 +223,7 @@ func play_rune_activation_animation() -> void:
 		rune_ui.play_activation_animation()
 
 
-# Lift-and-slam animation used during the post-turn segment result reveal.
+# Gold highlight flash used during the post-turn segment result reveal.
 func play_segment_result_animation() -> void:
 	if rune_ui == null:
 		return

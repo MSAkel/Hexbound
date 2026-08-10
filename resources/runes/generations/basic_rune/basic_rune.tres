@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://c7c2eo74m8q0l"]
 
-[ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/runes/basic_rune.png" id="1_ayjfw"]
+[ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/runes/production/basic_rune.png" id="1_ayjfw"]
 [ext_resource type="Script" uid="uid://cc6ehbquhicml" path="res://resources/runes/generations/basic_rune/basic_rune.gd" id="2_qvrl4"]
 
 [resource]

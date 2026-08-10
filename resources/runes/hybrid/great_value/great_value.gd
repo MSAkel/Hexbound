@@ -16,3 +16,7 @@ func _on_activate_rune(tile: Hex) -> void:
 	var target_rune : Rune = prod_runes.pick_random()
 	target_rune._empower()
 	_create_floating_text(tile, "Empowered %s" % target_rune.name)
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_same_segment_runes(hover_tile, RuneType.PRODUCER)

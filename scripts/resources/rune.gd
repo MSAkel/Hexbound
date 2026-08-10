@@ -22,12 +22,22 @@ enum Product {
 	NONE,
 }
 
+# Limits which map tiles can receive this rune during card placement.
+enum PlacementRestriction {
+	NONE,
+	EDGE_TILE,
+	SEGMENT_FIRST_TILE,
+	SEGMENT_LAST_TILE,
+}
+
 const EMPOWER_OUTPUT_SCALE := 3.0
 
 var activation_count: int = 0
 var is_active: bool = true
 # Optional player-applied bonus resolved whenever this rune activates.
 var enhancement: Enhancement = null
+# Runtime buffs from other runes, added to the base production amount.
+var bonus_production_amount: int = 0
 # Empowered runes triple their output once on trigger.
 var is_empowered: bool = false
 # Scales all rune output during this activation (score, gold, generated multiplier resource).
@@ -44,6 +54,8 @@ var _activation_output_scale: float = 1.0
 @export var product: Product = Product.NONE
 # only activates once per turn even if retriggered.
 @export var single_activation_per_turn: bool = false
+# When set, only matching tiles accept this rune during placement.
+@export var placement_restriction: PlacementRestriction = PlacementRestriction.NONE
 
 
 # Entry point for rune activation. Mainly called by Hex.apply_rune_activation()
@@ -75,6 +87,29 @@ func apply_on_placement(_tile: Hex) -> void:
 	pass
 
 
+func has_placement_restriction() -> bool:
+	return placement_restriction != PlacementRestriction.NONE
+
+
+# Placement validation used by CardPlacementHandler while a rune card is selected.
+func can_place_on_tile(tile: Hex) -> bool:
+	match placement_restriction:
+		PlacementRestriction.EDGE_TILE:
+			return _is_on_map_edge(tile)
+		PlacementRestriction.SEGMENT_FIRST_TILE:
+			return tile.map.is_first_tile_in_segment(tile.coordinates)
+		PlacementRestriction.SEGMENT_LAST_TILE:
+			return tile.map.is_last_tile_in_segment(tile.coordinates)
+		_:
+			return true
+
+
+# Tile coordinates that would be impacted when this rune is placed on hover_tile.
+# Override in runes that trigger or otherwise affect other tiles.
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return []
+
+
 #region --- Score, gold, and multiplier, and floating text helpers ---
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_output_scale))
@@ -96,6 +131,9 @@ func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE) 
 	tile.map.create_floating_text(tile_pos, text, color)
 
 #endregion --- Score, gold, and multiplier, and floating text helpers ---
+
+func _get_production_amount() -> int:
+	return base_production_amount + bonus_production_amount
 
 func _empower() -> void:
 	if is_empowered:
@@ -186,6 +224,29 @@ func _get_segment_index(tile: Hex) -> int:
 func _get_all_runes_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	return tile.map.get_all_runes_on_same_segment(tile, filter_type)
 
+
+# All placed runes on the same segment whose product matches filter_product.
+func _get_all_runes_on_same_segment_by_product(tile: Hex, filter_product: Product) -> Array[Rune]:
+	var result: Array[Rune] = []
+	for rune: Rune in _get_all_runes_on_same_segment(tile):
+		if rune.product != filter_product:
+			continue
+		result.append(rune)
+	return result
+
+
+# All placed producer runes on the map whose product matches filter_product.
+func _get_all_placed_producers_by_product(tile: Hex, filter_product: Product) -> Array[Rune]:
+	var result: Array[Rune] = []
+	for rune: Rune in _get_all_placed_runes(tile):
+		if rune.type != RuneType.PRODUCER:
+			continue
+		if rune.product != filter_product:
+			continue
+		result.append(rune)
+	return result
+
+
 func _get_all_runes_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	return tile.map.get_all_runes_on_other_segments(tile, filter_type)
 
@@ -214,6 +275,41 @@ func _get_first_or_last_rune_in_relative_segment(
 #endregion --- Segment helpers ---
 
 #region --- Rune destruction helpers ---
+# Resolves placed runes to their map coordinates for placement previews.
+func _coords_for_placed_runes(tile: Hex, runes: Array[Rune]) -> Array[Vector2i]:
+	var coords: Array[Vector2i] = []
+	for rune: Rune in runes:
+		var hex := tile.map.get_hex_for_rune(rune)
+		if hex != null:
+			coords.append(hex.coordinates)
+	return coords
+
+
+# Highlights same-segment runes, optionally filtered by rune type.
+func _coords_for_same_segment_runes(tile: Hex, filter_type: Variant = null) -> Array[Vector2i]:
+	return _coords_for_placed_runes(tile, _get_all_runes_on_same_segment(tile, filter_type))
+
+
+# Highlights same-segment runes that match a product type.
+func _coords_for_same_segment_runes_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	return _coords_for_placed_runes(tile, _get_all_runes_on_same_segment_by_product(tile, filter_product))
+
+
+# Highlights all placed producers on the map that match a product type.
+func _coords_for_placed_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	return _coords_for_placed_runes(tile, _get_all_placed_producers_by_product(tile, filter_product))
+
+
+# Highlights adjacent producers that match a product type.
+func _coords_for_adjacent_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	var matching: Array[Rune] = []
+	for rune: Rune in _get_all_adjacent_runes(tile, RuneType.PRODUCER):
+		if rune.product != filter_product:
+			continue
+		matching.append(rune)
+	return _coords_for_placed_runes(tile, matching)
+
+
 # Remove a placed rune instance from the map (clears its tile and cancels queued triggers).
 func _destroy_placed_rune(source_tile: Hex, rune: Rune) -> void:
 	source_tile.map.destroy_placed_rune(rune)

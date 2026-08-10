@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://y4red7h47dee"]
 
-[ext_resource type="Texture2D" uid="uid://cbv7lbq1evfov" path="res://assets/icons/runes/advanced_pointer.png" id="1_asyvl"]
+[ext_resource type="Texture2D" uid="uid://cbv7lbq1evfov" path="res://assets/icons/runes/production/advanced_pointer.png" id="1_asyvl"]
 [ext_resource type="Script" uid="uid://cipa81s1njo6j" path="res://resources/runes/generations/advanced_pointer/advanced_pointer.gd" id="2_oa308"]
 
 [resource]

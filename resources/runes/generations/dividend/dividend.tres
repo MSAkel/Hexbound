@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://bnw10okphmsyu"]
 
-[ext_resource type="Texture2D" uid="uid://c25ot8dgtv7wt" path="res://assets/icons/runes/dividend.png" id="1_sdupe"]
+[ext_resource type="Texture2D" uid="uid://c25ot8dgtv7wt" path="res://assets/icons/runes/production/dividend.png" id="1_sdupe"]
 [ext_resource type="Script" uid="uid://cyxevwcqcax4a" path="res://resources/runes/generations/dividend/dividend.gd" id="2_b7j7h"]
 
 [resource]

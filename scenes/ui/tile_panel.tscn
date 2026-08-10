@@ -165,6 +165,7 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="RemoveRuneButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/RunePanelContainer/RuneVBox/HBoxContainer" unique_id=895667932]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 8
@@ -183,6 +184,7 @@ size_flags_vertical = 8
 text = "Disable"
 
 [node name="CloseButton" type="Button" parent="." unique_id=1070754519]
+visible = false
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0

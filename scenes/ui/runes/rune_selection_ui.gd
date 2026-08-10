@@ -1,7 +1,7 @@
 extends Control
 
-@onready var choices_container: HBoxContainer = $Panel/MarginPanel/ChoicesContainer
-@onready var reroll_button: Button = $Panel/MarginPanel/RerollButton
+@onready var choices_container: HBoxContainer = $Panel/VBoxContainer/MarginPanel/ChoicesContainer
+@onready var reroll_button: Button = $Panel/VBoxContainer/RerollButton
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CHOICE_CARD_SCALE := 1.45

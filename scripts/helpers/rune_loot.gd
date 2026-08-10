@@ -96,4 +96,3 @@ static func draw_filtered(
 	for _i in count:
 		result.append(available.pick_random())
 	return result
-

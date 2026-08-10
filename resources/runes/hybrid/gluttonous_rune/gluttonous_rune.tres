@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://dia2wi5j18o8g"]
 
-[ext_resource type="Texture2D" uid="uid://bpg7ltsn778y8" path="res://assets/icons/runes/gluttonous_rune.png" id="1_mi1r8"]
+[ext_resource type="Texture2D" uid="uid://bpg7ltsn778y8" path="res://assets/icons/runes/hybrid/gluttonous_rune.png" id="1_mi1r8"]
 [ext_resource type="Script" uid="uid://bn2e4r844r0fo" path="res://resources/runes/hybrid/gluttonous_rune/gluttonous_rune.gd" id="2_41old"]
 
 [resource]

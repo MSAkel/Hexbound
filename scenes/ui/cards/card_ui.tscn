@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
 [ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
-[ext_resource type="Texture2D" uid="uid://c25ot8dgtv7wt" path="res://assets/icons/runes/dividend.png" id="6_nmvtt"]
+[ext_resource type="Texture2D" uid="uid://c25ot8dgtv7wt" path="res://assets/icons/runes/production/dividend.png" id="6_nmvtt"]
 [ext_resource type="Texture2D" uid="uid://o0ecdi1va3oj" path="res://assets/gui/card/card_divider.png" id="6_onxhv"]
 [ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
 [ext_resource type="Script" uid="uid://lhyqf0q0f5ko" path="res://scenes/cards/card states/card_released_state.gd" id="8_o6pyt"]
@@ -96,9 +96,8 @@ offset_bottom = 310.0
 grow_horizontal = 2
 
 [node name="PriceLabel" type="Label" parent="VBoxContainer" unique_id=1732701792]
-visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
+theme_override_colors/font_color = Color(0.43634328, 0.572599, 0.42167145, 1)
 theme_override_font_sizes/font_size = 32
 text = "$100"
 horizontal_alignment = 1

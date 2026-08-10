@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://df4lfjvinn7jd" path="res://scenes/ui/settings/settings.gd" id="1_settings"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qvi1m"]
+content_margin_top = 100.0
 bg_color = Color(0.18359056, 0.18359041, 0.18359044, 0.79607844)
 
 [sub_resource type="LabelSettings" id="LabelSettings_m1kxf"]
@@ -22,13 +23,13 @@ custom_minimum_size = Vector2(600, 600)
 custom_maximum_size = Vector2(600, 700)
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 4
+size_flags_vertical = 0
 theme_override_constants/separation = 100
 
 [node name="Title" type="Label" parent="VBoxContainer" unique_id=2122274666]
 layout_mode = 2
 size_flags_vertical = 0
-text = "Settings"
+text = "Options"
 label_settings = SubResource("LabelSettings_m1kxf")
 horizontal_alignment = 1
 
@@ -178,6 +179,21 @@ popup/item_1/id = 1
 popup/item_2/text = "Option 3"
 popup/item_2/id = 2
 
+[node name="VSyncContainer" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=964202736]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="VSyncLabel" type="Label" parent="VBoxContainer/SettingsContainer/VSyncContainer" unique_id=1213458172]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Enable VSync"
+
+[node name="VSyncCheckBox" type="CheckBox" parent="VBoxContainer/SettingsContainer/VSyncContainer" unique_id=1060789328]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+size_flags_stretch_ratio = 2.0
+
 [node name="BackButton" type="Button" parent="VBoxContainer" unique_id=1457783041]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
@@ -186,6 +202,7 @@ size_flags_vertical = 3
 text = "Close"
 
 [connection signal="item_selected" from="VBoxContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton" to="." method="_on_game_speed_option_button_item_selected"]
+[connection signal="toggled" from="VBoxContainer/SettingsContainer/VSyncContainer/VSyncCheckBox" to="." method="_on_v_sync_check_box_toggled"]
 [connection signal="focus_entered" from="VBoxContainer/BackButton" to="." method="_on_back_button_focus_entered"]
 [connection signal="mouse_entered" from="VBoxContainer/BackButton" to="." method="_on_back_button_mouse_entered"]
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
