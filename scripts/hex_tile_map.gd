@@ -55,6 +55,11 @@ const SEGMENT_REVEAL_PAUSE := 0.35
 # Keep in sync with RuneUI segment reveal highlight + fade durations.
 const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
 
+# Delay before showing the tile info panel after hovering a tile.
+const TILE_PANEL_HOVER_DELAY := 0.4
+# Tile currently being hovered for the info panel (independent of selection overlay).
+var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
+var _tile_panel_timer: Timer
 
 
 func _ready() -> void:
@@ -65,19 +70,30 @@ func _ready() -> void:
 	Events.turn_ended.connect(on_turn_ended)
 	Events.rune_empowered.connect(_on_rune_empowered)
 	Events.rune_empower_consumed.connect(_on_rune_empower_consumed)
+	Events.card_drag_started.connect(_on_card_drag_started_hide_tile_panel)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
 	add_child(card_placement_handler)
+
+	_tile_panel_timer = Timer.new()
+	_tile_panel_timer.one_shot = true
+	_tile_panel_timer.wait_time = TILE_PANEL_HOVER_DELAY
+	_tile_panel_timer.timeout.connect(_on_tile_panel_hover_timeout)
+	add_child(_tile_panel_timer)
+	tile_panel.hide()
 
 	set_process(true)
 
 
 func _process(_delta: float) -> void:
 	var should_hide_runes := Input.is_action_pressed("toggle_map_display")
-	if should_hide_runes == _runes_hidden:
-		return
-	_set_runes_hidden(should_hide_runes)
+	if should_hide_runes != _runes_hidden:
+		_set_runes_hidden(should_hide_runes)
+
+	# Re-anchor while visible so zoom/pan mid-hover stays lined up with the tile.
+	if tile_panel.visible and _tile_panel_hover_coords != Vector2i(-1, -1):
+		tile_panel.update_anchor(_get_tile_screen_rect(_tile_panel_hover_coords))
 
 
 # Widen the hex grid cells while keeping 256px textures, creating visible gaps
@@ -99,10 +115,15 @@ func _apply_tile_spacing() -> void:
 # Handles tile hover highlighting and selection clicks.
 func _unhandled_input(event: InputEvent) -> void:
 	if GameManager.is_processing_turn:
+		_hide_tile_panel_hover()
 		return
 
-	if not card_placement_handler.is_card_selected and event is InputEventMouseMotion:
-		_update_hover_highlight()
+	if event is InputEventMouseMotion:
+		if card_placement_handler.is_card_selected:
+			_hide_tile_panel_hover()
+		else:
+			_update_hover_highlight()
+			_update_tile_panel_hover(_mouse_map_coords())
 
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
@@ -143,9 +164,6 @@ func _handle_left_click() -> void:
 		_clear_selection()
 		return
 
-	if not card_placement_handler.is_card_selected:
-		tile_panel.set_hex(map_data[map_coords])
-
 	if map_coords != selected_cell:
 		selection_overlay_layer.set_cell(selected_cell, -1)
 
@@ -163,13 +181,62 @@ func _handle_left_click() -> void:
 
 
 func _clear_selection() -> void:
-	tile_panel.hide()
 	selection_overlay_layer.set_cell(selected_cell, -1)
 	selected_cell = Vector2i(-1, -1)
 
 
 func _mouse_map_coords() -> Vector2i:
 	return base_layer.local_to_map(to_local(get_global_mouse_position()))
+
+
+# Start / refresh the hover-delay panel for the tile under the cursor.
+func _update_tile_panel_hover(map_coords: Vector2i) -> void:
+	if not is_in_map(map_coords) or not is_tile_interactable(map_coords):
+		_hide_tile_panel_hover()
+		return
+
+	if map_coords == _tile_panel_hover_coords:
+		# Keep the panel glued to the tile while the camera zooms or pans.
+		if tile_panel.visible:
+			tile_panel.update_anchor(_get_tile_screen_rect(map_coords))
+		return
+
+	_tile_panel_hover_coords = map_coords
+	tile_panel.hide()
+	_tile_panel_timer.start()
+
+
+func _hide_tile_panel_hover() -> void:
+	_tile_panel_hover_coords = Vector2i(-1, -1)
+	_tile_panel_timer.stop()
+	tile_panel.hide()
+
+
+func _on_tile_panel_hover_timeout() -> void:
+	if _tile_panel_hover_coords == Vector2i(-1, -1):
+		return
+	if not map_data.has(_tile_panel_hover_coords):
+		return
+	tile_panel.set_hex(
+		map_data[_tile_panel_hover_coords],
+		_get_tile_screen_rect(_tile_panel_hover_coords)
+	)
+
+
+func _on_card_drag_started_hide_tile_panel(_card: CardUI) -> void:
+	_hide_tile_panel_hover()
+
+
+# Convert a map cell into a viewport/CanvasLayer rect so the panel aligns with the camera.
+func _get_tile_screen_rect(coords: Vector2i) -> Rect2:
+	var tile_size := Vector2(HEX_TEXTURE_SIZE, HEX_TEXTURE_SIZE)
+	var center_local: Vector2 = base_layer.map_to_local(coords)
+	var top_left_local: Vector2 = center_local - tile_size * 0.5
+	# Use the canvas transform so Camera2D position/zoom are included.
+	var canvas_xform: Transform2D = base_layer.get_global_transform_with_canvas()
+	var screen_pos: Vector2 = canvas_xform * top_left_local
+	var screen_size: Vector2 = canvas_xform.basis_xform(tile_size).abs()
+	return Rect2(screen_pos, screen_size)
 
 
 ## True when coords belong to a tile on this map.

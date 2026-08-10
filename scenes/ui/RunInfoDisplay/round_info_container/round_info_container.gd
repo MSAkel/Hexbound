@@ -23,10 +23,10 @@ func _on_turn_started() -> void:
 	_update_phase_label()
 
 func _update_phase_label() -> void:
-	phase_label.text = "Phase: %s" % [GameManager.current_phase]
+	phase_label.text = "Phase %s" % [GameManager.current_phase]
 
 func _update_turn_label() -> void:
-	turn_counter_label.text = "%s/" % [GameManager.current_turn]
+	turn_counter_label.text = "%s" % [GameManager.current_turn]
 
 func _update_total_round_score() -> void:
 	score_this_round.text = "%s" % [GameManager.total_round_score]
