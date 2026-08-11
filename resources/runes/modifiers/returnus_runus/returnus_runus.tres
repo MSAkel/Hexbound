@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://6vhr523vpnd"]
+
+[ext_resource type="Texture2D" uid="uid://bwshjhnnv44nf" path="res://assets/icons/runes/modifier/returnus_runus.png" id="1_npphp"]
+[ext_resource type="Script" uid="uid://bgbplenqaqqeq" path="res://resources/runes/modifiers/returnus_runus/returnus_runus.gd" id="2_w3ae8"]
+
+[resource]
+script = ExtResource("2_w3ae8")
+id = "returnus_runus"
+name = "Returnus Runus"
+icon = ExtResource("1_npphp")
+description = "returnS rune to hand"
+type = 3
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

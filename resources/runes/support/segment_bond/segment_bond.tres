@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://cufkw84oyi5e3"]
+
+[ext_resource type="Texture2D" uid="uid://0cb6ie8dl0w7" path="res://assets/icons/runes/support/segment_bond.png" id="1_k0ops"]
+[ext_resource type="Script" uid="uid://d0c11g62hx5yb" path="res://resources/runes/support/segment_bond/segment_bond.gd" id="2_2qyvr"]
+
+[resource]
+script = ExtResource("2_2qyvr")
+id = "segment_bond"
+name = "Segment Bond"
+icon = ExtResource("1_k0ops")
+base_production_amount = 10
+description = "Adjacent score runes on the same segment permanently gain +10 score"
+type = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

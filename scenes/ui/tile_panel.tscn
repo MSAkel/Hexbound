@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/tile_panel.gd" id="1_0dxj0"]
 [ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="2_8qrfl"]
-[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="2_f84w1"]
+[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_f84w1"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8qrfl"]
 content_margin_left = 24.0
@@ -10,6 +10,12 @@ content_margin_top = 32.0
 content_margin_right = 24.0
 content_margin_bottom = 32.0
 texture = ExtResource("2_f84w1")
+
+[sub_resource type="FontVariation" id="FontVariation_0dxj0"]
+variation_embolden = 0.25
+
+[sub_resource type="FontVariation" id="FontVariation_c0n6m"]
+variation_embolden = 0.25
 
 [node name="TilePanel" type="Control" unique_id=882335406]
 z_index = 100
@@ -43,7 +49,8 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.78039217, 0.7019608, 0.5568628, 1)
+theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
+theme_override_fonts/font = SubResource("FontVariation_0dxj0")
 theme_override_font_sizes/font_size = 18
 text = "Tile Modifier"
 
@@ -51,6 +58,7 @@ text = "Tile Modifier"
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.23753911, 0.23753914, 0.23753911, 1)
 theme_override_font_sizes/font_size = 16
 text = "None"
 
@@ -81,7 +89,8 @@ size_flags_horizontal = 3
 [node name="RuneName" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=2066887061]
 layout_mode = 2
 size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.78039217, 0.7019608, 0.5568628, 1)
+theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
+theme_override_fonts/font = SubResource("FontVariation_c0n6m")
 theme_override_font_sizes/font_size = 18
 text = "No Rune"
 
@@ -89,6 +98,7 @@ text = "No Rune"
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.23753911, 0.23753914, 0.23753911, 1)
 theme_override_font_sizes/font_size = 16
 text = "Description"
 autowrap_mode = 3

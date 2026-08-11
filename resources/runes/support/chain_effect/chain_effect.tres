@@ -9,6 +9,5 @@ id = "chain_effect"
 name = "Chain effect"
 icon = ExtResource("1_sprk3")
 description = "Triggers the next 3 prod runes, generated value  reduced by 20% per jump"
-rarity = 1
 type = 1
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

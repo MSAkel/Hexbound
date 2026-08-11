@@ -1,8 +1,12 @@
 extends Camera2D
 
+signal intro_zoom_finished
+
 @export var velocity: int = 15
 @export var zoom_speed: float = 0.02
 @export var initial_zoom_duration: float = 1.5
+## Multiplier applied to the playable zoom at intro start (< 1 = pulled back, then zooms in).
+@export var intro_start_zoom_factor: float = 0.72
 @export var rune_shake_strength: float = 10.0
 @export var rune_shake_duration: float = 0.3
 
@@ -13,6 +17,10 @@ var mouse_wheel_scrolling_down := false
 var _shake_strength: float = 0.0
 var _shake_duration: float = 0.0
 var _shake_timer: float = 0.0
+# Blocks player zoom while the scene-enter zoom tween is running.
+var _intro_zoom_active := false
+# Playable zoom captured before the intro pulls the camera back.
+var _intro_target_zoom: Vector2 = Vector2.ONE
 
 # Map boundaries
 var left_boundary: float
@@ -39,12 +47,11 @@ func _ready() -> void:
 	right_boundary = to_global(map.map_to_local(max_coords)).x
 	top_boundary = to_global(map.map_to_local(min_coords)).y
 	bottom_boundary = to_global(map.map_to_local(max_coords)).y
-	
-	# Start with a zoomed out view
-	# zoom = Vector2(0.1, 0.1)
-	
-	if zoom_sound:
-		zoom_sound.play()
+
+	# Park at the pulled-back intro zoom before the first frame draws.
+	_intro_target_zoom = zoom
+	zoom = _intro_target_zoom * intro_start_zoom_factor
+	_intro_zoom_active = true
 	
 	Events.rune_activated.connect(_on_rune_activated)
 
@@ -63,6 +70,10 @@ func _physics_process(_delta: float) -> void:
 
 	# if Input.is_action_pressed("map_down") && position.y < bottom_boundary:
 	# 	position += Vector2(0, velocity)
+
+	# Ignore manual zoom while the enter-run zoom settles on the playable level.
+	if _intro_zoom_active:
+		return
 		
 	if Input.is_action_pressed("zoom_in") || mouse_wheel_scrolling_up:
 		if zoom < Vector2(2.0, 2.0):
@@ -74,6 +85,23 @@ func _physics_process(_delta: float) -> void:
 			
 	mouse_wheel_scrolling_up = Input.is_action_just_released("mouse_zoom_in")
 	mouse_wheel_scrolling_down = Input.is_action_just_released("mouse_zoom_out")
+
+
+## Eases from the pulled-back intro zoom into the scene's configured playable zoom.
+func play_intro_zoom() -> void:
+	_intro_zoom_active = true
+
+	if zoom_sound:
+		zoom_sound.play()
+
+	var tween := create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(self, "zoom", _intro_target_zoom, initial_zoom_duration)
+	await tween.finished
+
+	_intro_zoom_active = false
+	intro_zoom_finished.emit()
 
 func _on_rune_activated(_rune: Rune) -> void:
 	shake(rune_shake_strength, rune_shake_duration)

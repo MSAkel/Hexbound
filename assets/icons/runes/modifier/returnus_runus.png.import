@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cw0gr6gygx2vu"
-path="res://.godot/imported/return.png-6428a2a3e12f31658c99fbf41c5da34f.ctex"
+uid="uid://bwshjhnnv44nf"
+path="res://.godot/imported/returnus_runus.png-fa3c444e528b0d0f94a57c1aee5c9a45.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/modifier/return.png"
-dest_files=["res://.godot/imported/return.png-6428a2a3e12f31658c99fbf41c5da34f.ctex"]
+source_file="res://assets/icons/runes/modifier/returnus_runus.png"
+dest_files=["res://.godot/imported/returnus_runus.png-fa3c444e528b0d0f94a57c1aee5c9a45.ctex"]
 
 [params]
 

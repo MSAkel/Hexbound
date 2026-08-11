@@ -5,8 +5,8 @@ extends RefCounted
 
 # Chance to roll each rarity when drafting (must sum to 100).
 const RARITY_WEIGHTS := {
-	Rune.RuneRarity.COMMON: 65.0,
-	Rune.RuneRarity.UNCOMMON: 25.0,
+	Rune.RuneRarity.COMMON: 60.0,
+	Rune.RuneRarity.UNCOMMON: 30.0,
 	Rune.RuneRarity.RARE: 10.0,
 }
 

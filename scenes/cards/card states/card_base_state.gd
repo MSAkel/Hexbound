@@ -54,6 +54,11 @@ func on_mouse_exited() -> void:
 
 
 func _refresh_hover_state() -> void:
+	# Don't zero offset_transform while the hand is holding cards for the run intro.
+	var hand := card_ui.get_parent() as Hand
+	if hand != null and hand.is_awaiting_intro():
+		return
+
 	mouse_over_card = card_ui.is_mouse_over()
 	if mouse_over_card:
 		card_ui.set_hover_elevated(true, not card_ui.is_hover_elevated())

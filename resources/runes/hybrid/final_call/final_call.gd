@@ -3,7 +3,8 @@ extends Rune
 # +25 score. On the last turn of a round, empowers every Prod rune in its segment
 func _on_activate_rune(tile: Hex) -> void:
 	add_score(tile, 25)
-	if GameManager.current_turn == GameManager.get_max_turns_per_phase():
+	# remaining_turns of 1 means this is the final turn of the phase.
+	if GameManager.remaining_turns == 1:
 		var prod_runes := _get_all_runes_on_same_segment(tile, RuneType.PRODUCER)
 		if prod_runes.is_empty():
 			return

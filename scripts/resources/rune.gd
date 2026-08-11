@@ -171,18 +171,21 @@ func _get_producer_count_by_product_type(tile: Hex, filter_product: Product) -> 
 	return count
 
 #region --- Adjacent runes helpers ---
-# Counts all adjacent tiles occupied by a rune. Pass filter_type to filter by rune type.
+## Counts all adjacent tiles occupied by a rune. Pass filter_type to filter by rune type.
+## filter_type: RuneType (PRODUCER, SUPPORT, HYBRID, MODIFIER)
 func _count_all_occupied_adjacent_runes(tile: Hex, filter_type: Variant = null) -> int:
 	return tile.map.count_all_occupied_adjacent_runes(tile.coordinates, filter_type)
 
-# All runes on map-adjacent hexes around tile (unordered).
+## All runes on map-adjacent hexes around tile (unordered).
+## filter_type: RuneType (PRODUCER, SUPPORT, HYBRID, MODIFIER)
 func _get_all_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	return tile.map.get_all_adjacent_runes(tile, filter_type)
 
 #endregion --- Adjacent runes helpers ---
 
 #region --- Trigger order helpers ---
-# All adjacent runes sorted in the map's global trigger order.
+## All adjacent runes sorted in the map's global trigger order.
+## filter_type: RuneType (PRODUCER, SUPPORT, HYBRID, MODIFIER)
 func _get_all_adjacent_runes_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
 	return tile.map.get_all_adjacent_runes_in_trigger_order(tile, filter_type)
 
@@ -225,7 +228,7 @@ func _get_all_runes_on_same_segment(tile: Hex, filter_type: Variant = null) -> A
 	return tile.map.get_all_runes_on_same_segment(tile, filter_type)
 
 
-# All placed runes on the same segment whose product matches filter_product.
+## All placed runes on the same segment whose product matches filter_product.
 func _get_all_runes_on_same_segment_by_product(tile: Hex, filter_product: Product) -> Array[Rune]:
 	var result: Array[Rune] = []
 	for rune: Rune in _get_all_runes_on_same_segment(tile):
@@ -235,13 +238,37 @@ func _get_all_runes_on_same_segment_by_product(tile: Hex, filter_product: Produc
 	return result
 
 
-# All placed producer runes on the map whose product matches filter_product.
+## All placed producer runes on the map whose product matches filter_product.
 func _get_all_placed_producers_by_product(tile: Hex, filter_product: Product) -> Array[Rune]:
 	var result: Array[Rune] = []
 	for rune: Rune in _get_all_placed_runes(tile):
 		if rune.type != RuneType.PRODUCER:
 			continue
 		if rune.product != filter_product:
+			continue
+		result.append(rune)
+	return result
+
+
+## Adjacent producer runes whose product matches filter_product.
+func _get_adjacent_runes_by_product(tile: Hex, filter_product: Product) -> Array[Rune]:
+	var result: Array[Rune] = []
+	for rune: Rune in _get_all_adjacent_runes(tile, RuneType.PRODUCER):
+		if rune.product != filter_product:
+			continue
+		result.append(rune)
+	return result
+
+
+## Adjacent producers of the given product that share this tile's segment.
+func _get_adjacent_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[Rune]:
+	var segment_index := _get_segment_index(tile)
+	var result: Array[Rune] = []
+	for rune: Rune in _get_adjacent_runes_by_product(tile, filter_product):
+		var hex := tile.map.get_hex_for_rune(rune)
+		if hex == null:
+			continue
+		if tile.map.get_segment_index(hex.coordinates) != segment_index:
 			continue
 		result.append(rune)
 	return result
@@ -275,7 +302,7 @@ func _get_first_or_last_rune_in_relative_segment(
 #endregion --- Segment helpers ---
 
 #region --- Rune destruction helpers ---
-# Resolves placed runes to their map coordinates for placement previews.
+## Resolves placed runes to their map coordinates for placement previews.
 func _coords_for_placed_runes(tile: Hex, runes: Array[Rune]) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
 	for rune: Rune in runes:
@@ -285,32 +312,38 @@ func _coords_for_placed_runes(tile: Hex, runes: Array[Rune]) -> Array[Vector2i]:
 	return coords
 
 
-# Highlights same-segment runes, optionally filtered by rune type.
+## Highlights same-segment runes, optionally filtered by RUNE type.
 func _coords_for_same_segment_runes(tile: Hex, filter_type: Variant = null) -> Array[Vector2i]:
 	return _coords_for_placed_runes(tile, _get_all_runes_on_same_segment(tile, filter_type))
 
 
-# Highlights same-segment runes that match a product type.
+## Highlights same-segment runes that match a PRODUCT type.
 func _coords_for_same_segment_runes_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
 	return _coords_for_placed_runes(tile, _get_all_runes_on_same_segment_by_product(tile, filter_product))
 
 
-# Highlights all placed producers on the map that match a product type.
+## Highlights all placed producers on the map that match a product type.
 func _coords_for_placed_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
 	return _coords_for_placed_runes(tile, _get_all_placed_producers_by_product(tile, filter_product))
 
 
-# Highlights adjacent producers that match a product type.
-func _coords_for_adjacent_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	var matching: Array[Rune] = []
-	for rune: Rune in _get_all_adjacent_runes(tile, RuneType.PRODUCER):
-		if rune.product != filter_product:
-			continue
-		matching.append(rune)
-	return _coords_for_placed_runes(tile, matching)
+## Highlights adjacent producers that match a product type.
+func _coords_for_adjacent_runes_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	return _coords_for_placed_runes(tile, _get_adjacent_runes_by_product(tile, filter_product))
 
 
-# Remove a placed rune instance from the map (clears its tile and cancels queued triggers).
+## Highlights adjacent same-segment producers that match a product type.
+func _coords_for_adjacent_same_segment_producers_by_product(
+	tile: Hex,
+	filter_product: Product
+) -> Array[Vector2i]:
+	return _coords_for_placed_runes(
+		tile,
+		_get_adjacent_same_segment_producers_by_product(tile, filter_product)
+	)
+
+
+## Remove a placed rune instance from the map (clears its tile and cancels queued triggers).
 func _destroy_placed_rune(source_tile: Hex, rune: Rune) -> void:
 	source_tile.map.destroy_placed_rune(rune)
 

@@ -3,6 +3,10 @@
 [ext_resource type="Script" uid="uid://ciy7fj80my7ax" path="res://scripts/floating_text.gd" id="1_45khh"]
 [ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="2_j1yni"]
 
+[sub_resource type="FontVariation" id="FontVariation_ksxla"]
+variation_embolden = 0.4
+spacing_glyph = 1
+
 [sub_resource type="Animation" id="Animation_vqah5"]
 length = 0.001
 tracks/0/type = "value"
@@ -68,9 +72,12 @@ z_index = 10
 script = ExtResource("1_45khh")
 
 [node name="Label" type="Label" parent="." unique_id=448775708]
-offset_right = 112.0
+offset_right = 121.0
 offset_bottom = 44.666668
-theme_override_constants/outline_size = 6
+scale = Vector2(1.2, 1.2)
+theme_override_colors/font_outline_color = Color(0.08468992, 0.08468992, 0.08468992, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = SubResource("FontVariation_ksxla")
 theme_override_font_sizes/font_size = 32
 text = "+5 gold"
 

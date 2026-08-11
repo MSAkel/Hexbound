@@ -1,9 +1,10 @@
 extends Rune
 
-# +3 gold for every gold producing rune
+## +3 gold for every gold producing rune on its segment
 func _on_activate_rune(tile: Hex) -> void:
-	var gold_producers := _get_producer_count_by_product_type(tile, Product.GOLD)
-	var gold_to_add := gold_producers * _get_production_amount()
+	var gold_producers := _get_all_runes_on_same_segment_by_product(tile, Product.GOLD)
+	var gold_producers_count := gold_producers.size()
+	var gold_to_add := gold_producers_count * _get_production_amount()
 	add_gold(tile, gold_to_add)
 
 

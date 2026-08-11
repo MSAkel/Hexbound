@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://h7sqfh0382uk"]
+
+[ext_resource type="Texture2D" uid="uid://dimvs7pvd5w50" path="res://assets/icons/runes/support/radiant_link.png" id="1_11jx1"]
+[ext_resource type="Script" uid="uid://356p2qnxvbrt" path="res://resources/runes/support/radiant_link/radiant_link.gd" id="2_s7hf8"]
+
+[resource]
+script = ExtResource("2_s7hf8")
+id = "radiant_link"
+name = "Radiant Link"
+icon = ExtResource("1_11jx1")
+base_production_amount = 3
+description = "Up to 3 adjacent score runes permanently gain +3 score"
+type = 1
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

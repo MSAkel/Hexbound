@@ -9,6 +9,6 @@ id = "investment"
 name = "Investment"
 icon = ExtResource("1_01j7q")
 base_production_amount = 3
-description = "+3 gold for every gold producing rune"
+description = "+3 gold for every gold producing rune on its segment"
 product = 0
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

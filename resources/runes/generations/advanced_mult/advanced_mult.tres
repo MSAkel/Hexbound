@@ -10,5 +10,6 @@ name = "Advanced Mult"
 icon = ExtResource("1_rajw6")
 base_production_amount = 4
 description = "+4 Mult increased by 1 for each Mult rune on the same segment"
+rarity = 1
 product = 2
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

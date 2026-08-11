@@ -4,6 +4,7 @@ extends Node
 const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 
 var _coordinates: Vector2i = Vector2i(0, 0)
+## The rune currently placed on this tile.
 var active_rune: Rune = null
 var rune_ui: RuneUI = null
 

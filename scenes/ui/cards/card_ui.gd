@@ -207,6 +207,13 @@ func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
 		elevated = false
 		animate = false
 
+	# Clearing hover must not wipe the off-screen intro slide offset.
+	var hand := get_parent() as Hand
+	if not elevated and hand != null and hand.is_awaiting_intro():
+		_is_hover_elevated = false
+		_update_hand_z_index(false)
+		return
+
 	if _elevation_tween and _elevation_tween.is_valid():
 		_elevation_tween.kill()
 		_elevation_tween = null

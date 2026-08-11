@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bh6ysb32dx1if"]
 
-[ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="1_60kgd"]
+[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="1_327l5"]
 [ext_resource type="Script" uid="uid://ycxqb17pnybc" path="res://scenes/ui/tooltip/tooltip.gd" id="2_327l5"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_327l5"]
@@ -8,7 +8,7 @@ content_margin_left = 12.0
 content_margin_top = 8.0
 content_margin_right = 12.0
 content_margin_bottom = 8.0
-texture = ExtResource("1_60kgd")
+texture = ExtResource("1_327l5")
 
 [node name="TooltipPanelContainer" type="PanelContainer" unique_id=1260599820]
 offset_right = 55.0
@@ -17,5 +17,8 @@ theme_override_styles/panel = SubResource("StyleBoxTexture_327l5")
 script = ExtResource("2_327l5")
 
 [node name="Label" type="Label" parent="." unique_id=2122435884]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
-text = "Food"
+theme_override_colors/font_color = Color(0.21230483, 0.21230483, 0.21230483, 1)
+text = "Tooltip text"
+autowrap_mode = 3

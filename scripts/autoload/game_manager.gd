@@ -17,16 +17,18 @@ var current_phase: int = 1
 
 #region Turn state
 
-var _current_turn := 1
+## Remaining turns in the current phase (counts down from get_max_turns_per_phase()).
+var _remaining_turns := MAX_TURNS_PER_PHASE
 ## Blocks player input while runes are resolving after end turn.
 var _is_processing_turn := false
 
-var current_turn: int:
+var remaining_turns: int:
 	get:
-		return _current_turn
+		return _remaining_turns
 	set(value):
-		_current_turn = value
-		if _current_turn > get_max_turns_per_phase():
+		_remaining_turns = value
+		# Hitting 0 remaining after a failed turn ends the run.
+		if _remaining_turns <= 0:
 			Events.game_ended.emit()
 
 var is_processing_turn: bool:
@@ -85,6 +87,8 @@ var enhancements_pool: Array[Enhancement] = []
 ## Cleared at turn start, filled as each rune resolves during turn processing.
 var _runes_activated_this_turn: int = 0
 var _activated_runes_this_turn: Array[Rune] = []
+## Incremented on each turn_started; placed runes use this to gate once-per-turn permanent effects.
+var turn_stamp: int = 0
 
 #endregion
 
@@ -143,7 +147,8 @@ func finish_turn_processing() -> void:
 
 	## Score the turn before advancing counters so phase logic sees this turn's contribution.
 	var pending_total_round_score := total_round_score + (turn_score * turn_multiplier)
-	var should_advance_turn := current_turn <= get_max_turns_per_phase() and pending_total_round_score < required_score
+	# Consume one remaining turn when the phase goal was not met.
+	var should_consume_turn := remaining_turns > 0 and pending_total_round_score < required_score
 
 	if pending_total_round_score >= required_score:
 		if ChallengeManager.is_completing_final_challenge_phase():
@@ -161,12 +166,13 @@ func finish_turn_processing() -> void:
 	UiManager.show_runes_choice_panel.emit()
 	Events.turn_started.emit()
 
-	if should_advance_turn:
-		current_turn += 1
+	if should_consume_turn:
+		remaining_turns -= 1
 		Events.turn_changed.emit()
 
 
 func _on_turn_started() -> void:
+	turn_stamp += 1
 	_runes_activated_this_turn = 0
 	_activated_runes_this_turn.clear()
 	GoldManager.reset_turn_tracking()
@@ -204,6 +210,12 @@ func get_max_turns_per_phase() -> int:
 	return ChallengeManager.get_max_turns_per_phase()
 
 
+## Ascending turn index within the phase (1 on the first turn, max on the last).
+## Use when effects scale with how far into the phase you are, not remaining turns.
+func get_turn_number() -> int:
+	return get_max_turns_per_phase() - remaining_turns + 1
+
+
 func _complete_current_phase() -> void:
 	required_score = required_score * required_score_multiplier + 750
 	total_round_score = 0
@@ -222,8 +234,9 @@ func advance_phase() -> void:
 	GoldManager.add(20)
 	AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
 
-	current_turn = 1
+	# Apply challenge first so Rush Hour's reduced max is reflected in remaining turns.
 	ChallengeManager.on_phase_advanced(current_phase)
+	remaining_turns = get_max_turns_per_phase()
 	Events.turn_changed.emit()
 	Events.phase_changed.emit(current_phase)
 	Events.required_score_changed.emit()

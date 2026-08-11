@@ -18,7 +18,6 @@ func _on_toggle_tooltip(is_tooltip_visible: bool, text: String, element_rect: Re
 	if is_tooltip_visible and text != "":
 		target_rect = element_rect
 		_update_content(text)
-		_update_position()
 		show()
 	else:
 		hide()
@@ -26,16 +25,22 @@ func _on_toggle_tooltip(is_tooltip_visible: bool, text: String, element_rect: Re
 
 func _update_content(text: String) -> void:
 	label.text = text
-	# Force update size
 	call_deferred("_update_size")
 
 
 func _update_size() -> void:
-	# Adjust size to fit content
-	size = Vector2.ZERO
+	# Let the label reflow with its min width before measuring.
 	await get_tree().process_frame
-	var label_size = label.get_minimum_size()
-	size = label_size + Vector2(16, 16)  # Add padding
+	var label_size := label.get_minimum_size()
+	var style := get_theme_stylebox("panel")
+	var padding := Vector2(24, 16)
+	if style != null:
+		padding = Vector2(
+			style.get_margin(SIDE_LEFT) + style.get_margin(SIDE_RIGHT),
+			style.get_margin(SIDE_TOP) + style.get_margin(SIDE_BOTTOM)
+		)
+	size = label_size + padding
+	_update_position()
 
 
 func _update_position() -> void:

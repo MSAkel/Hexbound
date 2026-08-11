@@ -5,8 +5,8 @@
 
 [resource]
 script = ExtResource("2_ubapp")
-id = "basic_multi"
-name = "Multiplier"
+id = "basic_mult"
+name = "Basic Multiplier"
 icon = ExtResource("1_pj818")
 base_production_amount = 2
 description = "+2 Mult"

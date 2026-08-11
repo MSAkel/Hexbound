@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://dnv2j7w43hgq3"]
 
 [ext_resource type="Texture2D" uid="uid://54ardna8nujc" path="res://assets/icons/runes/modifier/clonus_runus.png" id="1_dp1v5"]
-[ext_resource type="Script" uid="uid://cuxinu630dsg1" path="res://resources/runes/support/clonus_runus/clonus_runus.gd" id="2_p0trl"]
+[ext_resource type="Script" uid="uid://cuxinu630dsg1" path="res://resources/runes/modifiers/clonus_runus/clonus_runus.gd" id="2_p0trl"]
 
 [resource]
 script = ExtResource("2_p0trl")

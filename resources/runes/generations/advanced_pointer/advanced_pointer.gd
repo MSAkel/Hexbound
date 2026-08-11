@@ -11,4 +11,4 @@ func _on_activate_rune(_tile: Hex) -> void:
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_adjacent_producers_by_product(hover_tile, Product.SCORE)
+	return _coords_for_adjacent_runes_by_product(hover_tile, Product.SCORE)

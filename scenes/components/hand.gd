@@ -10,11 +10,16 @@ const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 # Slide the hand off-screen between turns using 4.7 offset transforms (layout-safe).
 const HAND_SLIDE_DURATION := 0.35
+# Stagger between each card during the run-start entrance from below.
+const INTRO_CARD_STAGGER := 0.07
 
 # Test-only enhancements dealt at run start. Clear this array when done testing.
 const DEBUG_STARTING_ENHANCEMENTS: Array[Enhancement] = [
 	#preload("uid://dcn24d4g51dc6"),
 ]
+
+# Keep starting cards parked off-screen until Main finishes fade/zoom.
+var _awaiting_intro := true
 
 # Reparent cards to hand when they are dragged or released
 func _ready() -> void:
@@ -31,6 +36,10 @@ func _ready() -> void:
 
 	for enhancement in DEBUG_STARTING_ENHANCEMENTS:
 		_add_enhancement_card(enhancement)
+
+	# Snap immediately so the first frame never flashes cards at rest before the intro.
+	if _awaiting_intro:
+		_snap_hand_offscreen()
 
 
 func _add_rune_card(rune: Rune) -> void:
@@ -50,7 +59,11 @@ func _add_card(data: Resource) -> void:
 		child.reparent(self)
 		var new_index := clampi(child.starting_hand_position - cards_played, 0, _get_hand_card_count())
 		move_child.call_deferred(child, new_index)
-)
+	)
+	# Cards dealt during the enter-run intro stay hidden below the viewport.
+	if _awaiting_intro:
+		_snap_card_offscreen(new_rune_card)
+
 
 # Guard against non-card children
 func _get_hand_card_count() -> int:
@@ -77,7 +90,78 @@ func _hide_hand() -> void:
 
 
 func _show_hand() -> void:
+	# Don't fight the run-start entrance if a turn signal fires early.
+	if _awaiting_intro:
+		return
 	_animate_hand_slide(false)
+
+
+## True while starting cards should stay parked below the viewport.
+func is_awaiting_intro() -> bool:
+	return _awaiting_intro
+
+
+## After fade/zoom, slide each starting card up from below with a light stagger.
+func play_intro_entrance() -> void:
+	# CardBaseState waits one frame then clears hover offset to ZERO — wait past that,
+	# then re-park so the entrance tween has a real distance to travel.
+	await get_tree().process_frame
+	_snap_hand_offscreen()
+
+	if _hand_slide_tween and _hand_slide_tween.is_valid():
+		_hand_slide_tween.kill()
+		_hand_slide_tween = null
+
+	_hand_slide_tween = create_tween()
+	_hand_slide_tween.set_parallel(true)
+
+	var animated_cards := 0
+	for child in get_children():
+		if not child is CardUI:
+			continue
+		var card := child as CardUI
+		card.offset_transform_enabled = true
+		var step := _hand_slide_tween.tween_property(
+			card,
+			"offset_transform_position",
+			Vector2.ZERO,
+			HAND_SLIDE_DURATION
+		)
+		step.set_delay(animated_cards * INTRO_CARD_STAGGER)
+		step.set_ease(Tween.EASE_OUT)
+		step.set_trans(Tween.TRANS_QUART)
+		animated_cards += 1
+
+	# Intro offset is now owned by the tween; allow normal hover afterward.
+	_awaiting_intro = false
+
+	if animated_cards == 0:
+		_hand_slide_tween.kill()
+		_hand_slide_tween = null
+		_restore_card_mouse_filters()
+		return
+
+	await _hand_slide_tween.finished
+	_hand_slide_tween = null
+	_restore_card_mouse_filters()
+
+
+func _snap_hand_offscreen() -> void:
+	for child in get_children():
+		if child is CardUI:
+			_snap_card_offscreen(child as CardUI)
+
+
+func _snap_card_offscreen(card: CardUI) -> void:
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.offset_transform_enabled = true
+	card.offset_transform_position = Vector2(0, _get_hand_slide_distance())
+
+
+func _restore_card_mouse_filters() -> void:
+	for child in get_children():
+		if child is CardUI:
+			child.mouse_filter = Control.MOUSE_FILTER_STOP
 
 
 func _animate_hand_slide(hide: bool) -> void:
@@ -121,9 +205,7 @@ func _animate_hand_slide(hide: bool) -> void:
 
 	if not hide:
 		_hand_slide_tween.finished.connect(func() -> void:
-			for child in get_children():
-				if child is CardUI:
-					child.mouse_filter = Control.MOUSE_FILTER_STOP
+			_restore_card_mouse_filters()
 		)
 
 
