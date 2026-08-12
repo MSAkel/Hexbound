@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3 uid="uid://b5kunlu1hpwlk"]
+
+[ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dstgadvktxsbu" path="res://assets/map/segment_passives/encircler_passive.png" id="2_3q0wb"]
+[ext_resource type="Texture2D" uid="uid://brk6a3m33m4fs" path="res://assets/map/trigger_order/the_encircler_map.png" id="2_trigger_preview"]
+[ext_resource type="Texture2D" uid="uid://c8lewiayrer5i" path="res://assets/map/segment_icons/first_circle_tile_passive.png" id="3_passive_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "encircler"
+display_name = "The Encircler"
+trigger_order_strategy = 1
+trigger_order_display_name = "Outer ring → inner ring"
+trigger_order_description = "Outer ring runes activate first, moving inward toward the center."
+trigger_order_preview = ExtResource("2_trigger_preview")
+segment_key_strategy = 1
+passive_modifier_type = 1
+passive_name = "Circle Passive"
+passive_description = "If the first rune on a circle segment is a support rune, the rune gains a 15% chance to trigger each prod rune on the same segment."
+passive_icon = ExtResource("3_passive_icon")
+passive_icon_preview = ExtResource("2_3q0wb")

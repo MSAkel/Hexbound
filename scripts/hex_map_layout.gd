@@ -48,13 +48,19 @@ func get_ring_distance(coords: Vector2i) -> int:
 
 ## All map coordinates sorted by the active character trigger-order rule.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
-	match GameManager.trigger_order:
-		TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT:
+	var character := GameManager.selected_character
+	if character == null:
+		return _get_order_top_left_to_bottom_right()
+
+	match character.trigger_order_strategy:
+		CharacterDefinition.TriggerOrderStrategy.ZIGZAG_ROWS:
 			return _get_order_top_left_to_bottom_right()
-		TriggerOrderType.Type.OUTER_RING_TO_INNER:
-			return _get_order_outer_to_inner()
-		TriggerOrderType.Type.CLOCKWISE_SPIRAL:
-			return _get_order_clockwise_spiral()
+		CharacterDefinition.TriggerOrderStrategy.RINGS_OUTWARD:
+			return _get_order_by_rings(true, false)
+		CharacterDefinition.TriggerOrderStrategy.RINGS_INWARD:
+			return _get_order_by_rings(false, true)
+		CharacterDefinition.TriggerOrderStrategy.NUMBERED_GRID:
+			return _get_order_from_numbered_grid(character.numbered_order_grid)
 		_:
 			return _get_order_top_left_to_bottom_right()
 
@@ -324,9 +330,43 @@ func _sort_ring_clockwise(cells: Array[Vector2i], start_tile: Vector2i) -> Array
 ## Trigger order: top-to-bottom rows, zigzagging left/right within each row.
 ## Even rows (0-based) go left → right; odd rows go right → left.
 func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
+	var ordered: Array[Vector2i] = []
+	var row_index := 0
+	for row: Array in _get_spatial_rows():
+		var row_slice: Array = row.duplicate()
+		# Odd rows traverse right → left.
+		if row_index % 2 == 1:
+			row_slice.reverse()
+		ordered.append_array(row_slice)
+		row_index += 1
+	return ordered
+
+
+## Trigger order: ring-by-ring traversal, optionally from the outside in.
+func _get_order_by_rings(from_outer: bool, use_ne_start: bool) -> Array[Vector2i]:
+	var coords: Array[Vector2i] = []
+	var ring := _map.hex_size if from_outer else 0
+	var end := -1 if from_outer else _map.hex_size + 1
+	var step := -1 if from_outer else 1
+
+	while ring != end:
+		if ring == 0:
+			coords.append(_hex_center)
+		else:
+			var ring_tiles: Array[Vector2i] = _get_tiles_in_ring(ring)
+			var start_tile: Vector2i = (
+				_find_ne_start_tile(ring_tiles) if use_ne_start
+				else _find_top_left_tile(ring_tiles)
+			)
+			coords.append_array(_sort_ring_clockwise(ring_tiles, start_tile))
+		ring += step
+	return coords
+
+
+## Groups map tiles into visual rows (top-to-bottom, left-to-right within each row).
+func _get_spatial_rows() -> Array:
 	var coords: Array[Vector2i] = []
 	coords.assign(_map.map_data.keys())
-	# First pass: stable top-to-bottom, left-to-right so rows are contiguous.
 	coords.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
 		var pos_a: Vector2 = _get_screen_position(a)
 		var pos_b: Vector2 = _get_screen_position(b)
@@ -335,58 +375,70 @@ func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
 		return pos_a.x < pos_b.x
 	)
 
-	# Reverse every other row so traversal zigzags across the map.
-	var ordered: Array[Vector2i] = []
+	var rows: Array = []
 	var row_start: int = 0
-	var row_index: int = 0
 	while row_start < coords.size():
 		var row_y: float = _get_screen_position(coords[row_start]).y
 		var row_end: int = row_start + 1
 		while row_end < coords.size() and is_equal_approx(_get_screen_position(coords[row_end]).y, row_y):
 			row_end += 1
-		var row_slice: Array[Vector2i] = coords.slice(row_start, row_end)
-		# Odd rows traverse right → left.
-		if row_index % 2 == 1:
-			row_slice.reverse()
-		ordered.append_array(row_slice)
+		rows.append(coords.slice(row_start, row_end))
 		row_start = row_end
-		row_index += 1
+	return rows
+
+
+## Maps a numbered preview grid onto live map coordinates to produce trigger order.
+func _get_order_from_numbered_grid(order_grid: Array) -> Array[Vector2i]:
+	var rows := _get_spatial_rows()
+	if rows.size() != order_grid.size():
+		push_warning("Trigger-order grid row count does not match the map layout.")
+		return _get_order_top_left_to_bottom_right()
+
+	var order_to_coords: Dictionary = {}
+	for row_idx in range(rows.size()):
+		var row_coords: Array = rows[row_idx]
+		var row_orders: Array = order_grid[row_idx]
+		if row_coords.size() != row_orders.size():
+			push_warning("Trigger-order grid column count mismatch at row %d." % row_idx)
+			return _get_order_top_left_to_bottom_right()
+		for col_idx in range(row_coords.size()):
+			order_to_coords[row_orders[col_idx]] = row_coords[col_idx]
+
+	var ordered: Array[Vector2i] = []
+	for order in range(1, _map.map_data.size() + 1):
+		if not order_to_coords.has(order):
+			push_warning("Trigger-order grid is missing index %d." % order)
+			return _get_order_top_left_to_bottom_right()
+		ordered.append(order_to_coords[order])
 	return ordered
 
 
-## Trigger order: outer ring inward, each ring traversed clockwise.
-func _get_order_outer_to_inner() -> Array[Vector2i]:
-	var coords: Array[Vector2i] = []
-	for ring in range(_map.hex_size, -1, -1):
-		var ring_tiles: Array[Vector2i] = _get_tiles_in_ring(ring)
-		if ring == 0:
-			coords.append(_hex_center)
-			continue
-		var start_tile: Vector2i = _find_top_left_tile(ring_tiles)
-		coords.append_array(_sort_ring_clockwise(ring_tiles, start_tile))
-	return coords
+## Segment index for custom layouts where yellow preview tiles start a new segment.
+func _get_layout_segment_index(coords: Vector2i, segment_starts: Array[int]) -> int:
+	var order: int = get_coords_in_trigger_order().find(coords) + 1
+	if order <= 0:
+		return 0
+
+	var segment_idx := 0
+	for i in range(segment_starts.size()):
+		if order >= segment_starts[i]:
+			segment_idx = i
+	return segment_idx
 
 
-## Trigger order: center outward, each ring traversed clockwise from the northeast.
-func _get_order_clockwise_spiral() -> Array[Vector2i]:
-	var coords: Array[Vector2i] = []
-	for ring in range(_map.hex_size + 1):
-		var ring_tiles: Array[Vector2i] = _get_tiles_in_ring(ring)
-		if ring == 0:
-			coords.append(_hex_center)
-			continue
-		var start_tile: Vector2i = _find_ne_start_tile(ring_tiles)
-		coords.append_array(_sort_ring_clockwise(ring_tiles, start_tile))
-	return coords
-
-
-## Segment grouping key for the active character (row Y or ring index).
+## Segment grouping key for the active character (row Y, ring index, or layout segment).
 func _get_segment_key(coords: Vector2i) -> Variant:
-	match GameManager.selected_character:
-		PlayerCharacter.Type.SURVEYOR:
+	var character := GameManager.selected_character
+	if character == null:
+		return _get_screen_position(coords).y
+
+	match character.segment_key_strategy:
+		CharacterDefinition.SegmentKeyStrategy.ROW_Y:
 			return _get_screen_position(coords).y
-		PlayerCharacter.Type.ENCIRCLER, PlayerCharacter.Type.SPIRALIST:
+		CharacterDefinition.SegmentKeyStrategy.RING:
 			return get_ring_distance(coords)
+		CharacterDefinition.SegmentKeyStrategy.NUMBERED_GRID:
+			return _get_layout_segment_index(coords, character.segment_starts)
 		_:
 			return _get_screen_position(coords).y
 

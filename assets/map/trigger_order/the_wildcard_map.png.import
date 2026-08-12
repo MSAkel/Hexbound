@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bm1itbk7dbfiy"
-path="res://.godot/imported/spiralist_segment_passive_map.png-6e354c043d984fcdd689d9d87c3ca93f.ctex"
+uid="uid://d13vnpjpk2qb2"
+path="res://.godot/imported/the_wildcard_map.png-aa5193f05e06b1a4e96b823c0cdffafb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/segment_passives/spiralist_segment_passive_map.png"
-dest_files=["res://.godot/imported/spiralist_segment_passive_map.png-6e354c043d984fcdd689d9d87c3ca93f.ctex"]
+source_file="res://assets/map/trigger_order/the_wildcard_map.png"
+dest_files=["res://.godot/imported/the_wildcard_map.png-aa5193f05e06b1a4e96b823c0cdffafb.ctex"]
 
 [params]
 

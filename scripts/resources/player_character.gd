@@ -1,47 +1,60 @@
 extends Resource
 class_name PlayerCharacter
 
-# Each playable selection is tied to a fixed trigger order for the entire run.
-enum Type {
-	SURVEYOR,
-	ENCIRCLER,
-	SPIRALIST,
-}
+# Registry for playable character definitions loaded from resources/characters/.
 
-#const RANDOM_SELECTION = preload("uid://dfs3j40u078c6")
+const CHARACTER_PATHS: Array[String] = [
+	"res://resources/characters/surveyor.tres",
+	"res://resources/characters/encircler.tres",
+	"res://resources/characters/spiralist.tres",
+	"res://resources/characters/columnist.tres",
+	"res://resources/characters/converger.tres",
+	"res://resources/characters/wildcard.tres",
+]
 
-
-static func get_all_types() -> Array[Type]:
-	return [
-		Type.SURVEYOR,
-		Type.ENCIRCLER,
-		Type.SPIRALIST,
-	]
+static var _definitions: Array[CharacterDefinition] = []
+static var _definitions_by_id: Dictionary = {}
 
 
-static func get_trigger_order(character_type: Type) -> TriggerOrderType.Type:
-	match character_type:
-		Type.SURVEYOR:
-			return TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
-		Type.ENCIRCLER:
-			return TriggerOrderType.Type.OUTER_RING_TO_INNER
-		Type.SPIRALIST:
-			return TriggerOrderType.Type.CLOCKWISE_SPIRAL
-		_:
-			return TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
+static func _ensure_loaded() -> void:
+	if not _definitions.is_empty():
+		return
+
+	for path: String in CHARACTER_PATHS:
+		var definition := load(path) as CharacterDefinition
+		if definition == null:
+			push_error("Failed to load character definition: %s" % path)
+			continue
+		_definitions.append(definition)
+		_definitions_by_id[definition.id] = definition
 
 
-# Build the starting hand runes for the given character type.
+static func get_all_characters() -> Array[CharacterDefinition]:
+	_ensure_loaded()
+	return _definitions
+
+
+static func get_default_character() -> CharacterDefinition:
+	_ensure_loaded()
+	return _definitions[0]
+
+
+static func get_character_by_id(character_id: String) -> CharacterDefinition:
+	_ensure_loaded()
+	return _definitions_by_id.get(character_id)
+
+
+# Build the starting hand runes for the given character.
 # 5 random common cards: 3 production (at least one score) and 2 support.
-static func get_starting_hand_runes(character_type: Type) -> Array[Rune]:
+static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Rune]:
 	var hand: Array[Rune] = []
+	if character == null:
+		return hand
 
-	match character_type:
-		Type.SURVEYOR, Type.ENCIRCLER, Type.SPIRALIST:
-			hand.append_array(_get_starting_producer_runes(3))
-			hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
-			#hand.append(RANDOM_SELECTION)
-			hand.shuffle()
+	if character.uses_standard_starting_hand:
+		hand.append_array(_get_starting_producer_runes(3))
+		hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
+		hand.shuffle()
 
 	# Drop card based on difficulty level
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
@@ -103,23 +116,3 @@ static func _get_random_common_runes(
 		true,
 		product
 	)
-
-static func get_character_name(character_type: Type) -> String:
-	match character_type:
-		Type.SURVEYOR:
-			return "The Surveyor"
-		Type.ENCIRCLER:
-			return "The Encircler"
-		Type.SPIRALIST:
-			return "The Spiralist"
-
-	return "Unknown"
-
-
-# Passive abilities are not finalized yet
-static func get_passive_description(character_type: Type) -> String:
-	match character_type:
-		Type.SURVEYOR, Type.ENCIRCLER, Type.SPIRALIST:
-			return "Passive ability: TBD"
-
-	return "Unknown"

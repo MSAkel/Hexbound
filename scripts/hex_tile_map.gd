@@ -399,18 +399,16 @@ func _apply_difficulty_disabled_tiles() -> void:
 
 # Stamp each character's segment passive onto reserved map tiles at run start.
 func _assign_segment_passive_modifiers() -> void:
-	var modifier := SegmentPassiveModifier.create_for_character(GameManager.selected_character)
-	
+	var character := GameManager.selected_character
+	var modifier := SegmentPassiveModifier.create_for_character(character)
+	if character != null and character.passive_places_on_center_tile:
+		map_data[_layout.get_hex_center()].set_segment_passive_modifier(modifier)
+		return
 
-	match GameManager.selected_character:
-		PlayerCharacter.Type.SURVEYOR, PlayerCharacter.Type.ENCIRCLER:
-			# First tile of every row (Surveyor) or ring (Encircler) segment.
-			for segment: Array in _layout.build_segments():
-				if segment.is_empty():
-					continue
-				map_data[segment[0]].set_segment_passive_modifier(modifier)
-		PlayerCharacter.Type.SPIRALIST:
-			map_data[_layout.get_hex_center()].set_segment_passive_modifier(modifier)
+	for segment: Array in _layout.build_segments():
+		if segment.is_empty():
+			continue
+		map_data[segment[0]].set_segment_passive_modifier(modifier)
 
 
 func _set_runes_hidden(hide_runes: bool) -> void:

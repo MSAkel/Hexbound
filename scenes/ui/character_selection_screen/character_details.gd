@@ -18,17 +18,14 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 @onready var segment_description: Label = $SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer/SegmentDescription
 @onready var segment_image: TextureRect = $SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer/SegmentImage
 
-func display_selection(character_type: PlayerCharacter.Type) -> void:
-	character_name_label.text = "[wave amp=50 freq=2]%s[/wave]" %  PlayerCharacter.get_character_name(character_type)
-
-	var trigger_order: TriggerOrderType.Type = PlayerCharacter.get_trigger_order(character_type)
-	trigger_order_label.text = TriggerOrderType.get_display_name(trigger_order)
-	trigger_order_description.text = TriggerOrderType.get_description(trigger_order)
-	trigger_order_image.texture = TriggerOrderType.get_preview_texture(trigger_order)
-
-	segment_label.text = SegmentPassiveModifier.get_display_name(character_type)
-	segment_description.text = SegmentPassiveModifier.get_description(character_type)
-	segment_image.texture = SegmentPassiveModifier.get_icon_preview(character_type)
+func display_selection(character: CharacterDefinition) -> void:
+	character_name_label.text = "[wave amp=50 freq=2]%s[/wave]" % character.display_name
+	trigger_order_label.text = character.trigger_order_display_name
+	trigger_order_description.text = character.trigger_order_description
+	trigger_order_image.texture = character.trigger_order_preview
+	segment_label.text = character.passive_name
+	segment_description.text = character.passive_description
+	segment_image.texture = character.passive_icon_preview
 
 func _on_prev_selection_pressed() -> void:
 	prev_selection_pressed.emit()

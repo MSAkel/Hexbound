@@ -54,6 +54,4 @@ signal enhancement_selected(enhancement: Enhancement)
 signal enhancement_applied(rune: Rune, enhancement: Enhancement)  
 signal card_selected(card: CardUI)
 
-signal trigger_order_changed(new_order: TriggerOrderType.Type)
-
 signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)

@@ -92,21 +92,11 @@ var turn_stamp: int = 0
 
 #endregion
 
-#region Character and trigger order
+#region Character selection
 
-## Chosen on the character selection screen, drives starting hand and trigger order.
-var selected_character: PlayerCharacter.Type = PlayerCharacter.Type.SURVEYOR
+## Chosen on the character selection screen; drives layout rules, starting hand, and passives.
+var selected_character: CharacterDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
-var _trigger_order: TriggerOrderType.Type = TriggerOrderType.Type.TOP_LEFT_TO_BOTTOM_RIGHT
-
-var trigger_order: TriggerOrderType.Type:
-	get:
-		return _trigger_order
-	set(value):
-		if _trigger_order == value:
-			return
-		_trigger_order = value
-		EventBus.trigger_order_changed.emit(_trigger_order)
 
 #endregion
 
@@ -124,6 +114,9 @@ var game_speed: float:
 #endregion
 
 func _ready() -> void:
+	if selected_character == null:
+		selected_character = PlayerCharacter.get_default_character()
+
 	_load_runes_from_directory("res://resources/runes/")
 	_load_enhancements_from_directory("res://resources/enhancements/")
 

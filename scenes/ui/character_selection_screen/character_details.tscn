@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/divivder.png" id="2_t3sbv"]
 [ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="3_1a3dm"]
 [ext_resource type="Texture2D" uid="uid://ddi3bwc5uw3rp" path="res://assets/gui/frames/frame_1.png" id="4_br4kt"]
-[ext_resource type="Texture2D" uid="uid://dvu4jpgj2jlr6" path="res://assets/map/trigger_order/surveyor_trigger_order.png" id="4_iw7qv"]
+[ext_resource type="Texture2D" uid="uid://dvu4jpgj2jlr6" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_iw7qv"]
 [ext_resource type="Texture2D" uid="uid://ll7d4y1b83sj" path="res://assets/map/segment_icons/segment_start.png" id="7_daqkf"]
 [ext_resource type="Texture2D" uid="uid://bgj3xo0w2i6gx" path="res://assets/map/segment_passives/first_in_segment.png" id="8_daqkf"]
 

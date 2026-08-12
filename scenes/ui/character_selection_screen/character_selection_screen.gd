@@ -8,15 +8,15 @@ var main_menu_scene := load("res://scenes/ui/main_menu/main_menu.tscn")
 
 @onready var selection_details: SelectionDetails = $Container/VBoxContainer/CharacterDetails
 
-# One selection per trigger order; only one is shown at a time.
-var selections: Array[PlayerCharacter.Type] = []
+# One selection per character definition; only one is shown at a time.
+var selections: Array[CharacterDefinition] = []
 var current_index: int = 0
 
 
 func _ready() -> void:
 	get_tree().paused = false
 
-	selections = PlayerCharacter.get_all_types()
+	selections = PlayerCharacter.get_all_characters()
 	selection_details.prev_selection_pressed.connect(_on_prev_selection)
 	selection_details.next_selection_pressed.connect(_on_next_selection)
 	_update_display()
@@ -26,7 +26,7 @@ func _ready() -> void:
 		AudioManager.play_music(music)
 
 
-func get_selected_character() -> PlayerCharacter.Type:
+func get_selected_character() -> CharacterDefinition:
 	return selections[current_index]
 
 
@@ -50,10 +50,8 @@ func _update_display() -> void:
 func _on_start_button_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 
-	var character_type: PlayerCharacter.Type = get_selected_character()
-	# Character choice locks in the trigger order for the entire run.
-	GameManager.selected_character = character_type
-	GameManager.trigger_order = PlayerCharacter.get_trigger_order(character_type)
+	# Character choice locks in layout rules for the entire run.
+	GameManager.selected_character = get_selected_character()
 	GameManager.selected_difficulty = selection_details.get_selected_difficulty()
 
 	get_tree().change_scene_to_packed(main_scene)

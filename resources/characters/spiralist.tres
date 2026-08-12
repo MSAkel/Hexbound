@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3 uid="uid://kpsdt1kwanhc"]
+
+[ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dhqi4kh8qyy1b" path="res://assets/map/segment_passives/epic_center.png" id="2_egjdi"]
+[ext_resource type="Texture2D" uid="uid://1n3drwued4ar" path="res://assets/map/trigger_order/the_spiralist_map.png" id="2_trigger_preview"]
+[ext_resource type="Texture2D" uid="uid://t7e6ybgan3k" path="res://assets/map/segment_icons/center_tile_passive.png" id="3_passive_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "spiralist"
+display_name = "The Spiralist"
+trigger_order_strategy = 2
+trigger_order_display_name = "Clockwise spiral"
+trigger_order_description = "Runes activate in a clockwise spiral, starting at the center and expanding outward."
+trigger_order_preview = ExtResource("2_trigger_preview")
+passive_places_on_center_tile = true
+passive_modifier_type = 2
+passive_name = "Center Tile Passive"
+passive_description = "Rune in the center tile triggers thrice, including support runes."
+passive_icon = ExtResource("3_passive_icon")
+passive_icon_preview = ExtResource("2_egjdi")

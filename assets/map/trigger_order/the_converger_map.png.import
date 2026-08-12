@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvymih6a8i2nq"
-path="res://.godot/imported/encricler_segment_passive_map.png-a309fb147b5ba069f6a5a986b29d058e.ctex"
+uid="uid://ws4fwjrp54v6"
+path="res://.godot/imported/the_converger_map.png-486655ebe10d7d14622a0497b42fb3a9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/segment_passives/encricler_segment_passive_map.png"
-dest_files=["res://.godot/imported/encricler_segment_passive_map.png-a309fb147b5ba069f6a5a986b29d058e.ctex"]
+source_file="res://assets/map/trigger_order/the_converger_map.png"
+dest_files=["res://.godot/imported/the_converger_map.png-486655ebe10d7d14622a0497b42fb3a9.ctex"]
 
 [params]
 

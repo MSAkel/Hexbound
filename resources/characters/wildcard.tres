@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3 uid="uid://brju001yd2q7n"]
+
+[ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d13vnpjpk2qb2" path="res://assets/map/trigger_order/the_wildcard_map.png" id="2_trigger_preview"]
+[ext_resource type="Texture2D" uid="uid://bgj3xo0w2i6gx" path="res://assets/map/segment_passives/first_in_segment.png" id="2_wkud0"]
+[ext_resource type="Texture2D" uid="uid://t7e6ybgan3k" path="res://assets/map/segment_icons/center_tile_passive.png" id="3_passive_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "wildcard"
+display_name = "The Wildcard"
+trigger_order_display_name = "Random"
+trigger_order_description = "Runes activate in a random order each turn."
+trigger_order_preview = ExtResource("2_trigger_preview")
+segment_key_strategy = 1
+passive_places_on_center_tile = true
+passive_modifier_type = 2
+passive_name = "Wildcard Passive"
+passive_description = "WIP"
+passive_icon = ExtResource("3_passive_icon")
+passive_icon_preview = ExtResource("2_wkud0")

@@ -14,7 +14,7 @@ func _ready() -> void:
 
 
 func _on_all_challenges_completed() -> void:
-	played_as_label.text = PlayerCharacter.get_character_name(GameManager.selected_character)
+	played_as_label.text = GameManager.selected_character.display_name if GameManager.selected_character else "Unknown"
 	turns_played_label.text = "Phase Reached: %s" % GameManager.current_phase
 	gold_earned_label.text = "Gold Earned: %s" % GoldManager.amount
 	cards_played_label.text = "Card Played: 0"

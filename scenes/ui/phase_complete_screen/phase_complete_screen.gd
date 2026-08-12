@@ -18,7 +18,7 @@ func _ready() -> void:
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
-	# total_round_score is already reset when the phase completes; use the snapshot instead.
+	# total_round_score is already reset when the phase completes, use the snapshot instead.
 	phase_score.text = str(GameManager.completed_phase_score)
 	gold_earned.text = str(GoldManager.earned_this_turn)
 	turns_remaning_label.text = "%d Turns Remaining" % GameManager.remaining_turns

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/map/trigger_order/the_columnist_map.png" id="2_trigger_preview"]
+[ext_resource type="Texture2D" path="res://assets/map/segment_icons/first_row_tile_passive.png" id="3_passive_icon"]
+[ext_resource type="Texture2D" path="res://assets/map/segment_passives/first_in_segment.png" id="4_passive_preview"]
+
+[resource]
+script = ExtResource("1_script")
+id = "columnist"
+display_name = "The Columnist"
+trigger_order_strategy = 3
+trigger_order_display_name = "Vertical serpentine"
+trigger_order_description = "Runes activate column by column from right to left, alternating direction each column."
+trigger_order_preview = ExtResource("2_trigger_preview")
+numbered_order_grid = [[37, 24, 23, 10], [36, 25, 22, 11, 9], [35, 26, 21, 12, 8, 2], [34, 27, 20, 13, 7, 3, 1], [33, 28, 19, 14, 6, 4], [32, 29, 18, 15, 5], [31, 30, 17, 16]]
+segment_starts = [1, 2, 5, 10, 17, 24, 31]
+segment_key_strategy = 2
+passive_places_on_center_tile = false
+passive_modifier_type = 0
+passive_name = "First In segment"
+passive_description = "Production runes on the first plot of a segment have double production"
+passive_icon = ExtResource("3_passive_icon")
+passive_icon_preview = ExtResource("4_passive_preview")
+uses_standard_starting_hand = true
+character_passive_description = "Passive ability: TBD"
