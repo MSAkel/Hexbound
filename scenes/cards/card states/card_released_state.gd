@@ -3,7 +3,7 @@ extends CardState
 var placed: bool
 
 func enter() -> void:
-	Events.card_drag_ended.emit()
+	EventBus.card_drag_ended.emit()
 	placed = false
 	if not card_ui.targets.is_empty():
 		placed = true

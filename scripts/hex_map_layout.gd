@@ -200,7 +200,8 @@ func reset_turn_results() -> void:
 	_segment_turn_gold.resize(segment_count)
 	for i in segment_count:
 		_segment_turn_scores[i] = 0
-		_segment_turn_multiplier[i] = 0
+		# Base multiplier is 1 so score is unchanged when no mult runes fire in a segment.
+		_segment_turn_multiplier[i] = 1
 		_segment_turn_gold[i] = 0
 
 

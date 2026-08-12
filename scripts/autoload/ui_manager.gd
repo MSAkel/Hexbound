@@ -4,6 +4,7 @@ signal show_runes_panel
 signal show_runes_choice_panel
 signal show_cards_choice_panel
 signal show_merchant_panel
+signal show_phase_complete_panel
 
 var active_panel: Control = null
 

@@ -23,8 +23,8 @@ func _ready() -> void:
 	hide()
 	reroll_button.pressed.connect(_on_reroll_button_pressed)
 	leave_button.pressed.connect(_on_leave_button_pressed)
-	Events.gold_changed.connect(_on_gold_changed)
-	Events.merchant_discount_changed.connect(_on_merchant_discount_changed)
+	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.merchant_discount_changed.connect(_on_merchant_discount_changed)
 	UiManager.show_merchant_panel.connect(open)
 	_update_reroll_button()
 	await _refresh_merchant_cards()
@@ -90,11 +90,11 @@ func _on_merchant_card_purchased(card_ui: CardUI) -> void:
 
 	var card : Resource = card_ui.card
 	if card is Rune:
-		Events.rune_selected.emit(card as Rune)
-		Events.merchant_item_purchased.emit("rune")
+		EventBus.rune_selected.emit(card as Rune)
+		EventBus.merchant_item_purchased.emit("rune")
 	elif card is Enhancement:
-		Events.enhancement_selected.emit(card as Enhancement)
-		Events.merchant_item_purchased.emit("enhancement")
+		EventBus.enhancement_selected.emit(card as Enhancement)
+		EventBus.merchant_item_purchased.emit("enhancement")
 
 	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_CARD_PURCHASED)
 	_update_reroll_button()
@@ -116,7 +116,7 @@ func _on_leave_button_pressed() -> void:
 	hide()
 	if UiManager.active_panel == self:
 		UiManager.active_panel = null
-	Events.merchant_closed.emit()
+	EventBus.merchant_closed.emit()
 
 
 func _on_gold_changed(_new_amount: int) -> void:

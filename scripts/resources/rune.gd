@@ -65,13 +65,13 @@ func activate_rune(tile: Hex, activation_scale: float = 1.0) -> void:
 	
 	# Register before the effect so get_activations_this_turn() includes this rune.
 	GameManager.register_rune_activation(self)
-	Events.rune_activated.emit(self)
+	EventBus.rune_activated.emit(self)
 	
 	var output_scale := activation_scale
 	if is_empowered:
 		output_scale *= EMPOWER_OUTPUT_SCALE
 		is_empowered = false
-		Events.rune_empower_consumed.emit(self)
+		EventBus.rune_empower_consumed.emit(self)
 	
 	_activation_output_scale = output_scale
 	_on_activate_rune(tile)
@@ -140,7 +140,7 @@ func _empower() -> void:
 		return
 	
 	is_empowered = true
-	Events.rune_empowered.emit(self)
+	EventBus.rune_empowered.emit(self)
 
 func _on_activate_rune(_tile: Hex) -> void:
 	pass

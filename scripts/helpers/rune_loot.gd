@@ -5,8 +5,8 @@ extends RefCounted
 
 # Chance to roll each rarity when drafting (must sum to 100).
 const RARITY_WEIGHTS := {
-	Rune.RuneRarity.COMMON: 60.0,
-	Rune.RuneRarity.UNCOMMON: 30.0,
+	Rune.RuneRarity.COMMON: 55.0,
+	Rune.RuneRarity.UNCOMMON: 35.0,
 	Rune.RuneRarity.RARE: 10.0,
 }
 
@@ -27,17 +27,20 @@ static func _roll_rarity(weights: Dictionary = RARITY_WEIGHTS) -> Rune.RuneRarit
 	return Rune.RuneRarity.COMMON
 
 
-# Keep runes that match optional rarity and type filters.
+# Keep runes that match optional rarity, type, and product filters.
 static func _filter_runes(
 	pool: Array[Rune],
 	rarity: Variant,
-	rune_type: Variant
+	rune_type: Variant,
+	product: Variant = null
 ) -> Array[Rune]:
 	var filtered: Array[Rune] = []
 	for rune in pool:
 		if rarity != null and rune.rarity != rarity:
 			continue
 		if rune_type != null and rune.type != rune_type:
+			continue
+		if product != null and rune.product != product:
 			continue
 		filtered.append(rune)
 	return filtered
@@ -71,16 +74,17 @@ static func draw_runes(
 	return result
 
 
-# Draw without rarity weights, optionally filter by rarity and/or type.
+# Draw without rarity weights, optionally filter by rarity, type, and/or product.
 static func draw_filtered(
 	count: int,
 	pool: Array[Rune] = [],
 	rarity: Variant = null,
 	rune_type: Variant = null,
-	unique: bool = true
+	unique: bool = true,
+	product: Variant = null
 ) -> Array[Rune]:
 	var source_pool := pool if not pool.is_empty() else GameManager.runes_pool
-	var available := _filter_runes(source_pool, rarity, rune_type)
+	var available := _filter_runes(source_pool, rarity, rune_type, product)
 	var result: Array[Rune] = []
 
 	if available.is_empty():

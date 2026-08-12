@@ -17,8 +17,8 @@ func _ready() -> void:
 	hide()
 
 	UiManager.show_runes_choice_panel.connect(_on_show_panel)
-	Events.gold_changed.connect(_on_gold_changed)
-	Events.rune_selected.connect(_on_rune_selected)
+	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.rune_selected.connect(_on_rune_selected)
 	_update_reroll_button()
 
 func _on_rune_selected(_rune: Rune) -> void:
@@ -94,7 +94,7 @@ func _on_rune_choice_selected(card_ui: CardUI) -> void:
 	var rune := card_ui.card as Rune
 	## Selecting a rune consumes the pack so a new one can be offered later.
 	runes_pack.clear()
-	Events.rune_selected.emit(rune)
+	EventBus.rune_selected.emit(rune)
 
 
 ## Pick random runes for the selection panel from the shared pool.

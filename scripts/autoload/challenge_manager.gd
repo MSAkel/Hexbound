@@ -65,9 +65,9 @@ var _pending_challenge_reveal := false
 
 
 func _ready() -> void:
-	Events.turn_started.connect(_on_turn_started)
-	Events.rune_activated.connect(_on_rune_activated)
-	Events.merchant_closed.connect(_on_merchant_closed)
+	EventBus.turn_started.connect(_on_turn_started)
+	EventBus.rune_activated.connect(_on_rune_activated)
+	EventBus.merchant_closed.connect(_on_merchant_closed)
 
 
 # Pick three unique challenges for phases 4, 8, and 12 at the start of a run.
@@ -84,7 +84,7 @@ func init_run() -> void:
 	for i in CHALLENGE_PHASES.size():
 		scheduled_challenges.append(pool[i])
 
-	Events.challenge_schedule_changed.emit()
+	EventBus.challenge_schedule_changed.emit()
 
 
 func on_phase_advanced(new_phase: int) -> void:
@@ -95,9 +95,9 @@ func on_phase_advanced(new_phase: int) -> void:
 	if active_challenge != -1:
 		_pending_challenge_reveal = true
 	else:
-		Events.challenge_banner_hidden.emit()
+		EventBus.challenge_banner_hidden.emit()
 
-	Events.challenge_changed.emit()
+	EventBus.challenge_changed.emit()
 
 
 func is_completing_final_challenge_phase() -> bool:
@@ -214,7 +214,7 @@ func _on_merchant_closed() -> void:
 
 	_pending_challenge_reveal = false
 	AudioManager.play_sfx(UI_SOUNDS.CHALLENGE_START)
-	Events.challenge_banner_shown.emit(get_active_challenge_name())
+	EventBus.challenge_banner_shown.emit(get_active_challenge_name())
 
 
 func _apply_blackout() -> void:
@@ -264,7 +264,7 @@ func _pick_halved_segment() -> void:
 
 	_halved_segment_index = randi() % segment_count
 	_apply_fading_sector_visuals()
-	Events.challenge_changed.emit()
+	EventBus.challenge_changed.emit()
 
 
 func _apply_fading_sector_visuals() -> void:

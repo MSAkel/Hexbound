@@ -5,18 +5,23 @@ extends Node
 signal game_speed_changed(new_speed: float)
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
+## Number of runes in a rune pack, picked at the end of each turn
 const RUNES_PACK_SIZE := 3
 const MAX_TURNS_PER_PHASE := 5
 
 ## Set when a turn ends with enough score to meet the phase goal
 var _pending_merchant_visit := false
+## Score from the phase just completed, kept for the phase-complete screen after total_round_score resets.
+## TODO: reconsider when the next phase starts?
+var completed_phase_score: int = 0
 ## After the final-challenge victory screen, rune pick and merchant happen before phase 13.
 var _pending_post_victory_phase_advance := false
 
 var current_phase: int = 1
+## Counter for the number of triggers that have been activated throughout the run, used to reward perks
+var trigger_counter: int = 0
 
 #region Turn state
-
 ## Remaining turns in the current phase (counts down from get_max_turns_per_phase()).
 var _remaining_turns := MAX_TURNS_PER_PHASE
 ## Blocks player input while runes are resolving after end turn.
@@ -29,7 +34,7 @@ var remaining_turns: int:
 		_remaining_turns = value
 		# Hitting 0 remaining after a failed turn ends the run.
 		if _remaining_turns <= 0:
-			Events.game_ended.emit()
+			EventBus.game_ended.emit()
 
 var is_processing_turn: bool:
 	get:
@@ -40,20 +45,22 @@ var is_processing_turn: bool:
 #region Score and phase progression
 
 ## Score needed to complete the current phase and open the merchant.
-var required_score: int = 1500
+var required_score: int = 1000
 ## Applied each time required_score is met to scale difficulty across phases.
-var required_score_multiplier: int = 2
+var required_score_multiplier: int = 1.5
 
+## total score earned in the current round/phase. 
+## TOOD: Need name consistency with either round or phase.
 var _total_round_score: int = 0
+## Score earned during the current turn
 var _turn_score: int = 0
-var _turn_multiplier: int = 1
 
 var total_round_score: int:
 	get:
 		return _total_round_score
 	set(value):
 		_total_round_score = value
-		Events.total_round_score_changed.emit()
+		EventBus.total_round_score_changed.emit()
 		if _total_round_score >= required_score:
 			_complete_current_phase()
 
@@ -62,14 +69,7 @@ var turn_score: int:
 		return _turn_score
 	set(value):
 		_turn_score = value
-		Events.turn_score_changed.emit()
-
-var turn_multiplier: int:
-	get:
-		return _turn_multiplier
-	set(value):
-		_turn_multiplier = value
-		Events.turn_multiplier_changed.emit()
+		EventBus.turn_score_changed.emit()
 
 #endregion
 
@@ -106,7 +106,7 @@ var trigger_order: TriggerOrderType.Type:
 		if _trigger_order == value:
 			return
 		_trigger_order = value
-		Events.trigger_order_changed.emit(_trigger_order)
+		EventBus.trigger_order_changed.emit(_trigger_order)
 
 #endregion
 
@@ -133,9 +133,9 @@ func _ready() -> void:
 	if enhancements_pool.is_empty():
 		push_warning("No enhancements loaded into pool")
 
-	Events.turn_ended.connect(end_turn)
-	Events.turn_started.connect(_on_turn_started)
-	Events.merchant_closed.connect(_on_merchant_closed)
+	EventBus.turn_ended.connect(end_turn)
+	EventBus.turn_started.connect(_on_turn_started)
+	EventBus.merchant_closed.connect(_on_merchant_closed)
 #region Turn flow
 
 func end_turn() -> void:
@@ -146,7 +146,7 @@ func finish_turn_processing() -> void:
 	_is_processing_turn = false
 
 	## Score the turn before advancing counters so phase logic sees this turn's contribution.
-	var pending_total_round_score := total_round_score + (turn_score * turn_multiplier)
+	var pending_total_round_score := total_round_score + turn_score
 	# Consume one remaining turn when the phase goal was not met.
 	var should_consume_turn := remaining_turns > 0 and pending_total_round_score < required_score
 
@@ -154,21 +154,25 @@ func finish_turn_processing() -> void:
 		if ChallengeManager.is_completing_final_challenge_phase():
 			total_round_score = pending_total_round_score
 			turn_score = 0
-			turn_multiplier = 1
-			Events.turn_started.emit()
+			EventBus.turn_started.emit()
 			return
 		_pending_merchant_visit = true
+		# Snapshot before _complete_current_phase resets total_round_score to 0.
+		completed_phase_score = pending_total_round_score
 
 	total_round_score = pending_total_round_score
 	turn_score = 0
-	turn_multiplier = 1
 
-	UiManager.show_runes_choice_panel.emit()
-	Events.turn_started.emit()
+	# Phase complete → rune pick → merchant when the phase goal was met, rune pick only otherwise.
+	if _pending_merchant_visit:
+		UiManager.show_phase_complete_panel.emit()
+	else:
+		UiManager.show_runes_choice_panel.emit()
+	EventBus.turn_started.emit()
 
 	if should_consume_turn:
 		remaining_turns -= 1
-		Events.turn_changed.emit()
+		EventBus.turn_changed.emit()
 
 
 func _on_turn_started() -> void:
@@ -194,7 +198,7 @@ func continue_run_after_victory() -> void:
 	_pending_post_victory_phase_advance = true
 	# Choice of cards at the end of the turn
 	UiManager.show_runes_choice_panel.emit()
-	Events.turn_started.emit()
+	EventBus.turn_started.emit()
 
 
 func _on_merchant_closed() -> void:
@@ -203,7 +207,7 @@ func _on_merchant_closed() -> void:
 
 	_pending_post_victory_phase_advance = false
 	advance_phase()
-	Events.turn_started.emit()
+	EventBus.turn_started.emit()
 
 
 func get_max_turns_per_phase() -> int:
@@ -219,11 +223,11 @@ func get_turn_number() -> int:
 func _complete_current_phase() -> void:
 	required_score = required_score * required_score_multiplier + 750
 	total_round_score = 0
-	Events.required_score_changed.emit()
+	EventBus.required_score_changed.emit()
 
 	if ChallengeManager.is_completing_final_challenge_phase():
-		Events.challenge_banner_hidden.emit()
-		Events.all_challenges_completed.emit()
+		EventBus.challenge_banner_hidden.emit()
+		EventBus.all_challenges_completed.emit()
 		return
 
 	advance_phase()
@@ -237,9 +241,9 @@ func advance_phase() -> void:
 	# Apply challenge first so Rush Hour's reduced max is reflected in remaining turns.
 	ChallengeManager.on_phase_advanced(current_phase)
 	remaining_turns = get_max_turns_per_phase()
-	Events.turn_changed.emit()
-	Events.phase_changed.emit(current_phase)
-	Events.required_score_changed.emit()
+	EventBus.turn_changed.emit()
+	EventBus.phase_changed.emit(current_phase)
+	EventBus.required_score_changed.emit()
 
 #endregion
 

@@ -10,13 +10,13 @@ const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 func _ready() -> void:
 	required_score.text = "%s" % [GameManager.required_score]
 
-	Events.turn_changed.connect(_update_turn_label)
-	Events.total_round_score_changed.connect(_update_total_round_score)
-	Events.required_score_changed.connect(_update_required_score)
-	Events.turn_started.connect(_on_turn_started)
+	EventBus.turn_changed.connect(_update_turn_label)
+	EventBus.total_round_score_changed.connect(_update_total_round_score)
+	EventBus.required_score_changed.connect(_update_required_score)
+	EventBus.turn_started.connect(_on_turn_started)
 
 func _on_end_turn_button_pressed() -> void:
-	Events.turn_ended.emit()
+	EventBus.turn_ended.emit()
 	AudioManager.play_sfx(UI_SOUNDS.END_TURN)
 
 func _on_turn_started() -> void:

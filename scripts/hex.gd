@@ -155,7 +155,7 @@ func try_apply_enhancement(enhancement: Enhancement) -> bool:
 
 	# Each placement needs its own instance so map state does not leak between cards.
 	active_rune.enhancement = enhancement.duplicate(true)
-	Events.enhancement_applied.emit(active_rune, active_rune.enhancement)
+	EventBus.enhancement_applied.emit(active_rune, active_rune.enhancement)
 	# Future: add enhancement_icon UI when that overlay is implemented.
 	return true
 

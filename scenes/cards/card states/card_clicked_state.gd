@@ -9,13 +9,13 @@ func enter() -> void:
 		card_ui.set_hover_elevated(true, false)
 	
 	card_ui.show_selection_glow()
-	Events.card_drag_started.emit(card_ui)
-	Events.card_selected.emit(card_ui)
+	EventBus.card_drag_started.emit(card_ui)
+	EventBus.card_selected.emit(card_ui)
 
 
 func exit(_next_state: State = State.BASE) -> void:
 	card_ui.hide_selection_glow()
-	Events.card_drag_ended.emit()
+	EventBus.card_drag_ended.emit()
 
 
 func on_gui_input(event: InputEvent) -> void:

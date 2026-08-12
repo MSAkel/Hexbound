@@ -67,10 +67,10 @@ func _ready() -> void:
 	_layout.setup(self)
 	_apply_tile_spacing()
 	generate_terrain()
-	Events.turn_ended.connect(on_turn_ended)
-	Events.rune_empowered.connect(_on_rune_empowered)
-	Events.rune_empower_consumed.connect(_on_rune_empower_consumed)
-	Events.card_drag_started.connect(_on_card_drag_started_hide_tile_panel)
+	EventBus.turn_ended.connect(on_turn_ended)
+	EventBus.rune_empowered.connect(_on_rune_empowered)
+	EventBus.rune_empower_consumed.connect(_on_rune_empower_consumed)
+	EventBus.card_drag_started.connect(_on_card_drag_started_hide_tile_panel)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
@@ -493,38 +493,26 @@ func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 ## Clears per-segment turn totals at the start of turn resolution.
 func reset_segment_turn_results() -> void:
 	_layout.reset_turn_results()
-	Events.segment_turn_results_reset.emit()
+	EventBus.segment_turn_results_reset.emit()
 
 
-## Records score produced by a rune on its tile's segment and updates global turn score.
+## Records score produced by a rune on its tile's segment.
 func add_turn_score_for_tile(tile: Hex, amount: int) -> void:
 	if amount == 0:
 		return
 
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_score(segment_index, amount)
-	GameManager.turn_score += amount
-	Events.segment_turn_results_changed.emit(
-		segment_index,
-		_layout.get_segment_turn_score(segment_index),
-		_layout.get_segment_turn_multiplier(segment_index),
-		_layout.get_segment_turn_gold(segment_index)
-	)
+	_emit_segment_turn_results_changed(segment_index)
 
-## Records multiplier produced by a rune on its tile's segment and updates global turn multiplier.
+## Records multiplier produced by a rune on its tile's segment.
 func add_turn_multiplier_for_tile(tile: Hex, amount: int) -> void:
 	if amount == 0:
 		return
 
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_multiplier(segment_index, amount)
-	GameManager.turn_multiplier += amount
-	Events.segment_turn_results_changed.emit(
-		segment_index,
-		_layout.get_segment_turn_score(segment_index),
-		_layout.get_segment_turn_multiplier(segment_index),
-		_layout.get_segment_turn_gold(segment_index)
-	)
+	_emit_segment_turn_results_changed(segment_index)
 
 
 ## Records gold produced by a rune on its tile's segment and updates the gold pool.
@@ -535,12 +523,23 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
 	GoldManager.add(amount)
-	Events.segment_turn_results_changed.emit(
-		segment_index,
-		_layout.get_segment_turn_score(segment_index),
-		_layout.get_segment_turn_multiplier(segment_index),
-		_layout.get_segment_turn_gold(segment_index)
-	)
+	_emit_segment_turn_results_changed(segment_index)
+
+
+## Notifies UI of the latest per-segment score, multiplier, and score x multiplier total.
+func _emit_segment_turn_results_changed(segment_index: int) -> void:
+	var score := _layout.get_segment_turn_score(segment_index)
+	var multiplier := _layout.get_segment_turn_multiplier(segment_index)
+	var gold := _layout.get_segment_turn_gold(segment_index)
+	EventBus.segment_turn_results_changed.emit(segment_index, score, multiplier, score * multiplier, gold)
+
+
+## Each segment scores independently (score x multiplier), then totals are summed for the turn.
+func _apply_segment_turn_totals_to_game_manager() -> void:
+	var total := 0
+	for segment_index in get_segment_count():
+		total += get_segment_turn_score(segment_index) * get_segment_turn_multiplier(segment_index)
+	GameManager.turn_score = total
 
 
 func get_segment_turn_score(segment_index: int) -> int:
@@ -765,6 +764,7 @@ func on_turn_ended() -> void:
 		await get_tree().create_timer(delay_interval).timeout
 
 	await _play_segment_turn_result_reveals()
+	_apply_segment_turn_totals_to_game_manager()
 	GameManager.finish_turn_processing()
 
 

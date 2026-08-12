@@ -23,11 +23,11 @@ var _awaiting_intro := true
 
 # Reparent cards to hand when they are dragged or released
 func _ready() -> void:
-	Events.card_played.connect(_on_card_played)
-	Events.rune_selected.connect(_add_rune_card)
-	Events.enhancement_selected.connect(_add_enhancement_card)
-	Events.turn_ended.connect(_hide_hand)
-	Events.turn_started.connect(_show_hand)
+	EventBus.card_played.connect(_on_card_played)
+	EventBus.rune_selected.connect(_add_rune_card)
+	EventBus.enhancement_selected.connect(_add_enhancement_card)
+	EventBus.turn_ended.connect(_hide_hand)
+	EventBus.turn_started.connect(_show_hand)
 
 	# Starting hand depends on the character selected before the run begins
 	var starting_runes := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
@@ -79,7 +79,7 @@ func _on_card_played(_card_ui: CardUI) -> void:
 	# Wait for the played card's queue_free() before checking remaining hand size.
 	await get_tree().create_timer(0.1).timeout
 	if _get_hand_card_count() < 3:
-		Events.turn_ended.emit()
+		EventBus.turn_ended.emit()
 		AudioManager.play_sfx(UI_SOUNDS.END_TURN)
 
 var _hand_slide_tween: Tween = null

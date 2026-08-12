@@ -32,8 +32,8 @@ const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
 
 
 func _ready() -> void:
-	Events.card_drag_started.connect(_on_card_selected)
-	Events.card_drag_ended.connect(_on_card_deselected)
+	EventBus.card_drag_started.connect(_on_card_selected)
+	EventBus.card_drag_ended.connect(_on_card_deselected)
 	_setup_rune_preview()
 
 
@@ -157,7 +157,7 @@ func _try_place_card() -> void:
 		selected_card.card.apply_on_placement(hex)
 	else:
 		hex.place_rune(selected_card.card)
-	Events.card_played.emit(selected_card)
+	EventBus.card_played.emit(selected_card)
 	AudioManager.play_sfx(UI_SOUNDS.GROUND_IMPACT)
 	
 	var card_to_remove := selected_card

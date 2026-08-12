@@ -22,18 +22,18 @@ var earned_this_turn: int:
 func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	_amount = Difficulty.get_starting_gold(difficulty)
 	_earned_this_turn = 0
-	Events.gold_changed.emit(_amount)
+	EventBus.gold_changed.emit(_amount)
 
 
 func add(amount_to_add: int) -> void:
 	_amount += amount_to_add
 	_earned_this_turn += amount_to_add
-	Events.gold_changed.emit(_amount)
+	EventBus.gold_changed.emit(_amount)
 
 
 func remove(amount_to_remove: int) -> void:
 	_amount -= amount_to_remove
-	Events.gold_changed.emit(_amount)
+	EventBus.gold_changed.emit(_amount)
 
 
 func can_afford(cost: int) -> bool:

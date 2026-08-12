@@ -10,7 +10,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
 	hide()
-	Events.all_challenges_completed.connect(_on_all_challenges_completed)
+	EventBus.all_challenges_completed.connect(_on_all_challenges_completed)
 
 
 func _on_all_challenges_completed() -> void:

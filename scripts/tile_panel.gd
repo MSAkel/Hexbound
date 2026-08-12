@@ -17,7 +17,7 @@ var target_rect: Rect2 = Rect2()
 
 
 func _ready() -> void:
-	Events.turn_ended.connect(_on_turn_ended)
+	EventBus.turn_ended.connect(_on_turn_ended)
 	hide()
 	# Keep above map UI chrome while ignoring mouse so hover can leave the tile.
 	z_index = 100

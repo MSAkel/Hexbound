@@ -8,9 +8,9 @@ extends Control
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
-	Events.phase_changed.connect(_update_challenge_preview)
-	Events.challenge_schedule_changed.connect(_update_challenge_preview)
-	Events.challenge_changed.connect(_update_challenge_preview)
+	EventBus.phase_changed.connect(_update_challenge_preview)
+	EventBus.challenge_schedule_changed.connect(_update_challenge_preview)
+	EventBus.challenge_changed.connect(_update_challenge_preview)
 
 	challenge_panel.mouse_entered.connect(_on_mouse_entered)
 	challenge_panel.mouse_exited.connect(_on_mouse_exited)
@@ -66,8 +66,8 @@ func _on_mouse_entered() -> void:
 	var text := _get_tooltip_text()
 	if text.is_empty():
 		return
-	Events.toggle_tooltip.emit(true, text, _get_tooltip_rect())
+	EventBus.toggle_tooltip.emit(true, text, _get_tooltip_rect())
 
 
 func _on_mouse_exited() -> void:
-	Events.toggle_tooltip.emit(false, "")
+	EventBus.toggle_tooltip.emit(false, "")

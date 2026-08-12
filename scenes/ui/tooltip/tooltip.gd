@@ -8,7 +8,7 @@ const offset: Vector2 = Vector2(10, 10)
 var target_rect: Rect2 = Rect2()
 
 func _ready() -> void:
-	Events.toggle_tooltip.connect(_on_toggle_tooltip)
+	EventBus.toggle_tooltip.connect(_on_toggle_tooltip)
 	hide()
 	# Make sure tooltip is on top
 	z_index = 100

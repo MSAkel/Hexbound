@@ -6,7 +6,7 @@ const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
 	hide()
-	Events.game_ended.connect(_on_game_ended)
+	EventBus.game_ended.connect(_on_game_ended)
 	played_as_label.text = PlayerCharacter.get_character_name(GameManager.selected_character)
 
 

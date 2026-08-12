@@ -13,6 +13,6 @@ func apply_on_placement(tile: Hex) -> void:
 	hand_copy.activation_count = 0
 	hand_copy.is_empowered = false
 	hand_copy.is_active = true
-	Events.rune_selected.emit(hand_copy)
+	EventBus.rune_selected.emit(hand_copy)
 	tile.remove_rune()
 	_create_floating_text(tile, "Returned!")

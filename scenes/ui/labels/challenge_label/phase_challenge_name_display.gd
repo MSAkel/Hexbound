@@ -5,8 +5,8 @@ extends Control
 
 func _ready() -> void:
 	hide()
-	Events.challenge_banner_shown.connect(_on_challenge_banner_shown)
-	Events.challenge_banner_hidden.connect(_on_challenge_banner_hidden)
+	EventBus.challenge_banner_shown.connect(_on_challenge_banner_shown)
+	EventBus.challenge_banner_hidden.connect(_on_challenge_banner_hidden)
 
 
 func _on_challenge_banner_shown(challenge_name: String) -> void:
