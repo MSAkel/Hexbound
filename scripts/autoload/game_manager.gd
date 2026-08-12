@@ -335,3 +335,75 @@ func _has_enhancement_with_id(enhancement_id: String) -> bool:
 
 func set_game_speed(speed: float) -> void:
 	game_speed = speed
+
+
+#region Run save / load
+
+func reset_for_new_run() -> void:
+	current_phase = 1
+	trigger_counter = 0
+	_pending_merchant_visit = false
+	completed_phase_score = 0
+	_pending_post_victory_phase_advance = false
+	_remaining_turns = MAX_TURNS_PER_PHASE
+	_is_processing_turn = false
+	required_score = 1000
+	required_score_multiplier = 1.5
+	_total_round_score = 0
+	_turn_score = 0
+	_runes_activated_this_turn = 0
+	_activated_runes_this_turn.clear()
+	turn_stamp = 0
+	game_speed = 1.0
+
+
+func capture_run_state() -> Dictionary:
+	return {
+		"current_phase": current_phase,
+		"trigger_counter": trigger_counter,
+		"remaining_turns": _remaining_turns,
+		"is_processing_turn": _is_processing_turn,
+		"required_score": required_score,
+		"required_score_multiplier": required_score_multiplier,
+		"total_round_score": _total_round_score,
+		"turn_score": _turn_score,
+		"pending_merchant_visit": _pending_merchant_visit,
+		"completed_phase_score": completed_phase_score,
+		"pending_post_victory_phase_advance": _pending_post_victory_phase_advance,
+		"turn_stamp": turn_stamp,
+		"game_speed": _game_speed,
+	}
+
+
+func apply_run_state(state: Dictionary) -> void:
+	current_phase = int(state.get("current_phase", 1))
+	trigger_counter = int(state.get("trigger_counter", 0))
+	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_PHASE))
+	_is_processing_turn = bool(state.get("is_processing_turn", false))
+	required_score = int(state.get("required_score", 1000))
+	required_score_multiplier = state.get("required_score_multiplier", 1.5)
+	_total_round_score = int(state.get("total_round_score", 0))
+	_turn_score = int(state.get("turn_score", 0))
+	_pending_merchant_visit = bool(state.get("pending_merchant_visit", false))
+	completed_phase_score = int(state.get("completed_phase_score", 0))
+	_pending_post_victory_phase_advance = bool(state.get("pending_post_victory_phase_advance", false))
+	turn_stamp = int(state.get("turn_stamp", 0))
+	_runes_activated_this_turn = 0
+	_activated_runes_this_turn.clear()
+	game_speed = float(state.get("game_speed", 1.0))
+
+
+func get_rune_by_id(rune_id: String) -> Rune:
+	for rune in runes_pool:
+		if rune.id == rune_id:
+			return rune
+	return null
+
+
+func get_enhancement_by_id(enhancement_id: String) -> Enhancement:
+	for enhancement in enhancements_pool:
+		if enhancement.id == enhancement_id:
+			return enhancement
+	return null
+
+#endregion

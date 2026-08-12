@@ -12,7 +12,19 @@ var segment_index: int = -1
 func _ready() -> void:
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
 	EventBus.segment_turn_results_reset.connect(_on_segment_turn_results_reset)
-	_refresh(0, 1, 0, 0)
+	_sync_from_tile_map()
+
+
+func _sync_from_tile_map() -> void:
+	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
+	if tile_map == null or segment_index < 0:
+		_refresh(0, 1, 0, 0)
+		return
+
+	var score := tile_map.get_segment_turn_score(segment_index)
+	var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
+	var gold := tile_map.get_segment_turn_gold(segment_index)
+	_refresh(score, multiplier, score * multiplier, gold)
 
 
 func _on_segment_turn_results_changed(changed_index: int, score: int, multiplier: int, totalScore: int, gold: int) -> void:

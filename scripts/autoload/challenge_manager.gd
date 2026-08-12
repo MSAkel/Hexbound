@@ -301,3 +301,31 @@ func _get_tile_map() -> HexTileMap:
 		if _tile_map != null:
 			return _tile_map
 	return null
+
+
+func capture_run_state() -> Dictionary:
+	return {
+		"scheduled_challenges": scheduled_challenges.duplicate(),
+		"active_challenge": active_challenge,
+		"halved_segment_index": _halved_segment_index,
+		"pending_challenge_reveal": _pending_challenge_reveal,
+	}
+
+
+func apply_run_state(state: Dictionary) -> void:
+	scheduled_challenges.clear()
+	for challenge_type in state.get("scheduled_challenges", []):
+		scheduled_challenges.append(int(challenge_type))
+
+	active_challenge = int(state.get("active_challenge", -1))
+	_halved_segment_index = int(state.get("halved_segment_index", -1))
+	_pending_challenge_reveal = bool(state.get("pending_challenge_reveal", false))
+	_disabled_prior_states.clear()
+	_tile_map = null
+
+
+func refresh_challenge_visuals() -> void:
+	if active_challenge == Type.FADING_SECTOR and _halved_segment_index >= 0:
+		_apply_fading_sector_visuals()
+	else:
+		_clear_fading_sector_visuals()

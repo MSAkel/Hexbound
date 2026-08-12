@@ -246,6 +246,30 @@ func get_segment_turn_gold(segment_index: int) -> int:
 	return _segment_turn_gold[segment_index]
 
 
+func capture_turn_results() -> Dictionary:
+	return {
+		"scores": _segment_turn_scores.duplicate(),
+		"multipliers": _segment_turn_multiplier.duplicate(),
+		"gold": _segment_turn_gold.duplicate(),
+	}
+
+
+func apply_turn_results(state: Dictionary) -> void:
+	var scores: Array = state.get("scores", [])
+	var multipliers: Array = state.get("multipliers", [])
+	var gold_amounts: Array = state.get("gold", [])
+	var segment_count := build_segments().size()
+
+	_segment_turn_scores.resize(segment_count)
+	_segment_turn_multiplier.resize(segment_count)
+	_segment_turn_gold.resize(segment_count)
+
+	for i in segment_count:
+		_segment_turn_scores[i] = int(scores[i]) if i < scores.size() else 0
+		_segment_turn_multiplier[i] = int(multipliers[i]) if i < multipliers.size() else 1
+		_segment_turn_gold[i] = int(gold_amounts[i]) if i < gold_amounts.size() else 0
+
+
 ## Clears cached segment groups so the next build_segments() call rebuilds them.
 func _invalidate_segments_cache() -> void:
 	_segments_cache_valid = false

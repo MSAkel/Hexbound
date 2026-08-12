@@ -43,3 +43,15 @@ func can_afford(cost: int) -> bool:
 # Called when a new turn begins so turn-scaling runes start from zero.
 func reset_turn_tracking() -> void:
 	_earned_this_turn = 0
+
+
+func capture_run_state() -> Dictionary:
+	return {
+		"amount": _amount,
+		"earned_this_turn": _earned_this_turn,
+	}
+
+
+func apply_run_state(state: Dictionary) -> void:
+	_amount = int(state.get("amount", 0))
+	_earned_this_turn = int(state.get("earned_this_turn", 0))

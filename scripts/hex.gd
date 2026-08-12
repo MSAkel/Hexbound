@@ -81,6 +81,25 @@ func place_rune(rune: Rune) -> void:
 	refresh_rune_visual_state()
 
 
+# Restore a placed rune from a save file without duplicating the resource again.
+func restore_placed_rune(rune: Rune) -> void:
+	if active_rune != null or is_disabled_by_difficulty:
+		return
+
+	active_rune = rune
+	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
+	rune_ui = new_rune_instance
+	new_rune_instance.map = map
+	new_rune_instance.tile = self
+	new_rune_instance.center_coordinates = coordinates
+	new_rune_instance.setup(rune)
+	new_rune_instance.position = Vector2.ZERO
+	new_rune_instance.size = HEX_TILE_SIZE
+	items_grid.add_child(new_rune_instance)
+	_apply_display_mode()
+	refresh_rune_visual_state()
+
+
 # Stamp the character's segment passive onto this tile (run start only).
 func set_segment_passive_modifier(modifier: SegmentPassiveModifier) -> void:
 	segment_passive_modifier = modifier

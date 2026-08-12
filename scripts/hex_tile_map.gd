@@ -366,7 +366,9 @@ func generate_terrain() -> void:
 	_layout.reset(hex_center)
 	_assign_segment_passive_modifiers()
 	_layout.reset_turn_results()
-	_apply_difficulty_disabled_tiles()
+	# Disabled tiles are restored from the save file when continuing a run.
+	if not RunSaveManager.should_restore_run():
+		_apply_difficulty_disabled_tiles()
 
 
 # Randomly disable tiles for difficulty level 5, excluding segment-passive tiles.
@@ -881,3 +883,110 @@ func _get_segment_screen_center(segment_index: int) -> Vector2:
 	for coords: Vector2i in segment:
 		center += base_layer.map_to_local(coords)
 	return center / segment.size()
+
+
+#region Run save / load
+
+func capture_map_state() -> Dictionary:
+	var disabled_coords: Array = []
+	for coords: Vector2i in _disabled_tile_coords:
+		disabled_coords.append([coords.x, coords.y])
+
+	var placed_runes: Array = []
+	for coords: Vector2i in map_data:
+		var hex: Hex = map_data[coords]
+		if hex.active_rune == null:
+			continue
+		var entry := _serialize_placed_rune(hex.active_rune)
+		entry["coords"] = [coords.x, coords.y]
+		placed_runes.append(entry)
+
+	return {
+		"disabled_coords": disabled_coords,
+		"placed_runes": placed_runes,
+		"segment_turn_results": _layout.capture_turn_results(),
+	}
+
+
+func restore_map_state(state: Dictionary) -> void:
+	_restore_disabled_tiles(state.get("disabled_coords", []))
+
+	for entry: Dictionary in state.get("placed_runes", []):
+		var coords_data: Array = entry.get("coords", [])
+		if coords_data.size() < 2:
+			continue
+		var coords := Vector2i(int(coords_data[0]), int(coords_data[1]))
+		if not map_data.has(coords):
+			continue
+
+		var rune := _deserialize_placed_rune(entry)
+		if rune == null:
+			continue
+		map_data[coords].restore_placed_rune(rune)
+
+	_layout.apply_turn_results(state.get("segment_turn_results", {}))
+
+
+func refresh_segment_turn_results_ui() -> void:
+	for segment_index in get_segment_count():
+		_emit_segment_turn_results_changed(segment_index)
+
+
+func _restore_disabled_tiles(coords_list: Array) -> void:
+	for coords: Vector2i in _disabled_tile_coords:
+		if map_data.has(coords):
+			map_data[coords].is_disabled_by_difficulty = false
+
+	_disabled_tile_coords.clear()
+	disabled_tile_overlay_layer.clear()
+
+	for coords_data: Variant in coords_list:
+		if coords_data is not Array or coords_data.size() < 2:
+			continue
+		var coords := Vector2i(int(coords_data[0]), int(coords_data[1]))
+		if not map_data.has(coords):
+			continue
+
+		var hex: Hex = map_data[coords]
+		hex.is_disabled_by_difficulty = true
+		disabled_tile_overlay_layer.set_cell(
+			coords,
+			OVERLAY_TILE_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_disabled_tile_coords.append(coords)
+
+
+func _serialize_placed_rune(rune: Rune) -> Dictionary:
+	var data := {
+		"rune_id": rune.id,
+		"activation_count": rune.activation_count,
+		"is_active": rune.is_active,
+		"bonus_production_amount": rune.bonus_production_amount,
+		"is_empowered": rune.is_empowered,
+		"enhancement_id": "",
+	}
+	if rune.enhancement != null:
+		data["enhancement_id"] = rune.enhancement.id
+	return data
+
+
+func _deserialize_placed_rune(data: Dictionary) -> Rune:
+	var template := GameManager.get_rune_by_id(data.get("rune_id", ""))
+	if template == null:
+		return null
+
+	var rune := template.duplicate(true)
+	rune.activation_count = int(data.get("activation_count", 0))
+	rune.is_active = bool(data.get("is_active", true))
+	rune.bonus_production_amount = int(data.get("bonus_production_amount", 0))
+	rune.is_empowered = bool(data.get("is_empowered", false))
+
+	var enhancement_id: String = data.get("enhancement_id", "")
+	if not enhancement_id.is_empty():
+		var enhancement_template := GameManager.get_enhancement_by_id(enhancement_id)
+		if enhancement_template != null:
+			rune.enhancement = enhancement_template.duplicate(true)
+	return rune
+
+#endregion

@@ -50,6 +50,9 @@ func _update_display() -> void:
 func _on_start_button_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 
+	# A fresh run replaces any saved session from a previous quit.
+	RunSaveManager.delete_save()
+
 	# Character choice locks in layout rules for the entire run.
 	GameManager.selected_character = get_selected_character()
 	GameManager.selected_difficulty = selection_details.get_selected_difficulty()

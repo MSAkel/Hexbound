@@ -29,6 +29,10 @@ func _ready() -> void:
 	EventBus.turn_ended.connect(_hide_hand)
 	EventBus.turn_started.connect(_show_hand)
 
+	# Saved runs rebuild the hand after the main scene finishes loading.
+	if RunSaveManager.should_restore_run():
+		return
+
 	# Starting hand depends on the character selected before the run begins
 	var starting_runes := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
 	for rune in starting_runes:
@@ -212,3 +216,43 @@ func _animate_hand_slide(hide: bool) -> void:
 func _get_hand_slide_distance() -> float:
 	# Full viewport height guarantees cards leave the screen from the bottom edge.
 	return get_viewport().get_visible_rect().size.y
+
+
+func capture_hand_state() -> Dictionary:
+	var cards: Array = []
+	for child in get_children():
+		if not child is CardUI:
+			continue
+		var card_ui := child as CardUI
+		if card_ui.card is Rune:
+			cards.append({"kind": "rune", "id": (card_ui.card as Rune).id})
+		elif card_ui.card is Enhancement:
+			cards.append({"kind": "enhancement", "id": (card_ui.card as Enhancement).id})
+
+	return {
+		"cards": cards,
+		"cards_played": cards_played,
+	}
+
+
+func restore_hand_state(state: Dictionary) -> void:
+	# Park restored cards off-screen, main.gd replays the hand intro afterward.
+	_awaiting_intro = true
+
+	for child in get_children():
+		if child is CardUI:
+			remove_child(child)
+			child.free()
+
+	cards_played = int(state.get("cards_played", 0))
+	for entry: Dictionary in state.get("cards", []):
+		var kind: String = entry.get("kind", "")
+		var card_id: String = entry.get("id", "")
+		if kind == "rune":
+			var rune := GameManager.get_rune_by_id(card_id)
+			if rune != null:
+				_add_rune_card(rune)
+		elif kind == "enhancement":
+			var enhancement := GameManager.get_enhancement_by_id(card_id)
+			if enhancement != null:
+				_add_enhancement_card(enhancement)

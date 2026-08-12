@@ -11,6 +11,9 @@ const HOVER_DURATION := 0.12
 @onready var game_version: Label = $GameVersion
 @onready var menu_container: MarginContainer = $MenuContainer
 @onready var settings_container: PanelContainer = $SettingsContainer
+@onready var continue_button: Button = %Continue
+
+var main_scene := load("res://scenes/main.tscn")
 
 
 var character_selection_screen = load("res://scenes/ui/character_selection_screen/character_selection_screen.tscn")
@@ -24,6 +27,7 @@ func _ready() -> void:
 	# On game ending will pause the game, so we need to unpausse it
 	get_tree().paused = false
 	game_version.text = ProjectSettings.get_setting("application/config/version")
+	_refresh_continue_button()
 	
 	# Play main menu music
 	var music = SOUNDTRACK.get_music_for_scene(scene_file_path)
@@ -75,6 +79,19 @@ func _animate_button_hover(button: Button, hovered: bool) -> void:
 
 func _on_focus_entered() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+
+
+func _refresh_continue_button() -> void:
+	continue_button.disabled = not RunSaveManager.has_save()
+
+
+func _on_continue_pressed() -> void:
+	if not RunSaveManager.has_save():
+		return
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	RunSaveManager.request_continue_run()
+	get_tree().change_scene_to_packed(main_scene)
+
 
 func _on_play_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
