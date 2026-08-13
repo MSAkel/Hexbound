@@ -55,6 +55,7 @@ size_flags_vertical = 4
 theme_override_constants/separation = 16
 
 [node name="TextureRect" type="TextureRect" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=107385875]
+texture_filter = 1
 custom_minimum_size = Vector2(350, 400)
 layout_mode = 2
 size_flags_horizontal = 8

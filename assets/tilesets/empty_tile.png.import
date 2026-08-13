@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://e3s8v7swelk7"
-path="res://.godot/imported/divivder.png-0c988431feb0fc79759dcd77b8dc22a4.ctex"
+uid="uid://cly36pbnd4ixq"
+path="res://.godot/imported/empty_tile.png-775693a9589a403852336e28738e4302.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/divivder.png"
-dest_files=["res://.godot/imported/divivder.png-0c988431feb0fc79759dcd77b8dc22a4.ctex"]
+source_file="res://assets/tilesets/empty_tile.png"
+dest_files=["res://.godot/imported/empty_tile.png-775693a9589a403852336e28738e4302.ctex"]
 
 [params]
 

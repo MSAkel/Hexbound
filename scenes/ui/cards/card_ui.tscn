@@ -43,6 +43,9 @@ font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2hgda"]
 bg_color = Color(0.09019608, 0.09019608, 0.09019608, 0.5647059)
 
+[sub_resource type="FontVariation" id="FontVariation_m82f4"]
+variation_embolden = 0.09
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
 size = Vector2(198, 317)
 
@@ -164,7 +167,6 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="SoldOverlay" type="Panel" parent="." unique_id=993550490]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -175,6 +177,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_2hgda")
 
 [node name="Label" type="Label" parent="SoldOverlay" unique_id=1355951540]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -188,8 +191,11 @@ offset_bottom = 30.0
 grow_horizontal = 2
 grow_vertical = 2
 rotation = -0.24842073
-theme_override_colors/font_color = Color(0, 1, 0, 1)
-theme_override_font_sizes/font_size = 64
+theme_override_colors/font_color = Color(6.8345666e-06, 0.7738233, 1.540184e-06, 1)
+theme_override_colors/font_outline_color = Color(0.20871013, 0.20871016, 0.20871013, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = SubResource("FontVariation_m82f4")
+theme_override_font_sizes/font_size = 46
 text = "SOLD"
 horizontal_alignment = 1
 vertical_alignment = 1

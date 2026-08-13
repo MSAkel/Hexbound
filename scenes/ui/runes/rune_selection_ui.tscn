@@ -2,18 +2,10 @@
 
 [ext_resource type="Script" uid="uid://nriqkn24o42m" path="res://scenes/ui/runes/rune_selection_ui.gd" id="1_e7vfp"]
 [ext_resource type="PackedScene" uid="uid://dt0t3awb0mejg" path="res://scenes/ui/cards/card_ui.tscn" id="2_kwqlr"]
-[ext_resource type="Texture2D" uid="uid://dmua3jnsjlbgr" path="res://assets/gui/buttons/button_rect.png" id="5_2hgda"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8btky"]
 content_margin_top = 150.0
 bg_color = Color(0.12614134, 0.32311276, 0.39601648, 0.70980394)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jpxjh"]
-content_margin_left = 6.0
-content_margin_top = 6.0
-content_margin_right = 6.0
-content_margin_bottom = 6.0
-texture = ExtResource("5_2hgda")
 
 [node name="RuneSelectionUI" type="Control" unique_id=1995601468]
 layout_mode = 3
@@ -80,7 +72,6 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
-theme_override_styles/normal = SubResource("StyleBoxTexture_jpxjh")
 text = "Reroll (free)"
 
 [connection signal="pressed" from="Panel/VBoxContainer/RerollButton" to="." method="_on_reroll_button_pressed"]

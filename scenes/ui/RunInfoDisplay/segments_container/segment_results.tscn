@@ -43,7 +43,7 @@ theme_override_font_sizes/font_size = 21
 text = "1"
 
 [node name="SegmentTotalScore" type="Label" parent="HBoxContainer" unique_id=1004428651]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
@@ -64,7 +64,7 @@ expand_mode = 1
 stretch_mode = 4
 
 [node name="SegmentGold" type="Label" parent="HBoxContainer/GoldContainer" unique_id=90959331]
-custom_minimum_size = Vector2(50, 0)
+custom_minimum_size = Vector2(35, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21

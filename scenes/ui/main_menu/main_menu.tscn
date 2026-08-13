@@ -5,11 +5,11 @@
 [ext_resource type="Texture2D" uid="uid://dinaslb47ov38" path="res://assets/gui/3 Aklatros.png" id="3_qt1dd"]
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="4_cmwxi"]
 
-[sub_resource type="Gradient" id="Gradient_qt1dd"]
+[sub_resource type="Gradient" id="Gradient_cmwxi"]
 colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_1g8jr"]
-gradient = SubResource("Gradient_qt1dd")
+gradient = SubResource("Gradient_cmwxi")
 width = 50
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7pmlo"]
@@ -121,7 +121,7 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
 text = "OPTIONS"
 alignment = 0
 
-[node name="Options2" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=170776200]
+[node name="CollectionButton" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=170776200]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
@@ -129,7 +129,6 @@ theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
-disabled = true
 text = "COLLECTION"
 alignment = 0
 
@@ -174,4 +173,5 @@ layout_mode = 1
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Play" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Options" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="MenuContainer/MenuItemsContainer/CollectionButton" to="." method="_on_collection_button_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Exit" to="." method="_on_exit_pressed"]

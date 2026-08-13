@@ -11,9 +11,8 @@ const MAX_TURNS_PER_PHASE := 5
 
 ## Set when a turn ends with enough score to meet the phase goal
 var _pending_merchant_visit := false
-## Score from the phase just completed, kept for the phase-complete screen after total_round_score resets.
-## TODO: reconsider when the next phase starts?
-var completed_phase_score: int = 0
+## Phase advance (remaining turns reset, +gold, challenges) waits until phase-complete confirm.
+var _pending_phase_advance := false
 ## After the final-challenge victory screen, rune pick and merchant happen before phase 13.
 var _pending_post_victory_phase_advance := false
 
@@ -87,14 +86,14 @@ var enhancements_pool: Array[Enhancement] = []
 ## Cleared at turn start, filled as each rune resolves during turn processing.
 var _runes_activated_this_turn: int = 0
 var _activated_runes_this_turn: Array[Rune] = []
-## Incremented on each turn_started; placed runes use this to gate once-per-turn permanent effects.
+## Incremented on each turn_started, placed runes use this to gate once-per-turn permanent effects.
 var turn_stamp: int = 0
 
 #endregion
 
 #region Character selection
 
-## Chosen on the character selection screen; drives layout rules, starting hand, and passives.
+## Chosen on the character selection screen, drives layout rules, starting hand, and passives.
 var selected_character: CharacterDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
 
@@ -150,18 +149,16 @@ func finish_turn_processing() -> void:
 			EventBus.turn_started.emit()
 			return
 		_pending_merchant_visit = true
-		# Snapshot before _complete_current_phase resets total_round_score to 0.
-		completed_phase_score = pending_total_round_score
 
 	total_round_score = pending_total_round_score
 	turn_score = 0
 
-	# Phase complete → rune pick → merchant when the phase goal was met, rune pick only otherwise.
+	# Phase complete → confirm screen first (turn start deferred), otherwise rune pick immediately.
 	if _pending_merchant_visit:
 		UiManager.show_phase_complete_panel.emit()
 	else:
 		UiManager.show_runes_choice_panel.emit()
-	EventBus.turn_started.emit()
+		EventBus.turn_started.emit()
 
 	if should_consume_turn:
 		remaining_turns -= 1
@@ -173,6 +170,15 @@ func _on_turn_started() -> void:
 	_runes_activated_this_turn = 0
 	_activated_runes_this_turn.clear()
 	GoldManager.reset_turn_tracking()
+
+
+## Called when the phase-complete Continue button is pressed.
+## Applies deferred phase advance, then starts the next turn so HUD/gold reset after the summary.
+func confirm_phase_complete() -> void:
+	if _pending_phase_advance:
+		_pending_phase_advance = false
+		advance_phase()
+	EventBus.turn_started.emit()
 
 
 func consume_pending_merchant_visit() -> bool:
@@ -215,12 +221,16 @@ func get_turn_number() -> int:
 
 func _complete_current_phase() -> void:
 	required_score = required_score * required_score_multiplier + 750
-	total_round_score = 0
 	EventBus.required_score_changed.emit()
 
 	if ChallengeManager.is_completing_final_challenge_phase():
 		EventBus.challenge_banner_hidden.emit()
 		EventBus.all_challenges_completed.emit()
+		return
+
+	# Keep remaining turns / gold-earned for the phase-complete summary until Continue.
+	if _pending_merchant_visit:
+		_pending_phase_advance = true
 		return
 
 	advance_phase()
@@ -229,6 +239,7 @@ func _complete_current_phase() -> void:
 func advance_phase() -> void:
 	current_phase += 1
 	GoldManager.add(20)
+	total_round_score = 0
 	AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
 
 	# Apply challenge first so Rush Hour's reduced max is reflected in remaining turns.
@@ -343,7 +354,7 @@ func reset_for_new_run() -> void:
 	current_phase = 1
 	trigger_counter = 0
 	_pending_merchant_visit = false
-	completed_phase_score = 0
+	_pending_phase_advance = false
 	_pending_post_victory_phase_advance = false
 	_remaining_turns = MAX_TURNS_PER_PHASE
 	_is_processing_turn = false
@@ -368,7 +379,7 @@ func capture_run_state() -> Dictionary:
 		"total_round_score": _total_round_score,
 		"turn_score": _turn_score,
 		"pending_merchant_visit": _pending_merchant_visit,
-		"completed_phase_score": completed_phase_score,
+		"pending_phase_advance": _pending_phase_advance,
 		"pending_post_victory_phase_advance": _pending_post_victory_phase_advance,
 		"turn_stamp": turn_stamp,
 		"game_speed": _game_speed,
@@ -385,7 +396,7 @@ func apply_run_state(state: Dictionary) -> void:
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
 	_pending_merchant_visit = bool(state.get("pending_merchant_visit", false))
-	completed_phase_score = int(state.get("completed_phase_score", 0))
+	_pending_phase_advance = bool(state.get("pending_phase_advance", false))
 	_pending_post_victory_phase_advance = bool(state.get("pending_post_victory_phase_advance", false))
 	turn_stamp = int(state.get("turn_stamp", 0))
 	_runes_activated_this_turn = 0

@@ -1,0 +1,172 @@
+[gd_scene format=3 uid="uid://duvvd2s4kriyg"]
+
+[ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="1_6w68x"]
+[ext_resource type="Script" uid="uid://dy2gqsj6wlkur" path="res://scenes/ui/collection/collection.gd" id="1_wnhp0"]
+[ext_resource type="PackedScene" uid="uid://dt0t3awb0mejg" path="res://scenes/ui/cards/card_ui.tscn" id="3_g1foq"]
+
+[sub_resource type="Gradient" id="Gradient_qt1dd"]
+colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_wnhp0"]
+gradient = SubResource("Gradient_qt1dd")
+width = 50
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_r6dd1"]
+content_margin_left = 50.0
+content_margin_top = 50.0
+content_margin_right = 50.0
+content_margin_bottom = 50.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cmwxi"]
+content_margin_left = 25.0
+content_margin_top = 25.0
+content_margin_right = 25.0
+content_margin_bottom = 25.0
+bg_color = Color(0.15294118, 0.15294118, 0.15294118, 0.28627452)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wnhp0"]
+
+[node name="Collection" type="Panel" unique_id=354411271]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wnhp0")
+
+[node name="Background" type="TextureRect" parent="." unique_id=104295522]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_6w68x")
+expand_mode = 1
+
+[node name="Foreground" type="TextureRect" parent="." unique_id=1168488758]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture1D_wnhp0")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=746111216]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_r6dd1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1866107561]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer" unique_id=622977923]
+custom_minimum_size = Vector2(100, 42)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "BACK"
+
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/VBoxContainer" unique_id=283782135]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_cmwxi")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/PanelContainer" unique_id=1952959809]
+layout_mode = 2
+
+[node name="TabBar" type="TabBar" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=1366092697]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/tab_separation = 8
+current_tab = 0
+tab_count = 4
+tab_0/title = "Runes"
+tab_1/title = "Map Templates"
+tab_2/title = "Challenges"
+tab_3/title = "Perks"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_wnhp0")
+horizontal_scroll_mode = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer" unique_id=1725908816]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 0
+
+[node name="CollectionGridContainer" type="GridContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer" unique_id=1958177970]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 5
+
+[node name="CardUI" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=1998448617 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI2" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=852630449 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI3" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=1059665577 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI4" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=1637977241 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI5" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=1144655511 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI6" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=671763442 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI7" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=436236695 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI8" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=907021798 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI9" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=360928734 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI10" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=612308742 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI11" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=2147175453 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI12" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=67991775 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI13" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=642568203 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI14" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=644227522 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI15" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=1824610087 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI16" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=457064185 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI17" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=717789152 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI18" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=74710006 instance=ExtResource("3_g1foq")]
+layout_mode = 2
+
+[node name="CardUI19" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer" unique_id=1771523308 instance=ExtResource("3_g1foq")]
+layout_mode = 2

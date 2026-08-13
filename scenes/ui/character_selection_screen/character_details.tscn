@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/others/play.png" id="1_5oaiq"]
 [ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/character_details.gd" id="1_r7hje"]
-[ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/divivder.png" id="2_t3sbv"]
+[ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/divider_dark.png" id="2_t3sbv"]
 [ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="3_1a3dm"]
 [ext_resource type="Texture2D" uid="uid://ddi3bwc5uw3rp" path="res://assets/gui/frames/frame_1.png" id="4_br4kt"]
 [ext_resource type="Texture2D" uid="uid://dvu4jpgj2jlr6" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_iw7qv"]
