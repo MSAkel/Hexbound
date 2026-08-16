@@ -6,7 +6,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 var main_scene := load("res://scenes/main.tscn")
 var main_menu_scene := load("res://scenes/ui/main_menu/main_menu.tscn")
 
-@onready var selection_details: SelectionDetails = $Container/VBoxContainer/CharacterDetails
+@onready var character_details: CharacterDetails = $Container/VBoxContainer/CharacterDetails
 
 # One selection per character definition; only one is shown at a time.
 var selections: Array[CharacterDefinition] = []
@@ -17,8 +17,9 @@ func _ready() -> void:
 	get_tree().paused = false
 
 	selections = PlayerCharacter.get_all_characters()
-	selection_details.prev_selection_pressed.connect(_on_prev_selection)
-	selection_details.next_selection_pressed.connect(_on_next_selection)
+	character_details.prev_selection_pressed.connect(_on_prev_selection)
+	character_details.next_selection_pressed.connect(_on_next_selection)
+
 	_update_display()
 
 	var music := SOUNDTRACK.get_music_for_scene(scene_file_path)
@@ -43,22 +44,8 @@ func _on_next_selection() -> void:
 
 
 func _update_display() -> void:
-	# Character name, starting hand, and map details are shown inside SelectionDetails.
-	selection_details.display_selection(get_selected_character())
-
-
-func _on_start_button_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
-
-	# A fresh run replaces any saved session from a previous quit.
-	RunSaveManager.delete_save()
-
-	# Character choice locks in layout rules for the entire run.
-	GameManager.selected_character = get_selected_character()
-	GameManager.selected_difficulty = selection_details.get_selected_difficulty()
-
-	get_tree().change_scene_to_packed(main_scene)
-
+	# Name, passives, trigger order, and difficulty are shown inside CharacterDetails.
+	character_details.display_selection(get_selected_character())
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)

@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://crffik30sf5rg"]
 
-[ext_resource type="Texture2D" uid="uid://b4vsyy8dc6oor" path="res://assets/gui/panels/v_bar.png" id="1_jevqn"]
+[ext_resource type="Texture2D" uid="uid://b85eh86cnkj4i" path="res://assets/gui/panels/v_bar_light.png" id="1_jevqn"]
 [ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="2_amxqk"]
 [ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/divider.png" id="3_i0t37"]
+[ext_resource type="PackedScene" uid="uid://behfllgh3b7fc" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.tscn" id="4_amxqk"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g5bg1"]
 content_margin_left = 16.0
@@ -22,13 +23,22 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 8
 
-[node name="PhaseLabel" type="Label" parent="VBoxContainer" unique_id=49207560 groups=["main_ui"]]
+[node name="TurnLabel" type="Label" parent="VBoxContainer" unique_id=1392901756 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_font_sizes/font_size = 21
-text = "Segments Result"
+text = "Turn 1"
+horizontal_alignment = 1
+
+[node name="RoundLabel" type="Label" parent="VBoxContainer" unique_id=49207560 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "Segments Output"
 horizontal_alignment = 1
 
 [node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=875436109]
@@ -40,3 +50,6 @@ stretch_mode = 2
 [node name="SegmentResultsList" type="VBoxContainer" parent="VBoxContainer" unique_id=1045123781]
 layout_mode = 2
 theme_override_constants/separation = 4
+
+[node name="SegmentResults" parent="VBoxContainer/SegmentResultsList" unique_id=1594320159 instance=ExtResource("4_amxqk")]
+layout_mode = 2

@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://bj0bkesq2wj5x" path="res://scenes/ui/RunInfoDisplay/gold_container/gold_container.tscn" id="2_hwuyg"]
 [ext_resource type="PackedScene" uid="uid://dcbl86nephwyu" path="res://scenes/ui/RunInfoDisplay/round_info_container/round_info.tscn" id="3_i8t20"]
+[ext_resource type="PackedScene" uid="uid://baphc61loe4mb" path="res://scenes/ui/RunInfoDisplay/layouts_container/layouts_container.tscn" id="4_hwuyg"]
 [ext_resource type="PackedScene" uid="uid://crffik30sf5rg" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.tscn" id="7_6tdp6"]
 [ext_resource type="PackedScene" uid="uid://dh8s60bf3jvak" path="res://scenes/ui/RunInfoDisplay/challenge_container/challenge_container.tscn" id="8_lsngd"]
 
@@ -40,6 +41,29 @@ layout_mode = 2
 [node name="SegmentsContainer" parent="LeftContainer/VBoxContainer" unique_id=1933303425 instance=ExtResource("7_6tdp6")]
 layout_mode = 2
 
-[node name="ChallengeContainer" parent="." unique_id=521758828 instance=ExtResource("8_lsngd")]
+[node name="RightContainer" type="MarginContainer" parent="." unique_id=1973211944]
 layout_mode = 1
-offset_left = -300.0
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -258.0
+offset_bottom = 567.0
+grow_horizontal = 0
+mouse_filter = 0
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RightContainer" unique_id=1282817857]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="layoutsContainer" parent="RightContainer/VBoxContainer" unique_id=19642657 instance=ExtResource("4_hwuyg")]
+layout_mode = 2
+
+[node name="ChallengeContainer" parent="RightContainer/VBoxContainer" unique_id=521758828 instance=ExtResource("8_lsngd")]
+layout_mode = 2
+size_flags_horizontal = 10

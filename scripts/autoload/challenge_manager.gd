@@ -2,7 +2,7 @@ extends Node
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
-# Manages phase challenges on phases 4, 8, and 12. Three challenges are picked at run start.
+# Manages round challenges on rounds 3, 6, and 9. Three challenges are picked at run start.
 
 enum Type {
 	BLACKOUT,
@@ -13,7 +13,7 @@ enum Type {
 	FADING_SECTOR,
 }
 
-const CHALLENGE_PHASES := [3, 6, 9]
+const CHALLENGE_ROUNDS := [3, 6, 9]
 
 const ALL_CHALLENGES: Array[Type] = [
 	Type.BLACKOUT,
@@ -31,7 +31,7 @@ const CHALLENGE_INFO := {
 	},
 	Type.RUSH_HOUR: {
 		"name": "Rush Hour",
-		"description": "You have 1 less turn to complete the phase.",
+		"description": "You have 1 less turn to complete the round.",
 	},
 	Type.SOLO_PACT: {
 		"name": "Solo Pact",
@@ -51,16 +51,18 @@ const CHALLENGE_INFO := {
 	},
 }
 
-# One challenge per entry in CHALLENGE_PHASES, chosen at run start.
+## One challenge per entry in CHALLENGE_ROUNDS, chosen at run start.
 var scheduled_challenges: Array[Type] = []
-# Active challenge for the current phase; -1 when no challenge is running.
+## Active challenge for the current round, -1 when no challenge is running.
 var active_challenge: int = -1
 
+## Index of the segment whose producer output is halved, -1 when not in fading sector challenge.
 var _halved_segment_index := -1
-# Saved is_active values so player toggles are restored after each turn's blackout.
+
+## Saved is_active values so player toggles are restored after each turn's blackout.
 var _disabled_prior_states: Dictionary = {}
 var _tile_map: HexTileMap = null
-# Set when entering a challenge phase; cleared after the post-merchant banner is shown.
+## Set when entering a challenge round, cleared after the post-merchant banner is shown.
 var _pending_challenge_reveal := false
 
 
@@ -70,7 +72,7 @@ func _ready() -> void:
 	EventBus.merchant_closed.connect(_on_merchant_closed)
 
 
-# Pick three unique challenges for phases 4, 8, and 12 at the start of a run.
+# Pick three unique challenges for rounds 4, 8, and 12 at the start of a run.
 func init_run() -> void:
 	scheduled_challenges.clear()
 	active_challenge = -1
@@ -81,15 +83,15 @@ func init_run() -> void:
 
 	var pool := ALL_CHALLENGES.duplicate()
 	pool.shuffle()
-	for i in CHALLENGE_PHASES.size():
+	for i in CHALLENGE_ROUNDS.size():
 		scheduled_challenges.append(pool[i])
 
 	EventBus.challenge_schedule_changed.emit()
 
 
-func on_phase_advanced(new_phase: int) -> void:
+func on_round_advanced(new_round: int) -> void:
 	_clear_fading_sector_visuals()
-	active_challenge = get_challenge_for_phase(new_phase)
+	active_challenge = get_challenge_for_round(new_round)
 	_restore_challenge_disabled_runes()
 
 	if active_challenge != -1:
@@ -100,35 +102,35 @@ func on_phase_advanced(new_phase: int) -> void:
 	EventBus.challenge_changed.emit()
 
 
-func is_completing_final_challenge_phase() -> bool:
+func is_completing_final_challenge_round() -> bool:
 	return (
-		GameManager.current_phase == CHALLENGE_PHASES[-1]
-		and get_challenge_for_phase(GameManager.current_phase) != -1
+		GameManager.current_round == CHALLENGE_ROUNDS[-1]
+		and get_challenge_for_round(GameManager.current_round) != -1
 	)
 
 
-func get_challenge_for_phase(phase: int) -> int:
-	var phase_index := CHALLENGE_PHASES.find(phase)
-	if phase_index == -1:
+func get_challenge_for_round(round: int) -> int:
+	var round_index := CHALLENGE_ROUNDS.find(round)
+	if round_index == -1:
 		return -1
 	# Left panel can query before main.gd calls init_run() at run start.
-	if phase_index >= scheduled_challenges.size():
+	if round_index >= scheduled_challenges.size():
 		return -1
-	return scheduled_challenges[phase_index]
+	return scheduled_challenges[round_index]
 
 
-func get_next_challenge_phase() -> int:
-	for phase in CHALLENGE_PHASES:
-		if phase > GameManager.current_phase:
-			return phase
+func get_next_challenge_round() -> int:
+	for round in CHALLENGE_ROUNDS:
+		if round > GameManager.current_round:
+			return round
 	return -1
 
 
 func get_next_challenge_type() -> int:
-	var next_phase := get_next_challenge_phase()
-	if next_phase == -1:
+	var next_round := get_next_challenge_round()
+	if next_round == -1:
 		return -1
-	return get_challenge_for_phase(next_phase)
+	return get_challenge_for_round(next_round)
 
 
 func get_challenge_name(challenge_type: int) -> String:
@@ -147,10 +149,10 @@ func get_active_challenge_name() -> String:
 	return get_challenge_name(active_challenge)
 
 
-func get_max_turns_per_phase() -> int:
+func get_max_turns_per_round() -> int:
 	if active_challenge == Type.RUSH_HOUR:
-		return GameManager.MAX_TURNS_PER_PHASE - 1
-	return GameManager.MAX_TURNS_PER_PHASE
+		return GameManager.MAX_TURNS_PER_ROUND - 1
+	return GameManager.MAX_TURNS_PER_ROUND
 
 
 func get_runes_pack_size() -> int:

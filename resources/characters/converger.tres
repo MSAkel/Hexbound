@@ -1,26 +1,25 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3 uid="uid://b6tnj4hgi6dlk"]
 
-[ext_resource type="Script" path="res://scripts/resources/character_definition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/map/trigger_order/the_converger_map.png" id="2_trigger_preview"]
-[ext_resource type="Texture2D" path="res://assets/map/segment_icons/first_row_tile_passive.png" id="3_passive_icon"]
-[ext_resource type="Texture2D" path="res://assets/map/segment_passives/first_in_segment.png" id="4_passive_preview"]
+[ext_resource type="Texture2D" uid="uid://ftil14bumakg" path="res://assets/characters/the_converger.png" id="1_e7148"]
+[ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://ws4fwjrp54v6" path="res://assets/map/trigger_order/the_converger_map.png" id="2_trigger_preview"]
+[ext_resource type="Texture2D" uid="uid://bd7vwhffd8iiy" path="res://assets/map/segment_icons/first_row_tile_passive.png" id="3_passive_icon"]
+[ext_resource type="Texture2D" uid="uid://bgj3xo0w2i6gx" path="res://assets/map/segment_passives/first_in_segment.png" id="4_passive_preview"]
 
 [resource]
 script = ExtResource("1_script")
 id = "converger"
 display_name = "The Converger"
+icon = ExtResource("1_e7148")
 trigger_order_strategy = 3
 trigger_order_display_name = "Inward spiral"
 trigger_order_description = "Runes activate in alternating arcs from the outer edge inward toward the center."
 trigger_order_preview = ExtResource("2_trigger_preview")
 numbered_order_grid = [[1, 2, 3, 4], [10, 19, 20, 21, 5], [11, 25, 31, 32, 22, 6], [12, 26, 34, 37, 33, 23, 7], [13, 27, 35, 36, 24, 8], [14, 28, 29, 30, 9], [15, 16, 17, 18]]
-segment_starts = [1, 10, 19, 25, 31, 34, 37]
+segment_starts = Array[int]([1, 10, 19, 25, 31, 34, 37])
 segment_key_strategy = 2
-passive_places_on_center_tile = false
-passive_modifier_type = 0
+segments_count = 6
 passive_name = "First In segment"
-passive_description = "Production runes on the first plot of a segment have double production"
+passive_description = "WIP"
 passive_icon = ExtResource("3_passive_icon")
 passive_icon_preview = ExtResource("4_passive_preview")
-uses_standard_starting_hand = true
-character_passive_description = "Passive ability: TBD"

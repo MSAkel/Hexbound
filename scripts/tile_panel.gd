@@ -45,7 +45,7 @@ func _set_tile_information() -> void:
 
 	if hex.segment_passive_modifier != null:
 		lines.append(
-			"Segment Passive: %s\n%s" % [
+			"%s\n%s" % [
 				hex.segment_passive_modifier.name,
 				hex.segment_passive_modifier.description,
 			]
@@ -53,7 +53,7 @@ func _set_tile_information() -> void:
 
 	if hex.tile_modifier != null:
 		lines.append(
-			"Tile Modifier: %s\n%s" % [
+			"%s\n%s" % [
 				hex.tile_modifier.name,
 				hex.tile_modifier.description,
 			]
@@ -72,10 +72,7 @@ func _set_rune_information() -> void:
 		var description_lines: PackedStringArray = [hex.active_rune.description]
 		if hex.active_rune.enhancement != null:
 			description_lines.append(
-				"Enhancement: %s\n%s" % [
-					hex.active_rune.enhancement.name,
-					hex.active_rune.enhancement.description,
-				]
+				"Enhancement: %s" % [hex.active_rune.enhancement.short_description]
 			)
 		rune_description.text = "\n\n".join(description_lines)
 	else:

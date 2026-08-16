@@ -8,5 +8,6 @@ script = ExtResource("2_script")
 id = "score_boost"
 name = "Score Boost"
 icon = ExtResource("1_einfm")
-description = "+40 score when the host rune activates."
+description = "Rune gains +40 Score"
+short_description = "+40 Score"
 score_bonus = 40

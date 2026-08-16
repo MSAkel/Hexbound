@@ -13,8 +13,8 @@ texture = ExtResource("1_wgaml")
 
 [node name="RoundInfoContainer" type="PanelContainer" unique_id=456985837]
 texture_filter = 1
-offset_right = 170.0
-offset_bottom = 346.0
+offset_right = 191.0
+offset_bottom = 268.0
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxTexture_g5bg1")
 script = ExtResource("2_hjquj")
@@ -24,16 +24,18 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 8
 
-[node name="PhaseLabel" type="Label" parent="VBoxContainer" unique_id=1242587291 groups=["main_ui"]]
+[node name="RoundLabel" type="Label" parent="VBoxContainer" unique_id=1242587291 groups=["main_ui"]]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 26
-text = "Phase 1"
+theme_override_font_sizes/font_size = 24
+text = "Round 1"
 horizontal_alignment = 1
 
 [node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=2145180946]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("2_vqnsx")
@@ -42,22 +44,22 @@ stretch_mode = 2
 [node name="TurnsContainer" type="VBoxContainer" parent="VBoxContainer" unique_id=1567882250]
 layout_mode = 2
 
-[node name="TurnCounterLabel" type="Label" parent="VBoxContainer/TurnsContainer" unique_id=1362274989 groups=["main_ui"]]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 21
-text = "5"
-horizontal_alignment = 1
-
 [node name="TurnsLeft" type="Label" parent="VBoxContainer/TurnsContainer" unique_id=644751429 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
 text = "Turns Left"
+horizontal_alignment = 1
+
+[node name="TurnCounterLabel" type="Label" parent="VBoxContainer/TurnsContainer" unique_id=1362274989 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 21
+text = "5"
 horizontal_alignment = 1
 
 [node name="Divider2" type="TextureRect" parent="VBoxContainer" unique_id=1750255380]
@@ -71,7 +73,7 @@ layout_mode = 2
 
 [node name="RequiredScoreLabel" type="Label" parent="VBoxContainer/RequiredScoreContainer" unique_id=1104499985 groups=["main_ui"]]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
 text = "Required Score"
@@ -79,7 +81,7 @@ horizontal_alignment = 1
 
 [node name="RequiredScore" type="Label" parent="VBoxContainer/RequiredScoreContainer" unique_id=992593298]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 21
 text = "00000"
@@ -96,7 +98,7 @@ layout_mode = 2
 
 [node name="ScoreThisRoundLabel" type="Label" parent="VBoxContainer/ScoreContainer" unique_id=705617950]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
 text = "Score this round"
@@ -104,24 +106,42 @@ horizontal_alignment = 1
 
 [node name="ScoreThisRound" type="Label" parent="VBoxContainer/ScoreContainer" unique_id=422264704]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 21
 text = "0"
 horizontal_alignment = 1
 
 [node name="Divider4" type="TextureRect" parent="VBoxContainer" unique_id=2053224114]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("2_vqnsx")
 stretch_mode = 2
 
-[node name="NextPerk" type="Label" parent="VBoxContainer" unique_id=1794316690]
+[node name="NextPerkLabel" type="Label" parent="VBoxContainer" unique_id=842781909]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 16
-text = "Next Perk in
-100
-Triggers"
+text = "Next Perk in"
+horizontal_alignment = 1
+
+[node name="NextPerkCounter" type="Label" parent="VBoxContainer" unique_id=1794316690]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "100"
+horizontal_alignment = 1
+
+[node name="TriggersLabel" type="Label" parent="VBoxContainer" unique_id=1208417124]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.21176471, 0.20392157, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Triggers"
 horizontal_alignment = 1

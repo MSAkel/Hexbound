@@ -8,20 +8,20 @@ var cards_played := 0
 
 const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
-# Slide the hand off-screen between turns using 4.7 offset transforms (layout-safe).
+## Slide the hand off-screen between turns using 4.7 offset transforms (layout-safe).
 const HAND_SLIDE_DURATION := 0.35
-# Stagger between each card during the run-start entrance from below.
+## Stagger between each card during the run-start entrance from below.
 const INTRO_CARD_STAGGER := 0.07
 
-# Test-only enhancements dealt at run start. Clear this array when done testing.
-const DEBUG_STARTING_ENHANCEMENTS: Array[Enhancement] = [
-	#preload("uid://dcn24d4g51dc6"),
-]
+## Debug-only cards appended to the opening hand.
+@export_group("Debug Starting Hand")
+@export var debug_starting_runes: Array[Rune] = []
+@export var debug_starting_enhancements: Array[Enhancement] = []
 
-# Keep starting cards parked off-screen until Main finishes fade/zoom.
+## Keep starting cards parked off-screen until Main finishes fade/zoom.
 var _awaiting_intro := true
 
-# Reparent cards to hand when they are dragged or released
+## Reparent cards to hand when they are dragged or released
 func _ready() -> void:
 	EventBus.card_played.connect(_on_card_played)
 	EventBus.rune_selected.connect(_add_rune_card)
@@ -29,21 +29,34 @@ func _ready() -> void:
 	EventBus.turn_ended.connect(_hide_hand)
 	EventBus.turn_started.connect(_show_hand)
 
-	# Saved runs rebuild the hand after the main scene finishes loading.
+	## Saved runs rebuild the hand after the main scene finishes loading.
 	if RunSaveManager.should_restore_run():
 		return
 
-	# Starting hand depends on the character selected before the run begins
+	## Starting hand depends on the character selected before the run begins
 	var starting_runes := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
 	for rune in starting_runes:
 		_add_rune_card(rune)
 
-	for enhancement in DEBUG_STARTING_ENHANCEMENTS:
-		_add_enhancement_card(enhancement)
+	_add_debug_starting_cards()
 
-	# Snap immediately so the first frame never flashes cards at rest before the intro.
+	## Snap immediately so the first frame never flashes cards at rest before the intro.
 	if _awaiting_intro:
 		_snap_hand_offscreen()
+
+
+## Extra inspector cards for testing a specific rune or enhancement without merchant luck.
+func _add_debug_starting_cards() -> void:
+	if not OS.is_debug_build():
+		return
+
+	for rune in debug_starting_runes:
+		if rune != null:
+			_add_rune_card(rune)
+
+	for enhancement in debug_starting_enhancements:
+		if enhancement != null:
+			_add_enhancement_card(enhancement)
 
 
 func _add_rune_card(rune: Rune) -> void:
@@ -69,7 +82,7 @@ func _add_card(data: Resource) -> void:
 		_snap_card_offscreen(new_rune_card)
 
 
-# Guard against non-card children
+## Guard against non-card children
 func _get_hand_card_count() -> int:
 	var count := 0
 	for child in get_children():
@@ -80,7 +93,7 @@ func _get_hand_card_count() -> int:
 
 func _on_card_played(_card_ui: CardUI) -> void:
 	cards_played += 1
-	# Wait for the played card's queue_free() before checking remaining hand size.
+	## Wait for the played card's queue_free() before checking remaining hand size.
 	await get_tree().create_timer(0.1).timeout
 	if _get_hand_card_count() < 3:
 		EventBus.turn_ended.emit()
@@ -94,7 +107,7 @@ func _hide_hand() -> void:
 
 
 func _show_hand() -> void:
-	# Don't fight the run-start entrance if a turn signal fires early.
+	## Don't fight the run-start entrance if a turn signal fires early.
 	if _awaiting_intro:
 		return
 	_animate_hand_slide(false)
@@ -107,7 +120,7 @@ func is_awaiting_intro() -> bool:
 
 ## After fade/zoom, slide each starting card up from below with a light stagger.
 func play_intro_entrance() -> void:
-	# CardBaseState waits one frame then clears hover offset to ZERO — wait past that,
+	## CardBaseState waits one frame then clears hover offset to ZERO — wait past that,
 	# then re-park so the entrance tween has a real distance to travel.
 	await get_tree().process_frame
 	_snap_hand_offscreen()
@@ -136,7 +149,7 @@ func play_intro_entrance() -> void:
 		step.set_trans(Tween.TRANS_QUART)
 		animated_cards += 1
 
-	# Intro offset is now owned by the tween; allow normal hover afterward.
+	## Intro offset is now owned by the tween; allow normal hover afterward.
 	_awaiting_intro = false
 
 	if animated_cards == 0:

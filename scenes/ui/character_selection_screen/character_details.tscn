@@ -1,259 +1,402 @@
 [gd_scene format=3 uid="uid://cdi5v4a8f6h2x"]
 
-[ext_resource type="Texture2D" uid="uid://cjkbugou2w8ih" path="res://assets/icons/others/play.png" id="1_5oaiq"]
 [ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/character_details.gd" id="1_r7hje"]
-[ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/divider_dark.png" id="2_t3sbv"]
 [ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="3_1a3dm"]
-[ext_resource type="Texture2D" uid="uid://ddi3bwc5uw3rp" path="res://assets/gui/frames/frame_1.png" id="4_br4kt"]
-[ext_resource type="Texture2D" uid="uid://dvu4jpgj2jlr6" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_iw7qv"]
-[ext_resource type="Texture2D" uid="uid://ll7d4y1b83sj" path="res://assets/map/segment_icons/segment_start.png" id="7_daqkf"]
-[ext_resource type="Texture2D" uid="uid://bgj3xo0w2i6gx" path="res://assets/map/segment_passives/first_in_segment.png" id="8_daqkf"]
+[ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="4_daqkf"]
+[ext_resource type="Texture2D" uid="uid://cpkbpjt0rbyto" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_iw7qv"]
+[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/divider.png" id="7_eeimr"]
+[ext_resource type="Texture2D" uid="uid://bve5aohm2c03v" path="res://assets/map/segment_passives/double_production_passive.png" id="8_x6eud"]
+[ext_resource type="Texture2D" uid="uid://bp0w0wvwvpnjw" path="res://assets/gui/panels/character_selection_panel_2.png" id="9_r66gk"]
+[ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="10_ayqni"]
+[ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="10_r66gk"]
+[ext_resource type="Texture2D" uid="uid://bbkumikovlpne" path="res://assets/gui/panels/v_bar_lighter.png" id="10_x6eud"]
+[ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="11_r66gk"]
+[ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="11_x6eud"]
+[ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="12_5rwoj"]
+[ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="12_x6eud"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r6dd1"]
-texture = ExtResource("4_br4kt")
+content_margin_left = 32.0
+content_margin_top = 24.0
+content_margin_right = 32.0
+content_margin_bottom = 24.0
+texture = ExtResource("9_r66gk")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1a3dm"]
-content_margin_left = 25.0
-content_margin_top = 25.0
-content_margin_right = 25.0
-content_margin_bottom = 25.0
-bg_color = Color(0.07450981, 0.12941177, 0.14117648, 1)
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vxwtt"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bfo61"]
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+texture = ExtResource("9_r66gk")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pomje"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+texture = ExtResource("10_x6eud")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_2vjdo"]
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+texture = ExtResource("9_r66gk")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_eeimr"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x6eud"]
+content_margin_left = 64.0
+content_margin_top = 16.0
+content_margin_right = 64.0
+content_margin_bottom = 16.0
+bg_color = Color(0.12290869, 0.19797018, 0.21427926, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="CharacterDetails" type="HBoxContainer" unique_id=581860497]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -700.0
+offset_top = -375.5
+offset_right = 700.0
+offset_bottom = 242.5
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(1.0023638, 1)
-size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 32
 script = ExtResource("1_r7hje")
 
-[node name="SlectionDetails" type="VBoxContainer" parent="." unique_id=1032022933]
+[node name="PrevSelection" type="TextureButton" parent="." unique_id=40130060]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+texture_normal = ExtResource("10_ayqni")
+texture_pressed = ExtResource("11_r66gk")
+texture_hover = ExtResource("12_x6eud")
+stretch_mode = 3
+flip_h = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=84041992]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1602772163]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SelectionContainer" type="PanelContainer" parent="VBoxContainer/HBoxContainer" unique_id=339562569]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_r6dd1")
+
+[node name="SelectionVContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/SelectionContainer" unique_id=1032022933]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="SelectYourPath" type="Label" parent="SlectionDetails" unique_id=1484975773]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 32
-text = "SELECT YOUR PATH"
-horizontal_alignment = 1
-uppercase = true
-
-[node name="PathSubtitle" type="Label" parent="SlectionDetails" unique_id=790181717]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 32
-text = "Each path has a unique flow and
-way the land responds to your runes"
-horizontal_alignment = 1
-
-[node name="TextureRect" type="TextureRect" parent="SlectionDetails" unique_id=190441139]
-layout_mode = 2
-texture = ExtResource("2_t3sbv")
-stretch_mode = 3
-
-[node name="HBoxContainer" type="HBoxContainer" parent="SlectionDetails" unique_id=115256075]
-layout_mode = 2
-size_flags_vertical = 2
-theme_override_constants/separation = 21
-
-[node name="PrevSelection" type="TextureButton" parent="SlectionDetails/HBoxContainer" unique_id=40130060]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-texture_normal = ExtResource("1_5oaiq")
-stretch_mode = 3
-flip_h = true
-
-[node name="Panel" type="PanelContainer" parent="SlectionDetails/HBoxContainer" unique_id=397528664]
-custom_minimum_size = Vector2(0, 250)
+[node name="CharacterPanel" type="PanelContainer" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer" unique_id=397528664]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxTexture_r6dd1")
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_vxwtt")
 
-[node name="CharacterNameLabel" type="RichTextLabel" parent="SlectionDetails/HBoxContainer/Panel" unique_id=1947284594]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/CharacterPanel" unique_id=1496770277]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="CharacterIcon" type="TextureRect" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/CharacterPanel/VBoxContainer" unique_id=632601031]
+custom_maximum_size = Vector2(150, 175)
+layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 4
-theme_override_colors/default_color = Color(0.6509804, 0.654902, 0.35686275, 1)
-theme_override_font_sizes/normal_font_size = 52
+texture = ExtResource("4_daqkf")
+stretch_mode = 4
+
+[node name="CharacterNameLabel" type="RichTextLabel" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/CharacterPanel/VBoxContainer" unique_id=1947284594]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/default_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/normal_font_size = 32
 bbcode_enabled = true
-text = "[wave amp=50 freq=2]Character Name[/wave]"
+text = "Character Name"
 fit_content = true
 autowrap_mode = 0
 horizontal_alignment = 1
 
-[node name="StartingHandPanel" type="VBoxContainer" parent="SlectionDetails/HBoxContainer" unique_id=326574285]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 6
-theme_override_constants/separation = 16
-
-[node name="StartingHandLabel" type="Label" parent="SlectionDetails/HBoxContainer/StartingHandPanel" unique_id=328579733]
-visible = false
-layout_mode = 2
-theme_override_font_sizes/font_size = 21
-text = "Starting Hand"
-horizontal_alignment = 1
-
-[node name="StartingHandGridContainer" type="GridContainer" parent="SlectionDetails/HBoxContainer/StartingHandPanel" unique_id=743940292]
-visible = false
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-columns = 3
-
-[node name="NextSelection" type="TextureButton" parent="SlectionDetails/HBoxContainer" unique_id=1177842379]
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 4
-texture_normal = ExtResource("1_5oaiq")
-stretch_mode = 3
-
-[node name="DifficultyLevelContainer" parent="SlectionDetails" unique_id=1240284962 instance=ExtResource("3_1a3dm")]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="SlectionTriggerOrder" type="VBoxContainer" parent="." unique_id=155871284]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
-
-[node name="triggerOrderPanel" type="PanelContainer" parent="SlectionTriggerOrder" unique_id=1740980350]
-clip_children = 2
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 1.5
-theme_override_styles/panel = SubResource("StyleBoxFlat_1a3dm")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel" unique_id=2098114581]
-layout_mode = 2
-size_flags_horizontal = 6
-theme_override_constants/separation = 12
-
-[node name="MapsLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=1220581385]
+[node name="Divider" type="TextureRect" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer" unique_id=170764045]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
-text = "Map plots trigger order"
-horizontal_alignment = 1
-uppercase = true
+texture = ExtResource("7_eeimr")
+stretch_mode = 2
 
-[node name="TriggerOrderLabel" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=1609280158]
+[node name="PassivesLabel" type="Label" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer" unique_id=149836310]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 24
-text = "Top-left → Bottom-right"
-horizontal_alignment = 1
-
-[node name="TriggerOrderDescription" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=1541863406]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 16
-text = "Triggers starts from...end on..."
-horizontal_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer" unique_id=92250150]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 6
-theme_override_constants/separation = 24
-
-[node name="TriggerOrderImage" type="TextureRect" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer" unique_id=1970264467]
-custom_minimum_size = Vector2(400, 300)
-custom_maximum_size = Vector2(400, 300)
-layout_mode = 2
-size_flags_horizontal = 0
-texture = ExtResource("4_iw7qv")
-expand_mode = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer" unique_id=438270027]
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 2
 size_flags_vertical = 0
-
-[node name="SegmentStart" type="TextureRect" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer/HBoxContainer" unique_id=473648374]
-custom_minimum_size = Vector2(50, 50)
-custom_maximum_size = Vector2(50, 50)
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-texture = ExtResource("7_daqkf")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="SlectionTriggerOrder/triggerOrderPanel/VBoxContainer/HBoxContainer/HBoxContainer" unique_id=1837626047]
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
-text = "Segment Start"
-
-[node name="SegmentsPanel" type="Panel" parent="SlectionTriggerOrder" unique_id=1467965942]
-custom_minimum_size = Vector2(400, 0)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_1a3dm")
-
-[node name="MarginContainer" type="MarginContainer" parent="SlectionTriggerOrder/SegmentsPanel" unique_id=864179816]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer" unique_id=576769818]
-layout_mode = 2
-
-[node name="SegmentLabel" type="Label" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer" unique_id=1437331464]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 24
-text = "Segments Passive"
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 20
+text = "Passive Abilities"
 horizontal_alignment = 1
-uppercase = true
 
-[node name="SegmentImage" type="TextureRect" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer" unique_id=1200120951]
+[node name="PassivesContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer" unique_id=1640156372]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="PassiveIcon" type="TextureRect" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer" unique_id=1200120951]
 custom_minimum_size = Vector2(75, 75)
 custom_maximum_size = Vector2(75, 75)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
-texture = ExtResource("8_daqkf")
+texture = ExtResource("8_x6eud")
 expand_mode = 1
 
-[node name="SegmentDescription" type="Label" parent="SlectionTriggerOrder/SegmentsPanel/MarginContainer/VBoxContainer" unique_id=1795182502]
-custom_minimum_size = Vector2(300, 0)
+[node name="PassiveInfoContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer" unique_id=61843742]
+layout_mode = 2
+
+[node name="PassiveName" type="Label" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer/PassiveInfoContainer" unique_id=1437331464]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 18
+text = "Double Production"
+
+[node name="PassiveDescription" type="Label" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer/PassiveInfoContainer" unique_id=1795182502]
+custom_minimum_size = Vector2(250, 0)
 propagate_maximum_size = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_colors/font_color = Color(0.3647059, 0.3647059, 0.29803923, 1)
 theme_override_font_sizes/font_size = 16
 text = "Every starting rune on..."
+autowrap_mode = 3
+
+[node name="triggerOrderPanel" type="PanelContainer" parent="VBoxContainer/HBoxContainer" unique_id=1740980350]
+clip_children = 2
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_bfo61")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel" unique_id=720931761]
+layout_mode = 2
+
+[node name="TriggerOrderLabel" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer" unique_id=1609280158]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 24
+text = "Top-left → Bottom-right"
+horizontal_alignment = 1
+
+[node name="TriggerOrderDescription" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer" unique_id=1541863406]
+custom_maximum_size = Vector2(500, -1)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.48735946, 0.3695218, 0.20802519, 1)
+theme_override_font_sizes/font_size = 16
+text = "Triggers starts from...end on..."
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[connection signal="pressed" from="SlectionDetails/HBoxContainer/PrevSelection" to="." method="_on_prev_selection_pressed"]
-[connection signal="pressed" from="SlectionDetails/HBoxContainer/NextSelection" to="." method="_on_next_selection_pressed"]
+[node name="Control2" type="Control" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer" unique_id=150012027]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="Divider" type="TextureRect" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer" unique_id=1878073417]
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("7_eeimr")
+stretch_mode = 2
+
+[node name="Control" type="Control" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer" unique_id=1326931240]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer" unique_id=1565943331]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TriggerOrderImage" type="TextureRect" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer" unique_id=1970264467]
+custom_minimum_size = Vector2(400, 325)
+custom_maximum_size = Vector2(400, 325)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+texture = ExtResource("4_iw7qv")
+expand_mode = 1
+
+[node name="LegendContainer" type="PanelContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer" unique_id=77832185]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_pomje")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer" unique_id=1705549789]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SegmentStartContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer" unique_id=438270027]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="ItemIcon" type="TextureRect" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentStartContainer" unique_id=473648374]
+custom_minimum_size = Vector2(45, 45)
+custom_maximum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("11_x6eud")
+expand_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentStartContainer" unique_id=1294461341]
+layout_mode = 2
+
+[node name="ItemTitle" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentStartContainer/VBoxContainer" unique_id=1837626047]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 18
+text = "Segment Start"
+
+[node name="ItemDescription" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentStartContainer/VBoxContainer" unique_id=2077386857]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 16
+text = "The First tile in a segment"
+
+[node name="Divider" type="TextureRect" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer" unique_id=1047429189]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+texture = ExtResource("7_eeimr")
+stretch_mode = 2
+
+[node name="SegmentEndContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer" unique_id=1599295911]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="ItemIcon" type="TextureRect" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentEndContainer" unique_id=790251422]
+custom_minimum_size = Vector2(45, 45)
+custom_maximum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("12_5rwoj")
+expand_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentEndContainer" unique_id=84122706]
+layout_mode = 2
+
+[node name="ItemTitle" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentEndContainer/VBoxContainer" unique_id=218099951]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 18
+text = "Segment End"
+
+[node name="ItemDescription" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentEndContainer/VBoxContainer" unique_id=938169079]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 16
+text = "The last tile in a segment"
+
+[node name="Divider2" type="TextureRect" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer" unique_id=1335868034]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+texture = ExtResource("7_eeimr")
+stretch_mode = 2
+
+[node name="SegmentsContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer" unique_id=1940676654]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="ItemIcon" type="TextureRect" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentsContainer" unique_id=1635396335]
+custom_minimum_size = Vector2(45, 45)
+custom_maximum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("10_r66gk")
+expand_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentsContainer" unique_id=1731464367]
+layout_mode = 2
+
+[node name="ItemTitle" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentsContainer/VBoxContainer" unique_id=28725280]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 18
+text = "Segments: 7"
+
+[node name="ItemDescription" type="Label" parent="VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentsContainer/VBoxContainer" unique_id=1700618812]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
+theme_override_font_sizes/font_size = 16
+text = "Score, multiplier, and gold
+ are calculated separately for 
+each segment."
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer" unique_id=1564743141]
+layout_mode = 2
+
+[node name="DifficultyPanel" type="PanelContainer" parent="VBoxContainer/HBoxContainer2" unique_id=1534789559]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxTexture_2vjdo")
+
+[node name="DifficultyLevelContainer" parent="VBoxContainer/HBoxContainer2/DifficultyPanel" unique_id=1240284962 instance=ExtResource("3_1a3dm")]
+layout_mode = 2
+size_flags_vertical = 10
+theme_override_styles/panel = SubResource("StyleBoxEmpty_eeimr")
+
+[node name="PlayButton" type="Button" parent="VBoxContainer/HBoxContainer2" unique_id=1057496386]
+custom_minimum_size = Vector2(100, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_x6eud")
+text = "PLAY"
+
+[node name="NextSelection" type="TextureButton" parent="." unique_id=1177842379]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture_normal = ExtResource("10_ayqni")
+texture_pressed = ExtResource("11_r66gk")
+texture_hover = ExtResource("12_x6eud")
+stretch_mode = 3
+
+[connection signal="pressed" from="PrevSelection" to="." method="_on_prev_selection_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="NextSelection" to="." method="_on_next_selection_pressed"]

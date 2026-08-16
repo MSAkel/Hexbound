@@ -4,10 +4,19 @@ extends Resource
 # Player-applied bonus attached to a placed rune. Effects are independent of the rune's
 # product type, so a mult producer can receive a score enhancement and vice versa.
 
+enum Type {
+	SCORE,
+	MULTIPLIER,
+	GOLD,
+	TRIGGER,
+}
+
 @export var id: String
 @export var name: String
 @export var icon: Texture2D
+@export var type: Type
 @export_multiline var description: String
+@export var short_description: String
 
 # Bonus output resolved each time the host rune activates.
 @export var score_bonus: int = 0
@@ -26,13 +35,13 @@ static func can_apply_to(hex: Hex) -> bool:
 
 # Resolve enhancement output using the host rune's activation helpers so empower scaling applies.
 func activate(host_rune: Rune, tile: Hex) -> void:
-	if score_bonus > 0:
+	if type == Type.SCORE:
 		host_rune.add_score(tile, score_bonus)
-	if mult_bonus > 0:
+	if type == Type.MULTIPLIER:
 		host_rune.add_multiplier(tile, mult_bonus)
-	if gold_bonus > 0:
+	if type == Type.GOLD:
 		host_rune.add_gold(tile, gold_bonus)
-	if trigger_count > 0:
+	if type == Type.TRIGGER:
 		var retriggers: Array[Rune] = []
 		retriggers.resize(trigger_count)
 		retriggers.fill(host_rune)

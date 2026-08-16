@@ -138,7 +138,7 @@ func _notify_ui_restored() -> void:
 	EventBus.total_round_score_changed.emit()
 	EventBus.turn_score_changed.emit()
 	EventBus.turn_changed.emit()
-	EventBus.phase_changed.emit(GameManager.current_phase)
+	EventBus.round_changed.emit(GameManager.current_round)
 	EventBus.required_score_changed.emit()
 	EventBus.challenge_schedule_changed.emit()
 	EventBus.challenge_changed.emit()

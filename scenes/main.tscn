@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cnndmv1aydlal" path="res://scenes/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="1_sugp2"]
-[ext_resource type="PackedScene" uid="uid://cpvr3k1luft0f" path="res://scenes/hex_tile_map.tscn" id="2_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://buygicnlcs3ji" path="res://scenes/hex_tile_map.tscn" id="2_jyhfs"]
 [ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/map/background_image.png" id="2_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 
@@ -31,14 +31,14 @@ texture = ExtResource("2_tbgi4")
 [node name="Camera" parent="." unique_id=321380676 instance=ExtResource("3_tbgi4")]
 position = Vector2(1089, 1000)
 
-[node name="IntroFadeLayer" type="CanvasLayer" parent="."]
+[node name="IntroFadeLayer" type="CanvasLayer" parent="." unique_id=1772854946]
 layer = 100
+visible = false
 
-[node name="IntroFade" type="ColorRect" parent="IntroFadeLayer"]
+[node name="IntroFade" type="ColorRect" parent="IntroFadeLayer" unique_id=743168280]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 color = Color(0, 0, 0, 1)

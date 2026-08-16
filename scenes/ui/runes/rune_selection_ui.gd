@@ -24,7 +24,7 @@ func _ready() -> void:
 func _on_rune_selected(_rune: Rune) -> void:
 	hide()
 
-	## Open the merchant only after a rune pick when the phase goal was met this turn.
+	## Open the merchant only after a rune pick when the round goal was met this turn.
 	if GameManager.consume_pending_merchant_visit():
 		UiManager.show_merchant_panel.emit()
 

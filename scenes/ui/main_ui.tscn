@@ -8,8 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://cylk7h6n211gc" path="res://scenes/ui/game_over_screen/game_over_screen.tscn" id="9_b65ll"]
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="10_b65ll"]
 [ext_resource type="PackedScene" uid="uid://ci2r1gwxv4fag" path="res://scenes/components/cards_hand.tscn" id="11_oi40j"]
-[ext_resource type="PackedScene" uid="uid://b04mnn3bt2r1e" path="res://scenes/ui/labels/challenge_label/phase_challenge_name_display.tscn" id="12_m82f4"]
-[ext_resource type="PackedScene" uid="uid://di0jbf4swcn62" path="res://scenes/ui/phase_complete_screen/phase_complete_screen.tscn" id="13_m82f4"]
+[ext_resource type="PackedScene" uid="uid://b04mnn3bt2r1e" path="res://scenes/ui/labels/challenge_label/round_challenge_name_display.tscn" id="12_m82f4"]
+[ext_resource type="PackedScene" uid="uid://di0jbf4swcn62" path="res://scenes/ui/round_complete_screen/round_complete_screen.tscn" id="13_m82f4"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="14_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
@@ -49,7 +49,7 @@ visible = false
 visible = false
 rotation = -0.00022035485
 
-[node name="PhaseChallengeNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
+[node name="RoundChallengeNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
 visible = false
 
 [node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]

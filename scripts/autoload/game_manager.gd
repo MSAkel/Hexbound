@@ -1,28 +1,45 @@
 extends Node
 
-## Central coordinator for run flow: turns, scoring, phases, resource pools, and turn processing.
+## Central coordinator for run flow: turns, scoring, rounds, resource pools, and turn processing.
 
 signal game_speed_changed(new_speed: float)
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 ## Number of runes in a rune pack, picked at the end of each turn
 const RUNES_PACK_SIZE := 3
-const MAX_TURNS_PER_PHASE := 5
+const MAX_TURNS_PER_ROUND := 5
 
-## Set when a turn ends with enough score to meet the phase goal
+## Set when a turn ends with enough score to meet the round goal
 var _pending_merchant_visit := false
-## Phase advance (remaining turns reset, +gold, challenges) waits until phase-complete confirm.
-var _pending_phase_advance := false
-## After the final-challenge victory screen, rune pick and merchant happen before phase 13.
-var _pending_post_victory_phase_advance := false
+## Round advance (remaining turns reset, +gold, challenges) waits until round-complete confirm.
+var _pending_round_advance := false
+## After the final-challenge victory screen, rune pick and merchant happen before round 13.
+var _pending_post_victory_round_advance := false
 
-var current_phase: int = 1
+var current_round: int = 1
 ## Counter for the number of triggers that have been activated throughout the run, used to reward perks
-var trigger_counter: int = 0
+var _total_rune_activations: int = 0
+
+var _activations_needed_for_next_perk: int = 2
+
+var activations_needed_for_next_perk: int:
+	get:
+		return _activations_needed_for_next_perk
+	set(value):
+		_activations_needed_for_next_perk = value
+		if _total_rune_activations >= _activations_needed_for_next_perk:
+			_activations_needed_for_next_perk = _activations_needed_for_next_perk * 1.5
+			EventBus.activations_needed_for_next_perk_changed.emit(_activations_needed_for_next_perk)
+
+var total_rune_activations: int:
+	get:
+		return _total_rune_activations
+	set(value):
+		_total_rune_activations = value
 
 #region Turn state
-## Remaining turns in the current phase (counts down from get_max_turns_per_phase()).
-var _remaining_turns := MAX_TURNS_PER_PHASE
+## Remaining turns in the current round (counts down from get_max_turns_per_round()).
+var _remaining_turns := MAX_TURNS_PER_ROUND
 ## Blocks player input while runes are resolving after end turn.
 var _is_processing_turn := false
 
@@ -41,15 +58,14 @@ var is_processing_turn: bool:
 
 #endregion
 
-#region Score and phase progression
+#region Score and round progression
 
-## Score needed to complete the current phase and open the merchant.
+## Score needed to complete the current round and open the merchant.
 var required_score: int = 1000
-## Applied each time required_score is met to scale difficulty across phases.
+## Applied each time required_score is met to scale difficulty across rounds.
 var required_score_multiplier: int = 1.5
 
-## total score earned in the current round/phase. 
-## TOOD: Need name consistency with either round or phase.
+## total score earned in the current round. 
 var _total_round_score: int = 0
 ## Score earned during the current turn
 var _turn_score: int = 0
@@ -61,7 +77,7 @@ var total_round_score: int:
 		_total_round_score = value
 		EventBus.total_round_score_changed.emit()
 		if _total_round_score >= required_score:
-			_complete_current_phase()
+			_complete_current_round()
 
 var turn_score: int:
 	get:
@@ -84,7 +100,6 @@ var enhancements_pool: Array[Enhancement] = []
 #region Rune activation tracking
 
 ## Cleared at turn start, filled as each rune resolves during turn processing.
-var _runes_activated_this_turn: int = 0
 var _activated_runes_this_turn: Array[Rune] = []
 ## Incremented on each turn_started, placed runes use this to gate once-per-turn permanent effects.
 var turn_stamp: int = 0
@@ -137,13 +152,13 @@ func end_turn() -> void:
 func finish_turn_processing() -> void:
 	_is_processing_turn = false
 
-	## Score the turn before advancing counters so phase logic sees this turn's contribution.
+	## Score the turn before advancing counters so round logic sees this turn's contribution.
 	var pending_total_round_score := total_round_score + turn_score
-	# Consume one remaining turn when the phase goal was not met.
+	# Consume one remaining turn when the round goal was not met.
 	var should_consume_turn := remaining_turns > 0 and pending_total_round_score < required_score
 
 	if pending_total_round_score >= required_score:
-		if ChallengeManager.is_completing_final_challenge_phase():
+		if ChallengeManager.is_completing_final_challenge_round():
 			total_round_score = pending_total_round_score
 			turn_score = 0
 			EventBus.turn_started.emit()
@@ -153,9 +168,9 @@ func finish_turn_processing() -> void:
 	total_round_score = pending_total_round_score
 	turn_score = 0
 
-	# Phase complete → confirm screen first (turn start deferred), otherwise rune pick immediately.
+	# Round complete → confirm screen first (turn start deferred), otherwise rune pick immediately.
 	if _pending_merchant_visit:
-		UiManager.show_phase_complete_panel.emit()
+		UiManager.show_round_complete_panel.emit()
 	else:
 		UiManager.show_runes_choice_panel.emit()
 		EventBus.turn_started.emit()
@@ -167,17 +182,16 @@ func finish_turn_processing() -> void:
 
 func _on_turn_started() -> void:
 	turn_stamp += 1
-	_runes_activated_this_turn = 0
 	_activated_runes_this_turn.clear()
 	GoldManager.reset_turn_tracking()
 
 
-## Called when the phase-complete Continue button is pressed.
-## Applies deferred phase advance, then starts the next turn so HUD/gold reset after the summary.
-func confirm_phase_complete() -> void:
-	if _pending_phase_advance:
-		_pending_phase_advance = false
-		advance_phase()
+## Called when the round-complete Continue button is pressed.
+## Applies deferred round advance, then starts the next turn so HUD/gold reset after the summary.
+func confirm_round_complete() -> void:
+	if _pending_round_advance:
+		_pending_round_advance = false
+		advance_round()
 	EventBus.turn_started.emit()
 
 
@@ -189,82 +203,82 @@ func consume_pending_merchant_visit() -> bool:
 
 
 func is_in_post_victory_transition() -> bool:
-	return _pending_post_victory_phase_advance
+	return _pending_post_victory_round_advance
 
 
 func continue_run_after_victory() -> void:
 	_pending_merchant_visit = true
-	_pending_post_victory_phase_advance = true
+	_pending_post_victory_round_advance = true
 	# Choice of cards at the end of the turn
 	UiManager.show_runes_choice_panel.emit()
 	EventBus.turn_started.emit()
 
 
 func _on_merchant_closed() -> void:
-	if not _pending_post_victory_phase_advance:
+	if not _pending_post_victory_round_advance:
 		return
 
-	_pending_post_victory_phase_advance = false
-	advance_phase()
+	_pending_post_victory_round_advance = false
+	advance_round()
 	EventBus.turn_started.emit()
 
 
-func get_max_turns_per_phase() -> int:
-	return ChallengeManager.get_max_turns_per_phase()
+func get_max_turns_per_round() -> int:
+	return ChallengeManager.get_max_turns_per_round()
 
 
-## Ascending turn index within the phase (1 on the first turn, max on the last).
-## Use when effects scale with how far into the phase you are, not remaining turns.
+## Ascending turn index within the round (1 on the first turn, max on the last).
+## Use when effects scale with how far into the round you are, not remaining turns.
 func get_turn_number() -> int:
-	return get_max_turns_per_phase() - remaining_turns + 1
+	return get_max_turns_per_round() - remaining_turns + 1
 
 
-func _complete_current_phase() -> void:
+func _complete_current_round() -> void:
 	required_score = required_score * required_score_multiplier + 750
 	EventBus.required_score_changed.emit()
 
-	if ChallengeManager.is_completing_final_challenge_phase():
+	if ChallengeManager.is_completing_final_challenge_round():
 		EventBus.challenge_banner_hidden.emit()
 		EventBus.all_challenges_completed.emit()
 		return
 
-	# Keep remaining turns / gold-earned for the phase-complete summary until Continue.
+	# Keep remaining turns / gold-earned for the round-complete summary until Continue.
 	if _pending_merchant_visit:
-		_pending_phase_advance = true
+		_pending_round_advance = true
 		return
 
-	advance_phase()
+	advance_round()
 
 
-func advance_phase() -> void:
-	current_phase += 1
+func advance_round() -> void:
+	current_round += 1
 	GoldManager.add(20)
 	total_round_score = 0
 	AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
 
 	# Apply challenge first so Rush Hour's reduced max is reflected in remaining turns.
-	ChallengeManager.on_phase_advanced(current_phase)
-	remaining_turns = get_max_turns_per_phase()
+	ChallengeManager.on_round_advanced(current_round)
+	remaining_turns = get_max_turns_per_round()
 	EventBus.turn_changed.emit()
-	EventBus.phase_changed.emit(current_phase)
+	EventBus.round_changed.emit(current_round)
 	EventBus.required_score_changed.emit()
 
 #endregion
 
-#region Rune activation API
+#region Rune activation
+## Register a rune activation from rune.gd activate_rune() 
+## for it to be read by hex_tile_map.gd can_consume_next_rune_in_trigger_order()
+func register_rune_activation(rune: Rune) -> void:
+	_activated_runes_this_turn.append(rune)
+	_total_rune_activations += 1
 
-func get_runes_activated_this_turn() -> int:
-	return _runes_activated_this_turn
-
-
+## Read rune activation to check if it has already fired this turn.
+## Used by hex_tile_map.gd can_consume_next_rune_in_trigger_order()
 func has_rune_activated_this_turn(rune: Rune) -> bool:
 	return _activated_runes_this_turn.has(rune)
 
-
-func register_rune_activation(rune: Rune) -> void:
-	_runes_activated_this_turn += 1
-	_activated_runes_this_turn.append(rune)
-
+func rune_activations_countdown() -> int:
+	return _activations_needed_for_next_perk - _total_rune_activations
 #endregion
 
 #region Runes and enhancements pool loading
@@ -351,18 +365,17 @@ func set_game_speed(speed: float) -> void:
 #region Run save / load
 
 func reset_for_new_run() -> void:
-	current_phase = 1
-	trigger_counter = 0
+	current_round = 1
+	_total_rune_activations = 0
 	_pending_merchant_visit = false
-	_pending_phase_advance = false
-	_pending_post_victory_phase_advance = false
-	_remaining_turns = MAX_TURNS_PER_PHASE
+	_pending_round_advance = false
+	_pending_post_victory_round_advance = false
+	_remaining_turns = MAX_TURNS_PER_ROUND
 	_is_processing_turn = false
 	required_score = 1000
 	required_score_multiplier = 1.5
 	_total_round_score = 0
 	_turn_score = 0
-	_runes_activated_this_turn = 0
 	_activated_runes_this_turn.clear()
 	turn_stamp = 0
 	game_speed = 1.0
@@ -370,8 +383,8 @@ func reset_for_new_run() -> void:
 
 func capture_run_state() -> Dictionary:
 	return {
-		"current_phase": current_phase,
-		"trigger_counter": trigger_counter,
+		"current_round": current_round,
+		"total_rune_activations": _total_rune_activations,
 		"remaining_turns": _remaining_turns,
 		"is_processing_turn": _is_processing_turn,
 		"required_score": required_score,
@@ -379,27 +392,26 @@ func capture_run_state() -> Dictionary:
 		"total_round_score": _total_round_score,
 		"turn_score": _turn_score,
 		"pending_merchant_visit": _pending_merchant_visit,
-		"pending_phase_advance": _pending_phase_advance,
-		"pending_post_victory_phase_advance": _pending_post_victory_phase_advance,
+		"pending_round_advance": _pending_round_advance,
+		"pending_post_victory_round_advance": _pending_post_victory_round_advance,
 		"turn_stamp": turn_stamp,
 		"game_speed": _game_speed,
 	}
 
 
 func apply_run_state(state: Dictionary) -> void:
-	current_phase = int(state.get("current_phase", 1))
-	trigger_counter = int(state.get("trigger_counter", 0))
-	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_PHASE))
+	current_round = int(state.get("current_round", 1))
+	_total_rune_activations = int(state.get("total_rune_activations"))
+	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_ROUND))
 	_is_processing_turn = bool(state.get("is_processing_turn", false))
 	required_score = int(state.get("required_score", 1000))
 	required_score_multiplier = state.get("required_score_multiplier", 1.5)
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
 	_pending_merchant_visit = bool(state.get("pending_merchant_visit", false))
-	_pending_phase_advance = bool(state.get("pending_phase_advance", false))
-	_pending_post_victory_phase_advance = bool(state.get("pending_post_victory_phase_advance", false))
+	_pending_round_advance = bool(state.get("pending_round_advance", false))
+	_pending_post_victory_round_advance = bool(state.get("pending_post_victory_round_advance", false))
 	turn_stamp = int(state.get("turn_stamp", 0))
-	_runes_activated_this_turn = 0
 	_activated_runes_this_turn.clear()
 	game_speed = float(state.get("game_speed", 1.0))
 

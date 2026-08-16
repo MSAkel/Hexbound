@@ -1,7 +1,7 @@
 class_name TileModifier
 extends RefCounted
 
-# Player-applied tile modifier for future mechanics (events, items, etc.).
+# Player-applied tile modifier for future mechanics.
 # Unlike SegmentPassiveModifier, these can be placed during a run on eligible tiles.
 
 var name: String

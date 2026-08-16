@@ -63,7 +63,6 @@ func activate_rune(tile: Hex, activation_scale: float = 1.0) -> void:
 	if not is_active:
 		return
 	
-	# Register before the effect so get_activations_this_turn() includes this rune.
 	GameManager.register_rune_activation(self)
 	EventBus.rune_activated.emit(self)
 	

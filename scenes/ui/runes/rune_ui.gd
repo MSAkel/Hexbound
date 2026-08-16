@@ -3,6 +3,8 @@ extends Control
 
 @onready var rune_button: TextureButton = $Container/RuneButton
 @onready var _anim_target: Control = $Container
+@onready var enhancement_value_container: PanelContainer = $Container/EnhancementValueContainer
+@onready var enhancement_value: Label = $Container/EnhancementValueContainer/EnhancementValue
 
 var map: HexTileMap
 var tile: Hex
@@ -32,7 +34,37 @@ func setup(rune: Rune) -> void:
 		await ready
 	
 	rune_button.texture_normal = rune.icon
+	# Show enhancement if it exists on loading a game
+	if rune.enhancement != null:
+		show_enhancement(rune.enhancement)
 
+
+## Called by Hex when an enhancement is attached to this tile.
+func show_enhancement(enhancement: Enhancement) -> void:
+	if enhancement == null:
+		enhancement_value_container.hide()
+		return
+
+	enhancement_value_container.show()
+	enhancement_value.text = enhancement.short_description
+
+	# Dark tints on the panel only; the label stays white with a thin outline.
+	match enhancement.type:
+		Enhancement.Type.SCORE:
+			enhancement_value.text = "+ %s" % str(enhancement.score_bonus)
+			enhancement_value_container.self_modulate = Color(0.08, 0.38, 0.40)
+		Enhancement.Type.MULTIPLIER:
+			enhancement_value.text = "+ %s" % str(enhancement.mult_bonus)
+			enhancement_value_container.self_modulate = Color(0.52, 0.10, 0.12)
+		Enhancement.Type.GOLD:
+			enhancement_value.text = "+ %s" % str(enhancement.gold_bonus)
+			enhancement_value_container.self_modulate = Color(0.715, 0.509, 0.05)
+		Enhancement.Type.TRIGGER:
+			enhancement_value.text = "+ %s" % str(enhancement.trigger_count)
+			enhancement_value_container.self_modulate = Color(0.58, 0.28, 0.06)
+
+
+#region Animations and colors
 # Drop-in animation when a rune is first placed on a tile.
 func play_placement_animation() -> void:
 	_anim_target.position.y = PLACEMENT_DROP_OFFSET
@@ -90,7 +122,7 @@ func play_activation_animation() -> void:
 	
 	_activation_tween = create_tween()
 	
-	# Phase 1: pop outward with a gold-tinted highlight.
+	# Step 1: pop outward with a gold-tinted highlight.
 	_activation_tween.set_parallel(true)
 	_activation_tween.tween_property(
 		_anim_target,
@@ -105,7 +137,7 @@ func play_activation_animation() -> void:
 		ACTIVATION_POP_DURATION
 	)
 	
-	# Phase 2: settle back to the resting pose.
+	# Step 2: settle back to the resting pose.
 	_activation_tween.set_parallel(false)
 	_activation_tween.tween_property(
 		_anim_target,
@@ -188,3 +220,4 @@ func stop_empower_flash() -> void:
 	_empower_flash_tween = null
 	
 	_apply_resting_modulate()
+#endregion Animations and colors

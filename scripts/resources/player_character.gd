@@ -51,10 +51,10 @@ static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Run
 	if character == null:
 		return hand
 
-	if character.uses_standard_starting_hand:
-		hand.append_array(_get_starting_producer_runes(3))
-		hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
-		hand.shuffle()
+	# 5 common runes, then difficulty may drop cards from the back.
+	hand.append_array(_get_starting_producer_runes(3))
+	hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
+	hand.shuffle()
 
 	# Drop card based on difficulty level
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)

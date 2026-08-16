@@ -12,10 +12,8 @@ content_margin_bottom = 32.0
 texture = ExtResource("2_f84w1")
 
 [sub_resource type="FontVariation" id="FontVariation_0dxj0"]
-variation_embolden = 0.25
 
 [sub_resource type="FontVariation" id="FontVariation_c0n6m"]
-variation_embolden = 0.25
 
 [node name="TilePanel" type="Control" unique_id=882335406]
 z_index = 100
@@ -51,7 +49,7 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
 theme_override_fonts/font = SubResource("FontVariation_0dxj0")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 21
 text = "Tile Modifier"
 
 [node name="ActiveTileModifier" type="Label" parent="PanelContainer/VBoxContainer/TileDetailsContainer" unique_id=869168508]

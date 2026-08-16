@@ -43,8 +43,7 @@ var _layout: HexMapLayout
 
 # Card placement handler
 var card_placement_handler: CardPlacementHandler
-# True while the player holds toggle_map_display (Ctrl) to hide rune icons.
-var _runes_hidden: bool = false
+
 var _challenge_highlighted_coords: Array[Vector2i] = []
 var _disabled_tile_coords: Array[Vector2i] = []
 # Tiles currently lit during the post-turn segment result reveal.
@@ -71,6 +70,7 @@ func _ready() -> void:
 	EventBus.rune_empowered.connect(_on_rune_empowered)
 	EventBus.rune_empower_consumed.connect(_on_rune_empower_consumed)
 	EventBus.card_drag_started.connect(_on_card_drag_started_hide_tile_panel)
+	EventBus.map_display_layout_changed.connect(_on_map_display_layout_changed)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
@@ -87,10 +87,6 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var should_hide_runes := Input.is_action_pressed("toggle_map_display")
-	if should_hide_runes != _runes_hidden:
-		_set_runes_hidden(should_hide_runes)
-
 	# Re-anchor while visible so zoom/pan mid-hover stays lined up with the tile.
 	if tile_panel.visible and _tile_panel_hover_coords != Vector2i(-1, -1):
 		tile_panel.update_anchor(_get_tile_screen_rect(_tile_panel_hover_coords))
@@ -413,8 +409,16 @@ func _assign_segment_passive_modifiers() -> void:
 		map_data[segment[0]].set_segment_passive_modifier(modifier)
 
 
+func _on_map_display_layout_changed(layout: String) -> void:
+	if layout == "base":
+		_set_runes_hidden(false)
+	elif layout == "tile_passives":
+		_set_runes_hidden(true)
+	elif layout == "order_segments":
+		_set_runes_hidden(true)
+
+
 func _set_runes_hidden(hide_runes: bool) -> void:
-	_runes_hidden = hide_runes
 	for hex: Hex in map_data.values():
 		hex.set_runes_hidden(hide_runes)
 

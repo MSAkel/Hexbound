@@ -70,7 +70,7 @@ func place_rune(rune: Rune) -> void:
 	new_rune_instance.tile = self
 	new_rune_instance.center_coordinates = coordinates
 
-	new_rune_instance.setup(rune)
+	new_rune_instance.setup(active_rune)
 	# Fixed size keeps runes aligned to the hex art
 	new_rune_instance.position = Vector2.ZERO
 	new_rune_instance.size = HEX_TILE_SIZE
@@ -115,7 +115,6 @@ func set_segment_passive_modifier(modifier: SegmentPassiveModifier) -> void:
 		items_grid.add_child(segment_passive_icon)
 
 	segment_passive_icon.texture = modifier.icon
-	_refresh_segment_passive_icon_rotation()
 	_apply_display_mode()
 
 
@@ -130,20 +129,7 @@ func _create_segment_passive_icon() -> TextureRect:
 	icon.offset_top = -half_size.y
 	icon.offset_right = half_size.x
 	icon.offset_bottom = half_size.y
-	# Row-direction flips rotate around the icon center, not the top-left corner.
-	icon.pivot_offset = half_size
 	return icon
-
-
-func _refresh_segment_passive_icon_rotation() -> void:
-	if segment_passive_icon == null or segment_passive_modifier == null:
-		return
-	if segment_passive_modifier.modifier_type != SegmentPassiveModifier.Type.FIRST_ROW:
-		segment_passive_icon.rotation = 0.0
-		return
-
-	var row_index := map.get_segment_index(coordinates)
-	segment_passive_icon.rotation = PI if row_index % 2 == 1 else 0.0
 
 
 # Apply a run-time tile modifier. Returns false on segment-passive or occupied tiles.
@@ -174,8 +160,10 @@ func try_apply_enhancement(enhancement: Enhancement) -> bool:
 
 	# Each placement needs its own instance so map state does not leak between cards.
 	active_rune.enhancement = enhancement.duplicate(true)
-	EventBus.enhancement_applied.emit(active_rune, active_rune.enhancement)
-	# Future: add enhancement_icon UI when that overlay is implemented.
+	## Handle enhancement UI display
+	if rune_ui != null:
+		rune_ui.show_enhancement(active_rune.enhancement)
+
 	return true
 
 

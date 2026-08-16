@@ -6,7 +6,7 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r6dd1"]
 content_margin_left = 16.0
 content_margin_right = 16.0
-bg_color = Color(0.10459473, 0.41231135, 0.36963555, 0.16078432)
+bg_color = Color(0.106126174, 0.41277742, 0.3703063, 0.53000003)
 corner_radius_top_left = 100
 corner_radius_top_right = 100
 corner_radius_bottom_right = 100
@@ -23,6 +23,7 @@ script = ExtResource("1_bo2vp")
 layout_mode = 2
 
 [node name="SegmentScore" type="Label" parent="HBoxContainer" unique_id=577569526]
+visible = false
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
@@ -30,12 +31,14 @@ theme_override_font_sizes/font_size = 21
 text = "0"
 
 [node name="x" type="Label" parent="HBoxContainer" unique_id=291974523]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
 text = "x"
 
 [node name="SegmentMultiplier" type="Label" parent="HBoxContainer" unique_id=1993148651]
+visible = false
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)

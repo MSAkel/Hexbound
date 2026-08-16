@@ -8,8 +8,8 @@ signal turn_ended
 signal turn_started  
 ## Emitted when the turn changes
 signal turn_changed
-## Emitted when the phase changes
-signal phase_changed(new_phase: int)
+## Emitted when the round changes
+signal round_changed(new_round: int)
 
 ## Challenge signals
 signal challenge_schedule_changed
@@ -50,8 +50,11 @@ signal rune_empowered(rune: Rune)
 signal rune_empower_consumed(rune: Rune)  
 ## Emitted when an enhancement card is added to hand
 signal enhancement_selected(enhancement: Enhancement)  
-## Emitted when an enhancement is placed on a rune
-signal enhancement_applied(rune: Rune, enhancement: Enhancement)  
+
 signal card_selected(card: CardUI)
 
 signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)
+
+signal map_display_layout_changed(layout: String)
+
+signal activations_needed_for_next_perk_changed(new_activations_needed: int)
