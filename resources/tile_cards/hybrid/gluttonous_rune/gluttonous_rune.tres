@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://dia2wi5j18o8g"]
+
+[ext_resource type="Texture2D" uid="uid://bpg7ltsn778y8" path="res://assets/icons/runes/hybrid/gluttonous_rune.png" id="1_mi1r8"]
+[ext_resource type="Script" uid="uid://bn2e4r844r0fo" path="res://resources/tile_cards/hybrid/gluttonous_rune/gluttonous_rune.gd" id="2_41old"]
+
+[resource]
+script = ExtResource("2_41old")
+base_production_amount = 30
+rarity = 2
+type = 2
+id = "gluttonous_rune"
+name = "Gluttonous Rune"
+icon = ExtResource("1_mi1r8")
+description = "+30 Essence. Consumes the next adjacent card to permanently double it's Essence (stackable)"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

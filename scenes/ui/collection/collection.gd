@@ -8,7 +8,7 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 
 
 func _ready() -> void:
-	for rune in GameManager.runes_pool:
+	for rune in GameManager.tile_cards_pool:
 		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
 		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW)
 		collection_grid_container.add_child(card_ui)

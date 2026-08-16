@@ -4,8 +4,8 @@ extends Node
 const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 
 var _coordinates: Vector2i = Vector2i(0, 0)
-## The rune currently placed on this tile.
-var active_rune: Rune = null
+## The TileCard currently occupying this hex.
+var active_tile_card: TileCard = null
 var rune_ui: RuneUI = null
 
 # Character segment passive, stamped at run start on fixed tiles. Cannot be changed or overridden.
@@ -57,20 +57,20 @@ func can_receive_tile_modifier() -> bool:
 	return TileModifier.can_replace_on(self)
 
 
-func place_rune(rune: Rune) -> void:
+func place_tile_card(rune: TileCard) -> void:
 	# Prevent placing a rune if one already exists or the tile is disabled by difficulty.
-	if active_rune != null or is_disabled_by_difficulty:
+	if active_tile_card != null or is_disabled_by_difficulty:
 		return
 	
 	# Each tile needs its own rune instance. hand/pool cards often share one .tres reference.
-	active_rune = rune.duplicate(true)
+	active_tile_card = rune.duplicate(true)
 	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
 	rune_ui = new_rune_instance
 	new_rune_instance.map = map
 	new_rune_instance.tile = self
 	new_rune_instance.center_coordinates = coordinates
 
-	new_rune_instance.setup(active_rune)
+	new_rune_instance.setup(active_tile_card)
 	# Fixed size keeps runes aligned to the hex art
 	new_rune_instance.position = Vector2.ZERO
 	new_rune_instance.size = HEX_TILE_SIZE
@@ -78,15 +78,15 @@ func place_rune(rune: Rune) -> void:
 	items_grid.add_child(new_rune_instance)
 	new_rune_instance.play_placement_animation()
 	_apply_display_mode()
-	refresh_rune_visual_state()
+	refresh_tile_card_visual_state()
 
 
 # Restore a placed rune from a save file without duplicating the resource again.
-func restore_placed_rune(rune: Rune) -> void:
-	if active_rune != null or is_disabled_by_difficulty:
+func restore_placed_tile_card(rune: TileCard) -> void:
+	if active_tile_card != null or is_disabled_by_difficulty:
 		return
 
-	active_rune = rune
+	active_tile_card = rune
 	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
 	rune_ui = new_rune_instance
 	new_rune_instance.map = map
@@ -97,7 +97,7 @@ func restore_placed_rune(rune: Rune) -> void:
 	new_rune_instance.size = HEX_TILE_SIZE
 	items_grid.add_child(new_rune_instance)
 	_apply_display_mode()
-	refresh_rune_visual_state()
+	refresh_tile_card_visual_state()
 
 
 # Stamp the character's segment passive onto this tile (run start only).
@@ -159,22 +159,22 @@ func try_apply_enhancement(enhancement: Enhancement) -> bool:
 		return false
 
 	# Each placement needs its own instance so map state does not leak between cards.
-	active_rune.enhancement = enhancement.duplicate(true)
+	active_tile_card.enhancement = enhancement.duplicate(true)
 	## Handle enhancement UI display
 	if rune_ui != null:
-		rune_ui.show_enhancement(active_rune.enhancement)
+		rune_ui.show_enhancement(active_tile_card.enhancement)
 
 	return true
 
 
 # Hide or show rune icons while keeping segment-passive modifiers visible.
-func set_runes_hidden(hide_runes: bool) -> void:
+func set_tile_cards_hidden(hide_runes: bool) -> void:
 	_runes_hidden = hide_runes
 	_apply_display_mode()
 
 
 func _apply_display_mode() -> void:
-	var has_rune := rune_ui != null and active_rune != null
+	var has_rune := rune_ui != null and active_tile_card != null
 	if segment_passive_icon != null:
 		# Modifiers are shown by default; a placed rune takes priority on the same tile.
 		segment_passive_icon.visible = (
@@ -185,12 +185,12 @@ func _apply_display_mode() -> void:
 		rune_ui.visible = has_rune and not _runes_hidden
 
 
-func refresh_rune_visual_state() -> void:
-	if rune_ui == null or active_rune == null:
+func refresh_tile_card_visual_state() -> void:
+	if rune_ui == null or active_tile_card == null:
 		return
 
 	var target_modulate := Color.WHITE
-	if not active_rune.is_active:
+	if not active_tile_card.is_active:
 		target_modulate = RUNE_INACTIVE_MODULATE
 	elif _challenge_rune_modulate != Color.WHITE:
 		target_modulate = _challenge_rune_modulate
@@ -198,22 +198,22 @@ func refresh_rune_visual_state() -> void:
 	rune_ui.apply_resting_modulate(target_modulate)
 
 
-func set_rune_challenge_modulate(modulate: Color) -> void:
+func set_tile_card_challenge_modulate(modulate: Color) -> void:
 	_challenge_rune_modulate = modulate
-	refresh_rune_visual_state()
+	refresh_tile_card_visual_state()
 
 
-func clear_rune_challenge_modulate() -> void:
+func clear_tile_card_challenge_modulate() -> void:
 	_challenge_rune_modulate = Color.WHITE
-	refresh_rune_visual_state()
+	refresh_tile_card_visual_state()
 
 
 # Clear the placed rune from this tile and remove its map UI.
-func remove_rune() -> void:
-	if active_rune == null:
+func remove_tile_card() -> void:
+	if active_tile_card == null:
 		return
 	
-	active_rune = null
+	active_tile_card = null
 	_challenge_rune_modulate = Color.WHITE
 	if rune_ui != null:
 		rune_ui.queue_free()
@@ -222,12 +222,12 @@ func remove_rune() -> void:
 
 
 # Play the rune trigger animation without applying the effect.
-func play_rune_activation_animation() -> void:
-	if active_rune == null or rune_ui == null:
+func play_tile_card_activation_animation() -> void:
+	if active_tile_card == null or rune_ui == null:
 		return
 	
 	# Only animate active runes so inactive runes do not look triggered.
-	if active_rune.is_active:
+	if active_tile_card.is_active:
 		rune_ui.play_activation_animation()
 
 
@@ -238,11 +238,11 @@ func play_segment_result_animation() -> void:
 	rune_ui.play_segment_result_animation()
 
 
-func apply_rune_activation(activation_scale: float = 1.0) -> void:
-	if active_rune == null:
+func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
+	if active_tile_card == null:
 		return
 	
-	active_rune.activate_rune(self, activation_scale)
+	active_tile_card.activate_tile_card(self, activation_scale)
 
 
 func start_empower_flash() -> void:

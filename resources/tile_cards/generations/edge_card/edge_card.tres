@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://bp1tk0ukiucl1"]
+
+[ext_resource type="Texture2D" uid="uid://0cuoko522r8m" path="res://assets/icons/runes/production/edge_rune.png" id="1_42myd"]
+[ext_resource type="Script" uid="uid://dxmj6xelyy45s" path="res://resources/tile_cards/generations/edge_card/edge_card.gd" id="2_13ivt"]
+
+[resource]
+script = ExtResource("2_13ivt")
+base_production_amount = 40
+product = 1
+placement_restriction = 1
+id = "edge_card"
+name = "Edge Card"
+icon = ExtResource("1_42myd")
+description = "+40 Essence. Must be placed on an edge tile."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

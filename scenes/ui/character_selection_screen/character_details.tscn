@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="3_1a3dm"]
 [ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="4_daqkf"]
 [ext_resource type="Texture2D" uid="uid://cpkbpjt0rbyto" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_iw7qv"]
-[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/divider.png" id="7_eeimr"]
+[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/dividers/divider.png" id="7_eeimr"]
 [ext_resource type="Texture2D" uid="uid://bve5aohm2c03v" path="res://assets/map/segment_passives/double_production_passive.png" id="8_x6eud"]
 [ext_resource type="Texture2D" uid="uid://bp0w0wvwvpnjw" path="res://assets/gui/panels/character_selection_panel_2.png" id="9_r66gk"]
 [ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="10_ayqni"]

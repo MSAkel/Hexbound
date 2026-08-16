@@ -15,7 +15,7 @@ func _ready() -> void:
 	EventBus.total_round_score_changed.connect(_update_total_round_score)
 	EventBus.required_score_changed.connect(_update_required_score)
 	EventBus.turn_started.connect(_on_turn_started)
-	EventBus.rune_activated.connect(_update_total_rune_activations)
+	EventBus.tile_card_activated.connect(_update_total_tile_card_activations)
 
 func _on_end_turn_button_pressed() -> void:
 	EventBus.turn_ended.emit()
@@ -36,5 +36,5 @@ func _update_total_round_score() -> void:
 func _update_required_score() -> void:
 	required_score.text = "%s" % [GameManager.required_score]
 
-func _update_total_rune_activations(_rune: Rune) -> void:
+func _update_total_tile_card_activations(_rune: TileCard) -> void:
 	next_perk_counter.text = "%s" % [GameManager.rune_activations_countdown()]

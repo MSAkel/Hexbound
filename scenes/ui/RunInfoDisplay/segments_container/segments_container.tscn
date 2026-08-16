@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://b85eh86cnkj4i" path="res://assets/gui/panels/v_bar_light.png" id="1_jevqn"]
 [ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="2_amxqk"]
-[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/divider.png" id="3_i0t37"]
+[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/dividers/divider.png" id="3_i0t37"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g5bg1"]
 content_margin_left = 16.0

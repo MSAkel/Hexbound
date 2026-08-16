@@ -1,4 +1,4 @@
-# Handles rune card selection and placement on the hex tile map.
+# Handles hand card selection and placement on the hex tile map.
 class_name CardPlacementHandler
 extends Node
 
@@ -151,12 +151,7 @@ func _try_place_card() -> void:
 	if not _can_place_on_hex(hex):
 		return
 	
-	if selected_card.card is Enhancement:
-		hex.try_apply_enhancement(selected_card.card)
-	elif selected_card.card.type == Rune.RuneType.MODIFIER:
-		selected_card.card.apply_on_placement(hex)
-	else:
-		hex.place_rune(selected_card.card)
+	selected_card.card.play_on(hex)
 	EventBus.card_played.emit(selected_card)
 	AudioManager.play_sfx(UI_SOUNDS.GROUND_IMPACT)
 	
@@ -230,8 +225,8 @@ func _reset_state() -> void:
 func _update_placement_overlays() -> void:
 	_clear_placement_overlays()
 	
-	var rune := _get_selected_rune()
-	if rune == null or not rune.has_placement_restriction():
+	var tile_card := _get_selected_tile_card()
+	if tile_card == null or not tile_card.has_placement_restriction():
 		return
 	
 	for coords: Vector2i in tile_map.map_data:
@@ -239,7 +234,7 @@ func _update_placement_overlays() -> void:
 		if not _is_placement_candidate(hex):
 			continue
 		
-		if rune.can_place_on_tile(hex):
+		if tile_card.can_place_on_tile(hex):
 			continue
 		
 		_restricted_invalid_coords.append(coords)
@@ -258,11 +253,11 @@ func _update_hover_highlights(hover_hex: Hex) -> void:
 	_placement_target_coord = hover_hex.coordinates
 	_stamp_rune_highlight(_placement_target_coord)
 	
-	var rune := _get_selected_rune()
-	if rune == null:
+	var tile_card := _get_selected_tile_card()
+	if tile_card == null:
 		return
 	
-	for coords: Vector2i in rune.get_trigger_preview_coords(hover_hex):
+	for coords: Vector2i in tile_card.get_trigger_preview_coords(hover_hex):
 		if not tile_map.is_in_map(coords):
 			continue
 		if coords == _placement_target_coord:
@@ -271,45 +266,21 @@ func _update_hover_highlights(hover_hex: Hex) -> void:
 		_effect_preview_coords.append(coords)
 
 
-func _get_selected_rune() -> Rune:
-	if selected_card == null or not (selected_card.card is Rune):
+func _get_selected_tile_card() -> TileCard:
+	if selected_card == null or not (selected_card.card is TileCard):
 		return null
-	return selected_card.card as Rune
+	return selected_card.card as TileCard
 
 
 # Tiles that can receive the currently selected card before restriction checks.
 func _is_placement_candidate(hex: Hex) -> bool:
 	if selected_card == null or selected_card.card == null:
 		return false
-	if hex.is_disabled_by_difficulty:
-		return false
-	
-	if selected_card.card is Enhancement:
-		return Enhancement.can_apply_to(hex)
-	if selected_card.card.type == Rune.RuneType.MODIFIER:
-		return hex.active_rune != null
-	return hex.active_rune == null
+	return selected_card.card.is_placement_candidate(hex)
 
 
-# Modifiers and enhancements attach to occupied tiles; all other runes require an empty tile.
+# Delegates occupancy, restrictions, and attach rules to the selected Card.
 func _can_place_on_hex(hex: Hex) -> bool:
-	if hex.is_disabled_by_difficulty:
-		return false
-
 	if selected_card == null or selected_card.card == null:
 		return false
-
-	if selected_card.card is Enhancement:
-		return Enhancement.can_apply_to(hex)
-
-	if selected_card.card.type == Rune.RuneType.MODIFIER:
-		return hex.active_rune != null
-
-	if hex.active_rune != null:
-		return false
-	
-	var rune := _get_selected_rune()
-	if rune != null and not rune.can_place_on_tile(hex):
-		return false
-
-	return true
+	return selected_card.card.can_play_on(hex)

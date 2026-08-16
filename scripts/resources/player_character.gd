@@ -46,14 +46,14 @@ static func get_character_by_id(character_id: String) -> CharacterDefinition:
 
 # Build the starting hand runes for the given character.
 # 5 random common cards: 3 production (at least one score) and 2 support.
-static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Rune]:
-	var hand: Array[Rune] = []
+static func get_starting_hand_runes(character: CharacterDefinition) -> Array[TileCard]:
+	var hand: Array[TileCard] = []
 	if character == null:
 		return hand
 
 	# 5 common runes, then difficulty may drop cards from the back.
 	hand.append_array(_get_starting_producer_runes(3))
-	hand.append_array(_get_random_common_runes(2, Rune.RuneType.SUPPORT))
+	hand.append_array(_get_random_common_runes(2, TileCard.TileCardType.SUPPORT))
 	hand.shuffle()
 
 	# Drop card based on difficulty level
@@ -67,13 +67,13 @@ static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Run
 
 
 # Draw producers with a guaranteed score rune among them.
-static func _get_starting_producer_runes(count: int) -> Array[Rune]:
+static func _get_starting_producer_runes(count: int) -> Array[TileCard]:
 	if count <= 0:
 		return []
 
 	# Lock in one score producer first so the opening hand can always score.
-	var producers: Array[Rune] = _get_random_common_runes(
-		1, Rune.RuneType.PRODUCER, Rune.Product.SCORE
+	var producers: Array[TileCard] = _get_random_common_runes(
+		1, TileCard.TileCardType.PRODUCER, TileCard.Product.SCORE
 	)
 
 	# Fill the remaining slots from any common producer, excluding the score pick.
@@ -85,8 +85,8 @@ static func _get_starting_producer_runes(count: int) -> Array[Rune]:
 	for rune in producers:
 		used_ids[rune.id] = true
 
-	var available_pool: Array[Rune] = []
-	for rune in GameManager.runes_pool:
+	var available_pool: Array[TileCard] = []
+	for rune in GameManager.tile_cards_pool:
 		if used_ids.has(rune.id):
 			continue
 		available_pool.append(rune)
@@ -95,8 +95,8 @@ static func _get_starting_producer_runes(count: int) -> Array[Rune]:
 		RuneLoot.draw_filtered(
 			remaining_count,
 			available_pool,
-			Rune.RuneRarity.COMMON,
-			Rune.RuneType.PRODUCER
+			TileCard.TileCardRarity.COMMON,
+			TileCard.TileCardType.PRODUCER
 		)
 	)
 	return producers
@@ -105,13 +105,13 @@ static func _get_starting_producer_runes(count: int) -> Array[Rune]:
 # Pick random common runes of the given type from the pool.
 static func _get_random_common_runes(
 	count: int,
-	rune_type: Rune.RuneType,
+	rune_type: TileCard.TileCardType,
 	product: Variant = null
-) -> Array[Rune]:
+) -> Array[TileCard]:
 	return RuneLoot.draw_filtered(
 		count,
-		GameManager.runes_pool,
-		Rune.RuneRarity.COMMON,
+		GameManager.tile_cards_pool,
+		TileCard.TileCardRarity.COMMON,
 		rune_type,
 		true,
 		product

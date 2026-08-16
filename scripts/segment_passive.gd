@@ -9,12 +9,12 @@ const SPIRALIST_CENTER_ACTIVATION_COUNT := 3
 
 
 static func get_activation_scale(tile: Hex) -> float:
-	if tile.active_rune == null or tile.segment_passive_modifier == null:
+	if tile.active_tile_card == null or tile.segment_passive_modifier == null:
 		return 1.0
 
 	if tile.segment_passive_modifier.modifier_type != SegmentPassiveModifier.Type.FIRST_ROW:
 		return 1.0
-	if tile.active_rune.type != Rune.RuneType.PRODUCER:
+	if tile.active_tile_card.type != TileCard.TileCardType.PRODUCER:
 		return 1.0
 
 	return SURVEYOR_ACTIVATION_SCALE
@@ -31,7 +31,7 @@ static func get_activation_count(tile: Hex) -> int:
 
 
 static func apply_post_activation_effects(tile: Hex) -> void:
-	if tile.active_rune == null or tile.segment_passive_modifier == null:
+	if tile.active_tile_card == null or tile.segment_passive_modifier == null:
 		return
 
 	if tile.segment_passive_modifier.modifier_type == SegmentPassiveModifier.Type.FIRST_CIRCLE:
@@ -39,11 +39,11 @@ static func apply_post_activation_effects(tile: Hex) -> void:
 
 
 static func _apply_encircler_post_activation(tile: Hex) -> void:
-	if tile.active_rune.type != Rune.RuneType.SUPPORT:
+	if tile.active_tile_card.type != TileCard.TileCardType.SUPPORT:
 		return
 
-	var triggered_producers: Array[Rune] = []
-	for rune: Rune in tile.map.get_all_runes_on_same_segment(tile, Rune.RuneType.PRODUCER):
+	var triggered_producers: Array[TileCard] = []
+	for rune: TileCard in tile.map.get_all_tile_cards_on_same_segment(tile, TileCard.TileCardType.PRODUCER):
 		if randf() >= ENCIRCLER_PROD_TRIGGER_CHANCE:
 			continue
 		triggered_producers.append(rune)
@@ -51,4 +51,4 @@ static func _apply_encircler_post_activation(tile: Hex) -> void:
 	if triggered_producers.is_empty():
 		return
 
-	tile.active_rune.queue_rune_triggers(tile, triggered_producers)
+	tile.active_tile_card.queue_tile_card_triggers(tile, triggered_producers)

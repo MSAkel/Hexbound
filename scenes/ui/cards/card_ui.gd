@@ -9,15 +9,6 @@ const BASE_STYLEBOX := preload("res://themes/card_base_stylebox.tres")
 const HOVER_STYLEBOX := preload("res://themes/card_hover_stylebox.tres")
 const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 
-# Fallback prices when a rune has no rarity set in its resource.
-const BASE_PRICE_BY_RARITY := {
-	Rune.RuneRarity.COMMON: 15,
-	Rune.RuneRarity.UNCOMMON: 30,
-	Rune.RuneRarity.RARE: 45,
-}
-const DEFAULT_PRICE := 10
-const ENHANCEMENT_BASE_PRICE := 30
-
 @onready var card_name: Label = $VBoxContainer/NameContainer/CardName
 @onready var icon: TextureRect = $VBoxContainer/IconContainer/Icon
 @onready var card_description: Label = $VBoxContainer/CardDescription
@@ -43,13 +34,8 @@ enum InteractionMode {
 	PREVIEW,
 }
 
-enum CardType {
-	RUNE,
-	ENHANCEMENT,
-}
-
-var card = null
-var card_type: CardType
+# Typed payload. TileCard occupies hexes, Enhancement attaches to a placed TileCard.
+var card: Card = null
 var interaction_mode: InteractionMode = InteractionMode.HAND
 # Preview cards (e.g. character select) should not play hover elevation.
 var hover_enabled := true
@@ -309,7 +295,8 @@ func _handle_choice_gui_input(event: InputEvent) -> void:
 		accept_event()
 
 
-func set_card(data) -> void:
+# Bind presentation fields from the shared Card resource.
+func set_card(data: Card) -> void:
 	if not is_node_ready():
 		await ready
 
@@ -317,23 +304,11 @@ func set_card(data) -> void:
 	card_name.text = data.name
 	icon.texture = data.icon
 	card_description.text = data.description
-
-	if data is Rune:
-		card_type = CardType.RUNE
-		card_type_label.text = Rune.RuneType.keys()[data.type]
-	elif data is Enhancement:
-		card_type = CardType.ENHANCEMENT
-		card_type_label.text = "Enhancement"
-	else:
-		push_error("Unknown card type for data: ", data)
+	card_type_label.text = data.get_card_kind_label()
 
 	if interaction_mode == InteractionMode.MERCHANT:
 		_refresh_merchant_price()
 		_update_affordability()
-
-
-func get_card_type() -> CardType:
-	return card_type
 
 
 func is_mouse_over() -> bool:
@@ -378,27 +353,11 @@ func apply_discount(discount: float) -> void:
 	_update_affordability()
 
 
-static func get_price_for_rune(card_rune: Rune, discount: float = 0.0) -> int:
-	var base_price: int = BASE_PRICE_BY_RARITY.get(card_rune.rarity, DEFAULT_PRICE)
-	return maxi(1, int(round(base_price * (Difficulty.get_merchant_price_multiplier(GameManager.selected_difficulty) - discount))))
-
-
-static func get_price_for_enhancement(discount: float = 0.0) -> int:
-	return maxi(1, int(round(ENHANCEMENT_BASE_PRICE * (Difficulty.get_merchant_price_multiplier(GameManager.selected_difficulty) - discount))))
-
-
 func _refresh_merchant_price() -> void:
 	if card == null:
 		return
 
-	if card is Rune:
-		price = get_price_for_rune(card as Rune, _discount)
-	elif card is Enhancement:
-		price = get_price_for_enhancement(_discount)
-	else:
-		push_error("CardUI cannot price unsupported resource type")
-		return
-
+	price = card.get_shop_price(_discount)
 	price_label.text = "$%d" % price
 
 

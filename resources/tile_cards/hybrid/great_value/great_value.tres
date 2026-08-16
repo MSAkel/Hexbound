@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://om6a1l4snwcg"]
+
+[ext_resource type="Texture2D" uid="uid://b4f2gp2ggp8ew" path="res://assets/icons/runes/hybrid/great_value.png" id="1_645dx"]
+[ext_resource type="Script" uid="uid://bsawstnxgd2m5" path="res://resources/tile_cards/hybrid/great_value/great_value.gd" id="2_jt1cb"]
+
+[resource]
+script = ExtResource("2_jt1cb")
+base_production_amount = null
+rarity = 1
+type = 2
+id = "great_value"
+name = "Great Value"
+icon = ExtResource("1_645dx")
+description = "Spends 1 gold to empower a random production card in its segment"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

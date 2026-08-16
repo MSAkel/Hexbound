@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://tgx0mcgx7sat"]
+
+[ext_resource type="Texture2D" uid="uid://bea2j31x8q4c" path="res://assets/icons/runes/support/catalyst.png" id="1_hq5bc"]
+[ext_resource type="Script" uid="uid://dbqwu661a2dw7" path="res://resources/tile_cards/support/catalyst/catalyst.gd" id="2_ky0lw"]
+
+[resource]
+script = ExtResource("2_ky0lw")
+type = 1
+id = "catalyst"
+name = "Catalyst"
+icon = ExtResource("1_hq5bc")
+description = "After every 2 activations, empowers a random Producer in its segment."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

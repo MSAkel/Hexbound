@@ -15,7 +15,7 @@ const INTRO_CARD_STAGGER := 0.07
 
 ## Debug-only cards appended to the opening hand.
 @export_group("Debug Starting Hand")
-@export var debug_starting_runes: Array[Rune] = []
+@export var debug_starting_runes: Array[TileCard] = []
 @export var debug_starting_enhancements: Array[Enhancement] = []
 
 ## Keep starting cards parked off-screen until Main finishes fade/zoom.
@@ -24,7 +24,7 @@ var _awaiting_intro := true
 ## Reparent cards to hand when they are dragged or released
 func _ready() -> void:
 	EventBus.card_played.connect(_on_card_played)
-	EventBus.rune_selected.connect(_add_rune_card)
+	EventBus.tile_card_selected.connect(_add_tile_card)
 	EventBus.enhancement_selected.connect(_add_enhancement_card)
 	EventBus.turn_ended.connect(_hide_hand)
 	EventBus.turn_started.connect(_show_hand)
@@ -36,7 +36,7 @@ func _ready() -> void:
 	## Starting hand depends on the character selected before the run begins
 	var starting_runes := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
 	for rune in starting_runes:
-		_add_rune_card(rune)
+		_add_tile_card(rune)
 
 	_add_debug_starting_cards()
 
@@ -52,14 +52,14 @@ func _add_debug_starting_cards() -> void:
 
 	for rune in debug_starting_runes:
 		if rune != null:
-			_add_rune_card(rune)
+			_add_tile_card(rune)
 
 	for enhancement in debug_starting_enhancements:
 		if enhancement != null:
 			_add_enhancement_card(enhancement)
 
 
-func _add_rune_card(rune: Rune) -> void:
+func _add_tile_card(rune: TileCard) -> void:
 	_add_card(rune)
 
 
@@ -67,7 +67,7 @@ func _add_enhancement_card(enhancement: Enhancement) -> void:
 	_add_card(enhancement)
 
 
-func _add_card(data: Resource) -> void:
+func _add_card(data: Card) -> void:
 	var new_rune_card := CARD_UI_SCENE.instantiate() as CardUI
 	new_rune_card.configure_interaction(CardUI.InteractionMode.HAND)
 	add_child(new_rune_card)
@@ -237,10 +237,10 @@ func capture_hand_state() -> Dictionary:
 		if not child is CardUI:
 			continue
 		var card_ui := child as CardUI
-		if card_ui.card is Rune:
-			cards.append({"kind": "rune", "id": (card_ui.card as Rune).id})
-		elif card_ui.card is Enhancement:
-			cards.append({"kind": "enhancement", "id": (card_ui.card as Enhancement).id})
+		if card_ui.card == null:
+			continue
+		# Writes "tile_card" or "enhancement". Older saves used "rune".
+		cards.append({"kind": card_ui.card.get_save_kind(), "id": card_ui.card.id})
 
 	return {
 		"cards": cards,
@@ -261,10 +261,10 @@ func restore_hand_state(state: Dictionary) -> void:
 	for entry: Dictionary in state.get("cards", []):
 		var kind: String = entry.get("kind", "")
 		var card_id: String = entry.get("id", "")
-		if kind == "rune":
-			var rune := GameManager.get_rune_by_id(card_id)
-			if rune != null:
-				_add_rune_card(rune)
+		if kind == "tile_card" or kind == "rune":
+			var tile_card := GameManager.get_tile_card_by_id(card_id)
+			if tile_card != null:
+				_add_tile_card(tile_card)
 		elif kind == "enhancement":
 			var enhancement := GameManager.get_enhancement_by_id(card_id)
 			if enhancement != null:

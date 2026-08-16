@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://cdwhguguoqq60"]
+
+[ext_resource type="Texture2D" uid="uid://62jqqcmgcb3d" path="res://assets/icons/runes/production/central_bank.png" id="1_78phl"]
+[ext_resource type="Script" uid="uid://cwd68crfojhnc" path="res://resources/tile_cards/generations/central_bank/central_bank.gd" id="2_3t4dt"]
+
+[resource]
+script = ExtResource("2_3t4dt")
+base_production_amount = 2
+rarity = 1
+product = 0
+id = "central_bank"
+name = "Central Bank"
+icon = ExtResource("1_78phl")
+description = " +2 Gold, increases by 2 for every adjacent gold Production card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

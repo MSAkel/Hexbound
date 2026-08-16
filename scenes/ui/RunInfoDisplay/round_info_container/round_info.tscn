@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://b85eh86cnkj4i" path="res://assets/gui/panels/v_bar_light.png" id="1_wgaml"]
 [ext_resource type="Script" uid="uid://b001af0n3a5p" path="res://scenes/ui/RunInfoDisplay/round_info_container/round_info_container.gd" id="2_hjquj"]
-[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/divider.png" id="2_vqnsx"]
+[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/dividers/divider.png" id="2_vqnsx"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g5bg1"]
 content_margin_left = 24.0
@@ -76,7 +76,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
-text = "Required Score"
+text = "Required Essence"
 horizontal_alignment = 1
 
 [node name="RequiredScore" type="Label" parent="VBoxContainer/RequiredScoreContainer" unique_id=992593298]
@@ -101,7 +101,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
-text = "Score this round"
+text = "Current Essence"
 horizontal_alignment = 1
 
 [node name="ScoreThisRound" type="Label" parent="VBoxContainer/ScoreContainer" unique_id=422264704]

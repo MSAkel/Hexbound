@@ -29,7 +29,7 @@ const PLACEMENT_DROP_DURATION := 0.28
 const EMPOWER_FLASH_HIGHLIGHT := Color(1.45, 1.35, 0.15, 1.0)
 const EMPOWER_FLASH_DURATION := 0.45
 
-func setup(rune: Rune) -> void:
+func setup(rune: TileCard) -> void:
 	if not is_node_ready():
 		await ready
 	

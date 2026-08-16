@@ -91,16 +91,16 @@ var turn_score: int:
 #region Runes and enhancements pools
 
 ## Every rune resource loaded from disk at startup.
-var runes_pool: Array[Rune] = []
+var tile_cards_pool: Array[TileCard] = []
 ## Every enhancement resource loaded from disk at startup.
 var enhancements_pool: Array[Enhancement] = []
 
 #endregion
 
-#region Rune activation tracking
+#region TileCard activation tracking
 
 ## Cleared at turn start, filled as each rune resolves during turn processing.
-var _activated_runes_this_turn: Array[Rune] = []
+var _activated_tile_cards_this_turn: Array[TileCard] = []
 ## Incremented on each turn_started, placed runes use this to gate once-per-turn permanent effects.
 var turn_stamp: int = 0
 
@@ -131,11 +131,11 @@ func _ready() -> void:
 	if selected_character == null:
 		selected_character = PlayerCharacter.get_default_character()
 
-	_load_runes_from_directory("res://resources/runes/")
+	_load_tile_cards_from_directory("res://resources/tile_cards/")
 	_load_enhancements_from_directory("res://resources/enhancements/")
 
-	if runes_pool.is_empty():
-		push_error("No runes loaded into pool")
+	if tile_cards_pool.is_empty():
+		push_error("No tile cards loaded into pool")
 
 	if enhancements_pool.is_empty():
 		push_warning("No enhancements loaded into pool")
@@ -182,7 +182,7 @@ func finish_turn_processing() -> void:
 
 func _on_turn_started() -> void:
 	turn_stamp += 1
-	_activated_runes_this_turn.clear()
+	_activated_tile_cards_this_turn.clear()
 	GoldManager.reset_turn_tracking()
 
 
@@ -265,17 +265,17 @@ func advance_round() -> void:
 
 #endregion
 
-#region Rune activation
-## Register a rune activation from rune.gd activate_rune() 
-## for it to be read by hex_tile_map.gd can_consume_next_rune_in_trigger_order()
-func register_rune_activation(rune: Rune) -> void:
-	_activated_runes_this_turn.append(rune)
+#region TileCard activation
+## Register a tile card activation from tile_card.gd activate_tile_card() 
+## for it to be read by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
+func register_tile_card_activation(rune: TileCard) -> void:
+	_activated_tile_cards_this_turn.append(rune)
 	_total_rune_activations += 1
 
 ## Read rune activation to check if it has already fired this turn.
-## Used by hex_tile_map.gd can_consume_next_rune_in_trigger_order()
-func has_rune_activated_this_turn(rune: Rune) -> bool:
-	return _activated_runes_this_turn.has(rune)
+## Used by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
+func has_tile_card_activated_this_turn(rune: TileCard) -> bool:
+	return _activated_tile_cards_this_turn.has(rune)
 
 func rune_activations_countdown() -> int:
 	return _activations_needed_for_next_perk - _total_rune_activations
@@ -285,7 +285,7 @@ func rune_activations_countdown() -> int:
 
 ## Recursively load every .tres rune under the runes folder, skipping duplicate ids.
 ## ResourceLoader.list_directory works in exported builds, DirAccess only sees .gd files in PCK.
-func _load_runes_from_directory(dir_path: String) -> void:
+func _load_tile_cards_from_directory(dir_path: String) -> void:
 	var normalized_path := dir_path
 	if not normalized_path.ends_with("/"):
 		normalized_path += "/"
@@ -296,26 +296,26 @@ func _load_runes_from_directory(dir_path: String) -> void:
 
 		if entry.ends_with("/"):
 			# Visit subfolders first so organized copies win over legacy root duplicates.
-			_load_runes_from_directory(normalized_path.path_join(entry.trim_suffix("/")))
+			_load_tile_cards_from_directory(normalized_path.path_join(entry.trim_suffix("/")))
 			continue
 
 		if not entry.ends_with(".tres"):
 			continue
 
 		var resource_path := normalized_path.path_join(entry)
-		var rune := ResourceLoader.load(resource_path) as Rune
+		var rune := ResourceLoader.load(resource_path) as TileCard
 		if rune == null:
 			push_error("Failed to load rune: " + resource_path)
 			continue
 
-		if _has_rune_with_id(rune.id):
+		if _has_tile_card_with_id(rune.id):
 			continue
 
-		runes_pool.append(rune)
+		tile_cards_pool.append(rune)
 
 
-func _has_rune_with_id(rune_id: String) -> bool:
-	for existing_rune in runes_pool:
+func _has_tile_card_with_id(rune_id: String) -> bool:
+	for existing_rune in tile_cards_pool:
 		if existing_rune.id == rune_id:
 			return true
 	return false
@@ -376,7 +376,7 @@ func reset_for_new_run() -> void:
 	required_score_multiplier = 1.5
 	_total_round_score = 0
 	_turn_score = 0
-	_activated_runes_this_turn.clear()
+	_activated_tile_cards_this_turn.clear()
 	turn_stamp = 0
 	game_speed = 1.0
 
@@ -412,12 +412,12 @@ func apply_run_state(state: Dictionary) -> void:
 	_pending_round_advance = bool(state.get("pending_round_advance", false))
 	_pending_post_victory_round_advance = bool(state.get("pending_post_victory_round_advance", false))
 	turn_stamp = int(state.get("turn_stamp", 0))
-	_activated_runes_this_turn.clear()
+	_activated_tile_cards_this_turn.clear()
 	game_speed = float(state.get("game_speed", 1.0))
 
 
-func get_rune_by_id(rune_id: String) -> Rune:
-	for rune in runes_pool:
+func get_tile_card_by_id(rune_id: String) -> TileCard:
+	for rune in tile_cards_pool:
 		if rune.id == rune_id:
 			return rune
 	return null

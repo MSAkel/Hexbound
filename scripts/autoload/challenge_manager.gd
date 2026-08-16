@@ -68,7 +68,7 @@ var _pending_challenge_reveal := false
 
 func _ready() -> void:
 	EventBus.turn_started.connect(_on_turn_started)
-	EventBus.rune_activated.connect(_on_rune_activated)
+	EventBus.tile_card_activated.connect(_on_tile_card_activated)
 	EventBus.merchant_closed.connect(_on_merchant_closed)
 
 
@@ -161,14 +161,14 @@ func get_runes_pack_size() -> int:
 	return GameManager.RUNES_PACK_SIZE
 
 
-func should_skip_primary_producer_activation(rune: Rune) -> bool:
-	return active_challenge == Type.CHAIN_REACTION and rune.type == Rune.RuneType.PRODUCER
+func should_skip_primary_producer_activation(rune: TileCard) -> bool:
+	return active_challenge == Type.CHAIN_REACTION and rune.type == TileCard.TileCardType.PRODUCER
 
 
 func get_producer_output_multiplier(tile: Hex) -> float:
 	if active_challenge != Type.FADING_SECTOR or _halved_segment_index < 0:
 		return 1.0
-	if tile.active_rune == null or tile.active_rune.type != Rune.RuneType.PRODUCER:
+	if tile.active_tile_card == null or tile.active_tile_card.type != TileCard.TileCardType.PRODUCER:
 		return 1.0
 
 	var tile_map := _get_tile_map()
@@ -193,10 +193,10 @@ func _on_turn_started() -> void:
 		_clear_fading_sector_visuals()
 
 
-func _on_rune_activated(rune: Rune) -> void:
+func _on_tile_card_activated(rune: TileCard) -> void:
 	if active_challenge != Type.TAXATION:
 		return
-	if rune.type != Rune.RuneType.SUPPORT:
+	if rune.type != TileCard.TileCardType.SUPPORT:
 		return
 	if GoldManager.amount <= 0:
 		return
@@ -204,7 +204,7 @@ func _on_rune_activated(rune: Rune) -> void:
 	GoldManager.remove(1)
 	var tile_map := _get_tile_map()
 	if tile_map != null:
-		var hex := tile_map.get_hex_for_rune(rune)
+		var hex := tile_map.get_hex_for_tile_card(rune)
 		if hex != null:
 			var tile_pos := tile_map.base_layer.map_to_local(hex.coordinates)
 			tile_map.create_floating_text(tile_pos, "-1 Gold", Color.GOLD)
@@ -231,23 +231,23 @@ func _apply_blackout() -> void:
 
 	for i in mini(5, hexes_with_runes.size()):
 		var hex := hexes_with_runes[i]
-		var rune := hex.active_rune
+		var rune := hex.active_tile_card
 		if rune == null:
 			continue
 		_disabled_prior_states[rune] = rune.is_active
 		rune.is_active = false
-		hex.refresh_rune_visual_state()
+		hex.refresh_tile_card_visual_state()
 
 
 func _restore_challenge_disabled_runes() -> void:
 	var tile_map := _get_tile_map()
-	for rune: Rune in _disabled_prior_states:
+	for rune: TileCard in _disabled_prior_states:
 		if is_instance_valid(rune):
 			rune.is_active = _disabled_prior_states[rune]
 			if tile_map != null:
-				var hex := tile_map.get_hex_for_rune(rune)
+				var hex := tile_map.get_hex_for_tile_card(rune)
 				if hex != null:
-					hex.refresh_rune_visual_state()
+					hex.refresh_tile_card_visual_state()
 	_disabled_prior_states.clear()
 
 
@@ -276,11 +276,11 @@ func _apply_fading_sector_visuals() -> void:
 
 	tile_map.highlight_challenge_segment(_halved_segment_index)
 	for hex: Hex in tile_map.get_hexes_in_segment(_halved_segment_index):
-		if hex.active_rune == null:
+		if hex.active_tile_card == null:
 			continue
-		if hex.active_rune.type != Rune.RuneType.PRODUCER:
+		if hex.active_tile_card.type != TileCard.TileCardType.PRODUCER:
 			continue
-		hex.set_rune_challenge_modulate(Hex.RUNE_FADED_SECTOR_MODULATE)
+		hex.set_tile_card_challenge_modulate(Hex.RUNE_FADED_SECTOR_MODULATE)
 
 
 func _clear_fading_sector_visuals() -> void:
@@ -291,7 +291,7 @@ func _clear_fading_sector_visuals() -> void:
 
 	tile_map.clear_challenge_segment_highlight()
 	for hex: Hex in tile_map.map_data.values():
-		hex.clear_rune_challenge_modulate()
+		hex.clear_tile_card_challenge_modulate()
 
 
 func _get_tile_map() -> HexTileMap:

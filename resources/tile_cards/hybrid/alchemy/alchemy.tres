@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://c6s5pfat7vjqp"]
+
+[ext_resource type="Texture2D" uid="uid://dcg34mwql85a3" path="res://assets/icons/runes/hybrid/alchemy.png" id="1_7mm74"]
+[ext_resource type="Script" uid="uid://duw8xttcfq0dh" path="res://resources/tile_cards/hybrid/alchemy/alchemy.gd" id="1_sh6kq"]
+
+[resource]
+script = ExtResource("1_sh6kq")
+id = "alchemy"
+name = "Alchemy"
+icon = ExtResource("1_7mm74")
+description = "Converts all gold generated so far this turn into Mult"
+type = 2
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -40,7 +40,7 @@ func _ready() -> void:
 	zoom = _intro_target_zoom * intro_start_zoom_factor
 	_intro_zoom_active = true
 	
-	EventBus.rune_activated.connect(_on_rune_activated)
+	EventBus.tile_card_activated.connect(_on_tile_card_activated)
 	_cache_shake_canvas_layers()
 
 func _process(delta: float) -> void:
@@ -79,7 +79,7 @@ func play_intro_zoom() -> void:
 	_intro_zoom_active = false
 	intro_zoom_finished.emit()
 
-func _on_rune_activated(_rune: Rune) -> void:
+func _on_tile_card_activated(_rune: TileCard) -> void:
 	shake(rune_shake_strength, rune_shake_duration)
 
 ## Start or intensify a screen shake, duration scales with game speed like other turn effects.

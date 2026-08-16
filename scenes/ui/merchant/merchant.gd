@@ -11,8 +11,8 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 @onready var reroll_button: Button = $ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer/RerollButton
 @onready var leave_button: Button = $ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer/LeaveButton
 
-# Runes and enhancements currently offered for purchase in the merchant grid.
-var merchant_inventory: Array[Resource] = []
+# Tile cards and enhancements currently offered for purchase in the merchant grid.
+var merchant_inventory: Array[Card] = []
 var reroll_cost := BASE_REROLL_COST
 var reroll_counter := 1
 var _displayed_cards: Array[CardUI] = []
@@ -41,7 +41,7 @@ func _refresh_merchant_cards() -> void:
 	merchant_inventory.clear()
 
 	# Same loot table as rune selection so merchant rarity odds stay consistent.
-	var drafted_runes := RuneLoot.draw_runes(MERCHANT_RUNE_COUNT, GameManager.runes_pool)
+	var drafted_runes := RuneLoot.draw_runes(MERCHANT_RUNE_COUNT, GameManager.tile_cards_pool)
 	for rune in drafted_runes:
 		merchant_inventory.append(rune)
 
@@ -88,10 +88,10 @@ func _on_merchant_card_purchased(card_ui: CardUI) -> void:
 	GoldManager.remove(price)
 	card_ui.mark_sold()
 
-	var card : Resource = card_ui.card
-	if card is Rune:
-		EventBus.rune_selected.emit(card as Rune)
-		EventBus.merchant_item_purchased.emit("rune")
+	var card: Card = card_ui.card
+	if card is TileCard:
+		EventBus.tile_card_selected.emit(card as TileCard)
+		EventBus.merchant_item_purchased.emit("tile_card")
 	elif card is Enhancement:
 		EventBus.enhancement_selected.emit(card as Enhancement)
 		EventBus.merchant_item_purchased.emit("enhancement")

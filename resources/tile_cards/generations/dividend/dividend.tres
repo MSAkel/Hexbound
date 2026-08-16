@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://bnw10okphmsyu"]
+
+[ext_resource type="Texture2D" uid="uid://c25ot8dgtv7wt" path="res://assets/icons/runes/production/dividend.png" id="1_sdupe"]
+[ext_resource type="Script" uid="uid://cyxevwcqcax4a" path="res://resources/tile_cards/generations/dividend/dividend.gd" id="2_b7j7h"]
+
+[resource]
+script = ExtResource("2_b7j7h")
+rarity = 2
+product = 3
+id = "dividend"
+name = "Divident"
+icon = ExtResource("1_sdupe")
+description = "After 4 triggers: gain 300 Essece, 20 Mult and 15 Gold."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

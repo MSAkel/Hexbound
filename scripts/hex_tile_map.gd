@@ -16,7 +16,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const HOVER_OVERLAY_SOURCE_ID := 0
 const SELECTED_OVERLAY_SOURCE_ID := 2
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
-# Rune placement / trigger preview overlay on RuneHighlightOverlayLayer.
+# TileCard placement / trigger preview overlay on RuneHighlightOverlayLayer.
 const RUNE_HIGHLIGHT_SOURCE_ID := 0
 # Draw above hex tiles (0) and rune UI (resting 0, activation/reveal animations 10).
 const RUNE_HIGHLIGHT_LAYER_Z_INDEX := 20
@@ -77,8 +77,8 @@ func _ready() -> void:
 	_apply_tile_spacing()
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
-	EventBus.rune_empowered.connect(_on_rune_empowered)
-	EventBus.rune_empower_consumed.connect(_on_rune_empower_consumed)
+	EventBus.tile_card_empowered.connect(_on_tile_card_empowered)
+	EventBus.tile_card_empower_consumed.connect(_on_tile_card_empower_consumed)
 	EventBus.card_drag_started.connect(_on_card_drag_started_hide_tile_panel)
 	EventBus.map_display_layout_changed.connect(_on_map_display_layout_changed)
 
@@ -277,14 +277,14 @@ func is_edge_tile(coords: Vector2i) -> bool:
 
 
 ## Every rune currently placed on the map. Pass rune_type to filter by PRODUCER or SUPPORT.
-func get_all_placed_runes(rune_type: Variant = null) -> Array[Rune]:
-	var runes: Array[Rune] = []
+func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
+	var runes: Array[TileCard] = []
 	for hex: Hex in map_data.values():
-		if hex.active_rune == null:
+		if hex.active_tile_card == null:
 			continue
-		if rune_type != null and hex.active_rune.type != rune_type:
+		if rune_type != null and hex.active_tile_card.type != rune_type:
 			continue
-		runes.append(hex.active_rune)
+		runes.append(hex.active_tile_card)
 	return runes
 
 
@@ -292,47 +292,47 @@ func get_all_placed_runes(rune_type: Variant = null) -> Array[Rune]:
 func get_all_hexes_with_runes() -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	for hex: Hex in map_data.values():
-		if hex.active_rune != null:
+		if hex.active_tile_card != null:
 			hexes.append(hex)
 	return hexes
 
 
 ## Counts all adjacent tiles occupied by a rune. Pass rune_type to filter by type.
-func count_all_occupied_adjacent_runes(coords: Vector2i, rune_type: Variant = null) -> int:
+func count_all_occupied_adjacent_tile_cards(coords: Vector2i, rune_type: Variant = null) -> int:
 	var count := 0
 	for hex: Hex in get_all_adjacent_hexes(coords):
-		if hex.active_rune == null:
+		if hex.active_tile_card == null:
 			continue
-		if rune_type != null and hex.active_rune.type != rune_type:
+		if rune_type != null and hex.active_tile_card.type != rune_type:
 			continue
 		count += 1
 	return count
 
 
 ## All runes on map-adjacent hexes around tile (unordered).
-func get_all_adjacent_runes(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	var result: Array[Rune] = []
+func get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	var result: Array[TileCard] = []
 	for hex: Hex in get_all_adjacent_hexes(tile.coordinates):
-		if hex.active_rune == null:
+		if hex.active_tile_card == null:
 			continue
-		if filter_type != null and hex.active_rune.type != filter_type:
+		if filter_type != null and hex.active_tile_card.type != filter_type:
 			continue
-		result.append(hex.active_rune)
+		result.append(hex.active_tile_card)
 	return result
 
 
 ## All adjacent runes sorted in the map's global trigger order.
-func get_all_adjacent_runes_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	var result: Array[Rune] = []
+func get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	var result: Array[TileCard] = []
 	var neighbors := get_all_adjacent_hexes(tile.coordinates)
 	for hex: Hex in get_hexes_in_trigger_order():
-		if hex.active_rune == null:
+		if hex.active_tile_card == null:
 			continue
 		if not neighbors.has(hex):
 			continue
-		if filter_type != null and hex.active_rune.type != filter_type:
+		if filter_type != null and hex.active_tile_card.type != filter_type:
 			continue
-		result.append(hex.active_rune)
+		result.append(hex.active_tile_card)
 	return result
 
 
@@ -423,16 +423,16 @@ func _assign_segment_passive_modifiers() -> void:
 
 func _on_map_display_layout_changed(layout: String) -> void:
 	if layout == "base":
-		_set_runes_hidden(false)
+		_set_tile_cards_hidden(false)
 	elif layout == "tile_passives":
-		_set_runes_hidden(true)
+		_set_tile_cards_hidden(true)
 	elif layout == "order_segments":
-		_set_runes_hidden(true)
+		_set_tile_cards_hidden(true)
 
 
-func _set_runes_hidden(hide_runes: bool) -> void:
+func _set_tile_cards_hidden(hide_runes: bool) -> void:
 	for hex: Hex in map_data.values():
-		hex.set_runes_hidden(hide_runes)
+		hex.set_tile_cards_hidden(hide_runes)
 
 
 ## Ring index from the map center (0 = center, hex_size = outer edge).
@@ -476,18 +476,18 @@ func get_last_tile_coords_in_segment(segment_index: int) -> Vector2i:
 
 
 ## All placed runes on the same segment as tile, optionally filtered by rune type.
-func get_all_runes_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return _layout.get_all_runes_on_segment(get_segment_index(tile.coordinates), filter_type)
+func get_all_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	return _layout.get_all_tile_cards_on_segment(get_segment_index(tile.coordinates), filter_type)
 
 
 ## All placed runes on one segment by index, optionally filtered by rune type.
-func get_all_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
-	return _layout.get_all_runes_on_segment(segment_index, filter_type)
+func get_all_tile_cards_on_segment(segment_index: int, filter_type: Variant = null) -> Array[TileCard]:
+	return _layout.get_all_tile_cards_on_segment(segment_index, filter_type)
 
 
 ## All placed runes on other segments, optionally filtered by rune type.
-func get_all_runes_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
-	return _layout.get_all_runes_on_other_segments(tile, filter_type)
+func get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	return _layout.get_all_tile_cards_on_other_segments(tile, filter_type)
 
 ## Number of character-specific segments on the current map.
 func get_segment_count() -> int:
@@ -643,14 +643,14 @@ func _fading_overlay_still_needed(coords: Vector2i, owner: FadingOverlayOwner) -
 	return false
 
 
-## First or last placed rune in a segment relative to tile's segment. See HexMapLayout.get_rune_in_relative_segment().
-func get_rune_in_relative_segment(
+## First or last placed rune in a segment relative to tile's segment. See HexMapLayout.get_tile_card_in_relative_segment().
+func get_tile_card_in_relative_segment(
 	tile: Hex,
 	segment_index_offset: int,
 	pick_first_in_segment: bool,
 	filter_type: Variant = null
-) -> Rune:
-	return _layout.get_rune_in_relative_segment(tile, segment_index_offset, pick_first_in_segment, filter_type)
+) -> TileCard:
+	return _layout.get_tile_card_in_relative_segment(tile, segment_index_offset, pick_first_in_segment, filter_type)
 
 
 func _get_hex_trigger_order_index(current_tile: Hex) -> int:
@@ -661,72 +661,72 @@ func _get_hex_trigger_order_index(current_tile: Hex) -> int:
 	return -1
 
 
-## Rune on the next occupied hex in global trigger order (null when empty).
-func get_next_rune_in_trigger_order(current_tile: Hex) -> Rune:
+## TileCard on the next occupied hex in global trigger order (null when empty).
+func get_next_tile_card_in_trigger_order(current_tile: Hex) -> TileCard:
 	var hexes := get_hexes_in_trigger_order()
 	var current_index := _get_hex_trigger_order_index(current_tile)
 	if current_index == -1 or current_index + 1 >= hexes.size():
 		return null
-	return hexes[current_index + 1].active_rune
+	return hexes[current_index + 1].active_tile_card
 
 
 ## True when the next rune in trigger order can be consumed in-sequence this turn.
-func can_consume_next_rune_in_trigger_order(current_tile: Hex) -> bool:
+func can_consume_next_tile_card_in_trigger_order(current_tile: Hex) -> bool:
 	var hexes := get_hexes_in_trigger_order()
 	var current_index := _get_hex_trigger_order_index(current_tile)
 	if current_index == -1 or current_index + 1 >= hexes.size():
 		return false
 
-	var next_rune := hexes[current_index + 1].active_rune
+	var next_rune := hexes[current_index + 1].active_tile_card
 	if next_rune == null:
 		return false
 
 	# Every rune on earlier hexes must have already activated this turn.
 	for i in range(current_index):
-		var prior_rune := hexes[i].active_rune
-		if prior_rune != null and not GameManager.has_rune_activated_this_turn(prior_rune):
+		var prior_rune := hexes[i].active_tile_card
+		if prior_rune != null and not GameManager.has_tile_card_activated_this_turn(prior_rune):
 			return false
 
-	return not GameManager.has_rune_activated_this_turn(next_rune)
+	return not GameManager.has_tile_card_activated_this_turn(next_rune)
 
 
 ## Up to count runes that activate after current_tile in trigger order.
-func get_next_runes_in_trigger_order(
+func get_next_tile_cards_in_trigger_order(
 	current_tile: Hex,
 	count: int = 1,
 	filter_type: Variant = null
-) -> Array[Rune]:
-	return _get_runes_relative_to_trigger_order(current_tile, count, false, filter_type)
+) -> Array[TileCard]:
+	return _get_tile_cards_relative_to_trigger_order(current_tile, count, false, filter_type)
 
 
 ## Up to count runes that activated before current_tile in trigger order.
-func get_previous_runes_in_trigger_order(
+func get_previous_tile_cards_in_trigger_order(
 	current_tile: Hex,
 	count: int = 1,
 	filter_type: Variant = null
-) -> Array[Rune]:
-	return _get_runes_relative_to_trigger_order(current_tile, count, true, filter_type)
+) -> Array[TileCard]:
+	return _get_tile_cards_relative_to_trigger_order(current_tile, count, true, filter_type)
 
 
-func _get_runes_relative_to_trigger_order(
+func _get_tile_cards_relative_to_trigger_order(
 	current_tile: Hex,
 	count: int,
 	previous: bool,
 	filter_type: Variant = null
-) -> Array[Rune]:
+) -> Array[TileCard]:
 	# Walk hexes in trigger order so previews work on empty placement tiles too.
 	var hexes := get_hexes_in_trigger_order()
 	var current_index := _get_hex_trigger_order_index(current_tile)
 	if current_index == -1:
 		return []
 
-	var result: Array[Rune] = []
+	var result: Array[TileCard] = []
 	var start := current_index - 1 if previous else current_index + 1
 	var end := -1 if previous else hexes.size()
 	var step := -1 if previous else 1
 
 	for i in range(start, end, step):
-		var rune := hexes[i].active_rune
+		var rune := hexes[i].active_tile_card
 		if rune == null:
 			continue
 		if filter_type != null and rune.type != filter_type:
@@ -738,20 +738,20 @@ func _get_runes_relative_to_trigger_order(
 
 
 ## Returns the hex tile that currently holds rune, or null when it is not placed.
-func get_hex_for_rune(rune: Rune) -> Hex:
+func get_hex_for_tile_card(rune: TileCard) -> Hex:
 	for hex: Hex in map_data.values():
-		if hex.active_rune == rune:
+		if hex.active_tile_card == rune:
 			return hex
 	return null
 
 
 ## Removes a placed rune from its tile and cancels queued triggers targeting it.
-func destroy_placed_rune(rune: Rune) -> void:
-	var hex := get_hex_for_rune(rune)
+func destroy_placed_tile_card(rune: TileCard) -> void:
+	var hex := get_hex_for_tile_card(rune)
 	if hex == null:
 		return
 
-	hex.remove_rune()
+	hex.remove_tile_card()
 
 	for i in range(_pending_trigger_queue.size() - 1, -1, -1):
 		if _pending_trigger_queue[i]["rune"] == rune:
@@ -759,7 +759,7 @@ func destroy_placed_rune(rune: Rune) -> void:
 
 
 ## Queues extra rune activations to resolve before the current tile flow continues.
-func queue_rune_triggers(runes: Array[Rune], activation_scales: Array[float] = []) -> void:
+func queue_tile_card_triggers(runes: Array[TileCard], activation_scales: Array[float] = []) -> void:
 	for i in range(runes.size()):
 		var scale_rune := 1.0
 		if i < activation_scales.size():
@@ -782,13 +782,13 @@ const ENHANCEMENT_ACTIVATION_DELAY := 0.5
 
 
 ## Delays enhancement resolution so its floating text does not overlap the host rune's text.
-func schedule_delayed_enhancement_activation(host_rune: Rune, tile: Hex, output_scale: float) -> void:
+func schedule_delayed_enhancement_activation(host_rune: TileCard, tile: Hex, output_scale: float) -> void:
 	_play_delayed_enhancement_activation(host_rune, tile, output_scale)
 
 
-func _play_delayed_enhancement_activation(host_rune: Rune, tile: Hex, output_scale: float) -> void:
+func _play_delayed_enhancement_activation(host_rune: TileCard, tile: Hex, output_scale: float) -> void:
 	await get_tree().create_timer(ENHANCEMENT_ACTIVATION_DELAY / GameManager.game_speed).timeout
-	if tile.active_rune != host_rune or host_rune.enhancement == null:
+	if tile.active_tile_card != host_rune or host_rune.enhancement == null:
 		return
 
 	host_rune._activation_output_scale = output_scale
@@ -801,15 +801,15 @@ func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
 
 
-func _on_rune_empowered(rune: Rune) -> void:
+func _on_tile_card_empowered(rune: TileCard) -> void:
 	AudioManager.play_sfx(UI_SOUNDS.EMPOWER)
-	var hex := get_hex_for_rune(rune)
+	var hex := get_hex_for_tile_card(rune)
 	if hex != null:
 		hex.start_empower_flash()
 
 
-func _on_rune_empower_consumed(rune: Rune) -> void:
-	var hex := get_hex_for_rune(rune)
+func _on_tile_card_empower_consumed(rune: TileCard) -> void:
+	var hex := get_hex_for_tile_card(rune)
 	if hex != null:
 		hex.stop_empower_flash()
 
@@ -822,7 +822,7 @@ func on_turn_ended() -> void:
 	_pending_trigger_queue.clear()
 
 	for tile: Hex in get_hexes_in_trigger_order():
-		if tile.active_rune == null:
+		if tile.active_tile_card == null:
 			continue
 
 		var delay_interval := base_delay_interval / GameManager.game_speed
@@ -836,21 +836,21 @@ func on_turn_ended() -> void:
 
 # Resolve one tile: primary activation, then any queued secondary triggers.
 func _resolve_rune_activation(tile: Hex) -> void:
-	await _activate_rune_on_tile(tile, 1.0, false)
+	await _activate_tile_card_on_tile(tile, 1.0, false)
 
 	while not _pending_trigger_queue.is_empty():
 		var entry: Dictionary = _pending_trigger_queue.pop_front()
-		var target_hex := get_hex_for_rune(entry["rune"])
-		if target_hex == null or target_hex.active_rune == null:
+		var target_hex := get_hex_for_tile_card(entry["rune"])
+		if target_hex == null or target_hex.active_tile_card == null:
 			continue
-		await _activate_rune_on_tile(target_hex, entry["activation_scale"], true)
+		await _activate_tile_card_on_tile(target_hex, entry["activation_scale"], true)
 
 
-func _activate_rune_on_tile(tile: Hex, activation_scale: float = 1.0, from_trigger: bool = false) -> void:
-	if tile.active_rune == null or tile.is_disabled_by_difficulty:
+func _activate_tile_card_on_tile(tile: Hex, activation_scale: float = 1.0, from_trigger: bool = false) -> void:
+	if tile.active_tile_card == null or tile.is_disabled_by_difficulty:
 		return
 
-	if not from_trigger and ChallengeManager.should_skip_primary_producer_activation(tile.active_rune):
+	if not from_trigger and ChallengeManager.should_skip_primary_producer_activation(tile.active_tile_card):
 		return
 
 	activation_scale *= SegmentPassive.get_activation_scale(tile)
@@ -858,14 +858,14 @@ func _activate_rune_on_tile(tile: Hex, activation_scale: float = 1.0, from_trigg
 	var activation_count: int = SegmentPassive.get_activation_count(tile)
 
 	for _activation_index in activation_count:
-		if tile.active_rune == null:
+		if tile.active_tile_card == null:
 			return
 
-		if tile.active_rune.is_active:
-			tile.play_rune_activation_animation()
+		if tile.active_tile_card.is_active:
+			tile.play_tile_card_activation_animation()
 			await _wait_for_activation_animation()
 
-		tile.apply_rune_activation(activation_scale)
+		tile.apply_tile_card_activation(activation_scale)
 		SegmentPassive.apply_post_activation_effects(tile)
 
 
@@ -890,7 +890,7 @@ func _play_single_segment_reveal(segment_index: int, score: int, multiplier: int
 	_apply_segment_reveal_glow(segment_index)
 
 	for hex: Hex in get_hexes_in_segment(segment_index):
-		if hex.active_rune != null:
+		if hex.active_tile_card != null:
 			hex.play_segment_result_animation()
 
 	await get_tree().create_timer(
@@ -963,9 +963,9 @@ func capture_map_state() -> Dictionary:
 	var placed_runes: Array = []
 	for coords: Vector2i in map_data:
 		var hex: Hex = map_data[coords]
-		if hex.active_rune == null:
+		if hex.active_tile_card == null:
 			continue
-		var entry := _serialize_placed_rune(hex.active_rune)
+		var entry := _serialize_placed_tile_card(hex.active_tile_card)
 		entry["coords"] = [coords.x, coords.y]
 		placed_runes.append(entry)
 
@@ -987,10 +987,10 @@ func restore_map_state(state: Dictionary) -> void:
 		if not map_data.has(coords):
 			continue
 
-		var rune := _deserialize_placed_rune(entry)
+		var rune := _deserialize_placed_tile_card(entry)
 		if rune == null:
 			continue
-		map_data[coords].restore_placed_rune(rune)
+		map_data[coords].restore_placed_tile_card(rune)
 
 	_layout.apply_turn_results(state.get("segment_turn_results", {}))
 
@@ -1025,7 +1025,7 @@ func _restore_disabled_tiles(coords_list: Array) -> void:
 		_disabled_tile_coords.append(coords)
 
 
-func _serialize_placed_rune(rune: Rune) -> Dictionary:
+func _serialize_placed_tile_card(rune: TileCard) -> Dictionary:
 	var data := {
 		"rune_id": rune.id,
 		"activation_count": rune.activation_count,
@@ -1039,8 +1039,8 @@ func _serialize_placed_rune(rune: Rune) -> Dictionary:
 	return data
 
 
-func _deserialize_placed_rune(data: Dictionary) -> Rune:
-	var template := GameManager.get_rune_by_id(data.get("rune_id", ""))
+func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
+	var template := GameManager.get_tile_card_by_id(data.get("rune_id", ""))
 	if template == null:
 		return null
 

@@ -1,9 +1,9 @@
 class_name RuneButton
 extends Button
 
-var rune: Rune
+var rune: TileCard
 
-signal rune_selected(rune: Rune)
+signal tile_card_selected(rune: TileCard)
 
 func _on_pressed() -> void:
-	rune_selected.emit(rune)
+	tile_card_selected.emit(rune)

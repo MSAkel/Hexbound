@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://dpu8gj3ofb5dy"]
+
+[ext_resource type="Texture2D" uid="uid://p8867xlo2qt8" path="res://assets/icons/runes/support/unstable_rune.png" id="1_210j2"]
+[ext_resource type="Script" uid="uid://fv5rajp1y0mq" path="res://resources/tile_cards/support/unstable_rune/unstable_rune.gd" id="2_210j2"]
+
+[resource]
+script = ExtResource("2_210j2")
+rarity = 2
+type = 1
+id = "unstable_rune"
+name = "Unstable Rune"
+icon = ExtResource("1_210j2")
+description = "Triggers adjacent Producers, starting from the one next in order. There is a 10% chance that this card will be destroyed for every adjacent card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

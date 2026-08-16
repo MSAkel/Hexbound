@@ -136,12 +136,12 @@ func build_segments() -> Array[Array]:
 
 
 ## All placed runes on one segment, optionally filtered by rune type.
-func get_all_runes_on_segment(segment_index: int, filter_type: Variant = null) -> Array[Rune]:
+func get_all_tile_cards_on_segment(segment_index: int, filter_type: Variant = null) -> Array[TileCard]:
 	var segments := build_segments()
 	if segment_index < 0 or segment_index >= segments.size():
 		return []
 
-	var result: Array[Rune] = []
+	var result: Array[TileCard] = []
 	for coords: Vector2i in segments[segment_index]:
 		var rune := _get_rune_on_coords(coords, filter_type)
 		if rune != null:
@@ -150,13 +150,13 @@ func get_all_runes_on_segment(segment_index: int, filter_type: Variant = null) -
 
 
 ## All placed runes on other segments, optionally filtered by rune type.
-func get_all_runes_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[Rune]:
+func get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	# Resolves the tile’s segment index (returns [] if unknown)
 	var tile_segment_index := get_segment_index(tile.coordinates)
 	if tile_segment_index < 0:
 		return []
 
-	var result: Array[Rune] = []
+	var result: Array[TileCard] = []
 	var segments := build_segments()
 	# Walks every other segment in trigger order
 	for segment_index in range(segments.size()):
@@ -173,12 +173,12 @@ func get_all_runes_on_other_segments(tile: Hex, filter_type: Variant = null) -> 
 ## First or last matching rune in a segment relative to tile's segment.
 ## segment_index_offset is added to the tile's segment index (0 = same segment, -1 = previous, +1 = next).
 ## pick_first_in_segment: true = first placed rune in segment, false = last placed rune in segment.
-func get_rune_in_relative_segment(
+func get_tile_card_in_relative_segment(
 	tile: Hex,
 	segment_index_offset: int,
 	pick_first_in_segment: bool,
 	filter_type: Variant = null
-) -> Rune:
+) -> TileCard:
 	var segment_index := get_segment_index(tile.coordinates) + segment_index_offset
 	var segments := build_segments()
 	if segment_index < 0 or segment_index >= segments.size():
@@ -494,10 +494,10 @@ func _build_segments_uncached() -> Array[Array]:
 
 
 ## Returns the rune on coords when present and matching filter_type (or any type when null).
-func _get_rune_on_coords(coords: Vector2i, filter_type: Variant = null) -> Rune:
+func _get_rune_on_coords(coords: Vector2i, filter_type: Variant = null) -> TileCard:
 	var hex: Hex = _map.map_data.get(coords)
-	if hex == null or hex.active_rune == null:
+	if hex == null or hex.active_tile_card == null:
 		return null
-	if filter_type != null and hex.active_rune.type != filter_type:
+	if filter_type != null and hex.active_tile_card.type != filter_type:
 		return null
-	return hex.active_rune
+	return hex.active_tile_card

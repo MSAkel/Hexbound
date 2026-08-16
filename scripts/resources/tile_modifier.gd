@@ -3,6 +3,7 @@ extends RefCounted
 
 # Player-applied tile modifier for future mechanics.
 # Unlike SegmentPassiveModifier, these can be placed during a run on eligible tiles.
+# This is not a Card or TileCard. TileCard occupies a hex as a playable piece.
 
 var name: String
 var description: String

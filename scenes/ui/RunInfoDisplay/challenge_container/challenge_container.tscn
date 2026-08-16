@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dh8s60bf3jvak"]
 
 [ext_resource type="Script" uid="uid://cawjeaar55yqc" path="res://scenes/ui/RunInfoDisplay/challenge_container/challenge_container.gd" id="1_fwrky"]
-[ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/divider_dark.png" id="2_kls1t"]
+[ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/dividers/divider_dark.png" id="2_kls1t"]
 [ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_uh4uk"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_b1ppx"]
@@ -13,7 +13,6 @@ texture = ExtResource("2_uh4uk")
 modulate_color = Color(0.9340804, 0.9340805, 0.93408036, 1)
 
 [node name="ChallengePanel" type="PanelContainer" unique_id=948507863]
-anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -148.0

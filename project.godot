@@ -51,10 +51,10 @@ window/main_scene="uid://bpaabu6bfu0hv"
 
 folder_colors={
 "res://assets/": "orange",
-"res://resources/runes/generations/": "blue",
-"res://resources/runes/hybrid/": "orange",
-"res://resources/runes/modifiers/": "purple",
-"res://resources/runes/support/": "green",
+"res://resources/tile_cards/generations/": "blue",
+"res://resources/tile_cards/hybrid/": "orange",
+"res://resources/tile_cards/modifiers/": "purple",
+"res://resources/tile_cards/support/": "green",
 "res://scenes/": "green",
 "res://scripts/": "yellow"
 }

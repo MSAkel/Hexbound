@@ -29,12 +29,12 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 8
 
-[node name="PhaseLabel" type="Label" parent="VBoxContainer" unique_id=1242587291 groups=["main_ui"]]
+[node name="RoundLabel" type="Label" parent="VBoxContainer" unique_id=1242587291 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 32
-text = "Phase 1"
+text = "Round 1"
 horizontal_alignment = 1
 
 [node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=2145180946]

@@ -41,13 +41,13 @@ signal merchant_closed
 ## Emitted when a card is played
 signal card_played(card_ui: CardUI)  
 
-signal rune_selected(rune: Rune)
-## Emitted when a rune successfully triggers its effect
-signal rune_activated(rune: Rune)  
-## Emitted when a rune becomes empowered
-signal rune_empowered(rune: Rune)  
-## Emitted when an empowered rune triggers and loses empower
-signal rune_empower_consumed(rune: Rune)  
+signal tile_card_selected(tile_card: TileCard)
+## Emitted when a tile card successfully triggers its effect
+signal tile_card_activated(tile_card: TileCard)
+## Emitted when a tile card becomes empowered
+signal tile_card_empowered(tile_card: TileCard)
+## Emitted when an empowered tile card triggers and loses empower
+signal tile_card_empower_consumed(tile_card: TileCard)  
 ## Emitted when an enhancement card is added to hand
 signal enhancement_selected(enhancement: Enhancement)  
 

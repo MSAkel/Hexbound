@@ -8,7 +8,7 @@ const CHOICE_CARD_SCALE := 1.45
 const CHOICE_CARD_BASE_SIZE := Vector2(198, 317)
 
 ## List of rune choices for the current turn
-var runes_pack: Array[Rune] = []
+var runes_pack: Array[TileCard] = []
 ## Gold cost to reroll the current pack, rises by 10 after each reroll.
 var runes_reroll_cost: int = 10
 
@@ -18,10 +18,10 @@ func _ready() -> void:
 
 	UiManager.show_runes_choice_panel.connect(_on_show_panel)
 	EventBus.gold_changed.connect(_on_gold_changed)
-	EventBus.rune_selected.connect(_on_rune_selected)
+	EventBus.tile_card_selected.connect(_on_tile_card_selected)
 	_update_reroll_button()
 
-func _on_rune_selected(_rune: Rune) -> void:
+func _on_tile_card_selected(_rune: TileCard) -> void:
 	hide()
 
 	## Open the merchant only after a rune pick when the round goal was met this turn.
@@ -76,7 +76,7 @@ func instantiate_rune_choices() -> void:
 		_create_choice_card(rune)
 
 
-func _create_choice_card(rune: Rune) -> void:
+func _create_choice_card(rune: TileCard) -> void:
 	## Wrapper reserves scaled layout space, the card itself is visually scaled up.
 	var card_slot := Control.new()
 	card_slot.custom_minimum_size = CHOICE_CARD_BASE_SIZE * CHOICE_CARD_SCALE
@@ -87,14 +87,14 @@ func _create_choice_card(rune: Rune) -> void:
 	card_ui.scale = Vector2.ONE * CHOICE_CARD_SCALE
 	card_ui.configure_interaction(CardUI.InteractionMode.CHOICE)
 	card_ui.set_card(rune)
-	card_ui.action_requested.connect(_on_rune_choice_selected)
+	card_ui.action_requested.connect(_on_tile_card_choice_selected)
 
 
-func _on_rune_choice_selected(card_ui: CardUI) -> void:
-	var rune := card_ui.card as Rune
+func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
+	var rune := card_ui.card as TileCard
 	## Selecting a rune consumes the pack so a new one can be offered later.
 	runes_pack.clear()
-	EventBus.rune_selected.emit(rune)
+	EventBus.tile_card_selected.emit(rune)
 
 
 ## Pick random runes for the selection panel from the shared pool.
@@ -103,13 +103,13 @@ func create_runes_pack() -> void:
 	if not runes_pack.is_empty():
 		return
 
-	if GameManager.runes_pool.is_empty():
+	if GameManager.tile_cards_pool.is_empty():
 		push_error("Cannot create runes pack: runes pool is empty")
 		return
 
 	# Rarity-weighted draft (common / uncommon / rare) from the shared pool.
 	var pack_size := ChallengeManager.get_runes_pack_size()
-	runes_pack = RuneLoot.draw_runes(pack_size, GameManager.runes_pool)
+	runes_pack = RuneLoot.draw_runes(pack_size, GameManager.tile_cards_pool)
 
 
 func clear_choices() -> void:

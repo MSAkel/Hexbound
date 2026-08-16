@@ -11,7 +11,7 @@ extends Control
 const OFFSET := Vector2(12, 12)
 
 var hex: Hex = null
-var selected_rune: Rune = null
+var selected_rune: TileCard = null
 # Screen-space rect of the hovered tile (viewport / CanvasLayer coords).
 var target_rect: Rect2 = Rect2()
 
@@ -66,13 +66,13 @@ func _set_tile_information() -> void:
 
 
 func _set_rune_information() -> void:
-	if hex.active_rune != null:
-		rune_icon.texture = hex.active_rune.icon
-		rune_name.text = hex.active_rune.name
-		var description_lines: PackedStringArray = [hex.active_rune.description]
-		if hex.active_rune.enhancement != null:
+	if hex.active_tile_card != null:
+		rune_icon.texture = hex.active_tile_card.icon
+		rune_name.text = hex.active_tile_card.name
+		var description_lines: PackedStringArray = [hex.active_tile_card.description]
+		if hex.active_tile_card.enhancement != null:
 			description_lines.append(
-				"Enhancement: %s" % [hex.active_rune.enhancement.short_description]
+				"Enhancement: %s" % [hex.active_tile_card.enhancement.short_description]
 			)
 		rune_description.text = "\n\n".join(description_lines)
 	else:
@@ -111,11 +111,11 @@ func _on_close_button_pressed() -> void:
 
 
 func _on_toggle_rune_button_pressed() -> void:
-	if hex.active_rune.is_active:
-		hex.active_rune.is_active = false
+	if hex.active_tile_card.is_active:
+		hex.active_tile_card.is_active = false
 	else:
-		hex.active_rune.is_active = true
-	hex.refresh_rune_visual_state()
+		hex.active_tile_card.is_active = true
+	hex.refresh_tile_card_visual_state()
 
 
 func _on_turn_ended() -> void:
