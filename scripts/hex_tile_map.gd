@@ -18,6 +18,8 @@ const SELECTED_OVERLAY_SOURCE_ID := 2
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
 # Rune placement / trigger preview overlay on RuneHighlightOverlayLayer.
 const RUNE_HIGHLIGHT_SOURCE_ID := 0
+# Draw above hex tiles (0) and rune UI (resting 0, activation/reveal animations 10).
+const RUNE_HIGHLIGHT_LAYER_Z_INDEX := 20
 # Disabled and fading-sector layers each expose a single tile on source 0.
 const OVERLAY_TILE_SOURCE_ID := 0
 
@@ -48,6 +50,12 @@ var _challenge_highlighted_coords: Array[Vector2i] = []
 var _disabled_tile_coords: Array[Vector2i] = []
 # Tiles currently lit during the post-turn segment result reveal.
 var _segment_reveal_glow_coords: Array[Vector2i] = []
+# Tiles highlighted while hovering a segment-results row in the run-info panel.
+var _hovered_segment_coords: Array[Vector2i] = []
+var _hovered_segment_index: int = -1
+
+# Owners of cells on fading_sector_overlay_layer, used so one overlay does not erase another.
+enum FadingOverlayOwner { CHALLENGE, REVEAL }
 
 const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
 const SEGMENT_REVEAL_PAUSE := 0.35
@@ -64,6 +72,8 @@ var _tile_panel_timer: Timer
 func _ready() -> void:
 	_layout = HexMapLayout.new()
 	_layout.setup(self)
+	# Keep the rune highlight above tiles and placed runes so segment/placement overlays stay visible.
+	rune_highlight_overlay_layer.z_index = RUNE_HIGHLIGHT_LAYER_Z_INDEX
 	_apply_tile_spacing()
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
@@ -342,6 +352,8 @@ func generate_terrain() -> void:
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
 	_disabled_tile_coords.clear()
+	_hovered_segment_coords.clear()
+	_hovered_segment_index = -1
 
 	var hex_center := Vector2i(hex_size, hex_size)
 	_place_hex_tile(hex_center)
@@ -577,8 +589,58 @@ func highlight_challenge_segment(segment_index: int) -> void:
 ## Clears the challenge segment overlay stamped by highlight_challenge_segment().
 func clear_challenge_segment_highlight() -> void:
 	for coords: Vector2i in _challenge_highlighted_coords:
+		if _fading_overlay_still_needed(coords, FadingOverlayOwner.CHALLENGE):
+			continue
 		fading_sector_overlay_layer.set_cell(coords, -1)
 	_challenge_highlighted_coords.clear()
+
+
+## Overlays every tile in a segment while its run-info row is hovered.
+func highlight_hovered_segment(segment_index: int) -> void:
+	if _hovered_segment_index == segment_index:
+		return
+
+	clear_hovered_segment_highlight()
+	if segment_index < 0:
+		return
+
+	_hovered_segment_index = segment_index
+	for hex: Hex in get_hexes_in_segment(segment_index):
+		var coords := hex.coordinates
+		rune_highlight_overlay_layer.set_cell(
+			coords,
+			RUNE_HIGHLIGHT_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_hovered_segment_coords.append(coords)
+
+
+## Clears the hover overlay. Pass segment_index so a row's mouse-exit cannot wipe a newer hover.
+func clear_hovered_segment_highlight(segment_index: int = -1) -> void:
+	if segment_index >= 0 and _hovered_segment_index != segment_index:
+		return
+
+	for coords: Vector2i in _hovered_segment_coords:
+		# Leave cells that card placement is currently previewing on the same layer.
+		if card_placement_handler != null and card_placement_handler.is_highlighting_coord(coords):
+			continue
+		rune_highlight_overlay_layer.set_cell(coords, -1)
+	_hovered_segment_coords.clear()
+	_hovered_segment_index = -1
+
+
+## True while a run-info segment row is lighting this tile on RuneHighlightOverlayLayer.
+func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
+	return coords in _hovered_segment_coords
+
+
+## True when another fading-sector overlay still owns this cell.
+func _fading_overlay_still_needed(coords: Vector2i, owner: FadingOverlayOwner) -> bool:
+	if owner != FadingOverlayOwner.CHALLENGE and coords in _challenge_highlighted_coords:
+		return true
+	if owner != FadingOverlayOwner.REVEAL and coords in _segment_reveal_glow_coords:
+		return true
+	return false
 
 
 ## First or last placed rune in a segment relative to tile's segment. See HexMapLayout.get_rune_in_relative_segment().
@@ -871,6 +933,8 @@ func _apply_segment_reveal_glow(segment_index: int) -> void:
 
 func _clear_segment_reveal_glow() -> void:
 	for coords: Vector2i in _segment_reveal_glow_coords:
+		if _fading_overlay_still_needed(coords, FadingOverlayOwner.REVEAL):
+			continue
 		fading_sector_overlay_layer.set_cell(coords, -1)
 	_segment_reveal_glow_coords.clear()
 	fading_sector_overlay_layer.modulate = Color.WHITE

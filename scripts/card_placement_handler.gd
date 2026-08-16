@@ -202,7 +202,15 @@ func _clear_rune_highlights_at(coords_list: Array[Vector2i]) -> void:
 
 
 func _clear_rune_highlight_at(coords: Vector2i) -> void:
+	# Segment-row hover shares this layer, do not erase its tiles while that hover is active.
+	if tile_map.has_hovered_segment_highlight_at(coords):
+		return
 	tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
+
+
+## True when this handler currently stamps a placement/effect highlight on coords.
+func is_highlighting_coord(coords: Vector2i) -> bool:
+	return coords == _placement_target_coord or coords in _effect_preview_coords
 
 
 func _stamp_rune_highlight(coords: Vector2i) -> void:

@@ -3,7 +3,6 @@ extends Control
 const SOUNDTRACK := preload("res://scripts/soundtracks.gd")
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
-var main_scene := load("res://scenes/main.tscn")
 var main_menu_scene := load("res://scenes/ui/main_menu/main_menu.tscn")
 
 @onready var character_details: CharacterDetails = $Container/VBoxContainer/CharacterDetails

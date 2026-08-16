@@ -77,6 +77,7 @@ tile_set = SubResource("TileSet_ekk8a")
 tile_set = SubResource("TileSet_3rbfx")
 
 [node name="RuneHighlightOverlayLayer" type="TileMapLayer" parent="." unique_id=272160682]
+z_index = 20
 tile_set = SubResource("TileSet_047vf")
 
 [node name="DisabledTileOverlayLayer" type="TileMapLayer" parent="." unique_id=1424799643]

@@ -1,0 +1,18 @@
+---
+description: Do not use semicolons in code comments
+alwaysApply: true
+---
+
+# Comment style
+
+Never use semicolons in comments (`#`, `##`, `//`, `/* */`, or docstrings).
+
+Split the thought into two sentences, or rephrase with a comma, dash, or period.
+
+```gdscript
+# BAD
+# Segment-row hover shares this layer; do not erase its tiles.
+
+# GOOD
+# Segment-row hover shares this layer. Do not erase its tiles.
+```
