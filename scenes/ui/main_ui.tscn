@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="14_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
+[ext_resource type="PackedScene" uid="uid://jknp6dm4cexb" path="res://scenes/ui/labels/turn_score_display/turn_score_display.tscn" id="15_turnscore"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -50,6 +51,9 @@ visible = false
 rotation = -0.00022035485
 
 [node name="RoundChallengeNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
+visible = false
+
+[node name="TurnScoreDisplay" parent="." instance=ExtResource("15_turnscore")]
 visible = false
 
 [node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]

@@ -4,7 +4,6 @@
 [ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="2_j1yni"]
 
 [sub_resource type="FontVariation" id="FontVariation_ksxla"]
-variation_embolden = 0.4
 spacing_glyph = 1
 
 [sub_resource type="Animation" id="Animation_vqah5"]

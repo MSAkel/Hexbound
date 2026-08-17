@@ -26,8 +26,7 @@ var _placement_target_coord: Vector2i = Vector2i(-1, -1)
 # Tiles currently showing trigger-effect preview highlights.
 var _effect_preview_coords: Array[Vector2i] = []
 
-const PREVIEW_ICON_SIZE := 200.0
-const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.55)
+const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
 
 
@@ -99,8 +98,10 @@ func _update_preview_texture() -> void:
 	var icon: Texture2D = selected_card.card.icon
 	_rune_preview.texture = icon
 	if icon:
+		# Match the placed rune's hover size, slightly larger than the hex art.
 		var tex_size := icon.get_size()
-		var scale_factor := PREVIEW_ICON_SIZE / maxf(tex_size.x, tex_size.y)
+		var preview_pixel_size := float(HexTileMap.HEX_TEXTURE_SIZE) * RuneUI.PLACEMENT_HOVER_SCALE
+		var scale_factor := preview_pixel_size / maxf(tex_size.x, tex_size.y)
 		_rune_preview.scale = Vector2(scale_factor, scale_factor)
 
 
@@ -150,7 +151,9 @@ func _try_place_card() -> void:
 		return
 	if not _can_place_on_hex(hex):
 		return
-	
+
+	# Hide the hover sprite so the placed rune can take over the same oversized pose.
+	_rune_preview.visible = false
 	selected_card.card.play_on(hex)
 	EventBus.card_played.emit(selected_card)
 	AudioManager.play_sfx(UI_SOUNDS.GROUND_IMPACT)

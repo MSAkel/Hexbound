@@ -11,7 +11,7 @@ content_margin_right = 24.0
 content_margin_bottom = 16.0
 texture = ExtResource("1_wgaml")
 
-[node name="RoundInfoContainer" type="PanelContainer" unique_id=456985837]
+[node name="RoundInfoContainer" type="PanelContainer" unique_id=456985837 groups=["round_info_panel"]]
 texture_filter = 1
 offset_right = 191.0
 offset_bottom = 268.0

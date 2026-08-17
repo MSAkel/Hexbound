@@ -770,12 +770,18 @@ func queue_tile_card_triggers(runes: Array[TileCard], activation_scales: Array[f
 		})
 
 
-## Spawns floating combat text at a world position on the current scene.
+## Show floating text at a world position on the current scene.
 func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE) -> void:
-	var floating_text = preload("res://scenes/animations/floating_text.tscn").instantiate()
+	var floating_text := _spawn_floating_text(pos, text, color)
+	floating_text.play_float_and_free()
+
+
+func _spawn_floating_text(pos: Vector2, text: String, color: Color) -> FloatingText:
+	var floating_text := preload("res://scenes/animations/floating_text.tscn").instantiate() as FloatingText
 	floating_text.position = pos
-	floating_text.set_text(text, color)
 	get_tree().current_scene.add_child(floating_text)
+	floating_text.set_text(text, color)
+	return floating_text
 
 
 const ENHANCEMENT_ACTIVATION_DELAY := 0.5
@@ -870,23 +876,44 @@ func _activate_tile_card_on_tile(tile: Hex, activation_scale: float = 1.0, from_
 
 
 func _wait_for_activation_animation() -> void:
-	var duration := RuneUI.ACTIVATION_POP_DURATION + RuneUI.ACTIVATION_SETTLE_DURATION
+	var duration := RuneUI.activation_animation_duration()
 	await get_tree().create_timer(duration / GameManager.game_speed).timeout
 
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
 func _play_segment_turn_result_reveals() -> void:
+	var running_total := 0
+	var revealed_any := false
+	var handed_off_to_display := false
 	for segment_index in get_segment_count():
 		var score := get_segment_turn_score(segment_index)
 		var multiplier := get_segment_turn_multiplier(segment_index)
 		var gold := get_segment_turn_gold(segment_index)
 		if score == 0 and gold == 0:
 			continue
-		await _play_single_segment_reveal(segment_index, score, multiplier, gold)
+		var contribution := score * multiplier
+		running_total += contribution
+		var grow_into_display := contribution > 0 and not handed_off_to_display
+		await _play_single_segment_reveal(segment_index, contribution, running_total, grow_into_display)
+		if contribution > 0:
+			handed_off_to_display = true
+		revealed_any = true
+
+	if not revealed_any:
+		return
+
+	var display := _get_turn_score_display()
+	if display != null:
+		await display.play_merge_into_round_info()
 
 
-## Highlights one segment, animates its runes, then shows a combined floating total.
-func _play_single_segment_reveal(segment_index: int, score: int, multiplier: int, gold: int) -> void:
+## Highlights one segment, animates its runes, then flies its essence total into the turn score overlay.
+func _play_single_segment_reveal(
+	segment_index: int,
+	contribution: int,
+	running_total: int,
+	grow_into_display: bool
+) -> void:
 	_apply_segment_reveal_glow(segment_index)
 
 	for hex: Hex in get_hexes_in_segment(segment_index):
@@ -897,22 +924,66 @@ func _play_single_segment_reveal(segment_index: int, score: int, multiplier: int
 		SEGMENT_REVEAL_ANIMATION_DURATION / GameManager.game_speed
 	).timeout
 
-	var summary_lines: PackedStringArray = []
-	if score > 0:
-		summary_lines.append("+%d Score" % score)
-	if multiplier > 0:
-		summary_lines.append("+%d Mult" % multiplier)
-	if gold > 0:
-		summary_lines.append("+%d Gold" % gold)
-	create_floating_text(
-		_get_segment_screen_center(segment_index),
-		"\n".join(summary_lines), 
-		Color(1.0, 0.85, 0.2, 1.0)
-	)
+	if contribution > 0:
+		await _play_segment_essence_merge(segment_index, contribution, running_total, grow_into_display)
 
 	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 	_clear_segment_reveal_glow()
 	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
+
+
+## Rises a segment essence float, then grows into or shrinks toward the shared turn score overlay.
+func _play_segment_essence_merge(
+	segment_index: int,
+	contribution: int,
+	running_total: int,
+	grow_into_display: bool
+) -> void:
+	var floating_text := _spawn_floating_text(
+		_get_segment_screen_center(segment_index),
+		CountingNumber.format_int(contribution),
+		ScoreReadoutStyle.SEGMENT_SCORE_COLOR
+	)
+	await floating_text.play_rise()
+
+	var display := _get_turn_score_display()
+	if display == null:
+		floating_text.queue_free()
+		return
+
+	var target_world := _canvas_to_world(display.get_label_center_canvas())
+	var target_font := ScoreReadoutStyle.font_size_for_score(running_total)
+	await floating_text.merge_into(target_world, grow_into_display, target_font)
+
+	if grow_into_display:
+		display.appear_from_handoff(running_total)
+		floating_text.queue_free()
+	else:
+		floating_text.queue_free()
+		await display.present_running_total(running_total)
+
+
+## Average tile position for segment-wide floating text placement.
+func _get_segment_screen_center(segment_index: int) -> Vector2:
+	var segments := _layout.build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return Vector2.ZERO
+
+	var center := Vector2.ZERO
+	var segment: Array = segments[segment_index]
+	for coords: Vector2i in segment:
+		center += base_layer.map_to_local(coords)
+	return center / segment.size()
+
+
+## Converts a viewport or CanvasLayer point into world space under the play camera.
+func _canvas_to_world(canvas_pos: Vector2) -> Vector2:
+	return get_viewport().get_canvas_transform().affine_inverse() * canvas_pos
+
+
+## Shared overlay that accumulates segment essence during the post-turn reveal.
+func _get_turn_score_display() -> TurnScoreDisplay:
+	return get_tree().get_first_node_in_group("turn_score_display") as TurnScoreDisplay
 
 
 func _apply_segment_reveal_glow(segment_index: int) -> void:
@@ -938,19 +1009,6 @@ func _clear_segment_reveal_glow() -> void:
 		fading_sector_overlay_layer.set_cell(coords, -1)
 	_segment_reveal_glow_coords.clear()
 	fading_sector_overlay_layer.modulate = Color.WHITE
-
-
-## Average tile position for segment-wide floating text placement.
-func _get_segment_screen_center(segment_index: int) -> Vector2:
-	var segments := _layout.build_segments()
-	if segment_index < 0 or segment_index >= segments.size():
-		return Vector2.ZERO
-
-	var center := Vector2.ZERO
-	var segment: Array = segments[segment_index]
-	for coords: Vector2i in segment:
-		center += base_layer.map_to_local(coords)
-	return center / segment.size()
 
 
 #region Run save / load

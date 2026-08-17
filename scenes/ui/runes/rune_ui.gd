@@ -5,6 +5,8 @@ extends Control
 @onready var _anim_target: Control = $Container
 @onready var enhancement_value_container: PanelContainer = $Container/EnhancementValueContainer
 @onready var enhancement_value: Label = $Container/EnhancementValueContainer/EnhancementValue
+@onready var placement_smoke: GPUParticles2D = $PlacementSmoke
+@onready var hex_stroke: HexStroke = $HexStroke
 
 var map: HexTileMap
 var tile: Hex
@@ -16,16 +18,21 @@ var _empower_flash_tween: Tween
 # Resting color when no activation or empower tween is running.
 var _resting_modulate := Color.WHITE
 
-# Pop scale and warm highlight tuned to fit within the turn-end delay interval.
-const ACTIVATION_PEAK_SCALE := Vector2(1.22, 1.22)
+# Pop, squash, then settle. Durations must stay in sync with HexTileMap._wait_for_activation_animation.
+const ACTIVATION_PEAK_SCALE := Vector2(1.12, 1.12)
+const ACTIVATION_SQUASH_SCALE := Vector2(0.88, 0.88)
 const ACTIVATION_HIGHLIGHT := Color(1.3, 1.15, 0.75, 1.0)
-const ACTIVATION_POP_DURATION := 0.14
-const ACTIVATION_SETTLE_DURATION := 0.22
+const ACTIVATION_POP_DURATION := 0.07
+const ACTIVATION_SQUASH_DURATION := 0.08
+const ACTIVATION_SETTLE_DURATION := 0.08
+const ACTIVATION_SHAKE_STRENGTH := 4.5
+const ACTIVATION_SHAKE_DURATION := 0.14
 # Gold flash timing; kept in sync with HexTileMap.SEGMENT_REVEAL_ANIMATION_DURATION.
 const SEGMENT_REVEAL_HIGHLIGHT_DURATION := 0.2
 const SEGMENT_REVEAL_FADE_DURATION := 0.16
-const PLACEMENT_DROP_OFFSET := -72.0
-const PLACEMENT_DROP_DURATION := 0.28
+# Hover preview and the start of the place animation sit slightly larger than the hex.
+const PLACEMENT_HOVER_SCALE := 1.16
+const PLACEMENT_INSERT_DURATION := 0.28
 const EMPOWER_FLASH_HIGHLIGHT := Color(1.45, 1.35, 0.15, 1.0)
 const EMPOWER_FLASH_DURATION := 0.45
 
@@ -65,26 +72,45 @@ func show_enhancement(enhancement: Enhancement) -> void:
 
 
 #region Animations and colors
-# Drop-in animation when a rune is first placed on a tile.
+# Scales the rune from the oversized hover preview down into the hex.
 func play_placement_animation() -> void:
-	_anim_target.position.y = PLACEMENT_DROP_OFFSET
-	_anim_target.modulate = Color(1.0, 1.0, 1.0, 0.85)
-	
+	_anim_target.pivot_offset = _anim_target.size / 2
+	if _anim_target.pivot_offset == Vector2.ZERO:
+		_anim_target.pivot_offset = size / 2
+	_anim_target.scale = Vector2(PLACEMENT_HOVER_SCALE, PLACEMENT_HOVER_SCALE)
+	_anim_target.modulate = Color(1.0, 1.0, 1.0, 0.9)
+	z_index = 10
+
 	var placement_tween := create_tween()
-	placement_tween.set_ease(Tween.EASE_OUT)
-	placement_tween.set_trans(Tween.TRANS_BACK)
+	placement_tween.set_parallel(true)
+	# Back ease overshoots slightly under 1, then seats at rest like a press-in.
 	placement_tween.tween_property(
 		_anim_target,
-		"position",
-		Vector2.ZERO,
-		PLACEMENT_DROP_DURATION
-	)
-	placement_tween.parallel().tween_property(
+		"scale",
+		Vector2.ONE,
+		PLACEMENT_INSERT_DURATION
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	placement_tween.tween_property(
 		_anim_target,
 		"modulate",
 		_resting_modulate,
-		PLACEMENT_DROP_DURATION * 0.8
+		PLACEMENT_INSERT_DURATION * 0.8
 	)
+	placement_tween.chain().tween_callback(func() -> void:
+		z_index = 0
+		_anim_target.scale = Vector2.ONE
+	)
+	_play_placement_smoke()
+	if hex_stroke != null:
+		hex_stroke.play_clockwise_draw()
+
+
+func _play_placement_smoke() -> void:
+	if placement_smoke == null:
+		return
+	# One-shot emitters stay off until this restart. Emitting must be set true after.
+	placement_smoke.restart()
+	placement_smoke.emitting = true
 
 
 func apply_resting_modulate(color: Color) -> void:
@@ -119,6 +145,11 @@ func play_activation_animation() -> void:
 	
 	var original_z_index := z_index
 	z_index = 10
+	_shake_on_activation()
+
+	var pop_duration := ACTIVATION_POP_DURATION / GameManager.game_speed
+	var squash_duration := ACTIVATION_SQUASH_DURATION / GameManager.game_speed
+	var settle_duration := ACTIVATION_SETTLE_DURATION / GameManager.game_speed
 	
 	_activation_tween = create_tween()
 	
@@ -128,34 +159,53 @@ func play_activation_animation() -> void:
 		_anim_target,
 		"scale",
 		ACTIVATION_PEAK_SCALE,
-		ACTIVATION_POP_DURATION
-	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		pop_duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_activation_tween.tween_property(
 		_anim_target,
 		"modulate",
 		ACTIVATION_HIGHLIGHT,
-		ACTIVATION_POP_DURATION
+		pop_duration
 	)
 	
-	# Step 2: settle back to the resting pose.
+	# Step 2: compress smaller than rest.
 	_activation_tween.set_parallel(false)
 	_activation_tween.tween_property(
 		_anim_target,
 		"scale",
+		ACTIVATION_SQUASH_SCALE,
+		squash_duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	
+	# Step 3: return to the resting pose.
+	_activation_tween.tween_property(
+		_anim_target,
+		"scale",
 		Vector2.ONE,
-		ACTIVATION_SETTLE_DURATION
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+		settle_duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_activation_tween.parallel().tween_property(
 		_anim_target,
 		"modulate",
 		_resting_modulate,
-		ACTIVATION_SETTLE_DURATION
+		settle_duration
 	)
 	_activation_tween.tween_callback(func() -> void:
 		z_index = original_z_index
 		_activation_tween = null
 		_apply_resting_modulate()
 	)
+
+
+func _shake_on_activation() -> void:
+	var camera := get_viewport().get_camera_2d()
+	if camera == null or not camera.has_method("shake"):
+		return
+	camera.shake(ACTIVATION_SHAKE_STRENGTH, ACTIVATION_SHAKE_DURATION)
+
+
+static func activation_animation_duration() -> float:
+	return ACTIVATION_POP_DURATION + ACTIVATION_SQUASH_DURATION + ACTIVATION_SETTLE_DURATION
 
 
 # Gold highlight flash when a segment's turn totals are revealed.

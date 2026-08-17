@@ -8,8 +8,14 @@ extends Control
 
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
+var _required_counter: CountingNumber
+var _round_score_counter: CountingNumber
+
 func _ready() -> void:
-	required_score.text = "%s" % [GameManager.required_score]
+	_required_counter = CountingNumber.for_label(self, required_score)
+	_round_score_counter = CountingNumber.for_label(self, score_this_round)
+	_required_counter.snap_to(GameManager.required_score)
+	_round_score_counter.snap_to(GameManager.total_round_score)
 
 	EventBus.turn_changed.connect(_update_turn_label)
 	EventBus.total_round_score_changed.connect(_update_total_round_score)
@@ -31,10 +37,17 @@ func _update_turn_label() -> void:
 	turn_counter_label.text = "%s" % [GameManager.remaining_turns]
 
 func _update_total_round_score() -> void:
-	score_this_round.text = "%s" % [GameManager.total_round_score]
+	_round_score_counter.play(GameManager.total_round_score)
 
 func _update_required_score() -> void:
-	required_score.text = "%s" % [GameManager.required_score]
+	_required_counter.play(GameManager.required_score)
 
 func _update_total_tile_card_activations(_rune: TileCard) -> void:
 	next_perk_counter.text = "%s" % [GameManager.rune_activations_countdown()]
+
+
+func _exit_tree() -> void:
+	if _required_counter != null:
+		_required_counter.kill()
+	if _round_score_counter != null:
+		_round_score_counter.kill()

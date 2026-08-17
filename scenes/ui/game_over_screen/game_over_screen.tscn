@@ -22,6 +22,7 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [sub_resource type="SystemFont" id="SystemFont_fw22d"]
+subpixel_positioning = 0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftetl"]
 content_margin_left = 8.0
@@ -152,7 +153,7 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9303785, 0.8507871, 0.4908229, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_ftetl")
-text = "S1C1E7C9"
+text = "WIP"
 
 [node name="CopySeedButton" type="Button" parent="RunStatsPanel/VBoxContainer/SeedContainer" unique_id=338566109]
 layout_mode = 2

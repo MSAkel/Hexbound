@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://cvrhe05ck15tj" path="res://scenes/ui/runes/rune_ui.gd" id="1_ncwa2"]
 [ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/runes/production/basic_rune.png" id="2_gx0vj"]
+[ext_resource type="Texture2D" uid="uid://b8wbfxcvxew5s" path="res://assets/particles/flame_01.png" id="3_j3x5t"]
+[ext_resource type="Script" path="res://scenes/ui/runes/hex_stroke.gd" id="4_hexstroke"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qvrl4"]
 
@@ -20,6 +22,41 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_placement_smoke"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_placement_smoke"]
+offsets = PackedFloat32Array(0, 0.12, 1)
+colors = PackedColorArray(0.9, 0.84, 0.72, 0, 0.88, 0.8, 0.66, 0.85, 0.7, 0.64, 0.52, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_placement_smoke"]
+gradient = SubResource("Gradient_placement_smoke")
+
+[sub_resource type="Curve" id="Curve_placement_smoke_scale"]
+_data = [Vector2(0, 0.45), 0.0, 0.0, 0, 0, Vector2(0.2, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.12), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_placement_smoke_scale"]
+curve = SubResource("Curve_placement_smoke_scale")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_placement_smoke"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 40.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, -1, 0)
+spread = 90.0
+initial_velocity_min = 16.0
+initial_velocity_max = 48.0
+gravity = Vector3(0, -20, 0)
+damping_min = 4.0
+damping_max = 10.0
+scale_min = 0.22
+scale_max = 0.75
+scale_curve = SubResource("CurveTexture_placement_smoke_scale")
+color_ramp = SubResource("GradientTexture1D_placement_smoke")
 
 [node name="RuneUI" type="Control" unique_id=957735592]
 custom_minimum_size = Vector2(256, 256)
@@ -76,5 +113,31 @@ theme_override_colors/font_outline_color = Color(0.06, 0.05, 0.04, 0.95)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 42
 text = "+0"
+
+[node name="PlacementSmoke" type="GPUParticles2D" parent="." unique_id=2116065945]
+self_modulate = Color(0.86793804, 0.78399736, 0.33285496, 1)
+z_index = 4
+material = SubResource("CanvasItemMaterial_placement_smoke")
+position = Vector2(128, 128)
+emitting = false
+amount = 16
+texture = ExtResource("3_j3x5t")
+lifetime = 0.75
+one_shot = true
+explosiveness = 0.95
+randomness = 0.4
+visibility_rect = Rect2(-256, -256, 512, 512)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_placement_smoke")
+
+[node name="HexStroke" type="Line2D" parent="."]
+z_index = 6
+width = 6.0
+default_color = Color(1, 0.86, 0.42, 0.95)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+script = ExtResource("4_hexstroke")
 
 [connection signal="pressed" from="Container/RuneButton" to="." method="_on_ruins_button_pressed"]
