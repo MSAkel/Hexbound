@@ -9,9 +9,15 @@ const BASE_STYLEBOX := preload("res://themes/card_base_stylebox.tres")
 const HOVER_STYLEBOX := preload("res://themes/card_hover_stylebox.tres")
 const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 
+# TileCardType.PRODUCER uses the production frame. Enhancement cards keep the scene default.
+@export var frame_producer: Texture2D
+@export var frame_support: Texture2D
+@export var frame_hybrid: Texture2D
+@export var frame_modifier: Texture2D
+
 @onready var card_name: Label = $VBoxContainer/NameContainer/CardName
 @onready var icon: TextureRect = $VBoxContainer/IconContainer/Icon
-@onready var card_description: Label = $VBoxContainer/CardDescription
+@onready var card_description: RichTextLabel = $VBoxContainer/CardDescription
 @onready var resource_cost_container: HBoxContainer = $VBoxContainer/ResourceCostContainer
 @onready var card_type_label: Label = $VBoxContainer/CardTypeLabel
 @onready var price_label: Label = $VBoxContainer/PriceLabel
@@ -61,6 +67,7 @@ var _discount := 0.0
 func _ready() -> void:
 	_resting_z_index = z_index
 	_apply_interaction_mode()
+	tree_exiting.connect(_hide_keyword_tooltips)
 
 
 # Parent screens call this after instantiation to choose how the card responds to input.
@@ -260,13 +267,16 @@ func _on_mouse_entered() -> void:
 	match interaction_mode:
 		InteractionMode.HAND:
 			card_state_machine.on_mouse_entered()
+			_show_keyword_tooltips()
 		InteractionMode.MERCHANT, InteractionMode.CHOICE:
 			if _is_sold:
 				return
 			set_hover_elevated(true)
+			_show_keyword_tooltips()
 
 
 func _on_mouse_exited() -> void:
+	_hide_keyword_tooltips()
 	match interaction_mode:
 		InteractionMode.HAND:
 			card_state_machine.on_mouse_exited()
@@ -304,8 +314,10 @@ func set_card(data: Card) -> void:
 	card = data
 	card_name.text = data.name
 	icon.texture = data.icon
-	card_description.text = data.description
+	# Keywords such as Score and Mult are colored in CardKeywordGlossary.
+	card_description.text = CardKeywordGlossary.to_bbcode(data.description)
 	card_type_label.text = data.get_card_kind_label()
+	_apply_card_frame()
 
 	if interaction_mode == InteractionMode.MERCHANT:
 		_refresh_merchant_price()
@@ -337,6 +349,7 @@ func mark_sold() -> void:
 	sold_overlay.visible = true
 	set_hover_elevated(false, false)
 	mouse_default_cursor_shape = Control.CURSOR_ARROW
+	_hide_keyword_tooltips()
 
 
 func refresh_affordability() -> void:
@@ -367,6 +380,55 @@ func _update_affordability() -> void:
 	# Price color communicates affordability; the card itself stays unchanged.
 	price_label.modulate = Color.WHITE if can_afford else Color.RED
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if can_afford else Control.CURSOR_ARROW
+
+
+func _show_keyword_tooltips() -> void:
+	if card == null or _is_sold:
+		return
+	if interaction_mode == InteractionMode.PREVIEW:
+		return
+
+	# Always emit a hover claim so an empty keyword list closes the previous card's tips.
+	var entries := CardKeywordGlossary.tooltip_entries(card.description)
+	EventBus.toggle_keyword_tooltips.emit(true, entries, get_global_rect(), self)
+
+
+func _hide_keyword_tooltips() -> void:
+	EventBus.toggle_keyword_tooltips.emit(false, [], Rect2(), self)
+
+
+func _apply_card_frame() -> void:
+	var frame := _frame_texture_for_card(card)
+	if frame == null:
+		return
+
+	var current_style := panel.get_theme_stylebox("panel")
+	var textured: StyleBoxTexture
+	if current_style is StyleBoxTexture:
+		# Duplicate so swapping one card's frame does not change other instances.
+		textured = (current_style as StyleBoxTexture).duplicate() as StyleBoxTexture
+	else:
+		textured = StyleBoxTexture.new()
+		textured.content_margin_left = 4.0
+		textured.content_margin_top = 4.0
+		textured.content_margin_right = 4.0
+
+	textured.texture = frame
+	panel.add_theme_stylebox_override("panel", textured)
+
+
+func _frame_texture_for_card(data: Card) -> Texture2D:
+	if data is TileCard:
+		match (data as TileCard).type:
+			TileCard.TileCardType.PRODUCER:
+				return frame_producer
+			TileCard.TileCardType.SUPPORT:
+				return frame_support
+			TileCard.TileCardType.HYBRID:
+				return frame_hybrid
+			TileCard.TileCardType.MODIFIER:
+				return frame_modifier
+	return frame_producer
 
 
 func _on_drop_point_area_entered(area: Area2D) -> void:

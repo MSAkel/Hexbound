@@ -54,6 +54,8 @@ signal enhancement_selected(enhancement: Enhancement)
 signal card_selected(card: CardUI)
 
 signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)
+## One hover panel per glossary keyword. Source is the CardUI that requested it.
+signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect2, source: Object)
 
 signal map_display_layout_changed(layout: String)
 

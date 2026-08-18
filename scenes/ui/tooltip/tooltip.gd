@@ -5,13 +5,26 @@ extends PanelContainer
 
 const offset: Vector2 = Vector2(10, 10)
 
+# Card keyword panels reuse this scene without listening to the global tooltip bus.
+@export var bind_event_bus: bool = true
+
 var target_rect: Rect2 = Rect2()
 
 func _ready() -> void:
-	EventBus.toggle_tooltip.connect(_on_toggle_tooltip)
+	if bind_event_bus:
+		EventBus.toggle_tooltip.connect(_on_toggle_tooltip)
 	hide()
 	# Make sure tooltip is on top
 	z_index = 100
+
+
+# Used when this panel is stacked beside a hovered card description.
+func configure_as_embedded(text: String) -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if label != null:
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		label.text = text
+	show()
 
 
 func _on_toggle_tooltip(is_tooltip_visible: bool, text: String, element_rect: Rect2 = Rect2()) -> void:
