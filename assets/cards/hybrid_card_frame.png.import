@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccdkflkrder07"
-path="res://.godot/imported/basic_layout_hover.png-ee78703824d2f66a5f4fe6126714bbc0.ctex"
+uid="uid://bgru8i40w22v3"
+path="res://.godot/imported/hybrid_card_frame.png-67b8538b98ec3818ae40bb0a3b30308c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/map_layouts/basic_layout_hover.png"
-dest_files=["res://.godot/imported/basic_layout_hover.png-ee78703824d2f66a5f4fe6126714bbc0.ctex"]
+source_file="res://assets/cards/hybrid_card_frame.png"
+dest_files=["res://.godot/imported/hybrid_card_frame.png-67b8538b98ec3818ae40bb0a3b30308c.ctex"]
 
 [params]
 

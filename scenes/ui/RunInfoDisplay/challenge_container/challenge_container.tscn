@@ -3,32 +3,36 @@
 [ext_resource type="Script" uid="uid://cawjeaar55yqc" path="res://scenes/ui/RunInfoDisplay/challenge_container/challenge_container.gd" id="1_fwrky"]
 [ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/dividers/divider_dark.png" id="2_kls1t"]
 [ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_uh4uk"]
+[ext_resource type="Texture2D" uid="uid://yjsyynwlyscq" path="res://assets/gui/map_layouts/challenge_icon.png" id="4_fwrky"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_b1ppx"]
-content_margin_left = 24.0
-content_margin_top = 16.0
-content_margin_right = 24.0
-content_margin_bottom = 16.0
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
 texture = ExtResource("2_uh4uk")
 modulate_color = Color(0.9340804, 0.9340805, 0.93408036, 1)
 
 [node name="ChallengePanel" type="PanelContainer" unique_id=948507863]
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -148.0
-offset_bottom = 156.0
+offset_left = -66.0
+offset_bottom = 66.0
 grow_horizontal = 0
-size_flags_horizontal = 2
+size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxTexture_b1ppx")
 script = ExtResource("1_fwrky")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2054347688]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
 
 [node name="NextChallengeRound" type="Label" parent="VBoxContainer" unique_id=1915613817]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.17838323, 0.4173505, 0.42574936, 1)
 theme_override_font_sizes/font_size = 24
@@ -36,6 +40,7 @@ text = "Round 4"
 horizontal_alignment = 1
 
 [node name="ChallengeName" type="Label" parent="VBoxContainer" unique_id=1094373895]
+visible = false
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -47,12 +52,14 @@ horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=730783744]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 texture = ExtResource("2_kls1t")
 stretch_mode = 2
 
 [node name="ChallengeDescription" type="Label" parent="VBoxContainer" unique_id=712698428]
+visible = false
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.211032, 0.20218796, 0, 1)
@@ -60,3 +67,8 @@ theme_override_font_sizes/font_size = 16
 text = "Challenge information"
 horizontal_alignment = 1
 autowrap_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1050428528]
+custom_maximum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("4_fwrky")

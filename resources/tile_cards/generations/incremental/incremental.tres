@@ -10,5 +10,5 @@ product = 1
 id = "incremental"
 name = "Incremental"
 icon = ExtResource("1_do01j")
-description = "+5 Essence increasing by 5 every 2 turns up to a maximum of 70"
+description = "+5 Score increasing by 5 every 2 turns up to a maximum of 70"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

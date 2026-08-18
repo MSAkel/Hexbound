@@ -10,5 +10,5 @@ product = 1
 id = "basic_card"
 name = "Basic Card"
 icon = ExtResource("1_ayjfw")
-description = "+20 Essence"
+description = "+20 Score"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

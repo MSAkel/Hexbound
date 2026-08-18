@@ -30,9 +30,14 @@ const ACTIVATION_SHAKE_DURATION := 0.14
 # Gold flash timing; kept in sync with HexTileMap.SEGMENT_REVEAL_ANIMATION_DURATION.
 const SEGMENT_REVEAL_HIGHLIGHT_DURATION := 0.2
 const SEGMENT_REVEAL_FADE_DURATION := 0.16
-# Hover preview and the start of the place animation sit slightly larger than the hex.
+# Hover preview sits slightly larger than the hex. Slam overshoots, then seats at rest.
 const PLACEMENT_HOVER_SCALE := 1.16
-const PLACEMENT_INSERT_DURATION := 0.28
+const PLACEMENT_SLAM_SCALE := Vector2(1.08, 0.78)
+const PLACEMENT_DROP_OFFSET := -40.0
+const PLACEMENT_SLAM_DURATION := 0.11
+const PLACEMENT_RECOVER_DURATION := 0.13
+const PLACEMENT_SHAKE_STRENGTH := 8.0
+const PLACEMENT_SHAKE_DURATION := 0.18
 const EMPOWER_FLASH_HIGHLIGHT := Color(1.45, 1.35, 0.15, 1.0)
 const EMPOWER_FLASH_DURATION := 0.45
 
@@ -72,34 +77,59 @@ func show_enhancement(enhancement: Enhancement) -> void:
 
 
 #region Animations and colors
-# Scales the rune from the oversized hover preview down into the hex.
+# Drops the oversized hover pose into the hex with a hard slam, then seats at rest.
 func play_placement_animation() -> void:
 	_anim_target.pivot_offset = _anim_target.size / 2
 	if _anim_target.pivot_offset == Vector2.ZERO:
 		_anim_target.pivot_offset = size / 2
 	_anim_target.scale = Vector2(PLACEMENT_HOVER_SCALE, PLACEMENT_HOVER_SCALE)
+	_anim_target.position.y = PLACEMENT_DROP_OFFSET
 	_anim_target.modulate = Color(1.0, 1.0, 1.0, 0.9)
 	z_index = 10
 
+	var slam_duration := PLACEMENT_SLAM_DURATION / GameManager.game_speed
+	var recover_duration := PLACEMENT_RECOVER_DURATION / GameManager.game_speed
+
 	var placement_tween := create_tween()
 	placement_tween.set_parallel(true)
-	# Back ease overshoots slightly under 1, then seats at rest like a press-in.
+	# Accelerate into the tile so the hit reads as a drop, not a float.
+	placement_tween.tween_property(
+		_anim_target,
+		"position",
+		Vector2.ZERO,
+		slam_duration
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	placement_tween.tween_property(
 		_anim_target,
 		"scale",
-		Vector2.ONE,
-		PLACEMENT_INSERT_DURATION
-	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		PLACEMENT_SLAM_SCALE,
+		slam_duration
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	placement_tween.tween_property(
 		_anim_target,
 		"modulate",
 		_resting_modulate,
-		PLACEMENT_INSERT_DURATION * 0.8
+		slam_duration
 	)
+
+	placement_tween.chain()
+	placement_tween.tween_callback(_on_placement_impact)
+	placement_tween.tween_property(
+		_anim_target,
+		"scale",
+		Vector2.ONE,
+		recover_duration
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
 	placement_tween.chain().tween_callback(func() -> void:
 		z_index = 0
 		_anim_target.scale = Vector2.ONE
+		_anim_target.position = Vector2.ZERO
 	)
+
+
+func _on_placement_impact() -> void:
+	_shake_screen(PLACEMENT_SHAKE_STRENGTH, PLACEMENT_SHAKE_DURATION)
 	_play_placement_smoke()
 	if hex_stroke != null:
 		hex_stroke.play_clockwise_draw()
@@ -198,10 +228,14 @@ func play_activation_animation() -> void:
 
 
 func _shake_on_activation() -> void:
+	_shake_screen(ACTIVATION_SHAKE_STRENGTH, ACTIVATION_SHAKE_DURATION)
+
+
+func _shake_screen(strength: float, duration: float) -> void:
 	var camera := get_viewport().get_camera_2d()
 	if camera == null or not camera.has_method("shake"):
 		return
-	camera.shake(ACTIVATION_SHAKE_STRENGTH, ACTIVATION_SHAKE_DURATION)
+	camera.shake(strength, duration)
 
 
 static func activation_animation_duration() -> float:

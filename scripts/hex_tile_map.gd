@@ -7,14 +7,14 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
 @onready var base_layer: TileMapLayer = $BaseLayer
+@onready var trigger_order_overlay: TriggerOrderOverlay = $TriggerOrderOverlay
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var rune_highlight_overlay_layer: TileMapLayer = $RuneHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
 
-# Selection overlay uses source 0 for hover and source 2 for the locked selection.
+# Selection overlay uses source 0 for hover. Click-to-lock selection was removed.
 const HOVER_OVERLAY_SOURCE_ID := 0
-const SELECTED_OVERLAY_SOURCE_ID := 2
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
 # TileCard placement / trigger preview overlay on RuneHighlightOverlayLayer.
 const RUNE_HIGHLIGHT_SOURCE_ID := 0
@@ -34,7 +34,6 @@ const HEX_TEXTURE_SIZE := 256
 # Atlas coords for the single dashed hex tile on BaseLayer (source 0)
 const BASE_TILE_ATLAS_COORDS := Vector2i(0, 0)
 
-var selected_cell: Vector2i = Vector2i(-1, -1)
 var hovered_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>
 var map_data: Dictionary = {}
@@ -75,6 +74,7 @@ func _ready() -> void:
 	# Keep the rune highlight above tiles and placed runes so segment/placement overlays stay visible.
 	rune_highlight_overlay_layer.z_index = RUNE_HIGHLIGHT_LAYER_Z_INDEX
 	_apply_tile_spacing()
+	trigger_order_overlay.setup(self)
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
 	EventBus.tile_card_empowered.connect(_on_tile_card_empowered)
@@ -118,7 +118,7 @@ func _apply_tile_spacing() -> void:
 		layer.tile_set.tile_size = spaced_tile_size
 
 
-# Handles tile hover highlighting and selection clicks.
+# Handles tile hover highlighting. Left-click no longer locks a selected hex.
 func _unhandled_input(event: InputEvent) -> void:
 	if GameManager.is_processing_turn:
 		_hide_tile_panel_hover()
@@ -131,14 +131,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			_update_hover_highlight()
 			_update_tile_panel_hover(_mouse_map_coords())
 
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			_clear_selection()
-			return
-
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_handle_left_click()
-
 
 func _update_hover_highlight() -> void:
 	var map_coords: Vector2i = _mouse_map_coords()
@@ -146,49 +138,18 @@ func _update_hover_highlight() -> void:
 		if map_coords == hovered_cell:
 			return
 
-		if hovered_cell != Vector2i(-1, -1) and hovered_cell != selected_cell:
+		if hovered_cell != Vector2i(-1, -1):
 			selection_overlay_layer.set_cell(hovered_cell, -1)
 
 		hovered_cell = map_coords
-		if map_coords != selected_cell:
-			selection_overlay_layer.set_cell(
-				map_coords,
-				HOVER_OVERLAY_SOURCE_ID,
-				OVERLAY_TILE_ATLAS_COORDS
-			)
-		else:
-			# Selected tile already shows the selection overlay; skip hover.
-			hovered_cell = Vector2i(-1, -1)
-	elif hovered_cell != Vector2i(-1, -1) and hovered_cell != selected_cell:
-		selection_overlay_layer.set_cell(hovered_cell, -1)
-		hovered_cell = Vector2i(-1, -1)
-
-
-func _handle_left_click() -> void:
-	var map_coords: Vector2i = _mouse_map_coords()
-	if not is_in_map(map_coords) or not is_tile_interactable(map_coords):
-		_clear_selection()
-		return
-
-	if map_coords != selected_cell:
-		selection_overlay_layer.set_cell(selected_cell, -1)
-
-	if hovered_cell == map_coords:
-		selection_overlay_layer.set_cell(hovered_cell, -1)
-		hovered_cell = Vector2i(-1, -1)
-
-	if not card_placement_handler.is_card_selected:
 		selection_overlay_layer.set_cell(
 			map_coords,
-			SELECTED_OVERLAY_SOURCE_ID,
+			HOVER_OVERLAY_SOURCE_ID,
 			OVERLAY_TILE_ATLAS_COORDS
 		)
-		selected_cell = map_coords
-
-
-func _clear_selection() -> void:
-	selection_overlay_layer.set_cell(selected_cell, -1)
-	selected_cell = Vector2i(-1, -1)
+	elif hovered_cell != Vector2i(-1, -1):
+		selection_overlay_layer.set_cell(hovered_cell, -1)
+		hovered_cell = Vector2i(-1, -1)
 
 
 func _mouse_map_coords() -> Vector2i:
@@ -250,7 +211,7 @@ func is_in_map(coords: Vector2i) -> bool:
 	return map_data.has(coords)
 
 
-## Disabled difficulty tiles exist on the map but cannot be selected, hovered, or played on.
+## Disabled difficulty tiles exist on the map but cannot be hovered or played on.
 func is_tile_interactable(coords: Vector2i) -> bool:
 	if not is_in_map(coords):
 		return false
@@ -377,6 +338,7 @@ func generate_terrain() -> void:
 	# Disabled tiles are restored from the save file when continuing a run.
 	if not RunSaveManager.should_restore_run():
 		_apply_difficulty_disabled_tiles()
+	trigger_order_overlay.rebuild()
 
 
 # Randomly disable tiles for difficulty level 5, excluding segment-passive tiles.
@@ -422,17 +384,10 @@ func _assign_segment_passive_modifiers() -> void:
 
 
 func _on_map_display_layout_changed(layout: String) -> void:
-	if layout == "base":
-		_set_tile_cards_hidden(false)
-	elif layout == "tile_passives":
-		_set_tile_cards_hidden(true)
-	elif layout == "order_segments":
-		_set_tile_cards_hidden(true)
-
-
-func _set_tile_cards_hidden(hide_runes: bool) -> void:
 	for hex: Hex in map_data.values():
-		hex.set_tile_cards_hidden(hide_runes)
+		hex.set_map_display_layout(layout)
+	# Order numbers are Controls, not atlas tiles. Toggle the overlay instead of a TileMapLayer.
+	trigger_order_overlay.set_active(layout == "order_segments")
 
 
 ## Ring index from the map center (0 = center, hex_size = outer edge).
@@ -784,6 +739,14 @@ func _spawn_floating_text(pos: Vector2, text: String, color: Color) -> FloatingT
 	return floating_text
 
 
+func _spawn_segment_product_text(pos: Vector2, score: int, multiplier: int) -> FloatingText:
+	var floating_text := preload("res://scenes/animations/floating_text.tscn").instantiate() as FloatingText
+	floating_text.position = pos
+	get_tree().current_scene.add_child(floating_text)
+	floating_text.set_segment_product(score, multiplier)
+	return floating_text
+
+
 const ENHANCEMENT_ACTIVATION_DELAY := 0.5
 
 
@@ -907,7 +870,7 @@ func _play_segment_turn_result_reveals() -> void:
 		await display.play_merge_into_round_info()
 
 
-## Highlights one segment, animates its runes, then flies its essence total into the turn score overlay.
+## Highlights one segment, animates its runes, then flies its score total into the turn score overlay.
 func _play_single_segment_reveal(
 	segment_index: int,
 	contribution: int,
@@ -925,24 +888,26 @@ func _play_single_segment_reveal(
 	).timeout
 
 	if contribution > 0:
-		await _play_segment_essence_merge(segment_index, contribution, running_total, grow_into_display)
+		await _play_segment_score_merge(segment_index, contribution, running_total, grow_into_display)
 
 	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 	_clear_segment_reveal_glow()
 	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 
 
-## Rises a segment essence float, then grows into or shrinks toward the shared turn score overlay.
-func _play_segment_essence_merge(
+## Rises a segment score float, then grows into or shrinks toward the shared turn score overlay.
+func _play_segment_score_merge(
 	segment_index: int,
 	contribution: int,
 	running_total: int,
 	grow_into_display: bool
 ) -> void:
-	var floating_text := _spawn_floating_text(
+	var score := get_segment_turn_score(segment_index)
+	var multiplier := get_segment_turn_multiplier(segment_index)
+	var floating_text := _spawn_segment_product_text(
 		_get_segment_screen_center(segment_index),
-		CountingNumber.format_int(contribution),
-		ScoreReadoutStyle.SEGMENT_SCORE_COLOR
+		score,
+		multiplier
 	)
 	await floating_text.play_rise()
 
@@ -981,7 +946,7 @@ func _canvas_to_world(canvas_pos: Vector2) -> Vector2:
 	return get_viewport().get_canvas_transform().affine_inverse() * canvas_pos
 
 
-## Shared overlay that accumulates segment essence during the post-turn reveal.
+## Shared overlay that accumulates segment score during the post-turn reveal.
 func _get_turn_score_display() -> TurnScoreDisplay:
 	return get_tree().get_first_node_in_group("turn_score_display") as TurnScoreDisplay
 

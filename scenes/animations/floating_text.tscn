@@ -70,15 +70,22 @@ _data = {
 z_index = 10
 script = ExtResource("1_45khh")
 
-[node name="Label" type="Label" parent="." unique_id=448775708]
+[node name="Label" type="RichTextLabel" parent="." unique_id=448775708]
 offset_right = 121.0
 offset_bottom = 44.666668
 scale = Vector2(1.2, 1.2)
+mouse_filter = 2
+theme_override_colors/default_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0.08468992, 0.08468992, 0.08468992, 1)
 theme_override_constants/outline_size = 4
-theme_override_fonts/font = SubResource("FontVariation_ksxla")
-theme_override_font_sizes/font_size = 32
+theme_override_fonts/normal_font = SubResource("FontVariation_ksxla")
+theme_override_font_sizes/normal_font_size = 32
+bbcode_enabled = true
 text = "+5 gold"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
 
 [node name="Timer" type="Timer" parent="." unique_id=2081876531]
 one_shot = true

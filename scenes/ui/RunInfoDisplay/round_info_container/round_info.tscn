@@ -76,7 +76,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
-text = "Required Essence"
+text = "Target Score"
 horizontal_alignment = 1
 
 [node name="RequiredScore" type="Label" parent="VBoxContainer/RequiredScoreContainer" unique_id=992593298]
@@ -101,7 +101,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
-text = "Current Essence"
+text = "Round Score"
 horizontal_alignment = 1
 
 [node name="ScoreThisRound" type="Label" parent="VBoxContainer/ScoreContainer" unique_id=422264704]

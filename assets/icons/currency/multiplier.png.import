@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1o16732ml7"
-path="res://.godot/imported/basic_layout.png-526b6916f6e7e8c57b103c3f2215091f.ctex"
+uid="uid://jtmgf0kaqiyp"
+path="res://.godot/imported/multiplier.png-64e4dbaf03cd47677fb7be81ffc91432.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/map_layouts/basic_layout.png"
-dest_files=["res://.godot/imported/basic_layout.png-526b6916f6e7e8c57b103c3f2215091f.ctex"]
+source_file="res://assets/icons/currency/multiplier.png"
+dest_files=["res://.godot/imported/multiplier.png-64e4dbaf03cd47677fb7be81ffc91432.ctex"]
 
 [params]
 

@@ -11,5 +11,5 @@ type = 2
 id = "gluttonous_rune"
 name = "Gluttonous Rune"
 icon = ExtResource("1_mi1r8")
-description = "+30 Essence. Consumes the next adjacent card to permanently double it's Essence (stackable)"
+description = "+30 Score. Consumes the next adjacent card to permanently double it's Score (stackable)"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

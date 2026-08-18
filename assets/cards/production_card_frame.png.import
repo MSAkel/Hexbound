@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0bs1h7l3l8ye"
-path="res://.godot/imported/the_spiralist_map.png-f4034bad578fedb895bfefaac44d5591.ctex"
+uid="uid://d4a3cfbq7svgl"
+path="res://.godot/imported/production_card_frame.png-d2bc75f0fcb1d04da0183a13626a231e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/trigger_order/the_spiralist_map.png"
-dest_files=["res://.godot/imported/the_spiralist_map.png-f4034bad578fedb895bfefaac44d5591.ctex"]
+source_file="res://assets/cards/production_card_frame.png"
+dest_files=["res://.godot/imported/production_card_frame.png-d2bc75f0fcb1d04da0183a13626a231e.ctex"]
 
 [params]
 

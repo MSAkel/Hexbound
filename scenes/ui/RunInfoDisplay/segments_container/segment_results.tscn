@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://behfllgh3b7fc"]
 
 [ext_resource type="Script" uid="uid://cw5fm7tuluw1w" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.gd" id="1_bo2vp"]
-[ext_resource type="Texture2D" uid="uid://dnujadhya634n" path="res://assets/icons/currency/essence.png" id="2_2h2b2"]
+[ext_resource type="Texture2D" uid="uid://dnujadhya634n" path="res://assets/icons/currency/score.png" id="2_2h2b2"]
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="2_keyqk"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/currency/gold.png" id="3_bp3vb"]
 
@@ -15,7 +15,6 @@ corner_radius_bottom_right = 100
 corner_radius_bottom_left = 100
 
 [node name="SegmentResultsPanel" type="PanelContainer" unique_id=1594320159]
-custom_minimum_size = Vector2(200, 35)
 offset_right = 40.0
 offset_bottom = 40.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_r6dd1")
@@ -52,12 +51,13 @@ theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
 text = ":"
 
-[node name="EssenceContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1587263802]
+[node name="ScoreContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1587263802]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4
 
-[node name="EssenceIcon" type="TextureRect" parent="HBoxContainer/EssenceContainer" unique_id=1655605410]
+[node name="ScoreIcon" type="TextureRect" parent="HBoxContainer/ScoreContainer" unique_id=1655605410]
 texture_filter = 1
 custom_minimum_size = Vector2(15, 27.82)
 layout_mode = 2
@@ -67,7 +67,7 @@ texture = ExtResource("2_2h2b2")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="SegmentEssence" type="Label" parent="HBoxContainer/EssenceContainer" unique_id=1004428651]
+[node name="SegmentScore" type="Label" parent="HBoxContainer/ScoreContainer" unique_id=1004428651]
 custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
@@ -98,6 +98,7 @@ theme_override_font_sizes/font_size = 21
 text = "1"
 
 [node name="GoldContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=267342223]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4

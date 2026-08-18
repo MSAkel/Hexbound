@@ -13,6 +13,7 @@ texture = ExtResource("1_jevqn")
 
 [node name="SegmentsContainer" type="PanelContainer" unique_id=1933303425]
 texture_filter = 1
+size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxTexture_g5bg1")
 script = ExtResource("2_amxqk")
@@ -38,7 +39,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_font_sizes/font_size = 18
-text = "Segments Output"
+text = "Segments"
 horizontal_alignment = 1
 
 [node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=875436109]

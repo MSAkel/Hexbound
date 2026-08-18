@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
-[ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card/card_background.png" id="3_nmvtt"]
+[ext_resource type="Texture2D" uid="uid://d4a3cfbq7svgl" path="res://assets/cards/production_card_frame.png" id="3_nmvtt"]
 [ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="4_7xb4v"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
@@ -59,7 +59,7 @@ mouse_filter = 1
 theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
 
-[node name="Panel" type="Panel" parent="." unique_id=932652994]
+[node name="CardBackground" type="Panel" parent="." unique_id=932652994]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

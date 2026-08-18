@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfsnsn6me38ya"
-path="res://.godot/imported/basic_layout_off.png-910fbf1a4f28b60405b10620a9ac255d.ctex"
+uid="uid://yjsyynwlyscq"
+path="res://.godot/imported/challenge_icon.png-ff1b319a1a2a18c99d693427583c9d0f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/map_layouts/basic_layout_off.png"
-dest_files=["res://.godot/imported/basic_layout_off.png-910fbf1a4f28b60405b10620a9ac255d.ctex"]
+source_file="res://assets/gui/map_layouts/challenge_icon.png"
+dest_files=["res://.godot/imported/challenge_icon.png-ff1b319a1a2a18c99d693427583c9d0f.ctex"]
 
 [params]
 

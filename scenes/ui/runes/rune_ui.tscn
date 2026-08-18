@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cvrhe05ck15tj" path="res://scenes/ui/runes/rune_ui.gd" id="1_ncwa2"]
 [ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/runes/production/basic_rune.png" id="2_gx0vj"]
 [ext_resource type="Texture2D" uid="uid://b8wbfxcvxew5s" path="res://assets/particles/flame_01.png" id="3_j3x5t"]
-[ext_resource type="Script" path="res://scenes/ui/runes/hex_stroke.gd" id="4_hexstroke"]
+[ext_resource type="Script" uid="uid://oseck4kpvgh2" path="res://scenes/ui/runes/hex_stroke.gd" id="4_hexstroke"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qvrl4"]
 
@@ -118,7 +118,7 @@ text = "+0"
 self_modulate = Color(0.86793804, 0.78399736, 0.33285496, 1)
 z_index = 4
 material = SubResource("CanvasItemMaterial_placement_smoke")
-position = Vector2(128, 128)
+position = Vector2(128, 127)
 emitting = false
 amount = 16
 texture = ExtResource("3_j3x5t")
@@ -130,7 +130,7 @@ visibility_rect = Rect2(-256, -256, 512, 512)
 local_coords = true
 process_material = SubResource("ParticleProcessMaterial_placement_smoke")
 
-[node name="HexStroke" type="Line2D" parent="."]
+[node name="HexStroke" type="Line2D" parent="." unique_id=1184104513]
 z_index = 6
 width = 6.0
 default_color = Color(1, 0.86, 0.42, 0.95)

@@ -58,7 +58,6 @@ visible = false
 
 [node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]
 visible = false
-script = null
 
 [node name="SettingsContainer" parent="." unique_id=897472805 instance=ExtResource("14_8s2gp")]
 visible = false

@@ -21,7 +21,8 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @onready var targets: Array[Node] = []
 @onready var starting_hand_position := self.get_index()
 
-@onready var panel: Panel = $Panel
+# Textured card frame. Used for hover tint and to ignore mouse so the root Control gets clicks.
+@onready var panel: Panel = $CardBackground
 @onready var content_container: VBoxContainer = $VBoxContainer
 # Scene-authored border glow; toggled when the card enters/exits the clicked placement state.
 @onready var selection_glow: Panel = $SelectionGlow

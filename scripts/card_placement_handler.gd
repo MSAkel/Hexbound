@@ -189,9 +189,7 @@ func _clear_restriction_overlays() -> void:
 func _clear_hover_highlights() -> void:
 	_clear_rune_highlights_at(_effect_preview_coords)
 	_effect_preview_coords.clear()
-	if _placement_target_coord != Vector2i(-1, -1):
-		_clear_rune_highlight_at(_placement_target_coord)
-		_placement_target_coord = Vector2i(-1, -1)
+	_placement_target_coord = Vector2i(-1, -1)
 
 
 func _clear_rune_highlights_at(coords_list: Array[Vector2i]) -> void:
@@ -206,9 +204,9 @@ func _clear_rune_highlight_at(coords: Vector2i) -> void:
 	tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
 
 
-## True when this handler currently stamps a placement/effect highlight on coords.
+## True when this handler currently stamps an effect-preview highlight on coords.
 func is_highlighting_coord(coords: Vector2i) -> bool:
-	return coords == _placement_target_coord or coords in _effect_preview_coords
+	return coords in _effect_preview_coords
 
 
 func _stamp_rune_highlight(coords: Vector2i) -> void:
@@ -249,12 +247,11 @@ func _update_placement_overlays() -> void:
 			)
 
 
-# Highlights the hovered placement tile and any tiles its effect would impact.
+# Highlights tiles the hovered card would affect. The placement tile itself stays unhighlighted.
 func _update_hover_highlights(hover_hex: Hex) -> void:
 	_clear_hover_highlights()
 	
 	_placement_target_coord = hover_hex.coordinates
-	_stamp_rune_highlight(_placement_target_coord)
 	
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:

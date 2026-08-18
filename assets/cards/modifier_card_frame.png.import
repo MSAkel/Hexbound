@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnujadhya634n"
-path="res://.godot/imported/essence.png-e0c0e7dc651a60af13c12331d166c02a.ctex"
+uid="uid://cybeqkl7icvqn"
+path="res://.godot/imported/modifier_card_frame.png-a12ac2ce0a3e453d4b9e72b3d97ea4e7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/currency/essence.png"
-dest_files=["res://.godot/imported/essence.png-e0c0e7dc651a60af13c12331d166c02a.ctex"]
+source_file="res://assets/cards/modifier_card_frame.png"
+dest_files=["res://.godot/imported/modifier_card_frame.png-a12ac2ce0a3e453d4b9e72b3d97ea4e7.ctex"]
 
 [params]
 

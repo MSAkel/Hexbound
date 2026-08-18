@@ -5,19 +5,19 @@ extends PanelContainer
 var segment_index: int = -1
 
 @onready var segment_no: Label = $HBoxContainer/SegmentNoContainer/SegmentNo
-@onready var segment_essence: Label = $HBoxContainer/EssenceContainer/SegmentEssence
+@onready var segment_score: Label = $HBoxContainer/ScoreContainer/SegmentScore
 @onready var segment_gold: Label = $HBoxContainer/GoldContainer/SegmentGold
 
-var _essence: int = 0
+var _score: int = 0
 var _multiplier: int = 1
 var _total_score: int = 0
 var _gold: int = 0
-var _essence_counter: CountingNumber
+var _score_counter: CountingNumber
 var _gold_counter: CountingNumber
 
 
 func _ready() -> void:
-	_essence_counter = CountingNumber.for_label(self, segment_essence)
+	_score_counter = CountingNumber.for_label(self, segment_score)
 	_gold_counter = CountingNumber.for_label(self, segment_gold)
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
 	EventBus.segment_turn_results_reset.connect(_on_segment_turn_results_reset)
@@ -34,34 +34,34 @@ func _sync_from_tile_map() -> void:
 		_apply_results(0, 1, 0, 0, false)
 		return
 
-	var essence := tile_map.get_segment_turn_score(segment_index)
+	var score := tile_map.get_segment_turn_score(segment_index)
 	var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
 	var gold := tile_map.get_segment_turn_gold(segment_index)
-	_apply_results(essence, multiplier, essence * multiplier, gold, false)
+	_apply_results(score, multiplier, score * multiplier, gold, false)
 	_set_segment_no(segment_index + 1)
 
 
-func _on_segment_turn_results_changed(changed_index: int, essence: int, multiplier: int, total_score: int, gold: int) -> void:
+func _on_segment_turn_results_changed(changed_index: int, score: int, multiplier: int, total_score: int, gold: int) -> void:
 	if changed_index != segment_index:
 		return
-	_apply_results(essence, multiplier, total_score, gold)
+	_apply_results(score, multiplier, total_score, gold)
 
 
 func _on_segment_turn_results_reset() -> void:
 	_apply_results(0, 1, 0, 0, false)
 
 
-## Stores tooltip values and updates the essence/gold labels.
-func _apply_results(essence: int, multiplier: int, total_score: int, gold: int, animate: bool = true) -> void:
-	_essence = essence
+## Stores tooltip values and updates the score/gold labels.
+func _apply_results(score: int, multiplier: int, total_score: int, gold: int, animate: bool = true) -> void:
+	_score = score
 	_multiplier = multiplier
 	_total_score = total_score
 	_gold = gold
 	if animate:
-		_essence_counter.play(essence)
+		_score_counter.play(score)
 		_gold_counter.play(gold)
 	else:
-		_essence_counter.snap_to(essence)
+		_score_counter.snap_to(score)
 		_gold_counter.snap_to(gold)
 
 
@@ -87,7 +87,7 @@ func _set_segment_no(no: int) -> void:
 			segment_no.text = "9th"
 
 func _on_mouse_entered() -> void:
-	var tooltip := "Last Turn Results:\nEssence: %s\nMultiplier: %s\nGold: %s\nTotal Score: %s\n\nRound Results: \nWIP" % [_essence, _multiplier, _gold, _total_score]
+	var tooltip := "Last Turn Results:\nScore: %s\nMultiplier: %s\nGold: %s\nTotal Score: %s\n\nRound Results: \nWIP" % [_score, _multiplier, _gold, _total_score]
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 	# Highlight this segment's tiles on the map for as long as the tooltip is shown.
 	var tile_map := _get_tile_map()
@@ -103,8 +103,8 @@ func _on_mouse_exited() -> void:
 
 
 func _exit_tree() -> void:
-	if _essence_counter != null:
-		_essence_counter.kill()
+	if _score_counter != null:
+		_score_counter.kill()
 	if _gold_counter != null:
 		_gold_counter.kill()
 	var tile_map := _get_tile_map()
