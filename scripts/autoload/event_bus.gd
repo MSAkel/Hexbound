@@ -49,7 +49,9 @@ signal tile_card_empowered(tile_card: TileCard)
 ## Emitted when an empowered tile card triggers and loses empower
 signal tile_card_empower_consumed(tile_card: TileCard)  
 ## Emitted when an enhancement card is added to hand
-signal enhancement_selected(enhancement: Enhancement)  
+signal enhancement_selected(enhancement: Enhancement)
+## Emitted when a tile effect creates a card that should animate into the hand
+signal generated_hand_card(card: Card)  
 
 signal card_selected(card: CardUI)
 

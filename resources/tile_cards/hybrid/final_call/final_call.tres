@@ -12,5 +12,5 @@ product = null
 id = "final_call"
 name = "Final Call"
 icon = ExtResource("1_1w7xl")
-description = "+25 score. On the last turn of a round, empowers every Production card in its segment"
+description = "+25 score. On the last turn of a round, empowers every Production card on its segment"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

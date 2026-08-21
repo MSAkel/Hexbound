@@ -11,16 +11,19 @@
 [ext_resource type="PackedScene" uid="uid://b04mnn3bt2r1e" path="res://scenes/ui/labels/challenge_label/round_challenge_name_display.tscn" id="12_m82f4"]
 [ext_resource type="PackedScene" uid="uid://di0jbf4swcn62" path="res://scenes/ui/round_complete_screen/round_complete_screen.tscn" id="13_m82f4"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="13_tooltip"]
-[ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="14_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
 [ext_resource type="PackedScene" uid="uid://jknp6dm4cexb" path="res://scenes/ui/labels/turn_score_display/turn_score_display.tscn" id="15_turnscore"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
+[ext_resource type="PackedScene" uid="uid://casabnpm08k0k" path="res://scenes/ui/tutorial/tutorial_text_container.tscn" id="17_tutorial"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
 
 [node name="RunInfoUI" parent="." unique_id=237509013 instance=ExtResource("2_8s2gp")]
 scale = Vector2(0.9969174, 1)
+
+[node name="TutorialTextContainer" parent="." unique_id=1844229200 instance=ExtResource("17_tutorial")]
 
 [node name="CardsHand" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
 custom_minimum_size = Vector2(0, 0)
@@ -44,9 +47,8 @@ offset_right = 220.0
 offset_bottom = 120.0
 mouse_filter = 2
 
-[node name="KeywordTooltipStack" parent="." instance=ExtResource("16_keyword_tips")]
+[node name="KeywordTooltipStack" parent="." unique_id=500675727 instance=ExtResource("16_keyword_tips")]
 visible = false
-mouse_filter = 2
 
 [node name="GameOverScreen" parent="." unique_id=725350368 instance=ExtResource("9_b65ll")]
 visible = false
@@ -58,7 +60,7 @@ rotation = -0.00022035485
 [node name="RoundChallengeNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
 visible = false
 
-[node name="TurnScoreDisplay" parent="." instance=ExtResource("15_turnscore")]
+[node name="TurnScoreDisplay" parent="." unique_id=1797239909 instance=ExtResource("15_turnscore")]
 visible = false
 
 [node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]

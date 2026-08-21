@@ -10,5 +10,5 @@ type = 1
 id = "radiant_link"
 name = "Radiant Link"
 icon = ExtResource("1_11jx1")
-description = "Up to 3 adjacent Essence cards permanently gain +3 Essence"
+description = "Up to 3 adjacent Score cards permanently gain +3 Score"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

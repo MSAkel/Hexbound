@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://54ardna8nujc"
-path="res://.godot/imported/clonus_runus.png-405de6440ea53ea259a82a4b2be0c388.ctex"
+uid="uid://pq0kql0xongj"
+path="res://.godot/imported/lone_fortune.png-7a2073902bf63dc91d46f59870cfa0e2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/modifier/clonus_runus.png"
-dest_files=["res://.godot/imported/clonus_runus.png-405de6440ea53ea259a82a4b2be0c388.ctex"]
+source_file="res://assets/icons/runes/production/lone_fortune.png"
+dest_files=["res://.godot/imported/lone_fortune.png-7a2073902bf63dc91d46f59870cfa0e2.ctex"]
 
 [params]
 

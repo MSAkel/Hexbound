@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://cl7o5t5jscgg4"]
+
+[ext_resource type="Texture2D" uid="uid://b2lyxaglonrqe" path="res://assets/icons/runes/production/rising_tempo.png" id="1_ud82v"]
+[ext_resource type="Script" uid="uid://b72ami54ald0n" path="res://resources/tile_cards/generations/rising_tempo/rising_tempo.gd" id="2_ps485"]
+
+[resource]
+script = ExtResource("2_ps485")
+base_production_amount = 5
+product = 1
+id = "rising_tempo"
+name = "Rising Tempo"
+icon = ExtResource("1_ud82v")
+description = "+5 score for every trigger on this segment so far this turn"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

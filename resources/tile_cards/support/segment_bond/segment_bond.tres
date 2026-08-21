@@ -10,5 +10,5 @@ type = 1
 id = "segment_bond"
 name = "Segment Bond"
 icon = ExtResource("1_k0ops")
-description = "Adjacent Essence cards  on the same segment permanently gain +10 Essence"
+description = "Adjacent Score cards in this segment permanently gain +10 Score."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

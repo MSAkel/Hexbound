@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://bpdqv3hg50vdf"]
+
+[ext_resource type="Texture2D" uid="uid://igbafbgbke4b" path="res://assets/icons/runes/support/helping_hand.png" id="1_8khpv"]
+[ext_resource type="Script" uid="uid://cha8ltd2le8nv" path="res://resources/tile_cards/support/helping_hand/helping_hand.gd" id="2_bskrr"]
+
+[resource]
+script = ExtResource("2_bskrr")
+base_production_amount = 5
+type = 1
+id = "helping_hand"
+name = "Helping Hand"
+icon = ExtResource("1_8khpv")
+description = "Gives the lowest Score producer +5 permanently"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

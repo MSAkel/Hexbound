@@ -1,0 +1,18 @@
+[gd_resource type="Resource" format=3 uid="uid://dmgsxsfmxqsx1"]
+
+[ext_resource type="Texture2D" uid="uid://b0jo4rvinycdo" path="res://assets/icons/runes/production/overcharge.png" id="1_0soeu"]
+[ext_resource type="Script" uid="uid://dxfcaqfkmao7x" path="res://resources/tile_cards/generations/overcharge/overcharge.gd" id="1_wm6wk"]
+
+[resource]
+script = ExtResource("1_wm6wk")
+base_production_amount = 50
+rarity = 1
+type = null
+product = 1
+single_activation_per_turn = null
+placement_restriction = null
+id = "overcharge"
+name = "Overcharge"
+icon = ExtResource("1_0soeu")
+description = "+60 Score. +10% break chance after every completed trigger this turn"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

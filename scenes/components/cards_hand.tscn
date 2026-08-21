@@ -1,6 +1,12 @@
 [gd_scene format=3 uid="uid://ci2r1gwxv4fag"]
 
 [ext_resource type="Script" uid="uid://dokobqfpi35ci" path="res://scenes/components/hand.gd" id="1_0y3yv"]
+[ext_resource type="Script" uid="uid://bgesqtywkhtmh" path="res://scenes/components/generated_card_reveal.gd" id="1_reveal"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_0v8h7"]
+[ext_resource type="Resource" uid="uid://dlrpfp2dc162e" path="res://resources/tile_cards/modifiers/card_extraction/card_extraction.tres" id="3_drsep"]
+[ext_resource type="Resource" uid="uid://dy6m0cf1e0c65" path="res://resources/tile_cards/modifiers/gold_extraction/gold_extraction.tres" id="4_yllye"]
+[ext_resource type="Resource" uid="uid://tbdpj1lh5eoa" path="res://resources/tile_cards/modifiers/transformus_upgradus/transformus_upgradus.tres" id="6_rmjai"]
+[ext_resource type="Resource" uid="uid://c7c2eo74m8q0l" path="res://resources/tile_cards/generations/basic_card/basic_card.tres" id="7_0l6v5"]
 
 [node name="CardsHand" type="Control" unique_id=19796645 groups=["ui_layer"]]
 custom_minimum_size = Vector2(600, 125)
@@ -31,3 +37,7 @@ grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 script = ExtResource("1_0y3yv")
+debug_starting_runes = Array[ExtResource("2_0v8h7")]([ExtResource("3_drsep"), ExtResource("4_yllye"), ExtResource("6_rmjai"), ExtResource("7_0l6v5"), ExtResource("7_0l6v5"), ExtResource("7_0l6v5")])
+
+[node name="GeneratedCardReveal" type="Node" parent="." unique_id=856140927]
+script = ExtResource("1_reveal")

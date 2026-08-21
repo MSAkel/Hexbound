@@ -10,5 +10,5 @@ type = 2
 id = "lucky_draw"
 name = "Lucky Draw"
 icon = ExtResource("1_pvsl8")
-description = "Spends 1 gold and gains a 3% stackable chance to either gain 500 essence or 20 gold. Resets on generation"
+description = "Spends 1 gold to gain a 3% chance to either gain 500 score or 20 gold. Resets on generation"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -33,7 +33,10 @@ enum PlacementRestriction {
 	SEGMENT_LAST_TILE,
 }
 
-const EMPOWER_OUTPUT_SCALE := 3.0
+const EMPOWER_OUTPUT_SCALE := 2.0
+const ICON_SCORE := preload("res://assets/icons/currency/score.png")
+const ICON_GOLD := preload("res://assets/icons/currency/gold.png")
+const ICON_MULT := preload("res://assets/icons/currency/multiplier.png")
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -118,6 +121,8 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		EventBus.tile_card_empower_consumed.emit(self)
 
 	_activation_output_scale = output_scale
+	# Count this activation before the card resolves so "triggers so far" includes the current one.
+	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
 	_schedule_enhancement_activation(tile)
 	_activation_output_scale = 1.0
@@ -158,21 +163,47 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_output_scale))
 	tile.map.add_turn_score_for_tile(tile, points)
-	_create_floating_text(tile, "+%d Score" % points, Color.AQUA)
+	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_SCORE)
 
 func add_gold(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))
 	tile.map.add_turn_gold_for_tile(tile, amount)
-	_create_floating_text(tile, "+%d Gold" % amount, Color(1.0, 0.85, 0.2, 1.0))
+	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD)
 
 func add_multiplier(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))
 	tile.map.add_turn_multiplier_for_tile(tile, amount)
-	_create_floating_text(tile, "+%d Mult" % amount, Color.PLUM)
+	_create_floating_text(tile, "+%d" % amount, Color.PLUM, ICON_MULT)
 
-func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE) -> void:
+
+# Credits another segment's turn score. Float stays on this tile, destination segment flashes.
+func add_score_to_segment(tile: Hex, segment_index: int, base_points: int) -> void:
+	var points := int(round(base_points * _activation_output_scale))
+	tile.map.add_turn_score_for_segment(segment_index, points)
+	_create_floating_text(tile, "+%d → next" % points, Color.AQUA, ICON_SCORE)
+	tile.map.flash_segment_highlight(segment_index)
+
+
+# Credits another segment's turn multiplier. Float stays on this tile, destination segment flashes.
+func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: int) -> void:
+	var amount := int(round(base_amount * _activation_output_scale))
+	tile.map.add_turn_multiplier_for_segment(segment_index, amount)
+	_create_floating_text(tile, "+%d → next" % amount, Color.PLUM, ICON_MULT)
+	tile.map.flash_segment_highlight(segment_index)
+
+
+func failed_tile_card_text(tile: Hex) -> void:
+	_create_floating_text(tile, "Failed", Color.RED)
+
+
+# Queues a newly created card for the hand reveal animation. Does not use tile_card_selected.
+func _add_generated_card_to_hand(card: Card) -> void:
+	EventBus.generated_hand_card.emit(card)
+
+
+func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
 	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
-	tile.map.create_floating_text(tile_pos, text, color)
+	tile.map.create_floating_text(tile_pos, text, color, icon)
 
 #endregion --- Score, gold, and multiplier, and floating text helpers ---
 
@@ -189,7 +220,7 @@ func _empower() -> void:
 func _on_activate_tile_card(_tile: Hex) -> void:
 	pass
 
-# Brief pause so enhancement floating text does not sit on top of the tile card's text.
+# Enhancement text stacks above the host rune float. No delay is needed.
 func _schedule_enhancement_activation(tile: Hex) -> void:
 	if enhancement == null:
 		return
@@ -267,9 +298,29 @@ func _can_consume_next_tile_card_in_trigger_order(tile: Hex) -> bool:
 func _get_segment_index(tile: Hex) -> int:
 	return tile.map.get_segment_index(tile.coordinates)
 
+# Number of tiles in this card's segment (0 when the segment is unknown).
+func _get_segment_size(tile: Hex) -> int:
+	return tile.map.get_segment_size(_get_segment_index(tile))
+
+func _get_segment_count(tile: Hex) -> int:
+	return tile.map.get_segment_count()
+
+
+# Next segment after this tile, or -1 when this tile is already on the last segment.
+func _get_next_segment_index(tile: Hex) -> int:
+	var next_segment_index := _get_segment_index(tile) + 1
+	if next_segment_index < 0 or next_segment_index >= _get_segment_count(tile):
+		return -1
+	return next_segment_index
+
 # All placed tile cards on the same segment as tile (optional filter_type for TileCard.TileCardType).
 func _get_all_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_tile_cards_on_same_segment(tile, filter_type)
+
+
+# Activations on this tile's segment so far this turn, including the current activation.
+func _get_segment_trigger_count_this_turn(tile: Hex) -> int:
+	return tile.map.get_segment_turn_trigger_count(_get_segment_index(tile))
 
 
 ## All placed tile cards on the same segment whose product matches filter_product.
@@ -345,6 +396,21 @@ func _get_first_or_last_tile_card_in_relative_segment(
 
 #endregion --- Segment helpers ---
 
+#region --- Opposite tile helpers ---
+## Hex on the opposite side of the map from tile, or null when that cell is missing.
+func _get_opposite_hex(tile: Hex) -> Hex:
+	return tile.map.get_opposite_hex(tile.coordinates)
+
+
+## Placement preview for the tile whose ability this card would copy.
+func _coords_for_opposite_tile(tile: Hex) -> Array[Vector2i]:
+	var opposite := _get_opposite_hex(tile)
+	if opposite == null or opposite == tile:
+		return []
+	return [opposite.coordinates]
+
+#endregion --- Opposite tile helpers ---
+
 #region --- Tile card destruction helpers ---
 ## Resolves placed tile cards to their map coordinates for placement previews.
 func _coords_for_placed_tile_cards(tile: Hex, tile_cards: Array[TileCard]) -> Array[Vector2i]:
@@ -387,8 +453,55 @@ func _coords_for_adjacent_same_segment_producers_by_product(
 	)
 
 
+## All tiles in a segment, used to preview where forwarded score or mult will land.
+func _coords_for_segment(tile: Hex, segment_index: int) -> Array[Vector2i]:
+	var coords: Array[Vector2i] = []
+	if segment_index < 0:
+		return coords
+	for hex: Hex in tile.map.get_hexes_in_segment(segment_index):
+		coords.append(hex.coordinates)
+	return coords
+
+
+## Tiles in the segment after this one. Empty when this tile is on the last segment.
+func _coords_for_next_segment(tile: Hex) -> Array[Vector2i]:
+	return _coords_for_segment(tile, _get_next_segment_index(tile))
+
+
 ## Remove a placed tile card instance from the map (clears its tile and cancels queued triggers).
 func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard) -> void:
 	source_tile.map.destroy_placed_tile_card(tile_card)
+
+
+## Random pool card that can occupy a tile. Modifiers are excluded from the roll.
+## Pass exclude_id to omit one template so transforms can pick a different card.
+func _pick_random_placeable_tile_card(
+	rarity: Variant = null,
+	exclude_id: String = ""
+) -> TileCard:
+	var candidates: Array[TileCard] = []
+	for template: TileCard in GameManager.tile_cards_pool:
+		if template.type == TileCardType.MODIFIER:
+			continue
+		if rarity != null and template.rarity != rarity:
+			continue
+		if not exclude_id.is_empty() and template.id == exclude_id:
+			continue
+		candidates.append(template)
+
+	if candidates.is_empty():
+		return null
+
+	return candidates.pick_random()
+
+
+## Swaps the tile occupant for a fresh instance built from replacement_template.
+func _replace_placed_tile_card(tile: Hex, replacement_template: TileCard) -> void:
+	if tile.active_tile_card == null or replacement_template == null:
+		return
+
+	var old_card := tile.active_tile_card
+	_destroy_placed_tile_card(tile, old_card)
+	tile.place_tile_card(replacement_template)
 
 #endregion --- Tile card destruction helpers ---

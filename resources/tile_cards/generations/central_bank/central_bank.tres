@@ -11,5 +11,5 @@ product = 0
 id = "central_bank"
 name = "Central Bank"
 icon = ExtResource("1_78phl")
-description = " +2 Gold, increases by 2 for every adjacent gold Production card"
+description = " +2 Gold, increases by 2 for every adjacent Gold Production card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -10,5 +10,5 @@ product = 3
 id = "dividend"
 name = "Divident"
 icon = ExtResource("1_sdupe")
-description = "After 4 triggers: gain 300 Essece, 20 Mult and 15 Gold."
+description = "After 4 triggers: gain 300 Score, 20 Mult and 15 Gold."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

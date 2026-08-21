@@ -5,11 +5,10 @@
 
 [resource]
 script = ExtResource("1_stady")
-base_production_amount = null
 rarity = 2
 type = 2
 id = "unstable_concoction"
 name = "Unstable Concoction"
 icon = ExtResource("1_jjxmo")
-description = "Give 50 - 100 Essence, or 10 - 15 Mult or 10 - 20 gold or trigger the two previous card"
+description = "Gives 100 Score or 15 Mult or 15 gold or triggers the two previous cards"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

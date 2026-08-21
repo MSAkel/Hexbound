@@ -10,5 +10,5 @@ type = 1
 id = "unstable_rune"
 name = "Unstable Rune"
 icon = ExtResource("1_210j2")
-description = "Triggers adjacent Producers, starting from the one next in order. There is a 10% chance that this card will be destroyed for every adjacent card"
+description = "Triggers adjacent Producers. 10% chance this card will break for every adjacent card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

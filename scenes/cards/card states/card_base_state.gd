@@ -54,9 +54,9 @@ func on_mouse_exited() -> void:
 
 
 func _refresh_hover_state() -> void:
-	# Don't zero offset_transform while the hand is holding cards for the run intro.
+	# Don't zero offset_transform during intro slides or generated-card reveals.
 	var hand := card_ui.get_parent() as Hand
-	if hand != null and hand.is_awaiting_intro():
+	if hand != null and hand.is_preserving_offset_for(card_ui):
 		return
 
 	mouse_over_card = card_ui.is_mouse_over()

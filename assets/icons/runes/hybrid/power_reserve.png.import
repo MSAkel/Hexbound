@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blklpuod6ivk3"
-path="res://.godot/imported/rune_extraction.png-77092bbd0adbde752e5d74cbe190ed22.ctex"
+uid="uid://iqy5y7j4hpck"
+path="res://.godot/imported/power_reserve.png-54274508b464c056a307699a35d581dc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/modifier/rune_extraction.png"
-dest_files=["res://.godot/imported/rune_extraction.png-77092bbd0adbde752e5d74cbe190ed22.ctex"]
+source_file="res://assets/icons/runes/hybrid/power_reserve.png"
+dest_files=["res://.godot/imported/power_reserve.png-54274508b464c056a307699a35d581dc.ctex"]
 
 [params]
 

@@ -18,8 +18,13 @@ const INTRO_CARD_STAGGER := 0.07
 @export var debug_starting_runes: Array[TileCard] = []
 @export var debug_starting_enhancements: Array[Enhancement] = []
 
+@onready var _generated_reveal: GeneratedCardReveal = $"../GeneratedCardReveal"
+
 ## Keep starting cards parked off-screen until Main finishes fade/zoom.
 var _awaiting_intro := true
+## True while the hand is slid below the viewport (intro or turn resolution).
+var _hand_hidden := true
+var _hand_slide_tween: Tween = null
 
 ## Reparent cards to hand when they are dragged or released
 func _ready() -> void:
@@ -67,7 +72,11 @@ func _add_enhancement_card(enhancement: Enhancement) -> void:
 	_add_card(enhancement)
 
 
-func _add_card(data: Card) -> void:
+func create_hand_card(data: Card) -> CardUI:
+	return _add_card(data)
+
+
+func _add_card(data: Card) -> CardUI:
 	var new_rune_card := CARD_UI_SCENE.instantiate() as CardUI
 	new_rune_card.configure_interaction(CardUI.InteractionMode.HAND)
 	add_child(new_rune_card)
@@ -80,6 +89,7 @@ func _add_card(data: Card) -> void:
 	# Cards dealt during the enter-run intro stay hidden below the viewport.
 	if _awaiting_intro:
 		_snap_card_offscreen(new_rune_card)
+	return new_rune_card
 
 
 ## Guard against non-card children
@@ -99,10 +109,10 @@ func _on_card_played(_card_ui: CardUI) -> void:
 		EventBus.turn_ended.emit()
 		AudioManager.play_sfx(UI_SOUNDS.END_TURN)
 
-var _hand_slide_tween: Tween = null
-
 
 func _hide_hand() -> void:
+	_hand_hidden = true
+	_generated_reveal.interrupt()
 	_animate_hand_slide(true)
 
 
@@ -110,12 +120,33 @@ func _show_hand() -> void:
 	## Don't fight the run-start entrance if a turn signal fires early.
 	if _awaiting_intro:
 		return
+	_hand_hidden = false
 	_animate_hand_slide(false)
+	if _hand_slide_tween != null and _hand_slide_tween.is_valid():
+		await _hand_slide_tween.finished
+	_generated_reveal.try_play_next()
 
 
 ## True while starting cards should stay parked below the viewport.
 func is_awaiting_intro() -> bool:
 	return _awaiting_intro
+
+
+func is_hand_hidden() -> bool:
+	return _hand_hidden
+
+
+func get_card_rest_offset() -> Vector2:
+	if _hand_hidden:
+		return Vector2(0.0, _get_hand_slide_distance())
+	return Vector2.ZERO
+
+
+## True while this card's offset_transform is owned by intro or a generated reveal.
+func is_preserving_offset_for(card_ui: CardUI) -> bool:
+	if _awaiting_intro:
+		return true
+	return _generated_reveal != null and _generated_reveal.is_animating_card(card_ui)
 
 
 ## After fade/zoom, slide each starting card up from below with a light stagger.
@@ -156,11 +187,15 @@ func play_intro_entrance() -> void:
 		_hand_slide_tween.kill()
 		_hand_slide_tween = null
 		_restore_card_mouse_filters()
+		_hand_hidden = false
+		_generated_reveal.try_play_next()
 		return
 
 	await _hand_slide_tween.finished
 	_hand_slide_tween = null
 	_restore_card_mouse_filters()
+	_hand_hidden = false
+	_generated_reveal.try_play_next()
 
 
 func _snap_hand_offscreen() -> void:
@@ -177,8 +212,13 @@ func _snap_card_offscreen(card: CardUI) -> void:
 
 func _restore_card_mouse_filters() -> void:
 	for child in get_children():
-		if child is CardUI:
-			child.mouse_filter = Control.MOUSE_FILTER_STOP
+		if not child is CardUI:
+			continue
+		if _generated_reveal != null and _generated_reveal.is_animating_card(child as CardUI):
+			continue
+		var card := child as CardUI
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.hover_enabled = true
 
 
 func _animate_hand_slide(hide: bool) -> void:
@@ -197,6 +237,9 @@ func _animate_hand_slide(hide: bool) -> void:
 		if not child is CardUI:
 			continue
 		var card := child as CardUI
+		# The reveal owns this card's offset until it settles into the hand.
+		if _generated_reveal != null and _generated_reveal.is_animating_card(card):
+			continue
 		animated_cards += 1
 
 		if hide:
@@ -245,12 +288,14 @@ func capture_hand_state() -> Dictionary:
 	return {
 		"cards": cards,
 		"cards_played": cards_played,
+		"pending_generated_cards": _generated_reveal.capture_pending(),
 	}
 
 
 func restore_hand_state(state: Dictionary) -> void:
 	# Park restored cards off-screen, main.gd replays the hand intro afterward.
 	_awaiting_intro = true
+	_hand_hidden = true
 
 	for child in get_children():
 		if child is CardUI:
@@ -269,3 +314,5 @@ func restore_hand_state(state: Dictionary) -> void:
 			var enhancement := GameManager.get_enhancement_by_id(card_id)
 			if enhancement != null:
 				_add_enhancement_card(enhancement)
+
+	_generated_reveal.restore_pending(state.get("pending_generated_cards", []))

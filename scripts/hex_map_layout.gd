@@ -21,6 +21,8 @@ var _segments_cache_valid: bool = false
 var _segment_turn_scores: Array[int] = []
 var _segment_turn_multiplier: Array[int] = []
 var _segment_turn_gold: Array[int] = []
+# Completed tile card activations on each segment during the current turn.
+var _segment_turn_triggers: Array[int] = []
 
 
 ## Binds this layout helper to a live map instance.
@@ -39,6 +41,22 @@ func reset(hex_center: Vector2i) -> void:
 ## Map center tile used as the origin for ring distance calculations.
 func get_hex_center() -> Vector2i:
 	return _hex_center
+
+
+## Tile 180 degrees from coords around the map center. Returns coords when the map is empty.
+func get_opposite_coords(coords: Vector2i) -> Vector2i:
+	if _map == null or _map.map_data.is_empty():
+		return coords
+	var center_pos: Vector2 = _get_screen_position(_hex_center)
+	var reflected_pos: Vector2 = center_pos * 2.0 - _get_screen_position(coords)
+	var best: Vector2i = coords
+	var best_dist := INF
+	for map_coords: Vector2i in _map.map_data.keys():
+		var dist := reflected_pos.distance_squared_to(_get_screen_position(map_coords))
+		if dist < best_dist:
+			best_dist = dist
+			best = map_coords
+	return best
 
 
 ## Ring index from the map center (0 = center, outer ring = map hex_size).
@@ -125,6 +143,14 @@ func get_last_tile_coords_in_segment(segment_index: int) -> Vector2i:
 	return segment[segment.size() - 1]
 
 
+## Tile count for a segment index, or 0 when the index is invalid.
+func get_segment_size(segment_index: int) -> int:
+	var segments := build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return 0
+	return segments[segment_index].size()
+
+
 ## Character-specific segment groups (each segment is an ordered list of coordinates).
 func build_segments() -> Array[Array]:
 	if _segments_cache_valid:
@@ -204,11 +230,13 @@ func reset_turn_results() -> void:
 	_segment_turn_scores.resize(segment_count)
 	_segment_turn_multiplier.resize(segment_count)
 	_segment_turn_gold.resize(segment_count)
+	_segment_turn_triggers.resize(segment_count)
 	for i in segment_count:
 		_segment_turn_scores[i] = 0
 		# Base multiplier is 1 so score is unchanged when no mult runes fire in a segment.
 		_segment_turn_multiplier[i] = 1
 		_segment_turn_gold[i] = 0
+		_segment_turn_triggers[i] = 0
 
 
 # Adds score produced by a rune on the given segment index.
@@ -246,11 +274,25 @@ func get_segment_turn_gold(segment_index: int) -> int:
 	return _segment_turn_gold[segment_index]
 
 
+# Counts one completed activation on the given segment this turn.
+func add_segment_turn_trigger(segment_index: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_turn_triggers.size():
+		return
+	_segment_turn_triggers[segment_index] += 1
+
+
+func get_segment_turn_trigger_count(segment_index: int) -> int:
+	if segment_index < 0 or segment_index >= _segment_turn_triggers.size():
+		return 0
+	return _segment_turn_triggers[segment_index]
+
+
 func capture_turn_results() -> Dictionary:
 	return {
 		"scores": _segment_turn_scores.duplicate(),
 		"multipliers": _segment_turn_multiplier.duplicate(),
 		"gold": _segment_turn_gold.duplicate(),
+		"triggers": _segment_turn_triggers.duplicate(),
 	}
 
 
@@ -258,16 +300,19 @@ func apply_turn_results(state: Dictionary) -> void:
 	var scores: Array = state.get("scores", [])
 	var multipliers: Array = state.get("multipliers", [])
 	var gold_amounts: Array = state.get("gold", [])
+	var triggers: Array = state.get("triggers", [])
 	var segment_count := build_segments().size()
 
 	_segment_turn_scores.resize(segment_count)
 	_segment_turn_multiplier.resize(segment_count)
 	_segment_turn_gold.resize(segment_count)
+	_segment_turn_triggers.resize(segment_count)
 
 	for i in segment_count:
 		_segment_turn_scores[i] = int(scores[i]) if i < scores.size() else 0
 		_segment_turn_multiplier[i] = int(multipliers[i]) if i < multipliers.size() else 1
 		_segment_turn_gold[i] = int(gold_amounts[i]) if i < gold_amounts.size() else 0
+		_segment_turn_triggers[i] = int(triggers[i]) if i < triggers.size() else 0
 
 
 ## Clears cached segment groups so the next build_segments() call rebuilds them.

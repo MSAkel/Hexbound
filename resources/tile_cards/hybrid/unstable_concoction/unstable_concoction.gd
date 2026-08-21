@@ -4,11 +4,11 @@ extends TileCard
 func _on_activate_tile_card(tile: Hex) -> void:
 	match randi_range(0, 3):
 		0:
-			add_score(tile, randi_range(50, 100))
+			add_score(tile, 100)
 		1:
-			add_multiplier(tile, randi_range(10, 15))
+			add_multiplier(tile, 15)
 		2:
-			add_gold(tile, randi_range(10, 20))
+			add_gold(tile, 15)
 		3:
 			var prior_runes := _get_previous_tile_cards_in_trigger_order(tile, 2)
 			if prior_runes.is_empty():

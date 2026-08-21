@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://bnu80oif472g1"]
+
+[ext_resource type="Texture2D" uid="uid://bfwllgu75jhd1" path="res://assets/icons/runes/production/compact_power.png" id="1_dmkn0"]
+[ext_resource type="Script" uid="uid://co33b54vxvx65" path="res://resources/tile_cards/generations/compact_power/compact_power.gd" id="2_d1fck"]
+
+[resource]
+script = ExtResource("2_d1fck")
+base_production_amount = 15
+product = 2
+id = "compact_power"
+name = "Compact Power"
+icon = ExtResource("1_dmkn0")
+description = "+15 Mult if segment size is less than 6"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://dy6m0cf1e0c65"]
+
+[ext_resource type="Script" uid="uid://dbhewfmbfxmb2" path="res://resources/tile_cards/modifiers/gold_extraction/gold_extraction.gd" id="1_ivtcg"]
+[ext_resource type="Texture2D" uid="uid://xy0m3mkprdhy" path="res://assets/icons/runes/modifier/gold_extraction.png" id="1_y2qbq"]
+
+[resource]
+script = ExtResource("1_ivtcg")
+rarity = 1
+type = 3
+id = "gold_extraction"
+name = "Gold Extraction"
+icon = ExtResource("1_y2qbq")
+description = "Breaks target card then gain 20 gold"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

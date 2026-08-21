@@ -281,7 +281,10 @@ func rune_activations_countdown() -> int:
 	return _activations_needed_for_next_perk - _total_rune_activations
 #endregion
 
-#region Runes and enhancements pool loading
+func set_game_speed(speed: float) -> void:
+	game_speed = speed
+
+#region tile cards and enhancement cards pool loading
 
 ## Recursively load every .tres rune under the runes folder, skipping duplicate ids.
 ## ResourceLoader.list_directory works in exported builds, DirAccess only sees .gd files in PCK.
@@ -357,10 +360,6 @@ func _has_enhancement_with_id(enhancement_id: String) -> bool:
 	return false
 
 #endregion
-
-func set_game_speed(speed: float) -> void:
-	game_speed = speed
-
 
 #region Run save / load
 

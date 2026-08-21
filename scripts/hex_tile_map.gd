@@ -52,6 +52,9 @@ var _segment_reveal_glow_coords: Array[Vector2i] = []
 # Tiles highlighted while hovering a segment-results row in the run-info panel.
 var _hovered_segment_coords: Array[Vector2i] = []
 var _hovered_segment_index: int = -1
+# Tiles lit when a card credits another segment's turn total.
+var _flashed_segment_coords: Array[Vector2i] = []
+var _flash_segment_generation: int = 0
 
 # Owners of cells on fading_sector_overlay_layer, used so one overlay does not erase another.
 enum FadingOverlayOwner { CHALLENGE, REVEAL }
@@ -60,6 +63,8 @@ const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
 const SEGMENT_REVEAL_PAUSE := 0.35
 # Keep in sync with RuneUI segment reveal highlight + fade durations.
 const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
+# How long a destination-segment flash stays visible during card activation.
+const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 
 # Delay before showing the tile info panel after hovering a tile.
 const TILE_PANEL_HOVER_DELAY := 0.4
@@ -395,6 +400,19 @@ func get_tile_ring_distance(coords: Vector2i) -> int:
 	return _layout.get_ring_distance(coords)
 
 
+## Tile 180 degrees from coords around the map center.
+func get_opposite_coords(coords: Vector2i) -> Vector2i:
+	return _layout.get_opposite_coords(coords)
+
+
+## Hex on the opposite side of the map, or null when that cell is missing.
+func get_opposite_hex(coords: Vector2i) -> Hex:
+	var opposite_coords := get_opposite_coords(coords)
+	if not map_data.has(opposite_coords):
+		return null
+	return map_data[opposite_coords]
+
+
 ## All map coordinates sorted by the active trigger-order rule.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
 	return _layout.get_coords_in_trigger_order()
@@ -428,6 +446,11 @@ func get_first_tile_coords_in_segment(segment_index: int) -> Vector2i:
 ## Last tile coordinates in a segment, or Vector2i(-1, -1) when the index is invalid.
 func get_last_tile_coords_in_segment(segment_index: int) -> Vector2i:
 	return _layout.get_last_tile_coords_in_segment(segment_index)
+
+
+## Tile count for a segment index, or 0 when the index is invalid.
+func get_segment_size(segment_index: int) -> int:
+	return _layout.get_segment_size(segment_index)
 
 
 ## All placed runes on the same segment as tile, optionally filtered by rune type.
@@ -469,19 +492,28 @@ func reset_segment_turn_results() -> void:
 
 ## Records score produced by a rune on its tile's segment.
 func add_turn_score_for_tile(tile: Hex, amount: int) -> void:
+	add_turn_score_for_segment(get_segment_index(tile.coordinates), amount)
+
+
+## Records score on a segment by index. Used when a card credits another segment.
+func add_turn_score_for_segment(segment_index: int, amount: int) -> void:
 	if amount == 0:
 		return
 
-	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_score(segment_index, amount)
 	_emit_segment_turn_results_changed(segment_index)
 
+
 ## Records multiplier produced by a rune on its tile's segment.
 func add_turn_multiplier_for_tile(tile: Hex, amount: int) -> void:
+	add_turn_multiplier_for_segment(get_segment_index(tile.coordinates), amount)
+
+
+## Records multiplier on a segment by index. Used when a card credits another segment.
+func add_turn_multiplier_for_segment(segment_index: int, amount: int) -> void:
 	if amount == 0:
 		return
 
-	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_multiplier(segment_index, amount)
 	_emit_segment_turn_results_changed(segment_index)
 
@@ -522,6 +554,17 @@ func get_segment_turn_multiplier(segment_index: int) -> int:
 
 func get_segment_turn_gold(segment_index: int) -> int:
 	return _layout.get_segment_turn_gold(segment_index)
+
+
+## Activations on a segment this turn, including the activation currently resolving.
+func get_segment_turn_trigger_count(segment_index: int) -> int:
+	return _layout.get_segment_turn_trigger_count(segment_index)
+
+
+## Records that a tile card on this tile is activating during turn resolution.
+func record_segment_trigger_for_tile(tile: Hex) -> void:
+	var segment_index := get_segment_index(tile.coordinates)
+	_layout.add_segment_turn_trigger(segment_index)
 
 
 ## Overlays every tile in a segment for challenge UI highlighting.
@@ -576,17 +619,62 @@ func clear_hovered_segment_highlight(segment_index: int = -1) -> void:
 		return
 
 	for coords: Vector2i in _hovered_segment_coords:
-		# Leave cells that card placement is currently previewing on the same layer.
-		if card_placement_handler != null and card_placement_handler.is_highlighting_coord(coords):
+		# Leave cells that card placement or a credit flash still owns on this layer.
+		if _rune_highlight_still_needed(coords, true, false):
 			continue
 		rune_highlight_overlay_layer.set_cell(coords, -1)
 	_hovered_segment_coords.clear()
 	_hovered_segment_index = -1
 
 
-## True while a run-info segment row is lighting this tile on RuneHighlightOverlayLayer.
+## Briefly lights a segment so the player can see where forwarded score or mult landed.
+func flash_segment_highlight(segment_index: int) -> void:
+	_clear_flashed_segment_highlight()
+	if segment_index < 0:
+		return
+
+	for hex: Hex in get_hexes_in_segment(segment_index):
+		var coords := hex.coordinates
+		rune_highlight_overlay_layer.set_cell(
+			coords,
+			RUNE_HIGHLIGHT_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_flashed_segment_coords.append(coords)
+
+	_flash_segment_generation += 1
+	var generation := _flash_segment_generation
+	var duration := SEGMENT_CREDIT_FLASH_DURATION / GameManager.game_speed
+	get_tree().create_timer(duration).timeout.connect(
+		func() -> void:
+			if generation != _flash_segment_generation:
+				return
+			_clear_flashed_segment_highlight()
+	)
+
+
+func _clear_flashed_segment_highlight() -> void:
+	for coords: Vector2i in _flashed_segment_coords:
+		if _rune_highlight_still_needed(coords, false, true):
+			continue
+		rune_highlight_overlay_layer.set_cell(coords, -1)
+	_flashed_segment_coords.clear()
+
+
+## True while hover, placement preview, or a credit flash still owns this overlay cell.
+func _rune_highlight_still_needed(coords: Vector2i, from_hover: bool, from_flash: bool) -> bool:
+	if card_placement_handler != null and card_placement_handler.is_highlighting_coord(coords):
+		return true
+	if not from_hover and coords in _hovered_segment_coords:
+		return true
+	if not from_flash and coords in _flashed_segment_coords:
+		return true
+	return false
+
+
+## True while a run-info segment row or credit flash is lighting this tile.
 func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
-	return coords in _hovered_segment_coords
+	return coords in _hovered_segment_coords or coords in _flashed_segment_coords
 
 
 ## True when another fading-sector overlay still owns this cell.
@@ -726,16 +814,16 @@ func queue_tile_card_triggers(runes: Array[TileCard], activation_scales: Array[f
 
 
 ## Show floating text at a world position on the current scene.
-func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE) -> void:
-	var floating_text := _spawn_floating_text(pos, text, color)
+func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
+	var floating_text := _spawn_floating_text(pos, text, color, icon)
 	floating_text.play_float_and_free()
 
 
-func _spawn_floating_text(pos: Vector2, text: String, color: Color) -> FloatingText:
+func _spawn_floating_text(pos: Vector2, text: String, color: Color, icon: Texture2D = null) -> FloatingText:
 	var floating_text := preload("res://scenes/animations/floating_text.tscn").instantiate() as FloatingText
 	floating_text.position = pos
 	get_tree().current_scene.add_child(floating_text)
-	floating_text.set_text(text, color)
+	floating_text.set_text(text, color, icon)
 	return floating_text
 
 
@@ -747,16 +835,8 @@ func _spawn_segment_product_text(pos: Vector2, score: int, multiplier: int) -> F
 	return floating_text
 
 
-const ENHANCEMENT_ACTIVATION_DELAY := 0.5
-
-
-## Delays enhancement resolution so its floating text does not overlap the host rune's text.
+## Runs the enhancement in the same activation. Card floats stack if both emit text.
 func schedule_delayed_enhancement_activation(host_rune: TileCard, tile: Hex, output_scale: float) -> void:
-	_play_delayed_enhancement_activation(host_rune, tile, output_scale)
-
-
-func _play_delayed_enhancement_activation(host_rune: TileCard, tile: Hex, output_scale: float) -> void:
-	await get_tree().create_timer(ENHANCEMENT_ACTIVATION_DELAY / GameManager.game_speed).timeout
 	if tile.active_tile_card != host_rune or host_rune.enhancement == null:
 		return
 

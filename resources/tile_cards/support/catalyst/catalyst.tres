@@ -9,5 +9,5 @@ type = 1
 id = "catalyst"
 name = "Catalyst"
 icon = ExtResource("1_hq5bc")
-description = "After every 2 activations, empowers a random Producer in its segment."
+description = "After 2 activations: empower a random Producer in its segment."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -20,11 +20,11 @@ script = ExtResource("1_settings")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2031348448]
 custom_minimum_size = Vector2(600, 600)
-custom_maximum_size = Vector2(600, 700)
+custom_maximum_size = Vector2(600, 900)
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 0
-theme_override_constants/separation = 100
+size_flags_vertical = 4
+theme_override_constants/separation = 32
 
 [node name="Title" type="Label" parent="VBoxContainer" unique_id=2122274666]
 layout_mode = 2
@@ -33,22 +33,27 @@ text = "Options"
 label_settings = SubResource("LabelSettings_m1kxf")
 horizontal_alignment = 1
 
-[node name="SettingsContainer" type="VBoxContainer" parent="VBoxContainer" unique_id=1961725118]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer" unique_id=1844229110]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SettingsContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer" unique_id=1961725118]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 32
 
-[node name="MasterVolume" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=475721116]
+[node name="MasterVolume" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=475721116]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="MasterLabel" type="Label" parent="VBoxContainer/SettingsContainer/MasterVolume" unique_id=246210503]
+[node name="MasterLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/MasterVolume" unique_id=246210503]
 layout_mode = 2
 size_flags_horizontal = 2
 text = "Master Volume"
 
-[node name="HSlider" type="HSlider" parent="VBoxContainer/SettingsContainer/MasterVolume" unique_id=608163990]
+[node name="HSlider" type="HSlider" parent="VBoxContainer/ScrollContainer/SettingsContainer/MasterVolume" unique_id=608163990]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -57,16 +62,16 @@ max_value = 1.0
 step = 0.01
 value = 1.0
 
-[node name="MusicVolume" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=1428391683]
+[node name="MusicVolume" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1428391683]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="MusicLabel" type="Label" parent="VBoxContainer/SettingsContainer/MusicVolume" unique_id=1608200190]
+[node name="MusicLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/MusicVolume" unique_id=1608200190]
 layout_mode = 2
 size_flags_horizontal = 2
 text = "Music Volume"
 
-[node name="MusicVolumeSlider" type="HSlider" parent="VBoxContainer/SettingsContainer/MusicVolume" unique_id=1791626962]
+[node name="MusicVolumeSlider" type="HSlider" parent="VBoxContainer/ScrollContainer/SettingsContainer/MusicVolume" unique_id=1791626962]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -75,16 +80,16 @@ max_value = 1.0
 step = 0.01
 value = 1.0
 
-[node name="SFXVolume" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=341116328]
+[node name="SFXVolume" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=341116328]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="SFXLabel" type="Label" parent="VBoxContainer/SettingsContainer/SFXVolume" unique_id=1638642833]
+[node name="SFXLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/SFXVolume" unique_id=1638642833]
 layout_mode = 2
 size_flags_horizontal = 2
 text = "SFX Volume"
 
-[node name="SFXVolumeSlider" type="HSlider" parent="VBoxContainer/SettingsContainer/SFXVolume" unique_id=1263522065]
+[node name="SFXVolumeSlider" type="HSlider" parent="VBoxContainer/ScrollContainer/SettingsContainer/SFXVolume" unique_id=1263522065]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -93,16 +98,16 @@ max_value = 1.0
 step = 0.01
 value = 0.5
 
-[node name="GameSpeed" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=1499482482]
+[node name="GameSpeed" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1499482482]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="GameSpeedLabel" type="Label" parent="VBoxContainer/SettingsContainer/GameSpeed" unique_id=344781631]
+[node name="GameSpeedLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed" unique_id=344781631]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Game Speed"
 
-[node name="GameSpeedOptionButton" type="OptionButton" parent="VBoxContainer/SettingsContainer/GameSpeed" unique_id=1154297427]
+[node name="GameSpeedOptionButton" type="OptionButton" parent="VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed" unique_id=1154297427]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -118,31 +123,31 @@ popup/item_2/id = 2
 popup/item_3/text = "Skip?"
 popup/item_3/id = 3
 
-[node name="ScreenShakeContainer" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=103405021]
+[node name="ScreenShakeContainer" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=103405021]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="ScreenShakeLabel" type="Label" parent="VBoxContainer/SettingsContainer/ScreenShakeContainer" unique_id=1313078969]
+[node name="ScreenShakeLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/ScreenShakeContainer" unique_id=1313078969]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Screen shake"
 
-[node name="ScreenShakeCheckBox" type="CheckBox" parent="VBoxContainer/SettingsContainer/ScreenShakeContainer" unique_id=682293725]
+[node name="ScreenShakeCheckBox" type="CheckBox" parent="VBoxContainer/ScrollContainer/SettingsContainer/ScreenShakeContainer" unique_id=682293725]
 layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
 
-[node name="DisplayModeContainer" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=1918488560]
+[node name="DisplayModeContainer" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1918488560]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="DisplayModeLabel" type="Label" parent="VBoxContainer/SettingsContainer/DisplayModeContainer" unique_id=1140134970]
+[node name="DisplayModeLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/DisplayModeContainer" unique_id=1140134970]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Display mode"
 
-[node name="DisplayModeOptionButton" type="OptionButton" parent="VBoxContainer/SettingsContainer/DisplayModeContainer" unique_id=1369970466]
+[node name="DisplayModeOptionButton" type="OptionButton" parent="VBoxContainer/ScrollContainer/SettingsContainer/DisplayModeContainer" unique_id=1369970466]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -156,16 +161,16 @@ popup/item_1/id = 1
 popup/item_2/text = "Borderless Windowed"
 popup/item_2/id = 2
 
-[node name="ResolutionContainer" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=1909470753]
+[node name="ResolutionContainer" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1909470753]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="ResolutionLabel" type="Label" parent="VBoxContainer/SettingsContainer/ResolutionContainer" unique_id=289919702]
+[node name="ResolutionLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/ResolutionContainer" unique_id=289919702]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Resolution"
 
-[node name="ResolutionOptionButton" type="OptionButton" parent="VBoxContainer/SettingsContainer/ResolutionContainer" unique_id=1950107706]
+[node name="ResolutionOptionButton" type="OptionButton" parent="VBoxContainer/ScrollContainer/SettingsContainer/ResolutionContainer" unique_id=1950107706]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -179,30 +184,45 @@ popup/item_1/id = 1
 popup/item_2/text = "Option 3"
 popup/item_2/id = 2
 
-[node name="VSyncContainer" type="HBoxContainer" parent="VBoxContainer/SettingsContainer" unique_id=964202736]
+[node name="VSyncContainer" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=964202736]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="VSyncLabel" type="Label" parent="VBoxContainer/SettingsContainer/VSyncContainer" unique_id=1213458172]
+[node name="VSyncLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer" unique_id=1213458172]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Enable VSync"
 
-[node name="VSyncCheckBox" type="CheckBox" parent="VBoxContainer/SettingsContainer/VSyncContainer" unique_id=1060789328]
+[node name="VSyncCheckBox" type="CheckBox" parent="VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer" unique_id=1060789328]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+size_flags_stretch_ratio = 2.0
+
+[node name="TutorialContainer" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1844229101]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="TutorialLabel" type="Label" parent="VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer" unique_id=1844229102]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Show tutorial again"
+
+[node name="TutorialCheckBox" type="CheckBox" parent="VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer" unique_id=1844229103]
 layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
 
 [node name="BackButton" type="Button" parent="VBoxContainer" unique_id=1457783041]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(100, 40)
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 3
+size_flags_vertical = 0
 text = "Close"
 
-[connection signal="item_selected" from="VBoxContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton" to="." method="_on_game_speed_option_button_item_selected"]
-[connection signal="toggled" from="VBoxContainer/SettingsContainer/VSyncContainer/VSyncCheckBox" to="." method="_on_v_sync_check_box_toggled"]
-[connection signal="focus_entered" from="VBoxContainer/BackButton" to="." method="_on_back_button_focus_entered"]
+[connection signal="item_selected" from="VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton" to="." method="_on_game_speed_option_button_item_selected"]
+[connection signal="toggled" from="VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox" to="." method="_on_v_sync_check_box_toggled"]
+[connection signal="toggled" from="VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/TutorialCheckBox" to="." method="_on_tutorial_check_box_toggled"]
 [connection signal="mouse_entered" from="VBoxContainer/BackButton" to="." method="_on_back_button_mouse_entered"]
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
