@@ -10,5 +10,5 @@ product = 2
 id = "turn_up"
 name = "Turn Up"
 icon = ExtResource("1_eh6vm")
-description = "Gains Mult equal to the current turn x3 (slightly confusing considering turns count down)"
+description = "+3 Mult per current turn."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

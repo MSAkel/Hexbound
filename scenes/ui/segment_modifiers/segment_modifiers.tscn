@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://bruc0rr3xv64q"]
 
 [ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="1_0cu0i"]
+[ext_resource type="Texture2D" uid="uid://c7xvqfy1s8fgc" path="res://assets/gui/panels/v_box_panel.png" id="2_5bk7d"]
+[ext_resource type="Texture2D" uid="uid://2d11wmwjhng8" path="res://assets/gui/panels/unlocked_modifier_panel.png" id="3_d6j02"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7pmlo"]
 
@@ -16,6 +18,12 @@ width = 50
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_d6j02"]
 load_path = "res://.godot/imported/arrow_left.png-52b3b81e0e8a1fb95ee73f5c4ec192f7.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tbgi4"]
+texture = ExtResource("2_5bk7d")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_riqys"]
+texture = ExtResource("3_d6j02")
 
 [node name="SegmentModifiers" type="PanelContainer" unique_id=171761554]
 anchors_preset = 15
@@ -73,12 +81,20 @@ layout_mode = 2
 
 [node name="ModifiersContainer" type="PanelContainer" parent="MarginContainer/VBoxContainer/CenterHBoxContainer" unique_id=106640534]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_tbgi4")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CenterHBoxContainer/ModifiersContainer" unique_id=703529883]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer/CenterHBoxContainer/ModifiersContainer/VBoxContainer" unique_id=1725064474]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.40257797, 0.28561157, 0.4103627, 1)
+theme_override_font_sizes/font_size = 32
+text = "MODIFIERS"
+
+[node name="ModifierPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/CenterHBoxContainer/ModifiersContainer/VBoxContainer" unique_id=336040274]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_riqys")
 
 [node name="SegmentsContainer" type="PanelContainer" parent="MarginContainer/VBoxContainer/CenterHBoxContainer" unique_id=1935385675]
 layout_mode = 2

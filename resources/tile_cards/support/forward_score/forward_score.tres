@@ -1,12 +1,12 @@
 [gd_resource type="Resource" format=3 uid="uid://doeihu8xbcfg8"]
 
 [ext_resource type="Texture2D" uid="uid://dvprq3exlnkh6" path="res://assets/icons/runes/hybrid/forward_score.png" id="1_jqonq"]
-[ext_resource type="Script" uid="uid://bnq4ira0fw4qx" path="res://resources/tile_cards/hybrid/forward_score/forward_score.gd" id="2_t6l0s"]
+[ext_resource type="Script" uid="uid://bnq4ira0fw4qx" path="res://resources/tile_cards/support/forward_score/forward_score.gd" id="2_t6l0s"]
 
 [resource]
 script = ExtResource("2_t6l0s")
 base_production_amount = 40
-type = 2
+type = 1
 product = 2
 id = "forward_score"
 name = "Forward Score"

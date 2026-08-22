@@ -12,7 +12,6 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 # TileCardType.PRODUCER uses the production frame. Enhancement cards keep the scene default.
 @export var frame_producer: Texture2D
 @export var frame_support: Texture2D
-@export var frame_hybrid: Texture2D
 @export var frame_modifier: Texture2D
 
 @onready var card_name: Label = $VBoxContainer/NameContainer/CardName
@@ -424,8 +423,6 @@ func _frame_texture_for_card(data: Card) -> Texture2D:
 				return frame_producer
 			TileCard.TileCardType.SUPPORT:
 				return frame_support
-			TileCard.TileCardType.HYBRID:
-				return frame_hybrid
 			TileCard.TileCardType.MODIFIER:
 				return frame_modifier
 	return frame_producer

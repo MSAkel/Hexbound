@@ -11,7 +11,7 @@ const HOVER_DURATION := 0.12
 @onready var game_version: Label = $GameVersion
 @onready var menu_container: MarginContainer = $MenuContainer
 @onready var settings_container: PanelContainer = $SettingsContainer
-@onready var continue_button: Button = %Continue
+@onready var continue_button: Button = $ContinueButton
 
 var main_scene := load("res://scenes/main.tscn")
 

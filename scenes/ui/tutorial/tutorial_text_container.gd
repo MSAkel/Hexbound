@@ -6,7 +6,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 const STEP_TEXTS: PackedStringArray = [
 	"Select a card to place it into an empty tile.\nYou must reach the required score for the current round before your turns reach to 0.",
-	"You can hover over a tile to check its stats.\nSupport and Hybrid cards abilities are not always limited to their own segments",
+	"You can hover over a tile to check its stats.\nSupport cards abilities are not always limited to their own segments",
 	"The turn ends when there are only two remaining cards in your hand.\nYou win once you have completed nine rounds.",
 	"Every segment Measures their outputs separately, before adding up their scores for the current turn.\nMultipliers (Mult) are only applied to the Score within their own Segment.",
 ]
@@ -64,7 +64,7 @@ func _on_card_played(_card_ui: CardUI) -> void:
 	if not _active:
 		return
 	_cards_placed += 1
-	# First placement explains support/hybrid range. Second explains hover and hand size.
+	# First placement explains support range. Second explains hover and hand size.
 	if _cards_placed == 1:
 		_advance_to(1)
 	elif _cards_placed >= 2:

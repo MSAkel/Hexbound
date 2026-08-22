@@ -7,7 +7,7 @@
 script = ExtResource("1_wm6wk")
 base_production_amount = 50
 rarity = 1
-type = null
+type = 0
 product = 1
 single_activation_per_turn = null
 placement_restriction = null

@@ -86,8 +86,7 @@ texture = ExtResource("3_qt1dd")
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
-[node name="Continue" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1924656440]
-unique_name_in_owner = true
+[node name="ContinueButton" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1924656440]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
@@ -153,7 +152,7 @@ offset_top = 43.0
 offset_right = -50.999878
 offset_bottom = 66.0
 grow_horizontal = 0
-text = "3Aklators v0.11"
+text = "6 Aklators v0.0.18"
 horizontal_alignment = 2
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1095667538]
@@ -170,7 +169,7 @@ process_material = SubResource("ParticleProcessMaterial_x2yvf")
 visible = false
 layout_mode = 1
 
-[connection signal="pressed" from="MenuContainer/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="MenuContainer/MenuItemsContainer/ContinueButton" to="." method="_on_continue_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Play" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Options" to="." method="_on_options_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/CollectionButton" to="." method="_on_collection_button_pressed"]

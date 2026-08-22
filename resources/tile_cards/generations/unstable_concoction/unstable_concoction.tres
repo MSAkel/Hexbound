@@ -1,14 +1,13 @@
 [gd_resource type="Resource" format=3 uid="uid://cdr6jp1cayaal"]
 
 [ext_resource type="Texture2D" uid="uid://iaca3uhdlky2" path="res://assets/icons/runes/hybrid/unstable_concoction.png" id="1_jjxmo"]
-[ext_resource type="Script" uid="uid://fqp1bledi1hh" path="res://resources/tile_cards/hybrid/unstable_concoction/unstable_concoction.gd" id="1_stady"]
+[ext_resource type="Script" uid="uid://fqp1bledi1hh" path="res://resources/tile_cards/generations/unstable_concoction/unstable_concoction.gd" id="1_stady"]
 
 [resource]
 script = ExtResource("1_stady")
 rarity = 2
-type = 2
 id = "unstable_concoction"
 name = "Unstable Concoction"
 icon = ExtResource("1_jjxmo")
-description = "Gives 100 Score or 15 Mult or 15 gold or triggers the two previous cards"
+description = "Gives 100 Score or 15 Mult or 15 gold"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_exaj3")
 rarity = 2
-type = 3
+type = 2
 id = "transformus_upgradus"
 name = "Transformus Upgradus"
 icon = ExtResource("1_exaj3")

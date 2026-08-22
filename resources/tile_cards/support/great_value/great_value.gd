@@ -1,6 +1,6 @@
 extends TileCard
 
-# Spends 1 gold to empower a random prod rune in its segment. can be triggered more than once
+# Spend 1 Gold to empower a random card in this segment
 func _on_activate_tile_card(tile: Hex) -> void:
 	if not GoldManager.can_afford(1):
 		_create_floating_text(tile, "Insufficient gold")

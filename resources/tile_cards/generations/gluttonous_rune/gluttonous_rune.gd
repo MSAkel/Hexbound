@@ -1,10 +1,11 @@
 extends TileCard
 
+## +30 Score. Consume the next card to permanently double this card's Score.
+
 var score_bonus: int = 1
 
-# +30 score. Consumes the next adjacent rune in the trigger order to permanently double it's score.
 func _on_activate_tile_card(tile: Hex) -> void:
-	# Only consume the rune directly after this one in trigger order, and only when in sequence.
+	## Only consume the card directly after this one in trigger order
 	if _can_consume_next_tile_card_in_trigger_order(tile):
 		var next_rune := _get_next_tile_card_in_trigger_order(tile)
 		if next_rune != null:

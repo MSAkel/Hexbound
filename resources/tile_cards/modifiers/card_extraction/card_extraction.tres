@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_q4rj5")
 rarity = 1
-type = 3
+type = 2
 id = "card_extraction"
 name = "Card Extraction"
 icon = ExtResource("1_iyql0")

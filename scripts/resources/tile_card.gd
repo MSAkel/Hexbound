@@ -13,7 +13,6 @@ enum TileCardRarity {
 enum TileCardType {
 	PRODUCER,
 	SUPPORT,
-	HYBRID,
 	MODIFIER,
 }
 
@@ -67,7 +66,11 @@ var _activation_output_scale: float = 1.0
 
 
 func get_card_kind_label() -> String:
-	return TileCardType.keys()[type]
+	# Saved resources can briefly hold a removed enum index after TileCardType changes.
+	var key: Variant = TileCardType.find_key(type)
+	if key == null:
+		return ""
+	return String(key)
 
 
 func get_save_kind() -> String:
@@ -247,12 +250,12 @@ func _get_producer_count_by_product_type(tile: Hex, filter_product: Product) -> 
 
 #region --- Adjacent tile card helpers ---
 ## Counts all adjacent tiles occupied by a tile card. Pass filter_type to filter by type.
-## filter_type: TileCardType (PRODUCER, SUPPORT, HYBRID, MODIFIER)
+## filter_type: TileCardType (PRODUCER, SUPPORT, MODIFIER)
 func _count_all_occupied_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> int:
 	return tile.map.count_all_occupied_adjacent_tile_cards(tile.coordinates, filter_type)
 
 ## All tile cards on map-adjacent hexes around tile (unordered).
-## filter_type: TileCardType (PRODUCER, SUPPORT, HYBRID, MODIFIER)
+## filter_type: TileCardType (PRODUCER, SUPPORT, MODIFIER)
 func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards(tile, filter_type)
 
@@ -260,7 +263,7 @@ func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Arr
 
 #region --- Trigger order helpers ---
 ## All adjacent tile cards sorted in the map's global trigger order.
-## filter_type: TileCardType (PRODUCER, SUPPORT, HYBRID, MODIFIER)
+## filter_type: TileCardType (PRODUCER, SUPPORT, MODIFIER)
 func _get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards_in_trigger_order(tile, filter_type)
 
@@ -536,4 +539,3 @@ func _replace_placed_tile_card(tile: Hex, replacement_template: TileCard) -> voi
 	# setup() may have already finished before the enhancement was copied.
 	if tile.rune_ui != null:
 		tile.rune_ui.show_enhancement(retained_enhancement)
-

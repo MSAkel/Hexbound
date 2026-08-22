@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_egyvg")
-type = 3
+type = 2
 id = "transformus_cardus"
 name = "Transformus Cardus"
 icon = ExtResource("1_q4fsf")

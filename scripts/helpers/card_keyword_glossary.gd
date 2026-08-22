@@ -54,7 +54,7 @@ static func _static_init() -> void:
 		["empower", "empowers", "empowered", "empowerment"],
 		"Empower",
 		COLOR_EMPOWER,
-		"Doubles a cards output."
+		"Doubles the output of a production card."
 	)
 
 

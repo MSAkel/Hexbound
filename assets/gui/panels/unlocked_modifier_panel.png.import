@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcg34mwql85a3"
-path="res://.godot/imported/alchemy.png-2afbcb5836ae98b63fa9826f7ae8bf5e.ctex"
+uid="uid://2d11wmwjhng8"
+path="res://.godot/imported/unlocked_modifier_panel.png-1434e77e353acb0e9bcdd98476ec8314.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/runes/hybrid/alchemy.png"
-dest_files=["res://.godot/imported/alchemy.png-2afbcb5836ae98b63fa9826f7ae8bf5e.ctex"]
+source_file="res://assets/gui/panels/unlocked_modifier_panel.png"
+dest_files=["res://.godot/imported/unlocked_modifier_panel.png-1434e77e353acb0e9bcdd98476ec8314.ctex"]
 
 [params]
 

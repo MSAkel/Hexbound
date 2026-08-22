@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("2_w3ae8")
-type = 3
+type = 2
 id = "returnus_cardus"
 name = "Returnus Cardus"
 icon = ExtResource("1_npphp")

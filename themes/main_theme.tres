@@ -1,7 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://d4kymlgb3fxc4"]
 
 [sub_resource type="FontVariation" id="FontVariation_h430w"]
-variation_embolden = 0.2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rjgu6"]
 content_margin_left = 6.0

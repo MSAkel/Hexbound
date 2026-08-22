@@ -1,14 +1,15 @@
 [gd_resource type="Resource" format=3 uid="uid://lhhdm6asgia8"]
 
 [ext_resource type="Texture2D" uid="uid://bm2kdf3inhmhm" path="res://assets/icons/runes/hybrid/mirror_copy.png" id="1_rc6dl"]
-[ext_resource type="Script" uid="uid://ydebkyu5dpqr" path="res://resources/tile_cards/hybrid/mirror_copy/mirror_copy.gd" id="2_rjenw"]
+[ext_resource type="Script" uid="uid://ydebkyu5dpqr" path="res://resources/tile_cards/support/mirror_copy/mirror_copy.gd" id="2_rjenw"]
 
 [resource]
 script = ExtResource("2_rjenw")
-type = 2
+type = 1
 product = 3
 id = "mirror_copy"
 name = "Mirror Copy"
 icon = ExtResource("1_rc6dl")
-description = "Copies the ability of the card on the opposite side of the map"
+description = "Copy the card on the opposite side of the map
+"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
