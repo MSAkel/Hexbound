@@ -100,7 +100,7 @@ func _update_preview_texture() -> void:
 	if icon:
 		# Match the placed rune's hover size, slightly larger than the hex art.
 		var tex_size := icon.get_size()
-		var preview_pixel_size := float(HexTileMap.HEX_TEXTURE_SIZE) * RuneUI.PLACEMENT_HOVER_SCALE
+		var preview_pixel_size := float(HexTileMap.HEX_TEXTURE_SIZE.y) * RuneUI.PLACEMENT_HOVER_SCALE
 		var scale_factor := preview_pixel_size / maxf(tex_size.x, tex_size.y)
 		_rune_preview.scale = Vector2(scale_factor, scale_factor)
 

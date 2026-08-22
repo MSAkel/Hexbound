@@ -25,9 +25,11 @@ var _runes_hidden: bool = false
 # Active RunInfoDisplay layout. "order_segments" also hides segment-passive icons.
 var _map_display_layout: String = "base"
 
-# Match the dashed hex art size so runes align with the tile texture
-const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE, HexTileMap.HEX_TEXTURE_SIZE)
+# Match the dashed hex art size so overlays sit on the tile texture.
+const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE)
 const HEX_TILE_HALF := HEX_TILE_SIZE / 2
+# Square rune controls. Centered on the hex because the icons still have side padding.
+const HEX_RUNE_SIZE := HexTileMap.HEX_RUNE_SIZE
 # Segment passive icons sit centered on the tile at half the hex size
 const SEGMENT_PASSIVE_ICON_SIZE := HEX_TILE_SIZE / 2
 const RUNE_INACTIVE_MODULATE := Color(0.35, 0.35, 0.42, 0.78)
@@ -49,6 +51,13 @@ func setup(map_ref: Node2D) -> void:
 	items_grid.size = HEX_TILE_SIZE
 	items_grid.position = map.base_layer.map_to_local(coordinates) - HEX_TILE_HALF
 	map.add_child(items_grid)
+
+
+# TODO: adjust icon size so that everything would match in size
+func _fit_rune_ui(rune_ui_node: RuneUI) -> void:
+	rune_ui_node.custom_minimum_size = HEX_RUNE_SIZE
+	rune_ui_node.size = HEX_RUNE_SIZE
+	rune_ui_node.position = (HEX_TILE_SIZE - HEX_RUNE_SIZE) * 0.5
 
 
 func is_reserved_for_segment_passive() -> bool:
@@ -73,9 +82,7 @@ func place_tile_card(rune: TileCard) -> void:
 	new_rune_instance.center_coordinates = coordinates
 
 	new_rune_instance.setup(active_tile_card)
-	# Fixed size keeps runes aligned to the hex art
-	new_rune_instance.position = Vector2.ZERO
-	new_rune_instance.size = HEX_TILE_SIZE
+	_fit_rune_ui(new_rune_instance)
 	
 	items_grid.add_child(new_rune_instance)
 	new_rune_instance.play_placement_animation()
@@ -95,8 +102,7 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 	new_rune_instance.tile = self
 	new_rune_instance.center_coordinates = coordinates
 	new_rune_instance.setup(rune)
-	new_rune_instance.position = Vector2.ZERO
-	new_rune_instance.size = HEX_TILE_SIZE
+	_fit_rune_ui(new_rune_instance)
 	items_grid.add_child(new_rune_instance)
 	_apply_display_mode()
 	refresh_tile_card_visual_state()

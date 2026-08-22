@@ -25,11 +25,15 @@ const OVERLAY_TILE_SOURCE_ID := 0
 
 # Hexagon radius — tiles from center to each outer edge (hex_size=2 → 19 tiles)
 @export_range(1, 20, 1) var hex_size: int = 2
-# Extra pixels added to tile_size so adjacent hex visuals do not touch
-@export_range(0, 64, 1) var hex_tile_gap: int = 16
+# Extra pixels added to tile_size so adjacent hex visuals do not touch.
+# Use a smaller X gap if rows look too far apart compared to the diagonal edges.
+@export_range(0, 64, 1) var hex_tile_gap_x: int = 16
+@export_range(0, 64, 1) var hex_tile_gap_y: int = 16
 
-# Dashed hex art size; tile_size = this + hex_tile_gap for spacing on the grid
-const HEX_TEXTURE_SIZE := 256
+# Pointy-top hex art size. tile_size = this + the X/Y gaps for spacing on the grid.
+const HEX_TEXTURE_SIZE := Vector2i(221, 255)
+# Placed rune UI. Icons are still square with side padding and must stay centered on the cell.
+const HEX_RUNE_SIZE := Vector2(256, 256)
 
 # Atlas coords for the single dashed hex tile on BaseLayer (source 0)
 const BASE_TILE_ATLAS_COORDS := Vector2i(0, 0)
@@ -107,11 +111,11 @@ func _process(_delta: float) -> void:
 		tile_panel.update_anchor(_get_tile_screen_rect(_tile_panel_hover_coords))
 
 
-# Widen the hex grid cells while keeping 256px textures, creating visible gaps
+# Widen the hex grid cells while keeping the 221x255 textures, creating visible gaps.
 func _apply_tile_spacing() -> void:
 	var spaced_tile_size := Vector2i(
-		HEX_TEXTURE_SIZE + hex_tile_gap,
-		HEX_TEXTURE_SIZE + hex_tile_gap
+		HEX_TEXTURE_SIZE.x + hex_tile_gap_x,
+		HEX_TEXTURE_SIZE.y + hex_tile_gap_y
 	)
 	for layer: TileMapLayer in [
 		base_layer,
@@ -201,7 +205,7 @@ func _on_card_drag_started_hide_tile_panel(_card: CardUI) -> void:
 
 # Convert a map cell into a viewport/CanvasLayer rect so the panel aligns with the camera.
 func _get_tile_screen_rect(coords: Vector2i) -> Rect2:
-	var tile_size := Vector2(HEX_TEXTURE_SIZE, HEX_TEXTURE_SIZE)
+	var tile_size := Vector2(HEX_TEXTURE_SIZE)
 	var center_local: Vector2 = base_layer.map_to_local(coords)
 	var top_left_local: Vector2 = center_local - tile_size * 0.5
 	# Use the canvas transform so Camera2D position/zoom are included.
