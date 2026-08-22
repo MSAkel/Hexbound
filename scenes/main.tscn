@@ -29,7 +29,7 @@ texture = ExtResource("2_tbgi4")
 [node name="HexTileMap" parent="." unique_id=44134177 groups=["hex_map_group"] instance=ExtResource("2_jyhfs")]
 
 [node name="Camera" parent="." unique_id=321380676 instance=ExtResource("3_tbgi4")]
-position = Vector2(1089, 1000)
+position = Vector2(930, 978)
 
 [node name="IntroFadeLayer" type="CanvasLayer" parent="." unique_id=1772854946]
 layer = 100

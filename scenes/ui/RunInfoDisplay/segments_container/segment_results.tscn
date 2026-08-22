@@ -1,9 +1,6 @@
 [gd_scene format=3 uid="uid://behfllgh3b7fc"]
 
 [ext_resource type="Script" uid="uid://cw5fm7tuluw1w" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.gd" id="1_bo2vp"]
-[ext_resource type="Texture2D" uid="uid://dnujadhya634n" path="res://assets/icons/currency/score.png" id="2_2h2b2"]
-[ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="2_keyqk"]
-[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/currency/gold.png" id="3_bp3vb"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r6dd1"]
 content_margin_left = 16.0
@@ -15,7 +12,7 @@ corner_radius_bottom_right = 100
 corner_radius_bottom_left = 100
 
 [node name="SegmentResultsPanel" type="PanelContainer" unique_id=1594320159]
-offset_right = 40.0
+offset_right = 349.0
 offset_bottom = 40.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_r6dd1")
 script = ExtResource("1_bo2vp")
@@ -24,98 +21,46 @@ script = ExtResource("1_bo2vp")
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="SegmentNoContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1745047072]
-custom_minimum_size = Vector2(75, 0)
+[node name="SegmentNo" type="Label" parent="HBoxContainer" unique_id=1315648677]
 layout_mode = 2
-
-[node name="SegmentNo" type="Label" parent="HBoxContainer/SegmentNoContainer" unique_id=1315648677]
-layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 18
 text = "1st"
 
-[node name="SegmentIcon" type="TextureRect" parent="HBoxContainer/SegmentNoContainer" unique_id=1045582712]
-texture_filter = 1
-custom_minimum_size = Vector2(25, 25)
+[node name="SegmentScore2" type="Label" parent="HBoxContainer" unique_id=1004428651]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-texture = ExtResource("2_keyqk")
-expand_mode = 1
-stretch_mode = 5
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_font_sizes/font_size = 21
+text = "1"
 
-[node name="Colon" type="Label" parent="HBoxContainer/SegmentNoContainer" unique_id=1209269545]
-visible = false
+[node name="MultiplierContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1537264061]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="x" type="Label" parent="HBoxContainer/MultiplierContainer" unique_id=291974523]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
-text = ":"
+text = "x"
 
-[node name="ScoreContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1587263802]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 10
-size_flags_vertical = 4
-
-[node name="ScoreIcon" type="TextureRect" parent="HBoxContainer/ScoreContainer" unique_id=1655605410]
-texture_filter = 1
-custom_minimum_size = Vector2(15, 27.82)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-texture = ExtResource("2_2h2b2")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="SegmentScore" type="Label" parent="HBoxContainer/ScoreContainer" unique_id=1004428651]
-custom_minimum_size = Vector2(75, 0)
+[node name="SegmentMultiplier" type="Label" parent="HBoxContainer/MultiplierContainer" unique_id=1993148651]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
 text = "1"
 
 [node name="SegmentScore" type="Label" parent="HBoxContainer" unique_id=577569526]
-visible = false
-custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
 text = "0"
 
-[node name="x" type="Label" parent="HBoxContainer" unique_id=291974523]
-visible = false
+[node name="SegmentGold" type="Label" parent="HBoxContainer" unique_id=90959331]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
-text = "x"
-
-[node name="SegmentMultiplier" type="Label" parent="HBoxContainer" unique_id=1993148651]
-visible = false
-custom_minimum_size = Vector2(50, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
-text = "1"
-
-[node name="GoldContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=267342223]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 10
-size_flags_vertical = 4
-
-[node name="GoldIcon" type="TextureRect" parent="HBoxContainer/GoldContainer" unique_id=1980748549]
-texture_filter = 1
-custom_minimum_size = Vector2(25, 25)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-texture = ExtResource("3_bp3vb")
-expand_mode = 1
-stretch_mode = 4
-
-[node name="SegmentGold" type="Label" parent="HBoxContainer/GoldContainer" unique_id=90959331]
-custom_minimum_size = Vector2(35, 0)
-layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
 text = "0"

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7as20l2555su"
-path="res://.godot/imported/gold.png-13a02bc9d7b993f6f4e0e915eeb2b99c.ctex"
+uid="uid://buy0ey27xyd04"
+path="res://.godot/imported/divider_plain.png-c74a798f97bd0d859d2db908309989d4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/currency/gold.png"
-dest_files=["res://.godot/imported/gold.png-13a02bc9d7b993f6f4e0e915eeb2b99c.ctex"]
+source_file="res://assets/gui/dividers/divider_plain.png"
+dest_files=["res://.godot/imported/divider_plain.png-c74a798f97bd0d859d2db908309989d4.ctex"]
 
 [params]
 

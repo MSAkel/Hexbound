@@ -33,9 +33,9 @@ enum PlacementRestriction {
 }
 
 const EMPOWER_OUTPUT_SCALE := 2.0
-const ICON_SCORE := preload("res://assets/icons/currency/score.png")
-const ICON_GOLD := preload("res://assets/icons/currency/gold.png")
-const ICON_MULT := preload("res://assets/icons/currency/multiplier.png")
+const ICON_SCORE := preload("res://assets/icons/resources/score.png")
+const ICON_GOLD := preload("res://assets/icons/resources/gold.png")
+const ICON_MULT := preload("res://assets/icons/resources/multiplier.png")
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {

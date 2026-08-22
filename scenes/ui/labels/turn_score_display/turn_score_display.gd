@@ -196,7 +196,8 @@ func _get_round_info_target() -> Vector2:
 	if panel == null:
 		return get_viewport_rect().position
 
-	var score_label := panel.get_node_or_null("VBoxContainer/ScoreContainer/ScoreThisRound") as Control
+	# Score lives on the run-status HUD. Find by name so layout tweaks do not break the merge.
+	var score_label := panel.find_child("ScoreThisRound", true, false) as Control
 	if score_label != null:
 		return score_label.get_global_rect().get_center()
 	return panel.get_global_rect().get_center()

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d0kwlqy5h1a8s"]
 
 [ext_resource type="PackedScene" uid="uid://4b51ctchdkwh" path="res://scenes/ui/perks/perkUI.tscn" id="1_js843"]
-[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/currency/coin.png" id="2_ts3bq"]
+[ext_resource type="Texture2D" uid="uid://2dlo0dauhj4t" path="res://assets/icons/resources/coin.png" id="2_ts3bq"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r6dd1"]
 bg_color = Color(0.3137255, 0.45882353, 0.3882353, 0.5176471)

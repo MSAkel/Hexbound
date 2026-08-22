@@ -1,18 +1,25 @@
 [gd_scene format=3 uid="uid://crffik30sf5rg"]
 
-[ext_resource type="Texture2D" uid="uid://b85eh86cnkj4i" path="res://assets/gui/panels/v_bar_light.png" id="1_jevqn"]
+[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="1_1reyj"]
 [ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="2_amxqk"]
-[ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/dividers/divider.png" id="3_i0t37"]
+[ext_resource type="Texture2D" uid="uid://bsyc5shwtko4o" path="res://assets/icons/others/navigation_arrow.png" id="3_csip5"]
+[ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="3_jevqn"]
+[ext_resource type="Texture2D" uid="uid://saywmnnvcfvg" path="res://assets/icons/resources/power_hex_icon.png" id="4_n62da"]
+[ext_resource type="Texture2D" uid="uid://cvbbkxidyytat" path="res://assets/icons/resources/mult_hex_icon.png" id="5_csip5"]
+[ext_resource type="Texture2D" uid="uid://dnujadhya634n" path="res://assets/icons/resources/score.png" id="6_ewesi"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="7_1wcrm"]
+[ext_resource type="PackedScene" uid="uid://behfllgh3b7fc" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.tscn" id="8_n62da"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g5bg1"]
 content_margin_left = 16.0
 content_margin_top = 16.0
 content_margin_right = 16.0
 content_margin_bottom = 16.0
-texture = ExtResource("1_jevqn")
+texture = ExtResource("1_1reyj")
 
 [node name="SegmentsContainer" type="PanelContainer" unique_id=1933303425]
 texture_filter = 1
+custom_minimum_size = Vector2(400, 0)
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxTexture_g5bg1")
@@ -23,31 +30,199 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 8
 
-[node name="TurnLabel" type="Label" parent="VBoxContainer" unique_id=1392901756 groups=["main_ui"]]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-theme_override_font_sizes/font_size = 21
-text = "Turn 1"
-horizontal_alignment = 1
-
 [node name="Title" type="Label" parent="VBoxContainer" unique_id=49207560 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_font_sizes/font_size = 18
-text = "Segments"
+text = "Segment Output"
 horizontal_alignment = 1
 
-[node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=875436109]
+[node name="TurnsContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=201524887]
 layout_mode = 2
 size_flags_horizontal = 4
-texture = ExtResource("3_i0t37")
-stretch_mode = 2
+size_flags_vertical = 4
+
+[node name="PrevTurnButton" type="TextureButton" parent="VBoxContainer/TurnsContainer" unique_id=1802224109]
+layout_mode = 2
+texture_normal = ExtResource("3_csip5")
+
+[node name="TurnLabel" type="Label" parent="VBoxContainer/TurnsContainer" unique_id=1392901756 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "Turn 1"
+horizontal_alignment = 1
+
+[node name="NextTurnButton" type="TextureButton" parent="VBoxContainer/TurnsContainer" unique_id=405219008]
+layout_mode = 2
+texture_normal = ExtResource("3_csip5")
+flip_h = true
+
+[node name="LabelsContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=2001090622]
+layout_mode = 2
+
+[node name="SegContainer" type="VBoxContainer" parent="VBoxContainer/LabelsContainer" unique_id=2070398045]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SegIcon" type="TextureRect" parent="VBoxContainer/LabelsContainer/SegContainer" unique_id=18482919]
+custom_minimum_size = Vector2(25, 25)
+custom_maximum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("3_jevqn")
+expand_mode = 2
+
+[node name="SegLabel" type="Label" parent="VBoxContainer/LabelsContainer/SegContainer" unique_id=896540620]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+text = "SEG"
+horizontal_alignment = 1
+
+[node name="PowerContainer" type="VBoxContainer" parent="VBoxContainer/LabelsContainer" unique_id=1550503]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PowerIcon" type="TextureRect" parent="VBoxContainer/LabelsContainer/PowerContainer" unique_id=1999179184]
+custom_minimum_size = Vector2(25, 25)
+custom_maximum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("4_n62da")
+expand_mode = 2
+
+[node name="PowerLabel" type="Label" parent="VBoxContainer/LabelsContainer/PowerContainer" unique_id=1349359424]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+text = "PWR"
+horizontal_alignment = 1
+
+[node name="MultContainer" type="VBoxContainer" parent="VBoxContainer/LabelsContainer" unique_id=342287358]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MultIcon" type="TextureRect" parent="VBoxContainer/LabelsContainer/MultContainer" unique_id=1581906745]
+custom_minimum_size = Vector2(25, 25)
+custom_maximum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("5_csip5")
+expand_mode = 2
+
+[node name="MultLabel" type="Label" parent="VBoxContainer/LabelsContainer/MultContainer" unique_id=1364882027]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+text = "MULT"
+horizontal_alignment = 1
+
+[node name="ScoreContainer" type="VBoxContainer" parent="VBoxContainer/LabelsContainer" unique_id=1914754647]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScoreIcon" type="TextureRect" parent="VBoxContainer/LabelsContainer/ScoreContainer" unique_id=647290778]
+custom_minimum_size = Vector2(25, 25)
+custom_maximum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("6_ewesi")
+expand_mode = 2
+
+[node name="ScoreLabel" type="Label" parent="VBoxContainer/LabelsContainer/ScoreContainer" unique_id=2089369518]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+text = "SCORE"
+horizontal_alignment = 1
+
+[node name="GoldContainer" type="VBoxContainer" parent="VBoxContainer/LabelsContainer" unique_id=144165341]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GoldIcon" type="TextureRect" parent="VBoxContainer/LabelsContainer/GoldContainer" unique_id=438535138]
+custom_minimum_size = Vector2(25, 25)
+custom_maximum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("7_1wcrm")
+expand_mode = 2
+
+[node name="GoldLabel" type="Label" parent="VBoxContainer/LabelsContainer/GoldContainer" unique_id=1072490368]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+text = "GOLD"
+horizontal_alignment = 1
 
 [node name="SegmentResultsList" type="VBoxContainer" parent="VBoxContainer" unique_id=1045123781]
 layout_mode = 2
 theme_override_constants/separation = 4
+
+[node name="SegmentResultsPanel" parent="VBoxContainer/SegmentResultsList" unique_id=1594320159 instance=ExtResource("8_n62da")]
+layout_mode = 2
+
+[node name="SegmentResultsPanel2" parent="VBoxContainer/SegmentResultsList" unique_id=635933563 instance=ExtResource("8_n62da")]
+layout_mode = 2
+
+[node name="SegmentResultsPanel3" parent="VBoxContainer/SegmentResultsList" unique_id=876664545 instance=ExtResource("8_n62da")]
+layout_mode = 2
+
+[node name="SegmentResultsPanel4" parent="VBoxContainer/SegmentResultsList" unique_id=1736212419 instance=ExtResource("8_n62da")]
+layout_mode = 2
+
+[node name="TurnTotalLabel" type="Label" parent="VBoxContainer" unique_id=1035631326 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "Turn Total"
+horizontal_alignment = 1
+
+[node name="TurnTotalContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1366490092]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ScoreContainer" type="HBoxContainer" parent="VBoxContainer/TurnTotalContainer" unique_id=516123702]
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="ScoreTotalNumber" type="Label" parent="VBoxContainer/TurnTotalContainer/ScoreContainer" unique_id=934089326 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "100"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/ScoreContainer" unique_id=641981863 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "Score"
+horizontal_alignment = 1
+
+[node name="GoldContainer" type="HBoxContainer" parent="VBoxContainer/TurnTotalContainer" unique_id=1546850971]
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="GoldTotalNumber" type="Label" parent="VBoxContainer/TurnTotalContainer/GoldContainer" unique_id=928560663 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "10"
+horizontal_alignment = 1
+
+[node name="GoldLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/GoldContainer" unique_id=1930296286 groups=["main_ui"]]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "Gold"
+horizontal_alignment = 1

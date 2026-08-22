@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jtmgf0kaqiyp"
-path="res://.godot/imported/multiplier.png-64e4dbaf03cd47677fb7be81ffc91432.ctex"
+uid="uid://bsxhmn6oyhu8c"
+path="res://.godot/imported/hourglass.png-51821b36a6c552fb1b8e6d05de5e40a0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/currency/multiplier.png"
-dest_files=["res://.godot/imported/multiplier.png-64e4dbaf03cd47677fb7be81ffc91432.ctex"]
+source_file="res://assets/icons/others/hourglass.png"
+dest_files=["res://.godot/imported/hourglass.png-51821b36a6c552fb1b8e6d05de5e40a0.ctex"]
 
 [params]
 
