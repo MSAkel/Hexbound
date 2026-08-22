@@ -9,5 +9,5 @@ type = 3
 id = "transformus_cardus"
 name = "Transformus Cardus"
 icon = ExtResource("1_q4fsf")
-description = "Transforms a played card into another card of the same rarity"
+description = "Transforms a played card into a random same rarity card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

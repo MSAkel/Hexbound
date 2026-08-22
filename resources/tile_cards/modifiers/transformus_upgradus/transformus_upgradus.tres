@@ -10,5 +10,5 @@ type = 3
 id = "transformus_upgradus"
 name = "Transformus Upgradus"
 icon = ExtResource("1_exaj3")
-description = "Transforms a played card into a random card of a higher rarity"
+description = "Transforms a played card into a random higher rarity card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

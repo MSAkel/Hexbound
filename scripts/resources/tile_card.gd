@@ -323,6 +323,19 @@ func _get_segment_trigger_count_this_turn(tile: Hex) -> int:
 	return tile.map.get_segment_turn_trigger_count(_get_segment_index(tile))
 
 
+# Extra activations beyond each card's first trigger on this segment this turn.
+func _get_segment_retrigger_count_this_turn(tile: Hex) -> int:
+	var retrigger_count := 0
+	for tile_card: TileCard in _get_all_tile_cards_on_same_segment(tile):
+		var activations := GameManager.get_tile_card_activation_count_this_turn(tile_card)
+		if activations > 1:
+			retrigger_count += activations - 1
+	return retrigger_count
+
+
+func _get_segment_turn_gold(tile: Hex) -> int:
+	return tile.map.get_segment_turn_gold(_get_segment_index(tile))
+
 ## All placed tile cards on the same segment whose product matches filter_product.
 func _get_all_tile_cards_on_same_segment_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
 	var result: Array[TileCard] = []
@@ -471,6 +484,7 @@ func _coords_for_next_segment(tile: Hex) -> Array[Vector2i]:
 ## Remove a placed tile card instance from the map (clears its tile and cancels queued triggers).
 func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard) -> void:
 	source_tile.map.destroy_placed_tile_card(tile_card)
+#endregion --- Tile card destruction helpers ---
 
 
 ## Random pool card that can occupy a tile. Modifiers are excluded from the roll.
@@ -496,12 +510,30 @@ func _pick_random_placeable_tile_card(
 
 
 ## Swaps the tile occupant for a fresh instance built from replacement_template.
+## Keeps runtime bonus production and any attached enhancement on the new card.
 func _replace_placed_tile_card(tile: Hex, replacement_template: TileCard) -> void:
 	if tile.active_tile_card == null or replacement_template == null:
 		return
 
 	var old_card := tile.active_tile_card
+	var retained_bonus := old_card.bonus_production_amount
+	var retained_enhancement: Enhancement = null
+	if old_card.enhancement != null:
+		retained_enhancement = old_card.enhancement.duplicate(true)
+
 	_destroy_placed_tile_card(tile, old_card)
 	tile.place_tile_card(replacement_template)
 
-#endregion --- Tile card destruction helpers ---
+	var new_card := tile.active_tile_card
+	if new_card == null:
+		return
+
+	new_card.bonus_production_amount = retained_bonus
+	if retained_enhancement == null:
+		return
+
+	new_card.enhancement = retained_enhancement
+	# setup() may have already finished before the enhancement was copied.
+	if tile.rune_ui != null:
+		tile.rune_ui.show_enhancement(retained_enhancement)
+

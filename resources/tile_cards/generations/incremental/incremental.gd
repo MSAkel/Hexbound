@@ -1,9 +1,10 @@
 extends TileCard
 
-# +5 points increasing by 5 every 2 turns up to a maximum of 70
+## +5 Score. Every 2nd trigger: permanently gain +5 Score.
 func _on_activate_tile_card(tile: Hex) -> void:
-	var points_to_add := _get_production_amount()
-	add_score(tile, points_to_add)
+	add_score(tile, _get_production_amount())
 
-	if _get_production_amount() < 70:
+	## Permanent +5 applies after scoring, so this trigger still uses the current amount.
+	activation_count += 1
+	if activation_count % 2 == 0:
 		bonus_production_amount += 5

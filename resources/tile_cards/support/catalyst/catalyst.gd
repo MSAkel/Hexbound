@@ -1,22 +1,29 @@
 extends TileCard
 
-# After every 2 triggers, empowers a random prod TileCard in its segment.
+## After 3 retriggers in this segment, empower the next Producer. Once per turn
+const SEGMENT_RETRIGGERS_NEEDED := 3
+
 func _on_activate_tile_card(tile: Hex) -> void:
-	activation_count += 1
-	if activation_count == 2:
-		var producers := _get_all_tile_cards_on_same_segment(tile, TileCard.TileCardType.PRODUCER)
-		if not producers.is_empty():
-			var selected_rune = producers.pick_random()	
-			selected_rune._empower()
-			activation_count = 0
-			_create_floating_text(tile, "Empowered: %s" % selected_rune.name)
-		else:
-			# Reset counter if no producers are on the segment
-			_create_floating_text(tile, "Failed")
-			activation_count = 0
-	else:
-		_create_floating_text(tile, "+1 Catalyst")
+	# Only counts activations beyond each card's first trigger this turn.
+	var retrigger_count := _get_segment_retrigger_count_this_turn(tile)
+	if retrigger_count < SEGMENT_RETRIGGERS_NEEDED:
+		_create_floating_text(tile, "%d/%d" % [retrigger_count, SEGMENT_RETRIGGERS_NEEDED])
+		return
+
+	var next_producers := _get_next_tile_cards_in_trigger_order(
+		tile, 1, TileCard.TileCardType.PRODUCER
+	)
+	if next_producers.is_empty():
+		failed_tile_card_text(tile)
+		return
+
+	var target := next_producers[0]
+	target._empower()
+	_create_floating_text(tile, "Empowered: %s" % target.name)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_same_segment_tile_cards(hover_tile, TileCardType.PRODUCER)
+	var next_producers := _get_next_tile_cards_in_trigger_order(
+		hover_tile, 1, TileCardType.PRODUCER
+	)
+	return _coords_for_placed_tile_cards(hover_tile, next_producers)

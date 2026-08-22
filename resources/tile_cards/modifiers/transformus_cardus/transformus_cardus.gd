@@ -1,7 +1,6 @@
 extends TileCard
 ## Transforms a played card into another card of the same rarity
 
-
 func apply_on_placement(tile: Hex) -> void:
 	var target := tile.active_tile_card
 	if target == null:

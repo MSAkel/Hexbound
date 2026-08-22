@@ -1,11 +1,13 @@
 extends Node
 
-# Tracks spendable gold and per-turn gold earnings.
-# Gold is used for rune activation, merchant purchases, and rerolls.
+## Tracks spendable gold and per-turn gold earnings.
+## Gold is used for rune activation, merchant purchases, and rerolls.
 
 var _amount: int = 0
-# Resets at the start of each turn; used by runes that scale with gold earned during a turn.
+## Resets at the start of each turn; used by runes that scale with gold earned during a turn.
 var _earned_this_turn: int = 0
+## Resets when a new round begins. Used by cards that scale with gold spent this round.
+var _spent_this_round: int = 0
 
 
 var amount: int:
@@ -18,10 +20,16 @@ var earned_this_turn: int:
 		return _earned_this_turn
 
 
-# Set starting gold for a new run based on difficulty and notify UI listeners.
+var spent_this_round: int:
+	get:
+		return _spent_this_round
+
+
+## Set starting gold for a new run based on difficulty and notify UI listeners.
 func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	_amount = Difficulty.get_starting_gold(difficulty)
 	_earned_this_turn = 0
+	_spent_this_round = 0
 	EventBus.gold_changed.emit(_amount)
 
 
@@ -33,6 +41,7 @@ func add(amount_to_add: int) -> void:
 
 func remove(amount_to_remove: int) -> void:
 	_amount -= amount_to_remove
+	_spent_this_round += amount_to_remove
 	EventBus.gold_changed.emit(_amount)
 
 
@@ -40,18 +49,25 @@ func can_afford(cost: int) -> bool:
 	return _amount >= cost
 
 
-# Called when a new turn begins so turn-scaling runes start from zero.
+## Called when a new turn begins so turn-scaling runes start from zero.
 func reset_turn_tracking() -> void:
 	_earned_this_turn = 0
+
+
+## Called when a new round begins so round-scaling runes start from zero.
+func reset_round_tracking() -> void:
+	_spent_this_round = 0
 
 
 func capture_run_state() -> Dictionary:
 	return {
 		"amount": _amount,
 		"earned_this_turn": _earned_this_turn,
+		"spent_this_round": _spent_this_round,
 	}
 
 
 func apply_run_state(state: Dictionary) -> void:
 	_amount = int(state.get("amount", 0))
 	_earned_this_turn = int(state.get("earned_this_turn", 0))
+	_spent_this_round = int(state.get("spent_this_round", 0))

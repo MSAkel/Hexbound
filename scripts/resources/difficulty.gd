@@ -34,7 +34,7 @@ const DIFFICULTY_INFO = {
 	},
 	Level.LEVEL_4: {
 		"name": "Level 5",
-		"info": "Three random tiles are disabled for the entire run. This does not apply to tiles with starting passive effects.",
+		"info": "Three random tiles are disabled for the entire run.",
 	},
 }
 

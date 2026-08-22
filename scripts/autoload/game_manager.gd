@@ -252,6 +252,8 @@ func _complete_current_round() -> void:
 
 func advance_round() -> void:
 	current_round += 1
+	# Round-spend counters reset before the round bonus so cards start fresh.
+	GoldManager.reset_round_tracking()
 	GoldManager.add(20)
 	total_round_score = 0
 	AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
@@ -276,6 +278,11 @@ func register_tile_card_activation(rune: TileCard) -> void:
 ## Used by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
 func has_tile_card_activated_this_turn(rune: TileCard) -> bool:
 	return _activated_tile_cards_this_turn.has(rune)
+
+
+## How many times this tile card has activated so far this turn (includes the current one).
+func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
+	return _activated_tile_cards_this_turn.count(rune)
 
 func rune_activations_countdown() -> int:
 	return _activations_needed_for_next_perk - _total_rune_activations
