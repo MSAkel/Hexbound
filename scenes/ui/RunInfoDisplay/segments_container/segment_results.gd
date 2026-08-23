@@ -1,27 +1,59 @@
 extends PanelContainer
 
-## One row in the run-info panel for a single map segment's turn score, multiplier, and gold.
+## One row in the run-info panel for a single map segment's turn power, multiplier, score, and gold.
 
 var segment_index: int = -1
 
-@onready var segment_no: Label = $HBoxContainer/SegmentNoContainer/SegmentNo
-@onready var segment_score: Label = $HBoxContainer/ScoreContainer/SegmentScore
-@onready var segment_gold: Label = $HBoxContainer/GoldContainer/SegmentGold
+@onready var segment_no: Label = $HBoxContainer/SegmentNo
+@onready var segment_power: Label = $HBoxContainer/SegmentPower
+@onready var multiplier_prefix: Label = $HBoxContainer/MultiplierContainer/x
+@onready var segment_multiplier: Label = $HBoxContainer/MultiplierContainer/SegmentMultiplier
+@onready var segment_total_score: Label = $HBoxContainer/SegmentTotalScore
+@onready var segment_gold: Label = $HBoxContainer/SegmentGold
 
 var _score: int = 0
 var _multiplier: int = 1
 var _total_score: int = 0
 var _gold: int = 0
-var _score_counter: CountingNumber
+var _accepts_live_updates: bool = true
+var _power_counter: CountingNumber
+var _multiplier_counter: CountingNumber
+var _total_score_counter: CountingNumber
 var _gold_counter: CountingNumber
+var _punch_tweens: Dictionary = {}
+
+const PUNCH_SCALE := 1.12
+const PUNCH_DURATION := 0.18
 
 
 func _ready() -> void:
-	_score_counter = CountingNumber.for_label(self, segment_score)
-	_gold_counter = CountingNumber.for_label(self, segment_gold)
+	_power_counter = _make_stat_counter(segment_power)
+	_multiplier_counter = CountingNumber.new(
+		self,
+		func(_text: String) -> void: pass,
+		false,
+		func(as_int: int) -> void: _apply_multiplier_display(as_int)
+	)
+	_total_score_counter = _make_stat_counter(segment_total_score)
+	_gold_counter = _make_stat_counter(segment_gold)
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
 	EventBus.segment_turn_results_reset.connect(_on_segment_turn_results_reset)
+	_set_segment_no(segment_index + 1)
 	_sync_from_tile_map()
+
+
+func set_accepts_live_updates(enabled: bool) -> void:
+	_accepts_live_updates = enabled
+
+
+func apply_turn_snapshot(
+	score: int,
+	multiplier: int,
+	total_score: int,
+	gold: int,
+	animate: bool = true
+) -> void:
+	_apply_results(score, multiplier, total_score, gold, animate)
 
 
 func _get_tile_map() -> HexTileMap:
@@ -29,6 +61,9 @@ func _get_tile_map() -> HexTileMap:
 
 
 func _sync_from_tile_map() -> void:
+	if not _accepts_live_updates:
+		return
+
 	var tile_map := _get_tile_map()
 	if tile_map == null or segment_index < 0:
 		_apply_results(0, 1, 0, 0, false)
@@ -38,34 +73,103 @@ func _sync_from_tile_map() -> void:
 	var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
 	var gold := tile_map.get_segment_turn_gold(segment_index)
 	_apply_results(score, multiplier, score * multiplier, gold, false)
-	_set_segment_no(segment_index + 1)
 
 
-func _on_segment_turn_results_changed(changed_index: int, score: int, multiplier: int, total_score: int, gold: int) -> void:
-	if changed_index != segment_index:
+func _on_segment_turn_results_changed(
+	changed_index: int,
+	score: int,
+	multiplier: int,
+	total_score: int,
+	gold: int
+) -> void:
+	if not _accepts_live_updates or changed_index != segment_index:
 		return
 	_apply_results(score, multiplier, total_score, gold)
 
 
 func _on_segment_turn_results_reset() -> void:
+	if not _accepts_live_updates:
+		return
 	_apply_results(0, 1, 0, 0, false)
 
 
-## Stores tooltip values and updates the score/gold labels.
-func _apply_results(score: int, multiplier: int, total_score: int, gold: int, animate: bool = true) -> void:
+## Stores tooltip values and updates the row labels.
+func _apply_results(
+	score: int,
+	multiplier: int,
+	total_score: int,
+	gold: int,
+	animate: bool = true
+) -> void:
 	_score = score
 	_multiplier = multiplier
 	_total_score = total_score
 	_gold = gold
+
 	if animate:
-		_score_counter.play(score)
-		_gold_counter.play(gold)
+		_play_counter(_power_counter, score, segment_power)
+		_play_counter(_multiplier_counter, multiplier, segment_multiplier)
+		_play_counter(_total_score_counter, total_score, segment_total_score)
+		_play_counter(_gold_counter, gold, segment_gold)
 	else:
-		_score_counter.snap_to(score)
+		_power_counter.snap_to(score)
+		_multiplier_counter.snap_to(multiplier)
+		_total_score_counter.snap_to(total_score)
 		_gold_counter.snap_to(gold)
+	_apply_multiplier_display(multiplier)
+
+
+func _make_stat_counter(label: Label) -> CountingNumber:
+	return CountingNumber.new(
+		self,
+		func(_text: String) -> void: pass,
+		false,
+		func(as_int: int) -> void: label.text = _format_stat(as_int)
+	)
+
+
+func _format_stat(value: int) -> String:
+	return "-" if value == 0 else str(value)
+
+
+func _apply_multiplier_display(multiplier: int) -> void:
+	var has_activity := _score > 0 or _total_score > 0 or _gold > 0
+	multiplier_prefix.visible = multiplier > 1
+	if multiplier <= 1 and not has_activity:
+		segment_multiplier.text = "-"
+	else:
+		segment_multiplier.text = str(multiplier)
+
+
+func _play_counter(counter: CountingNumber, target: int, punch_target: Control) -> void:
+	var tween := counter.play(target)
+	if tween != null:
+		_punch(punch_target)
+
+
+func _punch(control: Control) -> void:
+	if control == null:
+		return
+
+	var existing: Variant = _punch_tweens.get(control)
+	if existing is Tween and (existing as Tween).is_valid():
+		(existing as Tween).kill()
+
+	control.pivot_offset = control.size * 0.5
+	control.scale = Vector2.ONE
+
+	var duration := PUNCH_DURATION / GameManager.game_speed
+	var tween := create_tween()
+	tween.tween_property(control, "scale", Vector2(PUNCH_SCALE, PUNCH_SCALE), duration * 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, duration * 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_punch_tweens[control] = tween
 
 
 func _set_segment_no(no: int) -> void:
+	if no <= 0:
+		segment_no.text = "-"
+		return
+
 	match no:
 		1:
 			segment_no.text = "1st"
@@ -85,9 +189,15 @@ func _set_segment_no(no: int) -> void:
 			segment_no.text = "8th"
 		9:
 			segment_no.text = "9th"
+		_:
+			segment_no.text = "%dth" % no
+
 
 func _on_mouse_entered() -> void:
-	var tooltip := "Last Turn Results:\nScore: %s\nMultiplier: %s\nGold: %s\nTotal Score: %s\n\nRound Results: \nWIP" % [_score, _multiplier, _gold, _total_score]
+	var tooltip := (
+		"Turn Results:\nPower: %s\nMultiplier: %s\nGold: %s\nTotal Score: %s\n\nRound Results: \nWIP"
+		% [_score, _multiplier, _gold, _total_score]
+	)
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 	# Highlight this segment's tiles on the map for as long as the tooltip is shown.
 	var tile_map := _get_tile_map()
@@ -103,8 +213,12 @@ func _on_mouse_exited() -> void:
 
 
 func _exit_tree() -> void:
-	if _score_counter != null:
-		_score_counter.kill()
+	if _power_counter != null:
+		_power_counter.kill()
+	if _multiplier_counter != null:
+		_multiplier_counter.kill()
+	if _total_score_counter != null:
+		_total_score_counter.kill()
 	if _gold_counter != null:
 		_gold_counter.kill()
 	var tile_map := _get_tile_map()

@@ -29,6 +29,8 @@ signal turn_score_changed()
 ## Per-segment score, multiplier, total (score x mult), and gold during turn resolution.
 signal segment_turn_results_changed(segment_index: int, score: int, multiplier: int, total_score: int, gold: int)
 signal segment_turn_results_reset()
+## Fired once per resolved turn with a full per-segment snapshot for the run-info history UI.
+signal segment_turn_completed(turn_number: int, snapshot: Dictionary)
 
 signal required_score_changed()
 

@@ -28,18 +28,19 @@ theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 18
 text = "1st"
 
-[node name="SegmentScore2" type="Label" parent="HBoxContainer" unique_id=1004428651]
+[node name="SegmentPower" type="Label" parent="HBoxContainer" unique_id=1004428651]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
-text = "1"
+text = "-"
 
 [node name="MultiplierContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1537264061]
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="x" type="Label" parent="HBoxContainer/MultiplierContainer" unique_id=291974523]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
@@ -49,21 +50,21 @@ text = "x"
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
-text = "1"
+text = "-"
 
-[node name="SegmentScore" type="Label" parent="HBoxContainer" unique_id=577569526]
+[node name="SegmentTotalScore" type="Label" parent="HBoxContainer" unique_id=577569526]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
-text = "0"
+text = "-"
 
 [node name="SegmentGold" type="Label" parent="HBoxContainer" unique_id=90959331]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
 theme_override_font_sizes/font_size = 21
-text = "0"
+text = "-"
 
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

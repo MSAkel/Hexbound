@@ -3,17 +3,240 @@ extends PanelContainer
 const SEGMENT_RESULTS_SCENE := preload(
 	"res://scenes/ui/RunInfoDisplay/segments_container/segment_results.tscn"
 )
-@onready var turn_label: Label = $VBoxContainer/TurnLabel
+
+@onready var prev_turn_button: TextureButton = $VBoxContainer/TurnsContainer/PrevTurnButton
+@onready var turn_label: Label = $VBoxContainer/TurnsContainer/TurnLabel
+@onready var next_turn_button: TextureButton = $VBoxContainer/TurnsContainer/NextTurnButton
 @onready var segment_results_list: VBoxContainer = $VBoxContainer/SegmentResultsList
+@onready var score_total_number: Label = $VBoxContainer/TurnTotalContainer/ScoreContainer/ScoreTotalNumber
+@onready var gold_total_number: Label = $VBoxContainer/TurnTotalContainer/GoldContainer/GoldTotalNumber
+
+## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
+var _turn_history: Array = []
+var _viewed_turn_index: int = 0
+var _resolving_turn: bool = false
+var _score_total_counter: CountingNumber
+var _gold_total_counter: CountingNumber
+var _punch_tweens: Dictionary = {}
+
+const PUNCH_SCALE := 1.12
+const PUNCH_DURATION := 0.18
 
 
 func _ready() -> void:
-	## Delay execution until the end of the current frame
+	_score_total_counter = _make_stat_counter(score_total_number)
+	_gold_total_counter = _make_stat_counter(gold_total_number)
+
+	prev_turn_button.pressed.connect(_on_prev_turn_pressed)
+	next_turn_button.pressed.connect(_on_next_turn_pressed)
+
 	call_deferred("_build_segment_rows")
+
 	EventBus.turn_ended.connect(_on_turn_ended)
+	EventBus.segment_turn_completed.connect(_on_segment_turn_completed)
+	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
+	EventBus.round_changed.connect(_on_round_changed)
+
+	_refresh_view(false)
+
 
 func _on_turn_ended() -> void:
-	turn_label.text = "Turn %s" % GameManager.get_turn_number()
+	_resolving_turn = true
+	_viewed_turn_index = _turn_history.size()
+	_set_rows_live_mode(true)
+	_refresh_view(false)
+
+
+func _on_segment_turn_completed(_turn_number: int, snapshot: Dictionary) -> void:
+	_turn_history.append(snapshot)
+	_resolving_turn = false
+	_viewed_turn_index = _turn_history.size() - 1
+	_set_rows_live_mode(false)
+	_refresh_view(true)
+
+
+func _on_segment_turn_results_changed(
+	_changed_index: int,
+	_score: int,
+	_multiplier: int,
+	_total_score: int,
+	_gold: int
+) -> void:
+	if not _is_viewing_live_turn():
+		return
+	_update_turn_totals_from_tile_map(true)
+
+
+func _on_round_changed(_new_round: int) -> void:
+	_turn_history.clear()
+	_viewed_turn_index = 0
+	_resolving_turn = false
+	_set_rows_live_mode(_resolving_turn)
+	_refresh_view(false)
+
+
+func _on_prev_turn_pressed() -> void:
+	if _viewed_turn_index <= 0:
+		return
+	_viewed_turn_index -= 1
+	_refresh_view(true)
+
+
+func _on_next_turn_pressed() -> void:
+	if _viewed_turn_index >= _get_latest_view_index():
+		return
+	_viewed_turn_index += 1
+	_refresh_view(true)
+
+
+func _get_latest_view_index() -> int:
+	if _resolving_turn:
+		return _turn_history.size()
+	return maxi(_turn_history.size() - 1, 0)
+
+
+func _is_viewing_live_turn() -> bool:
+	return _resolving_turn and _viewed_turn_index == _turn_history.size()
+
+
+func _set_rows_live_mode(enabled: bool) -> void:
+	for child in segment_results_list.get_children():
+		if child.has_method("set_accepts_live_updates"):
+			child.set_accepts_live_updates(enabled)
+
+
+func _refresh_view(animate: bool) -> void:
+	_update_turn_label()
+	_update_navigation_buttons()
+
+	if _is_viewing_live_turn():
+		_set_rows_live_mode(true)
+		_sync_rows_from_tile_map(animate)
+		_update_turn_totals_from_tile_map(animate)
+		return
+
+	_set_rows_live_mode(false)
+	if _turn_history.is_empty():
+		_apply_empty_snapshot(animate)
+		return
+
+	var snapshot: Dictionary = _turn_history[_viewed_turn_index]
+	_apply_snapshot(snapshot, animate)
+
+
+func _update_turn_label() -> void:
+	turn_label.text = "Turn %d" % (_viewed_turn_index + 1)
+
+
+func _update_navigation_buttons() -> void:
+	prev_turn_button.disabled = _viewed_turn_index <= 0
+	next_turn_button.disabled = _viewed_turn_index >= _get_latest_view_index()
+
+
+func _apply_snapshot(snapshot: Dictionary, animate: bool) -> void:
+	var segments: Array = snapshot.get("segments", [])
+	for child in segment_results_list.get_children():
+		var segment_index: int = child.segment_index
+		if segment_index < 0 or segment_index >= segments.size():
+			child.apply_turn_snapshot(0, 1, 0, 0, animate)
+			continue
+
+		var segment_data: Dictionary = segments[segment_index]
+		child.apply_turn_snapshot(
+			int(segment_data.get("score", 0)),
+			int(segment_data.get("multiplier", 1)),
+			int(segment_data.get("total_score", 0)),
+			int(segment_data.get("gold", 0)),
+			animate
+		)
+
+	_update_turn_totals(
+		int(snapshot.get("total_score", 0)),
+		int(snapshot.get("total_gold", 0)),
+		animate
+	)
+
+
+func _apply_empty_snapshot(animate: bool) -> void:
+	for child in segment_results_list.get_children():
+		child.apply_turn_snapshot(0, 1, 0, 0, animate)
+	_update_turn_totals(0, 0, animate)
+
+
+func _sync_rows_from_tile_map(animate: bool) -> void:
+	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
+	if tile_map == null:
+		_apply_empty_snapshot(animate)
+		return
+
+	for child in segment_results_list.get_children():
+		var segment_index: int = child.segment_index
+		var score := tile_map.get_segment_turn_score(segment_index)
+		var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
+		var gold := tile_map.get_segment_turn_gold(segment_index)
+		child.apply_turn_snapshot(score, multiplier, score * multiplier, gold, animate)
+
+	_update_turn_totals_from_tile_map(animate)
+
+
+func _update_turn_totals_from_tile_map(animate: bool) -> void:
+	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
+	if tile_map == null:
+		_update_turn_totals(0, 0, animate)
+		return
+
+	var snapshot: Dictionary = tile_map.capture_segment_turn_snapshot()
+	_update_turn_totals(
+		int(snapshot.get("total_score", 0)),
+		int(snapshot.get("total_gold", 0)),
+		animate
+	)
+
+
+func _update_turn_totals(total_score: int, total_gold: int, animate: bool) -> void:
+	if animate:
+		_play_counter(_score_total_counter, total_score, score_total_number)
+		_play_counter(_gold_total_counter, total_gold, gold_total_number)
+	else:
+		_score_total_counter.snap_to(total_score)
+		_gold_total_counter.snap_to(total_gold)
+
+
+func _make_stat_counter(label: Label) -> CountingNumber:
+	return CountingNumber.new(
+		self,
+		func(_text: String) -> void: pass,
+		false,
+		func(as_int: int) -> void: label.text = _format_stat(as_int)
+	)
+
+
+func _format_stat(value: int) -> String:
+	return "-" if value == 0 else str(value)
+
+
+func _play_counter(counter: CountingNumber, target: int, punch_target: Control) -> void:
+	var tween := counter.play(target)
+	if tween != null:
+		_punch(punch_target)
+
+
+func _punch(control: Control) -> void:
+	if control == null:
+		return
+
+	var existing: Variant = _punch_tweens.get(control)
+	if existing is Tween and (existing as Tween).is_valid():
+		(existing as Tween).kill()
+
+	control.pivot_offset = control.size * 0.5
+	control.scale = Vector2.ONE
+
+	var duration := PUNCH_DURATION / GameManager.game_speed
+	var tween := create_tween()
+	tween.tween_property(control, "scale", Vector2(PUNCH_SCALE, PUNCH_SCALE), duration * 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, duration * 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_punch_tweens[control] = tween
 
 
 ## Creates one segment_results row for each map segment after the board is generated.
@@ -29,3 +252,13 @@ func _build_segment_rows() -> void:
 		var row: PanelContainer = SEGMENT_RESULTS_SCENE.instantiate()
 		row.segment_index = segment_index
 		segment_results_list.add_child(row)
+
+	_set_rows_live_mode(_is_viewing_live_turn())
+	_refresh_view(false)
+
+
+func _exit_tree() -> void:
+	if _score_total_counter != null:
+		_score_total_counter.kill()
+	if _gold_total_counter != null:
+		_gold_total_counter.kill()

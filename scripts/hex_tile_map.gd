@@ -884,6 +884,7 @@ func on_turn_ended() -> void:
 
 	await _play_segment_turn_result_reveals()
 	_apply_segment_turn_totals_to_game_manager()
+	_emit_segment_turn_completed_snapshot()
 	GameManager.finish_turn_processing()
 
 
@@ -1105,6 +1106,38 @@ func restore_map_state(state: Dictionary) -> void:
 func refresh_segment_turn_results_ui() -> void:
 	for segment_index in get_segment_count():
 		_emit_segment_turn_results_changed(segment_index)
+
+
+## Packages per-segment turn totals for the segment-output history panel.
+func capture_segment_turn_snapshot() -> Dictionary:
+	var segments: Array = []
+	var total_score := 0
+	var total_gold := 0
+	for segment_index in get_segment_count():
+		var score := get_segment_turn_score(segment_index)
+		var multiplier := get_segment_turn_multiplier(segment_index)
+		var gold := get_segment_turn_gold(segment_index)
+		var segment_total := score * multiplier
+		segments.append({
+			"score": score,
+			"multiplier": multiplier,
+			"total_score": segment_total,
+			"gold": gold,
+		})
+		total_score += segment_total
+		total_gold += gold
+	return {
+		"segments": segments,
+		"total_score": total_score,
+		"total_gold": total_gold,
+	}
+
+
+func _emit_segment_turn_completed_snapshot() -> void:
+	EventBus.segment_turn_completed.emit(
+		GameManager.get_turn_number(),
+		capture_segment_turn_snapshot()
+	)
 
 
 func _restore_disabled_tiles(coords_list: Array) -> void:
