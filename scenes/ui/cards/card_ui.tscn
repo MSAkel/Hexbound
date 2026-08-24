@@ -45,13 +45,13 @@ bg_color = Color(0.09019608, 0.09019608, 0.09019608, 0.5647059)
 variation_embolden = 0.09
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
-size = Vector2(198, 317)
+size = Vector2(214, 317)
 
 [node name="CardUI" type="Control" unique_id=1998448617]
-custom_minimum_size = Vector2(170, 260)
+custom_minimum_size = Vector2(186, 260)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 198.0
+offset_right = 214.0
 offset_bottom = 317.0
 mouse_filter = 1
 theme = ExtResource("1_o6pyt")
@@ -138,7 +138,15 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
 
-[node name="CardDescription" type="RichTextLabel" parent="Content" unique_id=2119088894]
+[node name="DescriptionContainer" type="MarginContainer" parent="Content" unique_id=1482093371]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="CardDescription" type="RichTextLabel" parent="Content/DescriptionContainer" unique_id=2119088894]
 custom_minimum_size = Vector2(75, 130)
 layout_mode = 2
 mouse_filter = 2
@@ -215,7 +223,7 @@ collision_mask = 2
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea" unique_id=1742927811]
-position = Vector2(99, 158.5)
+position = Vector2(107, 158.5)
 shape = SubResource("RectangleShape2D_s55cg")
 
 [node name="CardStateMachine" type="Node" parent="." unique_id=471583580 node_paths=PackedStringArray("initial_state")]

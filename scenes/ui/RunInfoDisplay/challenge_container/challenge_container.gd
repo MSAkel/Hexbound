@@ -4,8 +4,11 @@ extends Control
 @onready var next_challenge_round: Label = $VBoxContainer/NextChallengeRound
 @onready var challenge_name: Label = $VBoxContainer/ChallengeName
 @onready var challenge_description: Label = $VBoxContainer/ChallengeDescription
+@onready var challenge_icon: TextureRect = $TextureRect
 
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
+const ACTIVE_ICON_MODULATE := Color(1.35, 1.15, 0.55)
+const IDLE_ICON_MODULATE := Color.WHITE
 
 func _ready() -> void:
 	EventBus.round_changed.connect(_update_challenge_preview)
@@ -22,7 +25,10 @@ func _update_challenge_preview(_new_round: int = -1) -> void:
 	# Keep showing the active challenge name until its round completes.
 	if ChallengeManager.active_challenge != -1:
 		challenge_name.text = ChallengeManager.get_challenge_name(ChallengeManager.active_challenge)
+		challenge_icon.modulate = ACTIVE_ICON_MODULATE
 		return
+
+	challenge_icon.modulate = IDLE_ICON_MODULATE
 
 	var next_round: int = ChallengeManager.get_next_challenge_round()
 	if next_round == -1:
@@ -43,8 +49,9 @@ func _update_challenge_preview(_new_round: int = -1) -> void:
 
 func _get_tooltip_text() -> String:
 	if ChallengeManager.active_challenge != -1:
+		var active_name := ChallengeManager.get_challenge_name(ChallengeManager.active_challenge)
 		var description := ChallengeManager.get_challenge_description(ChallengeManager.active_challenge)
-		return "Round %d\n%s" % [GameManager.current_round, description]
+		return "Active Challenge\nRound %d — %s\n%s" % [GameManager.current_round, active_name, description]
 
 	var next_round: int = ChallengeManager.get_next_challenge_round()
 	if next_round == -1:

@@ -16,7 +16,7 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 
 @onready var card_name: Label = $Content/NameContainer/CardName
 @onready var icon: TextureRect = $Content/IconContainer/Icon
-@onready var card_description: RichTextLabel = $Content/CardDescription
+@onready var card_description: RichTextLabel = $Content/DescriptionContainer/CardDescription
 @onready var resource_cost_container: HBoxContainer = $Content/ResourceCostContainer
 @onready var card_type_label: Label = $Content/CardTypeLabel
 @onready var price_label: Label = $Content/PriceLabel
@@ -59,6 +59,8 @@ var _is_hover_elevated := false
 var _map_tile_hover_active := false
 var _resting_z_index := 0
 var _elevation_tween: Tween
+# Extra X shift applied by Hand so neighbors slide aside while this card grows.
+var _hand_spread_x := 0.0
 var _is_sold := false
 var _discount := 0.0
 
@@ -195,6 +197,24 @@ func _update_hand_z_index(elevated: bool) -> void:
 	z_index = HAND_ELEVATED_Z_INDEX if elevated else _resting_z_index
 
 
+func get_hand_spread_x() -> float:
+	return _hand_spread_x
+
+
+# Hand uses this to push unhovered cards away from the featured card.
+func set_hand_spread_x(spread_x: float, animate: bool = true) -> void:
+	if is_equal_approx(_hand_spread_x, spread_x):
+		return
+	_hand_spread_x = spread_x
+	var hand := get_parent() as Hand
+	if hand != null and hand.is_preserving_offset_for(self):
+		return
+	# The featured card's hover tween already includes the composed offset.
+	if _is_hover_elevated:
+		return
+	_apply_offset_transform(animate)
+
+
 func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
 	if not hover_enabled:
 		elevated = false
@@ -205,17 +225,30 @@ func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
 	if not elevated and hand != null and hand.is_preserving_offset_for(self):
 		_is_hover_elevated = false
 		_update_hand_z_index(false)
+		if hand != null:
+			hand.notify_card_featured(self, false, false)
 		return
 
+	_is_hover_elevated = elevated
+	_update_hand_z_index(elevated)
+	if hand != null:
+		hand.notify_card_featured(self, elevated, animate)
+	_apply_offset_transform(animate)
+
+
+func _composed_offset_position() -> Vector2:
+	var y := _get_hover_elevation_offset() if _is_hover_elevated else 0.0
+	return Vector2(_hand_spread_x, y)
+
+
+func _apply_offset_transform(animate: bool) -> void:
 	if _elevation_tween and _elevation_tween.is_valid():
 		_elevation_tween.kill()
 		_elevation_tween = null
 
-	_is_hover_elevated = elevated
-	_update_hand_z_index(elevated)
-	var target_offset := Vector2(0, _get_hover_elevation_offset()) if elevated else Vector2.ZERO
+	var target_offset := _composed_offset_position()
 	var apply_hand_scale := _should_apply_hand_hover_scale()
-	var target_scale := _get_hand_hover_scale() if elevated and apply_hand_scale else Vector2.ONE
+	var target_scale := _get_hand_hover_scale() if _is_hover_elevated and apply_hand_scale else Vector2.ONE
 
 	if not animate or _is_hover_transform_at_target(target_offset, target_scale, apply_hand_scale):
 		offset_transform_enabled = true
@@ -227,7 +260,7 @@ func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
 	offset_transform_enabled = true
 	_elevation_tween = create_tween()
 	_elevation_tween.set_parallel(true)
-	var ease_type := Tween.EASE_OUT if elevated else Tween.EASE_IN
+	var ease_type := Tween.EASE_OUT if _is_hover_elevated else Tween.EASE_IN
 	_elevation_tween.tween_property(
 		self,
 		"offset_transform_position",
@@ -389,7 +422,31 @@ func _show_keyword_tooltips() -> void:
 
 	# Always emit a hover claim so an empty keyword list closes the previous card's tips.
 	var entries := CardKeywordGlossary.tooltip_entries(card.description)
-	EventBus.toggle_keyword_tooltips.emit(true, entries, get_global_rect(), self)
+	EventBus.toggle_keyword_tooltips.emit(true, entries, get_keyword_tooltip_anchor_rect(), self)
+
+
+# Visual card bounds after offset_transform, using the hover pose so tips sit on the lifted top corners.
+func get_keyword_tooltip_anchor_rect() -> Rect2:
+	var pose_offset := offset_transform_position
+	var pose_scale := offset_transform_scale if offset_transform_enabled else Vector2.ONE
+	if interaction_mode == InteractionMode.HAND:
+		pose_offset = Vector2(_hand_spread_x, _get_hover_elevation_offset())
+		pose_scale = _get_hand_hover_scale()
+	elif _is_hover_elevated:
+		pose_offset = Vector2(0.0, _get_hover_elevation_offset())
+		pose_scale = Vector2.ONE
+	return _visual_global_rect_for(pose_offset, pose_scale)
+
+
+func _visual_global_rect_for(pose_offset: Vector2, pose_scale: Vector2) -> Rect2:
+	var pivot := size * offset_transform_pivot_ratio
+	var min_p := Vector2(INF, INF)
+	var max_p := Vector2(-INF, -INF)
+	for corner in [Vector2.ZERO, Vector2(size.x, 0.0), Vector2(0.0, size.y), size]:
+		var local : Vector2 = pivot + (corner - pivot) * pose_scale + pose_offset
+		min_p = min_p.min(local)
+		max_p = max_p.max(local)
+	return Rect2(global_position + min_p, max_p - min_p)
 
 
 func _hide_keyword_tooltips() -> void:

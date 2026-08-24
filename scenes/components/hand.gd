@@ -12,6 +12,14 @@ const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 const HAND_SLIDE_DURATION := 0.35
 ## Stagger between each card during the run-start entrance from below.
 const INTRO_CARD_STAGGER := 0.07
+## Hands of this size and smaller keep full spacing. Larger hands start to overlap.
+const SPACED_HAND_COUNT := 5
+## Never overlap so far that a card is left with a sliver too small to click.
+const MIN_VISIBLE_CARD_WIDTH := 56.0
+## Extra gap opened around a featured card so the 1.2 hover scale does not cover neighbors.
+const HOVER_PUSH_PADDING := 10.0
+## Fallback width before a card has been laid out.
+const DEFAULT_CARD_WIDTH := 214.0
 
 ## Debug-only cards appended to the opening hand.
 @export_group("Debug Starting Hand")
@@ -25,9 +33,14 @@ var _awaiting_intro := true
 ## True while the hand is slid below the viewport (intro or turn resolution).
 var _hand_hidden := true
 var _hand_slide_tween: Tween = null
+## Theme separation before overlap packing is applied.
+var _base_separation := 0
+## Card currently lifted in the hand, if any.
+var _featured_card: CardUI = null
 
 ## Reparent cards to hand when they are dragged or released
 func _ready() -> void:
+	_base_separation = get_theme_constant("separation")
 	EventBus.card_played.connect(_on_card_played)
 	EventBus.tile_card_selected.connect(_add_tile_card)
 	EventBus.enhancement_selected.connect(_add_enhancement_card)
@@ -48,6 +61,11 @@ func _ready() -> void:
 	## Snap immediately so the first frame never flashes cards at rest before the intro.
 	if _awaiting_intro:
 		_snap_hand_offscreen()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_CHILD_ORDER_CHANGED:
+		call_deferred("_refresh_hand_layout")
 
 
 ## Extra inspector cards for testing a specific rune or enhancement without merchant luck.
@@ -89,16 +107,86 @@ func _add_card(data: Card) -> CardUI:
 	# Cards dealt during the enter-run intro stay hidden below the viewport.
 	if _awaiting_intro:
 		_snap_card_offscreen(new_rune_card)
+	call_deferred("_refresh_hand_layout")
 	return new_rune_card
 
 
 ## Guard against non-card children
 func _get_hand_card_count() -> int:
-	var count := 0
+	return _get_hand_cards().size()
+
+
+func _get_hand_cards() -> Array[CardUI]:
+	var cards: Array[CardUI] = []
 	for child in get_children():
 		if child is CardUI:
-			count += 1
-	return count
+			cards.append(child as CardUI)
+	return cards
+
+
+# Called from CardUI when a hand card lifts or settles so neighbors can slide aside.
+func notify_card_featured(card: CardUI, featured: bool, animate: bool = true) -> void:
+	if featured:
+		_featured_card = card
+	elif _featured_card == card:
+		_featured_card = null
+	_apply_hover_spread(animate)
+
+
+func _refresh_hand_layout() -> void:
+	if not is_inside_tree():
+		return
+	if _featured_card != null and _featured_card.get_parent() != self:
+		_featured_card = null
+	_update_card_overlap()
+	_apply_hover_spread(true)
+
+
+func _update_card_overlap() -> void:
+	add_theme_constant_override("separation", _compute_hand_separation())
+
+
+func _compute_hand_separation() -> int:
+	var cards := _get_hand_cards()
+	var count := cards.size()
+	if count <= SPACED_HAND_COUNT:
+		return _base_separation
+
+	var card_width := _get_card_width()
+	# Keep the packed row about as wide as a five-card hand.
+	var target_width := SPACED_HAND_COUNT * card_width + (SPACED_HAND_COUNT - 1) * _base_separation
+	var packed_sep := (target_width - count * card_width) / float(count - 1)
+	var min_sep := -(card_width - MIN_VISIBLE_CARD_WIDTH)
+	return int(round(maxf(packed_sep, min_sep)))
+
+
+func _get_card_width() -> float:
+	for card in _get_hand_cards():
+		var width := maxf(card.size.x, card.custom_minimum_size.x)
+		if width > 1.0:
+			return width
+	return DEFAULT_CARD_WIDTH
+
+
+func _get_hover_push_amount() -> float:
+	var card_width := _get_card_width()
+	var scale_extra := card_width * (CardUI.HAND_HOVER_SCALE - 1.0) * 0.5
+	var overlap := maxf(0.0, -float(_compute_hand_separation()))
+	return scale_extra + overlap + HOVER_PUSH_PADDING
+
+
+func _apply_hover_spread(animate: bool) -> void:
+	var cards := _get_hand_cards()
+	var featured_index := cards.find(_featured_card)
+	var push := _get_hover_push_amount() if featured_index >= 0 else 0.0
+	for i in cards.size():
+		var card := cards[i]
+		if is_preserving_offset_for(card):
+			continue
+		var spread := 0.0
+		if featured_index >= 0 and i != featured_index:
+			spread = -push if i < featured_index else push
+		card.set_hand_spread_x(spread, animate)
 
 
 func _on_card_played(_card_ui: CardUI) -> void:
@@ -227,7 +315,7 @@ func _animate_hand_slide(hide: bool) -> void:
 		_hand_slide_tween = null
 
 	var slide_distance := _get_hand_slide_distance()
-	var target_offset := Vector2(0, slide_distance) if hide else Vector2.ZERO
+	var target_y := slide_distance if hide else 0.0
 
 	_hand_slide_tween = create_tween()
 	_hand_slide_tween.set_parallel(true)
@@ -252,7 +340,7 @@ func _animate_hand_slide(hide: bool) -> void:
 		var step := _hand_slide_tween.tween_property(
 			card,
 			"offset_transform_position",
-			target_offset,
+			Vector2(card.get_hand_spread_x(), target_y),
 			HAND_SLIDE_DURATION
 		)
 		step.set_ease(Tween.EASE_IN if hide else Tween.EASE_OUT)

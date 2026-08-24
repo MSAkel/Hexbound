@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8wbfxcvxew5s"
-path="res://.godot/imported/flame_01.png-875a428d9d95e5900ad31f8dab218f92.ctex"
+uid="uid://clsdhcffj5p0w"
+path="res://.godot/imported/circle_02.png-bb4632b3ba8b91429af06a3786020d75.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/particles/flame_01.png"
-dest_files=["res://.godot/imported/flame_01.png-875a428d9d95e5900ad31f8dab218f92.ctex"]
+source_file="res://assets/particles/circle/circle_02.png"
+dest_files=["res://.godot/imported/circle_02.png-bb4632b3ba8b91429af06a3786020d75.ctex"]
 
 [params]
 

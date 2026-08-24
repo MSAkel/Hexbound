@@ -224,3 +224,14 @@ theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
 theme_override_font_sizes/font_size = 18
 text = "Gold"
 horizontal_alignment = 1
+
+[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/SegContainer/SegIcon" to="." method="_on_seg_icon_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/SegContainer/SegIcon" to="." method="_on_seg_icon_mouse_exited"]
+[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/PowerContainer/EnergyIcon" to="." method="_on_energy_icon_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/PowerContainer/EnergyIcon" to="." method="_on_energy_icon_mouse_exited"]
+[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/MultContainer/MultIcon" to="." method="_on_mult_icon_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/MultContainer/MultIcon" to="." method="_on_mult_icon_mouse_exited"]
+[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/ScoreContainer/ScoreIcon" to="." method="_on_score_icon_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/ScoreContainer/ScoreIcon" to="." method="_on_score_icon_mouse_exited"]
+[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/GoldContainer/GoldIcon" to="." method="_on_gold_icon_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/GoldContainer/GoldIcon" to="." method="_on_gold_icon_mouse_exited"]

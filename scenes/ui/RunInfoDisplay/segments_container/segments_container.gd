@@ -291,3 +291,50 @@ func _exit_tree() -> void:
 		_score_total_counter.kill()
 	if _gold_total_counter != null:
 		_gold_total_counter.kill()
+
+
+func _on_seg_icon_mouse_entered() -> void:
+	var tooltip := "Segment"
+	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+
+
+
+func _on_seg_icon_mouse_exited() -> void:
+	EventBus.toggle_tooltip.emit(false, "")
+
+
+func _on_energy_icon_mouse_entered() -> void:
+	var tooltip := "Energy"
+	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+
+
+
+func _on_energy_icon_mouse_exited() -> void:
+	EventBus.toggle_tooltip.emit(false, "")
+
+
+func _on_mult_icon_mouse_entered() -> void:
+	var tooltip := "Mult"
+	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+
+
+func _on_mult_icon_mouse_exited() -> void:
+	EventBus.toggle_tooltip.emit(false, "")
+
+
+func _on_score_icon_mouse_entered() -> void:
+	var tooltip := "Score"
+	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+
+
+func _on_score_icon_mouse_exited() -> void:
+	EventBus.toggle_tooltip.emit(false, "")
+
+
+func _on_gold_icon_mouse_entered() -> void:
+	var tooltip := "Gold"
+	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+
+
+func _on_gold_icon_mouse_exited() -> void:
+	EventBus.toggle_tooltip.emit(false, "")

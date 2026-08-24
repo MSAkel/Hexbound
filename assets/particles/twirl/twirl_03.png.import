@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://da68q1s2m373t"
-path="res://.godot/imported/circle_01.png-c5c743bc654bb5ee52a5c95124aa6f1e.ctex"
+uid="uid://dwnqtpati2sgm"
+path="res://.godot/imported/twirl_03.png-8b48d2b762b0dd740e923e0934212e95.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/particles/circle_01.png"
-dest_files=["res://.godot/imported/circle_01.png-c5c743bc654bb5ee52a5c95124aa6f1e.ctex"]
+source_file="res://assets/particles/twirl/twirl_03.png"
+dest_files=["res://.godot/imported/twirl_03.png-8b48d2b762b0dd740e923e0934212e95.ctex"]
 
 [params]
 

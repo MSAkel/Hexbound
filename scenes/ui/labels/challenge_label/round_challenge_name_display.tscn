@@ -1,28 +1,106 @@
 [gd_scene format=3 uid="uid://b04mnn3bt2r1e"]
 
 [ext_resource type="Script" uid="uid://yv8aveeajv8r" path="res://scenes/ui/labels/challenge_label/round_challenge_name_display.gd" id="1_wdo53"]
+[ext_resource type="Texture2D" uid="uid://yjsyynwlyscq" path="res://assets/gui/map_layouts/challenge_icon.png" id="2_icon"]
 
-[node name="RoundChallengeNameDisplay" type="Control" unique_id=956026347]
+[node name="RoundChallengeNameDisplay" type="Control"]
+z_index = 40
 layout_mode = 3
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = 2.0
-offset_right = 2.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
+grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_wdo53")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="." unique_id=538678289]
+[node name="DimOverlay" type="ColorRect" parent="."]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 15
 anchor_right = 1.0
-offset_bottom = 97.0
+anchor_bottom = 1.0
 grow_horizontal = 2
-theme_override_font_sizes/normal_font_size = 72
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Banner" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -560.0
+offset_top = -160.0
+offset_right = 560.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="KickerRow" type="HBoxContainer" parent="Banner"]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ChallengeIcon" type="TextureRect" parent="Banner/KickerRow"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KickerLabel" type="Label" parent="Banner/KickerRow"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.28, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+text = "CHALLENGE ROUND"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ChallengeName" type="RichTextLabel" parent="Banner"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(1, 0.88, 0.38, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 14
+theme_override_font_sizes/normal_font_size = 96
 bbcode_enabled = true
 text = "[wave amp=50 freq=2]The Challenge[/wave]"
 fit_content = true
+scroll_active = false
 autowrap_mode = 0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Description" type="Label" parent="Banner"]
+custom_minimum_size = Vector2(720, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.82, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 28
+text = "Challenge description"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SkipHint" type="Label" parent="Banner"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.55)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "Click to continue"
 horizontal_alignment = 1

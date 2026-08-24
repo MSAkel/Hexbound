@@ -5,7 +5,7 @@ extends Control
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CHOICE_CARD_SCALE := 1.45
-const CHOICE_CARD_BASE_SIZE := Vector2(198, 317)
+const CHOICE_CARD_BASE_SIZE := Vector2(214, 317)
 
 ## List of rune choices for the current turn
 var runes_pack: Array[TileCard] = []

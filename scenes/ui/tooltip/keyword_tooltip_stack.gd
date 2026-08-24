@@ -77,7 +77,7 @@ func _reposition(target_rect: Rect2) -> void:
 	if stack_size == Vector2.ZERO:
 		stack_size = size
 
-	# Prefer the right side of the card, then left, then above.
+	# Pin the stack to the card's top-right corner, then top-left if it would leave the screen.
 	var stack_pos := Vector2(target_rect.end.x + EDGE_OFFSET.x, target_rect.position.y)
 	if stack_pos.x + stack_size.x > viewport_size.x:
 		stack_pos.x = target_rect.position.x - stack_size.x - EDGE_OFFSET.x
