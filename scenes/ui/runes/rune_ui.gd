@@ -8,6 +8,9 @@ extends Control
 @onready var placement_smoke: GPUParticles2D = $PlacementSmoke
 @onready var hex_stroke: HexStroke = $HexStroke
 @onready var sigil: TextureRect = $Container/Identifiers/Sigil
+@onready var output_chip: PanelContainer = $Container/OutputChip
+@onready var output_chip_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipIcon
+@onready var output_chip_label: Label = $Container/OutputChip/OutputChipRow/OutputChipLabel
 
 var map: HexTileMap
 var tile: Hex
@@ -47,19 +50,46 @@ func setup(rune: TileCard) -> void:
 		await ready
 	
 	rune_button.texture_normal = rune.icon
-	_show_sigil(rune)
+	# Role lives on the bottom chip. The corner sigil would duplicate producer icons.
+	if sigil != null:
+		sigil.hide()
+	refresh_output_chip(rune)
 	# Show enhancement if it exists on loading a game
 	if rune.enhancement != null:
 		show_enhancement(rune.enhancement)
 
 
-func _show_sigil(rune: TileCard) -> void:
-	var sigil_texture: Texture2D = rune.get_sigil_texture()
-	if sigil_texture == null:
-		sigil.hide()
+# Refresh the output chip after bonuses, chance, or progress change.
+func refresh_output_chip(rune: TileCard) -> void:
+	if not is_node_ready() or rune == null:
 		return
-	sigil.texture = sigil_texture
-	sigil.show()
+	_show_output_chip(rune)
+
+
+func _show_output_chip(rune: TileCard) -> void:
+	if output_chip == null:
+		return
+	var chip: Dictionary = rune.get_board_chip(tile)
+	var mode: Variant = chip.get("mode", TileCard.BoardChipMode.HIDDEN)
+	if mode == TileCard.BoardChipMode.HIDDEN:
+		output_chip.hide()
+		return
+
+	output_chip.show()
+	# Dark fill only. White numbers stay readable on top.
+	output_chip.self_modulate = chip.get("panel_color", rune.get_chip_panel_color())
+	var chip_text := str(chip.get("text", ""))
+	if chip_text.is_empty():
+		output_chip_label.hide()
+	else:
+		output_chip_label.text = chip_text
+		output_chip_label.show()
+	var icon := chip.get("icon") as Texture2D
+	if icon == null:
+		output_chip_icon.hide()
+	else:
+		output_chip_icon.texture = icon
+		output_chip_icon.show()
 
 
 ## Called by Hex when an enhancement is attached to this tile.

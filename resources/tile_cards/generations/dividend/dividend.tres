@@ -6,9 +6,10 @@
 [resource]
 script = ExtResource("2_b7j7h")
 rarity = 2
-product = 3
+base_production_amount = 18
+product = 0
 id = "dividend"
-name = "Divident"
+name = "Dividend"
 icon = ExtResource("1_sdupe")
-description = "After 4 triggers: gain 300 Score, 20 Mult and 15 Gold."
+description = "Every 4 triggers: gain 18 Gold."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

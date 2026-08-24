@@ -24,6 +24,22 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_output_chip"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.95, 0.93, 0.86, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_placement_smoke"]
 blend_mode = 1
 
@@ -101,8 +117,10 @@ offset_top = 27.0
 offset_right = -19.0
 offset_bottom = 127.0
 grow_horizontal = 0
+mouse_filter = 2
 
 [node name="Sigil" type="TextureRect" parent="Container/Identifiers" unique_id=1620264380]
+visible = false
 custom_minimum_size = Vector2(85, 85)
 custom_maximum_size = Vector2(85, 85)
 layout_mode = 2
@@ -121,6 +139,42 @@ theme_override_colors/font_outline_color = Color(0.06, 0.05, 0.04, 0.95)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 24
 text = "+0"
+
+[node name="OutputChip" type="PanelContainer" parent="Container" unique_id=1294529278]
+z_index = 5
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -49.0
+offset_top = -88.0
+offset_right = 51.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_output_chip")
+
+[node name="OutputChipRow" type="HBoxContainer" parent="Container/OutputChip" unique_id=1299805366]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="OutputChipIcon" type="TextureRect" parent="Container/OutputChip/OutputChipRow" unique_id=1387776164]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OutputChipLabel" type="Label" parent="Container/OutputChip/OutputChipRow" unique_id=1092273790]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+text = "0"
 
 [node name="PlacementSmoke" type="GPUParticles2D" parent="." unique_id=2116065945]
 self_modulate = Color(0.86793804, 0.78399736, 0.33285496, 1)

@@ -18,3 +18,12 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		target._empower()
 		unempowered_runes.erase(target)
 		_create_floating_text(tile, "Empowered %s" % target.name)
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	var prod_runes: Array[TileCard] = _get_all_placed_tile_cards(hover_tile, TileCardType.PRODUCER)
+	var targets: Array[TileCard] = []
+	for prod_rune: TileCard in prod_runes:
+		if not prod_rune.is_empowered:
+			targets.append(prod_rune)
+	return _coords_for_placed_tile_cards(hover_tile, targets)

@@ -69,11 +69,27 @@ theme_override_fonts/font = SubResource("FontVariation_c0n6m")
 theme_override_font_sizes/font_size = 18
 text = "No Rune"
 
-[node name="RuneDescription" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1044626882]
+[node name="RuneSubtitle" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.38, 0.28, 1)
+theme_override_font_sizes/font_size = 14
+text = "Producer"
+
+[node name="RuneChipLine" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.28, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+text = "15"
+
+[node name="RuneDescription" type="RichTextLabel" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.23753911, 0.23753914, 0.23753911, 1)
-theme_override_font_sizes/font_size = 16
-text = "Description"
+theme_override_colors/default_color = Color(0.23753911, 0.23753914, 0.23753911, 1)
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
 autowrap_mode = 3
+text = "Description"

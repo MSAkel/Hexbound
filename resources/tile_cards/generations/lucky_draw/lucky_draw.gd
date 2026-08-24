@@ -23,3 +23,14 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		current_chance = BASE_CHANCE
 	else:
 		current_chance += BASE_CHANCE
+
+
+func get_board_chip(_tile: Hex = null) -> Dictionary:
+	var percent := int(round(current_chance * 100.0))
+	return _make_board_chip(
+		BoardChipMode.CHANCE,
+		"%d%%" % percent,
+		null,
+		get_chip_panel_color(),
+		"Chance for 500 Score or 20 Gold"
+	)

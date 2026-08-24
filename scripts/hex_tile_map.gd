@@ -27,8 +27,8 @@ const OVERLAY_TILE_SOURCE_ID := 0
 @export_range(1, 20, 1) var hex_size: int = 2
 # Extra pixels added to tile_size so adjacent hex visuals do not touch.
 # Use a smaller X gap if rows look too far apart compared to the diagonal edges.
-@export_range(0, 64, 1) var hex_tile_gap_x: int = 16
-@export_range(0, 64, 1) var hex_tile_gap_y: int = 16
+@export_range(0, 64, 1) var hex_tile_gap_x: int = 20
+@export_range(0, 64, 1) var hex_tile_gap_y: int = 20
 
 # Pointy-top hex art size. tile_size = this + the X/Y gaps for spacing on the grid.
 const HEX_TEXTURE_SIZE := Vector2i(221, 255)
@@ -79,6 +79,8 @@ var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
 var _tile_panel_timer: Timer
 # Empty tile whose segment is highlighted on the map (no tile panel).
 var _empty_tile_segment_hover_coords: Vector2i = Vector2i(-1, -1)
+# Occupied-tile inspect overlay from get_trigger_preview_coords.
+var _inspect_highlight_coords: Array[Vector2i] = []
 
 
 func _ready() -> void:
@@ -193,6 +195,7 @@ func _update_tile_panel_hover(map_coords: Vector2i) -> void:
 		return
 
 	_tile_panel_hover_coords = map_coords
+	_update_occupied_inspect_overlay(hex)
 	tile_panel.hide()
 	_tile_panel_timer.start()
 
@@ -202,6 +205,7 @@ func _hide_tile_panel_only() -> void:
 	_tile_panel_hover_coords = Vector2i(-1, -1)
 	_tile_panel_timer.stop()
 	tile_panel.hide()
+	_clear_occupied_inspect_overlay()
 
 
 func _hide_tile_panel_hover() -> void:
@@ -234,6 +238,36 @@ func _clear_empty_tile_segment_hover() -> void:
 	var segment_index := get_segment_index(_empty_tile_segment_hover_coords)
 	_empty_tile_segment_hover_coords = Vector2i(-1, -1)
 	clear_hovered_segment_highlight(segment_index)
+
+
+# Light tiles this placed card would affect. Skip the hovered cell, matching placement preview.
+func _update_occupied_inspect_overlay(hex: Hex) -> void:
+	_clear_occupied_inspect_overlay()
+	if hex == null or hex.active_tile_card == null:
+		return
+	if card_placement_handler != null and card_placement_handler.is_card_selected:
+		return
+
+	var origin := hex.coordinates
+	for coords: Vector2i in hex.active_tile_card.get_trigger_preview_coords(hex):
+		if not is_in_map(coords):
+			continue
+		if coords == origin:
+			continue
+		rune_highlight_overlay_layer.set_cell(
+			coords,
+			RUNE_HIGHLIGHT_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_inspect_highlight_coords.append(coords)
+
+
+func _clear_occupied_inspect_overlay() -> void:
+	for coords: Vector2i in _inspect_highlight_coords:
+		if _rune_highlight_still_needed(coords, false, false, true):
+			continue
+		rune_highlight_overlay_layer.set_cell(coords, -1)
+	_inspect_highlight_coords.clear()
 
 
 func _on_tile_panel_hover_timeout() -> void:
@@ -719,19 +753,26 @@ func _clear_flashed_segment_highlight() -> void:
 
 
 ## True while hover, placement preview, or a credit flash still owns this overlay cell.
-func _rune_highlight_still_needed(coords: Vector2i, from_hover: bool, from_flash: bool) -> bool:
+func _rune_highlight_still_needed(
+	coords: Vector2i,
+	from_hover: bool,
+	from_flash: bool,
+	from_inspect: bool = false
+) -> bool:
 	if card_placement_handler != null and card_placement_handler.is_highlighting_coord(coords):
 		return true
 	if not from_hover and coords in _hovered_segment_coords:
 		return true
 	if not from_flash and coords in _flashed_segment_coords:
 		return true
+	if not from_inspect and coords in _inspect_highlight_coords:
+		return true
 	return false
 
 
 ## True while a run-info segment row or credit flash is lighting this tile.
 func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
-	return coords in _hovered_segment_coords or coords in _flashed_segment_coords
+	return coords in _hovered_segment_coords or coords in _flashed_segment_coords or coords in _inspect_highlight_coords
 
 
 ## True when another fading-sector overlay still owns this cell.

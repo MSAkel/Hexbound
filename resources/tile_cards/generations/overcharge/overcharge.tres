@@ -5,12 +5,9 @@
 
 [resource]
 script = ExtResource("1_wm6wk")
-base_production_amount = 50
+base_production_amount = 60
 rarity = 1
-type = 0
 product = 1
-single_activation_per_turn = null
-placement_restriction = null
 id = "overcharge"
 name = "Overcharge"
 icon = ExtResource("1_0soeu")

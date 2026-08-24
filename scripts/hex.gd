@@ -161,6 +161,7 @@ func refresh_tile_card_visual_state() -> void:
 		target_modulate = _challenge_rune_modulate
 
 	rune_ui.apply_resting_modulate(target_modulate)
+	rune_ui.refresh_output_chip(active_tile_card)
 
 
 func set_tile_card_challenge_modulate(modulate: Color) -> void:
@@ -208,6 +209,7 @@ func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
 		return
 	
 	active_tile_card.activate_tile_card(self, activation_scale)
+	refresh_tile_card_visual_state()
 
 
 func start_empower_flash() -> void:

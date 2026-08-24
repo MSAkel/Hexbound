@@ -3,7 +3,9 @@ extends Control
 
 @onready var rune_icon: TextureRect = $PanelContainer/VBoxContainer/RunePanelContainer/RuneIconPanel/RuneIcon
 @onready var rune_name: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneName
-@onready var rune_description: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
+@onready var rune_subtitle: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
+@onready var rune_chip_line: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneChipLine
+@onready var rune_description: RichTextLabel = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
 
 # Gap between the hovered tile and the panel edge.
 const OFFSET := Vector2(12, 12)
@@ -39,18 +41,43 @@ func update_anchor(tile_rect: Rect2) -> void:
 
 func _set_rune_information() -> void:
 	if hex.active_tile_card != null:
-		rune_icon.texture = hex.active_tile_card.icon
-		rune_name.text = hex.active_tile_card.name
-		var description_lines: PackedStringArray = [hex.active_tile_card.description]
-		if hex.active_tile_card.enhancement != null:
-			description_lines.append(
-				"Enhancement: %s" % [hex.active_tile_card.enhancement.short_description]
+		var card := hex.active_tile_card
+		rune_icon.texture = card.icon
+		rune_name.text = card.name
+		rune_subtitle.text = card.get_inspect_subtitle()
+		rune_subtitle.visible = not rune_subtitle.text.is_empty()
+		_set_chip_line(card)
+		var description_bbcode := CardKeywordGlossary.to_bbcode(card.description)
+		if card.enhancement != null:
+			description_bbcode += "\n\nEnhancement: %s" % CardKeywordGlossary.to_bbcode(
+				card.enhancement.short_description
 			)
-		rune_description.text = "\n\n".join(description_lines)
+		rune_description.text = description_bbcode
 	else:
 		rune_icon.texture = load("res://assets/tilesets/tile_dashed.png")
 		rune_name.text = "No Rune"
+		rune_subtitle.text = ""
+		rune_subtitle.hide()
+		rune_chip_line.hide()
 		rune_description.text = ""
+
+
+func _set_chip_line(card: TileCard) -> void:
+	var chip: Dictionary = card.get_board_chip(hex)
+	var mode: TileCard.BoardChipMode = chip.get("mode", TileCard.BoardChipMode.HIDDEN)
+	if mode == TileCard.BoardChipMode.HIDDEN:
+		rune_chip_line.hide()
+		return
+	var detail: String = str(chip.get("detail", ""))
+	var chip_text := str(chip.get("text", ""))
+	if chip_text.is_empty() and detail.is_empty():
+		rune_chip_line.hide()
+		return
+	if detail.is_empty():
+		rune_chip_line.text = chip_text
+	else:
+		rune_chip_line.text = "%s  ·  %s" % [chip_text, detail]
+	rune_chip_line.show()
 
 # Position next to the tile, flipping sides when near viewport edges (same idea as Tooltip).
 func _update_position() -> void:

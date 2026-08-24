@@ -19,3 +19,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if randf() < _destroy_chance_this_turn:
 		_destroy_placed_tile_card(tile, self)
 		AudioManager.play_sfx(UISounds.RUNE_BREAK)
+
+
+func get_board_chip(_tile: Hex = null) -> Dictionary:
+	return _amount_board_chip(60, ICON_SCORE)

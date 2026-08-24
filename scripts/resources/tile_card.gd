@@ -44,6 +44,14 @@ enum SigilKind {
 	GROWTH,
 }
 
+# Honest hex chip. HIDDEN when a number would misrepresent this card.
+enum BoardChipMode {
+	HIDDEN,
+	AMOUNT,
+	CHANCE,
+	PROGRESS,
+}
+
 const EMPOWER_OUTPUT_SCALE := 2.0
 const ICON_SCORE := preload("res://assets/icons/resources/score.png")
 const ICON_GOLD := preload("res://assets/icons/resources/gold.png")
@@ -57,6 +65,18 @@ const SIGIL_TEXTURES := {
 	SigilKind.SEGMENT_RELAY: preload("res://assets/icons/sigils/segment_relay_sigil.png"),
 	SigilKind.GROWTH: preload("res://assets/icons/sigils/growth_sigil.png"),
 }
+
+# Brighter than glossary text colors so the rim reads on dark hex art.
+const ROLE_COLOR_SCORE := Color(0.18, 0.78, 0.95)
+const ROLE_COLOR_MULT := Color(0.86, 0.38, 0.82)
+const ROLE_COLOR_GOLD := Color(0.95, 0.74, 0.2)
+const ROLE_COLOR_EMPOWER := Color(1.0, 0.58, 0.16)
+const ROLE_COLOR_RETRIGGER := Color(0.42, 0.86, 0.58)
+const ROLE_COLOR_RELAY := Color(0.52, 0.7, 1.0)
+const ROLE_COLOR_GROWTH := Color(0.38, 0.8, 0.4)
+const ROLE_COLOR_SUPPORT := Color(0.74, 0.58, 0.92)
+const ROLE_COLOR_MODIFIER := Color(0.58, 0.5, 0.44)
+const ROLE_COLOR_HYBRID := Color(0.86, 0.64, 0.38)
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -109,6 +129,151 @@ func get_sigil_texture() -> Texture2D:
 	if kind == SigilKind.NONE:
 		return null
 	return SIGIL_TEXTURES.get(kind)
+
+
+func get_role_color() -> Color:
+	if type == TileCardType.MODIFIER:
+		return ROLE_COLOR_MODIFIER
+	if type == TileCardType.SUPPORT:
+		match get_sigil_kind():
+			SigilKind.EMPOWER:
+				return ROLE_COLOR_EMPOWER
+			SigilKind.RETRIGGER:
+				return ROLE_COLOR_RETRIGGER
+			SigilKind.SEGMENT_RELAY:
+				return ROLE_COLOR_RELAY
+			SigilKind.GROWTH:
+				return ROLE_COLOR_GROWTH
+			_:
+				return ROLE_COLOR_SUPPORT
+	match product:
+		Product.SCORE:
+			return ROLE_COLOR_SCORE
+		Product.MULTIPLIER:
+			return ROLE_COLOR_MULT
+		Product.GOLD:
+			return ROLE_COLOR_GOLD
+		Product.HYBRID:
+			return ROLE_COLOR_HYBRID
+		_:
+			return ROLE_COLOR_SUPPORT
+
+
+# Dark fills so white chip numbers stay readable. Brighter role colors live on the icon art.
+func get_chip_panel_color() -> Color:
+	if type == TileCardType.MODIFIER:
+		return Color(0.28, 0.22, 0.18)
+	if type == TileCardType.SUPPORT:
+		match get_sigil_kind():
+			SigilKind.EMPOWER:
+				return Color(0.52, 0.26, 0.06)
+			SigilKind.RETRIGGER:
+				return Color(0.08, 0.36, 0.22)
+			SigilKind.SEGMENT_RELAY:
+				return Color(0.12, 0.26, 0.48)
+			SigilKind.GROWTH:
+				return Color(0.12, 0.34, 0.16)
+			_:
+				return Color(0.32, 0.2, 0.42)
+	match product:
+		Product.SCORE:
+			return Color(0.22, 0.16, 0.28)
+		Product.MULTIPLIER:
+			return Color(0.22, 0.16, 0.28)
+		Product.GOLD:
+			return Color(0.22, 0.16, 0.28)
+		Product.HYBRID:
+			return Color(0.22, 0.16, 0.28)
+		_:
+			return Color(0.22, 0.16, 0.28)
+
+
+func get_product_icon() -> Texture2D:
+	match product:
+		Product.SCORE:
+			return ICON_SCORE
+		Product.GOLD:
+			return ICON_GOLD
+		Product.MULTIPLIER:
+			return ICON_MULT
+		_:
+			return null
+
+
+func get_inspect_subtitle() -> String:
+	var type_label := get_card_kind_label().capitalize()
+	var role_label := _get_role_label()
+	if type_label.is_empty():
+		return role_label
+	if role_label.is_empty() or role_label.to_lower() == type_label.to_lower():
+		return type_label
+	return "%s  ·  %s" % [type_label, role_label]
+
+
+func _get_role_label() -> String:
+	match get_sigil_kind():
+		SigilKind.POWER:
+			return "Power"
+		SigilKind.MULT:
+			return "Mult"
+		SigilKind.GOLD:
+			return "Gold"
+		SigilKind.EMPOWER:
+			return "Empower"
+		SigilKind.RETRIGGER:
+			return "Retrigger"
+		SigilKind.SEGMENT_RELAY:
+			return "Segment Relay"
+		SigilKind.GROWTH:
+			return "Growth"
+		_:
+			if product == Product.HYBRID:
+				return "Hybrid"
+			return ""
+
+
+# Default chip: producers show amount. Supports show their sigil in the same slot.
+func get_board_chip(_tile: Hex = null) -> Dictionary:
+	if type != TileCardType.PRODUCER:
+		return _sigil_board_chip()
+	if product == Product.HYBRID or product == Product.NONE:
+		return _hidden_board_chip()
+	var amount := _get_production_amount()
+	if amount <= 0:
+		return _hidden_board_chip()
+	return _amount_board_chip(amount)
+
+
+func _sigil_board_chip() -> Dictionary:
+	var sigil_texture := get_sigil_texture()
+	if sigil_texture == null:
+		return _hidden_board_chip()
+	return _make_board_chip(BoardChipMode.AMOUNT, "", sigil_texture, get_chip_panel_color())
+
+
+func _hidden_board_chip() -> Dictionary:
+	return _make_board_chip(BoardChipMode.HIDDEN, "", null, Color.WHITE)
+
+
+func _amount_board_chip(amount: int, icon: Texture2D = null) -> Dictionary:
+	var chip_icon: Texture2D = icon if icon != null else get_product_icon()
+	return _make_board_chip(BoardChipMode.AMOUNT, str(amount), chip_icon, get_chip_panel_color())
+
+
+func _make_board_chip(
+	mode: BoardChipMode,
+	text: String,
+	icon: Texture2D,
+	panel_color: Color,
+	detail: String = ""
+) -> Dictionary:
+	return {
+		"mode": mode,
+		"text": text,
+		"icon": icon,
+		"panel_color": panel_color,
+		"detail": detail,
+	}
 
 
 func get_card_kind_label() -> String:
