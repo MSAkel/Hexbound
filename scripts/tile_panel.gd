@@ -1,8 +1,6 @@
 class_name TilePanel
 extends Control
 
-@onready var active_tile_modifier: Label = $PanelContainer/VBoxContainer/TileDetailsContainer/ActiveTileModifier
-
 @onready var rune_icon: TextureRect = $PanelContainer/VBoxContainer/RunePanelContainer/RuneIconPanel/RuneIcon
 @onready var rune_name: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneName
 @onready var rune_description: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
@@ -27,7 +25,6 @@ func _ready() -> void:
 func set_hex(h: Hex, tile_rect: Rect2 = Rect2()) -> void:
 	hex = h
 	target_rect = tile_rect
-	_set_tile_information()
 	_set_rune_information()
 	show()
 	# Size may change with content; position after the layout pass.
@@ -38,31 +35,6 @@ func set_hex(h: Hex, tile_rect: Rect2 = Rect2()) -> void:
 func update_anchor(tile_rect: Rect2) -> void:
 	target_rect = tile_rect
 	_update_position()
-
-
-func _set_tile_information() -> void:
-	var lines: PackedStringArray = []
-
-	if hex.segment_passive_modifier != null:
-		lines.append(
-			"%s\n%s" % [
-				hex.segment_passive_modifier.name,
-				hex.segment_passive_modifier.description,
-			]
-		)
-
-	if hex.tile_modifier != null:
-		lines.append(
-			"%s\n%s" % [
-				hex.tile_modifier.name,
-				hex.tile_modifier.description,
-			]
-		)
-
-	if lines.is_empty():
-		active_tile_modifier.text = "None"
-	else:
-		active_tile_modifier.text = "\n\n".join(lines)
 
 
 func _set_rune_information() -> void:

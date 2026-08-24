@@ -3,10 +3,11 @@ extends Control
 
 @onready var rune_button: TextureButton = $Container/RuneButton
 @onready var _anim_target: Control = $Container
-@onready var enhancement_value_container: PanelContainer = $Container/EnhancementValueContainer
-@onready var enhancement_value: Label = $Container/EnhancementValueContainer/EnhancementValue
+@onready var enhancement_value_container: PanelContainer = $Container/Identifiers/EnhancementValueContainer
+@onready var enhancement_value: Label = $Container/Identifiers/EnhancementValueContainer/EnhancementValue
 @onready var placement_smoke: GPUParticles2D = $PlacementSmoke
 @onready var hex_stroke: HexStroke = $HexStroke
+@onready var sigil: TextureRect = $Container/Identifiers/Sigil
 
 var map: HexTileMap
 var tile: Hex
@@ -46,9 +47,19 @@ func setup(rune: TileCard) -> void:
 		await ready
 	
 	rune_button.texture_normal = rune.icon
+	_show_sigil(rune)
 	# Show enhancement if it exists on loading a game
 	if rune.enhancement != null:
 		show_enhancement(rune.enhancement)
+
+
+func _show_sigil(rune: TileCard) -> void:
+	var sigil_texture: Texture2D = rune.get_sigil_texture()
+	if sigil_texture == null:
+		sigil.hide()
+		return
+	sigil.texture = sigil_texture
+	sigil.show()
 
 
 ## Called by Hex when an enhancement is attached to this tile.

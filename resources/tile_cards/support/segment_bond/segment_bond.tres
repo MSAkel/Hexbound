@@ -7,6 +7,7 @@
 script = ExtResource("2_2qyvr")
 base_production_amount = 10
 type = 1
+sigil_kind = 7
 id = "segment_bond"
 name = "Segment Bond"
 icon = ExtResource("1_k0ops")

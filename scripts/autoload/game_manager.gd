@@ -108,7 +108,7 @@ var turn_stamp: int = 0
 
 #region Character selection
 
-## Chosen on the character selection screen, drives layout rules, starting hand, and passives.
+## Chosen on the character selection screen, drives layout rules and starting hand.
 var selected_character: CharacterDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
 

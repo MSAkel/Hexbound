@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cr6tgdvsqspjf"
-path="res://.godot/imported/double_production_passive_preview.png-8df7d36ad5863069d841fdd69416ca7a.ctex"
+uid="uid://cayxg7x7mluqq"
+path="res://.godot/imported/empower_hex_icon.png-95b1ca971fa92a7bfb628843a0587d6c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/segment_icons/double_production_passive_preview.png"
-dest_files=["res://.godot/imported/double_production_passive_preview.png-8df7d36ad5863069d841fdd69416ca7a.ctex"]
+source_file="res://assets/icons/sigils/empower_hex_icon.png"
+dest_files=["res://.godot/imported/empower_hex_icon.png-95b1ca971fa92a7bfb628843a0587d6c.ctex"]
 
 [params]
 

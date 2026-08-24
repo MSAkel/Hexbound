@@ -8,6 +8,7 @@ script = ExtResource("1_p73ke")
 base_production_amount = null
 rarity = 1
 type = 1
+sigil_kind = 4
 id = "final_call"
 name = "Final Call"
 icon = ExtResource("1_1w7xl")

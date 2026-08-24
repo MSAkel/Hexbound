@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhqi4kh8qyy1b"
-path="res://.godot/imported/epic_center.png-cdebcf5a16efac53528d02becb39a4b6.ctex"
+uid="uid://saywmnnvcfvg"
+path="res://.godot/imported/power_sigil.png-ae4bd88daa0455771af7a6d7d326cf0d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/segment_passives/epic_center.png"
-dest_files=["res://.godot/imported/epic_center.png-cdebcf5a16efac53528d02becb39a4b6.ctex"]
+source_file="res://assets/icons/sigils/power_sigil.png"
+dest_files=["res://.godot/imported/power_sigil.png-ae4bd88daa0455771af7a6d7d326cf0d.ctex"]
 
 [params]
 

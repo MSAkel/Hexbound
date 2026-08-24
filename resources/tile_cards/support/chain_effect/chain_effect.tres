@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_sprk3")
 type = 1
+sigil_kind = 5
 id = "chain_effect"
 name = "Chain effect"
 icon = ExtResource("1_sprk3")

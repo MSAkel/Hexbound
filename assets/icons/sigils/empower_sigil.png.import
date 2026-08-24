@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://saywmnnvcfvg"
-path="res://.godot/imported/power_hex_icon.png-971828bc3deab77df3bcdb7d084d22ce.ctex"
+uid="uid://p4noharesr3u"
+path="res://.godot/imported/empower_sigil.png-621ad4925fd4d3c3d95f9b0fd8766210.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/resources/power_hex_icon.png"
-dest_files=["res://.godot/imported/power_hex_icon.png-971828bc3deab77df3bcdb7d084d22ce.ctex"]
+source_file="res://assets/icons/sigils/empower_sigil.png"
+dest_files=["res://.godot/imported/empower_sigil.png-621ad4925fd4d3c3d95f9b0fd8766210.ctex"]
 
 [params]
 

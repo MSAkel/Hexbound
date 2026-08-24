@@ -7,6 +7,7 @@
 script = ExtResource("2_ead5u")
 rarity = 1
 type = 1
+sigil_kind = 4
 id = "endless_power"
 name = "Endless Power"
 icon = ExtResource("1_sqldl")

@@ -4,8 +4,8 @@
 [ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="2_amxqk"]
 [ext_resource type="Texture2D" uid="uid://bsyc5shwtko4o" path="res://assets/icons/others/navigation_arrow.png" id="3_csip5"]
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="3_jevqn"]
-[ext_resource type="Texture2D" uid="uid://saywmnnvcfvg" path="res://assets/icons/resources/power_hex_icon.png" id="4_n62da"]
-[ext_resource type="Texture2D" uid="uid://cvbbkxidyytat" path="res://assets/icons/resources/mult_hex_icon.png" id="5_csip5"]
+[ext_resource type="Texture2D" uid="uid://saywmnnvcfvg" path="res://assets/icons/sigils/power_sigil.png" id="4_n62da"]
+[ext_resource type="Texture2D" uid="uid://cvbbkxidyytat" path="res://assets/icons/sigils/mult_sigil.png" id="5_csip5"]
 [ext_resource type="Texture2D" uid="uid://dnujadhya634n" path="res://assets/icons/resources/score.png" id="6_ewesi"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="7_1wcrm"]
 

@@ -46,7 +46,7 @@ const COLOR_EMPOWER := Color(0.78, 0.34, 0.0)
 static func _static_init() -> void:
 	# Longer tokens are matched before shorter ones.
 	# Leave tooltip empty to color the word without spawning a hover panel.
-	register("score", ["score"], "Score", COLOR_SCORE, "Progress toward the goal.")
+	register("score", ["score"], "Score", COLOR_SCORE, "The main resource used to gain score.\nPOWER x MULT = SCORE")
 	register("mult", ["mult"], "Mult", COLOR_MULT, "Multiplies Score.")
 	register("gold", ["gold"], "Gold", COLOR_GOLD, "")
 	register(

@@ -1,7 +1,7 @@
 class_name CharacterDefinition
 extends Resource
 
-# Data for one playable character: map layout rules, segment grouping, and passives.
+# Data for one playable character: map layout rules and segment grouping.
 
 # Rule that sorts tiles when runes activate on the map.
 enum TriggerOrderStrategy {
@@ -51,19 +51,3 @@ enum SegmentKeyStrategy {
 
 # Number of segments in the map for this character.
 @export var segments_count: int = 0
-
-# If true, stamp the segment passive on the center hex instead of the usual first tile(s).
-@export var passive_places_on_center_tile: bool = false
-# Where the reserved map passive is placed: first row, first circle, or center tile.
-@export var passive_modifier_type: SegmentPassiveModifier.Type = SegmentPassiveModifier.Type.FIRST_ROW
-# Display name of the map/segment passive (e.g. "Double Production").
-@export var passive_name: String = ""
-# Rules text for the map/segment passive.
-@export_multiline var passive_description: String = ""
-# In-game icon for the map/segment passive.
-@export var passive_icon: Texture2D
-# Larger preview art for the passive on the character-select details panel.
-@export var passive_icon_preview: Texture2D
-
-# Player-facing character ability text shown on the selection screen.
-@export_multiline var character_passive_description: String = "Passive ability: TBD"

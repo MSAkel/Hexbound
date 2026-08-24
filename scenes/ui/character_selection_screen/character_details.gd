@@ -18,10 +18,6 @@ var _selected_character: CharacterDefinition = null
 @onready var trigger_order_description: Label = $VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/TriggerOrderDescription
 @onready var trigger_order_image: TextureRect = $VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/TriggerOrderImage
 
-@onready var passive_icon: TextureRect = $VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer/PassiveIcon
-@onready var passive_name: Label = $VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer/PassiveInfoContainer/PassiveName
-@onready var passive_description: Label = $VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer/PassiveInfoContainer/PassiveDescription
-
 @onready var segment_count_label: Label = $VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentsContainer/VBoxContainer/ItemTitle
 
 
@@ -32,9 +28,6 @@ func display_selection(character: CharacterDefinition) -> void:
 	trigger_order_label.text = character.trigger_order_display_name
 	trigger_order_description.text = character.trigger_order_description
 	trigger_order_image.texture = character.trigger_order_preview
-	passive_name.text = character.passive_name
-	passive_description.text = character.passive_description
-	passive_icon.texture = character.passive_icon_preview
 	# Numbered-grid characters define segments explicitly; others keep the scene placeholder.
 	if not character.segment_starts.is_empty():
 		segment_count_label.text = "Segments: %d" % character.segment_starts.size()

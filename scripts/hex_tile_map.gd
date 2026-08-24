@@ -70,11 +70,15 @@ const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
 # How long a destination-segment flash stays visible during card activation.
 const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 
-# Delay before showing the tile info panel after hovering a tile.
+# Delay before showing the tile info panel after hovering a tile with a placed card.
 const TILE_PANEL_HOVER_DELAY := 0.4
+# Soften the light-blue segment overlay while previewing an empty tile's segment.
+const EMPTY_TILE_SEGMENT_HOVER_MODULATE := Color(1.0, 1.0, 1.0, 0.45)
 # Tile currently being hovered for the info panel (independent of selection overlay).
 var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
 var _tile_panel_timer: Timer
+# Empty tile whose segment is highlighted on the map (no tile panel).
+var _empty_tile_segment_hover_coords: Vector2i = Vector2i(-1, -1)
 
 
 func _ready() -> void:
@@ -165,11 +169,22 @@ func _mouse_map_coords() -> Vector2i:
 	return base_layer.local_to_map(to_local(get_global_mouse_position()))
 
 
-# Start / refresh the hover-delay panel for the tile under the cursor.
+# Start / refresh hover feedback for the tile under the cursor.
+# Empty tiles highlight their segment. Occupied tiles show the tile info panel.
 func _update_tile_panel_hover(map_coords: Vector2i) -> void:
 	if not is_in_map(map_coords) or not is_tile_interactable(map_coords):
 		_hide_tile_panel_hover()
 		return
+
+	var hex: Hex = map_data[map_coords]
+
+	# Empty tiles have nothing for the panel. Preview the rest of the segment instead.
+	if hex.active_tile_card == null:
+		_hide_tile_panel_only()
+		_update_empty_tile_segment_hover(map_coords)
+		return
+
+	_clear_empty_tile_segment_hover()
 
 	if map_coords == _tile_panel_hover_coords:
 		# Keep the panel glued to the tile while the camera zooms or pans.
@@ -182,10 +197,43 @@ func _update_tile_panel_hover(map_coords: Vector2i) -> void:
 	_tile_panel_timer.start()
 
 
-func _hide_tile_panel_hover() -> void:
+# Hide the panel and stop its timer without clearing empty-tile segment preview.
+func _hide_tile_panel_only() -> void:
 	_tile_panel_hover_coords = Vector2i(-1, -1)
 	_tile_panel_timer.stop()
 	tile_panel.hide()
+
+
+func _hide_tile_panel_hover() -> void:
+	_hide_tile_panel_only()
+	_clear_empty_tile_segment_hover()
+
+
+# Light-blue overlay on every other tile in this empty tile's segment.
+func _update_empty_tile_segment_hover(map_coords: Vector2i) -> void:
+	var segment_index := get_segment_index(map_coords)
+	# Re-apply if the coords match but another UI cleared the overlay meanwhile.
+	if (
+		map_coords == _empty_tile_segment_hover_coords
+		and _hovered_segment_index == segment_index
+	):
+		return
+
+	_empty_tile_segment_hover_coords = map_coords
+	highlight_hovered_segment(
+		segment_index,
+		map_coords,
+		EMPTY_TILE_SEGMENT_HOVER_MODULATE
+	)
+
+
+func _clear_empty_tile_segment_hover() -> void:
+	if _empty_tile_segment_hover_coords == Vector2i(-1, -1):
+		return
+
+	var segment_index := get_segment_index(_empty_tile_segment_hover_coords)
+	_empty_tile_segment_hover_coords = Vector2i(-1, -1)
+	clear_hovered_segment_highlight(segment_index)
 
 
 func _on_tile_panel_hover_timeout() -> void:
@@ -193,10 +241,11 @@ func _on_tile_panel_hover_timeout() -> void:
 		return
 	if not map_data.has(_tile_panel_hover_coords):
 		return
-	tile_panel.set_hex(
-		map_data[_tile_panel_hover_coords],
-		_get_tile_screen_rect(_tile_panel_hover_coords)
-	)
+	var hex: Hex = map_data[_tile_panel_hover_coords]
+	# Panel is only for tiles with a placed card.
+	if hex.active_tile_card == null:
+		return
+	tile_panel.set_hex(hex, _get_tile_screen_rect(_tile_panel_hover_coords))
 
 
 func _on_card_drag_started_hide_tile_panel(_card: CardUI) -> void:
@@ -313,7 +362,7 @@ func _place_hex_tile(offset: Vector2i) -> void:
 	base_layer.set_cell(offset, 0, BASE_TILE_ATLAS_COORDS)
 
 
-## Builds the hex map from the center tile outward and assigns segment passives.
+## Builds the hex map from the center tile outward.
 func generate_terrain() -> void:
 	map_data.clear()
 	base_layer.clear()
@@ -324,6 +373,8 @@ func generate_terrain() -> void:
 	_disabled_tile_coords.clear()
 	_hovered_segment_coords.clear()
 	_hovered_segment_index = -1
+	_empty_tile_segment_hover_coords = Vector2i(-1, -1)
+	rune_highlight_overlay_layer.modulate = Color.WHITE
 
 	var hex_center := Vector2i(hex_size, hex_size)
 	_place_hex_tile(hex_center)
@@ -342,7 +393,6 @@ func generate_terrain() -> void:
 		frontier = next_frontier
 
 	_layout.reset(hex_center)
-	_assign_segment_passive_modifiers()
 	_layout.reset_turn_results()
 	# Disabled tiles are restored from the save file when continuing a run.
 	if not RunSaveManager.should_restore_run():
@@ -350,7 +400,7 @@ func generate_terrain() -> void:
 	trigger_order_overlay.rebuild()
 
 
-# Randomly disable tiles for difficulty level 5, excluding segment-passive tiles.
+# Randomly disable tiles for difficulty level 5.
 func _apply_difficulty_disabled_tiles() -> void:
 	var disable_count := Difficulty.get_disabled_tile_count(GameManager.selected_difficulty)
 	if disable_count <= 0:
@@ -358,9 +408,6 @@ func _apply_difficulty_disabled_tiles() -> void:
 
 	var candidates: Array[Vector2i] = []
 	for coords: Vector2i in map_data:
-		var hex: Hex = map_data[coords]
-		if hex.is_reserved_for_segment_passive():
-			continue
 		candidates.append(coords)
 
 	candidates.shuffle()
@@ -376,20 +423,6 @@ func _apply_difficulty_disabled_tiles() -> void:
 			OVERLAY_TILE_ATLAS_COORDS
 		)
 		_disabled_tile_coords.append(coords)
-
-
-# Stamp each character's segment passive onto reserved map tiles at run start.
-func _assign_segment_passive_modifiers() -> void:
-	var character := GameManager.selected_character
-	var modifier := SegmentPassiveModifier.create_for_character(character)
-	if character != null and character.passive_places_on_center_tile:
-		map_data[_layout.get_hex_center()].set_segment_passive_modifier(modifier)
-		return
-
-	for segment: Array in _layout.build_segments():
-		if segment.is_empty():
-			continue
-		map_data[segment[0]].set_segment_passive_modifier(modifier)
 
 
 func _on_map_display_layout_changed(layout: String) -> void:
@@ -597,9 +630,23 @@ func clear_challenge_segment_highlight() -> void:
 	_challenge_highlighted_coords.clear()
 
 
-## Overlays every tile in a segment while its run-info row is hovered.
-func highlight_hovered_segment(segment_index: int) -> void:
-	if _hovered_segment_index == segment_index:
+## Overlays tiles in a segment while its run-info row or an empty map tile is hovered.
+## exclude_coords skips the hovered empty tile so the cream outline stays the focus.
+func highlight_hovered_segment(
+	segment_index: int,
+	exclude_coords: Vector2i = Vector2i(-1, -1),
+	overlay_modulate: Color = Color.WHITE
+) -> void:
+	# Full-segment UI-row hover replaces any empty-tile segment preview.
+	if exclude_coords == Vector2i(-1, -1) and overlay_modulate == Color.WHITE:
+		_empty_tile_segment_hover_coords = Vector2i(-1, -1)
+
+	# Skip only when an unchanged full-segment UI-row hover is requested again.
+	if (
+		_hovered_segment_index == segment_index
+		and exclude_coords == Vector2i(-1, -1)
+		and overlay_modulate == Color.WHITE
+	):
 		return
 
 	clear_hovered_segment_highlight()
@@ -607,8 +654,11 @@ func highlight_hovered_segment(segment_index: int) -> void:
 		return
 
 	_hovered_segment_index = segment_index
+	rune_highlight_overlay_layer.modulate = overlay_modulate
 	for hex: Hex in get_hexes_in_segment(segment_index):
 		var coords := hex.coordinates
+		if coords == exclude_coords:
+			continue
 		rune_highlight_overlay_layer.set_cell(
 			coords,
 			RUNE_HIGHLIGHT_SOURCE_ID,
@@ -629,6 +679,9 @@ func clear_hovered_segment_highlight(segment_index: int = -1) -> void:
 		rune_highlight_overlay_layer.set_cell(coords, -1)
 	_hovered_segment_coords.clear()
 	_hovered_segment_index = -1
+	# Restore full opacity unless placement or another owner still needs a custom modulate.
+	if card_placement_handler == null or not card_placement_handler.is_card_selected:
+		rune_highlight_overlay_layer.modulate = Color.WHITE
 
 
 ## Briefly lights a segment so the player can see where forwarded score or mult landed.
@@ -907,20 +960,13 @@ func _activate_tile_card_on_tile(tile: Hex, activation_scale: float = 1.0, from_
 	if not from_trigger and ChallengeManager.should_skip_primary_producer_activation(tile.active_tile_card):
 		return
 
-	activation_scale *= SegmentPassive.get_activation_scale(tile)
 	activation_scale *= ChallengeManager.get_producer_output_multiplier(tile)
-	var activation_count: int = SegmentPassive.get_activation_count(tile)
 
-	for _activation_index in activation_count:
-		if tile.active_tile_card == null:
-			return
+	if tile.active_tile_card.is_active:
+		tile.play_tile_card_activation_animation()
+		await _wait_for_activation_animation()
 
-		if tile.active_tile_card.is_active:
-			tile.play_tile_card_activation_animation()
-			await _wait_for_activation_animation()
-
-		tile.apply_tile_card_activation(activation_scale)
-		SegmentPassive.apply_post_activation_effects(tile)
+	tile.apply_tile_card_activation(activation_scale)
 
 
 func _wait_for_activation_animation() -> void:

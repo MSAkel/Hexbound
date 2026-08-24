@@ -43,7 +43,7 @@ func _on_next_selection() -> void:
 
 
 func _update_display() -> void:
-	# Name, passives, trigger order, and difficulty are shown inside CharacterDetails.
+	# Name, trigger order, and difficulty are shown inside CharacterDetails.
 	character_details.display_selection(get_selected_character())
 
 func _on_back_button_pressed() -> void:

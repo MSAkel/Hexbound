@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bgj3xo0w2i6gx"
-path="res://.godot/imported/first_in_segment.png-ff685d3600d590bf6005a7260822debf.ctex"
+uid="uid://cfh4rcbjp4f4h"
+path="res://.godot/imported/retrigger_sigil.png-35583da92daa0c3be3be783d3e58d67f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/segment_passives/first_in_segment.png"
-dest_files=["res://.godot/imported/first_in_segment.png-ff685d3600d590bf6005a7260822debf.ctex"]
+source_file="res://assets/icons/sigils/retrigger_sigil.png"
+dest_files=["res://.godot/imported/retrigger_sigil.png-35583da92daa0c3be3be783d3e58d67f.ctex"]
 
 [params]
 

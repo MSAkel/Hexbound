@@ -7,6 +7,7 @@
 script = ExtResource("1_lkuhm")
 rarity = 2
 type = 1
+sigil_kind = 5
 placement_restriction = 2
 id = "initial_encore"
 name = "Initial Encore"

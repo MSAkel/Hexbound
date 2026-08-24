@@ -2,9 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="1_m4y4a"]
 [ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://cr6tgdvsqspjf" path="res://assets/map/segment_icons/double_production_passive_preview.png" id="2_m4y4a"]
 [ext_resource type="Texture2D" uid="uid://cpkbpjt0rbyto" path="res://assets/map/trigger_order/the_surveyor_map.png" id="2_trigger_preview"]
-[ext_resource type="Texture2D" uid="uid://bve5aohm2c03v" path="res://assets/map/segment_passives/double_production_passive.png" id="3_m4y4a"]
 
 [resource]
 script = ExtResource("1_script")
@@ -15,8 +13,3 @@ trigger_order_display_name = "Top-left → bottom-right"
 trigger_order_description = "Cards activate from top-left to bottom-right across the map."
 trigger_order_preview = ExtResource("2_trigger_preview")
 segments_count = 7
-passive_name = "Double Production"
-passive_description = "Production cards on the first tile of a segment have double production"
-passive_icon = ExtResource("2_m4y4a")
-passive_icon_preview = ExtResource("3_m4y4a")
-character_passive_description = "Production cards on the first tile of a segment have double production"

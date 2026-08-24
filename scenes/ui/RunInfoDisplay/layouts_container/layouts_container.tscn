@@ -3,12 +3,9 @@
 [ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="1_nasv4"]
 [ext_resource type="Script" uid="uid://cqkacg882sfxx" path="res://scenes/ui/RunInfoDisplay/layouts_container/layouts_container.gd" id="2_nasv4"]
 [ext_resource type="Texture2D" uid="uid://gl0l413jbs7v" path="res://assets/gui/map_layouts/base_layout_off.png" id="3_c5roj"]
-[ext_resource type="Texture2D" uid="uid://fv5bnxukxnjv" path="res://assets/gui/map_layouts/tile_passives_layout.png" id="4_c5roj"]
 [ext_resource type="Texture2D" uid="uid://cgypbaahjtjcf" path="res://assets/map/segment_icons/tile_normal.png" id="4_ys28h"]
 [ext_resource type="Texture2D" uid="uid://nu4xy6fydlrs" path="res://assets/gui/map_layouts/trigger_order_segments_layout.png" id="5_oaavf"]
 [ext_resource type="Texture2D" uid="uid://b70xl3asjqxeo" path="res://assets/gui/map_layouts/base_layout_hover.png" id="5_sa5tt"]
-[ext_resource type="Texture2D" uid="uid://drm6fqnykkbqa" path="res://assets/gui/map_layouts/tile_passives_layout_off.png" id="6_c5roj"]
-[ext_resource type="Texture2D" uid="uid://deinrl6nymo0u" path="res://assets/gui/map_layouts/tile_passives_layout_hover.png" id="8_oaavf"]
 [ext_resource type="Texture2D" uid="uid://csqp07edvubsb" path="res://assets/gui/map_layouts/trigger_order_segments_layout_off.png" id="9_ys28h"]
 [ext_resource type="Texture2D" uid="uid://d2uhlo0l2sxk3" path="res://assets/gui/map_layouts/trigger_order_segments_layout_hover.png" id="11_o2bdw"]
 
@@ -47,16 +44,6 @@ texture_hover = ExtResource("5_sa5tt")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="TilePassivesLayout" type="TextureButton" parent="HBoxContainer" unique_id=24703873]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-toggle_mode = true
-texture_normal = ExtResource("6_c5roj")
-texture_pressed = ExtResource("4_c5roj")
-texture_hover = ExtResource("8_oaavf")
-ignore_texture_size = true
-stretch_mode = 0
-
 [node name="OrderSegmentsLayout" type="TextureButton" parent="HBoxContainer" unique_id=1022956191]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
@@ -70,9 +57,6 @@ stretch_mode = 0
 [connection signal="mouse_entered" from="HBoxContainer/BaseLayout" to="." method="_on_base_layout_mouse_entered"]
 [connection signal="mouse_exited" from="HBoxContainer/BaseLayout" to="." method="_on_base_layout_mouse_exited"]
 [connection signal="toggled" from="HBoxContainer/BaseLayout" to="." method="_on_base_layout_toggled"]
-[connection signal="mouse_entered" from="HBoxContainer/TilePassivesLayout" to="." method="_on_tile_passives_layout_mouse_entered"]
-[connection signal="mouse_exited" from="HBoxContainer/TilePassivesLayout" to="." method="_on_tile_passives_layout_mouse_exited"]
-[connection signal="toggled" from="HBoxContainer/TilePassivesLayout" to="." method="_on_tile_passives_layout_toggled"]
 [connection signal="mouse_entered" from="HBoxContainer/OrderSegmentsLayout" to="." method="_on_order_segments_layout_mouse_entered"]
 [connection signal="mouse_exited" from="HBoxContainer/OrderSegmentsLayout" to="." method="_on_order_segments_layout_mouse_exited"]
 [connection signal="toggled" from="HBoxContainer/OrderSegmentsLayout" to="." method="_on_order_segments_layout_toggled"]

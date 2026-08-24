@@ -7,6 +7,7 @@
 script = ExtResource("1_an07q")
 rarity = 1
 type = 1
+sigil_kind = 5
 single_activation_per_turn = true
 id = "overdrive"
 name = "Overdrive"

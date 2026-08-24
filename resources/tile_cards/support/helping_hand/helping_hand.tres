@@ -7,6 +7,7 @@
 script = ExtResource("2_bskrr")
 base_production_amount = 5
 type = 1
+sigil_kind = 7
 id = "helping_hand"
 name = "Helping Hand"
 icon = ExtResource("1_8khpv")

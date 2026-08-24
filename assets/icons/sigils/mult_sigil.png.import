@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://syhyecl5oem1"
-path="res://.godot/imported/support_hex_icon.png-45d754ad1b79e6e3ac36f13f7b52ec33.ctex"
+uid="uid://cvbbkxidyytat"
+path="res://.godot/imported/mult_sigil.png-5fbfcb238e81c23c227410a0923d1ea3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/resources/support_hex_icon.png"
-dest_files=["res://.godot/imported/support_hex_icon.png-45d754ad1b79e6e3ac36f13f7b52ec33.ctex"]
+source_file="res://assets/icons/sigils/mult_sigil.png"
+dest_files=["res://.godot/imported/mult_sigil.png-5fbfcb238e81c23c227410a0923d1ea3.ctex"]
 
 [params]
 

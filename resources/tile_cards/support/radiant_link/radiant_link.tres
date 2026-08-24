@@ -7,6 +7,7 @@
 script = ExtResource("2_s7hf8")
 base_production_amount = 3
 type = 1
+sigil_kind = 7
 id = "radiant_link"
 name = "Radiant Link"
 icon = ExtResource("1_11jx1")

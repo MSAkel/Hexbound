@@ -32,10 +32,31 @@ enum PlacementRestriction {
 	SEGMENT_LAST_TILE,
 }
 
+# Small icon on placed runes that identifies the card's main role.
+enum SigilKind {
+	NONE,
+	POWER,
+	MULT,
+	GOLD,
+	EMPOWER,
+	RETRIGGER,
+	SEGMENT_RELAY,
+	GROWTH,
+}
+
 const EMPOWER_OUTPUT_SCALE := 2.0
 const ICON_SCORE := preload("res://assets/icons/resources/score.png")
 const ICON_GOLD := preload("res://assets/icons/resources/gold.png")
 const ICON_MULT := preload("res://assets/icons/resources/multiplier.png")
+const SIGIL_TEXTURES := {
+	SigilKind.POWER: preload("res://assets/icons/sigils/power_sigil.png"),
+	SigilKind.MULT: preload("res://assets/icons/sigils/mult_sigil.png"),
+	SigilKind.GOLD: preload("res://assets/icons/sigils/gold_sigil.png"),
+	SigilKind.EMPOWER: preload("res://assets/icons/sigils/empower_sigil.png"),
+	SigilKind.RETRIGGER: preload("res://assets/icons/sigils/retrigger_sigil.png"),
+	SigilKind.SEGMENT_RELAY: preload("res://assets/icons/sigils/segment_relay_sigil.png"),
+	SigilKind.GROWTH: preload("res://assets/icons/sigils/growth_sigil.png"),
+}
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -63,6 +84,31 @@ var _activation_output_scale: float = 1.0
 @export var single_activation_per_turn: bool = false
 # When set, only matching tiles accept this tile card during placement.
 @export var placement_restriction: PlacementRestriction = PlacementRestriction.NONE
+# Support cards set this explicitly. Producers derive their sigil from product when NONE.
+@export var sigil_kind: SigilKind = SigilKind.NONE
+
+
+func get_sigil_kind() -> SigilKind:
+	if sigil_kind != SigilKind.NONE:
+		return sigil_kind
+	if type != TileCardType.PRODUCER:
+		return SigilKind.NONE
+	match product:
+		Product.SCORE:
+			return SigilKind.POWER
+		Product.MULTIPLIER:
+			return SigilKind.MULT
+		Product.GOLD:
+			return SigilKind.GOLD
+		_:
+			return SigilKind.NONE
+
+
+func get_sigil_texture() -> Texture2D:
+	var kind := get_sigil_kind()
+	if kind == SigilKind.NONE:
+		return null
+	return SIGIL_TEXTURES.get(kind)
 
 
 func get_card_kind_label() -> String:

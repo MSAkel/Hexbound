@@ -5,19 +5,29 @@ extends Node2D
 @onready var icon_rect: TextureRect = $Icon
 @onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
 
+## How far a segment readout travels upward, in pixels.
 const RISE_DISTANCE := 60.0
+## Seconds for that rise. Does not fade, so a later merge can still read the digits.
 const SEGMENT_RISE_DURATION := 0.32
+## Seconds for a readout that lands as the main score, flying in and growing to size.
 const GROW_MERGE_DURATION := 0.22
+## Seconds for a readout that is absorbed into the main score, flying in and shrinking away.
 const SHRINK_MERGE_DURATION := 0.15
+## Scale each glyph starts at before popping in. Near-zero so they appear from nothing.
 const POP_START_SCALE := 0.05
+## Seconds for one glyph to scale from POP_START_SCALE to full size.
 const CHAR_POP_DURATION := 0.12
+## Seconds between each glyph's pop, so letters appear in sequence rather than all at once.
 const CHAR_STAGGER := 0.018
-const HOLD_AFTER_POP := 0.12
+## Pause after the last glyph pops in, before the whole line shrinks away.
+const HOLD_AFTER_POP := 0.85
+## Seconds for the finished line to scale down to zero and then free itself.
 const SHRINK_DURATION := 0.14
 ## Card floats are a bit smaller than the shared score-readout curve.
-const CARD_FONT_SCALE := 0.82
+const CARD_FONT_SCALE := 0.9
 ## Treat nearby spawns as the same tile when stacking extra lines upward.
 const STACK_GROUP_DISTANCE := 8.0
+## Extra pixels between stacked card floats, on top of the previous line's font height.
 const STACK_GAP := 10.0
 
 ## Live card floats. Used to stack extra lines above the first at that tile.

@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_ky0lw")
 type = 1
+sigil_kind = 4
 id = "catalyst"
 name = "Catalyst"
 icon = ExtResource("1_hq5bc")

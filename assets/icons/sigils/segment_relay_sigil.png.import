@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvbbkxidyytat"
-path="res://.godot/imported/mult_hex_icon.png-e13307b52bc49ce321304348e5470998.ctex"
+uid="uid://celbg14qghuq5"
+path="res://.godot/imported/segment_relay_sigil.png-e437f6fec5167f3ec7bc72e033cb89c5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/resources/mult_hex_icon.png"
-dest_files=["res://.godot/imported/mult_hex_icon.png-e13307b52bc49ce321304348e5470998.ctex"]
+source_file="res://assets/icons/sigils/segment_relay_sigil.png"
+dest_files=["res://.godot/imported/segment_relay_sigil.png-e437f6fec5167f3ec7bc72e033cb89c5.ctex"]
 
 [params]
 

@@ -11,26 +11,23 @@ content_margin_right = 24.0
 content_margin_bottom = 32.0
 texture = ExtResource("2_f84w1")
 
-[sub_resource type="FontVariation" id="FontVariation_0dxj0"]
-
 [sub_resource type="FontVariation" id="FontVariation_c0n6m"]
 
 [node name="TilePanel" type="Control" unique_id=882335406]
 z_index = 100
-custom_minimum_size = Vector2(450, 350)
+custom_minimum_size = Vector2(450, 200)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 450.0
-offset_bottom = 350.0
+offset_bottom = 200.0
 mouse_filter = 2
 script = ExtResource("1_0dxj0")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1219395167]
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.92
-anchor_bottom = 0.68600005
-offset_bottom = -0.10002136
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -39,26 +36,6 @@ theme_override_styles/panel = SubResource("StyleBoxTexture_8qrfl")
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=556707738]
 layout_mode = 2
 theme_override_constants/separation = 24
-
-[node name="TileDetailsContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=2121128724]
-layout_mode = 2
-
-[node name="TileModifierLabel" type="Label" parent="PanelContainer/VBoxContainer/TileDetailsContainer" unique_id=1640881143]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
-theme_override_fonts/font = SubResource("FontVariation_0dxj0")
-theme_override_font_sizes/font_size = 21
-text = "Tile Modifier"
-
-[node name="ActiveTileModifier" type="Label" parent="PanelContainer/VBoxContainer/TileDetailsContainer" unique_id=869168508]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.23753911, 0.23753914, 0.23753911, 1)
-theme_override_font_sizes/font_size = 16
-text = "None"
 
 [node name="RunePanelContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=337661510]
 layout_mode = 2

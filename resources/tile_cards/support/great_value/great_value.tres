@@ -8,6 +8,7 @@ script = ExtResource("2_jt1cb")
 base_production_amount = null
 rarity = 1
 type = 1
+sigil_kind = 4
 id = "great_value"
 name = "Great Value"
 icon = ExtResource("1_645dx")

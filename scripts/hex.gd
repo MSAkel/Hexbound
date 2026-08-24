@@ -8,30 +8,23 @@ var _coordinates: Vector2i = Vector2i(0, 0)
 var active_tile_card: TileCard = null
 var rune_ui: RuneUI = null
 
-# Character segment passive, stamped at run start on fixed tiles. Cannot be changed or overridden.
-var segment_passive_modifier: SegmentPassiveModifier = null
-# Future player-applied modifier. Only allowed on tiles without a segment passive.
+# Future player-applied modifier for tiles without a placed card.
 var tile_modifier: TileModifier = null
-# Permanently disabled by difficulty level 5; tile cannot be used for the run.
+# Permanently disabled by difficulty level 5, tile cannot be used for the run.
 var is_disabled_by_difficulty: bool = false
 
-var segment_passive_icon: TextureRect = null
 var map: HexTileMap
 var items_grid: Control
 # Optional challenge tint layered on top of the normal active/inactive state.
 var _challenge_rune_modulate: Color = Color.WHITE
 # True while a map layout other than base is hiding rune icons.
 var _runes_hidden: bool = false
-# Active RunInfoDisplay layout. "order_segments" also hides segment-passive icons.
-var _map_display_layout: String = "base"
 
 # Match the dashed hex art size so overlays sit on the tile texture.
 const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE)
 const HEX_TILE_HALF := HEX_TILE_SIZE / 2
 # Square rune controls. Centered on the hex because the icons still have side padding.
 const HEX_RUNE_SIZE := HexTileMap.HEX_RUNE_SIZE
-# Segment passive icons sit centered on the tile at half the hex size
-const SEGMENT_PASSIVE_ICON_SIZE := HEX_TILE_SIZE / 2
 const RUNE_INACTIVE_MODULATE := Color(0.35, 0.35, 0.42, 0.78)
 const RUNE_FADED_SECTOR_MODULATE := Color(0.58, 0.46, 0.34, 0.9)
 
@@ -58,10 +51,6 @@ func _fit_rune_ui(rune_ui_node: RuneUI) -> void:
 	rune_ui_node.custom_minimum_size = HEX_RUNE_SIZE
 	rune_ui_node.size = HEX_RUNE_SIZE
 	rune_ui_node.position = (HEX_TILE_SIZE - HEX_RUNE_SIZE) * 0.5
-
-
-func is_reserved_for_segment_passive() -> bool:
-	return segment_passive_modifier != null
 
 
 func can_receive_tile_modifier() -> bool:
@@ -108,39 +97,7 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 	refresh_tile_card_visual_state()
 
 
-# Stamp the character's segment passive onto this tile (run start only).
-func set_segment_passive_modifier(modifier: SegmentPassiveModifier) -> void:
-	segment_passive_modifier = modifier
-
-	if modifier == null:
-		if segment_passive_icon != null:
-			segment_passive_icon.queue_free()
-			segment_passive_icon = null
-		return
-
-	if segment_passive_icon == null:
-		segment_passive_icon = _create_segment_passive_icon()
-		items_grid.add_child(segment_passive_icon)
-
-	segment_passive_icon.texture = modifier.icon
-	_apply_display_mode()
-
-
-func _create_segment_passive_icon() -> TextureRect:
-	var icon := TextureRect.new()
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	# Anchor to tile center so the icon stays centered at a fixed size
-	icon.set_anchors_preset(Control.PRESET_CENTER)
-	var half_size := SEGMENT_PASSIVE_ICON_SIZE / 2
-	icon.offset_left = -half_size.x
-	icon.offset_top = -half_size.y
-	icon.offset_right = half_size.x
-	icon.offset_bottom = half_size.y
-	return icon
-
-
-# Apply a run-time tile modifier. Returns false on segment-passive or occupied tiles.
+# Apply a run-time tile modifier. Returns false on occupied or ineligible tiles.
 func try_apply_tile_modifier(modifier: TileModifier) -> bool:
 	if is_disabled_by_difficulty:
 		return false
@@ -175,7 +132,7 @@ func try_apply_enhancement(enhancement: Enhancement) -> bool:
 	return true
 
 
-# Hide or show rune icons while keeping segment-passive modifiers visible.
+# Hide or show rune icons for map-layout display modes.
 func set_tile_cards_hidden(hide_runes: bool) -> void:
 	_runes_hidden = hide_runes
 	_apply_display_mode()
@@ -183,22 +140,12 @@ func set_tile_cards_hidden(hide_runes: bool) -> void:
 
 # Switch this tile's icons for the RunInfoDisplay map-layout buttons.
 func set_map_display_layout(layout: String) -> void:
-	_map_display_layout = layout
 	_runes_hidden = layout != "base"
 	_apply_display_mode()
 
 
 func _apply_display_mode() -> void:
 	var has_rune := rune_ui != null and active_tile_card != null
-	# Order overlay uses the same tiles. Hide passives so numbers stay readable.
-	var show_passives := _map_display_layout != "order_segments"
-	if segment_passive_icon != null:
-		# Modifiers are shown by default. A placed rune takes priority on the same tile.
-		segment_passive_icon.visible = (
-			show_passives
-			and segment_passive_modifier != null
-			and (not has_rune or _runes_hidden)
-		)
 	if rune_ui != null:
 		rune_ui.visible = has_rune and not _runes_hidden
 

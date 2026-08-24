@@ -2,9 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://ha3y72ugqnr6" path="res://assets/characters/the_encircler.png" id="1_1v70v"]
 [ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dstgadvktxsbu" path="res://assets/map/segment_passives/encircler_passive.png" id="2_3q0wb"]
 [ext_resource type="Texture2D" uid="uid://brk6a3m33m4fs" path="res://assets/map/trigger_order/the_encircler_map.png" id="2_trigger_preview"]
-[ext_resource type="Texture2D" uid="uid://c8lewiayrer5i" path="res://assets/map/segment_icons/first_circle_tile_passive.png" id="3_passive_icon"]
 
 [resource]
 script = ExtResource("1_script")
@@ -17,8 +15,3 @@ trigger_order_description = "Outer ring cards activate first, moving inward towa
 trigger_order_preview = ExtResource("2_trigger_preview")
 segment_key_strategy = 1
 segments_count = 4
-passive_modifier_type = 1
-passive_name = "Circle Passive"
-passive_description = "If the first card on a segment is a Support card, it gains a 15% chance to trigger each Production card on the same segment."
-passive_icon = ExtResource("3_passive_icon")
-passive_icon_preview = ExtResource("2_3q0wb")

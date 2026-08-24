@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8lewiayrer5i"
-path="res://.godot/imported/first_circle_tile_passive.png-3c8935af6d553e7db2bdfd0529dedef1.ctex"
+uid="uid://xqslk1n7ms1o"
+path="res://.godot/imported/gold_sigil.png-cef382387684125e81a7a998a79a4e92.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/segment_icons/first_circle_tile_passive.png"
-dest_files=["res://.godot/imported/first_circle_tile_passive.png-3c8935af6d553e7db2bdfd0529dedef1.ctex"]
+source_file="res://assets/icons/sigils/gold_sigil.png"
+dest_files=["res://.godot/imported/gold_sigil.png-cef382387684125e81a7a998a79a4e92.ctex"]
 
 [params]
 

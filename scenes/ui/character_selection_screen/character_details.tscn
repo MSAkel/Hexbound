@@ -5,7 +5,6 @@
 [ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="4_daqkf"]
 [ext_resource type="Texture2D" uid="uid://cpkbpjt0rbyto" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_iw7qv"]
 [ext_resource type="Texture2D" uid="uid://yfia6ltx5gqr" path="res://assets/gui/dividers/divider.png" id="7_eeimr"]
-[ext_resource type="Texture2D" uid="uid://bve5aohm2c03v" path="res://assets/map/segment_passives/double_production_passive.png" id="8_x6eud"]
 [ext_resource type="Texture2D" uid="uid://bp0w0wvwvpnjw" path="res://assets/gui/panels/character_selection_panel_2.png" id="9_r66gk"]
 [ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="10_ayqni"]
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="10_r66gk"]
@@ -139,55 +138,6 @@ text = "Character Name"
 fit_content = true
 autowrap_mode = 0
 horizontal_alignment = 1
-
-[node name="Divider" type="TextureRect" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer" unique_id=170764045]
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("7_eeimr")
-stretch_mode = 2
-
-[node name="PassivesLabel" type="Label" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer" unique_id=149836310]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
-theme_override_font_sizes/font_size = 20
-text = "Passive Abilities"
-horizontal_alignment = 1
-
-[node name="PassivesContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer" unique_id=1640156372]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 2
-theme_override_constants/separation = 12
-
-[node name="PassiveIcon" type="TextureRect" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer" unique_id=1200120951]
-custom_minimum_size = Vector2(75, 75)
-custom_maximum_size = Vector2(75, 75)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 6
-texture = ExtResource("8_x6eud")
-expand_mode = 1
-
-[node name="PassiveInfoContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer" unique_id=61843742]
-layout_mode = 2
-
-[node name="PassiveName" type="Label" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer/PassiveInfoContainer" unique_id=1437331464]
-layout_mode = 2
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
-theme_override_font_sizes/font_size = 18
-text = "Double Production"
-
-[node name="PassiveDescription" type="Label" parent="VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/PassivesContainer/PassiveInfoContainer" unique_id=1795182502]
-custom_minimum_size = Vector2(250, 0)
-propagate_maximum_size = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3647059, 0.3647059, 0.29803923, 1)
-theme_override_font_sizes/font_size = 16
-text = "Every starting rune on..."
-autowrap_mode = 3
 
 [node name="triggerOrderPanel" type="PanelContainer" parent="VBoxContainer/HBoxContainer" unique_id=1740980350]
 clip_children = 2

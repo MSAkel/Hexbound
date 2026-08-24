@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_km4p2")
 type = 1
+sigil_kind = 5
 id = "wildspark"
 name = "Wildspark"
 icon = ExtResource("1_sfxj2")

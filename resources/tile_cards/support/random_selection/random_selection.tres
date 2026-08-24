@@ -7,6 +7,7 @@
 script = ExtResource("2_ills5")
 rarity = 1
 type = 1
+sigil_kind = 5
 id = "random_selection"
 name = "Random Selection"
 icon = ExtResource("1_ills5")
