@@ -5,6 +5,7 @@ extends Node
 signal game_speed_changed(new_speed: float)
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
+const SCORE_PROGRESSION := preload("res://resources/score_progression.tres")
 ## Number of runes in a rune pack, picked at the end of each turn
 const RUNES_PACK_SIZE := 3
 const MAX_TURNS_PER_ROUND := 5
@@ -61,9 +62,7 @@ var is_processing_turn: bool:
 #region Score and round progression
 
 ## Score needed to complete the current round and open the merchant.
-var required_score: int = 1000
-## Applied each time required_score is met to scale difficulty across rounds.
-var required_score_multiplier: int = 1.5
+var required_score: int = SCORE_PROGRESSION.get_required_score(1)
 
 ## total score earned in the current round. 
 var _total_round_score: int = 0
@@ -234,9 +233,6 @@ func get_turn_number() -> int:
 
 
 func _complete_current_round() -> void:
-	required_score = required_score * required_score_multiplier + 750
-	EventBus.required_score_changed.emit()
-
 	if ChallengeManager.is_completing_final_challenge_round():
 		EventBus.challenge_banner_hidden.emit()
 		EventBus.all_challenges_completed.emit()
@@ -252,6 +248,7 @@ func _complete_current_round() -> void:
 
 func advance_round() -> void:
 	current_round += 1
+	required_score = SCORE_PROGRESSION.get_required_score(current_round)
 	# Round-spend counters reset before the round bonus so cards start fresh.
 	GoldManager.reset_round_tracking()
 	GoldManager.add(20)
@@ -378,13 +375,23 @@ func reset_for_new_run() -> void:
 	_pending_post_victory_round_advance = false
 	_remaining_turns = MAX_TURNS_PER_ROUND
 	_is_processing_turn = false
-	required_score = 1000
-	required_score_multiplier = 1.5
+	required_score = SCORE_PROGRESSION.get_required_score(current_round)
 	_total_round_score = 0
 	_turn_score = 0
 	_activated_tile_cards_this_turn.clear()
 	turn_stamp = 0
 	game_speed = 1.0
+
+
+## Moves a fresh run to a chosen round while keeping round-dependent state in sync.
+func set_starting_round_for_debug(starting_round: int) -> void:
+	current_round = maxi(1, starting_round)
+	required_score = SCORE_PROGRESSION.get_required_score(current_round)
+	ChallengeManager.on_round_advanced(current_round)
+	_remaining_turns = get_max_turns_per_round()
+	EventBus.turn_changed.emit()
+	EventBus.round_changed.emit(current_round)
+	EventBus.required_score_changed.emit()
 
 
 func capture_run_state() -> Dictionary:
@@ -394,7 +401,6 @@ func capture_run_state() -> Dictionary:
 		"remaining_turns": _remaining_turns,
 		"is_processing_turn": _is_processing_turn,
 		"required_score": required_score,
-		"required_score_multiplier": required_score_multiplier,
 		"total_round_score": _total_round_score,
 		"turn_score": _turn_score,
 		"pending_merchant_visit": _pending_merchant_visit,
@@ -410,8 +416,7 @@ func apply_run_state(state: Dictionary) -> void:
 	_total_rune_activations = int(state.get("total_rune_activations"))
 	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_ROUND))
 	_is_processing_turn = bool(state.get("is_processing_turn", false))
-	required_score = int(state.get("required_score", 1000))
-	required_score_multiplier = state.get("required_score_multiplier", 1.5)
+	required_score = int(state.get("required_score", SCORE_PROGRESSION.get_required_score(current_round)))
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
 	_pending_merchant_visit = bool(state.get("pending_merchant_visit", false))
