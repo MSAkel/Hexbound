@@ -1,6 +1,6 @@
 extends TileCard
 
-# +25 score. On the last turn of a round, empowers every Prod rune in its segment
+# +25 Energy. On the last turn of a round, empowers every Prod rune in its segment
 func _on_activate_tile_card(tile: Hex) -> void:
 	# remaining_turns of 1 means this is the final turn of the round.
 	if GameManager.remaining_turns == 1:

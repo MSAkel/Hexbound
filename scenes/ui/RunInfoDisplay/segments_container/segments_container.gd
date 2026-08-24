@@ -18,6 +18,8 @@ var _resolving_turn: bool = false
 var _score_total_counter: CountingNumber
 var _gold_total_counter: CountingNumber
 var _punch_tweens: Dictionary = {}
+## Score footer during live resolve. Grows only as each segment's equals beat lands.
+var _live_revealed_score: int = 0
 
 const PUNCH_SCALE := 1.12
 const PUNCH_DURATION := 0.18
@@ -35,6 +37,7 @@ func _ready() -> void:
 	EventBus.turn_ended.connect(_on_turn_ended)
 	EventBus.segment_turn_completed.connect(_on_segment_turn_completed)
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
+	EventBus.segment_score_revealed.connect(_on_segment_score_revealed)
 	EventBus.round_changed.connect(_on_round_changed)
 
 	_refresh_view(false)
@@ -42,6 +45,7 @@ func _ready() -> void:
 
 func _on_turn_ended() -> void:
 	_resolving_turn = true
+	_live_revealed_score = 0
 	_viewed_turn_index = _turn_history.size()
 	_set_rows_live_mode(true)
 	_refresh_view(false)
@@ -64,7 +68,15 @@ func _on_segment_turn_results_changed(
 ) -> void:
 	if not _is_viewing_live_turn():
 		return
-	_update_turn_totals_from_tile_map(true)
+	# Gold can land during activations. Score waits for each segment's equals beat.
+	_update_live_gold_total(true)
+
+
+func _on_segment_score_revealed(_segment_index: int, total_score: int) -> void:
+	if not _is_viewing_live_turn():
+		return
+	_live_revealed_score += total_score
+	_play_counter(_score_total_counter, _live_revealed_score, score_total_number)
 
 
 func _on_round_changed(_new_round: int) -> void:
@@ -112,7 +124,6 @@ func _refresh_view(animate: bool) -> void:
 	if _is_viewing_live_turn():
 		_set_rows_live_mode(true)
 		_sync_rows_from_tile_map(animate)
-		_update_turn_totals_from_tile_map(animate)
 		return
 
 	_set_rows_live_mode(false)
@@ -174,9 +185,27 @@ func _sync_rows_from_tile_map(animate: bool) -> void:
 		var score := tile_map.get_segment_turn_score(segment_index)
 		var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
 		var gold := tile_map.get_segment_turn_gold(segment_index)
-		child.apply_turn_snapshot(score, multiplier, score * multiplier, gold, animate)
+		child.apply_turn_snapshot(score, multiplier, score * multiplier, gold, animate, false)
 
-	_update_turn_totals_from_tile_map(animate)
+	_update_live_gold_total(animate)
+	_score_total_counter.snap_to(_live_revealed_score)
+
+
+func _update_live_gold_total(animate: bool) -> void:
+	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
+	if tile_map == null:
+		if animate:
+			_play_counter(_gold_total_counter, 0, gold_total_number)
+		else:
+			_gold_total_counter.snap_to(0)
+		return
+
+	var snapshot: Dictionary = tile_map.capture_segment_turn_snapshot()
+	var total_gold := int(snapshot.get("total_gold", 0))
+	if animate:
+		_play_counter(_gold_total_counter, total_gold, gold_total_number)
+	else:
+		_gold_total_counter.snap_to(total_gold)
 
 
 func _update_turn_totals_from_tile_map(animate: bool) -> void:

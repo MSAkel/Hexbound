@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cvrhe05ck15tj" path="res://scenes/ui/runes/rune_ui.gd" id="1_ncwa2"]
 [ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/runes/production/power_cell.png" id="2_gx0vj"]
-[ext_resource type="Texture2D" uid="uid://saywmnnvcfvg" path="res://assets/icons/sigils/power_sigil.png" id="3_7g4sv"]
+[ext_resource type="Texture2D" uid="uid://saywmnnvcfvg" path="res://assets/icons/sigils/energy_sigil.png" id="3_7g4sv"]
 [ext_resource type="Texture2D" uid="uid://b8wbfxcvxew5s" path="res://assets/particles/flame_01.png" id="3_j3x5t"]
 [ext_resource type="Script" uid="uid://oseck4kpvgh2" path="res://scenes/ui/runes/hex_stroke.gd" id="4_hexstroke"]
 

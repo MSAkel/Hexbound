@@ -81,6 +81,8 @@ var _tile_panel_timer: Timer
 var _empty_tile_segment_hover_coords: Vector2i = Vector2i(-1, -1)
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
+# First Energy × Mult equals beat in a tutorial run holds longer.
+var _did_tutorial_product_linger: bool = false
 
 
 func _ready() -> void:
@@ -561,12 +563,12 @@ func reset_segment_turn_results() -> void:
 	EventBus.segment_turn_results_reset.emit()
 
 
-## Records score produced by a rune on its tile's segment.
+## Records Energy produced by a rune on its tile's segment.
 func add_turn_score_for_tile(tile: Hex, amount: int) -> void:
 	add_turn_score_for_segment(get_segment_index(tile.coordinates), amount)
 
 
-## Records score on a segment by index. Used when a card credits another segment.
+## Records Energy on a segment by index. Used when a card credits another segment.
 func add_turn_score_for_segment(segment_index: int, amount: int) -> void:
 	if amount == 0:
 		return
@@ -600,7 +602,7 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	_emit_segment_turn_results_changed(segment_index)
 
 
-## Notifies UI of the latest per-segment score, multiplier, and score x multiplier total.
+## Notifies UI of the latest per-segment Energy, multiplier, and Energy x Mult product.
 func _emit_segment_turn_results_changed(segment_index: int) -> void:
 	var score := _layout.get_segment_turn_score(segment_index)
 	var multiplier := _layout.get_segment_turn_multiplier(segment_index)
@@ -608,7 +610,7 @@ func _emit_segment_turn_results_changed(segment_index: int) -> void:
 	EventBus.segment_turn_results_changed.emit(segment_index, score, multiplier, score * multiplier, gold)
 
 
-## Each segment scores independently (score x multiplier), then totals are summed for the turn.
+## Each segment scores independently (Energy x Mult), then products are summed for the turn.
 func _apply_segment_turn_totals_to_game_manager() -> void:
 	var total := 0
 	for segment_index in get_segment_count():
@@ -718,7 +720,7 @@ func clear_hovered_segment_highlight(segment_index: int = -1) -> void:
 		rune_highlight_overlay_layer.modulate = Color.WHITE
 
 
-## Briefly lights a segment so the player can see where forwarded score or mult landed.
+## Briefly lights a segment so the player can see where forwarded Energy or Mult landed.
 func flash_segment_highlight(segment_index: int) -> void:
 	_clear_flashed_segment_highlight()
 	if segment_index < 0:
@@ -752,7 +754,7 @@ func _clear_flashed_segment_highlight() -> void:
 	_flashed_segment_coords.clear()
 
 
-## True while hover, placement preview, or a credit flash still owns this overlay cell.
+## True while hover, placement preview, a credit flash, or inspect still owns this overlay cell.
 func _rune_highlight_still_needed(
 	coords: Vector2i,
 	from_hover: bool,
@@ -772,7 +774,11 @@ func _rune_highlight_still_needed(
 
 ## True while a run-info segment row or credit flash is lighting this tile.
 func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
-	return coords in _hovered_segment_coords or coords in _flashed_segment_coords or coords in _inspect_highlight_coords
+	return (
+		coords in _hovered_segment_coords
+		or coords in _flashed_segment_coords
+		or coords in _inspect_highlight_coords
+	)
 
 
 ## True when another fading-sector overlay still owns this cell.
@@ -1042,7 +1048,7 @@ func _play_segment_turn_result_reveals() -> void:
 		await display.play_merge_into_round_info()
 
 
-## Highlights one segment, animates its runes, then flies its score total into the turn score overlay.
+## Highlights one segment, animates its runes, then flies its Score product into the turn score overlay.
 func _play_single_segment_reveal(
 	segment_index: int,
 	contribution: int,
@@ -1067,7 +1073,7 @@ func _play_single_segment_reveal(
 	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 
 
-## Rises a segment score float, then grows into or shrinks toward the shared turn score overlay.
+## Rises Energy x Mult, morphs into Score, unlocks the panel cell, then merges the product.
 func _play_segment_score_merge(
 	segment_index: int,
 	contribution: int,
@@ -1082,6 +1088,9 @@ func _play_segment_score_merge(
 		multiplier
 	)
 	await floating_text.play_rise()
+	await floating_text.play_equals_to_product(contribution, _should_linger_on_product())
+
+	EventBus.segment_score_revealed.emit(segment_index, contribution)
 
 	var display := _get_turn_score_display()
 	if display == null:
@@ -1118,9 +1127,20 @@ func _canvas_to_world(canvas_pos: Vector2) -> Vector2:
 	return get_viewport().get_canvas_transform().affine_inverse() * canvas_pos
 
 
-## Shared overlay that accumulates segment score during the post-turn reveal.
+## Shared overlay that accumulates segment Score during the post-turn reveal.
 func _get_turn_score_display() -> TurnScoreDisplay:
 	return get_tree().get_first_node_in_group("turn_score_display") as TurnScoreDisplay
+
+
+## First product beat in an active tutorial holds longer so Energy × Mult can be read.
+func _should_linger_on_product() -> bool:
+	if _did_tutorial_product_linger:
+		return false
+	for node in get_tree().get_nodes_in_group("tutorial_banner"):
+		if node.has_method("is_tutorial_active") and node.is_tutorial_active():
+			_did_tutorial_product_linger = true
+			return true
+	return false
 
 
 func _apply_segment_reveal_glow(segment_index: int) -> void:

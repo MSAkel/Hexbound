@@ -1,6 +1,6 @@
 extends TileCard
 
-## +30 Score. Consume the next card to permanently double this card's Score.
+## +30 Energy. Consume the next card to permanently double this card's Energy.
 
 var score_bonus: int = 1
 

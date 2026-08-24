@@ -37,6 +37,7 @@ class Keyword:
 static var _keywords: Array[Keyword] = []
 static var _match_regex: RegEx = null
 
+const COLOR_ENERGY := Color(0.0, 0.52, 0.66)
 const COLOR_SCORE := Color(0.0, 0.42, 0.55)
 const COLOR_MULT := Color(0.52, 0.16, 0.48)
 const COLOR_GOLD := Color(0.62, 0.42, 0.0)
@@ -46,9 +47,22 @@ const COLOR_EMPOWER := Color(0.78, 0.34, 0.0)
 static func _static_init() -> void:
 	# Longer tokens are matched before shorter ones.
 	# Leave tooltip empty to color the word without spawning a hover panel.
-	register("score", ["score"], "Score", COLOR_SCORE, "The main resource used to gain score.\nPOWER x MULT = SCORE")
-	register("mult", ["mult"], "Mult", COLOR_MULT, "Multiplies Score.")
-	register("gold", ["gold"], "Gold", COLOR_GOLD, "")
+	register(
+		"energy",
+		["energy"],
+		"Energy",
+		COLOR_ENERGY,
+		"Added by producers in a segment.\nENERGY x MULT = SCORE"
+	)
+	register(
+		"score",
+		["score"],
+		"Score",
+		COLOR_SCORE,
+		"Energy × Mult for a segment. Segment Scores add for the turn."
+	)
+	register("mult", ["mult"], "Mult", COLOR_MULT, "Multiplies Energy in the same segment. Starts at 1.")
+	register("gold", ["gold"], "Gold", COLOR_GOLD, "Currency. Not multiplied by Mult.")
 	register(
 		"empower",
 		["empower", "empowers", "empowered", "empowerment"],

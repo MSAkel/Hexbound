@@ -11,5 +11,5 @@ product = 1
 id = "gluttonous_rune"
 name = "Gluttonous Rune"
 icon = ExtResource("1_mi1r8")
-description = "+30 Score. Consume the next card to permanently double this card's Score"
+description = "+30 Energy. Consume the next card to permanently double this card's Energy"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

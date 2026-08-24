@@ -7,7 +7,7 @@ const GOLD_REWARD := 20
 # Stacks +3% after each failed roll; resets when a reward is generated.
 var current_chance: float = BASE_CHANCE
 
-# Spends 1 gold and gains a 3% stackable chance to either gain 500 score or 20 gold. Resets on generation
+# Spends 1 gold and gains a 3% stackable chance to either gain 500 Energy or 20 gold. Resets on generation
 func _on_activate_tile_card(tile: Hex) -> void:
 	if not GoldManager.can_afford(1):
 		_create_floating_text(tile, "Insufficient gold")
@@ -32,5 +32,5 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 		"%d%%" % percent,
 		null,
 		get_chip_panel_color(),
-		"Chance for 500 Score or 20 Gold"
+		"Chance for 500 Energy or 20 Gold"
 	)

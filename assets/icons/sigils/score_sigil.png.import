@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://saywmnnvcfvg"
-path="res://.godot/imported/power_sigil.png-ae4bd88daa0455771af7a6d7d326cf0d.ctex"
+uid="uid://bygbf1c3537ay"
+path="res://.godot/imported/score_sigil.png-105d9dab977d08ca5e71935d936bf95a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/sigils/power_sigil.png"
-dest_files=["res://.godot/imported/power_sigil.png-ae4bd88daa0455771af7a6d7d326cf0d.ctex"]
+source_file="res://assets/icons/sigils/score_sigil.png"
+dest_files=["res://.godot/imported/score_sigil.png-105d9dab977d08ca5e71935d936bf95a.ctex"]
 
 [params]
 

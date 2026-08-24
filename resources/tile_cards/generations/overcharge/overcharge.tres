@@ -11,5 +11,5 @@ product = 1
 id = "overcharge"
 name = "Overcharge"
 icon = ExtResource("1_0soeu")
-description = "+60 Score. +10% break chance after every completed trigger this turn"
+description = "+60 Energy. +10% break chance after every completed trigger this turn"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

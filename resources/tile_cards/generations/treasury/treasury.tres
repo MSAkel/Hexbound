@@ -10,5 +10,5 @@ product = 1
 id = "treasury"
 name = "Treasury"
 icon = ExtResource("1_mv8hq")
-description = "+2 score for every gold you have"
+description = "+2 Energy for every Gold you have"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -11,5 +11,5 @@ product = 1
 id = "advanced_pointer"
 name = "Advanced Pointer"
 icon = ExtResource("1_asyvl")
-description = "+15 Score for every adjacent Score card. +50 score if all adjacent tiles are score cards (Rework)"
+description = "+15 Energy for every adjacent Energy card. +50 Energy if all adjacent tiles are Energy cards (Rework)"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

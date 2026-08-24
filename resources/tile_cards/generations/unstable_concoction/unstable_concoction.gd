@@ -1,6 +1,6 @@
 extends TileCard
 
-## Gives 100 Score or 15 Mult or 15 gold
+## Gives 100 Energy or 15 Mult or 15 Gold
 func _on_activate_tile_card(tile: Hex) -> void:
 	match randi_range(0, 3):
 		0:

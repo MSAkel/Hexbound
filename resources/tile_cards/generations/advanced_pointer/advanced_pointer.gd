@@ -1,6 +1,6 @@
 extends TileCard
 
-# +15 score for every adjacent score rune. +50 score if all adjacent tiles are score runes
+# +15 Energy for every adjacent Energy rune. +50 Energy if all adjacent tiles are Energy runes
 func _on_activate_tile_card(_tile: Hex) -> void:
 	var adjacent_generators_count = _count_all_occupied_adjacent_tile_cards(_tile, TileCard.TileCardType.PRODUCER)
 	if adjacent_generators_count > 0:

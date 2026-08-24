@@ -35,7 +35,7 @@ enum PlacementRestriction {
 # Small icon on placed runes that identifies the card's main role.
 enum SigilKind {
 	NONE,
-	POWER,
+	ENERGY,
 	MULT,
 	GOLD,
 	EMPOWER,
@@ -54,10 +54,12 @@ enum BoardChipMode {
 
 const EMPOWER_OUTPUT_SCALE := 2.0
 const ICON_SCORE := preload("res://assets/icons/resources/score.png")
+## Additive Energy pile. Distinct from ICON_SCORE, which is the Energy × Mult product.
+const ICON_ENERGY := preload("res://assets/icons/resources/energy.png")
 const ICON_GOLD := preload("res://assets/icons/resources/gold.png")
 const ICON_MULT := preload("res://assets/icons/resources/multiplier.png")
 const SIGIL_TEXTURES := {
-	SigilKind.POWER: preload("res://assets/icons/sigils/power_sigil.png"),
+	SigilKind.ENERGY: preload("res://assets/icons/sigils/energy_sigil.png"),
 	SigilKind.MULT: preload("res://assets/icons/sigils/mult_sigil.png"),
 	SigilKind.GOLD: preload("res://assets/icons/sigils/gold_sigil.png"),
 	SigilKind.EMPOWER: preload("res://assets/icons/sigils/empower_sigil.png"),
@@ -65,18 +67,6 @@ const SIGIL_TEXTURES := {
 	SigilKind.SEGMENT_RELAY: preload("res://assets/icons/sigils/segment_relay_sigil.png"),
 	SigilKind.GROWTH: preload("res://assets/icons/sigils/growth_sigil.png"),
 }
-
-# Brighter than glossary text colors so the rim reads on dark hex art.
-const ROLE_COLOR_SCORE := Color(0.18, 0.78, 0.95)
-const ROLE_COLOR_MULT := Color(0.86, 0.38, 0.82)
-const ROLE_COLOR_GOLD := Color(0.95, 0.74, 0.2)
-const ROLE_COLOR_EMPOWER := Color(1.0, 0.58, 0.16)
-const ROLE_COLOR_RETRIGGER := Color(0.42, 0.86, 0.58)
-const ROLE_COLOR_RELAY := Color(0.52, 0.7, 1.0)
-const ROLE_COLOR_GROWTH := Color(0.38, 0.8, 0.4)
-const ROLE_COLOR_SUPPORT := Color(0.74, 0.58, 0.92)
-const ROLE_COLOR_MODIFIER := Color(0.58, 0.5, 0.44)
-const ROLE_COLOR_HYBRID := Color(0.86, 0.64, 0.38)
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -115,7 +105,7 @@ func get_sigil_kind() -> SigilKind:
 		return SigilKind.NONE
 	match product:
 		Product.SCORE:
-			return SigilKind.POWER
+			return SigilKind.ENERGY
 		Product.MULTIPLIER:
 			return SigilKind.MULT
 		Product.GOLD:
@@ -130,68 +120,16 @@ func get_sigil_texture() -> Texture2D:
 		return null
 	return SIGIL_TEXTURES.get(kind)
 
-
-func get_role_color() -> Color:
-	if type == TileCardType.MODIFIER:
-		return ROLE_COLOR_MODIFIER
-	if type == TileCardType.SUPPORT:
-		match get_sigil_kind():
-			SigilKind.EMPOWER:
-				return ROLE_COLOR_EMPOWER
-			SigilKind.RETRIGGER:
-				return ROLE_COLOR_RETRIGGER
-			SigilKind.SEGMENT_RELAY:
-				return ROLE_COLOR_RELAY
-			SigilKind.GROWTH:
-				return ROLE_COLOR_GROWTH
-			_:
-				return ROLE_COLOR_SUPPORT
-	match product:
-		Product.SCORE:
-			return ROLE_COLOR_SCORE
-		Product.MULTIPLIER:
-			return ROLE_COLOR_MULT
-		Product.GOLD:
-			return ROLE_COLOR_GOLD
-		Product.HYBRID:
-			return ROLE_COLOR_HYBRID
-		_:
-			return ROLE_COLOR_SUPPORT
-
-
-# Dark fills so white chip numbers stay readable. Brighter role colors live on the icon art.
+## Switched to identical panel color as its easier to read.
 func get_chip_panel_color() -> Color:
-	if type == TileCardType.MODIFIER:
-		return Color(0.28, 0.22, 0.18)
-	if type == TileCardType.SUPPORT:
-		match get_sigil_kind():
-			SigilKind.EMPOWER:
-				return Color(0.52, 0.26, 0.06)
-			SigilKind.RETRIGGER:
-				return Color(0.08, 0.36, 0.22)
-			SigilKind.SEGMENT_RELAY:
-				return Color(0.12, 0.26, 0.48)
-			SigilKind.GROWTH:
-				return Color(0.12, 0.34, 0.16)
-			_:
-				return Color(0.32, 0.2, 0.42)
-	match product:
-		Product.SCORE:
-			return Color(0.22, 0.16, 0.28)
-		Product.MULTIPLIER:
-			return Color(0.22, 0.16, 0.28)
-		Product.GOLD:
-			return Color(0.22, 0.16, 0.28)
-		Product.HYBRID:
-			return Color(0.22, 0.16, 0.28)
-		_:
-			return Color(0.22, 0.16, 0.28)
+	return Color(0.22, 0.16, 0.28)
+
 
 
 func get_product_icon() -> Texture2D:
 	match product:
 		Product.SCORE:
-			return ICON_SCORE
+			return ICON_ENERGY
 		Product.GOLD:
 			return ICON_GOLD
 		Product.MULTIPLIER:
@@ -212,8 +150,8 @@ func get_inspect_subtitle() -> String:
 
 func _get_role_label() -> String:
 	match get_sigil_kind():
-		SigilKind.POWER:
-			return "Power"
+		SigilKind.ENERGY:
+			return "Energy"
 		SigilKind.MULT:
 			return "Mult"
 		SigilKind.GOLD:
@@ -369,15 +307,15 @@ func can_place_on_tile(tile: Hex) -> bool:
 
 # Tile coordinates that would be impacted when this tile card is placed on hover_tile.
 # Override in tile cards that trigger or otherwise affect other tiles.
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+func get_trigger_preview_coords(_hover_tile: Hex) -> Array[Vector2i]:
 	return []
 
 
-#region --- Score, gold, and multiplier, and floating text helpers ---
+#region --- Energy, gold, and multiplier, and floating text helpers ---
 func add_score(tile: Hex, base_points: int) -> void:
 	var points := int(round(base_points * _activation_output_scale))
 	tile.map.add_turn_score_for_tile(tile, points)
-	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_SCORE)
+	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_ENERGY)
 
 func add_gold(tile: Hex, base_amount: int) -> void:
 	var amount := int(round(base_amount * _activation_output_scale))
@@ -390,11 +328,11 @@ func add_multiplier(tile: Hex, base_amount: int) -> void:
 	_create_floating_text(tile, "+%d" % amount, Color.PLUM, ICON_MULT)
 
 
-# Credits another segment's turn score. Float stays on this tile, destination segment flashes.
+# Credits another segment's Energy. Float stays on this tile, destination segment flashes.
 func add_score_to_segment(tile: Hex, segment_index: int, base_points: int) -> void:
 	var points := int(round(base_points * _activation_output_scale))
 	tile.map.add_turn_score_for_segment(segment_index, points)
-	_create_floating_text(tile, "+%d → next" % points, Color.AQUA, ICON_SCORE)
+	_create_floating_text(tile, "+%d → next" % points, Color.AQUA, ICON_ENERGY)
 	tile.map.flash_segment_highlight(segment_index)
 
 
@@ -419,7 +357,7 @@ func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE, 
 	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
 	tile.map.create_floating_text(tile_pos, text, color, icon)
 
-#endregion --- Score, gold, and multiplier, and floating text helpers ---
+#endregion --- Energy, gold, and multiplier, and floating text helpers ---
 
 func _get_production_amount() -> int:
 	return base_production_amount + bonus_production_amount

@@ -1,10 +1,10 @@
 extends TileCard
 
-## Adjacent score runes on the same segment permanently gain +10 score
+## Adjacent Energy runes on the same segment permanently gain +10 Energy
 func _on_activate_tile_card(tile: Hex) -> void:
 	var targets := _get_adjacent_same_segment_producers_by_product(tile, Product.SCORE)
 	for rune: TileCard in targets:
-		# Permanent production buff so later activations of that score rune produce more.
+		# Permanent production buff so later activations of that Energy rune produce more.
 		rune.bonus_production_amount += base_production_amount
 		var target_hex := tile.map.get_hex_for_tile_card(rune)
 		if target_hex != null:

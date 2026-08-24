@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("2_script")
 id = "score_boost"
-name = "Score Boost"
+name = "Energy Boost"
 icon = ExtResource("1_einfm")
-description = "Rune gains +40 Score"
-short_description = "+40 Score"
+description = "Rune gains +40 Energy"
+short_description = "+40 Energy"
 score_bonus = 40

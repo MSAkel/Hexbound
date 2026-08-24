@@ -1,5 +1,5 @@
 extends TileCard
-## Gives the lowest Score producer +5 permanently
+## Gives the lowest Energy producer +5 permanently
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	var target := _get_lowest_score_producer(tile)
@@ -21,7 +21,7 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	return _coords_for_placed_tile_cards(hover_tile, [target])
 
 
-# Among Score producers, pick the lowest current output. Ties go to the earliest in trigger order.
+# Among Energy producers, pick the lowest current output. Ties go to the earliest in trigger order.
 func _get_lowest_score_producer(tile: Hex) -> TileCard:
 	var lowest: TileCard = null
 	var lowest_amount := 0

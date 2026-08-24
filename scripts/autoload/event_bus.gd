@@ -26,9 +26,11 @@ signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 
 signal total_round_score_changed()
 signal turn_score_changed()
-## Per-segment score, multiplier, total (score x mult), and gold during turn resolution.
+## Per-segment energy, multiplier, product (energy x mult), and gold during turn resolution.
 signal segment_turn_results_changed(segment_index: int, score: int, multiplier: int, total_score: int, gold: int)
 signal segment_turn_results_reset()
+## Product unlocked for one segment after its Energy × Mult equals beat.
+signal segment_score_revealed(segment_index: int, total_score: int)
 ## Fired once per resolved turn with a full per-segment snapshot for the run-info history UI.
 signal segment_turn_completed(turn_number: int, snapshot: Dictionary)
 

@@ -1,6 +1,6 @@
 extends TileCard
 
-## Up to 3 adjacent score runes permanently gain +3 score
+## Up to 3 adjacent Energy runes permanently gain +3 Energy
 func _on_activate_tile_card(tile: Hex) -> void:
 	var adjacent_cards: Array[TileCard] = _get_adjacent_tile_cards_by_product(tile, Product.SCORE)
 	for card: TileCard in adjacent_cards:

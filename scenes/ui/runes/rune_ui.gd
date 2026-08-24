@@ -217,6 +217,9 @@ func play_activation_animation() -> void:
 	var original_z_index := z_index
 	z_index = 10
 	_shake_on_activation()
+	if hex_stroke != null:
+		# Linger past the pop so the firing tile stays marked while its float appears.
+		hex_stroke.play_activation_glow(activation_animation_duration() + 0.28)
 
 	var pop_duration := ACTIVATION_POP_DURATION / GameManager.game_speed
 	var squash_duration := ACTIVATION_SQUASH_DURATION / GameManager.game_speed

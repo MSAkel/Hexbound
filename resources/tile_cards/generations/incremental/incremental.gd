@@ -1,6 +1,6 @@
 extends TileCard
 
-## +5 Score. Every 2nd trigger: permanently gain +5 Score.
+## +5 Energy. Every 2nd trigger: permanently gain +5 Energy.
 func _on_activate_tile_card(tile: Hex) -> void:
 	add_score(tile, _get_production_amount())
 

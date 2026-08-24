@@ -1,5 +1,5 @@
 extends TileCard
-## +60 Score. +10% break chance after every completed trigger this turn
+## +60 Energy. +10% break chance after every completed trigger this turn
 ## Should it be a fixed break chance instead, is this card worth the risk?
 const DESTROY_CHANCE_PER_TRIGGER := 0.10
 

@@ -10,5 +10,5 @@ product = 1
 id = "power_cell"
 name = "Power Cell"
 icon = ExtResource("1_ayjfw")
-description = "+20 Score"
+description = "+20 Energy"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

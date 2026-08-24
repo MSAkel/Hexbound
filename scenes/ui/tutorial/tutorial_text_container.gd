@@ -8,7 +8,7 @@ const STEP_TEXTS: PackedStringArray = [
 	"Select a card to place it into an empty tile.\nYou must reach the required score for the current round before your turns reach to 0.",
 	"You can hover over a tile to check its stats.\nSupport cards abilities are not always limited to their own segments",
 	"The turn ends when there are only two remaining cards in your hand.\nYou win once you have completed nine rounds.",
-	"Every segment Measures their outputs separately, before adding up their scores for the current turn.\nMultipliers (Mult) are only applied to the Score within their own Segment.",
+	"Every segment measures Energy and Mult separately. Energy × Mult becomes that segment's Score, then Scores add for the turn.\nMult only applies to Energy in its own segment. Gold is not multiplied.",
 ]
 
 const FADE_OUT_DURATION := 0.18
@@ -39,6 +39,10 @@ func _ready() -> void:
 		_begin_tutorial()
 	else:
 		hide()
+
+
+func is_tutorial_active() -> bool:
+	return _active
 
 
 func set_tutorial_visible_from_settings(should_show: bool) -> void:

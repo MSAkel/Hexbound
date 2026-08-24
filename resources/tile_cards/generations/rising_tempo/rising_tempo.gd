@@ -1,5 +1,5 @@
 extends TileCard
-## +5 score for every trigger on this segment so far this turn
+## +5 Energy for every trigger on this segment so far this turn
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	# Includes this activation

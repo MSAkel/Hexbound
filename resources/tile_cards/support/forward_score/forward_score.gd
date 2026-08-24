@@ -1,5 +1,5 @@
 extends TileCard
-## Gives the next segment +40 Score
+## Gives the next segment +40 Energy
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	var next_segment_index := _get_next_segment_index(tile)

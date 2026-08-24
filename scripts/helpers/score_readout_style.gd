@@ -40,7 +40,7 @@ static func color_for_score(score: int) -> Color:
 	return stops[index].lerp(stops[index + 1], local)
 
 
-## Pulls the first integer out of floatingtext such as "+120 Score" or "1,250".
+## Pulls the first integer out of floating text such as "+120" or "1,250".
 static func parse_amount(text: String) -> int:
 	var regex := RegEx.new()
 	regex.compile("-?[\\d,]+")

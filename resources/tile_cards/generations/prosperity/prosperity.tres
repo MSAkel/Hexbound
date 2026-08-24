@@ -10,5 +10,5 @@ product = 1
 id = "prosperity"
 name = "Prosperity"
 icon = ExtResource("1_psaim")
-description = "+4 Score per Gold produced earlier in this segment."
+description = "+4 Energy per Gold produced earlier in this segment."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

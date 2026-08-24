@@ -9,5 +9,5 @@ rarity = 2
 id = "unstable_concoction"
 name = "Unstable Concoction"
 icon = ExtResource("1_jjxmo")
-description = "Gives 100 Score or 15 Mult or 15 gold"
+description = "Gives 100 Energy or 15 Mult or 15 Gold"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

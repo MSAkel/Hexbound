@@ -313,7 +313,7 @@ func set_card(data: Card) -> void:
 	card = data
 	card_name.text = data.name
 	icon.texture = data.icon
-	# Keywords such as Score and Mult are colored in CardKeywordGlossary.
+	# Keywords such as Energy, Mult, and Score are colored in CardKeywordGlossary.
 	card_description.text = CardKeywordGlossary.to_bbcode(data.description)
 	card_type_label.text = data.get_card_kind_label()
 	_apply_card_frame()

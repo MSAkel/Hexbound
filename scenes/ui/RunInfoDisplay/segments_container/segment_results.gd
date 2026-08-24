@@ -1,6 +1,6 @@
 extends PanelContainer
 
-## One row in the run-info panel for a single map segment's turn power, multiplier, score, and gold.
+## One row in the run-info panel for a single map segment's turn Energy, multiplier, Score, and gold.
 
 var segment_index: int = -1
 
@@ -15,6 +15,8 @@ var _score: int = 0
 var _multiplier: int = 1
 var _total_score: int = 0
 var _gold: int = 0
+## Live resolve hides Score until this segment's equals beat.
+var _score_revealed: bool = true
 var _accepts_live_updates: bool = true
 var _power_counter: CountingNumber
 var _multiplier_counter: CountingNumber
@@ -38,12 +40,15 @@ func _ready() -> void:
 	_gold_counter = _make_stat_counter(segment_gold)
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
 	EventBus.segment_turn_results_reset.connect(_on_segment_turn_results_reset)
+	EventBus.segment_score_revealed.connect(_on_segment_score_revealed)
 	_set_segment_no(segment_index + 1)
 	_sync_from_tile_map()
 
 
 func set_accepts_live_updates(enabled: bool) -> void:
 	_accepts_live_updates = enabled
+	if enabled:
+		_score_revealed = false
 
 
 func apply_turn_snapshot(
@@ -51,8 +56,11 @@ func apply_turn_snapshot(
 	multiplier: int,
 	total_score: int,
 	gold: int,
-	animate: bool = true
+	animate: bool = true,
+	reveal_score: bool = true
 ) -> void:
+	if reveal_score:
+		_score_revealed = true
 	_apply_results(score, multiplier, total_score, gold, animate)
 
 
@@ -72,25 +80,35 @@ func _sync_from_tile_map() -> void:
 	var score := tile_map.get_segment_turn_score(segment_index)
 	var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
 	var gold := tile_map.get_segment_turn_gold(segment_index)
-	_apply_results(score, multiplier, score * multiplier, gold, false)
+	_apply_results(score, multiplier, 0, gold, false)
 
 
 func _on_segment_turn_results_changed(
 	changed_index: int,
 	score: int,
 	multiplier: int,
-	total_score: int,
+	_total_score: int,
 	gold: int
 ) -> void:
 	if not _accepts_live_updates or changed_index != segment_index:
 		return
-	_apply_results(score, multiplier, total_score, gold)
+	# Keep Score hidden until the equals beat. Energy, Mult, and Gold update live.
+	_apply_results(score, multiplier, 0, gold)
 
 
 func _on_segment_turn_results_reset() -> void:
 	if not _accepts_live_updates:
 		return
+	_score_revealed = false
 	_apply_results(0, 1, 0, 0, false)
+
+
+func _on_segment_score_revealed(changed_index: int, total_score: int) -> void:
+	if changed_index != segment_index:
+		return
+	_score_revealed = true
+	_total_score = total_score
+	_play_counter(_total_score_counter, total_score, segment_total_score)
 
 
 ## Stores tooltip values and updates the row labels.
@@ -109,12 +127,15 @@ func _apply_results(
 	if animate:
 		_play_counter(_power_counter, score, segment_power)
 		_play_counter(_multiplier_counter, multiplier, segment_multiplier)
-		_play_counter(_total_score_counter, total_score, segment_total_score)
+		if _score_revealed:
+			_play_counter(_total_score_counter, total_score, segment_total_score)
+		else:
+			_total_score_counter.snap_to(0)
 		_play_counter(_gold_counter, gold, segment_gold)
 	else:
 		_power_counter.snap_to(score)
 		_multiplier_counter.snap_to(multiplier)
-		_total_score_counter.snap_to(total_score)
+		_total_score_counter.snap_to(total_score if _score_revealed else 0)
 		_gold_counter.snap_to(gold)
 	_apply_multiplier_display(multiplier)
 
@@ -217,9 +238,14 @@ func _get_segments_container() -> Control:
 
 
 func _on_mouse_entered() -> void:
+	var score_line := (
+		"%s × %s = %s" % [_score, _multiplier, _total_score]
+		if _score_revealed
+		else "—"
+	)
 	var tooltip := (
-		"Turn Results:\nPower: %s\nMultiplier: %s\nGold: %s\nTotal Score: %s"
-		% [_score, _multiplier, _gold, _total_score]
+		"Turn Results:\nEnergy: %s\nMultiplier: %s\nGold: %s\nScore: %s"
+		% [_score, _multiplier, _gold, score_line]
 	)
 	EventBus.toggle_tooltip.emit(
 		true,
