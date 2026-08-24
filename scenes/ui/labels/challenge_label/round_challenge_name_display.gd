@@ -68,11 +68,16 @@ func _gui_input(event: InputEvent) -> void:
 		_begin_dock(true)
 
 
-func _on_challenge_banner_shown(challenge_name: String) -> void:
+func _on_challenge_banner_shown(challenge_name: String, dock_immediately: bool = false) -> void:
 	_reveal_id += 1
 	var reveal_id := _reveal_id
 	_challenge_name = challenge_name
 	_apply_copy()
+
+	if dock_immediately:
+		_show_docked_immediately()
+		return
+
 	_prepare_intro_visuals()
 	show()
 	await get_tree().process_frame
@@ -168,6 +173,20 @@ func _finish_dock() -> void:
 	skip_hint.hide()
 	_apply_docked_layout()
 	_center_banner_pivot()
+	# RoundFlow holds the round's first turn until the banner has settled.
+	EventBus.challenge_reveal_finished.emit()
+
+
+func _show_docked_immediately() -> void:
+	_kill_tween()
+	_phase = Phase.DOCKED
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	description_label.hide()
+	skip_hint.hide()
+	_apply_docked_layout()
+	show()
+	_center_banner_pivot()
+	EventBus.challenge_reveal_finished.emit()
 
 
 func _prepare_intro_visuals() -> void:

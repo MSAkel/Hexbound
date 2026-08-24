@@ -62,14 +62,11 @@ var _halved_segment_index := -1
 ## Saved is_active values so player toggles are restored after each turn's blackout.
 var _disabled_prior_states: Dictionary = {}
 var _tile_map: HexTileMap = null
-## Set when entering a challenge round, cleared after the post-merchant banner is shown.
-var _pending_challenge_reveal := false
 
 
 func _ready() -> void:
 	EventBus.turn_started.connect(_on_turn_started)
 	EventBus.tile_card_activated.connect(_on_tile_card_activated)
-	EventBus.merchant_closed.connect(_on_merchant_closed)
 
 
 # Pick three unique challenges for rounds 4, 8, and 12 at the start of a run.
@@ -78,7 +75,6 @@ func init_run() -> void:
 	active_challenge = -1
 	_halved_segment_index = -1
 	_disabled_prior_states.clear()
-	_pending_challenge_reveal = false
 	_clear_fading_sector_visuals()
 
 	var pool := ALL_CHALLENGES.duplicate()
@@ -94,12 +90,22 @@ func on_round_advanced(new_round: int) -> void:
 	active_challenge = get_challenge_for_round(new_round)
 	_restore_challenge_disabled_runes()
 
-	if active_challenge != -1:
-		_pending_challenge_reveal = true
-	else:
+	# Rush Hour's turn cap has to apply now. RoundFlow decides when the reveal plays.
+	if active_challenge == -1:
 		EventBus.challenge_banner_hidden.emit()
 
 	EventBus.challenge_changed.emit()
+
+
+## Plays the challenge reveal. Returns whether a banner actually started, so the caller
+## knows whether to wait for challenge_reveal_finished.
+func play_reveal() -> bool:
+	if active_challenge == -1:
+		return false
+
+	AudioManager.play_sfx(UI_SOUNDS.CHALLENGE_START)
+	EventBus.challenge_banner_shown.emit(get_active_challenge_name(), false)
+	return true
 
 
 func is_completing_final_challenge_round() -> bool:
@@ -156,7 +162,13 @@ func get_max_turns_per_round() -> int:
 
 
 func get_runes_pack_size() -> int:
-	if active_challenge == Type.SOLO_PACT:
+	# The post-round reward pick belongs to the round that just ended, so a challenge starting
+	# on the round being entered must not shrink it. In-round picks use the live challenge.
+	var governing_challenge := active_challenge
+	if RoundFlow.is_transitioning():
+		governing_challenge = RoundFlow.get_outgoing_challenge()
+
+	if governing_challenge == Type.SOLO_PACT:
 		return 1
 	return GameManager.RUNES_PACK_SIZE
 
@@ -180,8 +192,6 @@ func get_producer_output_multiplier(tile: Hex) -> float:
 
 
 func _on_turn_started() -> void:
-	if GameManager.is_in_post_victory_transition():
-		return
 	if active_challenge == Type.BLACKOUT:
 		_clear_fading_sector_visuals()
 		_apply_blackout()
@@ -208,15 +218,6 @@ func _on_tile_card_activated(rune: TileCard) -> void:
 		if hex != null:
 			var tile_pos := tile_map.base_layer.map_to_local(hex.coordinates)
 			tile_map.create_floating_text(tile_pos, "-1 Gold", Color.GOLD)
-
-
-func _on_merchant_closed() -> void:
-	if not _pending_challenge_reveal or active_challenge == -1:
-		return
-
-	_pending_challenge_reveal = false
-	AudioManager.play_sfx(UI_SOUNDS.CHALLENGE_START)
-	EventBus.challenge_banner_shown.emit(get_active_challenge_name())
 
 
 func _apply_blackout() -> void:
@@ -310,7 +311,6 @@ func capture_run_state() -> Dictionary:
 		"scheduled_challenges": scheduled_challenges.duplicate(),
 		"active_challenge": active_challenge,
 		"halved_segment_index": _halved_segment_index,
-		"pending_challenge_reveal": _pending_challenge_reveal,
 	}
 
 
@@ -321,9 +321,17 @@ func apply_run_state(state: Dictionary) -> void:
 
 	active_challenge = int(state.get("active_challenge", -1))
 	_halved_segment_index = int(state.get("halved_segment_index", -1))
-	_pending_challenge_reveal = bool(state.get("pending_challenge_reveal", false))
 	_disabled_prior_states.clear()
 	_tile_map = null
+
+
+func restore_banner_after_load() -> void:
+	# A queued reveal stays queued so the load does not spoil it before the merchant closes.
+	if active_challenge == -1 or RoundFlow.has_armed_challenge_reveal():
+		EventBus.challenge_banner_hidden.emit()
+		return
+
+	EventBus.challenge_banner_shown.emit(get_active_challenge_name(), true)
 
 
 func refresh_challenge_visuals() -> void:

@@ -33,6 +33,7 @@ AudioManager="*res://scripts/autoload/audio_manager.gd"
 EventBus="*uid://cw24fl4eehmwb"
 GoldManager="*res://scripts/autoload/gold_manager.gd"
 ChallengeManager="*res://scripts/autoload/challenge_manager.gd"
+RoundFlow="*res://scripts/autoload/round_flow.gd"
 RunSaveManager="*res://scripts/autoload/run_save_manager.gd"
 
 [debug]

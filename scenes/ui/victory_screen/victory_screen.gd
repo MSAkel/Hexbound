@@ -26,7 +26,7 @@ func _on_continue_pressed() -> void:
 	if UiManager.active_panel == self:
 		UiManager.active_panel = null
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
-	GameManager.continue_run_after_victory()
+	RoundFlow.notify_victory_continue()
 
 
 func _on_main_menu_pressed() -> void:

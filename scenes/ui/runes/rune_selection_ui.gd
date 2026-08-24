@@ -18,15 +18,7 @@ func _ready() -> void:
 
 	UiManager.show_runes_choice_panel.connect(_on_show_panel)
 	EventBus.gold_changed.connect(_on_gold_changed)
-	EventBus.tile_card_selected.connect(_on_tile_card_selected)
 	_update_reroll_button()
-
-func _on_tile_card_selected(_rune: TileCard) -> void:
-	hide()
-
-	## Open the merchant only after a rune pick when the round goal was met this turn.
-	if GameManager.consume_pending_merchant_visit():
-		UiManager.show_merchant_panel.emit()
 
 
 func _on_show_panel() -> void:
@@ -34,9 +26,6 @@ func _on_show_panel() -> void:
 	_update_reroll_button()
 	create_runes_pack()
 	instantiate_rune_choices()
-
-func _on_close_button_pressed() -> void:
-	hide()
 
 
 func _on_reroll_button_pressed() -> void:
@@ -94,7 +83,10 @@ func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
 	var rune := card_ui.card as TileCard
 	## Selecting a rune consumes the pack so a new one can be offered later.
 	runes_pack.clear()
+	hide()
 	EventBus.tile_card_selected.emit(rune)
+	## Report the pick here rather than on tile_card_selected, which merchant purchases also emit.
+	RoundFlow.notify_rune_picked()
 
 
 ## Pick random runes for the selection panel from the shared pool.

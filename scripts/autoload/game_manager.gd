@@ -10,13 +10,6 @@ const SCORE_PROGRESSION := preload("res://resources/score_progression.tres")
 const RUNES_PACK_SIZE := 3
 const MAX_TURNS_PER_ROUND := 5
 
-## Set when a turn ends with enough score to meet the round goal
-var _pending_merchant_visit := false
-## Round advance (remaining turns reset, +gold, challenges) waits until round-complete confirm.
-var _pending_round_advance := false
-## After the final-challenge victory screen, rune pick and merchant happen before round 13.
-var _pending_post_victory_round_advance := false
-
 var current_round: int = 1
 ## Counter for the number of triggers that have been activated throughout the run, used to reward perks
 var _total_rune_activations: int = 0
@@ -49,9 +42,6 @@ var remaining_turns: int:
 		return _remaining_turns
 	set(value):
 		_remaining_turns = value
-		# Hitting 0 remaining after a failed turn ends the run.
-		if _remaining_turns <= 0:
-			EventBus.game_ended.emit()
 
 var is_processing_turn: bool:
 	get:
@@ -75,8 +65,6 @@ var total_round_score: int:
 	set(value):
 		_total_round_score = value
 		EventBus.total_round_score_changed.emit()
-		if _total_round_score >= required_score:
-			_complete_current_round()
 
 var turn_score: int:
 	get:
@@ -141,7 +129,6 @@ func _ready() -> void:
 
 	EventBus.turn_ended.connect(end_turn)
 	EventBus.turn_started.connect(_on_turn_started)
-	EventBus.merchant_closed.connect(_on_merchant_closed)
 #region Turn flow
 
 func end_turn() -> void:
@@ -151,25 +138,14 @@ func end_turn() -> void:
 func finish_turn_processing() -> void:
 	_is_processing_turn = false
 
-	## Score the turn before advancing counters so round logic sees this turn's contribution.
-	var pending_total_round_score := total_round_score + turn_score
-	# Consume one remaining turn when the round goal was not met.
-	var should_consume_turn := remaining_turns > 0 and pending_total_round_score < required_score
+	# A turn is only consumed when it failed to reach the round goal.
+	var should_consume_turn := remaining_turns > 0 and total_round_score + turn_score < required_score
 
-	if pending_total_round_score >= required_score:
-		if ChallengeManager.is_completing_final_challenge_round():
-			total_round_score = pending_total_round_score
-			turn_score = 0
-			EventBus.turn_started.emit()
-			return
-		_pending_merchant_visit = true
-
-	total_round_score = pending_total_round_score
+	total_round_score += turn_score
 	turn_score = 0
 
-	# Round complete → confirm screen first (turn start deferred), otherwise rune pick immediately.
-	if _pending_merchant_visit:
-		UiManager.show_round_complete_panel.emit()
+	if _has_met_round_goal():
+		_complete_current_round()
 	else:
 		UiManager.show_runes_choice_panel.emit()
 		EventBus.turn_started.emit()
@@ -177,6 +153,7 @@ func finish_turn_processing() -> void:
 	if should_consume_turn:
 		remaining_turns -= 1
 		EventBus.turn_changed.emit()
+		_check_run_loss()
 
 
 func _on_turn_started() -> void:
@@ -185,41 +162,15 @@ func _on_turn_started() -> void:
 	GoldManager.reset_turn_tracking()
 
 
-## Called when the round-complete Continue button is pressed.
-## Applies deferred round advance, then starts the next turn so HUD/gold reset after the summary.
-func confirm_round_complete() -> void:
-	if _pending_round_advance:
-		_pending_round_advance = false
-		advance_round()
-	EventBus.turn_started.emit()
+func _has_met_round_goal() -> bool:
+	return total_round_score >= required_score
 
 
-func consume_pending_merchant_visit() -> bool:
-	if not _pending_merchant_visit:
-		return false
-	_pending_merchant_visit = false
-	return true
-
-
-func is_in_post_victory_transition() -> bool:
-	return _pending_post_victory_round_advance
-
-
-func continue_run_after_victory() -> void:
-	_pending_merchant_visit = true
-	_pending_post_victory_round_advance = true
-	# Choice of cards at the end of the turn
-	UiManager.show_runes_choice_panel.emit()
-	EventBus.turn_started.emit()
-
-
-func _on_merchant_closed() -> void:
-	if not _pending_post_victory_round_advance:
+## The run ends when a failed turn uses up the last remaining turn.
+func _check_run_loss() -> void:
+	if _remaining_turns > 0:
 		return
-
-	_pending_post_victory_round_advance = false
-	advance_round()
-	EventBus.turn_started.emit()
+	EventBus.game_ended.emit()
 
 
 func get_max_turns_per_round() -> int:
@@ -232,30 +183,30 @@ func get_turn_number() -> int:
 	return get_max_turns_per_round() - remaining_turns + 1
 
 
+## Hands the completed round to RoundFlow, which owns every step up to the next turn.
+## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
 func _complete_current_round() -> void:
 	if ChallengeManager.is_completing_final_challenge_round():
-		EventBus.challenge_banner_hidden.emit()
-		EventBus.all_challenges_completed.emit()
+		RoundFlow.begin_victory_transition()
 		return
 
-	# Keep remaining turns / gold-earned for the round-complete summary until Continue.
-	if _pending_merchant_visit:
-		_pending_round_advance = true
-		return
-
-	advance_round()
+	RoundFlow.begin_round_transition()
 
 
 func advance_round() -> void:
 	current_round += 1
-	required_score = SCORE_PROGRESSION.get_required_score(current_round)
 	# Round-spend counters reset before the round bonus so cards start fresh.
 	GoldManager.reset_round_tracking()
 	GoldManager.add(20)
 	total_round_score = 0
 	AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
+	_apply_round_state()
 
-	# Apply challenge first so Rush Hour's reduced max is reflected in remaining turns.
+
+## Round-dependent state and HUD refresh, shared by the round advance and the debug start.
+func _apply_round_state() -> void:
+	required_score = SCORE_PROGRESSION.get_required_score(current_round)
+	# Apply the challenge first so Rush Hour's reduced max is reflected in remaining turns.
 	ChallengeManager.on_round_advanced(current_round)
 	remaining_turns = get_max_turns_per_round()
 	EventBus.turn_changed.emit()
@@ -368,11 +319,9 @@ func _has_enhancement_with_id(enhancement_id: String) -> bool:
 #region Run save / load
 
 func reset_for_new_run() -> void:
+	RoundFlow.reset_for_new_run()
 	current_round = 1
 	_total_rune_activations = 0
-	_pending_merchant_visit = false
-	_pending_round_advance = false
-	_pending_post_victory_round_advance = false
 	_remaining_turns = MAX_TURNS_PER_ROUND
 	_is_processing_turn = false
 	required_score = SCORE_PROGRESSION.get_required_score(current_round)
@@ -386,12 +335,9 @@ func reset_for_new_run() -> void:
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.
 func set_starting_round_for_debug(starting_round: int) -> void:
 	current_round = maxi(1, starting_round)
-	required_score = SCORE_PROGRESSION.get_required_score(current_round)
-	ChallengeManager.on_round_advanced(current_round)
-	_remaining_turns = get_max_turns_per_round()
-	EventBus.turn_changed.emit()
-	EventBus.round_changed.emit(current_round)
-	EventBus.required_score_changed.emit()
+	_apply_round_state()
+	# No merchant visit precedes a debug start, so the reveal plays right away.
+	ChallengeManager.play_reveal()
 
 
 func capture_run_state() -> Dictionary:
@@ -403,9 +349,6 @@ func capture_run_state() -> Dictionary:
 		"required_score": required_score,
 		"total_round_score": _total_round_score,
 		"turn_score": _turn_score,
-		"pending_merchant_visit": _pending_merchant_visit,
-		"pending_round_advance": _pending_round_advance,
-		"pending_post_victory_round_advance": _pending_post_victory_round_advance,
 		"turn_stamp": turn_stamp,
 		"game_speed": _game_speed,
 	}
@@ -419,9 +362,6 @@ func apply_run_state(state: Dictionary) -> void:
 	required_score = int(state.get("required_score", SCORE_PROGRESSION.get_required_score(current_round)))
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
-	_pending_merchant_visit = bool(state.get("pending_merchant_visit", false))
-	_pending_round_advance = bool(state.get("pending_round_advance", false))
-	_pending_post_victory_round_advance = bool(state.get("pending_post_victory_round_advance", false))
 	turn_stamp = int(state.get("turn_stamp", 0))
 	_activated_tile_cards_this_turn.clear()
 	game_speed = float(state.get("game_speed", 1.0))

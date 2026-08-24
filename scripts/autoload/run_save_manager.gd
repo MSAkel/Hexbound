@@ -3,7 +3,7 @@ extends Node
 ## Persists in-progress runs to user:// so players can resume from the main menu.
 
 const SAVE_PATH := "user://run_save.json"
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 
 # Set before loading main.tscn from the main menu Continue button.
 var continue_run_pending := false
@@ -60,6 +60,7 @@ func save_current_run() -> void:
 		"game_manager": GameManager.capture_run_state(),
 		"gold": GoldManager.capture_run_state(),
 		"challenges": ChallengeManager.capture_run_state(),
+		"round_flow": RoundFlow.capture_run_state(),
 		"map": tile_map.capture_map_state(),
 		"hand": hand.capture_hand_state(),
 	}
@@ -95,12 +96,16 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
 	GameManager.apply_run_state(payload.get("game_manager", {}))
 	GoldManager.apply_run_state(payload.get("gold", {}))
 	ChallengeManager.apply_run_state(payload.get("challenges", {}))
+	RoundFlow.apply_run_state(payload.get("round_flow", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	hand.restore_hand_state(payload.get("hand", {}))
 	ChallengeManager.refresh_challenge_visuals()
+	ChallengeManager.restore_banner_after_load()
 	# Segment rows are built deferred, refresh them once the layout data is restored.
 	tile_map.call_deferred("refresh_segment_turn_results_ui")
 	_notify_ui_restored()
+	# Re-show the panel the run was sitting on, after the HUD has caught up.
+	RoundFlow.restore_after_load()
 
 
 func _load_save_payload() -> Dictionary:

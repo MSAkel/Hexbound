@@ -10,12 +10,17 @@ signal turn_started
 signal turn_changed
 ## Emitted when the round changes
 signal round_changed(new_round: int)
+## Emitted once the round transition finishes, right before the round's first turn starts.
+## Use this instead of turn_started for work that should run once per round, not once per turn.
+signal round_started(new_round: int)
 
 ## Challenge signals
 signal challenge_schedule_changed
 signal challenge_changed
-signal challenge_banner_shown(challenge_name: String)
+signal challenge_banner_shown(challenge_name: String, dock_immediately: bool)
 signal challenge_banner_hidden
+## Emitted once the reveal banner has settled into its docked position.
+signal challenge_reveal_finished
 signal all_challenges_completed
 
 signal card_drag_started(card: CardUI)

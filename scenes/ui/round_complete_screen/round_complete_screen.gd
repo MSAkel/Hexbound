@@ -13,7 +13,7 @@ func _ready() -> void:
 
 func _on_show_panel() -> void:
 	UiManager.show_panel(self)
-	# Read while round advance / turn_started are still deferred so leftover turns and
+	# Read while round advance and turn_started are still deferred so leftover turns and
 	# gold earned this turn still reflect the completed round.
 	round_score.text = str(GameManager.total_round_score)
 	gold_earned.text = str(GoldManager.earned_this_turn)
@@ -23,6 +23,5 @@ func _on_show_panel() -> void:
 
 func _on_continue_button_pressed() -> void:
 	hide()
-	# Advance the next round and start the new turn only after the summary is dismissed.
-	GameManager.confirm_round_complete()
-	UiManager.show_runes_choice_panel.emit()
+	# RoundFlow owns what comes next, this screen only reports that it was dismissed.
+	RoundFlow.notify_summary_confirmed()

@@ -34,7 +34,7 @@ grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 script = ExtResource("1_0y3yv")
-debug_starting_runes = Array[ExtResource("2_6x5t0")]([ExtResource("3_33g05"), ExtResource("3_33g05"), ExtResource("3_33g05"), ExtResource("3_33g05")])
+debug_starting_runes = Array[ExtResource("2_6x5t0")]([ExtResource("3_33g05")])
 
 [node name="GeneratedCardReveal" type="Node" parent="." unique_id=856140927]
 script = ExtResource("1_reveal")
