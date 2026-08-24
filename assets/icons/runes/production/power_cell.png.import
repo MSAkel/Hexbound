@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bgru8i40w22v3"
-path="res://.godot/imported/hybrid_card_frame.png-67b8538b98ec3818ae40bb0a3b30308c.ctex"
+uid="uid://cmywu02prhkhj"
+path="res://.godot/imported/power_cell.png-6de7dcd9cce46d8950877f2db847670a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/cards/hybrid_card_frame.png"
-dest_files=["res://.godot/imported/hybrid_card_frame.png-67b8538b98ec3818ae40bb0a3b30308c.ctex"]
+source_file="res://assets/icons/runes/production/power_cell.png"
+dest_files=["res://.godot/imported/power_cell.png-6de7dcd9cce46d8950877f2db847670a.ctex"]
 
 [params]
 

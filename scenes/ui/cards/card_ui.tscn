@@ -2,10 +2,9 @@
 
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
+[ext_resource type="Texture2D" uid="uid://cybeqkl7icvqn" path="res://assets/cards/modifier_card_frame.png" id="3_modifier"]
 [ext_resource type="Texture2D" uid="uid://d4a3cfbq7svgl" path="res://assets/cards/production_card_frame.png" id="3_nmvtt"]
 [ext_resource type="Texture2D" uid="uid://dnlyet37a8gu7" path="res://assets/cards/support_card_frame.png" id="3_support"]
-[ext_resource type="Texture2D" uid="uid://bgru8i40w22v3" path="res://assets/cards/hybrid_card_frame.png" id="3_hybrid"]
-[ext_resource type="Texture2D" uid="uid://cybeqkl7icvqn" path="res://assets/cards/modifier_card_frame.png" id="3_modifier"]
 [ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="4_7xb4v"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
@@ -59,7 +58,6 @@ theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
 frame_producer = ExtResource("3_nmvtt")
 frame_support = ExtResource("3_support")
-frame_hybrid = ExtResource("3_hybrid")
 frame_modifier = ExtResource("3_modifier")
 
 [node name="CardBackground" type="Panel" parent="." unique_id=932652994]
@@ -75,7 +73,93 @@ grow_vertical = 2
 offset_transform_enabled = true
 theme_override_styles/panel = SubResource("StyleBoxTexture_5jwxg")
 
-[node name="SelectionGlow" type="Panel" parent="." unique_id=2130580828]
+[node name="Content" type="VBoxContainer" parent="." unique_id=569885187]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 5.0
+offset_top = 6.0
+offset_right = -4.0
+offset_bottom = 310.0
+grow_horizontal = 2
+
+[node name="PriceLabel" type="Label" parent="Content" unique_id=1732701792]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.43634328, 0.572599, 0.42167145, 1)
+theme_override_font_sizes/font_size = 32
+text = "$100"
+horizontal_alignment = 1
+
+[node name="NameContainer" type="PanelContainer" parent="Content" unique_id=322151785]
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_rjgu6")
+
+[node name="CardName" type="Label" parent="Content/NameContainer" unique_id=780871484]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
+text = "Name"
+label_settings = SubResource("LabelSettings_nmvtt")
+horizontal_alignment = 1
+
+[node name="IconContainer" type="PanelContainer" parent="Content" unique_id=1784689084]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_vxwtt")
+
+[node name="Icon" type="TextureRect" parent="Content/IconContainer" unique_id=742371266]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("6_nmvtt")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CardTypeLabel" type="Label" parent="Content" unique_id=1751951717]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
+theme_override_font_sizes/font_size = 12
+text = "Type"
+label_settings = SubResource("LabelSettings_5jwxg")
+horizontal_alignment = 1
+
+[node name="Divider" type="TextureRect" parent="Content" unique_id=222293325]
+layout_mode = 2
+texture = ExtResource("6_onxhv")
+
+[node name="ResourceCostContainer" type="HBoxContainer" parent="Content" unique_id=1695431964]
+z_index = 1
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="CardDescription" type="RichTextLabel" parent="Content" unique_id=2119088894]
+custom_minimum_size = Vector2(75, 130)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
+theme_override_fonts/normal_font = SubResource("SystemFont_5jwxg")
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
+text = "Description"
+scroll_active = false
+horizontal_alignment = 1
+
+[node name="Overlays" type="Control" parent="." unique_id=1200456789]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SelectionGlow" type="Panel" parent="Overlays" unique_id=2130580828]
 visible = false
 z_index = 2
 layout_mode = 1
@@ -91,88 +175,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = ExtResource("4_7xb4v")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=569885187]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 5.0
-offset_top = 6.0
-offset_right = -4.0
-offset_bottom = 310.0
-grow_horizontal = 2
-
-[node name="PriceLabel" type="Label" parent="VBoxContainer" unique_id=1732701792]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.43634328, 0.572599, 0.42167145, 1)
-theme_override_font_sizes/font_size = 32
-text = "$100"
-horizontal_alignment = 1
-
-[node name="NameContainer" type="PanelContainer" parent="VBoxContainer" unique_id=322151785]
-layout_mode = 2
-size_flags_vertical = 0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_rjgu6")
-
-[node name="CardName" type="Label" parent="VBoxContainer/NameContainer" unique_id=780871484]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
-text = "Name"
-label_settings = SubResource("LabelSettings_nmvtt")
-horizontal_alignment = 1
-
-[node name="IconContainer" type="PanelContainer" parent="VBoxContainer" unique_id=1784689084]
-custom_minimum_size = Vector2(0, 75)
-layout_mode = 2
-size_flags_vertical = 0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_vxwtt")
-
-[node name="Icon" type="TextureRect" parent="VBoxContainer/IconContainer" unique_id=742371266]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("6_nmvtt")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="CardTypeLabel" type="Label" parent="VBoxContainer" unique_id=1751951717]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
-theme_override_font_sizes/font_size = 12
-text = "Type"
-label_settings = SubResource("LabelSettings_5jwxg")
-horizontal_alignment = 1
-
-[node name="Divider" type="TextureRect" parent="VBoxContainer" unique_id=222293325]
-layout_mode = 2
-texture = ExtResource("6_onxhv")
-
-[node name="ResourceCostContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1695431964]
-z_index = 1
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 0
-
-[node name="CostContainer" type="PanelContainer" parent="VBoxContainer" unique_id=782001662]
-layout_mode = 2
-
-[node name="CardDescription" type="RichTextLabel" parent="VBoxContainer" unique_id=2119088894]
-custom_minimum_size = Vector2(75, 130)
-layout_mode = 2
-mouse_filter = 2
-theme_override_colors/default_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
-theme_override_fonts/normal_font = SubResource("SystemFont_5jwxg")
-theme_override_font_sizes/normal_font_size = 14
-bbcode_enabled = true
-text = "Description"
-scroll_active = false
-autowrap_mode = 3
-horizontal_alignment = 1
-
-[node name="SoldOverlay" type="Panel" parent="." unique_id=993550490]
+[node name="SoldOverlay" type="Panel" parent="Overlays" unique_id=993550490]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -182,7 +185,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_2hgda")
 
-[node name="Label" type="Label" parent="SoldOverlay" unique_id=1355951540]
+[node name="SoldLabel" type="Label" parent="Overlays/SoldOverlay" unique_id=1355951540]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -237,5 +240,5 @@ state = 3
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
-[connection signal="area_entered" from="DropPointArea" to="." method="_on_drop_point_area_area_entered"]
-[connection signal="area_exited" from="DropPointArea" to="." method="_on_drop_point_area_area_exited"]
+[connection signal="area_entered" from="DropPointArea" to="." method="_on_drop_point_area_entered"]
+[connection signal="area_exited" from="DropPointArea" to="." method="_on_drop_point_area_exited"]

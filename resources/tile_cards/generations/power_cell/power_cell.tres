@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://c7c2eo74m8q0l"]
+
+[ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/runes/production/power_cell.png" id="1_ayjfw"]
+[ext_resource type="Script" uid="uid://cc6ehbquhicml" path="res://resources/tile_cards/generations/power_cell/power_cell.gd" id="2_qvrl4"]
+
+[resource]
+script = ExtResource("2_qvrl4")
+base_production_amount = 20
+product = 1
+id = "power_cell"
+name = "Power Cell"
+icon = ExtResource("1_ayjfw")
+description = "+20 Score"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

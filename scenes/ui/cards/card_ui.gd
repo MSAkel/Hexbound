@@ -14,12 +14,12 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @export var frame_support: Texture2D
 @export var frame_modifier: Texture2D
 
-@onready var card_name: Label = $VBoxContainer/NameContainer/CardName
-@onready var icon: TextureRect = $VBoxContainer/IconContainer/Icon
-@onready var card_description: RichTextLabel = $VBoxContainer/CardDescription
-@onready var resource_cost_container: HBoxContainer = $VBoxContainer/ResourceCostContainer
-@onready var card_type_label: Label = $VBoxContainer/CardTypeLabel
-@onready var price_label: Label = $VBoxContainer/PriceLabel
+@onready var card_name: Label = $Content/NameContainer/CardName
+@onready var icon: TextureRect = $Content/IconContainer/Icon
+@onready var card_description: RichTextLabel = $Content/CardDescription
+@onready var resource_cost_container: HBoxContainer = $Content/ResourceCostContainer
+@onready var card_type_label: Label = $Content/CardTypeLabel
+@onready var price_label: Label = $Content/PriceLabel
 
 @onready var drop_point_area: Area2D = $DropPointArea
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
@@ -28,10 +28,10 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 
 # Textured card frame. Used for hover tint and to ignore mouse so the root Control gets clicks.
 @onready var panel: Panel = $CardBackground
-@onready var content_container: VBoxContainer = $VBoxContainer
+@onready var content_container: VBoxContainer = $Content
 # Scene-authored border glow; toggled when the card enters/exits the clicked placement state.
-@onready var selection_glow: Panel = $SelectionGlow
-@onready var sold_overlay: Panel = $SoldOverlay
+@onready var selection_glow: Panel = $Overlays/SelectionGlow
+@onready var sold_overlay: Panel = $Overlays/SoldOverlay
 
 enum InteractionMode {
 	HAND,

@@ -24,6 +24,7 @@ script = ExtResource("1_l8t6x")
 scale = Vector2(0.9969174, 1)
 
 [node name="TutorialTextContainer" parent="." unique_id=1844229200 instance=ExtResource("17_tutorial")]
+offset_bottom = 110.0
 
 [node name="CardsHand" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
 custom_minimum_size = Vector2(0, 0)

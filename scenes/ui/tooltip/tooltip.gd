@@ -1,6 +1,12 @@
 class_name Tooltip
 extends PanelContainer
 
+enum Placement {
+	AUTO,
+	## Anchor rect x is the host panel's right edge. Tooltip opens to the right, aligned to the row.
+	RIGHT_OF_ANCHOR,
+}
+
 @onready var label: Label = $Label
 
 const offset: Vector2 = Vector2(10, 10)
@@ -9,6 +15,7 @@ const offset: Vector2 = Vector2(10, 10)
 @export var bind_event_bus: bool = true
 
 var target_rect: Rect2 = Rect2()
+var _placement: Placement = Placement.AUTO
 
 func _ready() -> void:
 	if bind_event_bus:
@@ -27,9 +34,15 @@ func configure_as_embedded(text: String) -> void:
 	show()
 
 
-func _on_toggle_tooltip(is_tooltip_visible: bool, text: String, element_rect: Rect2 = Rect2()) -> void:
+func _on_toggle_tooltip(
+	is_tooltip_visible: bool,
+	text: String,
+	element_rect: Rect2 = Rect2(),
+	placement: Placement = Placement.AUTO
+) -> void:
 	if is_tooltip_visible and text != "":
 		target_rect = element_rect
+		_placement = placement
 		_update_content(text)
 		show()
 	else:
@@ -63,6 +76,10 @@ func _update_position() -> void:
 		position = mouse_pos + offset
 		_clamp_to_viewport()
 		return
+
+	if _placement == Placement.RIGHT_OF_ANCHOR:
+		_position_right_of_anchor()
+		return
 	
 	var viewport_size = get_viewport().get_visible_rect().size
 	var tooltip_pos: Vector2
@@ -91,6 +108,27 @@ func _update_position() -> void:
 	
 	position = tooltip_pos
 	_clamp_to_viewport()
+
+
+## Opens beside the host panel with the hovered row centered vertically on the tooltip.
+func _position_right_of_anchor() -> void:
+	var tooltip_pos := Vector2(target_rect.position.x + offset.x, target_rect.position.y)
+	if target_rect.size.y > 0.0:
+		tooltip_pos.y += (target_rect.size.y - size.y) * 0.5
+
+	var viewport_size := get_viewport().get_visible_rect().size
+	var min_x := target_rect.position.x + offset.x
+
+	if tooltip_pos.y < 0.0:
+		tooltip_pos.y = 0.0
+	if tooltip_pos.y + size.y > viewport_size.y:
+		tooltip_pos.y = viewport_size.y - size.y
+
+	if tooltip_pos.x + size.x > viewport_size.x:
+		tooltip_pos.x = viewport_size.x - size.x
+	tooltip_pos.x = maxf(tooltip_pos.x, min_x)
+
+	position = tooltip_pos
 
 
 func _clamp_to_viewport() -> void:

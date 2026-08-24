@@ -193,12 +193,40 @@ func _set_segment_no(no: int) -> void:
 			segment_no.text = "%dth" % no
 
 
+## Anchor on the segments panel right edge, vertically aligned to this row.
+func _get_tooltip_anchor_rect() -> Rect2:
+	var segments_container := _get_segments_container()
+	var row_rect := get_global_rect()
+	if segments_container == null:
+		return row_rect
+
+	var container_rect := segments_container.get_global_rect()
+	return Rect2(
+		Vector2(container_rect.end.x, row_rect.position.y),
+		Vector2(0.0, row_rect.size.y)
+	)
+
+
+func _get_segments_container() -> Control:
+	var node: Node = self
+	while node != null:
+		if node.name == "SegmentsContainer" and node is PanelContainer:
+			return node as Control
+		node = node.get_parent()
+	return null
+
+
 func _on_mouse_entered() -> void:
 	var tooltip := (
-		"Turn Results:\nPower: %s\nMultiplier: %s\nGold: %s\nTotal Score: %s\n\nRound Results: \nWIP"
+		"Turn Results:\nPower: %s\nMultiplier: %s\nGold: %s\nTotal Score: %s"
 		% [_score, _multiplier, _gold, _total_score]
 	)
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+	EventBus.toggle_tooltip.emit(
+		true,
+		tooltip,
+		_get_tooltip_anchor_rect(),
+		Tooltip.Placement.RIGHT_OF_ANCHOR
+	)
 	# Highlight this segment's tiles on the map for as long as the tooltip is shown.
 	var tile_map := _get_tile_map()
 	if tile_map != null:
