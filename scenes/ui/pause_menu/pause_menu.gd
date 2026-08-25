@@ -6,6 +6,9 @@ const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 @onready var panel: Panel = $Panel
 # Sibling settings instance under MainUI
 @onready var settings_container: PanelContainer = $"../SettingsContainer"
+@onready var rune_selection_ui: Control = $"../RuneSelectionUI"
+@onready var merchant: Control = $"../Merchant"
+@onready var round_complete_screen: Control = $"../PanelContainer"
 
 
 func _ready() -> void:
@@ -53,4 +56,14 @@ func _input(event: InputEvent) -> void:
 		if pause_menu.visible:
 			_close_pause_menu()
 			return
+		if _is_pause_blocked():
+			return
 		pause_menu.show()
+
+
+func _is_pause_blocked() -> bool:
+	return (
+		rune_selection_ui.is_visible_in_tree()
+		or merchant.is_visible_in_tree()
+		or round_complete_screen.is_visible_in_tree()
+	)

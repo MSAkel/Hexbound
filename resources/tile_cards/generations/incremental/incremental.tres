@@ -11,4 +11,5 @@ id = "incremental"
 name = "Incremental"
 icon = ExtResource("1_do01j")
 description = " +5 Energy. Every 2nd trigger: permanently gain +5 Energy."
+starting_hand_eligible = true
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

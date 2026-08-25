@@ -7,6 +7,9 @@ const SAVE_VERSION := 2
 
 # Set before loading main.tscn from the main menu Continue button.
 var continue_run_pending := false
+## One-shot request set by menu buttons that enter main.tscn.
+## Keeping this outside main.tscn lets running that scene directly skip the transition.
+var main_scene_transition_pending := false
 
 
 func has_save() -> bool:
@@ -29,6 +32,17 @@ func request_continue_run() -> void:
 	GameManager.selected_character = character
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0))
 	continue_run_pending = true
+	request_main_scene_transition()
+
+
+func request_main_scene_transition() -> void:
+	main_scene_transition_pending = true
+
+
+func consume_main_scene_transition_request() -> bool:
+	var was_requested := main_scene_transition_pending
+	main_scene_transition_pending = false
+	return was_requested
 
 
 func should_restore_run() -> bool:

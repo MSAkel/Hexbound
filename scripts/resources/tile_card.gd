@@ -96,6 +96,8 @@ var _activation_output_scale: float = 1.0
 @export var placement_restriction: PlacementRestriction = PlacementRestriction.NONE
 # Support cards set this explicitly. Producers derive their sigil from product when NONE.
 @export var sigil_kind: SigilKind = SigilKind.NONE
+## When true, this common score producer may appear in flat-score starter draws.
+@export var starting_hand_eligible: bool = false
 
 
 func get_sigil_kind() -> SigilKind:

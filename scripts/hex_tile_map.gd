@@ -72,6 +72,8 @@ const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 
 # Delay before showing the tile info panel after hovering a tile with a placed card.
 const TILE_PANEL_HOVER_DELAY := 0.4
+# Pause between tile card activations during turn resolution. Shared by trigger order and queued triggers.
+const TILE_ACTIVATION_PACE_DELAY := 0.5
 # Soften the light-blue segment overlay while previewing an empty tile's segment.
 const EMPTY_TILE_SEGMENT_HOVER_MODULATE := Color(1.0, 1.0, 1.0, 0.45)
 # Tile currently being hovered for the info panel (independent of selection overlay).
@@ -971,16 +973,14 @@ func _on_tile_card_empower_consumed(rune: TileCard) -> void:
 func on_turn_ended() -> void:
 	reset_segment_turn_results()
 
-	var base_delay_interval := 0.5
 	_pending_trigger_queue.clear()
 
 	for tile: Hex in get_hexes_in_trigger_order():
 		if tile.active_tile_card == null:
 			continue
 
-		var delay_interval := base_delay_interval / GameManager.game_speed
 		await _resolve_rune_activation(tile)
-		await get_tree().create_timer(delay_interval).timeout
+		await _wait_between_tile_activations()
 
 	await _play_segment_turn_result_reveals()
 	_apply_segment_turn_totals_to_game_manager()
@@ -997,6 +997,8 @@ func _resolve_rune_activation(tile: Hex) -> void:
 		var target_hex := get_hex_for_tile_card(entry["rune"])
 		if target_hex == null or target_hex.active_tile_card == null:
 			continue
+		# Match the same pacing gap used between tiles in trigger order.
+		await _wait_between_tile_activations()
 		await _activate_tile_card_on_tile(target_hex, entry["activation_scale"], true)
 
 
@@ -1019,6 +1021,10 @@ func _activate_tile_card_on_tile(tile: Hex, activation_scale: float = 1.0, from_
 func _wait_for_activation_animation() -> void:
 	var duration := RuneUI.activation_animation_duration()
 	await get_tree().create_timer(duration / GameManager.game_speed).timeout
+
+
+func _wait_between_tile_activations() -> void:
+	await get_tree().create_timer(TILE_ACTIVATION_PACE_DELAY / GameManager.game_speed).timeout
 
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.

@@ -42,4 +42,22 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 color = Color(0, 0, 0, 1)
+
+[node name="IntroRune" type="TextureRect" parent="IntroFadeLayer" unique_id=1109015728]
+custom_minimum_size = Vector2(224, 224)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -112.0
+offset_top = -112.0
+offset_right = 112.0
+offset_bottom = 112.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5

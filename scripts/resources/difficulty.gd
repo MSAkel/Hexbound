@@ -22,7 +22,7 @@ const DIFFICULTY_INFO = {
 	},
 	Level.LEVEL_1: {
 		"name": "Level 2",
-		"info": "Start with 1 fewer card in the hand",
+		"info": "Start with 1 fewer support card in your starting hand",
 	},
 	Level.LEVEL_2: {
 		"name": "Level 3",

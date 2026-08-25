@@ -41,6 +41,8 @@ const CARD_FONT_SCALE := 0.9
 const STACK_GROUP_DISTANCE := 8.0
 ## Extra pixels between stacked card floats, on top of the previous line's font height.
 const STACK_GAP := 10.0
+## Centers card activation text over its rune, slightly above the rune's midpoint.
+const CARD_FLOAT_ANCHOR_OFFSET := Vector2(0.0, -24.0)
 
 ## Live card floats. Used to stack extra lines above the first at that tile.
 static var _active_card_floats: Array[FloatingText] = []
@@ -122,6 +124,7 @@ func play_float_and_free() -> void:
 
 ## Later floats at the same tile sit above earlier ones instead of overlapping.
 func _apply_card_stack_offset() -> void:
+	position += CARD_FLOAT_ANCHOR_OFFSET
 	_stack_anchor = position
 	var stack_index := 0
 	for other in _active_card_floats:
@@ -173,6 +176,9 @@ func _play_character_pop() -> bool:
 	if not is_instance_valid(self):
 		return false
 
+	# This row is not inside another Container, so explicitly size it before using its
+	# dimensions as the center offset. Otherwise its origin can remain at the rune center.
+	row.size = row.get_combined_minimum_size()
 	row.position = -row.size * 0.5
 	_text_root.scale = label.scale
 

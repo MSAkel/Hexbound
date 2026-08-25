@@ -53,5 +53,6 @@ func _on_play_button_pressed() -> void:
 	# Character choice locks in layout rules for the entire run.
 	GameManager.selected_character = _selected_character
 	GameManager.selected_difficulty = get_selected_difficulty()
+	RunSaveManager.request_main_scene_transition()
 
 	get_tree().change_scene_to_packed(main_scene)
