@@ -1,106 +1,99 @@
 [gd_scene format=3 uid="uid://bydk46w3lnoju"]
 
-[ext_resource type="Script" uid="uid://6n3v47jlsp0s" path="res://scenes/ui/character_selection_screen/character_selection_screen.gd" id="1_qkry7"]
-[ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="2_1dsk2"]
-[ext_resource type="PackedScene" uid="uid://cdi5v4a8f6h2x" path="res://scenes/ui/character_selection_screen/character_details.tscn" id="5_nbxll"]
+[ext_resource type="Script" uid="uid://6n3v47jlsp0s" path="res://scenes/ui/character_selection_screen/character_selection_screen.gd" id="1_screen"]
+[ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="2_background"]
+[ext_resource type="PackedScene" uid="uid://cdi5v4a8f6h2x" path="res://scenes/ui/character_selection_screen/character_details.tscn" id="3_details"]
+[ext_resource type="Texture2D" path="res://assets/icons/others/arrow_left.png" id="4_back"]
+[ext_resource type="PackedScene" path="res://scenes/ui/scene_enter_transition/scene_enter_transition.tscn" id="5_transition"]
 
-[sub_resource type="Gradient" id="Gradient_cmwxi"]
-colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_back"]
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_5uyla"]
-gradient = SubResource("Gradient_cmwxi")
-width = 50
-
-[sub_resource type="Gradient" id="Gradient_fe2o3"]
-offsets = PackedFloat32Array(0.016891891, 0.9932432)
-colors = PackedColorArray(0.0038762668, 0.0034745205, 0.0028596947, 0.28627452, 0.22514364, 0.22333887, 0.2845578, 0.3529412)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_1g8jr"]
-gradient = SubResource("Gradient_fe2o3")
-width = 50
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5uyla"]
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_5uyla"]
-load_path = "res://.godot/imported/arrow_left.png-52b3b81e0e8a1fb95ee73f5c4ec192f7.ctex"
-
-[node name="CharacterSelectionScreen" type="Control" unique_id=2011532295]
+[node name="CharacterSelectionScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_qkry7")
+script = ExtResource("1_screen")
 
-[node name="Background" type="TextureRect" parent="." unique_id=435190877]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_1dsk2")
+mouse_filter = 2
+texture = ExtResource("2_background")
 expand_mode = 1
+stretch_mode = 6
 
-[node name="OverlayDark" type="TextureRect" parent="." unique_id=1419786195]
-visible = false
+[node name="Atmosphere" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("GradientTexture1D_5uyla")
+mouse_filter = 2
+color = Color(0.015, 0.035, 0.038, 0.66)
 
-[node name="Overlay" type="TextureRect" parent="." unique_id=1573575630]
+[node name="SafeArea" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("GradientTexture1D_1g8jr")
-
-[node name="Container" type="MarginContainer" parent="." unique_id=104067726]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -750.0
-offset_top = -414.0
-offset_right = 750.0
-offset_bottom = 414.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 50
-theme_override_constants/margin_top = 50
+theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 50
-theme_override_constants/margin_bottom = 50
+theme_override_constants/margin_bottom = 44
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Container" unique_id=851188894]
+[node name="Page" type="VBoxContainer" parent="SafeArea"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 22
 
-[node name="BackButton" type="Button" parent="Container/VBoxContainer" unique_id=435385287]
-custom_minimum_size = Vector2(100, 42)
+[node name="Header" type="HBoxContainer" parent="SafeArea/Page"]
+custom_minimum_size = Vector2(0, 74)
 layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 8
+
+[node name="BackButton" type="Button" parent="SafeArea/Page/Header"]
+custom_minimum_size = Vector2(190, 58)
+layout_mode = 2
+size_flags_vertical = 4
 theme_override_constants/h_separation = 12
-theme_override_constants/icon_max_width = 28
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = SubResource("StyleBoxEmpty_5uyla")
+theme_override_constants/icon_max_width = 30
+theme_override_colors/font_color = Color(0.91, 0.77, 0.52, 1)
+theme_override_colors/font_hover_color = Color(1, 0.9, 0.68, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxEmpty_back")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_back")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_back")
 text = "BACK"
-icon = SubResource("CompressedTexture2D_5uyla")
+icon = ExtResource("4_back")
 
-[node name="CharacterDetails" parent="Container/VBoxContainer" unique_id=581860497 instance=ExtResource("5_nbxll")]
+[node name="PageTitle" type="Label" parent="SafeArea/Page/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.95, 0.86, 0.69, 1)
+theme_override_colors/font_outline_color = Color(0.025, 0.035, 0.032, 0.9)
+theme_override_constants/outline_size = 7
+theme_override_font_sizes/font_size = 48
+text = "CHOOSE YOUR CHARACTER"
+horizontal_alignment = 1
+
+[node name="HeaderBalance" type="Control" parent="SafeArea/Page/Header"]
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CharacterDetails" parent="SafeArea/Page" instance=ExtResource("3_details")]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="BottomContainer" type="HBoxContainer" parent="Container/VBoxContainer" unique_id=785894464]
-layout_mode = 2
+[node name="SceneEnterTransition" parent="." instance=ExtResource("5_transition")]
 
-[connection signal="pressed" from="Container/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="SafeArea/Page/Header/BackButton" to="." method="_on_back_button_pressed"]

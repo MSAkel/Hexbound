@@ -8,7 +8,8 @@ const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 @onready var settings_container: PanelContainer = $"../SettingsContainer"
 @onready var rune_selection_ui: Control = $"../RuneSelectionUI"
 @onready var merchant: Control = $"../Merchant"
-@onready var round_complete_screen: Control = $"../PanelContainer"
+@onready var round_complete_screen: Control = $"../RoundCompleteScreen"
+@onready var tile_map: HexTileMap = $"../../HexTileMap"
 
 
 func _ready() -> void:
@@ -49,6 +50,7 @@ func _close_pause_menu() -> void:
 	settings_container.hide()
 	panel.show()
 	pause_menu.hide()
+	EventBus.tooltip_hover_refresh_requested.emit()
 
 
 func _input(event: InputEvent) -> void:
@@ -58,12 +60,19 @@ func _input(event: InputEvent) -> void:
 			return
 		if _is_pause_blocked():
 			return
+		tile_map.dismiss_hover_feedback()
 		pause_menu.show()
 
 
+## Prevent the pause menu from opening on top of gameplay panels that require the player's attention.
 func _is_pause_blocked() -> bool:
 	return (
-		rune_selection_ui.is_visible_in_tree()
-		or merchant.is_visible_in_tree()
-		or round_complete_screen.is_visible_in_tree()
+		_is_control_visible(rune_selection_ui)
+		or _is_control_visible(merchant)
+		or _is_control_visible(round_complete_screen)
 	)
+
+
+## Safely checks visibility because a referenced panel may be absent or already being freed.
+func _is_control_visible(control: Control) -> bool:
+	return is_instance_valid(control) and control.is_visible_in_tree()

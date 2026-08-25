@@ -21,6 +21,7 @@ var map = HexTileMap
 @onready var zoom_sound: AudioStreamPlayer2D = $ZoomSound
 
 func _ready() -> void:
+	GameSettings.ensure_loaded()
 	var maps = get_tree().get_nodes_in_group("hex_map_group")
 	if maps.size() > 0:
 		map = maps[0] as HexTileMap
@@ -49,6 +50,13 @@ func _on_tile_card_activated(_rune: TileCard) -> void:
 
 ## Start or intensify a screen shake, duration scales with game speed like other turn effects.
 func shake(strength: float, duration: float) -> void:
+	GameSettings.ensure_loaded()
+	if not GameSettings.screen_shake_enabled:
+		_apply_shake_offset(Vector2.ZERO)
+		_shake_strength = 0.0
+		_shake_duration = 0.0
+		_shake_timer = 0.0
+		return
 	var scaled_duration := duration / GameManager.game_speed
 	_shake_strength = max(_shake_strength, strength)
 	_shake_duration = max(_shake_duration, scaled_duration)
@@ -76,6 +84,12 @@ func _apply_shake_offset(shake_offset: Vector2) -> void:
 		layer.offset = _shake_canvas_layer_bases.get(layer, Vector2.ZERO) + shake_offset
 
 func _update_screen_shake(delta: float) -> void:
+	if not GameSettings.screen_shake_enabled:
+		_apply_shake_offset(Vector2.ZERO)
+		_shake_strength = 0.0
+		_shake_duration = 0.0
+		_shake_timer = 0.0
+		return
 	if _shake_timer <= 0.0:
 		_apply_shake_offset(Vector2.ZERO)
 		_shake_strength = 0.0

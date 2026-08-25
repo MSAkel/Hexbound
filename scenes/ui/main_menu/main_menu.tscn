@@ -87,6 +87,7 @@ custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
 [node name="ContinueButton" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1924656440]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")

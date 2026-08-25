@@ -10,5 +10,5 @@ type = 2
 id = "gold_extraction"
 name = "Gold Extraction"
 icon = ExtResource("1_y2qbq")
-description = "Breaks target card then gain 20 gold"
+description = "Breaks target card then gain 3 gold"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

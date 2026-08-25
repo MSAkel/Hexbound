@@ -9,5 +9,5 @@ rarity = 2
 id = "lucky_draw"
 name = "Lucky Draw"
 icon = ExtResource("1_pvsl8")
-description = "Spend 1 Gold for a stacking 3% chance to gain 500 Energy or 20 Gold. Resets on success"
+description = "3% stacking chance to gain 500 Energy or 3 Gold. Resets on success"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

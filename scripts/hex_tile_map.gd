@@ -8,6 +8,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 @onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var trigger_order_overlay: TriggerOrderOverlay = $TriggerOrderOverlay
+@onready var trigger_link_overlay = $TriggerLinkOverlay
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var rune_highlight_overlay_layer: TileMapLayer = $RuneHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
@@ -41,8 +42,12 @@ const BASE_TILE_ATLAS_COORDS := Vector2i(0, 0)
 var hovered_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>
 var map_data: Dictionary = {}
-# Extra rune activations queued by support runes; resolved before tile flow continues.
+# Extra rune activations queued by support runes. Resolved before tile flow continues.
 var _pending_trigger_queue: Array[Dictionary] = []
+# Remaining chained triggers keyed by the source hex that queued them.
+var _trigger_link_pending: Dictionary = {}
+# Tile cards that should be removed once their queued trigger link session finishes.
+var _deferred_destroy_after_triggers: Dictionary = {}
 # Ring distances, trigger order, and segment grouping.
 var _layout: HexMapLayout
 
@@ -94,6 +99,7 @@ func _ready() -> void:
 	rune_highlight_overlay_layer.z_index = RUNE_HIGHLIGHT_LAYER_Z_INDEX
 	_apply_tile_spacing()
 	trigger_order_overlay.setup(self)
+	trigger_link_overlay.setup(self)
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
 	EventBus.tile_card_empowered.connect(_on_tile_card_empowered)
@@ -215,6 +221,11 @@ func _hide_tile_panel_only() -> void:
 func _hide_tile_panel_hover() -> void:
 	_hide_tile_panel_only()
 	_clear_empty_tile_segment_hover()
+
+
+## Dismisses any map hover feedback when gameplay is covered by another UI.
+func dismiss_hover_feedback() -> void:
+	_hide_tile_panel_hover()
 
 
 # Light-blue overlay on every other tile in this empty tile's segment.
@@ -600,7 +611,7 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
-	GoldManager.add(amount)
+	GoldManager.add_board_gold(amount)
 	_emit_segment_turn_results_changed(segment_index)
 
 
@@ -902,21 +913,107 @@ func destroy_placed_tile_card(rune: TileCard) -> void:
 
 	hex.remove_tile_card()
 
+	if _deferred_destroy_after_triggers.has(hex):
+		_deferred_destroy_after_triggers.erase(hex)
+
 	for i in range(_pending_trigger_queue.size() - 1, -1, -1):
 		if _pending_trigger_queue[i]["rune"] == rune:
+			_resolve_trigger_link_entry(_pending_trigger_queue[i])
 			_pending_trigger_queue.remove_at(i)
+
+	if _trigger_link_pending.has(hex):
+		_clear_trigger_link_session(hex)
 
 
 ## Queues extra rune activations to resolve before the current tile flow continues.
-func queue_tile_card_triggers(runes: Array[TileCard], activation_scales: Array[float] = []) -> void:
+func queue_tile_card_triggers(
+	runes: Array[TileCard],
+	activation_scales: Array[float] = [],
+	source_hex: Hex = null,
+) -> void:
 	for i in range(runes.size()):
 		var scale_rune := 1.0
 		if i < activation_scales.size():
 			scale_rune = activation_scales[i]
-		_pending_trigger_queue.append({
+		var entry := {
 			"rune": runes[i],
 			"activation_scale": scale_rune,
-		})
+			"source_hex": source_hex,
+		}
+		_pending_trigger_queue.append(entry)
+		if source_hex != null:
+			_register_trigger_link_pending(source_hex)
+
+
+## Removes tile_card from the map after every trigger queued from source_hex resolves.
+func schedule_destroy_after_trigger_link(
+	source_hex: Hex,
+	tile_card: TileCard,
+	on_destroy: Callable = Callable(),
+) -> void:
+	if source_hex == null or tile_card == null:
+		return
+	_deferred_destroy_after_triggers[source_hex] = {
+		"tile_card": tile_card,
+		"on_destroy": on_destroy,
+	}
+
+
+func _register_trigger_link_pending(source_hex: Hex) -> void:
+	if source_hex == null:
+		return
+
+	var pending_count: int = int(_trigger_link_pending.get(source_hex, 0))
+	if pending_count == 0:
+		source_hex.start_trigger_link_flash()
+	_trigger_link_pending[source_hex] = pending_count + 1
+
+
+func _resolve_trigger_link_entry(entry: Dictionary) -> void:
+	var source_hex: Variant = entry.get("source_hex")
+	if source_hex == null or not (source_hex is Hex):
+		return
+	if not _trigger_link_pending.has(source_hex):
+		return
+
+	var pending_count: int = int(_trigger_link_pending[source_hex]) - 1
+	if pending_count <= 0:
+		_clear_trigger_link_session(source_hex)
+	else:
+		_trigger_link_pending[source_hex] = pending_count
+
+
+func _clear_trigger_link_session(source_hex: Hex) -> void:
+	if source_hex == null:
+		return
+	_trigger_link_pending.erase(source_hex)
+	if is_instance_valid(source_hex):
+		source_hex.stop_trigger_link_flash()
+	_run_deferred_destroy_after_trigger_link(source_hex)
+
+
+func _run_deferred_destroy_after_trigger_link(source_hex: Hex) -> void:
+	if not _deferred_destroy_after_triggers.has(source_hex):
+		return
+
+	var pending: Dictionary = _deferred_destroy_after_triggers[source_hex]
+	_deferred_destroy_after_triggers.erase(source_hex)
+
+	var tile_card: TileCard = pending.get("tile_card")
+	if tile_card != null:
+		destroy_placed_tile_card(tile_card)
+
+	var on_destroy: Callable = pending.get("on_destroy", Callable())
+	if on_destroy.is_valid():
+		on_destroy.call()
+
+
+func _clear_trigger_link_sessions() -> void:
+	for source_hex: Hex in _trigger_link_pending.keys():
+		if is_instance_valid(source_hex):
+			source_hex.stop_trigger_link_flash()
+	_trigger_link_pending.clear()
+	_deferred_destroy_after_triggers.clear()
 
 
 ## Show floating text at a world position on the current scene.
@@ -974,6 +1071,7 @@ func on_turn_ended() -> void:
 	reset_segment_turn_results()
 
 	_pending_trigger_queue.clear()
+	_clear_trigger_link_sessions()
 
 	for tile: Hex in get_hexes_in_trigger_order():
 		if tile.active_tile_card == null:
@@ -994,15 +1092,28 @@ func _resolve_rune_activation(tile: Hex) -> void:
 
 	while not _pending_trigger_queue.is_empty():
 		var entry: Dictionary = _pending_trigger_queue.pop_front()
+		var source_hex: Hex = entry.get("source_hex") as Hex
 		var target_hex := get_hex_for_tile_card(entry["rune"])
 		if target_hex == null or target_hex.active_tile_card == null:
+			_resolve_trigger_link_entry(entry)
 			continue
 		# Match the same pacing gap used between tiles in trigger order.
 		await _wait_between_tile_activations()
-		await _activate_tile_card_on_tile(target_hex, entry["activation_scale"], true)
+		await _activate_tile_card_on_tile(
+			target_hex,
+			entry["activation_scale"],
+			true,
+			source_hex,
+		)
+		_resolve_trigger_link_entry(entry)
 
 
-func _activate_tile_card_on_tile(tile: Hex, activation_scale: float = 1.0, from_trigger: bool = false) -> void:
+func _activate_tile_card_on_tile(
+	tile: Hex,
+	activation_scale: float = 1.0,
+	from_trigger: bool = false,
+	trigger_source_hex: Hex = null,
+) -> void:
 	if tile.active_tile_card == null or tile.is_disabled_by_difficulty:
 		return
 
@@ -1012,7 +1123,11 @@ func _activate_tile_card_on_tile(tile: Hex, activation_scale: float = 1.0, from_
 	activation_scale *= ChallengeManager.get_producer_output_multiplier(tile)
 
 	if tile.active_tile_card.is_active:
-		tile.play_tile_card_activation_animation()
+		if from_trigger and trigger_source_hex != null:
+			trigger_link_overlay.play_bolt(trigger_source_hex, tile)
+			tile.play_chained_tile_card_activation_animation()
+		else:
+			tile.play_tile_card_activation_animation()
 		await _wait_for_activation_animation()
 
 	tile.apply_tile_card_activation(activation_scale)

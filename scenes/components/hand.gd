@@ -177,7 +177,8 @@ func _get_hover_push_amount() -> float:
 
 func _apply_hover_spread(animate: bool) -> void:
 	var cards := _get_hand_cards()
-	var featured_index := cards.find(_featured_card)
+	# Typed Array.find() rejects null. Skip the lookup when nothing is featured.
+	var featured_index := cards.find(_featured_card) if _featured_card != null else -1
 	var push := _get_hover_push_amount() if featured_index >= 0 else 0.0
 	for i in cards.size():
 		var card := cards[i]

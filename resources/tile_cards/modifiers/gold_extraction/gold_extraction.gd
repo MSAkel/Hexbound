@@ -1,7 +1,7 @@
 extends TileCard
-## Breaks target card then gain 20 gold
+## Breaks target card then gain 3 gold
 
-const GOLD_REWARD := 20
+const GOLD_REWARD := 3
 
 
 func apply_on_placement(tile: Hex) -> void:

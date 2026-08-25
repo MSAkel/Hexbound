@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://sw31sp5kvjvm" path="res://assets/characters/the_columnist.png" id="1_iqlay"]
 [ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://c5qnj87ejkxcc" path="res://assets/map/trigger_order/the_columnist_map.png" id="2_trigger_preview"]
+[ext_resource type="Texture2D" uid="uid://bup76me7pylwk" path="res://assets/map/trigger_order/the_columnist_map.png" id="2_trigger_preview"]
 
 [resource]
 script = ExtResource("1_script")

@@ -51,6 +51,7 @@ border_width_bottom = 2
 border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
 
 [node name="PauseMenu" type="Control" unique_id=1402050020]
+z_index = 110
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

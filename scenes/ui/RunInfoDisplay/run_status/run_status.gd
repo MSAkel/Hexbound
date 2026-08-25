@@ -5,6 +5,7 @@ extends PanelContainer
 @onready var round_label: Label = $VBoxContainer/HBoxContainer/RoundLabel
 @onready var turn_counter_label: Label = $VBoxContainer/HBoxContainer/TurnsContainer/TurnCounterLabel
 @onready var gold_amount_label: Label = $VBoxContainer/HBoxContainer/GoldRow/GoldAmountLabel
+@onready var token_amount_label: Label = $VBoxContainer/HBoxContainer/TokenRow/TokenAmountLabel
 @onready var score_this_round: Label = $VBoxContainer/ScoreContainer/HBoxContainer/ScoreThisRound
 @onready var required_score: Label = $VBoxContainer/ScoreContainer/HBoxContainer/RequiredScore
 @onready var progress_bar: ProgressBar = $VBoxContainer/ProgressBar
@@ -31,12 +32,14 @@ func _ready() -> void:
 	_round_score_counter = CountingNumber.for_label(self, score_this_round, false, _on_score_counted)
 
 	_gold_counter.snap_to(GoldManager.amount)
+	_update_token_label(GoldManager.merchant_tokens)
 	_round_counter.snap_to(GameManager.current_round)
 	_turn_counter.snap_to(GameManager.remaining_turns)
 	_required_counter.snap_to(GameManager.required_score)
 	_round_score_counter.snap_to(GameManager.total_round_score)
 
 	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.merchant_tokens_changed.connect(_on_merchant_tokens_changed)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.turn_changed.connect(_on_turn_changed)
 	EventBus.total_round_score_changed.connect(_on_total_round_score_changed)
@@ -45,6 +48,15 @@ func _ready() -> void:
 
 func _on_gold_changed(new_amount: int) -> void:
 	_play_counter(_gold_counter, new_amount, gold_amount_label)
+
+
+func _on_merchant_tokens_changed(new_amount: int) -> void:
+	_update_token_label(new_amount)
+	_punch(token_amount_label)
+
+
+func _update_token_label(amount: int) -> void:
+	token_amount_label.text = str(amount)
 
 
 func _on_round_changed(new_round: int) -> void:

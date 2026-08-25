@@ -1,12 +1,12 @@
-extends PanelContainer
+extends HBoxContainer
 
 signal prev_difficulty_level_pressed
 signal next_difficulty_level_pressed
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
-@onready var difficulty_level: Label = $HBoxContainer/VBoxContainer/DifficultyLevel
-@onready var difficulty_info: Label = $HBoxContainer/VBoxContainer/DifficultyInfo
+@onready var difficulty_level: Label = $DifficultyCopy/DifficultyLevel
+@onready var difficulty_info: Label = $DifficultyCopy/DifficultyInfo
 
 
 # Ordered list used for prev/next navigation on the selection screen.

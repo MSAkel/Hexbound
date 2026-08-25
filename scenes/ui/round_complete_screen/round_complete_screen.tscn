@@ -103,22 +103,67 @@ theme_override_font_sizes/font_size = 32
 text = "000"
 horizontal_alignment = 1
 
-[node name="MerchantTokens" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1122739415]
+[node name="RemainingTurnsRewardsContainer" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1601264083]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BaseGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=1819112609]
 layout_mode = 2
 
-[node name="TurnsRemaningLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/MerchantTokens" unique_id=1307929368]
+[node name="BaseGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/BaseGoldRow" unique_id=1951546497]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 32
-text = "2 Turns Remaining"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 26
+text = "Round complete"
 
-[node name="TokensEarned" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/MerchantTokens" unique_id=1788726871]
+[node name="BaseGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/BaseGoldRow" unique_id=1228991433]
 layout_mode = 2
 size_flags_horizontal = 10
 theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 32
-text = "2 token(s)"
+theme_override_font_sizes/font_size = 26
+text = "+0"
+horizontal_alignment = 2
+
+[node name="EarlyGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=538779927]
+layout_mode = 2
+
+[node name="EarlyGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/EarlyGoldRow" unique_id=1515805421]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
+theme_override_font_sizes/font_size = 26
+text = "Early complete"
+
+[node name="EarlyGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/EarlyGoldRow" unique_id=322724243]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
+theme_override_font_sizes/font_size = 26
+text = "+0"
+horizontal_alignment = 2
+
+[node name="MerchantTokensRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=1122739415]
+layout_mode = 2
+
+[node name="MerchantTokensTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1070663066]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
+theme_override_font_sizes/font_size = 26
+text = "Merchant tokens"
+
+[node name="MerchantTokensValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1788726871]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
+theme_override_font_sizes/font_size = 26
+text = "+0"
+horizontal_alignment = 2
+
+[node name="TokensLostLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=668218587]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 22
+text = "1 token(s) lost. Wallet is full."
 horizontal_alignment = 1
 
 [node name="ContinueButton" type="Button" parent="PanelContainer" unique_id=1025296605]

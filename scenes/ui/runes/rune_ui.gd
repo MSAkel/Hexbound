@@ -19,6 +19,7 @@ var center_coordinates: Vector2i
 # Keeps activation tweens from stacking if triggers overlap.
 var _activation_tween: Tween
 var _empower_flash_tween: Tween
+var _trigger_link_flash_tween: Tween
 # Resting color when no activation or empower tween is running.
 var _resting_modulate := Color.WHITE
 
@@ -44,6 +45,10 @@ const PLACEMENT_SHAKE_STRENGTH := 8.0
 const PLACEMENT_SHAKE_DURATION := 0.18
 const EMPOWER_FLASH_HIGHLIGHT := Color(1.45, 1.35, 0.15, 1.0)
 const EMPOWER_FLASH_DURATION := 0.45
+const TRIGGER_LINK_FLASH_HIGHLIGHT := Color(1.35, 0.72, 0.22, 1.0)
+const TRIGGER_LINK_FLASH_DURATION := 0.42
+const CHAINED_ACTIVATION_PEAK_SCALE := Vector2(1.06, 1.06)
+const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
 
 func setup(rune: TileCard) -> void:
 	if not is_node_ready():
@@ -195,6 +200,8 @@ func _can_apply_resting_modulate() -> bool:
 		return false
 	if _empower_flash_tween != null and _empower_flash_tween.is_valid():
 		return false
+	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
+		return false
 	return true
 
 
@@ -264,6 +271,72 @@ func play_activation_animation() -> void:
 		_resting_modulate,
 		settle_duration
 	)
+	_activation_tween.tween_callback(func() -> void:
+		z_index = original_z_index
+		_activation_tween = null
+		_apply_resting_modulate()
+	)
+
+
+# Chained fire from another rune. Orange palette and a smaller pop than a primary activation.
+func play_chained_activation_animation() -> void:
+	stop_empower_flash()
+
+	if _activation_tween != null and _activation_tween.is_valid():
+		_activation_tween.kill()
+
+	_anim_target.pivot_offset = _anim_target.size / 2
+	_anim_target.scale = Vector2.ONE
+	if _trigger_link_flash_tween == null or not _trigger_link_flash_tween.is_valid():
+		_anim_target.modulate = Color.WHITE
+
+	var original_z_index := z_index
+	z_index = 10
+	_shake_on_activation()
+	if hex_stroke != null:
+		hex_stroke.play_chained_activation_glow(activation_animation_duration() + 0.28)
+
+	var pop_duration := ACTIVATION_POP_DURATION / GameManager.game_speed
+	var squash_duration := ACTIVATION_SQUASH_DURATION / GameManager.game_speed
+	var settle_duration := ACTIVATION_SETTLE_DURATION / GameManager.game_speed
+
+	_activation_tween = create_tween()
+	_activation_tween.set_parallel(true)
+	_activation_tween.tween_property(
+		_anim_target,
+		"scale",
+		CHAINED_ACTIVATION_PEAK_SCALE,
+		pop_duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if _trigger_link_flash_tween == null or not _trigger_link_flash_tween.is_valid():
+		_activation_tween.tween_property(
+			_anim_target,
+			"modulate",
+			CHAINED_ACTIVATION_HIGHLIGHT,
+			pop_duration
+		)
+
+	_activation_tween.set_parallel(false)
+	_activation_tween.tween_property(
+		_anim_target,
+		"scale",
+		ACTIVATION_SQUASH_SCALE,
+		squash_duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	_activation_tween.tween_property(
+		_anim_target,
+		"scale",
+		Vector2.ONE,
+		settle_duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if _trigger_link_flash_tween == null or not _trigger_link_flash_tween.is_valid():
+		_activation_tween.parallel().tween_property(
+			_anim_target,
+			"modulate",
+			_resting_modulate,
+			settle_duration
+		)
 	_activation_tween.tween_callback(func() -> void:
 		z_index = original_z_index
 		_activation_tween = null
@@ -347,5 +420,42 @@ func stop_empower_flash() -> void:
 		_empower_flash_tween.kill()
 	_empower_flash_tween = null
 	
+	_apply_resting_modulate()
+
+
+# Looping orange pulse on the source rune while its queued triggers resolve.
+func start_trigger_link_flash() -> void:
+	stop_empower_flash()
+
+	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
+		_trigger_link_flash_tween.kill()
+
+	if hex_stroke != null:
+		hex_stroke.start_trigger_link_ring()
+
+	_trigger_link_flash_tween = create_tween()
+	_trigger_link_flash_tween.set_loops()
+	_trigger_link_flash_tween.tween_property(
+		_anim_target,
+		"modulate",
+		TRIGGER_LINK_FLASH_HIGHLIGHT,
+		TRIGGER_LINK_FLASH_DURATION
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_trigger_link_flash_tween.tween_property(
+		_anim_target,
+		"modulate",
+		_resting_modulate,
+		TRIGGER_LINK_FLASH_DURATION
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func stop_trigger_link_flash() -> void:
+	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
+		_trigger_link_flash_tween.kill()
+	_trigger_link_flash_tween = null
+
+	if hex_stroke != null:
+		hex_stroke.stop_trigger_link_ring()
+
 	_apply_resting_modulate()
 #endregion Animations and colors

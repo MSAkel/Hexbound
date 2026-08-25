@@ -26,6 +26,18 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_8btky")
 
+[node name="ShowBoardButton" type="Button" parent="Panel" unique_id=1982736401]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 32.0
+offset_right = 80.0
+offset_bottom = 72.0
+grow_horizontal = 2
+text = "Show Board"
+
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=367279326]
 layout_mode = 1
 anchors_preset = 8
@@ -39,12 +51,6 @@ offset_right = 335.0
 offset_bottom = 171.5
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="HideButton" type="Button" parent="Panel/VBoxContainer" unique_id=1440697406]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Hide"
 
 [node name="MarginPanel" type="MarginContainer" parent="Panel/VBoxContainer" unique_id=670077628]
 layout_mode = 2
@@ -73,5 +79,18 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 text = "Reroll (free)"
+
+[node name="ShowOptionsButton" type="Button" parent="." unique_id=1440697406]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -90.0
+offset_top = 32.0
+offset_right = 90.0
+offset_bottom = 72.0
+grow_horizontal = 2
+text = "Show Options"
 
 [connection signal="pressed" from="Panel/VBoxContainer/RerollButton" to="." method="_on_reroll_button_pressed"]

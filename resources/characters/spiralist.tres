@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/character_definition.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://ds5p00prugmrb" path="res://assets/characters/the_spiralist.png" id="1_yf8l2"]
-[ext_resource type="Texture2D" uid="uid://1n3drwued4ar" path="res://assets/map/trigger_order/the_spiralist_map.png" id="2_trigger_preview"]
+[ext_resource type="Texture2D" uid="uid://0bs1h7l3l8ye" path="res://assets/map/trigger_order/the_spiralist_map.png" id="2_trigger_preview"]
 
 [resource]
 script = ExtResource("1_script")

@@ -8,7 +8,7 @@ extends Resource
 @export var icon: Texture2D
 @export_multiline var description: String
 
-const DEFAULT_PRICE := 10
+const DEFAULT_PRICE := 2
 
 
 # Full placement validity, including tile occupancy and restrictions.

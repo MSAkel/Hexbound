@@ -197,6 +197,15 @@ func play_tile_card_activation_animation() -> void:
 		rune_ui.play_activation_animation()
 
 
+# Chained activation from another rune's trigger ability.
+func play_chained_tile_card_activation_animation() -> void:
+	if active_tile_card == null or rune_ui == null:
+		return
+
+	if active_tile_card.is_active:
+		rune_ui.play_chained_activation_animation()
+
+
 # Gold highlight flash used during the post-turn segment result reveal.
 func play_segment_result_animation() -> void:
 	if rune_ui == null:
@@ -222,3 +231,15 @@ func stop_empower_flash() -> void:
 	if rune_ui == null:
 		return
 	rune_ui.stop_empower_flash()
+
+
+func start_trigger_link_flash() -> void:
+	if rune_ui == null:
+		return
+	rune_ui.start_trigger_link_flash()
+
+
+func stop_trigger_link_flash() -> void:
+	if rune_ui == null:
+		return
+	rune_ui.stop_trigger_link_flash()

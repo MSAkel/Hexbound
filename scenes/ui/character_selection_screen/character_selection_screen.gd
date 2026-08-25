@@ -5,7 +5,8 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 var main_menu_scene := load("res://scenes/ui/main_menu/main_menu.tscn")
 
-@onready var character_details: CharacterDetails = $Container/VBoxContainer/CharacterDetails
+@onready var character_details: CharacterDetails = $SafeArea/Page/CharacterDetails
+@onready var scene_enter_transition: SceneEnterTransition = $SceneEnterTransition
 
 # One selection per character definition; only one is shown at a time.
 var selections: Array[CharacterDefinition] = []
@@ -19,7 +20,15 @@ func _ready() -> void:
 	character_details.prev_selection_pressed.connect(_on_prev_selection)
 	character_details.next_selection_pressed.connect(_on_next_selection)
 
+	var previous_run_transition := RunSaveManager.consume_scene_enter_transition_request()
+	if previous_run_transition:
+		_select_previous_run_character()
 	_update_display()
+	if previous_run_transition:
+		character_details.display_difficulty(GameManager.selected_difficulty)
+		await scene_enter_transition.play()
+	else:
+		scene_enter_transition.queue_free()
 
 	var music := SOUNDTRACK.get_music_for_scene(scene_file_path)
 	if music:
@@ -28,6 +37,16 @@ func _ready() -> void:
 
 func get_selected_character() -> CharacterDefinition:
 	return selections[current_index]
+
+
+func _select_previous_run_character() -> void:
+	if GameManager.selected_character == null:
+		return
+
+	for index in selections.size():
+		if selections[index].id == GameManager.selected_character.id:
+			current_index = index
+			return
 
 
 func _on_prev_selection() -> void:

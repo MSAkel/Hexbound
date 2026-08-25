@@ -115,6 +115,8 @@ var game_speed: float:
 #endregion
 
 func _ready() -> void:
+	GameSettings.ensure_loaded()
+	game_speed = GameSettings.game_speed
 	if selected_character == null:
 		selected_character = PlayerCharacter.get_default_character()
 
@@ -183,9 +185,18 @@ func get_turn_number() -> int:
 	return get_max_turns_per_round() - remaining_turns + 1
 
 
+## Turns not used before the round goal was met. Rewards use this, not raw remaining_turns.
+func get_skipped_turns() -> int:
+	return maxi(0, remaining_turns - 1)
+
+
 ## Hands the completed round to RoundFlow, which owns every step up to the next turn.
 ## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
 func _complete_current_round() -> void:
+	GoldManager.apply_round_speed_rewards(
+		get_skipped_turns(),
+		remaining_turns
+	)
 	if ChallengeManager.is_completing_final_challenge_round():
 		RoundFlow.begin_victory_transition()
 		return
@@ -197,9 +208,7 @@ func advance_round() -> void:
 	current_round += 1
 	# Round-spend counters reset before the round bonus so cards start fresh.
 	GoldManager.reset_round_tracking()
-	GoldManager.add(20)
 	total_round_score = 0
-	AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
 	_apply_round_state()
 
 
@@ -238,6 +247,7 @@ func rune_activations_countdown() -> int:
 
 func set_game_speed(speed: float) -> void:
 	game_speed = speed
+	GameSettings.set_game_speed(game_speed)
 
 #region tile cards and enhancement cards pool loading
 
@@ -329,7 +339,7 @@ func reset_for_new_run() -> void:
 	_turn_score = 0
 	_activated_tile_cards_this_turn.clear()
 	turn_stamp = 0
-	game_speed = 1.0
+	game_speed = GameSettings.game_speed
 
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.

@@ -36,6 +36,7 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 enum InteractionMode {
 	HAND,
 	MERCHANT,
+	MERCHANT_STOCK,
 	CHOICE,
 	PREVIEW,
 }
@@ -63,6 +64,7 @@ var _elevation_tween: Tween
 var _hand_spread_x := 0.0
 var _is_sold := false
 var _discount := 0.0
+var _token_cost := 0
 
 
 func _ready() -> void:
@@ -78,10 +80,14 @@ func configure_interaction(mode: InteractionMode, options: Dictionary = {}) -> v
 
 	if is_node_ready():
 		_apply_interaction_mode()
-	elif mode == InteractionMode.MERCHANT and card != null:
-		# set_card may run before _ready when merchant cards are spawned in a loop.
-		call_deferred("_refresh_merchant_price")
-		call_deferred("_update_affordability")
+	elif mode == InteractionMode.MERCHANT or mode == InteractionMode.MERCHANT_STOCK:
+		if card != null:
+			# set_card may run before _ready when merchant cards are spawned in a loop.
+			call_deferred("_refresh_merchant_price")
+			if mode == InteractionMode.MERCHANT_STOCK:
+				call_deferred("_update_stock_affordability")
+			else:
+				call_deferred("_update_affordability")
 
 
 func _apply_interaction_mode() -> void:
@@ -103,6 +109,13 @@ func _apply_interaction_mode() -> void:
 			sold_overlay.visible = _is_sold
 			_refresh_merchant_price()
 			_update_affordability()
+		InteractionMode.MERCHANT_STOCK:
+			hover_enabled = true
+			_configure_click_routing(true)
+			price_label.visible = true
+			sold_overlay.visible = _is_sold
+			_refresh_merchant_price()
+			_update_stock_affordability()
 		InteractionMode.CHOICE:
 			hover_enabled = true
 			_configure_click_routing(true)
@@ -147,7 +160,7 @@ func _get_hover_elevation_offset() -> float:
 			if _map_tile_hover_active:
 				return HAND_MAP_TILE_HOVER_ELEVATION_OFFSET
 			return HAND_HOVER_ELEVATION_OFFSET
-		InteractionMode.MERCHANT, InteractionMode.CHOICE:
+		InteractionMode.MERCHANT, InteractionMode.MERCHANT_STOCK, InteractionMode.CHOICE:
 			return PANEL_HOVER_ELEVATION_OFFSET
 		_:
 			return 0.0
@@ -291,6 +304,8 @@ func _on_gui_input(event: InputEvent) -> void:
 			card_state_machine.on_gui_input(event)
 		InteractionMode.MERCHANT:
 			_handle_merchant_gui_input(event)
+		InteractionMode.MERCHANT_STOCK:
+			_handle_merchant_stock_gui_input(event)
 		InteractionMode.CHOICE:
 			_handle_choice_gui_input(event)
 
@@ -300,7 +315,7 @@ func _on_mouse_entered() -> void:
 		InteractionMode.HAND:
 			card_state_machine.on_mouse_entered()
 			_show_keyword_tooltips()
-		InteractionMode.MERCHANT, InteractionMode.CHOICE:
+		InteractionMode.MERCHANT, InteractionMode.MERCHANT_STOCK, InteractionMode.CHOICE:
 			if _is_sold:
 				return
 			set_hover_elevated(true)
@@ -312,7 +327,7 @@ func _on_mouse_exited() -> void:
 	match interaction_mode:
 		InteractionMode.HAND:
 			card_state_machine.on_mouse_exited()
-		InteractionMode.MERCHANT, InteractionMode.CHOICE:
+		InteractionMode.MERCHANT, InteractionMode.MERCHANT_STOCK, InteractionMode.CHOICE:
 			set_hover_elevated(false)
 
 
@@ -326,6 +341,17 @@ func _handle_merchant_gui_input(event: InputEvent) -> void:
 		if not GoldManager.can_afford(price):
 			return
 
+		action_requested.emit(self)
+		accept_event()
+
+
+func _handle_merchant_stock_gui_input(event: InputEvent) -> void:
+	if _is_sold:
+		return
+
+	if event is InputEventMouseButton \
+			and event.pressed \
+			and event.button_index == MOUSE_BUTTON_LEFT:
 		action_requested.emit(self)
 		accept_event()
 
@@ -354,6 +380,9 @@ func set_card(data: Card) -> void:
 	if interaction_mode == InteractionMode.MERCHANT:
 		_refresh_merchant_price()
 		_update_affordability()
+	elif interaction_mode == InteractionMode.MERCHANT_STOCK:
+		_refresh_merchant_price()
+		_update_stock_affordability()
 
 
 func is_mouse_over() -> bool:
@@ -379,24 +408,33 @@ func is_sold() -> bool:
 func mark_sold() -> void:
 	_is_sold = true
 	sold_overlay.visible = true
+	hide_selection_glow()
 	set_hover_elevated(false, false)
 	mouse_default_cursor_shape = Control.CURSOR_ARROW
 	_hide_keyword_tooltips()
 
 
 func refresh_affordability() -> void:
-	if interaction_mode != InteractionMode.MERCHANT or _is_sold:
+	if _is_sold:
 		return
-	_update_affordability()
+	if interaction_mode == InteractionMode.MERCHANT_STOCK:
+		_update_stock_affordability()
+	elif interaction_mode == InteractionMode.MERCHANT:
+		_update_affordability()
 
 
 func apply_discount(discount: float) -> void:
-	if interaction_mode != InteractionMode.MERCHANT or _is_sold:
+	if interaction_mode != InteractionMode.MERCHANT and interaction_mode != InteractionMode.MERCHANT_STOCK:
+		return
+	if _is_sold:
 		return
 
 	_discount = discount
 	_refresh_merchant_price()
-	_update_affordability()
+	if interaction_mode == InteractionMode.MERCHANT_STOCK:
+		_update_stock_affordability()
+	else:
+		_update_affordability()
 
 
 func _refresh_merchant_price() -> void:
@@ -404,14 +442,31 @@ func _refresh_merchant_price() -> void:
 		return
 
 	price = card.get_shop_price(_discount)
+	_token_cost = GoldManager.get_token_cost(card)
 	price_label.text = "$%d" % price
 
 
 func _update_affordability() -> void:
 	var can_afford := GoldManager.can_afford(price)
-	# Price color communicates affordability; the card itself stays unchanged.
 	price_label.modulate = Color.WHITE if can_afford else Color.RED
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if can_afford else Control.CURSOR_ARROW
+
+
+## Stock cards are selectable even when the player cannot afford gold yet.
+func _update_stock_affordability() -> void:
+	price_label.modulate = Color.WHITE
+	mouse_default_cursor_shape = Control.CURSOR_ARROW if _is_sold else Control.CURSOR_POINTING_HAND
+
+
+func get_token_cost() -> int:
+	return _token_cost
+
+
+func set_merchant_selected(selected: bool) -> void:
+	if selected:
+		show_selection_glow()
+	else:
+		hide_selection_glow()
 
 
 func _show_keyword_tooltips() -> void:

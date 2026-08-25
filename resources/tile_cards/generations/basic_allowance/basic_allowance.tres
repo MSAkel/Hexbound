@@ -5,10 +5,10 @@
 
 [resource]
 script = ExtResource("2_28b2w")
-base_production_amount = 2
+base_production_amount = 1
 product = 0
 id = "basic_allowance"
 name = "Basic Allowance"
 icon = ExtResource("1_28b2w")
-description = "+ 2 gold"
+description = "+1 gold"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

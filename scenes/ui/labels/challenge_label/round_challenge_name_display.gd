@@ -115,7 +115,9 @@ func _play_intro() -> void:
 	_tween.tween_property(banner, "scale", Vector2.ONE, intro_in).set_trans(Tween.TRANS_BACK).set_ease(
 		Tween.EASE_OUT
 	)
+	# Leave parallel mode so the hold finishes before docking starts.
 	_tween.chain()
+	_tween.set_parallel(false)
 	_tween.tween_interval(hold)
 	_tween.tween_callback(_begin_dock.bind(false))
 
@@ -126,16 +128,20 @@ func _begin_dock(skipped: bool = false) -> void:
 
 	_kill_tween()
 	_phase = Phase.DOCKING
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var duration := (SKIP_DOCK_DURATION if skipped else DOCK_DURATION) / GameManager.game_speed
+
+	# Drop intro-only rows before measuring. A tall center rect pinned to the top
+	# overshoots the viewport while fonts are still large.
+	description_label.hide()
+	skip_hint.hide()
+	# Pin top anchors in place, then tween offsets only. Interpolating anchors from
+	# center to top with a negative offset_top drives the banner off-screen.
+	_rebake_banner_to_top_anchors()
+	_center_banner_pivot()
 
 	_tween = create_tween()
 	_tween.set_parallel(true)
-	_tween.tween_property(banner, "anchor_top", 0.0, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
-		Tween.EASE_IN_OUT
-	)
-	_tween.tween_property(banner, "anchor_bottom", 0.0, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
-		Tween.EASE_IN_OUT
-	)
 	_tween.tween_property(banner, "offset_left", DOCKED_OFFSETS.left, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_IN_OUT
 	)
@@ -151,18 +157,13 @@ func _begin_dock(skipped: bool = false) -> void:
 	_tween.tween_property(dim_overlay, "color:a", 0.0, duration * 0.7).set_trans(Tween.TRANS_QUAD).set_ease(
 		Tween.EASE_IN
 	)
-	_tween.tween_property(description_label, "modulate:a", 0.0, duration * 0.45).set_trans(Tween.TRANS_QUAD).set_ease(
-		Tween.EASE_IN
-	)
-	_tween.tween_property(skip_hint, "modulate:a", 0.0, duration * 0.35).set_trans(Tween.TRANS_QUAD).set_ease(
-		Tween.EASE_IN
-	)
 	_tween.tween_property(challenge_icon, "custom_minimum_size", DOCKED_ICON_SIZE, duration)
 	_tween.tween_method(_set_name_font_size, _name_font_size, float(DOCKED_NAME_SIZE), duration)
 	_tween.tween_method(_set_kicker_font_size, float(CENTER_KICKER_SIZE), float(DOCKED_KICKER_SIZE), duration)
 	_tween.tween_method(_set_wave_amp, _wave_amp, DOCKED_WAVE_AMP, duration)
 	_tween.tween_method(_set_name_outline, float(CENTER_NAME_OUTLINE), float(DOCKED_NAME_OUTLINE), duration)
 	_tween.chain()
+	_tween.set_parallel(false)
 	_tween.tween_callback(_finish_dock)
 
 
@@ -221,6 +222,8 @@ func _apply_center_layout() -> void:
 	banner.offset_top = CENTER_OFFSETS.top
 	banner.offset_right = CENTER_OFFSETS.right
 	banner.offset_bottom = CENTER_OFFSETS.bottom
+	# Center reveal grows evenly so the pop-in stays visually balanced.
+	banner.grow_vertical = Control.GROW_DIRECTION_BOTH
 
 
 func _apply_docked_layout() -> void:
@@ -232,6 +235,8 @@ func _apply_docked_layout() -> void:
 	banner.offset_top = DOCKED_OFFSETS.top
 	banner.offset_right = DOCKED_OFFSETS.right
 	banner.offset_bottom = DOCKED_OFFSETS.bottom
+	# Grow downward only so content size changes never push past the top edge.
+	banner.grow_vertical = Control.GROW_DIRECTION_END
 	_set_name_font_size(float(DOCKED_NAME_SIZE))
 	_set_kicker_font_size(float(DOCKED_KICKER_SIZE))
 	_set_wave_amp(DOCKED_WAVE_AMP)
@@ -262,6 +267,29 @@ func _set_name_outline(value: float) -> void:
 
 func _refresh_name_bbcode() -> void:
 	challenge_label.text = "[wave amp=%d freq=2]%s[/wave]" % [int(round(_wave_amp)), _challenge_name]
+
+
+func _rebake_banner_to_top_anchors() -> void:
+	# Capture the on-screen rect, then express a content-sized frame with top
+	# anchors so the dock tween never passes through anchor_top=0 with a large
+	# negative offset_top.
+	var rect := banner.get_rect()
+	var min_size := banner.get_combined_minimum_size()
+	var height := maxf(min_size.y, 1.0)
+	var width := maxf(rect.size.x, min_size.x)
+	var center := rect.get_center()
+	var compact := Rect2(center - Vector2(width, height) * 0.5, Vector2(width, height))
+	var parent_size := size
+
+	banner.anchor_left = 0.5
+	banner.anchor_right = 0.5
+	banner.anchor_top = 0.0
+	banner.anchor_bottom = 0.0
+	banner.grow_vertical = Control.GROW_DIRECTION_END
+	banner.offset_left = compact.position.x - parent_size.x * 0.5
+	banner.offset_right = compact.position.x + compact.size.x - parent_size.x * 0.5
+	banner.offset_top = compact.position.y
+	banner.offset_bottom = compact.position.y + compact.size.y
 
 
 func _center_banner_pivot() -> void:

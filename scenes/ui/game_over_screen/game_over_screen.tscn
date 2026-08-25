@@ -127,12 +127,12 @@ theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_ftetl")
 text = "0"
 
-[node name="RuneTriggersLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=373946657]
+[node name="CardTriggersLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=373946657]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Rune Triggers"
+text = "Card Triggers"
 
-[node name="RuneTriggersValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=350610046]
+[node name="CardTriggersValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=350610046]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9303785, 0.8507871, 0.4908229, 1)
 theme_override_font_sizes/font_size = 24

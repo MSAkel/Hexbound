@@ -31,4 +31,6 @@ func _on_main_menu_button_pressed() -> void:
 
 
 func _on_new_run_button_pressed() -> void:
-	pass # Replace with function body.
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	RunSaveManager.request_scene_enter_transition()
+	get_tree().change_scene_to_file("res://scenes/ui/character_selection_screen/character_selection_screen.tscn")

@@ -28,6 +28,7 @@ signal card_drag_ended()
 
 ## Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
+signal merchant_tokens_changed(new_amount: int)
 
 signal total_round_score_changed()
 signal turn_score_changed()
@@ -67,6 +68,8 @@ signal card_selected(card: CardUI)
 signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2, placement: int)
 ## One hover panel per glossary keyword. Source is the CardUI that requested it.
 signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect2, source: Object)
+## Re-evaluate the control beneath a stationary cursor after a covering UI closes.
+signal tooltip_hover_refresh_requested
 
 signal map_display_layout_changed(layout: String)
 

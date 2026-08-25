@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://scripts/hex_tile_map.gd" id="1_d5c3r"]
 [ext_resource type="Script" uid="uid://c6xjcfxyej4h2" path="res://scripts/trigger_order_overlay.gd" id="2_order"]
+[ext_resource type="Script" path="res://scripts/trigger_link_overlay.gd" id="2_link"]
 [ext_resource type="Texture2D" uid="uid://u433044huqg5" path="res://assets/tilesets/tile_hover_highlight.png" id="3_3rbfx"]
 [ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="3_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://d2i5udp267mcs" path="res://assets/tilesets/fading_sector_challenge_overlay.png" id="3_ekk8a"]
@@ -66,6 +67,10 @@ hex_size = 3
 [node name="TriggerOrderOverlay" type="Node2D" parent="." unique_id=426136559]
 visible = false
 script = ExtResource("2_order")
+
+[node name="TriggerLinkOverlay" type="Node2D" parent="."]
+z_index = 15
+script = ExtResource("2_link")
 
 [node name="BaseLayer" type="TileMapLayer" parent="." unique_id=1827759136 groups=["hex_map_group"]]
 tile_set = SubResource("TileSet_ekk8a")

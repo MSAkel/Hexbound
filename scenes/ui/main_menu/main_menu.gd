@@ -34,10 +34,11 @@ func _ready() -> void:
 	if music:
 		AudioManager.play_music(music)
 	
-	# Connect button hover/focus signals and scale from button center
+	# Connect button hover/focus signals and scale from beyond the left edge so
+	# the left-aligned label shifts noticeably to the right as it grows.
 	for button in $MenuContainer/MenuItemsContainer.get_children():
 		if button is Button:
-			button.pivot_offset = button.size / 2.0
+			_set_button_pivot(button)
 			button.resized.connect(_on_button_resized.bind(button))
 			button.mouse_entered.connect(_on_button_hover.bind(button))
 			button.mouse_exited.connect(_on_button_unhover.bind(button))
@@ -47,8 +48,12 @@ func _ready() -> void:
 
 
 func _on_button_resized(button: Button) -> void:
-	# Keep scale origin centered when layout settles or size changes.
-	button.pivot_offset = button.size / 2.0
+	_set_button_pivot(button)
+
+
+func _set_button_pivot(button: Button) -> void:
+	# Mirroring the former centered pivot gives the same travel in reverse.
+	button.pivot_offset = Vector2(-button.size.x / 2.0, button.size.y / 2.0)
 
 
 func _on_button_hover(button: Button) -> void:
@@ -67,7 +72,7 @@ func _animate_button_hover(button: Button, hovered: bool) -> void:
 		if previous.is_valid():
 			previous.kill()
 	
-	button.pivot_offset = button.size / 2.0
+	_set_button_pivot(button)
 	var tween := create_tween()
 	tween.set_ease(Tween.EASE_OUT)
 	tween.set_trans(Tween.TRANS_QUAD)
@@ -82,7 +87,9 @@ func _on_focus_entered() -> void:
 
 
 func _refresh_continue_button() -> void:
-	continue_button.disabled = not RunSaveManager.has_save()
+	var has_save := RunSaveManager.has_save()
+	continue_button.visible = has_save
+	continue_button.disabled = not has_save
 
 
 func _on_continue_pressed() -> void:

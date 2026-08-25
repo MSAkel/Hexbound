@@ -70,9 +70,9 @@ const SIGIL_TEXTURES := {
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
-	TileCardRarity.COMMON: 15,
-	TileCardRarity.UNCOMMON: 30,
-	TileCardRarity.RARE: 45,
+	TileCardRarity.COMMON: 2,
+	TileCardRarity.UNCOMMON: 5,
+	TileCardRarity.RARE: 8,
 }
 
 var activation_count: int = 0
@@ -283,7 +283,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 
 # Queue extra tile card activations to resolve before tile flow continues.
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
-	source_tile.map.queue_tile_card_triggers(tile_cards, activation_scales)
+	source_tile.map.queue_tile_card_triggers(tile_cards, activation_scales, source_tile)
 
 # Modifier cards resolve immediately on placement instead of occupying a tile.
 func apply_on_placement(_tile: Hex) -> void:
@@ -638,6 +638,15 @@ func _coords_for_next_segment(tile: Hex) -> Array[Vector2i]:
 ## Remove a placed tile card instance from the map (clears its tile and cancels queued triggers).
 func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard) -> void:
 	source_tile.map.destroy_placed_tile_card(tile_card)
+
+
+## Remove a placed tile card after its queued chained triggers finish resolving.
+func _destroy_placed_tile_card_after_queued_triggers(
+	source_tile: Hex,
+	tile_card: TileCard,
+	on_destroy: Callable = Callable(),
+) -> void:
+	source_tile.map.schedule_destroy_after_trigger_link(source_tile, tile_card, on_destroy)
 #endregion --- Tile card destruction helpers ---
 
 

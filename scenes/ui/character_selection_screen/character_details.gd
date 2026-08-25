@@ -2,6 +2,7 @@ class_name CharacterDetails
 extends HBoxContainer
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
+const DEFAULT_SEGMENT_COUNT := 7
 
 signal prev_selection_pressed
 signal next_selection_pressed
@@ -10,27 +11,27 @@ var main_scene := load("res://scenes/main.tscn")
 # Kept in sync by display_selection so Play can lock in the visible character.
 var _selected_character: CharacterDefinition = null
 
-@onready var character_name_label: RichTextLabel = $VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/CharacterPanel/VBoxContainer/CharacterNameLabel
-@onready var character_icon: TextureRect = $VBoxContainer/HBoxContainer/SelectionContainer/SelectionVContainer/CharacterPanel/VBoxContainer/CharacterIcon
-@onready var difficulty_container: PanelContainer = $VBoxContainer/HBoxContainer2/DifficultyPanel/DifficultyLevelContainer
-
-@onready var trigger_order_label: Label = $VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/TriggerOrderLabel
-@onready var trigger_order_description: Label = $VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/TriggerOrderDescription
-@onready var trigger_order_image: TextureRect = $VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/TriggerOrderImage
-
-@onready var segment_count_label: Label = $VBoxContainer/HBoxContainer/triggerOrderPanel/VBoxContainer/HBoxContainer/LegendContainer/VBoxContainer/SegmentsContainer/VBoxContainer/ItemTitle
+@onready var character_name_label: Label = $UnifiedPanel/Content/OverviewRow/ProfileColumn/CharacterNameLabel
+@onready var character_icon: TextureRect = $UnifiedPanel/Content/OverviewRow/ProfileColumn/CharacterIcon
+@onready var difficulty_container: HBoxContainer = $UnifiedPanel/Content/Footer/DifficultyLevelContainer
+@onready var trigger_order_label: Label = $UnifiedPanel/Content/OverviewRow/MapColumn/TriggerOrderLabel
+@onready var trigger_order_description: Label = $UnifiedPanel/Content/OverviewRow/MapColumn/TriggerOrderDescription
+@onready var trigger_order_image: TextureRect = $UnifiedPanel/Content/OverviewRow/MapColumn/TriggerOrderImage
+@onready var segment_count_label: Label = $UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy/Title
 
 
 func display_selection(character: CharacterDefinition) -> void:
 	_selected_character = character
-	character_name_label.text = "[wave amp=50 freq=2]%s[/wave]" % character.display_name
+	character_name_label.text = character.display_name.to_upper()
 	character_icon.texture = character.icon
-	trigger_order_label.text = character.trigger_order_display_name
+	trigger_order_label.text = character.trigger_order_display_name.to_upper()
 	trigger_order_description.text = character.trigger_order_description
 	trigger_order_image.texture = character.trigger_order_preview
-	# Numbered-grid characters define segments explicitly; others keep the scene placeholder.
+
+	var segment_count := DEFAULT_SEGMENT_COUNT
 	if not character.segment_starts.is_empty():
-		segment_count_label.text = "Segments: %d" % character.segment_starts.size()
+		segment_count = character.segment_starts.size()
+	segment_count_label.text = "%d SEGMENTS" % segment_count
 
 
 func _on_prev_selection_pressed() -> void:
@@ -40,8 +41,13 @@ func _on_prev_selection_pressed() -> void:
 func _on_next_selection_pressed() -> void:
 	next_selection_pressed.emit()
 
+
 func get_selected_difficulty() -> Difficulty.Level:
 	return difficulty_container.get_selected_difficulty()
+
+
+func display_difficulty(level: Difficulty.Level) -> void:
+	difficulty_container.display_difficulty(level)
 
 
 func _on_play_button_pressed() -> void:
@@ -53,6 +59,6 @@ func _on_play_button_pressed() -> void:
 	# Character choice locks in layout rules for the entire run.
 	GameManager.selected_character = _selected_character
 	GameManager.selected_difficulty = get_selected_difficulty()
-	RunSaveManager.request_main_scene_transition()
+	RunSaveManager.request_scene_enter_transition()
 
 	get_tree().change_scene_to_packed(main_scene)

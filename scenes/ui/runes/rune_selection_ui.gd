@@ -2,6 +2,9 @@ extends Control
 
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/MarginPanel/ChoicesContainer
 @onready var reroll_button: Button = $Panel/VBoxContainer/RerollButton
+@onready var _content_panel: Panel = $Panel
+@onready var _show_board_button: Button = $Panel/ShowBoardButton
+@onready var _show_options_button: Button = $ShowOptionsButton
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CHOICE_CARD_SCALE := 1.45
@@ -16,16 +19,35 @@ var runes_reroll_cost: int = 10
 func _ready() -> void:
 	hide()
 
+	_show_board_button.pressed.connect(_on_show_board_button_pressed)
+	_show_options_button.pressed.connect(_on_show_options_button_pressed)
 	UiManager.show_runes_choice_panel.connect(_on_show_panel)
 	EventBus.gold_changed.connect(_on_gold_changed)
 	_update_reroll_button()
 
 
 func _on_show_panel() -> void:
+	_set_board_view(false)
 	UiManager.show_panel(self)
 	_update_reroll_button()
 	create_runes_pack()
 	instantiate_rune_choices()
+
+
+func _on_show_board_button_pressed() -> void:
+	_set_board_view(true)
+
+
+func _on_show_options_button_pressed() -> void:
+	_set_board_view(false)
+
+
+## Hide the selection overlay so the player can inspect the board and hand.
+## Does not advance rune selection or round flow.
+func _set_board_view(active: bool) -> void:
+	_content_panel.visible = not active
+	_show_options_button.visible = active
+	mouse_filter = Control.MOUSE_FILTER_IGNORE if active else Control.MOUSE_FILTER_STOP
 
 
 func _on_reroll_button_pressed() -> void:
@@ -83,6 +105,7 @@ func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
 	var rune := card_ui.card as TileCard
 	## Selecting a rune consumes the pack so a new one can be offered later.
 	runes_pack.clear()
+	_set_board_view(false)
 	hide()
 	EventBus.tile_card_selected.emit(rune)
 	## Report the pick here rather than on tile_card_selected, which merchant purchases also emit.

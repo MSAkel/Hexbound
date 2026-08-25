@@ -11,7 +11,7 @@ enum Type {
 	TRIGGER,
 }
 
-const ENHANCEMENT_BASE_PRICE := 30
+const ENHANCEMENT_BASE_PRICE := 5
 
 @export var type: Type
 @export var short_description: String

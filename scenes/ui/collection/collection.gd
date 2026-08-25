@@ -1,18 +1,165 @@
 extends Panel
 
-## Collections screen shows all all collections in game such as runes, challenges, and map templates.
+## Collection screen for browsing every rune, character, and challenge in the game.
 
+@onready var tab_bar: TabBar = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar
 @onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
+const CHALLENGE_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
+
+const TEXT_PRIMARY := Color("e8dfc9")
+const TEXT_SECONDARY := Color("aeb9b3")
+const ACCENT := Color("c29a56")
+const ITEM_BACKGROUND := Color("182b30e8")
+const ITEM_BORDER := Color("617575")
+
+enum CollectionTab {
+	CARDS,
+	CHARACTERS,
+	CHALLENGES,
+}
 
 
 func _ready() -> void:
+	_show_tab(tab_bar.current_tab)
+
+
+func _show_tab(tab: int) -> void:
+	_clear_collection()
+	match tab:
+		CollectionTab.CARDS:
+			_show_cards()
+		CollectionTab.CHARACTERS:
+			_show_characters()
+		CollectionTab.CHALLENGES:
+			_show_challenges()
+
+
+func _clear_collection() -> void:
+	for child in collection_grid_container.get_children():
+		collection_grid_container.remove_child(child)
+		child.queue_free()
+
+
+func _show_cards() -> void:
+	collection_grid_container.columns = 5
 	for rune in GameManager.tile_cards_pool:
 		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
 		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW)
 		collection_grid_container.add_child(card_ui)
 		card_ui.set_card(rune)
+
+
+func _show_characters() -> void:
+	collection_grid_container.columns = 3
+	for character: CharacterDefinition in PlayerCharacter.get_all_characters():
+		collection_grid_container.add_child(_create_character_entry(character))
+
+
+func _show_challenges() -> void:
+	collection_grid_container.columns = 3
+	for challenge_type: ChallengeManager.Type in ChallengeManager.ALL_CHALLENGES:
+		collection_grid_container.add_child(_create_challenge_entry(challenge_type))
+
+
+func _create_character_entry(character: CharacterDefinition) -> PanelContainer:
+	var panel := _create_item_panel(Vector2(500, 270))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 18)
+	panel.add_child(row)
+
+	var portrait := TextureRect.new()
+	portrait.custom_minimum_size = Vector2(170, 230)
+	portrait.texture = character.icon
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(portrait)
+
+	var details := VBoxContainer.new()
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	details.add_theme_constant_override("separation", 8)
+	row.add_child(details)
+
+	details.add_child(_create_label(character.display_name.to_upper(), 27, TEXT_PRIMARY))
+	details.add_child(_create_separator())
+	details.add_child(_create_label("ACTIVATION ORDER", 14, ACCENT))
+	var order_label := _create_label(character.trigger_order_display_name, 20, TEXT_PRIMARY)
+	order_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	details.add_child(order_label)
+
+	var description := _create_label(character.trigger_order_description, 16, TEXT_SECONDARY)
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.add_child(description)
+
+	var segment_text := "Variable segments" if character.segments_count < 0 else "%d segments" % character.segments_count
+	details.add_child(_create_label(segment_text.to_upper(), 14, ACCENT))
+	return panel
+
+
+func _create_challenge_entry(challenge_type: ChallengeManager.Type) -> PanelContainer:
+	var panel := _create_item_panel(Vector2(500, 190))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 18)
+	panel.add_child(row)
+
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(72, 72)
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon.texture = CHALLENGE_ICON
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(icon)
+
+	var details := VBoxContainer.new()
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	details.add_theme_constant_override("separation", 10)
+	row.add_child(details)
+
+	details.add_child(_create_label(ChallengeManager.get_challenge_name(challenge_type).to_upper(), 25, TEXT_PRIMARY))
+	details.add_child(_create_separator())
+	var description := _create_label(ChallengeManager.get_challenge_description(challenge_type), 17, TEXT_SECONDARY)
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.add_child(description)
+	return panel
+
+
+func _create_item_panel(minimum_size: Vector2) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = minimum_size
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = ITEM_BACKGROUND
+	style.border_color = ITEM_BORDER
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 20
+	style.content_margin_top = 18
+	style.content_margin_right = 20
+	style.content_margin_bottom = 18
+	panel.add_theme_stylebox_override("panel", style)
+	return panel
+
+
+func _create_label(text: String, font_size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	return label
+
+
+func _create_separator() -> HSeparator:
+	var separator := HSeparator.new()
+	separator.modulate = ITEM_BORDER
+	return separator
+
+
+func _on_tab_bar_tab_changed(tab: int) -> void:
+	_show_tab(tab)
 
 
 func _on_back_button_pressed() -> void:

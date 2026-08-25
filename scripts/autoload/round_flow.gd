@@ -1,7 +1,8 @@
 extends Node
 
 ## Owns the ordered round-transition sequence so no single screen decides what comes next.
-## Round goal met -> summary -> rune pick -> merchant -> challenge reveal -> first turn of the round.
+## Round goal met -> summary -> merchant -> challenge reveal -> first turn of the round.
+## Mid-turn rune picks still use rune_selection_ui outside this transition.
 
 enum Step {
 	## Normal play. No transition is running.
@@ -76,7 +77,7 @@ func notify_summary_confirmed() -> void:
 	# The round bonus has to land before the merchant so the player can spend it there.
 	GameManager.advance_round()
 	_arm_challenge_reveal()
-	_enter_step(Step.RUNE_PICK)
+	_enter_step(Step.MERCHANT)
 
 
 func notify_victory_continue() -> void:

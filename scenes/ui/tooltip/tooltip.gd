@@ -20,9 +20,19 @@ var _placement: Placement = Placement.AUTO
 func _ready() -> void:
 	if bind_event_bus:
 		EventBus.toggle_tooltip.connect(_on_toggle_tooltip)
+		EventBus.tooltip_hover_refresh_requested.connect(_on_hover_refresh_requested)
 	hide()
 	# Make sure tooltip is on top
 	z_index = 100
+
+
+func _on_hover_refresh_requested() -> void:
+	# Let the covering control leave the GUI picking tree before replaying the pointer.
+	await get_tree().process_frame
+	var mouse_motion := InputEventMouseMotion.new()
+	mouse_motion.position = get_viewport().get_mouse_position()
+	mouse_motion.global_position = mouse_motion.position
+	get_viewport().push_input(mouse_motion, true)
 
 
 # Used when this panel is stacked beside a hovered card description.

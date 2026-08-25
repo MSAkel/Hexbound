@@ -1,77 +1,84 @@
 [gd_scene format=3 uid="uid://ln018toeb6p5"]
 
-[ext_resource type="Texture2D" uid="uid://bp0w0wvwvpnjw" path="res://assets/gui/panels/character_selection_panel_2.png" id="1_7cv0e"]
-[ext_resource type="Script" uid="uid://ca47lh6e1ysqu" path="res://scenes/ui/character_selection_screen/difficulty_level_container.gd" id="1_uu1md"]
-[ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="4_rjl0r"]
-[ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="5_idxdb"]
-[ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="6_gubkb"]
+[ext_resource type="Script" uid="uid://ca47lh6e1ysqu" path="res://scenes/ui/character_selection_screen/difficulty_level_container.gd" id="1_difficulty"]
+[ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="2_arrow_normal"]
+[ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="3_arrow_pressed"]
+[ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="4_arrow_hover"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7pmlo"]
-content_margin_left = 24.0
-content_margin_top = 24.0
-content_margin_right = 24.0
-content_margin_bottom = 24.0
-texture = ExtResource("1_7cv0e")
-modulate_color = Color(0.98234254, 0.9823423, 0.9823424, 1)
-
-[node name="DifficultyLevelPanel" type="PanelContainer" unique_id=1707494106]
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -118.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="DifficultyLevelContainer" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 110)
 size_flags_horizontal = 3
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxTexture_7pmlo")
-script = ExtResource("1_uu1md")
+theme_override_constants/separation = 18
+script = ExtResource("1_difficulty")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1049665216]
+[node name="SectionTitle" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
-
-[node name="PrevSelectionButton" type="TextureButton" parent="HBoxContainer" unique_id=1043424517]
-layout_mode = 2
-size_flags_horizontal = 0
 size_flags_vertical = 4
-texture_normal = ExtResource("4_rjl0r")
-texture_pressed = ExtResource("5_idxdb")
-texture_hover = ExtResource("6_gubkb")
+theme_override_constants/separation = 2
+
+[node name="Eyebrow" type="Label" parent="SectionTitle"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.33, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+text = "RUN SETTINGS"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="SectionTitle"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_font_sizes/font_size = 24
+text = "DIFFICULTY"
+horizontal_alignment = 1
+
+[node name="SectionDivider" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(2, 78)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+color = Color(0.43, 0.33, 0.19, 0.2)
+
+[node name="PrevSelectionButton" type="TextureButton" parent="."]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+texture_normal = ExtResource("2_arrow_normal")
+texture_pressed = ExtResource("3_arrow_pressed")
+texture_hover = ExtResource("4_arrow_hover")
 stretch_mode = 3
 flip_h = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=2098114582]
+[node name="DifficultyCopy" type="VBoxContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_constants/separation = 8
+size_flags_vertical = 4
+theme_override_constants/separation = 4
 
-[node name="DifficultyLevel" type="Label" parent="HBoxContainer/VBoxContainer" unique_id=68529099]
+[node name="DifficultyLevel" type="Label" parent="DifficultyCopy"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_font_sizes/font_size = 29
 text = "Level 1"
 horizontal_alignment = 1
 
-[node name="DifficultyInfo" type="Label" parent="HBoxContainer/VBoxContainer" unique_id=1600304068]
-custom_maximum_size = Vector2(400, -1)
+[node name="DifficultyInfo" type="Label" parent="DifficultyCopy"]
+custom_minimum_size = Vector2(420, 46)
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.23137255, 0.25882354, 0.20784314, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 17
 text = "Base difficulty"
 horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="NextSelectionButton" type="TextureButton" parent="HBoxContainer" unique_id=770637684]
+[node name="NextSelectionButton" type="TextureButton" parent="."]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-size_flags_horizontal = 8
 size_flags_vertical = 4
-texture_normal = ExtResource("4_rjl0r")
-texture_pressed = ExtResource("5_idxdb")
-texture_hover = ExtResource("6_gubkb")
+texture_normal = ExtResource("2_arrow_normal")
+texture_pressed = ExtResource("3_arrow_pressed")
+texture_hover = ExtResource("4_arrow_hover")
 stretch_mode = 3
 
-[connection signal="pressed" from="HBoxContainer/PrevSelectionButton" to="." method="_on_prev_selection_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/NextSelectionButton" to="." method="_on_next_selection_button_pressed"]
+[connection signal="pressed" from="PrevSelectionButton" to="." method="_on_prev_selection_button_pressed"]
+[connection signal="pressed" from="NextSelectionButton" to="." method="_on_next_selection_button_pressed"]
