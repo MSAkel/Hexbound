@@ -10,7 +10,6 @@ func enter() -> void:
 	
 	card_ui.show_selection_glow()
 	EventBus.card_drag_started.emit(card_ui)
-	EventBus.card_selected.emit(card_ui)
 
 
 func exit(_next_state: State = State.BASE) -> void:

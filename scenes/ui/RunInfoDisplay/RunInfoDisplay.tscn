@@ -31,7 +31,6 @@ size_flags_vertical = 0
 theme_override_constants/separation = 8
 
 [node name="RunStatus" parent="LeftContainer/VBoxContainer" unique_id=2029786034 instance=ExtResource("2_hwuyg")]
-z_index = 50
 layout_mode = 2
 
 [node name="SegmentsContainer" parent="LeftContainer/VBoxContainer" unique_id=1933303425 instance=ExtResource("7_6tdp6")]

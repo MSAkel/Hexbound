@@ -149,7 +149,6 @@ func _finish_transition() -> void:
 	_advance_round_after_merchant = false
 	_outgoing_challenge = -1
 
-	EventBus.round_started.emit(GameManager.current_round)
 	EventBus.turn_started.emit()
 
 

@@ -132,6 +132,18 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
 text = "COLLECTION"
 alignment = 0
 
+[node name="UISandboxButton" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=2847193051]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
+text = "UI SANDBOX"
+alignment = 0
+
 [node name="Exit" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1113969747]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
@@ -174,4 +186,5 @@ layout_mode = 1
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Play" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Options" to="." method="_on_options_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/CollectionButton" to="." method="_on_collection_button_pressed"]
+[connection signal="pressed" from="MenuContainer/MenuItemsContainer/UISandboxButton" to="." method="_on_ui_sandbox_button_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Exit" to="." method="_on_exit_pressed"]

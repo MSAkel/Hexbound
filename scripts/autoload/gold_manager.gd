@@ -6,15 +6,16 @@ extends Node
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 const MAX_MERCHANT_TOKENS := 5
-const TILE_CARD_TOKEN_COST := 1
-const ENHANCEMENT_TOKEN_COST := 2
+const MERCHANT_TOKEN_COST := 1
 ## Flat gold paid every time a round goal is met.
 const ROUND_COMPLETION_GOLD := 5
 ## Extra gold per unused turn when finishing a round early.
 const GOLD_PER_UNUSED_TURN := 1
 
 var _amount: int = 0
-## Resets at the start of each turn. Used by runes that scale with gold earned during a turn.
+## Gross gold gained during the run. Starting gold and spending do not affect this total.
+var _total_earned_this_run: int = 0
+## Resets at the start of each turn. Shown on the round-complete summary.
 var _earned_this_turn: int = 0
 ## Resets when a new round begins. Used by cards that scale with gold spent this round.
 var _spent_this_round: int = 0
@@ -26,6 +27,11 @@ var _last_speed_reward: Dictionary = {}
 var amount: int:
 	get:
 		return _amount
+
+
+var total_earned_this_run: int:
+	get:
+		return _total_earned_this_run
 
 
 var earned_this_turn: int:
@@ -51,6 +57,7 @@ var last_speed_reward: Dictionary:
 ## Set starting gold for a new run based on difficulty and notify UI listeners.
 func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	_amount = Difficulty.get_starting_gold(difficulty)
+	_total_earned_this_run = 0
 	_earned_this_turn = 0
 	_spent_this_round = 0
 	_merchant_tokens = 0
@@ -62,14 +69,8 @@ func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 func add(amount_to_add: int) -> void:
 	_amount += amount_to_add
 	_earned_this_turn += amount_to_add
+	_total_earned_this_run += maxi(0, amount_to_add)
 	EventBus.gold_changed.emit(_amount)
-
-
-## Gold from rune producers on the board. Thin alias over add for segment tracking callers.
-func add_board_gold(amount_to_add: int) -> void:
-	if amount_to_add == 0:
-		return
-	add(amount_to_add)
 
 
 func remove(amount_to_remove: int) -> void:
@@ -94,13 +95,6 @@ func spend_tokens(cost: int) -> bool:
 	return true
 
 
-## Token price for a merchant item. Tile cards cost 1, enhancements cost 2.
-func get_token_cost(card: Card) -> int:
-	if card is Enhancement:
-		return ENHANCEMENT_TOKEN_COST
-	return TILE_CARD_TOKEN_COST
-
-
 ## Awards tokens up to the wallet cap. Returns how many were earned and how many were lost to overflow.
 func earn_merchant_tokens(amount_to_earn: int) -> Dictionary:
 	if amount_to_earn <= 0:
@@ -115,7 +109,7 @@ func earn_merchant_tokens(amount_to_earn: int) -> Dictionary:
 
 
 ## Pays round completion gold, early-finish bonus, and merchant tokens when the goal is met.
-func apply_round_speed_rewards(skipped_turns: int, turns_remaining: int) -> void:
+func apply_round_speed_rewards(skipped_turns: int) -> void:
 	var base_gold := ROUND_COMPLETION_GOLD
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns
 	var token_result := earn_merchant_tokens(skipped_turns)
@@ -126,7 +120,6 @@ func apply_round_speed_rewards(skipped_turns: int, turns_remaining: int) -> void
 		AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
 
 	_last_speed_reward = {
-		"turns_remaining": turns_remaining,
 		"skipped_turns": skipped_turns,
 		"base_gold": base_gold,
 		"early_gold": early_gold,
@@ -135,18 +128,19 @@ func apply_round_speed_rewards(skipped_turns: int, turns_remaining: int) -> void
 	}
 
 
-## Called when a new turn begins so turn-scaling runes start from zero.
+## Called when a new turn begins so per-turn gold tracking resets.
 func reset_turn_tracking() -> void:
 	_earned_this_turn = 0
 
 
-## Called when a new round begins so round-scaling runes start from zero.
+## Called when a new round begins so round-spend tracking resets.
 func reset_round_tracking() -> void:
 	_spent_this_round = 0
 
 
 func capture_run_state() -> Dictionary:
 	return {
+		"total_earned_this_run": _total_earned_this_run,
 		"amount": _amount,
 		"earned_this_turn": _earned_this_turn,
 		"spent_this_round": _spent_this_round,
@@ -156,6 +150,7 @@ func capture_run_state() -> Dictionary:
 
 func apply_run_state(state: Dictionary) -> void:
 	_amount = int(state.get("amount", 0))
+	_total_earned_this_run = int(state.get("total_earned_this_run", 0))
 	_earned_this_turn = int(state.get("earned_this_turn", 0))
 	_spent_this_round = int(state.get("spent_this_round", 0))
 	_merchant_tokens = int(state.get("merchant_tokens", 0))

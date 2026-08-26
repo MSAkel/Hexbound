@@ -1,175 +1,354 @@
 [gd_scene format=3 uid="uid://di0jbf4swcn62"]
 
-[ext_resource type="Script" uid="uid://s0i54rdptfrm" path="res://scenes/ui/round_complete_screen/round_complete_screen.gd" id="1_wj4ep"]
-[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_57a7i"]
+[ext_resource type="Script" uid="uid://s0i54rdptfrm" path="res://scenes/ui/round_complete_screen/round_complete_screen.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="2_gold"]
+[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="3_token"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r6dd1"]
-bg_color = Color(0.015686275, 0.07450981, 0.20392157, 0.4745098)
+[sub_resource type="StyleBoxFlat" id="Overlay"]
+bg_color = Color(0.025840001, 0.050708726, 0.03876, 0.17500001)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7nsra"]
-texture = ExtResource("2_57a7i")
+[sub_resource type="StyleBoxFlat" id="Card"]
+bg_color = Color(0.957, 0.902, 0.741, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.235, 0.237, 0.126, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+shadow_offset = Vector2(0, 10)
 
-[sub_resource type="FontVariation" id="FontVariation_ftetl"]
+[sub_resource type="StyleBoxLine" id="Rule"]
+color = Color(0.35, 0.38, 0.18, 0.72)
+thickness = 3
 
-[sub_resource type="FontVariation" id="FontVariation_7pmlo"]
-base_font = SubResource("FontVariation_ftetl")
+[sub_resource type="StyleBoxFlat" id="RewardBreakdown"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+bg_color = Color(0.9, 0.79, 0.51, 0.28)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.68, 0.53, 0.2, 0.34)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
-[node name="RoundCompleteScreen" type="Panel" unique_id=906341562]
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+content_margin_left = 34.0
+content_margin_top = 13.0
+content_margin_right = 34.0
+content_margin_bottom = 13.0
+bg_color = Color(0.075, 0.245, 0.11, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.28, 0.3, 0.13, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ButtonPressed"]
+content_margin_left = 34.0
+content_margin_top = 15.0
+content_margin_right = 34.0
+content_margin_bottom = 11.0
+bg_color = Color(0.055, 0.17, 0.08, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.22, 0.24, 0.1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+content_margin_left = 34.0
+content_margin_top = 13.0
+content_margin_right = 34.0
+content_margin_bottom = 13.0
+bg_color = Color(0.105, 0.335, 0.155, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.45, 0.46, 0.22, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxEmpty" id="ButtonFocus"]
+
+[node name="RoundCompleteScreen" type="Panel" unique_id=113319956]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_r6dd1")
-script = ExtResource("1_wj4ep")
+theme_override_styles/panel = SubResource("Overlay")
+script = ExtResource("1_script")
 
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=142012728]
-custom_minimum_size = Vector2(600, 500)
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=486542318]
+custom_minimum_size = Vector2(760, 880)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -114.5
-offset_top = -22.0
-offset_right = 114.5
-offset_bottom = 22.0
+offset_left = -380.0
+offset_top = -440.0
+offset_right = 380.0
+offset_bottom = 440.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxTexture_7nsra")
+theme_override_styles/panel = SubResource("Card")
 
-[node name="Control" type="Control" parent="PanelContainer" unique_id=1375323956]
+[node name="Control" type="Control" parent="PanelContainer" unique_id=25937606]
 layout_mode = 2
-size_flags_vertical = 0
+mouse_filter = 2
 
-[node name="RoundCompleteLabel" type="Label" parent="PanelContainer/Control" unique_id=16293500]
-layout_mode = 0
-offset_top = -25.0
-offset_right = 600.0
-offset_bottom = 32.0
-rotation = -0.06981317
-size_flags_vertical = 0
-theme_override_colors/font_outline_color = Color(0.88994145, 0.83303005, 0.52653843, 1)
-theme_override_fonts/font = SubResource("FontVariation_7pmlo")
-theme_override_font_sizes/font_size = 42
+[node name="RoundCompleteLabel" type="Label" parent="PanelContainer/Control" unique_id=937633895]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 1.0
+offset_top = 35.0
+offset_right = 1.0
+offset_bottom = 102.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.96, 0.82, 0.42)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 48
 text = "Round Complete"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="ContentMarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1436864242]
+[node name="ContentMarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=188331323]
 layout_mode = 2
-theme_override_constants/margin_left = 50
-theme_override_constants/margin_top = 50
-theme_override_constants/margin_right = 50
-theme_override_constants/margin_bottom = 50
+theme_override_constants/margin_left = 58
+theme_override_constants/margin_top = 112
+theme_override_constants/margin_right = 58
+theme_override_constants/margin_bottom = 30
 
-[node name="ContentBoxContainer" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer" unique_id=1580098133]
+[node name="ContentBoxContainer" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer" unique_id=954891927]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 13
 
-[node name="ScoreContainer" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1263601636]
+[node name="HeaderRule" type="HSeparator" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1951790989]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/separator = SubResource("Rule")
+
+[node name="ScoreContainer" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1132703847]
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 
-[node name="RoundScoreLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/ScoreContainer" unique_id=1719466031]
+[node name="RoundScoreLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/ScoreContainer" unique_id=991979453]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 32
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 38
 text = "Total Score"
-horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="RoundScore" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/ScoreContainer" unique_id=1196142549]
+[node name="RoundScore" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/ScoreContainer" unique_id=759433246]
+custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
-size_flags_horizontal = 10
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 32
-text = "000"
-horizontal_alignment = 1
-
-[node name="GoldContainer" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=777143039]
-layout_mode = 2
-
-[node name="GoldEarnedLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/GoldContainer" unique_id=312244486]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 32
-text = "Gold Earned"
-horizontal_alignment = 1
-
-[node name="GoldEarned" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/GoldContainer" unique_id=861833872]
-layout_mode = 2
-size_flags_horizontal = 10
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 32
-text = "000"
-horizontal_alignment = 1
-
-[node name="RemainingTurnsRewardsContainer" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1601264083]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="BaseGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=1819112609]
-layout_mode = 2
-
-[node name="BaseGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/BaseGoldRow" unique_id=1951546497]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 26
-text = "Round complete"
-
-[node name="BaseGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/BaseGoldRow" unique_id=1228991433]
-layout_mode = 2
-size_flags_horizontal = 10
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 26
-text = "+0"
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 52
+text = "660"
 horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="EarlyGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=538779927]
+[node name="ScoreRule" type="HSeparator" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=439457728]
+custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
+theme_override_styles/separator = SubResource("Rule")
 
-[node name="EarlyGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/EarlyGoldRow" unique_id=1515805421]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 26
-text = "Early complete"
-
-[node name="EarlyGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/EarlyGoldRow" unique_id=322724243]
-layout_mode = 2
-size_flags_horizontal = 10
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 26
-text = "+0"
-horizontal_alignment = 2
-
-[node name="MerchantTokensRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=1122739415]
-layout_mode = 2
-
-[node name="MerchantTokensTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1070663066]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 26
-text = "Merchant tokens"
-
-[node name="MerchantTokensValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1788726871]
-layout_mode = 2
-size_flags_horizontal = 10
-theme_override_colors/font_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
-theme_override_font_sizes/font_size = 26
-text = "+0"
-horizontal_alignment = 2
-
-[node name="TokensLostLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=668218587]
+[node name="RewardsLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=330002805]
 visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 22
-text = "1 token(s) lost. Wallet is full."
+theme_override_colors/font_color = Color(0.29, 0.32, 0.17, 1)
+theme_override_font_sizes/font_size = 25
+text = "REWARDS"
+
+[node name="GoldContainer" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=802449603]
+visible = false
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="GoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/GoldContainer" unique_id=1414532253]
+custom_minimum_size = Vector2(62, 62)
+layout_mode = 2
+texture = ExtResource("2_gold")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="GoldEarnedLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/GoldContainer" unique_id=1525012400]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 32
+text = "Gold Earned"
+vertical_alignment = 1
+
+[node name="GoldEarned" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/GoldContainer" unique_id=425993568]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 38
+text = "6"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="RemainingTurnsRewardsContainer" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=606713706]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="RewardBreakdownPanel" type="PanelContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=147335529]
+layout_mode = 2
+theme_override_styles/panel = SubResource("RewardBreakdown")
+
+[node name="RewardBreakdownRows" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel" unique_id=845202348]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BaseGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows" unique_id=2096311997]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BaseGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=425057028]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 27
+text = "Round completion"
+vertical_alignment = 1
+
+[node name="BaseGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=1998184864]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.43, 0.06, 1)
+theme_override_font_sizes/font_size = 31
+text = "+5"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="BaseGoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=677500682]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+texture = ExtResource("2_gold")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="EarlyGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows" unique_id=191041374]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EarlyGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow" unique_id=1436574429]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 25
+text = "Early finish (x1 per turn)"
+vertical_alignment = 1
+
+[node name="EarlyGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow" unique_id=2135349268]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.43, 0.06, 1)
+theme_override_font_sizes/font_size = 31
+text = "+1"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="EarlyGoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow" unique_id=767788315]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+texture = ExtResource("2_gold")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TokenRule" type="HSeparator" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=45285921]
+custom_minimum_size = Vector2(0, 13)
+layout_mode = 2
+theme_override_styles/separator = SubResource("Rule")
+
+[node name="MerchantTokensRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=1010758444]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="MerchantTokensTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1060675684]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 27
+text = "Merchant Token (x1 per turn)"
+vertical_alignment = 1
+
+[node name="MerchantTokensValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1461419900]
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.06, 0.43, 0.43, 1)
+theme_override_font_sizes/font_size = 34
+text = "+1"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MerchantTokenIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1524448279]
+custom_minimum_size = Vector2(72, 58)
+layout_mode = 2
+texture = ExtResource("3_token")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TokensLostLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=401537775]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.62, 0.16, 0.12, 1)
+theme_override_font_sizes/font_size = 18
+text = "Max tokens reached"
 horizontal_alignment = 1
 
-[node name="ContinueButton" type="Button" parent="PanelContainer" unique_id=1025296605]
+[node name="ButtonSpacer" type="Control" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=2145883020]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+
+[node name="ContinueButtonMargin" type="MarginContainer" parent="PanelContainer" unique_id=1462300410]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
-text = "CONTINUE"
+theme_override_constants/margin_bottom = 24
 
-[connection signal="pressed" from="PanelContainer/ContinueButton" to="." method="_on_continue_button_pressed"]
+[node name="ContinueButton" type="Button" parent="PanelContainer/ContinueButtonMargin" unique_id=1354820777]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.97, 0.97, 0.9, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.94, 1)
+theme_override_font_sizes/font_size = 29
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_styles/focus = SubResource("ButtonFocus")
+text = "Continue"
+
+[connection signal="pressed" from="PanelContainer/ContinueButtonMargin/ContinueButton" to="." method="_on_continue_button_pressed"]

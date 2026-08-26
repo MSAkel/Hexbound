@@ -55,6 +55,7 @@ const HAND_MAP_TILE_HOVER_ELEVATION_OFFSET := -20.0
 const HAND_HOVER_SCALE := 1.2
 const HAND_ELEVATED_Z_INDEX := 10
 const PANEL_HOVER_ELEVATION_OFFSET := -12.0
+const MERCHANT_SELECTED_ELEVATION_OFFSET := -28.0
 const HOVER_ANIMATION_DURATION := 0.2
 var _is_hover_elevated := false
 var _map_tile_hover_active := false
@@ -65,6 +66,7 @@ var _hand_spread_x := 0.0
 var _is_sold := false
 var _discount := 0.0
 var _token_cost := 0
+var _merchant_selected := false
 
 
 func _ready() -> void:
@@ -251,6 +253,8 @@ func set_hover_elevated(elevated: bool, animate: bool = true) -> void:
 
 func _composed_offset_position() -> Vector2:
 	var y := _get_hover_elevation_offset() if _is_hover_elevated else 0.0
+	if _merchant_selected:
+		y = minf(y, MERCHANT_SELECTED_ELEVATION_OFFSET)
 	return Vector2(_hand_spread_x, y)
 
 
@@ -442,7 +446,7 @@ func _refresh_merchant_price() -> void:
 		return
 
 	price = card.get_shop_price(_discount)
-	_token_cost = GoldManager.get_token_cost(card)
+	_token_cost = GoldManager.MERCHANT_TOKEN_COST
 	price_label.text = "$%d" % price
 
 
@@ -463,10 +467,13 @@ func get_token_cost() -> int:
 
 
 func set_merchant_selected(selected: bool) -> void:
+	_merchant_selected = selected
+	z_index = 2 if selected else _resting_z_index
 	if selected:
 		show_selection_glow()
 	else:
 		hide_selection_glow()
+	_apply_offset_transform(true)
 
 
 func _show_keyword_tooltips() -> void:

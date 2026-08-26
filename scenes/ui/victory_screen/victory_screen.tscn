@@ -2,117 +2,168 @@
 
 [ext_resource type="Script" uid="uid://puk4cteawq6c" path="res://scenes/ui/victory_screen/victory_screen.gd" id="1_victory"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
-bg_color = Color(0.6, 0.6, 0.6, 0)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_background"]
+bg_color = Color(0.13, 0.53, 0.44, 0.22)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8ym52"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 28.0
+bg_color = Color(0.11, 0.28, 0.25, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.93, 0.82, 0.43, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.02, 0.07, 0.06, 0.55)
+shadow_size = 12
 
-[sub_resource type="Gradient" id="Gradient_fe2o3"]
-colors = PackedColorArray(0.127457, 0.249696, 0.321985, 0.580392, 0.02745098, 0.07450981, 0.08235294, 0.7764706)
+[sub_resource type="SystemFont" id="SystemFont_title"]
+subpixel_positioning = 0
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_p4b2q"]
-gradient = SubResource("Gradient_fe2o3")
-width = 50
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_value"]
+content_margin_left = 8.0
+content_margin_top = 1.0
+content_margin_right = 9.0
+content_margin_bottom = 1.0
+bg_color = Color(0.06, 0.19, 0.16, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
-[node name="VictoryScreen" type="Control" unique_id=725350368]
-layout_mode = 3
+[node name="VictoryScreen" type="Panel" unique_id=725350368]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_background")
 script = ExtResource("1_victory")
 
-[node name="background" type="Panel" parent="." unique_id=1392681935]
+[node name="RunStatsPanel" type="PanelContainer" parent="." unique_id=882452997]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -190.0
+offset_top = -264.0
+offset_right = 190.0
+offset_bottom = 264.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_riqys")
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="StatsPanel" type="Panel" parent="background" unique_id=882452997]
-custom_minimum_size = Vector2(500, 0)
-layout_mode = 1
-anchors_preset = 11
-anchor_left = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -499.0
-offset_top = 1.0
-offset_right = 1.0
-offset_bottom = 1.0
-grow_horizontal = 0
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_8ym52")
-
-[node name="Foreground" type="TextureRect" parent="background/StatsPanel" unique_id=46358393]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("GradientTexture1D_p4b2q")
-
-[node name="MarginContainer" type="MarginContainer" parent="background/StatsPanel" unique_id=1579781]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 100
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 100
-
-[node name="VBoxContainer" type="VBoxContainer" parent="background/StatsPanel/MarginContainer" unique_id=1721345815]
+[node name="VBoxContainer" type="VBoxContainer" parent="RunStatsPanel" unique_id=1721345815]
 layout_mode = 2
+theme_override_constants/separation = 4
 
-[node name="GameOverLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=121218275]
+[node name="VictoryLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=121218275]
 layout_mode = 2
-size_flags_vertical = 0
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_colors/font_outline_color = Color(0.03, 0.12, 0.1, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = SubResource("SystemFont_title")
+theme_override_font_sizes/font_size = 64
 text = "Victory!"
 horizontal_alignment = 1
 
-[node name="PlayedAsLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=41308403]
+[node name="PlayedAsLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=41308403]
 layout_mode = 2
-size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.86, 0.96, 0.91, 1)
 theme_override_font_sizes/font_size = 24
 text = "<CharacterName>"
 horizontal_alignment = 1
 
-[node name="TurnsPlayedLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=797874721]
+[node name="HighestScoreLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Highest Score"
+
+[node name="HighestScoreValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.71, 1, 1)
 theme_override_font_sizes/font_size = 24
-text = "Turns Played: 1"
+theme_override_styles/normal = SubResource("StyleBoxFlat_value")
+text = "0"
 
-[node name="GoldEarnedLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=1184859522]
+[node name="RoundLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Round"
+
+[node name="RoundValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53, 0.89, 0.95, 1)
 theme_override_font_sizes/font_size = 24
-text = "Gold Earned: 0"
+theme_override_styles/normal = SubResource("StyleBoxFlat_value")
+text = "1"
 
-[node name="CardsPlayedLabel" type="Label" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=674945790]
+[node name="GoldEarnedLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Gold Earned"
+
+[node name="GoldEarnedValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
 theme_override_font_sizes/font_size = 24
-text = "Cards Played: 0"
+theme_override_styles/normal = SubResource("StyleBoxFlat_value")
+text = "0"
 
-[node name="Control" type="Control" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=491790094]
+[node name="CardTriggersLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
+text = "Card Triggers"
 
-[node name="ContinueButton" type="Button" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=1314082620]
+[node name="CardTriggersValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.67, 0.94, 0.74, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_value")
+text = "0"
+
+[node name="SeedLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Seed"
+
+[node name="SeedContainer" type="HBoxContainer" parent="RunStatsPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="SeedValue" type="Label" parent="RunStatsPanel/VBoxContainer/SeedContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.86, 0.96, 0.91, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_value")
+text = "WIP"
+
+[node name="CopySeedButton" type="Button" parent="RunStatsPanel/VBoxContainer/SeedContainer"]
+layout_mode = 2
+text = "Copy"
+
+[node name="Spacer" type="Control" parent="RunStatsPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="ContinueButton" type="Button" parent="RunStatsPanel/VBoxContainer" unique_id=1314082620]
 layout_mode = 2
 size_flags_vertical = 8
 text = "CONTINUE RUN"
 
-[node name="EndlessModeButton" type="Button" parent="background/StatsPanel/MarginContainer/VBoxContainer" unique_id=1647789445]
+[node name="EndlessModeButton" type="Button" parent="RunStatsPanel/VBoxContainer" unique_id=1647789445]
 layout_mode = 2
 size_flags_vertical = 8
 text = "BACK TO MENU"
 
-[connection signal="pressed" from="background/StatsPanel/MarginContainer/VBoxContainer/ContinueButton" to="." method="_on_continue_pressed"]
-[connection signal="pressed" from="background/StatsPanel/MarginContainer/VBoxContainer/EndlessModeButton" to="." method="_on_main_menu_pressed"]
+[connection signal="pressed" from="RunStatsPanel/VBoxContainer/SeedContainer/CopySeedButton" to="." method="_on_copy_seed_button_pressed"]
+[connection signal="pressed" from="RunStatsPanel/VBoxContainer/ContinueButton" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="RunStatsPanel/VBoxContainer/EndlessModeButton" to="." method="_on_main_menu_pressed"]

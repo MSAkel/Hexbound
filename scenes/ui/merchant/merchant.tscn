@@ -2,9 +2,107 @@
 
 [ext_resource type="Script" uid="uid://dhgcsvr4lsi58" path="res://scenes/ui/merchant/merchant.gd" id="1_wha7e"]
 [ext_resource type="Texture2D" uid="uid://fvko4m74t6xh" path="res://assets/characters/NPC_Gramps.png" id="2_b5a5w"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="3_gold"]
+[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="4_token"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aum3v"]
-bg_color = Color(0.05882353, 0.09803922, 0.14509805, 0.8666667)
+bg_color = Color(0.025840001, 0.050708726, 0.03876, 0.259)
+
+[sub_resource type="StyleBoxFlat" id="ShopPanel"]
+bg_color = Color(0.9323934, 0.87570566, 0.7169422, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.32348415, 0.24706376, 0.07231019, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+
+[sub_resource type="StyleBoxLine" id="Divider"]
+color = Color(0.42, 0.36, 0.23, 0.42)
+thickness = 2
+vertical = true
+
+[sub_resource type="StyleBoxFlat" id="GreenButton"]
+content_margin_left = 18.0
+content_margin_top = 7.0
+content_margin_right = 18.0
+content_margin_bottom = 7.0
+bg_color = Color(0.17, 0.42, 0.25, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.1, 0.27, 0.14, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="DisabledButton"]
+content_margin_left = 18.0
+content_margin_top = 7.0
+content_margin_right = 18.0
+content_margin_bottom = 7.0
+bg_color = Color(0.68, 0.67, 0.61, 0.76)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.4, 0.37, 0.68)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wha7e"]
+content_margin_left = 18.0
+content_margin_top = 7.0
+content_margin_right = 18.0
+content_margin_bottom = 7.0
+bg_color = Color(0.7992013, 0.87371975, 0.95663863, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.49, 0.39, 0.23, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="ParchmentButton"]
+content_margin_left = 18.0
+content_margin_top = 7.0
+content_margin_right = 18.0
+content_margin_bottom = 7.0
+bg_color = Color(0.94969517, 0.8505485, 0.684312, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.49, 0.39, 0.23, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxEmpty" id="EmptyButton"]
+
+[sub_resource type="StyleBoxFlat" id="TopButton"]
+content_margin_left = 22.0
+content_margin_top = 6.0
+content_margin_right = 22.0
+content_margin_bottom = 6.0
+bg_color = Color(0.03308226, 0.36537462, 0.4017386, 0.98039216)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 7
 
 [node name="Merchant" type="Control" unique_id=613414351]
 layout_mode = 3
@@ -24,81 +122,189 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_aum3v")
 
+[node name="ShopPanel" type="PanelContainer" parent="ContainerPanel" unique_id=1781192049]
+custom_minimum_size = Vector2(1480, 820)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -740.0
+offset_top = -395.0
+offset_right = 740.0
+offset_bottom = 425.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("ShopPanel")
+
+[node name="MarginContainer" type="MarginContainer" parent="ContainerPanel/ShopPanel" unique_id=211312420]
+layout_mode = 2
+theme_override_constants/margin_left = 46
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 46
+theme_override_constants/margin_bottom = 30
+
+[node name="MainVBox" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer" unique_id=1051156069]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="CurrencyRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox" unique_id=1708344278]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="GoldIcon" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow" unique_id=1641370930]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+texture = ExtResource("3_gold")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="GoldAmount" type="Label" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow" unique_id=1442047401]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.19, 0.12, 1)
+theme_override_font_sizes/font_size = 30
+text = "0"
+vertical_alignment = 1
+
+[node name="TokenIcon" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow" unique_id=1129424102]
+custom_minimum_size = Vector2(52, 40)
+layout_mode = 2
+texture = ExtResource("4_token")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TokenAmount" type="Label" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow" unique_id=1995908000]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.19, 0.12, 1)
+theme_override_font_sizes/font_size = 30
+text = "0/5"
+vertical_alignment = 1
+
+[node name="Body" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox" unique_id=1951667650]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 34
+
+[node name="CardsCenter" type="CenterContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=472283362]
+custom_minimum_size = Vector2(970, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CardsGridContainer" type="GridContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter" unique_id=1594343347]
+layout_mode = 2
+theme_override_constants/h_separation = 26
+columns = 3
+
+[node name="Separator" type="VSeparator" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=739848913]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+theme_override_styles/separator = SubResource("Divider")
+
+[node name="MerchantSide" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=1617271380]
+custom_minimum_size = Vector2(310, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_constants/separation = 14
+
+[node name="Gramps" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=204440647]
+custom_minimum_size = Vector2(310, 320)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("2_b5a5w")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="PurchasePanel" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=1817095346]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BuyGoldButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide/PurchasePanel" unique_id=922827488]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.95, 0.85, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.36, 0.34, 0.72)
+theme_override_constants/icon_max_width = 32
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("GreenButton")
+theme_override_styles/pressed = SubResource("GreenButton")
+theme_override_styles/hover = SubResource("GreenButton")
+theme_override_styles/disabled = SubResource("DisabledButton")
+text = "BUY"
+icon = ExtResource("3_gold")
+expand_icon = true
+
+[node name="BuyTokenButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide/PurchasePanel" unique_id=1221982560]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.2, 0.15, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.16, 0.11, 1)
+theme_override_colors/font_hover_color = Color(0.16, 0.2, 0.15, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.36, 0.34, 0.72)
+theme_override_constants/icon_max_width = 34
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleBoxFlat_wha7e")
+theme_override_styles/pressed = SubResource("ParchmentButton")
+theme_override_styles/hover = SubResource("ParchmentButton")
+theme_override_styles/disabled = SubResource("DisabledButton")
+text = "USE TOKEN"
+icon = ExtResource("4_token")
+expand_icon = true
+
+[node name="ActionSpacer" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=981416549]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="RerollButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=2052932522]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.19, 0.14, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.15, 0.1, 1)
+theme_override_colors/font_hover_color = Color(0.16, 0.19, 0.14, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.36, 0.34, 0.72)
+theme_override_constants/icon_max_width = 32
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("ParchmentButton")
+theme_override_styles/pressed = SubResource("ParchmentButton")
+theme_override_styles/hover = SubResource("ParchmentButton")
+theme_override_styles/disabled = SubResource("DisabledButton")
+text = "REROLL - 5"
+icon = ExtResource("3_gold")
+expand_icon = true
+
+[node name="LeaveButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=411611746]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_colors/font_color = Color(0.16, 0.2, 0.14, 1)
+theme_override_colors/font_hover_color = Color(0.48, 0.31, 0.12, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("EmptyButton")
+theme_override_styles/pressed = SubResource("EmptyButton")
+theme_override_styles/hover = SubResource("EmptyButton")
+theme_override_styles/focus = SubResource("EmptyButton")
+text = "LEAVE"
+
 [node name="ShowBoardButton" type="Button" parent="ContainerPanel" unique_id=1982736402]
+z_index = 2
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -80.0
-offset_top = 32.0
-offset_right = 80.0
-offset_bottom = 72.0
+offset_left = -110.0
+offset_top = 18.0
+offset_right = 110.0
+offset_bottom = 66.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.96, 0.92, 0.79, 1)
+theme_override_colors/font_hover_color = Color(1, 0.86, 0.54, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("TopButton")
+theme_override_styles/pressed = SubResource("TopButton")
+theme_override_styles/hover = SubResource("TopButton")
 text = "Show Board"
-
-[node name="MarginContainer" type="MarginContainer" parent="ContainerPanel" unique_id=247689537]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 150
-theme_override_constants/margin_top = 75
-theme_override_constants/margin_right = 150
-theme_override_constants/margin_bottom = 75
-
-[node name="HBoxContainer" type="HBoxContainer" parent="ContainerPanel/MarginContainer" unique_id=2029895295]
-layout_mode = 2
-theme_override_constants/separation = 150
-
-[node name="CardsGridContainer" type="GridContainer" parent="ContainerPanel/MarginContainer/HBoxContainer" unique_id=120462758]
-layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 4
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 100
-columns = 3
-
-[node name="VBoxContainer" type="VBoxContainer" parent="ContainerPanel/MarginContainer/HBoxContainer" unique_id=1204375865]
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 4
-theme_override_constants/separation = 16
-
-[node name="TextureRect" type="TextureRect" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=107385875]
-texture_filter = 1
-custom_minimum_size = Vector2(350, 400)
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 4
-texture = ExtResource("2_b5a5w")
-
-[node name="PurchasePanel" type="VBoxContainer" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=553576777]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="BuyGoldButton" type="Button" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer/PurchasePanel" unique_id=646665587]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Buy for 30 Gold"
-
-[node name="BuyTokenButton" type="Button" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer/PurchasePanel" unique_id=1493515237]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Use 1 Token"
-
-[node name="RerollButton" type="Button" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1633335936]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Reroll: $5"
-
-[node name="LeaveButton" type="Button" parent="ContainerPanel/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1153443960]
-layout_mode = 2
-size_flags_vertical = 8
-theme_override_font_sizes/font_size = 32
-text = "Leave"
 
 [node name="ShowMerchantButton" type="Button" parent="." unique_id=1440697407]
 visible = false
@@ -106,10 +312,14 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -100.0
-offset_top = 32.0
-offset_right = 100.0
-offset_bottom = 72.0
+offset_left = -115.0
+offset_top = 18.0
+offset_right = 115.0
+offset_bottom = 66.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.96, 0.92, 0.79, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("TopButton")
+theme_override_styles/pressed = SubResource("TopButton")
+theme_override_styles/hover = SubResource("TopButton")
 text = "Show Merchant"

@@ -12,12 +12,14 @@ const HOVER_DURATION := 0.12
 @onready var menu_container: MarginContainer = $MenuContainer
 @onready var settings_container: PanelContainer = $SettingsContainer
 @onready var continue_button: Button = $MenuContainer/MenuItemsContainer/ContinueButton
+@onready var ui_sandbox_button: Button = $MenuContainer/MenuItemsContainer/UISandboxButton
 
 var main_scene := load("res://scenes/main.tscn")
 
 
 var character_selection_screen = load("res://scenes/ui/character_selection_screen/character_selection_screen.tscn")
 var settings_scene = load("res://scenes/ui/settings/settings.tscn")
+var ui_sandbox_scene := load("res://scenes/debug/ui_sandbox.tscn")
 
 # Tracks in-flight hover tweens so rapid enter/exit does not stack.
 var _hover_tweens: Dictionary = {}
@@ -28,7 +30,8 @@ func _ready() -> void:
 	get_tree().paused = false
 	game_version.text = ProjectSettings.get_setting("application/config/version")
 	_refresh_continue_button()
-	
+	ui_sandbox_button.visible = OS.is_debug_build()
+
 	# Play main menu music
 	var music = SOUNDTRACK.get_music_for_scene(scene_file_path)
 	if music:
@@ -121,3 +124,8 @@ func _on_exit_pressed() -> void:
 
 func _on_collection_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/collection/collection.tscn")
+
+
+func _on_ui_sandbox_button_pressed() -> void:
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	get_tree().change_scene_to_packed(ui_sandbox_scene)

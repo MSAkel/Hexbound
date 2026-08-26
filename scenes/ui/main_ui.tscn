@@ -71,3 +71,4 @@ visible = false
 visible = false
 
 [node name="RoundCompleteScreen" parent="." unique_id=142012728 instance=ExtResource("13_m82f4")]
+visible = false

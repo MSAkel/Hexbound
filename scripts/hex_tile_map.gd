@@ -611,7 +611,7 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
-	GoldManager.add_board_gold(amount)
+	GoldManager.add(amount)
 	_emit_segment_turn_results_changed(segment_index)
 
 

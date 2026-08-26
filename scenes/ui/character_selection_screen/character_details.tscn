@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="9_segment"]
 [ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="10_start"]
 [ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="11_end"]
+[ext_resource type="PackedScene" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parchment"]
 content_margin_left = 42.0
@@ -120,14 +121,10 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
-
-[node name="ProfileTopSpace" type="Control" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
-custom_minimum_size = Vector2(0, 8)
-layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 2
+alignment = 1
 
 [node name="CharacterIcon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(245, 278)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -136,12 +133,12 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="CharacterNameLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
 theme_override_font_sizes/font_size = 36
 text = "THE SURVEYOR"
 horizontal_alignment = 1
-autowrap_mode = 2
 
 [node name="ProfileRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
 custom_minimum_size = Vector2(220, 2)
@@ -157,17 +154,8 @@ theme_override_font_sizes/font_size = 18
 text = "CHARACTER"
 horizontal_alignment = 1
 
-[node name="ProfileBottomSpace" type="Control" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
-custom_minimum_size = Vector2(0, 8)
+[node name="ProfileDivider" parent="UnifiedPanel/Content/OverviewRow" instance=ExtResource("12_vertical_divider")]
 layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 2
-
-[node name="ProfileDivider" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow"]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 2
-mouse_filter = 2
-color = Color(0.43, 0.33, 0.19, 0.22)
 
 [node name="MapColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow"]
 custom_minimum_size = Vector2(610, 0)
@@ -177,6 +165,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 7
 
 [node name="TriggerOrderLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/MapColumn"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
 theme_override_font_sizes/font_size = 32
@@ -184,8 +173,10 @@ text = "TOP-LEFT → BOTTOM-RIGHT"
 horizontal_alignment = 1
 
 [node name="TriggerOrderDescription" type="Label" parent="UnifiedPanel/Content/OverviewRow/MapColumn"]
-custom_minimum_size = Vector2(0, 48)
+unique_name_in_owner = true
+custom_minimum_size = Vector2(580, 48)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
 theme_override_font_sizes/font_size = 18
 text = "Cards activate from top-left to bottom-right across the map."
@@ -200,6 +191,7 @@ mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.26)
 
 [node name="TriggerOrderImage" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/MapColumn"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 430)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -208,11 +200,8 @@ texture = ExtResource("4_preview")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LegendDivider" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow"]
-custom_minimum_size = Vector2(2, 0)
+[node name="LegendDivider" parent="UnifiedPanel/Content/OverviewRow" instance=ExtResource("12_vertical_divider")]
 layout_mode = 2
-mouse_filter = 2
-color = Color(0.43, 0.33, 0.19, 0.22)
 
 [node name="LegendColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow"]
 custom_minimum_size = Vector2(300, 0)
@@ -261,6 +250,7 @@ theme_override_font_sizes/font_size = 19
 text = "Segment Start"
 
 [node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row/Copy"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
@@ -294,6 +284,7 @@ theme_override_font_sizes/font_size = 19
 text = "Segment End"
 
 [node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row/Copy"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
@@ -320,13 +311,15 @@ stretch_mode = 5
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy"]
+[node name="SegmentCountTitle" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "7 Segments"
 
 [node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
@@ -345,15 +338,14 @@ layout_mode = 2
 theme_override_constants/separation = 28
 
 [node name="DifficultyLevelContainer" parent="UnifiedPanel/Content/Footer" instance=ExtResource("2_difficulty")]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FooterDivider" type="ColorRect" parent="UnifiedPanel/Content/Footer"]
-custom_minimum_size = Vector2(2, 82)
+[node name="FooterDivider" parent="UnifiedPanel/Content/Footer" instance=ExtResource("12_vertical_divider")]
 layout_mode = 2
 size_flags_vertical = 4
-mouse_filter = 2
-color = Color(0.43, 0.33, 0.19, 0.22)
+span = 82.0
 
 [node name="PlayButton" type="Button" parent="UnifiedPanel/Content/Footer"]
 custom_minimum_size = Vector2(270, 76)

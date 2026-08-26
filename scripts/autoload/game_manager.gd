@@ -4,32 +4,20 @@ extends Node
 
 signal game_speed_changed(new_speed: float)
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const SCORE_PROGRESSION := preload("res://resources/score_progression.tres")
 ## Number of runes in a rune pack, picked at the end of each turn
 const RUNES_PACK_SIZE := 3
 const MAX_TURNS_PER_ROUND := 5
 
 var current_round: int = 1
-## Counter for the number of triggers that have been activated throughout the run, used to reward perks
+## Highest completed/current round score reached during this run.
+var highest_round_score: int = 0
+## Total tile card activations this run, shown on the game-over screen.
 var _total_rune_activations: int = 0
-
-var _activations_needed_for_next_perk: int = 2
-
-var activations_needed_for_next_perk: int:
-	get:
-		return _activations_needed_for_next_perk
-	set(value):
-		_activations_needed_for_next_perk = value
-		if _total_rune_activations >= _activations_needed_for_next_perk:
-			_activations_needed_for_next_perk = _activations_needed_for_next_perk * 1.5
-			EventBus.activations_needed_for_next_perk_changed.emit(_activations_needed_for_next_perk)
 
 var total_rune_activations: int:
 	get:
 		return _total_rune_activations
-	set(value):
-		_total_rune_activations = value
 
 #region Turn state
 ## Remaining turns in the current round (counts down from get_max_turns_per_round()).
@@ -64,6 +52,7 @@ var total_round_score: int:
 		return _total_round_score
 	set(value):
 		_total_round_score = value
+		highest_round_score = maxi(highest_round_score, _total_round_score)
 		EventBus.total_round_score_changed.emit()
 
 var turn_score: int:
@@ -71,7 +60,6 @@ var turn_score: int:
 		return _turn_score
 	set(value):
 		_turn_score = value
-		EventBus.turn_score_changed.emit()
 
 #endregion
 
@@ -193,10 +181,7 @@ func get_skipped_turns() -> int:
 ## Hands the completed round to RoundFlow, which owns every step up to the next turn.
 ## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
 func _complete_current_round() -> void:
-	GoldManager.apply_round_speed_rewards(
-		get_skipped_turns(),
-		remaining_turns
-	)
+	GoldManager.apply_round_speed_rewards(get_skipped_turns())
 	if ChallengeManager.is_completing_final_challenge_round():
 		RoundFlow.begin_victory_transition()
 		return
@@ -241,8 +226,6 @@ func has_tile_card_activated_this_turn(rune: TileCard) -> bool:
 func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
 	return _activated_tile_cards_this_turn.count(rune)
 
-func rune_activations_countdown() -> int:
-	return _activations_needed_for_next_perk - _total_rune_activations
 #endregion
 
 func set_game_speed(speed: float) -> void:
@@ -331,6 +314,7 @@ func _has_enhancement_with_id(enhancement_id: String) -> bool:
 func reset_for_new_run() -> void:
 	RoundFlow.reset_for_new_run()
 	current_round = 1
+	highest_round_score = 0
 	_total_rune_activations = 0
 	_remaining_turns = MAX_TURNS_PER_ROUND
 	_is_processing_turn = false
@@ -352,6 +336,7 @@ func set_starting_round_for_debug(starting_round: int) -> void:
 
 func capture_run_state() -> Dictionary:
 	return {
+		"highest_round_score": highest_round_score,
 		"current_round": current_round,
 		"total_rune_activations": _total_rune_activations,
 		"remaining_turns": _remaining_turns,
@@ -366,6 +351,7 @@ func capture_run_state() -> Dictionary:
 
 func apply_run_state(state: Dictionary) -> void:
 	current_round = int(state.get("current_round", 1))
+	highest_round_score = int(state.get("highest_round_score", state.get("total_round_score", 0)))
 	_total_rune_activations = int(state.get("total_rune_activations"))
 	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_ROUND))
 	_is_processing_turn = bool(state.get("is_processing_turn", false))

@@ -162,7 +162,6 @@ func _find_hand() -> Hand:
 func _notify_ui_restored() -> void:
 	EventBus.gold_changed.emit(GoldManager.amount)
 	EventBus.total_round_score_changed.emit()
-	EventBus.turn_score_changed.emit()
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(GameManager.current_round)
 	EventBus.required_score_changed.emit()

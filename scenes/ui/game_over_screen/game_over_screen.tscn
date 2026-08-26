@@ -116,11 +116,13 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_ftetl")
 text = "0"
 
 [node name="CardsPlayedLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1656992079]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Cards Played"
 
 [node name="CardsPlayedValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1293529921]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9303785, 0.8507871, 0.4908229, 1)
 theme_override_font_sizes/font_size = 24

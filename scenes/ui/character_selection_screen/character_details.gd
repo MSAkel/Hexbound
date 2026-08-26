@@ -11,13 +11,13 @@ var main_scene := load("res://scenes/main.tscn")
 # Kept in sync by display_selection so Play can lock in the visible character.
 var _selected_character: CharacterDefinition = null
 
-@onready var character_name_label: Label = $UnifiedPanel/Content/OverviewRow/ProfileColumn/CharacterNameLabel
-@onready var character_icon: TextureRect = $UnifiedPanel/Content/OverviewRow/ProfileColumn/CharacterIcon
-@onready var difficulty_container: HBoxContainer = $UnifiedPanel/Content/Footer/DifficultyLevelContainer
-@onready var trigger_order_label: Label = $UnifiedPanel/Content/OverviewRow/MapColumn/TriggerOrderLabel
-@onready var trigger_order_description: Label = $UnifiedPanel/Content/OverviewRow/MapColumn/TriggerOrderDescription
-@onready var trigger_order_image: TextureRect = $UnifiedPanel/Content/OverviewRow/MapColumn/TriggerOrderImage
-@onready var segment_count_label: Label = $UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy/Title
+@onready var character_name_label: Label = %CharacterNameLabel
+@onready var character_icon: TextureRect = %CharacterIcon
+@onready var difficulty_container: DifficultyLevelContainer = %DifficultyLevelContainer
+@onready var trigger_order_label: Label = %TriggerOrderLabel
+@onready var trigger_order_description: Label = %TriggerOrderDescription
+@onready var trigger_order_image: TextureRect = %TriggerOrderImage
+@onready var segment_count_label: Label = %SegmentCountTitle
 
 
 func display_selection(character: CharacterDefinition) -> void:
@@ -31,6 +31,8 @@ func display_selection(character: CharacterDefinition) -> void:
 	var segment_count := DEFAULT_SEGMENT_COUNT
 	if not character.segment_starts.is_empty():
 		segment_count = character.segment_starts.size()
+	elif character.segments_count > 0:
+		segment_count = character.segments_count
 	segment_count_label.text = "%d SEGMENTS" % segment_count
 
 

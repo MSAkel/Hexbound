@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="2_arrow_normal"]
 [ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="3_arrow_pressed"]
 [ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="4_arrow_hover"]
+[ext_resource type="PackedScene" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="5_vertical_divider"]
 
 [node name="DifficultyLevelContainer" type="HBoxContainer"]
 custom_minimum_size = Vector2(0, 110)
@@ -31,12 +32,11 @@ theme_override_font_sizes/font_size = 24
 text = "DIFFICULTY"
 horizontal_alignment = 1
 
-[node name="SectionDivider" type="ColorRect" parent="."]
-custom_minimum_size = Vector2(2, 78)
+[node name="SectionDivider" parent="." instance=ExtResource("5_vertical_divider")]
 layout_mode = 2
 size_flags_vertical = 4
-mouse_filter = 2
-color = Color(0.43, 0.33, 0.19, 0.2)
+span = 78.0
+color_alpha = 0.2
 
 [node name="PrevSelectionButton" type="TextureButton" parent="."]
 custom_minimum_size = Vector2(64, 64)
@@ -55,6 +55,7 @@ size_flags_vertical = 4
 theme_override_constants/separation = 4
 
 [node name="DifficultyLevel" type="Label" parent="DifficultyCopy"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
 theme_override_font_sizes/font_size = 29
@@ -62,6 +63,7 @@ text = "Level 1"
 horizontal_alignment = 1
 
 [node name="DifficultyInfo" type="Label" parent="DifficultyCopy"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(420, 46)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)

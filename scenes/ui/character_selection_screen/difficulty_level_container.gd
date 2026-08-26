@@ -1,13 +1,10 @@
+class_name DifficultyLevelContainer
 extends HBoxContainer
-
-signal prev_difficulty_level_pressed
-signal next_difficulty_level_pressed
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
-@onready var difficulty_level: Label = $DifficultyCopy/DifficultyLevel
-@onready var difficulty_info: Label = $DifficultyCopy/DifficultyInfo
-
+@onready var difficulty_level: Label = %DifficultyLevel
+@onready var difficulty_info: Label = %DifficultyInfo
 
 # Ordered list used for prev/next navigation on the selection screen.
 var _difficulties: Array[Difficulty.Level] = Difficulty.get_all_levels()
@@ -30,6 +27,7 @@ func display_difficulty(level: Difficulty.Level) -> void:
 	_current_index = index
 	_update_display()
 
+
 # Refresh the name and description labels for the current difficulty.
 func _update_display() -> void:
 	var level := _difficulties[_current_index]
@@ -41,7 +39,6 @@ func _update_display() -> void:
 func _on_prev_selection_button_pressed() -> void:
 	_current_index = (_current_index - 1 + _difficulties.size()) % _difficulties.size()
 	_update_display()
-	prev_difficulty_level_pressed.emit()
 	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 
 
@@ -49,5 +46,4 @@ func _on_prev_selection_button_pressed() -> void:
 func _on_next_selection_button_pressed() -> void:
 	_current_index = (_current_index + 1) % _difficulties.size()
 	_update_display()
-	next_difficulty_level_pressed.emit()
 	AudioManager.play_sfx(UI_SOUNDS.SELECT)

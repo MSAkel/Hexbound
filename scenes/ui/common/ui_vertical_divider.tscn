@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://c8vdivider01ui"]
+
+[ext_resource type="Script" path="res://scenes/ui/common/ui_vertical_divider.gd" id="1_divider"]
+
+[node name="UiVerticalDivider" type="ColorRect"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.43, 0.33, 0.19, 0.22)
+script = ExtResource("1_divider")
