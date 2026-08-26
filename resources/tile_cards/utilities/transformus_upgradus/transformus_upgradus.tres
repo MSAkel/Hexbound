@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://tbdpj1lh5eoa"]
+
+[ext_resource type="Texture2D" uid="uid://c005kpr7r2pej" path="res://assets/icons/runes/modifier/transformus_upgradus.png" id="1_exaj3"]
+[ext_resource type="Script" uid="uid://b8p41ebvkk5vq" path="res://resources/tile_cards/utilities/transformus_upgradus/transformus_upgradus.gd" id="2_exaj3"]
+
+[resource]
+script = ExtResource("2_exaj3")
+rarity = 2
+type = 2
+id = "transformus_upgradus"
+name = "Transformus Upgradus"
+icon = ExtResource("1_exaj3")
+description = "Transforms a played card into a random higher rarity card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

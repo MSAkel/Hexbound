@@ -26,11 +26,11 @@ var _hover_tweens: Dictionary = {}
 
 
 func _ready() -> void:
-	# On game ending will pause the game, so we need to unpausse it
 	get_tree().paused = false
 	game_version.text = ProjectSettings.get_setting("application/config/version")
 	_refresh_continue_button()
 	ui_sandbox_button.visible = OS.is_debug_build()
+	SegmentPassiveUnlockPresenter.present_if_needed(self)
 
 	# Play main menu music
 	var music = SOUNDTRACK.get_music_for_scene(scene_file_path)

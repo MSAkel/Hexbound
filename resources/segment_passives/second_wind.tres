@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://cv8446phovvls"]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://dxqkqu47g1ep5" path="res://assets/passives/icons/second_wind.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_second"]
+script = ExtResource("1_unlock_script")
+condition_type = 0
+threshold = 1000
+description = "Unlock at 1,000 lifetime triggers"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "second_wind"
+display_name = "Second Wind"
+description = "Support cards in this segment have a 2% chance to retrigger."
+icon = ExtResource("3_icon")
+tile_cost = 3
+effect_type = 2
+effect_value = 0.02
+unlock_condition = SubResource("UnlockCondition_second")

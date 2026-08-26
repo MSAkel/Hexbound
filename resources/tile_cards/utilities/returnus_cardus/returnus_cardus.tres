@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://6vhr523vpnd"]
+
+[ext_resource type="Texture2D" uid="uid://bwshjhnnv44nf" path="res://assets/icons/runes/modifier/returnus_runus.png" id="1_npphp"]
+[ext_resource type="Script" uid="uid://bgbplenqaqqeq" path="res://resources/tile_cards/utilities/returnus_cardus/returnus_cardus.gd" id="2_w3ae8"]
+
+[resource]
+script = ExtResource("2_w3ae8")
+type = 2
+id = "returnus_cardus"
+name = "Returnus Cardus"
+icon = ExtResource("1_npphp")
+description = "returns the card of the selectd tile to your hand"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

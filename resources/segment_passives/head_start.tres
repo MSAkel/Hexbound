@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://brvmaqai71qhj"]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://cxwd17r4h35l5" path="res://assets/passives/icons/head_start.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_head"]
+script = ExtResource("1_unlock_script")
+description = "Unlock at 50 triggers in one turn"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "head_start"
+display_name = "Head Start"
+description = "Placeholder locked passive for future gold bonus."
+icon = ExtResource("3_icon")
+effect_type = 1
+unlock_condition = SubResource("UnlockCondition_head")

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://dnv2j7w43hgq3"]
+
+[ext_resource type="Texture2D" uid="uid://54ardna8nujc" path="res://assets/icons/runes/modifier/clonus_runus.png" id="1_iqoja"]
+[ext_resource type="Script" uid="uid://cuxinu630dsg1" path="res://resources/tile_cards/utilities/clonus_cardus/clonus_cardus.gd" id="2_xatfi"]
+
+[resource]
+script = ExtResource("2_xatfi")
+rarity = 1
+type = 2
+id = "clonus_cardus"
+name = "Clonus Cardus"
+icon = ExtResource("1_iqoja")
+description = "Clones the Card of the selected tile"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

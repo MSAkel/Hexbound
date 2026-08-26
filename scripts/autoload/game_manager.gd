@@ -86,6 +86,20 @@ var turn_stamp: int = 0
 ## Chosen on the character selection screen, drives layout rules and starting hand.
 var selected_character: CharacterDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
+## Character being edited on the segment passives screen.
+var segment_passives_editor_character: CharacterDefinition = null
+
+#endregion
+
+#region Segment passives (active run loadout)
+
+## segment_index -> placed passives for the current run.
+var _active_passives_by_segment: Dictionary = {}
+var _run_peak_triggers_single_turn: int = 0
+var _run_peak_segment_score_single_turn: int = 0
+var _run_peak_gold_held: int = 0
+var _current_turn_trigger_count: int = 0
+var _run_full_map_cards_achieved: bool = false
 
 #endregion
 
@@ -149,6 +163,7 @@ func finish_turn_processing() -> void:
 func _on_turn_started() -> void:
 	turn_stamp += 1
 	_activated_tile_cards_this_turn.clear()
+	_current_turn_trigger_count = 0
 	GoldManager.reset_turn_tracking()
 
 
@@ -215,6 +230,9 @@ func _apply_round_state() -> void:
 func register_tile_card_activation(rune: TileCard) -> void:
 	_activated_tile_cards_this_turn.append(rune)
 	_total_rune_activations += 1
+	_current_turn_trigger_count += 1
+	_run_peak_triggers_single_turn = maxi(_run_peak_triggers_single_turn, _current_turn_trigger_count)
+	MetaProgressionManager.add_lifetime_triggers(1)
 
 ## Read rune activation to check if it has already fired this turn.
 ## Used by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
@@ -225,6 +243,119 @@ func has_tile_card_activated_this_turn(rune: TileCard) -> bool:
 ## How many times this tile card has activated so far this turn (includes the current one).
 func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
 	return _activated_tile_cards_this_turn.count(rune)
+
+#endregion
+
+#region Segment passive runtime
+
+func apply_active_segment_passives(character_id: String) -> void:
+	_active_passives_by_segment.clear()
+	var set_id := MetaProgressionManager.get_selected_set_id(character_id)
+	var segments := MetaProgressionManager.get_segment_placements(character_id, set_id)
+	for segment_key: String in segments.keys():
+		var segment_index := int(segment_key)
+		var passive_ids: Array = segments[segment_key]
+		if not passive_ids is Array:
+			continue
+		var passives: Array[SegmentPassive] = []
+		for entry in passive_ids:
+			var passive := MetaProgressionManager.get_passive_by_id(String(entry))
+			if passive != null:
+				passives.append(passive)
+		_active_passives_by_segment[segment_index] = passives
+
+
+func get_passives_for_segment(segment_index: int) -> Array[SegmentPassive]:
+	var raw: Variant = _active_passives_by_segment.get(segment_index, [])
+	var result: Array[SegmentPassive] = []
+	if raw is Array:
+		for entry in raw:
+			if entry is SegmentPassive:
+				result.append(entry)
+	return result
+
+
+func get_segment_passive_flat_bonus(segment_index: int) -> int:
+	var total := 0
+	for passive in get_passives_for_segment(segment_index):
+		if passive.effect_type == SegmentPassive.EffectType.SEGMENT_SCORE_FLAT:
+			total += int(passive.effect_value)
+	return total
+
+
+func get_segment_passive_score_mult_factor(segment_index: int) -> float:
+	var bonus := 0.0
+	for passive in get_passives_for_segment(segment_index):
+		if passive.effect_type == SegmentPassive.EffectType.SEGMENT_SCORE_MULT:
+			bonus += passive.effect_value
+	return 1.0 + bonus
+
+
+func get_segment_passive_output_mult_factor(segment_index: int) -> float:
+	var bonus := 0.0
+	for passive in get_passives_for_segment(segment_index):
+		if passive.effect_type == SegmentPassive.EffectType.CARD_OUTPUT_MULT:
+			bonus += passive.effect_value
+	return 1.0 + bonus
+
+
+func roll_segment_support_retrigger(segment_index: int) -> bool:
+	for passive in get_passives_for_segment(segment_index):
+		if passive.effect_type != SegmentPassive.EffectType.SUPPORT_RETRIGGER:
+			continue
+		if randf() < passive.effect_value:
+			return true
+	return false
+
+
+func roll_segment_production_retrigger(segment_index: int) -> bool:
+	for passive in get_passives_for_segment(segment_index):
+		if passive.effect_type != SegmentPassive.EffectType.PRODUCTION_RETRIGGER:
+			continue
+		if randf() < passive.effect_value:
+			return true
+	return false
+
+
+func compute_segment_turn_contribution(segment_index: int, energy: int, multiplier: int) -> int:
+	var adjusted_energy := energy + get_segment_passive_flat_bonus(segment_index)
+	var product := adjusted_energy * multiplier
+	return int(round(float(product) * get_segment_passive_score_mult_factor(segment_index)))
+
+
+func record_turn_segment_peaks(segment_contributions: Array[int]) -> void:
+	for contribution in segment_contributions:
+		_run_peak_segment_score_single_turn = maxi(_run_peak_segment_score_single_turn, contribution)
+	_run_peak_triggers_single_turn = maxi(_run_peak_triggers_single_turn, _current_turn_trigger_count)
+
+
+func record_peak_gold_held(amount: int) -> void:
+	_run_peak_gold_held = maxi(_run_peak_gold_held, amount)
+
+
+func mark_full_map_cards_achieved() -> void:
+	_run_full_map_cards_achieved = true
+
+
+func build_run_snapshot(is_win: bool) -> Dictionary:
+	var character_id := selected_character.id if selected_character != null else ""
+	return {
+		"is_win": is_win,
+		"character_id": character_id,
+		"peak_gold_held": _run_peak_gold_held,
+		"peak_segment_score_single_turn": _run_peak_segment_score_single_turn,
+		"peak_triggers_single_turn": _run_peak_triggers_single_turn,
+		"full_map_cards": _run_full_map_cards_achieved,
+	}
+
+
+func clear_run_peak_tracking() -> void:
+	_active_passives_by_segment.clear()
+	_run_peak_triggers_single_turn = 0
+	_run_peak_segment_score_single_turn = 0
+	_run_peak_gold_held = 0
+	_current_turn_trigger_count = 0
+	_run_full_map_cards_achieved = false
 
 #endregion
 
@@ -324,6 +455,7 @@ func reset_for_new_run() -> void:
 	_activated_tile_cards_this_turn.clear()
 	turn_stamp = 0
 	game_speed = GameSettings.game_speed
+	clear_run_peak_tracking()
 
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.

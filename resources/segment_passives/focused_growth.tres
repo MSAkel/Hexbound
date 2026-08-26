@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://dfg2b1fdb8xj6"]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://cl0u0jj7pcmpx" path="res://assets/passives/icons/focused_growth.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_focused"]
+script = ExtResource("1_unlock_script")
+condition_type = 0
+threshold = 500
+description = "Unlock at 500 lifetime triggers"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "focused_growth"
+display_name = "Focused Growth"
+description = "+10% Score in this segment."
+icon = ExtResource("3_icon")
+effect_value = 0.1
+unlock_condition = SubResource("UnlockCondition_focused")

@@ -12,7 +12,7 @@ const NEIGHBORS: Array[TileSet.CellNeighbor] = [
 	TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE,
 ]
 
-var _map: HexTileMap
+var _map: Node
 var _hex_center: Vector2i = Vector2i.ZERO
 var _ring_distances: Dictionary = {}
 var _segments_cache: Array[Array] = []
@@ -26,7 +26,7 @@ var _segment_turn_triggers: Array[int] = []
 
 
 ## Binds this layout helper to a live map instance.
-func setup(map: HexTileMap) -> void:
+func setup(map: Node) -> void:
 	_map = map
 
 
@@ -414,8 +414,8 @@ func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
 ## Trigger order: ring-by-ring traversal, optionally from the outside in.
 func _get_order_by_rings(from_outer: bool, use_ne_start: bool) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
-	var ring := _map.hex_size if from_outer else 0
-	var end := -1 if from_outer else _map.hex_size + 1
+	var ring: int = _map.hex_size if from_outer else 0
+	var end: int = -1 if from_outer else _map.hex_size + 1
 	var step := -1 if from_outer else 1
 
 	while ring != end:

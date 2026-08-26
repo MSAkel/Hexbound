@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://dlrpfp2dc162e"]
+
+[ext_resource type="Texture2D" uid="uid://xy0m3mkprdhy" path="res://assets/icons/runes/modifier/gold_extraction.png" id="1_iyql0"]
+[ext_resource type="Script" uid="uid://pr0ompjthbva" path="res://resources/tile_cards/utilities/card_extraction/card_extraction.gd" id="1_q4rj5"]
+
+[resource]
+script = ExtResource("1_q4rj5")
+rarity = 1
+type = 2
+id = "card_extraction"
+name = "Card Extraction"
+icon = ExtResource("1_iyql0")
+description = "Breaks target card then gain a random card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

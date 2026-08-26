@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://h43clqga0w3q"]
+
+[ext_resource type="Script" uid="uid://hqe4urjxmwvh" path="res://resources/tile_cards/utilities/transformus_cardus/transformus_cardus.gd" id="1_egyvg"]
+[ext_resource type="Texture2D" uid="uid://gp0xl2n2jqqp" path="res://assets/icons/runes/modifier/transformus_cardus.png" id="1_q4fsf"]
+
+[resource]
+script = ExtResource("1_egyvg")
+type = 2
+id = "transformus_cardus"
+name = "Transformus Cardus"
+icon = ExtResource("1_q4fsf")
+description = "Transforms a played card into a random same rarity card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

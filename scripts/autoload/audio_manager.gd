@@ -16,6 +16,8 @@ var sfx_volume: float = 0.35
 # Crossfade settings
 const CROSSFADE_DURATION = 1.0
 var crossfade_tween: Tween
+# Per-player fade tweens so a reused SFX slot can cancel an in-flight fade.
+var _sfx_fade_tweens: Dictionary = {}
 
 func _ready() -> void:
 	# Initialize audio players
@@ -57,14 +59,41 @@ func play_music(music: AudioStream, fade: bool = true) -> void:
 		music_player.volume_db = linear_to_db(music_volume)
 		music_player.play()
 
-# Play a sound effect (includes UI click/select and other feedback sounds)
-func play_sfx(sfx: AudioStream) -> void:
-	# Find an available player
-	var player = get_available_sfx_player()
-	if player:
-		player.stream = sfx
+# Play a sound effect. Optional fade_out_after starts a volume fade after that many seconds.
+func play_sfx(sfx: AudioStream, fade_out_after: float = -1.0, fade_out_duration: float = 0.0) -> void:
+	var player := get_available_sfx_player()
+	if player == null:
+		return
+	_kill_sfx_fade(player)
+	player.stream = sfx
+	player.volume_db = linear_to_db(sfx_volume)
+	player.play()
+	if fade_out_after >= 0.0 and fade_out_duration > 0.0:
+		_fade_out_sfx(player, fade_out_after, fade_out_duration)
+
+
+## Fades an SFX player to silence, then stops it so the pool slot is free.
+func _fade_out_sfx(player: AudioStreamPlayer, fade_out_after: float, fade_out_duration: float) -> void:
+	var tween := create_tween()
+	_sfx_fade_tweens[player] = tween
+	if fade_out_after > 0.0:
+		tween.tween_interval(fade_out_after)
+	tween.tween_property(player, "volume_db", -80.0, fade_out_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func() -> void:
+		player.stop()
 		player.volume_db = linear_to_db(sfx_volume)
-		player.play()
+		_sfx_fade_tweens.erase(player)
+	)
+
+
+func _kill_sfx_fade(player: AudioStreamPlayer) -> void:
+	if not _sfx_fade_tweens.has(player):
+		return
+	var tween: Tween = _sfx_fade_tweens[player]
+	if tween != null and tween.is_valid():
+		tween.kill()
+	_sfx_fade_tweens.erase(player)
+	player.volume_db = linear_to_db(sfx_volume)
 
 # Get an available SFX player from the pool
 func get_available_sfx_player() -> AudioStreamPlayer:
@@ -84,6 +113,8 @@ func set_music_volume(volume: float) -> void:
 func set_sfx_volume(volume: float) -> void:
 	sfx_volume = clamp(volume, 0.0, 1.0)
 	for player in sfx_players:
+		if _sfx_fade_tweens.has(player):
+			continue
 		player.volume_db = linear_to_db(sfx_volume)
 	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(volume))
 	save_volume_settings()

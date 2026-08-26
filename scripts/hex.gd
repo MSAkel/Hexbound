@@ -7,10 +7,7 @@ var _coordinates: Vector2i = Vector2i(0, 0)
 ## The TileCard currently occupying this hex.
 var active_tile_card: TileCard = null
 var rune_ui: RuneUI = null
-
-# Future player-applied modifier for tiles without a placed card.
-var tile_modifier: TileModifier = null
-# Permanently disabled by difficulty level 5, tile cannot be used for the run.
+# Permanently disabled by difficulty level 5. The tile cannot be used for the run.
 var is_disabled_by_difficulty: bool = false
 
 var map: HexTileMap
@@ -53,10 +50,6 @@ func _fit_rune_ui(rune_ui_node: RuneUI) -> void:
 	rune_ui_node.position = (HEX_TILE_SIZE - HEX_RUNE_SIZE) * 0.5
 
 
-func can_receive_tile_modifier() -> bool:
-	return TileModifier.can_replace_on(self)
-
-
 func place_tile_card(rune: TileCard) -> void:
 	# Prevent placing a rune if one already exists or the tile is disabled by difficulty.
 	if active_tile_card != null or is_disabled_by_difficulty:
@@ -95,24 +88,6 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 	items_grid.add_child(new_rune_instance)
 	_apply_display_mode()
 	refresh_tile_card_visual_state()
-
-
-# Apply a run-time tile modifier. Returns false on occupied or ineligible tiles.
-func try_apply_tile_modifier(modifier: TileModifier) -> bool:
-	if is_disabled_by_difficulty:
-		return false
-
-	if not TileModifier.can_replace_on(self):
-		return false
-
-	tile_modifier = modifier
-	# Future: add tile_modifier_icon UI when this mechanic is implemented.
-	return true
-
-
-func clear_tile_modifier() -> void:
-	tile_modifier = null
-	# Future: remove tile_modifier_icon when that UI exists.
 
 
 # Attach an enhancement to the placed rune. Returns false when the tile is empty or already enhanced.

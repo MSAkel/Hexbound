@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://n60uq47w0yp0"]
+
+[ext_resource type="Script" path="res://scenes/debug/segment_passives_sandbox.gd" id="1_sandbox"]
+[ext_resource type="PackedScene" uid="uid://cqeih406wilvs" path="res://scenes/ui/segment_passives/segment_passives_screen.tscn" id="2_screen"]
+
+[node name="SegmentPassivesSandbox" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sandbox")
+
+[node name="SegmentPassivesScreen" parent="." instance=ExtResource("2_screen")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

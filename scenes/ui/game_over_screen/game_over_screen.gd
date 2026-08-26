@@ -16,6 +16,7 @@ func _ready() -> void:
 
 func _on_game_ended() -> void:
 	RunSaveManager.delete_save()
+	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(false), true)
 	played_as_label.text = GameManager.selected_character.display_name if GameManager.selected_character else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
 	round_value.text = str(GameManager.current_round)

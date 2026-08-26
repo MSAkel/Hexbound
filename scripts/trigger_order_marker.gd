@@ -12,6 +12,7 @@ const TILE_END := preload("res://assets/map/segment_icons/tile_segment_end.png")
 
 
 func setup(order: int, is_start: bool, is_end: bool) -> void:
+	_ensure_nodes()
 	size = Hex.HEX_TILE_SIZE
 	custom_minimum_size = Hex.HEX_TILE_SIZE
 	order_label.text = str(order)
@@ -22,3 +23,10 @@ func setup(order: int, is_start: bool, is_end: bool) -> void:
 		background.texture = TILE_END
 	else:
 		background.texture = TILE_NORMAL
+
+
+func _ensure_nodes() -> void:
+	if background == null:
+		background = $Background
+	if order_label == null:
+		order_label = $OrderLabel

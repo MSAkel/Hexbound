@@ -140,6 +140,20 @@ theme_override_font_sizes/font_size = 36
 text = "THE SURVEYOR"
 horizontal_alignment = 1
 
+[node name="SegmentPassivesButton" type="Button" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SEGMENT PASSIVES"
+
+[node name="PassiveSetLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 16
+text = "Set A"
+horizontal_alignment = 1
+
 [node name="ProfileRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
 custom_minimum_size = Vector2(220, 2)
 layout_mode = 2
@@ -371,5 +385,6 @@ texture_hover = ExtResource("8_arrow_hover")
 stretch_mode = 3
 
 [connection signal="pressed" from="PrevSelectionButton" to="." method="_on_prev_selection_pressed"]
+[connection signal="pressed" from="UnifiedPanel/Content/OverviewRow/ProfileColumn/SegmentPassivesButton" to="." method="_on_segment_passives_button_pressed"]
 [connection signal="pressed" from="UnifiedPanel/Content/Footer/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="NextSelectionButton" to="." method="_on_next_selection_pressed"]

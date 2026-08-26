@@ -1,0 +1,359 @@
+[gd_scene format=3 uid="uid://b77xc5y6w8mq2"]
+
+[ext_resource type="Script" uid="uid://c2up0trn1mr7v" path="res://scenes/ui/segment_passives/segment_passive_unlock_reveal.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://l23ocp51bm2p" path="res://assets/particles/light/light_03.png" id="2_glow"]
+[ext_resource type="Texture2D" uid="uid://jqy33oipuqud" path="res://assets/particles/light/light_01.png" id="3_rays"]
+[ext_resource type="Texture2D" uid="uid://da68q1s2m373t" path="res://assets/particles/circle/circle_01.png" id="4_dot"]
+[ext_resource type="Texture2D" uid="uid://bdjoab8uh4khw" path="res://assets/particles/trace/trace_02.png" id="5_6cskm"]
+[ext_resource type="Texture2D" uid="uid://ccxxa581gp0it" path="res://assets/passives/passives_tile.png" id="5_hex"]
+
+[sub_resource type="CanvasItemMaterial" id="Material_add"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_shimmer"]
+offsets = PackedFloat32Array(0, 0.14, 0.55, 1)
+colors = PackedColorArray(1, 0.95, 0.7, 0, 1, 0.9, 0.45, 0.7, 1, 0.78, 0.28, 0.35, 1, 0.7, 0.18, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTex_shimmer"]
+gradient = SubResource("Gradient_shimmer")
+
+[sub_resource type="Curve" id="Curve_shimmer"]
+_data = [Vector2(0, 0.2), 0.0, 0.0, 0, 0, Vector2(0.22, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTex_shimmer"]
+curve = SubResource("Curve_shimmer")
+
+[sub_resource type="ParticleProcessMaterial" id="Particles_shimmer"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(1, 1.18, 1)
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 300.0
+emission_ring_inner_radius = 255.0
+emission_ring_cone_angle = 90.0
+direction = Vector3(0, 0, 0)
+spread = 180.0
+initial_velocity_min = 4.0
+initial_velocity_max = 16.0
+radial_velocity_min = 10.0
+radial_velocity_max = 26.0
+gravity = Vector3(0, 0, 0)
+damping_min = 8.0
+damping_max = 16.0
+scale_min = 0.008
+scale_max = 0.022
+scale_curve = SubResource("CurveTex_shimmer")
+color = Color(1, 0.9, 0.48, 1)
+color_ramp = SubResource("GradientTex_shimmer")
+
+[sub_resource type="Gradient" id="Gradient_sparkle"]
+offsets = PackedFloat32Array(0, 0.08, 0.4, 1)
+colors = PackedColorArray(1, 0.98, 0.82, 0, 1, 0.95, 0.62, 1, 1, 0.82, 0.32, 0.75, 1, 0.7, 0.18, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTex_sparkle"]
+gradient = SubResource("Gradient_sparkle")
+
+[sub_resource type="Curve" id="Curve_sparkle"]
+_data = [Vector2(0, 0.1), 0.0, 0.0, 0, 0, Vector2(0.16, 1), 0.0, 0.0, 0, 0, Vector2(0.55, 0.55), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="CurveTex_sparkle"]
+curve = SubResource("Curve_sparkle")
+
+[sub_resource type="ParticleProcessMaterial" id="Particles_sparkle"]
+particle_flag_align_y = true
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(1, 1.2, 1)
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 308.0
+emission_ring_inner_radius = 248.0
+emission_ring_cone_angle = 90.0
+direction = Vector3(0, 0, 0)
+spread = 180.0
+initial_velocity_min = 6.0
+initial_velocity_max = 22.0
+angular_velocity_min = -20.0
+angular_velocity_max = 20.0
+radial_velocity_min = 14.0
+radial_velocity_max = 34.0
+gravity = Vector3(0, 0, 0)
+damping_min = 10.0
+damping_max = 20.0
+scale_min = 0.035
+scale_max = 0.09
+scale_curve = SubResource("CurveTex_sparkle")
+color = Color(1, 0.92, 0.5, 1)
+color_ramp = SubResource("GradientTex_sparkle")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 48.0
+content_margin_top = 36.0
+content_margin_right = 48.0
+content_margin_bottom = 32.0
+bg_color = Color(0.985, 0.945, 0.86, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.78, 0.61, 0.28, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.08, 0.05, 0.01, 0.55)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="Button_normal"]
+bg_color = Color(0.16, 0.22, 0.1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.78, 0.61, 0.28, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0.18, 0.1, 0.02, 0.4)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="Button_pressed"]
+bg_color = Color(0.12, 0.17, 0.08, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62, 0.48, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="Button_hover"]
+bg_color = Color(0.22, 0.3, 0.14, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.9, 0.74, 0.36, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="SegmentPassiveUnlockReveal" type="Control" unique_id=283957407]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Dimmer" type="ColorRect" parent="." unique_id=520598383]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.02, 0.78)
+
+[node name="Center" type="CenterContainer" parent="." unique_id=833000853]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CardStack" type="Control" parent="Center" unique_id=599350047]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 700)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="GlowRect" type="TextureRect" parent="Center/CardStack" unique_id=968831626]
+unique_name_in_owner = true
+modulate = Color(1, 0.78, 0.28, 0.4)
+material = SubResource("Material_add")
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -332.0
+offset_top = -357.5385
+offset_right = 332.0
+offset_bottom = 357.5385
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_glow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RaysRect" type="TextureRect" parent="Center/CardStack" unique_id=1020202244]
+unique_name_in_owner = true
+modulate = Color(1, 0.82, 0.32, 0.18)
+material = SubResource("Material_add")
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -454.0
+offset_top = -454.0
+offset_right = 454.0
+offset_bottom = 454.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(480, 480)
+mouse_filter = 2
+texture = ExtResource("3_rays")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AuraParticles" type="GPUParticles2D" parent="Center/CardStack" unique_id=1895500406]
+unique_name_in_owner = true
+material = SubResource("Material_add")
+position = Vector2(280, 350)
+amount = 48
+texture = ExtResource("4_dot")
+lifetime = 1.8
+preprocess = 1.8
+randomness = 1.0
+visibility_rect = Rect2(-420, -460, 840, 920)
+local_coords = true
+process_material = SubResource("Particles_shimmer")
+
+[node name="SparkParticles" type="GPUParticles2D" parent="Center/CardStack" unique_id=1268323802]
+unique_name_in_owner = true
+material = SubResource("Material_add")
+position = Vector2(280, 350)
+amount = 36
+texture = ExtResource("5_6cskm")
+lifetime = 1.15
+preprocess = 1.15
+randomness = 1.0
+visibility_rect = Rect2(-420, -460, 840, 920)
+local_coords = true
+process_material = SubResource("Particles_sparkle")
+
+[node name="Panel" type="PanelContainer" parent="Center/CardStack" unique_id=29025569]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -188.0
+offset_top = -256.0
+offset_right = 188.0
+offset_bottom = 256.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="Center/CardStack/Panel" unique_id=620750475]
+layout_mode = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="TitleRow" type="HBoxContainer" parent="Center/CardStack/Panel/VBox" unique_id=1317317068]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="FlourishLeft" type="Label" parent="Center/CardStack/Panel/VBox/TitleRow" unique_id=1148229594]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.61, 0.28, 1)
+theme_override_font_sizes/font_size = 18
+text = "◆"
+
+[node name="UnlockTitle" type="Label" parent="Center/CardStack/Panel/VBox/TitleRow" unique_id=1093580040]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.2, 0.12, 1)
+theme_override_font_sizes/font_size = 22
+text = "PASSIVE UNLOCKED"
+horizontal_alignment = 1
+
+[node name="FlourishRight" type="Label" parent="Center/CardStack/Panel/VBox/TitleRow" unique_id=1514867276]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.61, 0.28, 1)
+theme_override_font_sizes/font_size = 18
+text = "◆"
+
+[node name="HexIcon" type="Control" parent="Center/CardStack/Panel/VBox" unique_id=466350720]
+custom_minimum_size = Vector2(148, 170)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="HexTile" type="TextureRect" parent="Center/CardStack/Panel/VBox/HexIcon" unique_id=829099847]
+self_modulate = Color(0.32, 0.4, 0.2, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_hex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IconRect" type="TextureRect" parent="Center/CardStack/Panel/VBox/HexIcon" unique_id=45431229]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = 34.0
+offset_right = -28.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="Center/CardStack/Panel/VBox" unique_id=1698504080]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.18, 0.1, 1)
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="Center/CardStack/Panel/VBox" unique_id=1778797739]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.24, 0.16, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ContinueButton" type="Button" parent="Center/CardStack/Panel/VBox" unique_id=1999832142]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.97, 0.94, 0.82, 1)
+theme_override_colors/font_hover_color = Color(1, 0.97, 0.86, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("Button_normal")
+theme_override_styles/pressed = SubResource("Button_pressed")
+theme_override_styles/hover = SubResource("Button_hover")
+text = "CONTINUE"
+
+[connection signal="pressed" from="Center/CardStack/Panel/VBox/ContinueButton" to="." method="_on_continue_pressed"]

@@ -626,9 +626,25 @@ func _emit_segment_turn_results_changed(segment_index: int) -> void:
 ## Each segment scores independently (Energy x Mult), then products are summed for the turn.
 func _apply_segment_turn_totals_to_game_manager() -> void:
 	var total := 0
+	var contributions: Array[int] = []
 	for segment_index in get_segment_count():
-		total += get_segment_turn_score(segment_index) * get_segment_turn_multiplier(segment_index)
+		var score := get_segment_turn_score(segment_index)
+		var multiplier := get_segment_turn_multiplier(segment_index)
+		var contribution := GameManager.compute_segment_turn_contribution(segment_index, score, multiplier)
+		contributions.append(contribution)
+		total += contribution
+	GameManager.record_turn_segment_peaks(contributions)
 	GameManager.turn_score = total
+
+
+func _check_full_map_cards_achievement() -> void:
+	for coords: Vector2i in map_data.keys():
+		var hex: Hex = map_data[coords]
+		if hex.is_disabled_by_difficulty:
+			continue
+		if hex.active_tile_card == null:
+			return
+	GameManager.mark_full_map_cards_achieved()
 
 
 func get_segment_turn_score(segment_index: int) -> int:
@@ -1082,6 +1098,7 @@ func on_turn_ended() -> void:
 
 	await _play_segment_turn_result_reveals()
 	_apply_segment_turn_totals_to_game_manager()
+	_check_full_map_cards_achievement()
 	_emit_segment_turn_completed_snapshot()
 	GameManager.finish_turn_processing()
 

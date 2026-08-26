@@ -46,6 +46,7 @@ func _build_trigger_buttons() -> void:
 	_add_trigger_button(button_box, "Merchant", _show_merchant)
 	_add_trigger_button(button_box, "Round complete", _show_round_complete)
 	_add_trigger_button(button_box, "Rune selection", _show_rune_selection)
+	_add_trigger_button(button_box, "Passive unlock", _show_passive_unlock)
 	_add_trigger_button(button_box, "Hide active panel", _hide_active_panel)
 
 
@@ -60,6 +61,9 @@ func _hide_active_panel() -> void:
 	if UiManager.active_panel != null:
 		UiManager.active_panel.hide()
 		UiManager.active_panel = null
+	var reveal := get_node_or_null("PanelLayer/SegmentPassiveUnlockReveal") as Control
+	if reveal != null:
+		reveal.hide()
 
 
 func _show_victory() -> void:
@@ -87,3 +91,17 @@ func _show_round_complete() -> void:
 func _show_rune_selection() -> void:
 	_hide_active_panel()
 	UiManager.show_runes_choice_panel.emit()
+
+
+func _show_passive_unlock() -> void:
+	_hide_active_panel()
+	$PanelLayer/SegmentPassiveUnlockReveal.present_passive(_make_placeholder_passive())
+
+
+func _make_placeholder_passive() -> SegmentPassive:
+	var passive := SegmentPassive.new()
+	passive.id = "sandbox_placeholder"
+	passive.display_name = "Placeholder Passive"
+	passive.description = "Sandbox preview. This is not a real unlock."
+	passive.icon = preload("res://assets/passives/icons/steady_growth.png")
+	return passive

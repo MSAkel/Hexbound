@@ -58,7 +58,7 @@ theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
 frame_producer = ExtResource("3_nmvtt")
 frame_support = ExtResource("3_support")
-frame_modifier = ExtResource("3_modifier")
+frame_utility = ExtResource("3_modifier")
 
 [node name="CardBackground" type="Panel" parent="." unique_id=932652994]
 layout_mode = 1

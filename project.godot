@@ -35,6 +35,7 @@ GoldManager="*res://scripts/autoload/gold_manager.gd"
 ChallengeManager="*res://scripts/autoload/challenge_manager.gd"
 RoundFlow="*res://scripts/autoload/round_flow.gd"
 RunSaveManager="*res://scripts/autoload/run_save_manager.gd"
+MetaProgressionManager="*res://scripts/autoload/meta_progression_manager.gd"
 
 [debug]
 
@@ -54,8 +55,8 @@ window/main_scene="uid://bpaabu6bfu0hv"
 folder_colors={
 "res://assets/": "orange",
 "res://resources/tile_cards/generations/": "blue",
-"res://resources/tile_cards/modifiers/": "purple",
 "res://resources/tile_cards/support/": "green",
+"res://resources/tile_cards/utilities/": "purple",
 "res://scenes/": "green",
 "res://scripts/": "yellow"
 }

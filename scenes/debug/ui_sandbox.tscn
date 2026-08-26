@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bqj8ui4sandbox"]
+[gd_scene load_steps=8 format=3 uid="uid://bqj8ui4sandbox"]
 
 [ext_resource type="Script" path="res://scenes/debug/ui_sandbox.gd" id="1_sandbox"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="2_victory"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="4_merchant"]
 [ext_resource type="PackedScene" uid="uid://di0jbf4swcn62" path="res://scenes/ui/round_complete_screen/round_complete_screen.tscn" id="5_round_complete"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_rune_selection"]
+[ext_resource type="PackedScene" path="res://scenes/ui/segment_passives/segment_passive_unlock_reveal.tscn" id="7_passive_unlock"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trigger_panel"]
 bg_color = Color(0.08, 0.1, 0.12, 0.92)
@@ -46,7 +47,7 @@ layout_mode = 0
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 280.0
-offset_bottom = 420.0
+offset_bottom = 480.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_trigger_panel")
 
 [node name="MarginContainer" type="MarginContainer" parent="TriggerPanel"]
@@ -78,3 +79,7 @@ layer = 1
 [node name="RoundCompleteScreen" parent="PanelLayer" instance=ExtResource("5_round_complete")]
 
 [node name="RuneSelectionUI" parent="PanelLayer" instance=ExtResource("6_rune_selection")]
+
+[node name="SegmentPassiveUnlockReveal" parent="PanelLayer" instance=ExtResource("7_passive_unlock")]
+visible = false
+auto_present = false

@@ -62,6 +62,7 @@ func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	_spent_this_round = 0
 	_merchant_tokens = 0
 	_last_speed_reward = {}
+	GameManager.record_peak_gold_held(_amount)
 	EventBus.gold_changed.emit(_amount)
 	EventBus.merchant_tokens_changed.emit(_merchant_tokens)
 
@@ -70,6 +71,7 @@ func add(amount_to_add: int) -> void:
 	_amount += amount_to_add
 	_earned_this_turn += amount_to_add
 	_total_earned_this_run += maxi(0, amount_to_add)
+	GameManager.record_peak_gold_held(_amount)
 	EventBus.gold_changed.emit(_amount)
 
 

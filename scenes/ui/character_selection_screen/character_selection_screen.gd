@@ -33,6 +33,7 @@ func _ready() -> void:
 	var music := SOUNDTRACK.get_music_for_scene(scene_file_path)
 	if music:
 		AudioManager.play_music(music)
+	SegmentPassiveUnlockPresenter.present_if_needed(self)
 
 
 func get_selected_character() -> CharacterDefinition:

@@ -13,7 +13,7 @@ enum TileCardRarity {
 enum TileCardType {
 	PRODUCER,
 	SUPPORT,
-	MODIFIER,
+	UTILITY,
 }
 
 enum Product {
@@ -237,7 +237,7 @@ func get_shop_price(discount: float = 0.0) -> int:
 func can_play_on(hex: Hex) -> bool:
 	if hex.is_disabled_by_difficulty:
 		return false
-	if type == TileCardType.MODIFIER:
+	if type == TileCardType.UTILITY:
 		return hex.active_tile_card != null
 	if hex.active_tile_card != null:
 		return false
@@ -247,14 +247,14 @@ func can_play_on(hex: Hex) -> bool:
 func is_placement_candidate(hex: Hex) -> bool:
 	if hex.is_disabled_by_difficulty:
 		return false
-	if type == TileCardType.MODIFIER:
+	if type == TileCardType.UTILITY:
 		return hex.active_tile_card != null
 	return hex.active_tile_card == null
 
 
 # Instant-resolve modifiers, otherwise occupy the hex.
 func play_on(hex: Hex) -> void:
-	if type == TileCardType.MODIFIER:
+	if type == TileCardType.UTILITY:
 		apply_on_placement(hex)
 	else:
 		hex.place_tile_card(self)
@@ -273,11 +273,24 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		output_scale *= EMPOWER_OUTPUT_SCALE
 		is_empowered = false
 		EventBus.tile_card_empower_consumed.emit(self)
+	if tile.map != null:
+		var segment_index := tile.map.get_segment_index(tile.coordinates)
+		output_scale *= GameManager.get_segment_passive_output_mult_factor(segment_index)
 
 	_activation_output_scale = output_scale
 	# Count this activation before the card resolves so "triggers so far" includes the current one.
 	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
+	_try_segment_passive_retrigger(
+		tile,
+		TileCardType.SUPPORT,
+		GameManager.roll_segment_support_retrigger
+	)
+	_try_segment_passive_retrigger(
+		tile,
+		TileCardType.PRODUCER,
+		GameManager.roll_segment_production_retrigger
+	)
 	_schedule_enhancement_activation(tile)
 	_activation_output_scale = 1.0
 
@@ -285,9 +298,20 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
 	source_tile.map.queue_tile_card_triggers(tile_cards, activation_scales, source_tile)
 
-# Modifier cards resolve immediately on placement instead of occupying a tile.
+# Utility cards resolve immediately on placement instead of occupying a tile.
 func apply_on_placement(_tile: Hex) -> void:
 	pass
+
+
+func _try_segment_passive_retrigger(tile: Hex, card_type: TileCardType, roll: Callable) -> void:
+	if type != card_type or tile.map == null:
+		return
+	var segment_index := tile.map.get_segment_index(tile.coordinates)
+	if segment_index < 0:
+		return
+	if not roll.call(segment_index):
+		return
+	queue_tile_card_triggers(tile, [self])
 
 
 func has_placement_restriction() -> bool:
@@ -401,12 +425,12 @@ func _get_producer_count_by_product_type(tile: Hex, filter_product: Product) -> 
 
 #region --- Adjacent tile card helpers ---
 ## Counts all adjacent tiles occupied by a tile card. Pass filter_type to filter by type.
-## filter_type: TileCardType (PRODUCER, SUPPORT, MODIFIER)
+## filter_type: TileCardType (PRODUCER, SUPPORT, UTILITY)
 func _count_all_occupied_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> int:
 	return tile.map.count_all_occupied_adjacent_tile_cards(tile.coordinates, filter_type)
 
 ## All tile cards on map-adjacent hexes around tile (unordered).
-## filter_type: TileCardType (PRODUCER, SUPPORT, MODIFIER)
+## filter_type: TileCardType (PRODUCER, SUPPORT, UTILITY)
 func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards(tile, filter_type)
 
@@ -414,7 +438,7 @@ func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Arr
 
 #region --- Trigger order helpers ---
 ## All adjacent tile cards sorted in the map's global trigger order.
-## filter_type: TileCardType (PRODUCER, SUPPORT, MODIFIER)
+## filter_type: TileCardType (PRODUCER, SUPPORT, UTILITY)
 func _get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards_in_trigger_order(tile, filter_type)
 
@@ -658,7 +682,7 @@ func _pick_random_placeable_tile_card(
 ) -> TileCard:
 	var candidates: Array[TileCard] = []
 	for template: TileCard in GameManager.tile_cards_pool:
-		if template.type == TileCardType.MODIFIER:
+		if template.type == TileCardType.UTILITY:
 			continue
 		if rarity != null and template.rarity != rarity:
 			continue

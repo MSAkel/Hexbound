@@ -1,0 +1,21 @@
+[gd_scene format=4 uid="uid://bfh44hseoipx1"]
+
+[ext_resource type="Script" uid="uid://mpdwnq663v87" path="res://scripts/segment_passives_preview_map.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://ccxxa581gp0it" path="res://assets/passives/passives_tile.png" id="2_tile"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_base"]
+texture = ExtResource("2_tile")
+texture_region_size = Vector2i(221, 255)
+0:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_base"]
+tile_shape = 3
+tile_size = Vector2i(221, 255)
+sources/0 = SubResource("TileSetAtlasSource_base")
+
+[node name="SegmentPassivesPreviewMap" type="Node2D" unique_id=1840205331]
+script = ExtResource("1_script")
+
+[node name="BaseLayer" type="TileMapLayer" parent="." unique_id=1634063966]
+tile_map_data = PackedByteArray("AAADAAMAAAAAAAAAAAAEAAMAAAAAAAAAAAACAAMAAAAAAAAAAAAEAAIAAAAAAAAAAAADAAIAAAAAAAAAAAAEAAQAAAAAAAAAAAADAAQAAAAAAAAAAAAFAAMAAAAAAAAAAAAFAAIAAAAAAAAAAAAFAAQAAAAAAAAAAAABAAMAAAAAAAAAAAACAAIAAAAAAAAAAAACAAQAAAAAAAAAAAAEAAEAAAAAAAAAAAADAAEAAAAAAAAAAAACAAEAAAAAAAAAAAAEAAUAAAAAAAAAAAADAAUAAAAAAAAAAAACAAUAAAAAAAAAAAAGAAMAAAAAAAAAAAAGAAIAAAAAAAAAAAAGAAQAAAAAAAAAAAAFAAEAAAAAAAAAAAAFAAUAAAAAAAAAAAAAAAMAAAAAAAAAAAABAAIAAAAAAAAAAAABAAQAAAAAAAAAAAABAAEAAAAAAAAAAAABAAUAAAAAAAAAAAAFAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAADAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAFAAYAAAAAAAAAAAAEAAYAAAAAAAAAAAADAAYAAAAAAAAAAAACAAYAAAAAAAAAAAA=")
+tile_set = SubResource("TileSet_base")

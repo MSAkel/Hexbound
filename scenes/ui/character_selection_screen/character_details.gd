@@ -3,6 +3,7 @@ extends HBoxContainer
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const DEFAULT_SEGMENT_COUNT := 7
+const SEGMENT_PASSIVES_SCENE := preload("res://scenes/ui/segment_passives/segment_passives_screen.tscn")
 
 signal prev_selection_pressed
 signal next_selection_pressed
@@ -12,6 +13,8 @@ var main_scene := load("res://scenes/main.tscn")
 var _selected_character: CharacterDefinition = null
 
 @onready var character_name_label: Label = %CharacterNameLabel
+@onready var segment_passives_button: Button = %SegmentPassivesButton
+@onready var passive_set_label: Label = %PassiveSetLabel
 @onready var character_icon: TextureRect = %CharacterIcon
 @onready var difficulty_container: DifficultyLevelContainer = %DifficultyLevelContainer
 @onready var trigger_order_label: Label = %TriggerOrderLabel
@@ -34,6 +37,20 @@ func display_selection(character: CharacterDefinition) -> void:
 	elif character.segments_count > 0:
 		segment_count = character.segments_count
 	segment_count_label.text = "%d SEGMENTS" % segment_count
+	_refresh_passive_set_label(character)
+
+
+func _refresh_passive_set_label(character: CharacterDefinition) -> void:
+	var set_id := MetaProgressionManager.get_selected_set_id(character.id)
+	passive_set_label.text = "Set %s" % set_id
+
+
+func _on_segment_passives_button_pressed() -> void:
+	if _selected_character == null:
+		return
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	GameManager.segment_passives_editor_character = _selected_character
+	get_tree().change_scene_to_packed(SEGMENT_PASSIVES_SCENE)
 
 
 func _on_prev_selection_pressed() -> void:
@@ -61,6 +78,7 @@ func _on_play_button_pressed() -> void:
 	# Character choice locks in layout rules for the entire run.
 	GameManager.selected_character = _selected_character
 	GameManager.selected_difficulty = get_selected_difficulty()
+	GameManager.apply_active_segment_passives(_selected_character.id)
 	RunSaveManager.request_scene_enter_transition()
 
 	get_tree().change_scene_to_packed(main_scene)
