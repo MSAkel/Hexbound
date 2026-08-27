@@ -13,4 +13,5 @@ trigger_order_strategy = 2
 trigger_order_display_name = "Clockwise spiral"
 trigger_order_description = "Cards activate in a clockwise spiral, starting at the center and expanding outward."
 trigger_order_preview = ExtResource("2_trigger_preview")
+segment_key_strategy = 1
 segments_count = 4

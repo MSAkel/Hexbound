@@ -193,6 +193,16 @@ func get_skipped_turns() -> int:
 	return maxi(0, remaining_turns - 1)
 
 
+## Debug helper. Sets the round score to the goal and starts the normal complete-round flow.
+## Skips tile resolution so a sandbox can jump straight to the summary and merchant.
+func debug_meet_round_goal_and_complete() -> void:
+	if _is_processing_turn or RoundFlow.is_transitioning():
+		return
+	_turn_score = 0
+	total_round_score = required_score
+	_complete_current_round()
+
+
 ## Hands the completed round to RoundFlow, which owns every step up to the next turn.
 ## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
 func _complete_current_round() -> void:

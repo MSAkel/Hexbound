@@ -33,10 +33,10 @@ func _on_copy_seed_button_pressed() -> void:
 
 func _on_main_menu_button_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
+	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)
 
 
 func _on_new_run_button_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	RunSaveManager.request_scene_enter_transition()
-	get_tree().change_scene_to_file("res://scenes/ui/character_selection_screen/character_selection_screen.tscn")
+	get_tree().change_scene_to_file(ScenePaths.CHARACTER_SELECTION)

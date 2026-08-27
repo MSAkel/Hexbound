@@ -2,6 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="1_6w68x"]
 [ext_resource type="Script" uid="uid://dy2gqsj6wlkur" path="res://scenes/ui/collection/collection.gd" id="1_wnhp0"]
+[ext_resource type="Texture2D" uid="uid://cnstyqt8k8wlr" path="res://assets/background/test_bg.png" id="2_g1foq"]
+
+[sub_resource type="Gradient" id="Gradient_cmwxi"]
+colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_3h1o3"]
+gradient = SubResource("Gradient_cmwxi")
+width = 50
 
 [sub_resource type="Gradient" id="Gradient_qt1dd"]
 colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
@@ -33,7 +41,27 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_wnhp0")
 
+[node name="Background2" type="TextureRect" parent="." unique_id=1889242913]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_g1foq")
+expand_mode = 1
+
+[node name="Foreground2" type="TextureRect" parent="." unique_id=1890687808]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture1D_3h1o3")
+
 [node name="Background" type="TextureRect" parent="." unique_id=104295522]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -44,6 +72,7 @@ texture = ExtResource("1_6w68x")
 expand_mode = 1
 
 [node name="Foreground" type="TextureRect" parent="." unique_id=1168488758]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

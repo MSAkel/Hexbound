@@ -26,6 +26,15 @@ func _ready() -> void:
 	z_index = 100
 
 
+func _exit_tree() -> void:
+	if not bind_event_bus:
+		return
+	if EventBus.toggle_tooltip.is_connected(_on_toggle_tooltip):
+		EventBus.toggle_tooltip.disconnect(_on_toggle_tooltip)
+	if EventBus.tooltip_hover_refresh_requested.is_connected(_on_hover_refresh_requested):
+		EventBus.tooltip_hover_refresh_requested.disconnect(_on_hover_refresh_requested)
+
+
 func _on_hover_refresh_requested() -> void:
 	# Let the covering control leave the GUI picking tree before replaying the pointer.
 	await get_tree().process_frame
@@ -48,11 +57,11 @@ func _on_toggle_tooltip(
 	is_tooltip_visible: bool,
 	text: String,
 	element_rect: Rect2 = Rect2(),
-	placement: Placement = Placement.AUTO
+	placement: int = Placement.AUTO
 ) -> void:
 	if is_tooltip_visible and text != "":
 		target_rect = element_rect
-		_placement = placement
+		_placement = placement as Placement
 		_update_content(text)
 		show()
 	else:

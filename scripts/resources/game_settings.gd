@@ -17,6 +17,8 @@ static var game_speed: float = 1.0
 static var vsync_enabled: bool = false
 static var display_mode: int = DISPLAY_MODE_FULLSCREEN
 static var resolution: Vector2i = Vector2i(1920, 1080)
+## Last character shown on the character selection screen, even if no run was started.
+static var last_character_selection_id: String = ""
 static var _loaded: bool = false
 
 
@@ -45,6 +47,7 @@ static func ensure_loaded() -> void:
 			resolution = saved_resolution
 		elif saved_resolution is Vector2:
 			resolution = Vector2i(saved_resolution)
+		last_character_selection_id = String(settings.get("last_character_selection_id", ""))
 	_apply_display_settings()
 	_apply_vsync()
 
@@ -130,6 +133,14 @@ static func _shrink_fullscreen_sized_resolution() -> void:
 		resolution = DEFAULT_WINDOWED_RESOLUTION
 
 
+static func set_last_character_selection_id(character_id: String) -> void:
+	ensure_loaded()
+	if last_character_selection_id == character_id:
+		return
+	last_character_selection_id = character_id
+	_save()
+
+
 static func set_tutorial_enabled(value: bool) -> void:
 	ensure_loaded()
 	if tutorial_enabled == value:
@@ -156,6 +167,7 @@ static func _save() -> void:
 		"vsync_enabled": vsync_enabled,
 		"display_mode": display_mode,
 		"resolution": resolution,
+		"last_character_selection_id": last_character_selection_id,
 	}
 	var save_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if save_file == null:

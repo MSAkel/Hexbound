@@ -1,6 +1,7 @@
 extends Node2D
 
 const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
+const RUN_SANDBOX_OVERLAY := preload("res://scenes/debug/run_sandbox_overlay.tscn")
 
 @export_category("Debug")
 ## Round used when starting a fresh run. Continued runs always use their saved round.
@@ -14,6 +15,10 @@ const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
 
 func _ready() -> void:
 	var play_entry_transition := RunSaveManager.consume_scene_enter_transition_request()
+	# Debug-only cheat panel for completing rounds, passing turns, and injecting cards.
+	if OS.is_debug_build():
+		add_child(RUN_SANDBOX_OVERLAY.instantiate())
+
 	if play_entry_transition:
 		scene_enter_transition.show()
 	else:

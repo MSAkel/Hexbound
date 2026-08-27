@@ -35,7 +35,7 @@ func get_effect_summary() -> String:
 		EffectType.SEGMENT_SCORE_MULT:
 			return "+%d%% segment score" % int(round(effect_value * 100.0))
 		EffectType.SEGMENT_SCORE_FLAT:
-			return "+%d segment score per turn" % int(effect_value)
+			return "+%d power each turn in this segment" % int(effect_value)
 		EffectType.SUPPORT_RETRIGGER:
 			return "Support cards: %d%% retrigger" % int(round(effect_value * 100.0))
 		EffectType.CARD_OUTPUT_MULT:

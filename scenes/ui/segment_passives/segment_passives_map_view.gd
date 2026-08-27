@@ -43,11 +43,14 @@ var _tile_icons: Dictionary = {}
 var _tile_placement_index: Dictionary = {}
 var _selected_segment_index: int = -1
 var _hover_segment_index: int = -1
+var _hover_coords := Vector2i(-999, -999)
 var _placement_tweens: Array[Tween] = []
 
 
 func _ready() -> void:
 	clip_contents = true
+	# Tiles handle input. The view itself must not eat clicks outside the hexes.
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(_update_content_transform)
 
 
@@ -66,6 +69,9 @@ func get_segment_capacity(segment_index: int) -> int:
 func refresh_placements() -> void:
 	_refresh_passive_overlays()
 	_refresh_segment_highlights()
+	# Placement can change under a stationary cursor. Refresh the hover panel.
+	if _tiles.has(_hover_coords):
+		_show_placed_passive_tooltip(_hover_coords)
 
 
 func get_tile_placement_index(coords: Vector2i) -> int:
@@ -73,12 +79,37 @@ func get_tile_placement_index(coords: Vector2i) -> int:
 
 
 func cleanup() -> void:
+	_hide_placed_passive_tooltip()
+	_kill_placement_tweens()
+	_release_tile_hosts()
 	if _preview_map != null:
 		_preview_map.restore_character_context()
+		_preview_map = null
+	_content = null
+	_tiles.clear()
+	_tile_segments.clear()
+	_tile_icons.clear()
+	_tile_placement_index.clear()
+
+
+func _exit_tree() -> void:
+	cleanup()
+
+
+## Break HexTile.host cycles so the debugger does not report ObjectDB leaks on leave.
+func _release_tile_hosts() -> void:
+	for coords: Vector2i in _tiles.keys():
+		var tile: Variant = _tiles[coords]
+		if tile is HexTile:
+			(tile as HexTile).host = null
 
 
 func _rebuild_map() -> void:
 	_kill_placement_tweens()
+	_release_tile_hosts()
+	if _preview_map != null:
+		_preview_map.restore_character_context()
+		_preview_map = null
 	for child in get_children():
 		child.queue_free()
 	_tiles.clear()
@@ -87,6 +118,8 @@ func _rebuild_map() -> void:
 	_tile_placement_index.clear()
 	_selected_segment_index = -1
 	_hover_segment_index = -1
+	_hover_coords = Vector2i(-999, -999)
+	_hide_placed_passive_tooltip()
 	_content = null
 
 	if _character == null:
@@ -125,8 +158,8 @@ func _rebuild_map() -> void:
 		var tile := _make_tile_button(tile_size, segment_index, coords)
 		tile.position = tile_positions[coords] - min_pos
 		tile.gui_input.connect(_on_tile_gui_input.bind(segment_index, coords))
-		tile.mouse_entered.connect(_on_tile_mouse_entered.bind(segment_index))
-		tile.mouse_exited.connect(_on_tile_mouse_exited.bind(segment_index))
+		tile.mouse_entered.connect(_on_tile_mouse_entered.bind(segment_index, coords))
+		tile.mouse_exited.connect(_on_tile_mouse_exited.bind(segment_index, coords))
 		_content.add_child(tile)
 
 		var icon := TextureRect.new()
@@ -195,15 +228,49 @@ func _on_tile_gui_input(event: InputEvent, segment_index: int, coords: Vector2i)
 	passive_remove_requested.emit(segment_index, list_index)
 
 
-func _on_tile_mouse_entered(segment_index: int) -> void:
+func _on_tile_mouse_entered(segment_index: int, coords: Vector2i) -> void:
 	_hover_segment_index = segment_index
+	_hover_coords = coords
 	_refresh_segment_highlights()
+	_show_placed_passive_tooltip(coords)
 
 
-func _on_tile_mouse_exited(segment_index: int) -> void:
+func _on_tile_mouse_exited(segment_index: int, coords: Vector2i) -> void:
 	if _hover_segment_index == segment_index:
 		_hover_segment_index = -1
+	if _hover_coords == coords:
+		_hover_coords = Vector2i(-999, -999)
 	_refresh_segment_highlights()
+	_hide_placed_passive_tooltip()
+
+
+## Name and description for a placed passive. Empty tiles hide the panel.
+func _show_placed_passive_tooltip(coords: Vector2i) -> void:
+	var passive := _get_placed_passive_at(coords)
+	var tile: Control = _tiles.get(coords)
+	if passive == null or tile == null:
+		_hide_placed_passive_tooltip()
+		return
+	var body := passive.description
+	if body.is_empty():
+		body = passive.get_effect_summary()
+	var text := passive.display_name if body.is_empty() else "%s\n%s" % [passive.display_name, body]
+	EventBus.toggle_tooltip.emit(true, text, tile.get_global_rect())
+
+
+func _hide_placed_passive_tooltip() -> void:
+	EventBus.toggle_tooltip.emit(false, "")
+
+
+func _get_placed_passive_at(coords: Vector2i) -> SegmentPassive:
+	var list_index: int = int(_tile_placement_index.get(coords, -1))
+	if list_index < 0 or _character == null:
+		return null
+	var segment_index: int = int(_tile_segments.get(coords, -1))
+	var placed := MetaProgressionManager.get_placed_passive_ids(_character.id, _set_id, segment_index)
+	if list_index >= placed.size():
+		return null
+	return MetaProgressionManager.get_passive_by_id(placed[list_index])
 
 
 func _refresh_segment_highlights() -> void:
@@ -374,6 +441,7 @@ func accept_passive_drop(data: Variant, segment_index: int, coords: Vector2i) ->
 
 ## Starts a board drag from an occupied hex. Empty tiles do not drag.
 func begin_board_drag(coords: Vector2i) -> Variant:
+	_hide_placed_passive_tooltip()
 	var list_index: int = int(_tile_placement_index.get(coords, -1))
 	if list_index < 0 or _character == null:
 		return null

@@ -3,12 +3,10 @@ extends HBoxContainer
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const DEFAULT_SEGMENT_COUNT := 7
-const SEGMENT_PASSIVES_SCENE := preload("res://scenes/ui/segment_passives/segment_passives_screen.tscn")
 
 signal prev_selection_pressed
 signal next_selection_pressed
 
-var main_scene := load("res://scenes/main.tscn")
 # Kept in sync by display_selection so Play can lock in the visible character.
 var _selected_character: CharacterDefinition = null
 
@@ -50,7 +48,7 @@ func _on_segment_passives_button_pressed() -> void:
 		return
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	GameManager.segment_passives_editor_character = _selected_character
-	get_tree().change_scene_to_packed(SEGMENT_PASSIVES_SCENE)
+	get_tree().change_scene_to_file(ScenePaths.SEGMENT_PASSIVES)
 
 
 func _on_prev_selection_pressed() -> void:
@@ -81,4 +79,4 @@ func _on_play_button_pressed() -> void:
 	GameManager.apply_active_segment_passives(_selected_character.id)
 	RunSaveManager.request_scene_enter_transition()
 
-	get_tree().change_scene_to_packed(main_scene)
+	get_tree().change_scene_to_file(ScenePaths.MAIN)

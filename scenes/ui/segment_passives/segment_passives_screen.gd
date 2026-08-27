@@ -4,9 +4,6 @@ extends Control
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const MAP_VIEW_SCRIPT := preload("res://scenes/ui/segment_passives/segment_passives_map_view.gd")
-const CHARACTER_SELECTION_SCENE := preload(
-	"res://scenes/ui/character_selection_screen/character_selection_screen.tscn"
-)
 
 const COLOR_TITLE := Color(0.18, 0.24, 0.17, 1.0)
 const COLOR_BODY := Color(0.39, 0.31, 0.2, 1.0)
@@ -29,6 +26,9 @@ var _selected_segment_index: int = -1
 
 
 func _ready() -> void:
+	# Scene connections can drop after tscn unique_id rewrites. Guard so Back still works.
+	if not %BackButton.pressed.is_connected(_on_back_pressed):
+		%BackButton.pressed.connect(_on_back_pressed)
 	_build_set_tabs()
 	var character := GameManager.segment_passives_editor_character
 	if character == null:
@@ -122,12 +122,16 @@ func _rebuild_map_view() -> void:
 		return
 
 	_map_view = MAP_VIEW_SCRIPT.new()
-	_map_view.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Ignore on the root so an oversized map rect cannot steal header clicks.
+	# Hex tiles still use STOP and receive their own events.
+	_map_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	map_host.clip_contents = true
+	map_host.add_child(_map_view)
+	_map_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_map_view.segment_selected.connect(_on_segment_selected)
 	_map_view.passive_remove_requested.connect(_on_map_passive_remove_requested)
 	_map_view.passive_drop_requested.connect(_on_passive_dropped)
 	_map_view.passive_move_requested.connect(_on_passive_moved)
-	map_host.add_child(_map_view)
 	_map_view.setup(_character, _active_set_id)
 
 
@@ -358,7 +362,7 @@ func _build_effect_lines(passives: Array[SegmentPassive]) -> Array[String]:
 	if score_mult > 0.0:
 		lines.append("+%d%% Score" % int(round(score_mult * 100.0)))
 	if score_flat > 0.0:
-		lines.append("+%d Score each turn" % int(score_flat))
+		lines.append("+%d Power each turn" % int(score_flat))
 	if power_output > 0.0:
 		lines.append("+%d%% Power output" % int(round(power_output * 100.0)))
 	if support_retrigger > 0.0:
@@ -394,7 +398,9 @@ func _on_reset_segment_pressed() -> void:
 
 func _on_back_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_packed(CHARACTER_SELECTION_SCENE)
+	# SceneTree removes the current scene immediately and instantiates the next
+	# at end of frame. No extra call_deferred is needed.
+	get_tree().change_scene_to_file(ScenePaths.CHARACTER_SELECTION)
 
 
 func _make_label(text: String, font_size: int, color: Color, wrap: bool = false) -> Label:

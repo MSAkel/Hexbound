@@ -13,13 +13,7 @@ const HOVER_DURATION := 0.12
 @onready var settings_container: PanelContainer = $SettingsContainer
 @onready var continue_button: Button = $MenuContainer/MenuItemsContainer/ContinueButton
 @onready var ui_sandbox_button: Button = $MenuContainer/MenuItemsContainer/UISandboxButton
-
-var main_scene := load("res://scenes/main.tscn")
-
-
-var character_selection_screen = load("res://scenes/ui/character_selection_screen/character_selection_screen.tscn")
-var settings_scene = load("res://scenes/ui/settings/settings.tscn")
-var ui_sandbox_scene := load("res://scenes/debug/ui_sandbox.tscn")
+@onready var passives_sandbox_button: Button = $MenuContainer/MenuItemsContainer/PassivesSandboxButton
 
 # Tracks in-flight hover tweens so rapid enter/exit does not stack.
 var _hover_tweens: Dictionary = {}
@@ -29,7 +23,8 @@ func _ready() -> void:
 	get_tree().paused = false
 	game_version.text = ProjectSettings.get_setting("application/config/version")
 	_refresh_continue_button()
-	ui_sandbox_button.visible = OS.is_debug_build()
+	# Sandbox entries match the in-run overlay. They exist only in debug builds.
+	_apply_debug_sandbox_buttons()
 	SegmentPassiveUnlockPresenter.present_if_needed(self)
 
 	# Play main menu music
@@ -89,6 +84,18 @@ func _on_focus_entered() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.SELECT)
 
 
+func _apply_debug_sandbox_buttons() -> void:
+	var sandbox_buttons: Array[Button] = [ui_sandbox_button, passives_sandbox_button]
+	var debug := OS.is_debug_build()
+	for button in sandbox_buttons:
+		if button == null:
+			continue
+		if debug:
+			button.visible = true
+		else:
+			button.queue_free()
+
+
 func _refresh_continue_button() -> void:
 	var has_save := RunSaveManager.has_save()
 	continue_button.visible = has_save
@@ -100,12 +107,12 @@ func _on_continue_pressed() -> void:
 		return
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	RunSaveManager.request_continue_run()
-	get_tree().change_scene_to_packed(main_scene)
+	get_tree().change_scene_to_file(ScenePaths.MAIN)
 
 
 func _on_play_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_packed(character_selection_screen)
+	get_tree().change_scene_to_file(ScenePaths.CHARACTER_SELECTION)
 
 
 func _on_options_pressed() -> void:
@@ -123,9 +130,18 @@ func _on_exit_pressed() -> void:
 
 
 func _on_collection_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/collection/collection.tscn")
+	get_tree().change_scene_to_file(ScenePaths.COLLECTION)
 
 
 func _on_ui_sandbox_button_pressed() -> void:
+	if not OS.is_debug_build():
+		return
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_packed(ui_sandbox_scene)
+	get_tree().change_scene_to_file(ScenePaths.UI_SANDBOX)
+
+
+func _on_passives_sandbox_button_pressed() -> void:
+	if not OS.is_debug_build():
+		return
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	get_tree().change_scene_to_file(ScenePaths.SEGMENT_PASSIVES_SANDBOX)

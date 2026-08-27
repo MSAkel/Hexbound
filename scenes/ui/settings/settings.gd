@@ -23,8 +23,6 @@ const RESOLUTIONS := [
 	Vector2i(3840, 2160),
 ]
 
-var main_menu_scene = load("res://scenes/ui/main_menu/main_menu.tscn")
-
 func _ready() -> void:
 	# Initialize sliders with current values
 	#master_volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))

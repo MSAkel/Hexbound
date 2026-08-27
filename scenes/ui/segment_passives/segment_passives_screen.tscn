@@ -2,8 +2,17 @@
 
 [ext_resource type="Script" uid="uid://v4vsd0c8yb2q" path="res://scenes/ui/segment_passives/segment_passives_screen.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://cnstyqt8k8wlr" path="res://assets/background/test_bg.png" id="2_fvapy"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="3_back"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="4_vertical_divider"]
+[ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="5_tooltip"]
+
+[sub_resource type="Gradient" id="Gradient_u8fou"]
+colors = PackedColorArray(0, 0, 0.012920001, 0.60200006, 0.0058606174, 0.020055609, 0.034267083, 0.753)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_7cek3"]
+gradient = SubResource("Gradient_u8fou")
+width = 50
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_back"]
 
@@ -98,7 +107,27 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
+[node name="Background2" type="TextureRect" parent="." unique_id=2051419918]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_fvapy")
+expand_mode = 1
+
+[node name="Foreground" type="TextureRect" parent="." unique_id=978654225]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture1D_7cek3")
+
 [node name="Background" type="TextureRect" parent="." unique_id=1830176196]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -111,6 +140,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="Atmosphere" type="ColorRect" parent="." unique_id=1681742984]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -137,10 +167,13 @@ layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="Header" type="HBoxContainer" parent="SafeArea/Page" unique_id=1342163461]
+z_index = 1
 custom_minimum_size = Vector2(0, 82)
 layout_mode = 2
 
 [node name="BackButton" type="Button" parent="SafeArea/Page/Header" unique_id=1313012212]
+unique_name_in_owner = true
+z_index = 1
 custom_minimum_size = Vector2(190, 58)
 layout_mode = 2
 size_flags_vertical = 4
@@ -160,6 +193,7 @@ icon = ExtResource("3_back")
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
+mouse_filter = 2
 theme_override_constants/separation = 2
 
 [node name="PageTitle" type="Label" parent="SafeArea/Page/Header/TitleColumn" unique_id=1170686860]
@@ -234,6 +268,7 @@ theme_override_constants/separation = 12
 [node name="MapHost" type="Control" parent="SafeArea/Page/Body/Sections/CenterColumn" unique_id=1040784302]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 360)
+clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -282,8 +317,9 @@ theme_override_font_sizes/font_size = 17
 text = "PLACED PASSIVES"
 
 [node name="PlacedScroll" type="ScrollContainer" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1416143272]
+custom_minimum_size = Vector2(0, 350)
+custom_maximum_size = Vector2(-1, 350)
 layout_mode = 2
-size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
 [node name="PlacedList" type="VBoxContainer" parent="SafeArea/Page/Body/Sections/RightColumn/PlacedScroll" unique_id=2013623223]
@@ -307,6 +343,7 @@ text = "SEGMENT EFFECTS"
 [node name="EffectsList" type="VBoxContainer" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1467438030]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 4
 
 [node name="ResetSegmentButton" type="Button" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1806832400]
@@ -323,6 +360,12 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_reset_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_reset_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_reset_normal")
 text = "RESET SEGMENT"
+
+[node name="Tooltip" parent="." unique_id=1157743689 instance=ExtResource("5_tooltip")]
+visible = false
+z_index = 100
+layout_mode = 0
+mouse_filter = 2
 
 [connection signal="pressed" from="SafeArea/Page/Header/BackButton" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="SafeArea/Page/Body/Sections/RightColumn/ResetSegmentButton" to="." method="_on_reset_segment_pressed"]

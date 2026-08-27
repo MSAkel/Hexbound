@@ -67,6 +67,13 @@ func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	EventBus.merchant_tokens_changed.emit(_merchant_tokens)
 
 
+## Debug helper. Replaces the current gold wallet without counting it as earned or spent.
+func set_amount(new_amount: int) -> void:
+	_amount = maxi(0, new_amount)
+	GameManager.record_peak_gold_held(_amount)
+	EventBus.gold_changed.emit(_amount)
+
+
 func add(amount_to_add: int) -> void:
 	_amount += amount_to_add
 	_earned_this_turn += amount_to_add

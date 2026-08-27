@@ -3,8 +3,6 @@ extends Control
 const SOUNDTRACK := preload("res://scripts/soundtracks.gd")
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
-const MAIN_MENU_SCENE := preload("res://scenes/ui/main_menu/main_menu.tscn")
-
 @onready var character_details: CharacterDetails = $SafeArea/Page/CharacterDetails
 @onready var scene_enter_transition: SceneEnterTransition = $SceneEnterTransition
 
@@ -21,8 +19,7 @@ func _ready() -> void:
 	character_details.next_selection_pressed.connect(_on_next_selection)
 
 	var previous_run_transition := RunSaveManager.consume_scene_enter_transition_request()
-	if previous_run_transition:
-		_select_previous_run_character()
+	_restore_last_character()
 	_update_display()
 	if previous_run_transition:
 		character_details.display_difficulty(GameManager.selected_difficulty)
@@ -40,12 +37,17 @@ func get_selected_character() -> CharacterDefinition:
 	return selections[current_index]
 
 
-func _select_previous_run_character() -> void:
-	if GameManager.selected_character == null:
+func _restore_last_character() -> void:
+	GameSettings.ensure_loaded()
+	var character_id := GameSettings.last_character_selection_id
+	# Fall back to the last run character when settings have no stored selection yet.
+	if character_id.is_empty() and GameManager.selected_character != null:
+		character_id = GameManager.selected_character.id
+	if character_id.is_empty():
 		return
 
 	for index in selections.size():
-		if selections[index].id == GameManager.selected_character.id:
+		if selections[index].id == character_id:
 			current_index = index
 			return
 
@@ -65,7 +67,8 @@ func _on_next_selection() -> void:
 func _update_display() -> void:
 	# Name, trigger order, and difficulty are shown inside CharacterDetails.
 	character_details.display_selection(get_selected_character())
+	GameSettings.set_last_character_selection_id(get_selected_character().id)
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
-	get_tree().change_scene_to_packed(MAIN_MENU_SCENE)
+	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

@@ -1,14 +1,18 @@
-[gd_scene load_steps=8 format=3 uid="uid://bqj8ui4sandbox"]
+[gd_scene format=3 uid="uid://bxjuet0bpwt0"]
 
-[ext_resource type="Script" path="res://scenes/debug/ui_sandbox.gd" id="1_sandbox"]
+[ext_resource type="Script" uid="uid://cy3ormypibuqy" path="res://scenes/debug/ui_sandbox.gd" id="1_sandbox"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="2_victory"]
 [ext_resource type="PackedScene" uid="uid://cylk7h6n211gc" path="res://scenes/ui/game_over_screen/game_over_screen.tscn" id="3_game_over"]
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="4_merchant"]
 [ext_resource type="PackedScene" uid="uid://di0jbf4swcn62" path="res://scenes/ui/round_complete_screen/round_complete_screen.tscn" id="5_round_complete"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_rune_selection"]
-[ext_resource type="PackedScene" path="res://scenes/ui/segment_passives/segment_passive_unlock_reveal.tscn" id="7_passive_unlock"]
+[ext_resource type="PackedScene" uid="uid://b77xc5y6w8mq2" path="res://scenes/ui/segment_passives/segment_passive_unlock_reveal.tscn" id="7_passive_unlock"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trigger_panel"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
 bg_color = Color(0.08, 0.1, 0.12, 0.92)
 border_width_left = 2
 border_width_top = 2
@@ -19,12 +23,8 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-content_margin_left = 12.0
-content_margin_top = 12.0
-content_margin_right = 12.0
-content_margin_bottom = 12.0
 
-[node name="UISandbox" type="Control"]
+[node name="UISandbox" type="Control" unique_id=201449446]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,7 +33,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_sandbox")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1772882766]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -42,44 +42,38 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.12, 0.14, 0.16, 1)
 
-[node name="TriggerPanel" type="PanelContainer" parent="."]
+[node name="TriggerPanel" type="PanelContainer" parent="." unique_id=1906679637]
 layout_mode = 0
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 280.0
-offset_bottom = 480.0
+offset_bottom = 540.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_trigger_panel")
 
-[node name="MarginContainer" type="MarginContainer" parent="TriggerPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="TriggerPanel" unique_id=46517944]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TriggerPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="TriggerPanel/MarginContainer" unique_id=804419459]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TitleLabel" type="Label" parent="TriggerPanel/MarginContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="TriggerPanel/MarginContainer/VBoxContainer" unique_id=927279545]
 layout_mode = 2
-text = "UI Sandbox"
 theme_override_font_sizes/font_size = 20
+text = "UI Sandbox"
 
-[node name="HintLabel" type="Label" parent="TriggerPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "Run this scene with F6. Buttons open each panel with seeded run data."
-autowrap_mode = 3
+[node name="PanelLayer" type="CanvasLayer" parent="." unique_id=1244451666]
 
-[node name="PanelLayer" type="CanvasLayer" parent="."]
-layer = 1
+[node name="VictoryScreen" parent="PanelLayer" unique_id=869745838 instance=ExtResource("2_victory")]
 
-[node name="VictoryScreen" parent="PanelLayer" instance=ExtResource("2_victory")]
+[node name="GameOverScreen" parent="PanelLayer" unique_id=2058803529 instance=ExtResource("3_game_over")]
 
-[node name="GameOverScreen" parent="PanelLayer" instance=ExtResource("3_game_over")]
+[node name="Merchant" parent="PanelLayer" unique_id=1287111676 instance=ExtResource("4_merchant")]
 
-[node name="Merchant" parent="PanelLayer" instance=ExtResource("4_merchant")]
+[node name="RoundCompleteScreen" parent="PanelLayer" unique_id=889966669 instance=ExtResource("5_round_complete")]
 
-[node name="RoundCompleteScreen" parent="PanelLayer" instance=ExtResource("5_round_complete")]
+[node name="RuneSelectionUI" parent="PanelLayer" unique_id=2051509530 instance=ExtResource("6_rune_selection")]
 
-[node name="RuneSelectionUI" parent="PanelLayer" instance=ExtResource("6_rune_selection")]
-
-[node name="SegmentPassiveUnlockReveal" parent="PanelLayer" instance=ExtResource("7_passive_unlock")]
+[node name="SegmentPassiveUnlockReveal" parent="PanelLayer" unique_id=2016194325 instance=ExtResource("7_passive_unlock")]
 visible = false
 auto_present = false

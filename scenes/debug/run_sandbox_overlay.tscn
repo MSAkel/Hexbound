@@ -1,0 +1,149 @@
+[gd_scene format=3 uid="uid://da21wiintg171"]
+
+[ext_resource type="Script" uid="uid://bkgm50w5fv86o" path="res://scenes/debug/run_sandbox_overlay.gd" id="1_sandbox"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tools"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.08, 0.1, 0.12, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.42, 0.48, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="RunSandboxOverlay" type="CanvasLayer" unique_id=474466520]
+layer = 80
+script = ExtResource("1_sandbox")
+
+[node name="ToolsPanel" type="PanelContainer" parent="." unique_id=1111735781]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -320.0
+offset_right = 266.0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tools")
+
+[node name="MarginContainer" type="MarginContainer" parent="ToolsPanel" unique_id=873198453]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ToolsPanel/MarginContainer" unique_id=985784572]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1554267519]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Run Sandbox"
+
+[node name="CompleteRoundButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=40927998]
+layout_mode = 2
+text = "Complete round"
+
+[node name="PassTurnButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=186988538]
+layout_mode = 2
+text = "Pass turn"
+
+[node name="DrawRandomCardButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1653087712]
+layout_mode = 2
+text = "Draw random card"
+
+[node name="PickCardButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1438743610]
+layout_mode = 2
+text = "Pick a card..."
+
+[node name="GoldRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=469025335]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GoldSpinBox" type="SpinBox" parent="ToolsPanel/MarginContainer/VBoxContainer/GoldRow" unique_id=319026014]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 99999.0
+rounded = true
+allow_greater = true
+
+[node name="SetGoldButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/GoldRow" unique_id=2072866727]
+layout_mode = 2
+text = "Set gold"
+
+[node name="CardPicker" type="Control" parent="." unique_id=533934623]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="CardPicker" unique_id=418607493]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Panel" type="PanelContainer" parent="CardPicker" unique_id=903031176]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_top = 60.0
+offset_right = -80.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CardPicker/Panel" unique_id=1798936750]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CardPicker/Panel/MarginContainer" unique_id=597704141]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderRow" type="HBoxContainer" parent="CardPicker/Panel/MarginContainer/VBoxContainer" unique_id=1739454268]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="CardPicker/Panel/MarginContainer/VBoxContainer/HeaderRow" unique_id=956923145]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Add a card to hand"
+
+[node name="CloseButton" type="Button" parent="CardPicker/Panel/MarginContainer/VBoxContainer/HeaderRow" unique_id=111026999]
+layout_mode = 2
+text = "Close"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CardPicker/Panel/MarginContainer/VBoxContainer" unique_id=969346425]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CardGrid" type="GridContainer" parent="CardPicker/Panel/MarginContainer/VBoxContainer/ScrollContainer" unique_id=1903101278]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 6
+
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton" to="." method="_on_complete_round_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton" to="." method="_on_pass_turn_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PickCardButton" to="." method="_on_pick_card_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
+[connection signal="gui_input" from="CardPicker/Dim" to="." method="_on_card_picker_dim_gui_input"]
+[connection signal="pressed" from="CardPicker/Panel/MarginContainer/VBoxContainer/HeaderRow/CloseButton" to="." method="_on_close_card_picker_pressed"]
