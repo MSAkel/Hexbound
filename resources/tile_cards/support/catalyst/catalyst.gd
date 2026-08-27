@@ -18,7 +18,10 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		return
 
 	var target := next_producers[0]
-	target._empower()
+	if not _try_empower_tile_card(tile, target):
+		failed_tile_card_text(tile)
+		return
+
 	_create_floating_text(tile, "Empowered: %s" % target.name)
 
 

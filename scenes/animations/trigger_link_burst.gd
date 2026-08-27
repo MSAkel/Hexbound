@@ -57,7 +57,7 @@ func play(from_pos: Vector2, to_pos: Vector2) -> void:
 	impact.restart()
 	impact.emitting = true
 
-	await get_tree().create_timer(CLEANUP_DELAY / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(CLEANUP_DELAY / GameManager.game_speed).timeout
 	if is_instance_valid(self):
 		queue_free()
 

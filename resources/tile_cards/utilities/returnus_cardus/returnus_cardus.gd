@@ -1,7 +1,7 @@
 extends TileCard
 
 ## Returns rune to hand
-func _on_activate_tile_card(tile: Hex) -> void:
+func _on_activate_tile_card(_tile: Hex) -> void:
 	pass
 	
 func apply_on_placement(tile: Hex) -> void:

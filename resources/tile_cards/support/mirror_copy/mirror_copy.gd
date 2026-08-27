@@ -16,7 +16,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 	# Always read the live occupant. A later replacement on that tile is what gets copied.
 	var copied := opposite.active_tile_card
-	if copied == null:
+	if copied == null or not tile.map.is_tile_card_triggerable(opposite):
 		failed_tile_card_text(tile)
 		return
 

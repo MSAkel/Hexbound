@@ -13,6 +13,9 @@ const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 
 func _ready() -> void:
+	# Keep pause UI interactive while the scene tree is frozen during turn resolution.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	settings_container.process_mode = Node.PROCESS_MODE_ALWAYS
 	# Restore pause buttons when settings Back is pressed
 	settings_container.closed.connect(_on_settings_closed)
 
@@ -36,13 +39,20 @@ func _on_settings_closed() -> void:
 func _on_main_menu_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	RunSaveManager.save_current_run()
+	get_tree().paused = false
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)
 
 
 func _on_exit_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	RunSaveManager.save_current_run()
+	get_tree().paused = false
 	get_tree().quit()
+
+
+func _open_pause_menu() -> void:
+	pause_menu.show()
+	get_tree().paused = true
 
 
 func _close_pause_menu() -> void:
@@ -50,6 +60,7 @@ func _close_pause_menu() -> void:
 	settings_container.hide()
 	panel.show()
 	pause_menu.hide()
+	get_tree().paused = false
 	EventBus.tooltip_hover_refresh_requested.emit()
 
 
@@ -61,7 +72,7 @@ func _input(event: InputEvent) -> void:
 		if _is_pause_blocked():
 			return
 		tile_map.dismiss_hover_feedback()
-		pause_menu.show()
+		_open_pause_menu()
 
 
 ## Prevent the pause menu from opening on top of gameplay panels that require the player's attention.

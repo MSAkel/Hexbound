@@ -109,11 +109,12 @@ func play_float_and_free() -> void:
 		queue_free()
 		return
 
-	await get_tree().create_timer(HOLD_AFTER_POP / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(HOLD_AFTER_POP / GameManager.game_speed).timeout
 	if not is_instance_valid(self):
 		return
 
 	var shrink_tween := create_tween()
+	shrink_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	shrink_tween.set_trans(Tween.TRANS_CUBIC)
 	shrink_tween.set_ease(Tween.EASE_IN)
 	shrink_tween.tween_property(_text_root, "scale", Vector2.ZERO, SHRINK_DURATION / GameManager.game_speed)
@@ -185,6 +186,7 @@ func _play_character_pop() -> bool:
 	var pop_dur := CHAR_POP_DURATION / GameManager.game_speed
 	var stagger := CHAR_STAGGER / GameManager.game_speed
 	var pop_tween := create_tween()
+	pop_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	pop_tween.set_parallel(true)
 	for i in pop_items.size():
 		var pop_item := pop_items[i]
@@ -228,6 +230,7 @@ func _apply_icon(texture: Texture2D) -> void:
 func play_rise() -> void:
 	label.modulate = Color.WHITE
 	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	tween.tween_property(
 		label,
 		"position",
@@ -239,9 +242,9 @@ func play_rise() -> void:
 
 ## Turns the factor line into a larger Score product, punches, then holds so it can be read.
 func play_equals_to_product(product: int, linger_extra: bool = false) -> void:
-	await get_tree().create_timer(FACTOR_HOLD_DURATION / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(FACTOR_HOLD_DURATION / GameManager.game_speed).timeout
 	if linger_extra:
-		await get_tree().create_timer(TUTORIAL_EQUALS_HOLD / GameManager.game_speed).timeout
+		await GameManager.create_pauseable_timer(TUTORIAL_EQUALS_HOLD / GameManager.game_speed).timeout
 	if not is_instance_valid(self):
 		return
 
@@ -260,6 +263,7 @@ func play_equals_to_product(product: int, linger_extra: bool = false) -> void:
 
 	var duration := EQUALS_MORPH_DURATION / GameManager.game_speed
 	var punch := create_tween()
+	punch.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	punch.set_parallel(true)
 	punch.tween_method(_set_font_size, start_font, end_font, duration).set_trans(Tween.TRANS_BACK).set_ease(
 		Tween.EASE_OUT
@@ -278,7 +282,7 @@ func play_equals_to_product(product: int, linger_extra: bool = false) -> void:
 	if not is_instance_valid(self):
 		return
 
-	await get_tree().create_timer(PRODUCT_HOLD_DURATION / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(PRODUCT_HOLD_DURATION / GameManager.game_speed).timeout
 
 
 ## Flies the readout toward a world-space point. Grow lands as the main score. Shrink absorbs into it.
@@ -291,6 +295,7 @@ func merge_into(target_world: Vector2, grow: bool, target_font_size: int) -> voi
 	var start_font := float(label.get_theme_font_size("normal_font_size"))
 
 	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	tween.set_parallel(true)
 	tween.tween_property(self, "global_position", dest, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_OUT if grow else Tween.EASE_IN

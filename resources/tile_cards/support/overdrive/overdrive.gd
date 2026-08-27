@@ -6,11 +6,11 @@ func _init() -> void:
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	var next_rune: TileCard = _get_next_tile_card_in_trigger_order(tile)
-	if next_rune != null:
-		var retriggers: Array[TileCard] = [next_rune, next_rune]
-		queue_tile_card_triggers(tile, retriggers)
-	else:
-		_create_floating_text(tile, "Failed")
+	if next_rune == null:
+		failed_tile_card_text(tile)
+		return
+
+	_try_queue_tile_card_triggers(tile, [next_rune, next_rune])
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

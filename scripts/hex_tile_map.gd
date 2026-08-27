@@ -146,7 +146,7 @@ func _apply_tile_spacing() -> void:
 # Handles tile hover highlighting. Left-click no longer locks a selected hex.
 func _unhandled_input(event: InputEvent) -> void:
 	if GameManager.is_processing_turn:
-		_hide_tile_panel_hover()
+		dismiss_hover_feedback()
 		return
 
 	if event is InputEventMouseMotion:
@@ -223,9 +223,17 @@ func _hide_tile_panel_hover() -> void:
 	_clear_empty_tile_segment_hover()
 
 
+func _clear_selection_hover_highlight() -> void:
+	if hovered_cell == Vector2i(-1, -1):
+		return
+	selection_overlay_layer.set_cell(hovered_cell, -1)
+	hovered_cell = Vector2i(-1, -1)
+
+
 ## Dismisses any map hover feedback when gameplay is covered by another UI.
 func dismiss_hover_feedback() -> void:
 	_hide_tile_panel_hover()
+	_clear_selection_hover_highlight()
 
 
 # Light-blue overlay on every other tile in this empty tile's segment.
@@ -350,10 +358,21 @@ func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
 	for hex: Hex in map_data.values():
 		if hex.active_tile_card == null:
 			continue
+		if not is_tile_card_triggerable(hex):
+			continue
 		if rune_type != null and hex.active_tile_card.type != rune_type:
 			continue
 		runes.append(hex.active_tile_card)
 	return runes
+
+
+## True when a placed rune can be targeted or triggered by another effect this turn.
+func is_tile_card_triggerable(hex: Hex) -> bool:
+	if hex == null or hex.active_tile_card == null:
+		return false
+	if hex.is_disabled_by_difficulty:
+		return false
+	return hex.active_tile_card.is_active
 
 
 ## Hex tiles that currently hold a rune.
@@ -371,6 +390,8 @@ func count_all_occupied_adjacent_tile_cards(coords: Vector2i, rune_type: Variant
 	for hex: Hex in get_all_adjacent_hexes(coords):
 		if hex.active_tile_card == null:
 			continue
+		if not is_tile_card_triggerable(hex):
+			continue
 		if rune_type != null and hex.active_tile_card.type != rune_type:
 			continue
 		count += 1
@@ -382,6 +403,8 @@ func get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Arra
 	var result: Array[TileCard] = []
 	for hex: Hex in get_all_adjacent_hexes(tile.coordinates):
 		if hex.active_tile_card == null:
+			continue
+		if not is_tile_card_triggerable(hex):
 			continue
 		if filter_type != null and hex.active_tile_card.type != filter_type:
 			continue
@@ -397,6 +420,8 @@ func get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Varian
 		if hex.active_tile_card == null:
 			continue
 		if not neighbors.has(hex):
+			continue
+		if not is_tile_card_triggerable(hex):
 			continue
 		if filter_type != null and hex.active_tile_card.type != filter_type:
 			continue
@@ -767,7 +792,7 @@ func flash_segment_highlight(segment_index: int) -> void:
 	_flash_segment_generation += 1
 	var generation := _flash_segment_generation
 	var duration := SEGMENT_CREDIT_FLASH_DURATION / GameManager.game_speed
-	get_tree().create_timer(duration).timeout.connect(
+	GameManager.create_pauseable_timer(duration).timeout.connect(
 		func() -> void:
 			if generation != _flash_segment_generation:
 				return
@@ -841,29 +866,41 @@ func _get_hex_trigger_order_index(current_tile: Hex) -> int:
 func get_next_tile_card_in_trigger_order(current_tile: Hex) -> TileCard:
 	var hexes := get_hexes_in_trigger_order()
 	var current_index := _get_hex_trigger_order_index(current_tile)
-	if current_index == -1 or current_index + 1 >= hexes.size():
+	if current_index == -1:
 		return null
-	return hexes[current_index + 1].active_tile_card
+
+	for i in range(current_index + 1, hexes.size()):
+		var next_hex := hexes[i]
+		if next_hex.active_tile_card == null or _is_bypassed_in_trigger_order(next_hex):
+			continue
+		return next_hex.active_tile_card
+	return null
 
 
 ## True when the next rune in trigger order can be consumed in-sequence this turn.
 func can_consume_next_tile_card_in_trigger_order(current_tile: Hex) -> bool:
 	var hexes := get_hexes_in_trigger_order()
 	var current_index := _get_hex_trigger_order_index(current_tile)
-	if current_index == -1 or current_index + 1 >= hexes.size():
+	if current_index == -1:
 		return false
 
-	var next_rune := hexes[current_index + 1].active_tile_card
-	if next_rune == null:
-		return false
-
-	# Every rune on earlier hexes must have already activated this turn.
+	# Every earlier rune that will actually fire must have already activated this turn.
 	for i in range(current_index):
-		var prior_rune := hexes[i].active_tile_card
-		if prior_rune != null and not GameManager.has_tile_card_activated_this_turn(prior_rune):
+		var prior_hex := hexes[i]
+		var prior_rune := prior_hex.active_tile_card
+		if prior_rune == null or _is_bypassed_in_trigger_order(prior_hex):
+			continue
+		if not GameManager.has_tile_card_activated_this_turn(prior_rune):
 			return false
 
-	return not GameManager.has_tile_card_activated_this_turn(next_rune)
+	for i in range(current_index + 1, hexes.size()):
+		var next_hex := hexes[i]
+		var next_rune := next_hex.active_tile_card
+		if next_rune == null or _is_bypassed_in_trigger_order(next_hex):
+			continue
+		return not GameManager.has_tile_card_activated_this_turn(next_rune)
+
+	return false
 
 
 ## Up to count runes that activate after current_tile in trigger order.
@@ -902,8 +939,9 @@ func _get_tile_cards_relative_to_trigger_order(
 	var step := -1 if previous else 1
 
 	for i in range(start, end, step):
-		var rune := hexes[i].active_tile_card
-		if rune == null:
+		var hex := hexes[i]
+		var rune := hex.active_tile_card
+		if rune == null or _is_bypassed_in_trigger_order(hex):
 			continue
 		if filter_type != null and rune.type != filter_type:
 			continue
@@ -948,6 +986,10 @@ func queue_tile_card_triggers(
 	source_hex: Hex = null,
 ) -> void:
 	for i in range(runes.size()):
+		var target_hex := get_hex_for_tile_card(runes[i])
+		if target_hex == null or not is_tile_card_triggerable(target_hex):
+			continue
+
 		var scale_rune := 1.0
 		if i < activation_scales.size():
 			scale_rune = activation_scales[i]
@@ -1084,13 +1126,14 @@ func _on_tile_card_empower_consumed(rune: TileCard) -> void:
 
 ## Resolves every placed rune in trigger order when the player ends the turn.
 func on_turn_ended() -> void:
+	dismiss_hover_feedback()
 	reset_segment_turn_results()
 
 	_pending_trigger_queue.clear()
 	_clear_trigger_link_sessions()
 
 	for tile: Hex in get_hexes_in_trigger_order():
-		if tile.active_tile_card == null:
+		if _should_bypass_primary_trigger_order_activation(tile):
 			continue
 
 		await _resolve_rune_activation(tile)
@@ -1114,6 +1157,9 @@ func _resolve_rune_activation(tile: Hex) -> void:
 		if target_hex == null or target_hex.active_tile_card == null:
 			_resolve_trigger_link_entry(entry)
 			continue
+		if not _would_activate_tile_card_on_tile(target_hex, true):
+			_resolve_trigger_link_entry(entry)
+			continue
 		# Match the same pacing gap used between tiles in trigger order.
 		await _wait_between_tile_activations()
 		await _activate_tile_card_on_tile(
@@ -1131,32 +1177,43 @@ func _activate_tile_card_on_tile(
 	from_trigger: bool = false,
 	trigger_source_hex: Hex = null,
 ) -> void:
-	if tile.active_tile_card == null or tile.is_disabled_by_difficulty:
-		return
-
-	if not from_trigger and ChallengeManager.should_skip_primary_producer_activation(tile.active_tile_card):
+	if not _would_activate_tile_card_on_tile(tile, from_trigger):
 		return
 
 	activation_scale *= ChallengeManager.get_producer_output_multiplier(tile)
 
-	if tile.active_tile_card.is_active:
-		if from_trigger and trigger_source_hex != null:
-			trigger_link_overlay.play_bolt(trigger_source_hex, tile)
-			tile.play_chained_tile_card_activation_animation()
-		else:
-			tile.play_tile_card_activation_animation()
-		await _wait_for_activation_animation()
+	if from_trigger and trigger_source_hex != null:
+		trigger_link_overlay.play_bolt(trigger_source_hex, tile)
+		tile.play_chained_tile_card_activation_animation()
+	else:
+		tile.play_tile_card_activation_animation()
+	await _wait_for_activation_animation()
 
 	tile.apply_tile_card_activation(activation_scale)
 
 
+## Inactive and difficulty-disabled runes are skipped instantly during trigger order.
+func _is_bypassed_in_trigger_order(hex: Hex) -> bool:
+	if hex.active_tile_card == null:
+		return false
+	return not is_tile_card_triggerable(hex)
+
+
+func _should_bypass_primary_trigger_order_activation(tile: Hex) -> bool:
+	return not is_tile_card_triggerable(tile)
+
+
+func _would_activate_tile_card_on_tile(tile: Hex, _from_trigger: bool) -> bool:
+	return is_tile_card_triggerable(tile)
+
+
 func _wait_for_activation_animation() -> void:
 	var duration := RuneUI.activation_animation_duration()
-	await get_tree().create_timer(duration / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(duration / GameManager.game_speed).timeout
 
 
 func _wait_between_tile_activations() -> void:
-	await get_tree().create_timer(TILE_ACTIVATION_PACE_DELAY / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(TILE_ACTIVATION_PACE_DELAY / GameManager.game_speed).timeout
 
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
@@ -1199,16 +1256,16 @@ func _play_single_segment_reveal(
 		if hex.active_tile_card != null:
 			hex.play_segment_result_animation()
 
-	await get_tree().create_timer(
+	await GameManager.create_pauseable_timer(
 		SEGMENT_REVEAL_ANIMATION_DURATION / GameManager.game_speed
 	).timeout
 
 	if contribution > 0:
 		await _play_segment_score_merge(segment_index, contribution, running_total, grow_into_display)
 
-	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 	_clear_segment_reveal_glow()
-	await get_tree().create_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 
 
 ## Rises Energy x Mult, morphs into Score, unlocks the panel cell, then merges the product.

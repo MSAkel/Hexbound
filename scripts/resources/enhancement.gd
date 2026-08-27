@@ -71,4 +71,4 @@ func activate(host_tile_card: TileCard, tile: Hex) -> void:
 		var retriggers: Array[TileCard] = []
 		retriggers.resize(trigger_count)
 		retriggers.fill(host_tile_card)
-		host_tile_card.queue_tile_card_triggers(tile, retriggers)
+		host_tile_card._try_queue_tile_card_triggers(tile, retriggers)

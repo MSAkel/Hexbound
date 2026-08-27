@@ -298,6 +298,32 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
 	source_tile.map.queue_tile_card_triggers(tile_cards, activation_scales, source_tile)
 
+
+## Queues only triggerable runes. Shows Failed when nothing valid can fire.
+func _try_queue_tile_card_triggers(
+	source_tile: Hex,
+	tile_cards: Array[TileCard],
+	activation_scales: Array[float] = [],
+) -> bool:
+	var triggerable: Array[TileCard] = []
+	var aligned_scales: Array[float] = []
+	for i in range(tile_cards.size()):
+		var card := tile_cards[i]
+		if not _is_triggerable_tile_card(source_tile, card):
+			continue
+		triggerable.append(card)
+		if activation_scales.is_empty():
+			continue
+		var scale := activation_scales[i] if i < activation_scales.size() else activation_scales[-1]
+		aligned_scales.append(scale)
+
+	if triggerable.is_empty():
+		failed_tile_card_text(source_tile)
+		return false
+
+	queue_tile_card_triggers(source_tile, triggerable, aligned_scales)
+	return true
+
 # Utility cards resolve immediately on placement instead of occupying a tile.
 func apply_on_placement(_tile: Hex) -> void:
 	pass
@@ -311,7 +337,7 @@ func _try_segment_passive_retrigger(tile: Hex, card_type: TileCardType, roll: Ca
 		return
 	if not roll.call(segment_index):
 		return
-	queue_tile_card_triggers(tile, [self])
+	_try_queue_tile_card_triggers(tile, [self])
 
 
 func has_placement_restriction() -> bool:
@@ -372,6 +398,29 @@ func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: int) 
 
 func failed_tile_card_text(tile: Hex) -> void:
 	_create_floating_text(tile, "Failed", Color.RED)
+
+
+func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
+	if tile_card == null or source_tile.map == null:
+		return false
+	var target_hex := source_tile.map.get_hex_for_tile_card(tile_card)
+	return target_hex != null and source_tile.map.is_tile_card_triggerable(target_hex)
+
+
+func _filter_triggerable_tile_cards(source_tile: Hex, tile_cards: Array[TileCard]) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	for card in tile_cards:
+		if _is_triggerable_tile_card(source_tile, card):
+			result.append(card)
+	return result
+
+
+## Empowers a triggerable rune that is not already empowered.
+func _try_empower_tile_card(source_tile: Hex, target: TileCard) -> bool:
+	if not _is_triggerable_tile_card(source_tile, target) or target.is_empowered:
+		return false
+	target._empower()
+	return true
 
 
 # Queues a newly created card for the hand reveal animation. Does not use tile_card_selected.

@@ -26,7 +26,7 @@ script = ExtResource("1_sandbox")
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_top = -320.0
+offset_top = -508.0
 offset_right = 266.0
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_tools")
@@ -59,6 +59,18 @@ text = "Draw random card"
 layout_mode = 2
 text = "Pick a card..."
 
+[node name="ChallengeRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1982736451]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChallengeOption" type="OptionButton" parent="ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow" unique_id=1982736452]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ActivateChallengeButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow" unique_id=1982736453]
+layout_mode = 2
+text = "Activate"
+
 [node name="GoldRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=469025335]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -74,6 +86,29 @@ allow_greater = true
 [node name="SetGoldButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/GoldRow" unique_id=2072866727]
 layout_mode = 2
 text = "Set gold"
+
+[node name="TokenRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=469025336]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TokenSpinBox" type="SpinBox" parent="ToolsPanel/MarginContainer/VBoxContainer/TokenRow" unique_id=319026015]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 5.0
+rounded = true
+
+[node name="SetTokensButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/TokenRow" unique_id=2072866728]
+layout_mode = 2
+text = "Set tokens"
+
+[node name="OpenMerchantButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=2072866729]
+layout_mode = 2
+text = "Open merchant"
+
+[node name="OpenRuneSelectionButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=2072866730]
+layout_mode = 2
+text = "Open rune selection"
 
 [node name="CardPicker" type="Control" parent="." unique_id=533934623]
 visible = false
@@ -144,6 +179,10 @@ columns = 6
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton" to="." method="_on_pass_turn_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PickCardButton" to="." method="_on_pick_card_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ActivateChallengeButton" to="." method="_on_activate_challenge_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/TokenRow/SetTokensButton" to="." method="_on_set_tokens_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/OpenMerchantButton" to="." method="_on_open_merchant_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/OpenRuneSelectionButton" to="." method="_on_open_rune_selection_pressed"]
 [connection signal="gui_input" from="CardPicker/Dim" to="." method="_on_card_picker_dim_gui_input"]
 [connection signal="pressed" from="CardPicker/Panel/MarginContainer/VBoxContainer/HeaderRow/CloseButton" to="." method="_on_close_card_picker_pressed"]

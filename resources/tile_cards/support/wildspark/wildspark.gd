@@ -6,17 +6,20 @@ const BONUS_TRIGGER_COUNT := 3
 func _on_activate_tile_card(tile: Hex) -> void:
 	var adjacent_runes := _get_all_adjacent_tile_cards(tile)
 	if adjacent_runes.is_empty():
+		failed_tile_card_text(tile)
 		return
-	
+
 	var trigger_count := 1
 	if _all_adjacent_tiles_have_unique_runes(tile, adjacent_runes):
 		trigger_count = BONUS_TRIGGER_COUNT
-	
+
 	var to_trigger: Array[TileCard] = []
 	for _i in range(trigger_count):
 		to_trigger.append(adjacent_runes.pick_random())
-	
-	queue_tile_card_triggers(tile, to_trigger)
+
+	if not _try_queue_tile_card_triggers(tile, to_trigger):
+		return
+
 	_create_floating_text(tile, "Triggered %s runes" % trigger_count)
 
 
@@ -29,7 +32,7 @@ func _all_adjacent_tiles_have_unique_runes(tile: Hex, adjacent_runes: Array[Tile
 	var adjacent_hexes := tile.map.get_all_adjacent_hexes(tile.coordinates)
 	if adjacent_runes.size() != adjacent_hexes.size():
 		return false
-	
+
 	var seen_ids: Dictionary = {}
 	for rune: TileCard in adjacent_runes:
 		if seen_ids.has(rune.id):

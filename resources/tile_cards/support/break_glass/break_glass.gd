@@ -10,17 +10,16 @@ func _on_activate_tile_card(tile: Hex) -> void:
 			continue
 		to_trigger.append(card)
 
-	if not to_trigger.is_empty():
-		queue_tile_card_triggers(tile, to_trigger)
-		_create_floating_text(tile, "Shatter!")
-		_destroy_placed_tile_card_after_queued_triggers(
-			tile,
-			self,
-			func() -> void:
-				AudioManager.play_sfx(UISounds.RUNE_BREAK)
-		)
-	else:
-		failed_tile_card_text(tile)
+	if not _try_queue_tile_card_triggers(tile, to_trigger):
+		return
+
+	_create_floating_text(tile, "Shatter!")
+	_destroy_placed_tile_card_after_queued_triggers(
+		tile,
+		self,
+		func() -> void:
+			AudioManager.play_sfx(UISounds.RUNE_BREAK)
+	)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

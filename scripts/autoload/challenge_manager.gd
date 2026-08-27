@@ -8,7 +8,6 @@ enum Type {
 	BLACKOUT,
 	RUSH_HOUR,
 	SOLO_PACT,
-	CHAIN_REACTION,
 	TAXATION,
 	FADING_SECTOR,
 }
@@ -19,7 +18,6 @@ const ALL_CHALLENGES: Array[Type] = [
 	Type.BLACKOUT,
 	Type.RUSH_HOUR,
 	Type.SOLO_PACT,
-	Type.CHAIN_REACTION,
 	Type.TAXATION,
 	Type.FADING_SECTOR,
 ]
@@ -27,7 +25,7 @@ const ALL_CHALLENGES: Array[Type] = [
 const CHALLENGE_INFO := {
 	Type.BLACKOUT: {
 		"name": "Blackout",
-		"description": "Every turn, 5 random runes on the map are disabled.",
+		"description": "Every turn, 5 random cards on the map are disabled.",
 	},
 	Type.RUSH_HOUR: {
 		"name": "Rush Hour",
@@ -37,13 +35,9 @@ const CHALLENGE_INFO := {
 		"name": "Solo Pact",
 		"description": "Only 1 card choice at the start of every turn.",
 	},
-	Type.CHAIN_REACTION: {
-		"name": "Chain Reaction",
-		"description": "Producer runes only activate through triggers from other runes.",
-	},
 	Type.TAXATION: {
 		"name": "Taxation",
-		"description": "Lose 1 gold on every support rune trigger.",
+		"description": "Lose 1 gold on every support card trigger.",
 	},
 	Type.FADING_SECTOR: {
 		"name": "Fading Sector",
@@ -171,10 +165,6 @@ func get_runes_pack_size() -> int:
 	if governing_challenge == Type.SOLO_PACT:
 		return 1
 	return GameManager.RUNES_PACK_SIZE
-
-
-func should_skip_primary_producer_activation(rune: TileCard) -> bool:
-	return active_challenge == Type.CHAIN_REACTION and rune.type == TileCard.TileCardType.PRODUCER
 
 
 func get_producer_output_multiplier(tile: Hex) -> float:
@@ -306,6 +296,59 @@ func _get_tile_map() -> HexTileMap:
 	return null
 
 
+#region Debug
+
+## Forces a challenge on the current round and applies its immediate effects.
+func debug_activate_challenge(challenge_type: int) -> void:
+	if not ALL_CHALLENGES.has(challenge_type):
+		push_warning("ChallengeManager: invalid debug challenge type %d." % challenge_type)
+		return
+
+	var previous_challenge := active_challenge
+	_restore_challenge_disabled_runes()
+	_clear_fading_sector_visuals()
+	active_challenge = challenge_type
+	_apply_rush_hour_turn_cap(previous_challenge)
+
+	match active_challenge:
+		Type.BLACKOUT:
+			_apply_blackout()
+		Type.FADING_SECTOR:
+			_pick_halved_segment()
+
+	EventBus.challenge_changed.emit()
+	play_reveal()
+
+
+## Clears any sandbox-forced challenge and restores normal map visuals.
+func debug_clear_challenge() -> void:
+	var previous_challenge := active_challenge
+	if previous_challenge == -1:
+		return
+
+	_restore_challenge_disabled_runes()
+	_clear_fading_sector_visuals()
+	active_challenge = -1
+	_apply_rush_hour_turn_cap(previous_challenge)
+	EventBus.challenge_banner_hidden.emit()
+	EventBus.challenge_changed.emit()
+
+
+func _apply_rush_hour_turn_cap(previous_challenge: int) -> void:
+	var rush_hour_changed := (
+		previous_challenge == Type.RUSH_HOUR
+		or active_challenge == Type.RUSH_HOUR
+	)
+	if not rush_hour_changed:
+		return
+
+	var max_turns := get_max_turns_per_round()
+	if GameManager.remaining_turns > max_turns:
+		GameManager.remaining_turns = max_turns
+	EventBus.turn_changed.emit()
+
+#endregion
+
 func capture_run_state() -> Dictionary:
 	return {
 		"scheduled_challenges": scheduled_challenges.duplicate(),
@@ -317,12 +360,24 @@ func capture_run_state() -> Dictionary:
 func apply_run_state(state: Dictionary) -> void:
 	scheduled_challenges.clear()
 	for challenge_type in state.get("scheduled_challenges", []):
-		scheduled_challenges.append(int(challenge_type))
+		var normalized := _normalize_saved_challenge_type(int(challenge_type))
+		if normalized >= 0:
+			scheduled_challenges.append(normalized)
 
-	active_challenge = int(state.get("active_challenge", -1))
+	active_challenge = _normalize_saved_challenge_type(int(state.get("active_challenge", -1)))
 	_halved_segment_index = int(state.get("halved_segment_index", -1))
 	_disabled_prior_states.clear()
 	_tile_map = null
+
+
+## Remaps saves that still reference the removed Chain Reaction challenge.
+func _normalize_saved_challenge_type(challenge_type: int) -> int:
+	const LEGACY_CHAIN_REACTION := 3
+	if challenge_type == LEGACY_CHAIN_REACTION:
+		return -1
+	if challenge_type > LEGACY_CHAIN_REACTION:
+		return challenge_type - 1
+	return challenge_type
 
 
 func restore_banner_after_load() -> void:

@@ -373,6 +373,12 @@ func set_game_speed(speed: float) -> void:
 	game_speed = speed
 	GameSettings.set_game_speed(game_speed)
 
+
+## Scene timer that stops while the pause menu freezes the tree.
+## SceneTree.create_timer ignores pause unless process_always is false.
+func create_pauseable_timer(duration: float) -> SceneTreeTimer:
+	return get_tree().create_timer(duration, false)
+
 #region tile cards and enhancement cards pool loading
 
 ## Recursively load every .tres rune under the runes folder, skipping duplicate ids.
@@ -466,6 +472,9 @@ func reset_for_new_run() -> void:
 	turn_stamp = 0
 	game_speed = GameSettings.game_speed
 	clear_run_peak_tracking()
+	# Peak tracking clears the loadout. Re-apply the selected character's passives for this run.
+	if selected_character != null:
+		apply_active_segment_passives(selected_character.id)
 
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.

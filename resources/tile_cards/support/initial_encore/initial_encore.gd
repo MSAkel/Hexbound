@@ -10,7 +10,8 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		var rune: TileCard = _get_first_or_last_tile_card_in_relative_segment(tile, segment_index_offset, true)
 		if rune != null:
 			to_retrigger.append(rune)
-	queue_tile_card_triggers(tile, to_retrigger)
+
+	_try_queue_tile_card_triggers(tile, to_retrigger)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

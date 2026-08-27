@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="9_segment"]
 [ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="10_start"]
 [ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="11_end"]
-[ext_resource type="PackedScene" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
+[ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parchment"]
 content_margin_left = 42.0
@@ -52,22 +52,6 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_hover"]
-content_margin_left = 44.0
-content_margin_top = 18.0
-content_margin_right = 44.0
-content_margin_bottom = 18.0
-bg_color = Color(0.075, 0.3, 0.33, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.78, 0.61, 0.31, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_pressed"]
 content_margin_left = 44.0
 content_margin_top = 18.0
@@ -84,13 +68,29 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="CharacterDetails" type="HBoxContainer"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_hover"]
+content_margin_left = 44.0
+content_margin_top = 18.0
+content_margin_right = 44.0
+content_margin_bottom = 18.0
+bg_color = Color(0.075, 0.3, 0.33, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.78, 0.61, 0.31, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="CharacterDetails" type="HBoxContainer" unique_id=1598077284]
 custom_minimum_size = Vector2(0, 820)
 size_flags_vertical = 3
 theme_override_constants/separation = 20
 script = ExtResource("1_details")
 
-[node name="PrevSelectionButton" type="TextureButton" parent="."]
+[node name="PrevSelectionButton" type="TextureButton" parent="." unique_id=1203913993]
 custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -101,29 +101,29 @@ texture_hover = ExtResource("8_arrow_hover")
 stretch_mode = 3
 flip_h = true
 
-[node name="UnifiedPanel" type="PanelContainer" parent="."]
+[node name="UnifiedPanel" type="PanelContainer" parent="." unique_id=1251914286]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxTexture_parchment")
 
-[node name="Content" type="VBoxContainer" parent="UnifiedPanel"]
+[node name="Content" type="VBoxContainer" parent="UnifiedPanel" unique_id=39843696]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="OverviewRow" type="HBoxContainer" parent="UnifiedPanel/Content"]
+[node name="OverviewRow" type="HBoxContainer" parent="UnifiedPanel/Content" unique_id=622893113]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 28
 
-[node name="ProfileColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow"]
+[node name="ProfileColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow" unique_id=1601771923]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="CharacterIcon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+[node name="CharacterIcon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=1967071723]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(245, 278)
 layout_mode = 2
@@ -132,7 +132,7 @@ texture = ExtResource("3_character")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CharacterNameLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+[node name="CharacterNameLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=593003074]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
@@ -140,13 +140,13 @@ theme_override_font_sizes/font_size = 36
 text = "THE SURVEYOR"
 horizontal_alignment = 1
 
-[node name="SegmentPassivesButton" type="Button" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+[node name="SegmentPassivesButton" type="Button" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=2091026106]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "SEGMENT PASSIVES"
 
-[node name="PassiveSetLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+[node name="PassiveSetLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=1709617180]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.38, 0.31, 0.21, 1)
@@ -154,31 +154,30 @@ theme_override_font_sizes/font_size = 16
 text = "Set A"
 horizontal_alignment = 1
 
-[node name="ProfileRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+[node name="ProfileRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=1760315152]
 custom_minimum_size = Vector2(220, 2)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.32)
 
-[node name="ProfileCaption" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn"]
+[node name="ProfileCaption" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=1417530207]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.38, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 18
 text = "CHARACTER"
 horizontal_alignment = 1
 
-[node name="ProfileDivider" parent="UnifiedPanel/Content/OverviewRow" instance=ExtResource("12_vertical_divider")]
-layout_mode = 2
+[node name="ProfileDivider" parent="UnifiedPanel/Content/OverviewRow" unique_id=760577234 instance=ExtResource("12_vertical_divider")]
 
-[node name="MapColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow"]
+[node name="MapColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow" unique_id=1036898751]
 custom_minimum_size = Vector2(610, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 7
 
-[node name="TriggerOrderLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/MapColumn"]
+[node name="TriggerOrderLabel" type="Label" parent="UnifiedPanel/Content/OverviewRow/MapColumn" unique_id=441515204]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
@@ -186,7 +185,7 @@ theme_override_font_sizes/font_size = 32
 text = "TOP-LEFT → BOTTOM-RIGHT"
 horizontal_alignment = 1
 
-[node name="TriggerOrderDescription" type="Label" parent="UnifiedPanel/Content/OverviewRow/MapColumn"]
+[node name="TriggerOrderDescription" type="Label" parent="UnifiedPanel/Content/OverviewRow/MapColumn" unique_id=262045084]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(580, 48)
 layout_mode = 2
@@ -197,14 +196,14 @@ text = "Cards activate from top-left to bottom-right across the map."
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="MapRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/MapColumn"]
+[node name="MapRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/MapColumn" unique_id=2064269478]
 custom_minimum_size = Vector2(280, 2)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.26)
 
-[node name="TriggerOrderImage" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/MapColumn"]
+[node name="TriggerOrderImage" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/MapColumn" unique_id=1258443105]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 430)
 layout_mode = 2
@@ -214,38 +213,37 @@ texture = ExtResource("4_preview")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LegendDivider" parent="UnifiedPanel/Content/OverviewRow" instance=ExtResource("12_vertical_divider")]
-layout_mode = 2
+[node name="LegendDivider" parent="UnifiedPanel/Content/OverviewRow" unique_id=1517365727 instance=ExtResource("12_vertical_divider")]
 
-[node name="LegendColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow"]
+[node name="LegendColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow" unique_id=644988371]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 14
 
-[node name="LegendTitle" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn"]
+[node name="LegendTitle" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=1666208586]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
 theme_override_font_sizes/font_size = 26
 text = "MAP LEGEND"
 horizontal_alignment = 1
 
-[node name="LegendRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn"]
+[node name="LegendRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=354711576]
 custom_minimum_size = Vector2(180, 2)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.26)
 
-[node name="SegmentStartItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn"]
+[node name="SegmentStartItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=180812953]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
 
-[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem"]
+[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem" unique_id=2029940309]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row"]
+[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row" unique_id=1280471497]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
@@ -253,17 +251,17 @@ texture = ExtResource("10_start")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row"]
+[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row" unique_id=1511279492]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row/Copy"]
+[node name="Title" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row/Copy" unique_id=652107057]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "Segment Start"
 
-[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row/Copy"]
+[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentStartItem/Row/Copy" unique_id=1246581272]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
@@ -271,15 +269,15 @@ theme_override_font_sizes/font_size = 15
 text = "First tile in a segment"
 autowrap_mode = 3
 
-[node name="SegmentEndItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn"]
+[node name="SegmentEndItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=991141475]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
 
-[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem"]
+[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem" unique_id=1791736046]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row"]
+[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row" unique_id=1758719954]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
@@ -287,17 +285,17 @@ texture = ExtResource("11_end")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row"]
+[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row" unique_id=1633252311]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row/Copy"]
+[node name="Title" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row/Copy" unique_id=1278969653]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "Segment End"
 
-[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row/Copy"]
+[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentEndItem/Row/Copy" unique_id=558677291]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
@@ -305,15 +303,15 @@ theme_override_font_sizes/font_size = 15
 text = "Last tile in a segment"
 autowrap_mode = 3
 
-[node name="SegmentCountItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn"]
+[node name="SegmentCountItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=1830704522]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
 
-[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem"]
+[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem" unique_id=1564500937]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row"]
+[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row" unique_id=539106452]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
@@ -321,18 +319,18 @@ texture = ExtResource("9_segment")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row"]
+[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row" unique_id=1432686884]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SegmentCountTitle" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy"]
+[node name="SegmentCountTitle" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy" unique_id=1735213286]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "7 Segments"
 
-[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy"]
+[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy" unique_id=337615501]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
@@ -340,41 +338,39 @@ theme_override_font_sizes/font_size = 15
 text = "Each segment calculates its output separately."
 autowrap_mode = 3
 
-[node name="FooterRule" type="ColorRect" parent="UnifiedPanel/Content"]
+[node name="FooterRule" type="ColorRect" parent="UnifiedPanel/Content" unique_id=749394700]
 custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.28)
 
-[node name="Footer" type="HBoxContainer" parent="UnifiedPanel/Content"]
+[node name="Footer" type="HBoxContainer" parent="UnifiedPanel/Content" unique_id=2041827096]
 custom_minimum_size = Vector2(0, 118)
 layout_mode = 2
 theme_override_constants/separation = 28
 
-[node name="DifficultyLevelContainer" parent="UnifiedPanel/Content/Footer" instance=ExtResource("2_difficulty")]
+[node name="DifficultyLevelContainer" parent="UnifiedPanel/Content/Footer" unique_id=1103390495 instance=ExtResource("2_difficulty")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
 
-[node name="FooterDivider" parent="UnifiedPanel/Content/Footer" instance=ExtResource("12_vertical_divider")]
-layout_mode = 2
+[node name="FooterDivider" parent="UnifiedPanel/Content/Footer" unique_id=315356182 instance=ExtResource("12_vertical_divider")]
 size_flags_vertical = 4
 span = 82.0
 
-[node name="PlayButton" type="Button" parent="UnifiedPanel/Content/Footer"]
+[node name="PlayButton" type="Button" parent="UnifiedPanel/Content/Footer" unique_id=1794758867]
 custom_minimum_size = Vector2(270, 76)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.96, 0.84, 0.62, 1)
-theme_override_colors/font_hover_color = Color(1, 0.93, 0.76, 1)
 theme_override_colors/font_pressed_color = Color(0.84, 0.72, 0.51, 1)
+theme_override_colors/font_hover_color = Color(1, 0.93, 0.76, 1)
 theme_override_font_sizes/font_size = 34
 theme_override_styles/normal = SubResource("StyleBoxFlat_play_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_play_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_play_pressed")
-text = "✦  PLAY"
+theme_override_styles/hover = SubResource("StyleBoxFlat_play_hover")
+text = "PLAY"
 
-[node name="NextSelectionButton" type="TextureButton" parent="."]
+[node name="NextSelectionButton" type="TextureButton" parent="." unique_id=1794269466]
 custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0

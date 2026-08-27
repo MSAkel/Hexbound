@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="1_6w68x"]
 [ext_resource type="Script" uid="uid://dy2gqsj6wlkur" path="res://scenes/ui/collection/collection.gd" id="1_wnhp0"]
 [ext_resource type="Texture2D" uid="uid://cnstyqt8k8wlr" path="res://assets/background/test_bg.png" id="2_g1foq"]
+[ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
 
 [sub_resource type="Gradient" id="Gradient_cmwxi"]
 colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
@@ -105,7 +106,7 @@ text = "BACK"
 [node name="PanelContainer" type="PanelContainer" parent="PanelContainer/VBoxContainer" unique_id=283782135]
 custom_maximum_size = Vector2(-1, 850)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_cmwxi")
 
@@ -117,10 +118,11 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/tab_separation = 8
 current_tab = 0
-tab_count = 3
+tab_count = 4
 tab_0/title = "Cards"
 tab_1/title = "Characters"
 tab_2/title = "Challenges"
+tab_3/title = "Passives"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]
 layout_mode = 2
@@ -141,6 +143,8 @@ size_flags_vertical = 3
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 columns = 5
+
+[node name="Tooltip" parent="." instance=ExtResource("3_tooltip")]
 
 [connection signal="pressed" from="PanelContainer/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="tab_changed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]

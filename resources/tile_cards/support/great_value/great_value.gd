@@ -6,15 +6,17 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		_create_floating_text(tile, "Insufficient gold")
 		return
 
-	GoldManager.remove(1)
-	
 	var prod_runes := _get_all_tile_cards_on_same_segment(tile, TileCardType.PRODUCER)
 	if prod_runes.is_empty():
-		_create_floating_text(tile, "No effect")
+		failed_tile_card_text(tile)
 		return
-	
-	var target_rune : TileCard = prod_runes.pick_random()
-	target_rune._empower()
+
+	GoldManager.remove(1)
+	var target_rune: TileCard = prod_runes.pick_random()
+	if not _try_empower_tile_card(tile, target_rune):
+		failed_tile_card_text(tile)
+		return
+
 	_create_floating_text(tile, "Empowered %s" % target_rune.name)
 
 

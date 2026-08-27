@@ -538,10 +538,12 @@ func _build_segments_uncached() -> Array[Array]:
 	return segments
 
 
-## Returns the rune on coords when present and matching filter_type (or any type when null).
+## Returns the rune on coords when present, triggerable, and matching filter_type.
 func _get_rune_on_coords(coords: Vector2i, filter_type: Variant = null) -> TileCard:
 	var hex: Hex = _map.map_data.get(coords)
 	if hex == null or hex.active_tile_card == null:
+		return null
+	if not _map.is_tile_card_triggerable(hex):
 		return null
 	if filter_type != null and hex.active_tile_card.type != filter_type:
 		return null

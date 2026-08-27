@@ -6,18 +6,28 @@ extends CanvasLayer
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 
-@onready var _tools_panel: PanelContainer = $ToolsPanel
 @onready var _gold_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/GoldRow/GoldSpinBox
+@onready var _token_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/TokenRow/TokenSpinBox
 @onready var _complete_round_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton
 @onready var _pass_turn_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton
+@onready var _open_merchant_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenMerchantButton
+@onready var _open_rune_selection_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenRuneSelectionButton
+@onready var _challenge_option: OptionButton = $ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ChallengeOption
+@onready var _activate_challenge_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ActivateChallengeButton
 @onready var _card_picker: Control = $CardPicker
 @onready var _card_grid: GridContainer = $CardPicker/Panel/MarginContainer/VBoxContainer/ScrollContainer/CardGrid
 
 
 func _ready() -> void:
 	_gold_spin.value = GoldManager.amount
+	_token_spin.max_value = GoldManager.MAX_MERCHANT_TOKENS
+	_token_spin.value = GoldManager.merchant_tokens
 	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.merchant_tokens_changed.connect(_on_tokens_changed)
+	EventBus.challenge_changed.connect(_sync_challenge_option)
 	_card_picker.hide()
+	_populate_challenge_options()
+	_sync_challenge_option()
 	_refresh_action_buttons()
 
 
@@ -29,6 +39,9 @@ func _refresh_action_buttons() -> void:
 	var busy := GameManager.is_processing_turn or RoundFlow.is_transitioning()
 	_complete_round_button.disabled = busy
 	_pass_turn_button.disabled = busy
+	_activate_challenge_button.disabled = busy
+	_open_merchant_button.disabled = busy
+	_open_rune_selection_button.disabled = busy
 
 
 func _on_gold_changed(new_amount: int) -> void:
@@ -36,6 +49,12 @@ func _on_gold_changed(new_amount: int) -> void:
 	if _gold_spin.has_focus():
 		return
 	_gold_spin.value = new_amount
+
+
+func _on_tokens_changed(new_amount: int) -> void:
+	if _token_spin.has_focus():
+		return
+	_token_spin.value = new_amount
 
 
 func _on_complete_round_pressed() -> void:
@@ -76,6 +95,56 @@ func _on_card_picker_dim_gui_input(event: InputEvent) -> void:
 func _on_set_gold_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	GoldManager.set_amount(int(_gold_spin.value))
+
+
+func _on_set_tokens_pressed() -> void:
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	GoldManager.set_merchant_tokens(int(_token_spin.value))
+	_token_spin.value = GoldManager.merchant_tokens
+
+
+func _on_open_merchant_pressed() -> void:
+	_dismiss_blocking_panels()
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	UiManager.show_merchant_panel.emit()
+
+
+func _on_open_rune_selection_pressed() -> void:
+	_dismiss_blocking_panels()
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	UiManager.show_runes_choice_panel.emit()
+
+
+func _on_activate_challenge_pressed() -> void:
+	_dismiss_blocking_panels()
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	var challenge_type := _challenge_option.get_selected_id()
+	if challenge_type == -1:
+		ChallengeManager.debug_clear_challenge()
+	else:
+		ChallengeManager.debug_activate_challenge(challenge_type)
+
+
+func _populate_challenge_options() -> void:
+	_challenge_option.clear()
+	_challenge_option.add_item("(none)", -1)
+	for challenge_type in ChallengeManager.ALL_CHALLENGES:
+		_challenge_option.add_item(
+			ChallengeManager.get_challenge_name(challenge_type),
+			challenge_type
+		)
+
+
+func _sync_challenge_option(_unused: Variant = null) -> void:
+	var active_challenge := ChallengeManager.active_challenge
+	if active_challenge == -1:
+		_challenge_option.select(0)
+		return
+
+	for index in _challenge_option.item_count:
+		if _challenge_option.get_item_id(index) == active_challenge:
+			_challenge_option.select(index)
+			return
 
 
 ## Hide a mid-turn pick overlay so the sandbox action owns the next flow step.

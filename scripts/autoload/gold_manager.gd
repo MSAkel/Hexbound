@@ -74,6 +74,12 @@ func set_amount(new_amount: int) -> void:
 	EventBus.gold_changed.emit(_amount)
 
 
+## Debug helper. Sets merchant tokens without exceeding the wallet cap.
+func set_merchant_tokens(new_amount: int) -> void:
+	_merchant_tokens = clampi(new_amount, 0, MAX_MERCHANT_TOKENS)
+	EventBus.merchant_tokens_changed.emit(_merchant_tokens)
+
+
 func add(amount_to_add: int) -> void:
 	_amount += amount_to_add
 	_earned_this_turn += amount_to_add

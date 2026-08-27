@@ -85,7 +85,7 @@ func play_merge_into_round_info() -> void:
 	_stop_text_shake()
 	_kill_tweens()
 
-	await get_tree().create_timer(MERGE_LEAD_IN / GameManager.game_speed).timeout
+	await GameManager.create_pauseable_timer(MERGE_LEAD_IN / GameManager.game_speed).timeout
 
 	var duration := MERGE_DURATION / GameManager.game_speed
 	var start_global := global_position

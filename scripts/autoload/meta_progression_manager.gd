@@ -61,9 +61,28 @@ func save() -> void:
 func get_all_passives_for_character(character_id: String) -> Array[SegmentPassive]:
 	var result: Array[SegmentPassive] = []
 	for passive_id: String in _passives_by_id.keys():
+		if RETIRED_PASSIVE_IDS.has(passive_id):
+			continue
 		var passive: SegmentPassive = _passives_by_id[passive_id]
 		if passive.is_global() or passive.character_id == character_id:
 			result.append(passive)
+	result.sort_custom(func(a: SegmentPassive, b: SegmentPassive) -> bool:
+		var a_unlocked := is_unlocked(a.id)
+		var b_unlocked := is_unlocked(b.id)
+		if a_unlocked != b_unlocked:
+			return a_unlocked
+		return a.display_name < b.display_name
+	)
+	return result
+
+
+## Every active passive, including character-specific ones, for collection-style browsing.
+func get_all_passives() -> Array[SegmentPassive]:
+	var result: Array[SegmentPassive] = []
+	for passive_id: String in _passives_by_id.keys():
+		if RETIRED_PASSIVE_IDS.has(passive_id):
+			continue
+		result.append(_passives_by_id[passive_id] as SegmentPassive)
 	result.sort_custom(func(a: SegmentPassive, b: SegmentPassive) -> bool:
 		var a_unlocked := is_unlocked(a.id)
 		var b_unlocked := is_unlocked(b.id)
