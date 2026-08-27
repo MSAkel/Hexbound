@@ -10,6 +10,11 @@ const SEGMENT_RESULTS_SCENE := preload(
 @onready var segment_results_list: VBoxContainer = $VBoxContainer/SegmentResultsList
 @onready var score_total_number: Label = $VBoxContainer/TurnTotalContainer/ScoreContainer/ScoreTotalNumber
 @onready var gold_total_number: Label = $VBoxContainer/TurnTotalContainer/GoldContainer/GoldTotalNumber
+@onready var seg_icon: TextureRect = $VBoxContainer/LabelsMargin/LabelsContainer/SegContainer/SegIcon
+@onready var energy_icon: TextureRect = $VBoxContainer/LabelsMargin/LabelsContainer/PowerContainer/EnergyIcon
+@onready var mult_icon: TextureRect = $VBoxContainer/LabelsMargin/LabelsContainer/MultContainer/MultIcon
+@onready var score_icon: TextureRect = $VBoxContainer/LabelsMargin/LabelsContainer/ScoreContainer/ScoreIcon
+@onready var gold_icon: TextureRect = $VBoxContainer/LabelsMargin/LabelsContainer/GoldContainer/GoldIcon
 
 ## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
 var _turn_history: Array = []
@@ -68,7 +73,7 @@ func _on_segment_turn_results_changed(
 ) -> void:
 	if not _is_viewing_live_turn():
 		return
-	# Gold can land during activations. Score waits for each segment's equals beat.
+	# Gold can land during activations. Score waits until the overlay flies into the panel.
 	_update_live_gold_total(true)
 
 
@@ -293,10 +298,9 @@ func _exit_tree() -> void:
 		_gold_total_counter.kill()
 
 
+## Column-header tooltips sit under the hovered icon, not the full segments panel.
 func _on_seg_icon_mouse_entered() -> void:
-	var tooltip := "Segment"
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
-
+	EventBus.toggle_tooltip.emit(true, "Segment", seg_icon.get_global_rect())
 
 
 func _on_seg_icon_mouse_exited() -> void:
@@ -304,9 +308,7 @@ func _on_seg_icon_mouse_exited() -> void:
 
 
 func _on_energy_icon_mouse_entered() -> void:
-	var tooltip := "Energy"
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
-
+	EventBus.toggle_tooltip.emit(true, "Energy", energy_icon.get_global_rect())
 
 
 func _on_energy_icon_mouse_exited() -> void:
@@ -314,8 +316,7 @@ func _on_energy_icon_mouse_exited() -> void:
 
 
 func _on_mult_icon_mouse_entered() -> void:
-	var tooltip := "Mult"
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+	EventBus.toggle_tooltip.emit(true, "Mult", mult_icon.get_global_rect())
 
 
 func _on_mult_icon_mouse_exited() -> void:
@@ -323,8 +324,7 @@ func _on_mult_icon_mouse_exited() -> void:
 
 
 func _on_score_icon_mouse_entered() -> void:
-	var tooltip := "Score"
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+	EventBus.toggle_tooltip.emit(true, "Score", score_icon.get_global_rect())
 
 
 func _on_score_icon_mouse_exited() -> void:
@@ -332,8 +332,7 @@ func _on_score_icon_mouse_exited() -> void:
 
 
 func _on_gold_icon_mouse_entered() -> void:
-	var tooltip := "Gold"
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+	EventBus.toggle_tooltip.emit(true, "Gold", gold_icon.get_global_rect())
 
 
 func _on_gold_icon_mouse_exited() -> void:

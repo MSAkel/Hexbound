@@ -12,9 +12,11 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 @onready var _pass_turn_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton
 @onready var _open_merchant_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenMerchantButton
 @onready var _open_rune_selection_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenRuneSelectionButton
+@onready var _character_option: OptionButton = $ToolsPanel/MarginContainer/VBoxContainer/CharacterRow/CharacterOption
 @onready var _challenge_option: OptionButton = $ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ChallengeOption
 @onready var _activate_challenge_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ActivateChallengeButton
 @onready var _card_picker: Control = $CardPicker
+@onready var _card_search: LineEdit = $CardPicker/Panel/MarginContainer/VBoxContainer/SearchRow/CardSearch
 @onready var _card_grid: GridContainer = $CardPicker/Panel/MarginContainer/VBoxContainer/ScrollContainer/CardGrid
 
 
@@ -26,6 +28,7 @@ func _ready() -> void:
 	EventBus.merchant_tokens_changed.connect(_on_tokens_changed)
 	EventBus.challenge_changed.connect(_sync_challenge_option)
 	_card_picker.hide()
+	_populate_character_options()
 	_populate_challenge_options()
 	_sync_challenge_option()
 	_refresh_action_buttons()
@@ -115,6 +118,41 @@ func _on_open_rune_selection_pressed() -> void:
 	UiManager.show_runes_choice_panel.emit()
 
 
+func _on_character_option_item_selected(index: int) -> void:
+	var character_id := str(_character_option.get_item_metadata(index))
+	var character := PlayerCharacter.get_character_by_id(character_id)
+	if character == null:
+		return
+	if GameManager.selected_character != null and GameManager.selected_character.id == character.id:
+		return
+
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	_restart_run_as(character)
+
+
+## Lock in the new character, drop the current save, and reload the run scene.
+func _restart_run_as(character: CharacterDefinition) -> void:
+	GameManager.selected_character = character
+	GameManager.apply_active_segment_passives(character.id)
+	RunSaveManager.delete_save()
+	RunSaveManager.request_scene_enter_transition()
+	get_tree().change_scene_to_file(ScenePaths.MAIN)
+
+
+func _populate_character_options() -> void:
+	_character_option.clear()
+	var current_id := ""
+	if GameManager.selected_character != null:
+		current_id = GameManager.selected_character.id
+
+	for character in PlayerCharacter.get_all_characters():
+		var index := _character_option.item_count
+		_character_option.add_item(character.display_name)
+		_character_option.set_item_metadata(index, character.id)
+		if character.id == current_id:
+			_character_option.select(index)
+
+
 func _on_activate_challenge_pressed() -> void:
 	_dismiss_blocking_panels()
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
@@ -174,15 +212,36 @@ func _add_card_to_hand(card: Card) -> void:
 
 func _open_card_picker() -> void:
 	_clear_card_grid()
+	_card_search.text = ""
 	var cards := _all_cards_sorted()
 	for card in cards:
 		_add_picker_card(card)
+	_apply_card_filter()
 	_card_picker.show()
+	_card_search.grab_focus()
 
 
 func _close_card_picker() -> void:
 	_card_picker.hide()
+	_card_search.text = ""
 	_clear_card_grid()
+
+
+func _on_card_search_text_changed(_new_text: String) -> void:
+	_apply_card_filter()
+
+
+# Hide picker cards whose names do not contain the search text.
+func _apply_card_filter() -> void:
+	var query := _card_search.text.strip_edges().to_lower()
+	for child in _card_grid.get_children():
+		var card_ui := child as CardUI
+		if card_ui == null or card_ui.card == null:
+			continue
+		if query.is_empty():
+			card_ui.visible = true
+			continue
+		card_ui.visible = card_ui.card.name.to_lower().contains(query)
 
 
 func _clear_card_grid() -> void:

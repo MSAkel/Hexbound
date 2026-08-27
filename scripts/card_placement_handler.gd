@@ -25,6 +25,8 @@ var _restricted_invalid_coords: Array[Vector2i] = []
 var _placement_target_coord: Vector2i = Vector2i(-1, -1)
 # Tiles currently showing trigger-effect preview highlights.
 var _effect_preview_coords: Array[Vector2i] = []
+# Valid placement tiles highlighted for first, last, or edge restrictions.
+var _valid_restriction_coords: Array[Vector2i] = []
 
 const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
@@ -116,17 +118,19 @@ func _update_rune_preview() -> void:
 	var over_valid_tile := hex != null \
 		and tile_map.is_tile_interactable(map_coords) \
 		and _can_place_on_hex(hex)
-	# Dip the selected card while it covers fewer bottom tiles.
-	selected_card.set_map_tile_hover_active(over_valid_tile)
+	# Dip once the cursor leaves the selected card, not only when a tile is targeted.
+	selected_card.set_map_tile_hover_active(not selected_card.is_mouse_over())
 	
 	if over_valid_tile:
 		var tile_center: Vector2 = tile_map.base_layer.map_to_local(map_coords)
 		_rune_preview.global_position = tile_map.to_global(tile_center)
 		_rune_preview.modulate = VALID_PREVIEW_COLOR
 		_rune_preview.visible = true
+		tile_map.set_placement_preview_cell(map_coords)
 		_update_hover_highlights(hex)
 	else:
 		_rune_preview.visible = false
+		tile_map.clear_placement_preview()
 		_clear_hover_highlights()
 
 
@@ -173,8 +177,10 @@ func _clear_preview() -> void:
 
 
 func _clear_placement_overlays() -> void:
+	tile_map.clear_placement_preview()
 	_clear_hover_highlights()
 	_clear_restriction_overlays()
+	_clear_valid_restriction_highlights()
 	tile_map.rune_highlight_overlay_layer.modulate = Color.WHITE
 
 
@@ -184,6 +190,14 @@ func _clear_restriction_overlays() -> void:
 			continue
 		tile_map.disabled_tile_overlay_layer.set_cell(coords, -1)
 	_restricted_invalid_coords.clear()
+
+
+func _clear_valid_restriction_highlights() -> void:
+	for coords: Vector2i in _valid_restriction_coords:
+		if tile_map.has_hovered_segment_highlight_at(coords):
+			continue
+		tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
+	_valid_restriction_coords.clear()
 
 
 func _clear_hover_highlights() -> void:
@@ -204,9 +218,9 @@ func _clear_rune_highlight_at(coords: Vector2i) -> void:
 	tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
 
 
-## True when this handler currently stamps an effect-preview highlight on coords.
+## True while this handler currently stamps an effect-preview or valid-restriction highlight on coords.
 func is_highlighting_coord(coords: Vector2i) -> bool:
-	return coords in _effect_preview_coords
+	return coords in _effect_preview_coords or coords in _valid_restriction_coords
 
 
 func _stamp_rune_highlight(coords: Vector2i) -> void:
@@ -222,7 +236,7 @@ func _reset_state() -> void:
 	is_card_selected = false
 
 
-# Disables invalid tiles for runes with placement restrictions.
+# Disables invalid tiles and highlights valid ones for runes with placement restrictions.
 func _update_placement_overlays() -> void:
 	_clear_placement_overlays()
 	
@@ -236,6 +250,8 @@ func _update_placement_overlays() -> void:
 			continue
 		
 		if tile_card.can_place_on_tile(hex):
+			_stamp_rune_highlight(coords)
+			_valid_restriction_coords.append(coords)
 			continue
 		
 		_restricted_invalid_coords.append(coords)

@@ -1,0 +1,120 @@
+[gd_scene format=3 uid="uid://co10h7muq0fvk"]
+
+[ext_resource type="Script" uid="uid://bugtoqa36dxo1" path="res://scenes/animations/empower_strike_burst.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b5pj2jfa03bqt" path="res://assets/particles/spark/spark_01.png" id="2_spark"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_bolt"]
+offsets = PackedFloat32Array(0, 0.14, 0.72, 1)
+colors = PackedColorArray(1.25, 1.1, 0.5, 0.35, 1.35, 1.18, 0.48, 1, 1.2, 1.15, 0.7, 0.75, 1.1, 0.95, 0.4, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_bolt"]
+gradient = SubResource("Gradient_bolt")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_bolt"]
+particle_flag_align_y = true
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 4.0
+spread = 6.0
+initial_velocity_min = 6.0
+initial_velocity_max = 14.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.36
+scale_max = 0.5
+color = Color(1.3, 1.15, 0.5, 1)
+color_ramp = SubResource("GradientTexture1D_bolt")
+
+[sub_resource type="Gradient" id="Gradient_trail"]
+offsets = PackedFloat32Array(0, 0.16, 0.7, 1)
+colors = PackedColorArray(1.1, 1.2, 1.35, 0.2, 1.2, 1.22, 0.7, 0.9, 1.05, 1.15, 1.25, 0.55, 1, 0.95, 0.55, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_trail"]
+gradient = SubResource("Gradient_trail")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_trail"]
+particle_flag_align_y = true
+particle_flag_disable_z = true
+direction = Vector3(-1, 0, 0)
+spread = 10.0
+initial_velocity_min = 10.0
+initial_velocity_max = 24.0
+gravity = Vector3(0, 0, 0)
+damping_min = 14.0
+damping_max = 22.0
+scale_min = 0.18
+scale_max = 0.28
+color = Color(1.15, 1.2, 1.3, 1)
+color_ramp = SubResource("GradientTexture1D_trail")
+
+[sub_resource type="Gradient" id="Gradient_impact"]
+offsets = PackedFloat32Array(0, 0.12, 0.62, 1)
+colors = PackedColorArray(1.3, 1.15, 0.5, 0.55, 1.35, 1.2, 0.45, 1, 1.15, 1.1, 0.65, 0.65, 1, 0.9, 0.4, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_impact"]
+gradient = SubResource("Gradient_impact")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_impact"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 8.0
+direction = Vector3(0, -1, 0)
+spread = 75.0
+initial_velocity_min = 22.0
+initial_velocity_max = 52.0
+gravity = Vector3(0, 36, 0)
+damping_min = 18.0
+damping_max = 28.0
+scale_min = 0.16
+scale_max = 0.28
+color = Color(1.3, 1.12, 0.48, 1)
+color_ramp = SubResource("GradientTexture1D_impact")
+
+[node name="EmpowerStrikeBurst" type="Node2D" unique_id=1443077596]
+script = ExtResource("1_script")
+travel_duration = 0.18
+fall_x_jitter = 28.0
+
+[node name="Carrier" type="Node2D" parent="." unique_id=1644062788]
+position = Vector2(0, -240)
+
+[node name="Bolt" type="GPUParticles2D" parent="Carrier" unique_id=1745495171]
+z_index = 14
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 7
+texture = ExtResource("2_spark")
+lifetime = 0.15
+randomness = 0.2
+visibility_rect = Rect2(-192, -192, 384, 384)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_bolt")
+
+[node name="Trail" type="GPUParticles2D" parent="Carrier" unique_id=174769930]
+z_index = 13
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 12
+texture = ExtResource("2_spark")
+lifetime = 0.16
+preprocess = 0.05
+randomness = 0.25
+visibility_rect = Rect2(-192, -192, 384, 384)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_trail")
+
+[node name="Impact" type="GPUParticles2D" parent="." unique_id=1546336999]
+z_index = 16
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 14
+texture = ExtResource("2_spark")
+lifetime = 0.24
+one_shot = true
+explosiveness = 1.0
+randomness = 0.3
+visibility_rect = Rect2(-192, -192, 384, 384)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_impact")

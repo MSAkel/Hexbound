@@ -4,7 +4,7 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qvi1m"]
 content_margin_top = 100.0
-bg_color = Color(0.09985284, 0.09985284, 0.09985284, 0.35000002)
+bg_color = Color(0.047058824, 0.09019608, 0.09803922, 0.94)
 
 [sub_resource type="LabelSettings" id="LabelSettings_m1kxf"]
 font_size = 64

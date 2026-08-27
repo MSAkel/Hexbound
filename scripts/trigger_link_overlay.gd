@@ -1,9 +1,10 @@
 class_name TriggerLinkOverlay
 extends Node2D
 
-## Spark burst from chained trigger source to target during turn resolution.
+## Chained-trigger bolts and empower lightning strikes during turn resolution.
 
 const TriggerLinkBurstScript := preload("res://scenes/animations/trigger_link_burst.gd")
+const EmpowerStrikeBurstScene := preload("res://scenes/animations/empower_strike_burst.tscn")
 
 var _map: HexTileMap
 
@@ -19,6 +20,18 @@ func play_bolt(from_hex: Hex, to_hex: Hex) -> void:
 	var from_pos := _hex_center_local(from_hex)
 	var to_pos := _hex_center_local(to_hex)
 	TriggerLinkBurstScript.spawn(self, from_pos, to_pos)
+
+
+## Lightning strike that falls onto the rune receiving empower. Returns travel time before impact.
+func play_empower_strike(to_hex: Hex) -> float:
+	if _map == null or to_hex == null:
+		return 0.0
+
+	var burst: EmpowerStrikeBurst = EmpowerStrikeBurstScene.instantiate()
+	add_child(burst)
+	var travel := burst.travel_duration
+	burst.play(_hex_center_local(to_hex))
+	return travel
 
 
 func _hex_center_local(hex: Hex) -> Vector2:

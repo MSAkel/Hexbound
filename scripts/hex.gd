@@ -14,8 +14,6 @@ var map: HexTileMap
 var items_grid: Control
 # Optional challenge tint layered on top of the normal active/inactive state.
 var _challenge_rune_modulate: Color = Color.WHITE
-# True while a map layout other than base is hiding rune icons.
-var _runes_hidden: bool = false
 
 # Match the dashed hex art size so overlays sit on the tile texture.
 const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE)
@@ -70,6 +68,8 @@ func place_tile_card(rune: TileCard) -> void:
 	new_rune_instance.play_placement_animation()
 	_apply_display_mode()
 	refresh_tile_card_visual_state()
+	if map != null:
+		map.refresh_dashed_outlines()
 
 
 # Restore a placed rune from a save file without duplicating the resource again.
@@ -88,6 +88,8 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 	items_grid.add_child(new_rune_instance)
 	_apply_display_mode()
 	refresh_tile_card_visual_state()
+	if map != null:
+		map.refresh_dashed_outlines()
 
 
 # Attach an enhancement to the placed rune. Returns false when the tile is empty or already enhanced.
@@ -107,22 +109,10 @@ func try_apply_enhancement(enhancement: Enhancement) -> bool:
 	return true
 
 
-# Hide or show rune icons for map-layout display modes.
-func set_tile_cards_hidden(hide_runes: bool) -> void:
-	_runes_hidden = hide_runes
-	_apply_display_mode()
-
-
-# Switch this tile's icons for the RunInfoDisplay map-layout buttons.
-func set_map_display_layout(layout: String) -> void:
-	_runes_hidden = layout != "base"
-	_apply_display_mode()
-
-
 func _apply_display_mode() -> void:
 	var has_rune := rune_ui != null and active_tile_card != null
 	if rune_ui != null:
-		rune_ui.visible = has_rune and not _runes_hidden
+		rune_ui.visible = has_rune
 
 
 func refresh_tile_card_visual_state() -> void:
@@ -137,6 +127,11 @@ func refresh_tile_card_visual_state() -> void:
 
 	rune_ui.apply_resting_modulate(target_modulate)
 	rune_ui.refresh_output_chip(active_tile_card)
+	# Restore overcharge sparks after load or chip refresh. The strike itself is not replayed.
+	if active_tile_card.is_empowered:
+		rune_ui.start_empower_sparks()
+	else:
+		rune_ui.stop_empower_sparks()
 
 
 func set_tile_card_challenge_modulate(modulate: Color) -> void:
@@ -160,6 +155,8 @@ func remove_tile_card() -> void:
 		rune_ui.queue_free()
 		rune_ui = null
 	_apply_display_mode()
+	if map != null:
+		map.refresh_dashed_outlines()
 
 
 # Play the rune trigger animation without applying the effect.
@@ -196,16 +193,16 @@ func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
 	refresh_tile_card_visual_state()
 
 
-func start_empower_flash() -> void:
+func start_empower_sparks() -> void:
 	if rune_ui == null:
 		return
-	rune_ui.start_empower_flash()
+	rune_ui.start_empower_sparks()
 
 
-func stop_empower_flash() -> void:
+func stop_empower_sparks() -> void:
 	if rune_ui == null:
 		return
-	rune_ui.stop_empower_flash()
+	rune_ui.stop_empower_sparks()
 
 
 func start_trigger_link_flash() -> void:

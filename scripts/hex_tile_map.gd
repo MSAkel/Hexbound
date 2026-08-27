@@ -8,15 +8,23 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 @onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var trigger_order_overlay: TriggerOrderOverlay = $TriggerOrderOverlay
-@onready var trigger_link_overlay = $TriggerLinkOverlay
+@onready var segment_path_overlay: SegmentPathOverlay = $SegmentPathOverlay
+@onready var trigger_link_overlay: TriggerLinkOverlay = $TriggerLinkOverlay
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
+@onready var hovered_tile_overlay_layer: TileMapLayer = $HoveredTileOverlayLayer
 @onready var rune_highlight_overlay_layer: TileMapLayer = $RuneHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
 
-# Selection overlay uses source 0 for hover. Click-to-lock selection was removed.
-const HOVER_OVERLAY_SOURCE_ID := 0
+# Selection overlay tileset sources in hex_tile_map.tscn.
+const HOVER_OVERLAY_NORMAL := 0
+const HOVER_OVERLAY_FIRST := 1
+const HOVER_OVERLAY_LAST := 2
+const HOVER_OVERLAY_BOTH := 3
+const HOVERED_TILE_OVERLAY_SOURCE_ID := 0
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
+# Darken the tile under the cursor so it stands out within a highlighted segment.
+const HOVERED_TILE_OVERLAY_MODULATE := Color(0.9, 0.9, 0.9, 0.45)
 # TileCard placement / trigger preview overlay on RuneHighlightOverlayLayer.
 const RUNE_HIGHLIGHT_SOURCE_ID := 0
 # Draw above hex tiles (0) and rune UI (resting 0, activation/reveal animations 10).
@@ -61,6 +69,12 @@ var _segment_reveal_glow_coords: Array[Vector2i] = []
 # Tiles highlighted while hovering a segment-results row in the run-info panel.
 var _hovered_segment_coords: Array[Vector2i] = []
 var _hovered_segment_index: int = -1
+# Sticky trigger-order numbers from the layout button.
+var _sticky_order_numbers: bool = false
+# Temporary trigger-order numbers while Tab is held.
+var _peek_order_numbers: bool = false
+# Valid placement target while a hand card is selected.
+var _placement_preview_cell: Vector2i = Vector2i(-1, -1)
 # Tiles lit when a card credits another segment's turn total.
 var _flashed_segment_coords: Array[Vector2i] = []
 var _flash_segment_generation: int = 0
@@ -79,13 +93,9 @@ const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 const TILE_PANEL_HOVER_DELAY := 0.4
 # Pause between tile card activations during turn resolution. Shared by trigger order and queued triggers.
 const TILE_ACTIVATION_PACE_DELAY := 0.5
-# Soften the light-blue segment overlay while previewing an empty tile's segment.
-const EMPTY_TILE_SEGMENT_HOVER_MODULATE := Color(1.0, 1.0, 1.0, 0.45)
 # Tile currently being hovered for the info panel (independent of selection overlay).
 var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
 var _tile_panel_timer: Timer
-# Empty tile whose segment is highlighted on the map (no tile panel).
-var _empty_tile_segment_hover_coords: Vector2i = Vector2i(-1, -1)
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
 # First Energy × Mult equals beat in a tutorial run holds longer.
@@ -97,8 +107,10 @@ func _ready() -> void:
 	_layout.setup(self)
 	# Keep the rune highlight above tiles and placed runes so segment/placement overlays stay visible.
 	rune_highlight_overlay_layer.z_index = RUNE_HIGHLIGHT_LAYER_Z_INDEX
+	hovered_tile_overlay_layer.self_modulate = HOVERED_TILE_OVERLAY_MODULATE
 	_apply_tile_spacing()
 	trigger_order_overlay.setup(self)
+	segment_path_overlay.setup(self)
 	trigger_link_overlay.setup(self)
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
@@ -136,6 +148,7 @@ func _apply_tile_spacing() -> void:
 	for layer: TileMapLayer in [
 		base_layer,
 		selection_overlay_layer,
+		hovered_tile_overlay_layer,
 		rune_highlight_overlay_layer,
 		disabled_tile_overlay_layer,
 		fading_sector_overlay_layer,
@@ -144,6 +157,16 @@ func _apply_tile_spacing() -> void:
 
 
 # Handles tile hover highlighting. Left-click no longer locks a selected hex.
+func _input(event: InputEvent) -> void:
+	# Run before GUI focus navigation so Tab still peeks after clicking layout buttons.
+	if event.is_action_pressed("peek_trigger_order"):
+		_set_peek_order_numbers(true)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_released("peek_trigger_order"):
+		_set_peek_order_numbers(false)
+		get_viewport().set_input_as_handled()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if GameManager.is_processing_turn:
 		dismiss_hover_feedback()
@@ -159,22 +182,19 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _update_hover_highlight() -> void:
 	var map_coords: Vector2i = _mouse_map_coords()
+	var previous_hovered := hovered_cell
+
 	if is_in_map(map_coords) and is_tile_interactable(map_coords):
 		if map_coords == hovered_cell:
 			return
-
-		if hovered_cell != Vector2i(-1, -1):
-			selection_overlay_layer.set_cell(hovered_cell, -1)
-
 		hovered_cell = map_coords
-		selection_overlay_layer.set_cell(
-			map_coords,
-			HOVER_OVERLAY_SOURCE_ID,
-			OVERLAY_TILE_ATLAS_COORDS
-		)
-	elif hovered_cell != Vector2i(-1, -1):
-		selection_overlay_layer.set_cell(hovered_cell, -1)
+		_update_trigger_order_hover(map_coords)
+	else:
 		hovered_cell = Vector2i(-1, -1)
+		_clear_trigger_order_hover()
+
+	if hovered_cell != previous_hovered:
+		_refresh_segment_role_highlights()
 
 
 func _mouse_map_coords() -> Vector2i:
@@ -190,13 +210,10 @@ func _update_tile_panel_hover(map_coords: Vector2i) -> void:
 
 	var hex: Hex = map_data[map_coords]
 
-	# Empty tiles have nothing for the panel. Preview the rest of the segment instead.
+	# Empty tiles have nothing for the panel. Segment role tints come from selection hover.
 	if hex.active_tile_card == null:
 		_hide_tile_panel_only()
-		_update_empty_tile_segment_hover(map_coords)
 		return
-
-	_clear_empty_tile_segment_hover()
 
 	if map_coords == _tile_panel_hover_coords:
 		# Keep the panel glued to the tile while the camera zooms or pans.
@@ -220,14 +237,14 @@ func _hide_tile_panel_only() -> void:
 
 func _hide_tile_panel_hover() -> void:
 	_hide_tile_panel_only()
-	_clear_empty_tile_segment_hover()
 
 
 func _clear_selection_hover_highlight() -> void:
 	if hovered_cell == Vector2i(-1, -1):
 		return
-	selection_overlay_layer.set_cell(hovered_cell, -1)
 	hovered_cell = Vector2i(-1, -1)
+	_clear_trigger_order_hover()
+	_refresh_segment_role_highlights()
 
 
 ## Dismisses any map hover feedback when gameplay is covered by another UI.
@@ -236,31 +253,128 @@ func dismiss_hover_feedback() -> void:
 	_clear_selection_hover_highlight()
 
 
-# Light-blue overlay on every other tile in this empty tile's segment.
-func _update_empty_tile_segment_hover(map_coords: Vector2i) -> void:
-	var segment_index := get_segment_index(map_coords)
-	# Re-apply if the coords match but another UI cleared the overlay meanwhile.
-	if (
-		map_coords == _empty_tile_segment_hover_coords
-		and _hovered_segment_index == segment_index
-	):
+func _set_peek_order_numbers(active: bool) -> void:
+	if _peek_order_numbers == active:
 		return
+	_peek_order_numbers = active
+	_refresh_trigger_order_overlay()
 
-	_empty_tile_segment_hover_coords = map_coords
-	highlight_hovered_segment(
-		segment_index,
-		map_coords,
-		EMPTY_TILE_SEGMENT_HOVER_MODULATE
+
+func _refresh_trigger_order_overlay() -> void:
+	var overlay_on := _sticky_order_numbers or _peek_order_numbers
+	trigger_order_overlay.set_full_reveal(overlay_on)
+	# Paths share the order/segments and Tab peek gate. They stay off during idle hover.
+	segment_path_overlay.set_visible_for_order_view(overlay_on)
+	if overlay_on:
+		trigger_order_overlay.clear_focus()
+	else:
+		var focus_cell := _get_map_focus_cell()
+		if focus_cell != Vector2i(-1, -1):
+			var include_center := _placement_preview_cell == Vector2i(-1, -1)
+			trigger_order_overlay.set_focus_coords(focus_cell, include_center)
+		else:
+			trigger_order_overlay.clear_focus()
+	_refresh_segment_role_highlights()
+	refresh_dashed_outlines()
+
+
+func set_placement_preview_cell(coords: Vector2i) -> void:
+	if _placement_preview_cell == coords:
+		return
+	_placement_preview_cell = coords
+	_refresh_trigger_order_overlay()
+
+
+func clear_placement_preview() -> void:
+	set_placement_preview_cell(Vector2i(-1, -1))
+
+
+func _get_map_focus_cell() -> Vector2i:
+	if _placement_preview_cell != Vector2i(-1, -1):
+		return _placement_preview_cell
+	return hovered_cell
+
+
+func _refresh_segment_role_highlights() -> void:
+	selection_overlay_layer.clear()
+
+	# Tab peek and the layout toggle show every segment at once.
+	if _sticky_order_numbers or _peek_order_numbers:
+		for coords: Vector2i in map_data:
+			_stamp_segment_role_selection(coords)
+	else:
+		var focus_cell := _get_map_focus_cell()
+		if focus_cell != Vector2i(-1, -1):
+			# Hover or placement preview lights one segment with first/last/both tints.
+			var segment_index := get_segment_index(focus_cell)
+			if segment_index >= 0:
+				for hex: Hex in get_hexes_in_segment(segment_index):
+					_stamp_segment_role_selection(hex.coordinates)
+
+	_refresh_hovered_tile_emphasis()
+
+
+## Hides the dashed hex outline during the full order overlay, or when a card occupies the tile.
+func refresh_dashed_outlines() -> void:
+	for coords: Vector2i in map_data:
+		if _should_hide_dashed_outline(coords):
+			base_layer.set_cell(coords, -1)
+		else:
+			base_layer.set_cell(coords, 0, BASE_TILE_ATLAS_COORDS)
+
+
+func _should_hide_dashed_outline(coords: Vector2i) -> bool:
+	# Hover numbers keep the dashed outline. Tab and the layout toggle hide every tile.
+	if _sticky_order_numbers or _peek_order_numbers:
+		return true
+	var hex: Hex = map_data[coords]
+	return hex.active_tile_card != null
+
+
+func _refresh_hovered_tile_emphasis() -> void:
+	hovered_tile_overlay_layer.clear()
+	var emphasis_cell := _get_map_focus_cell()
+	if emphasis_cell == Vector2i(-1, -1):
+		return
+	if not is_in_map(emphasis_cell) or not is_tile_interactable(emphasis_cell):
+		return
+	hovered_tile_overlay_layer.set_cell(
+		emphasis_cell,
+		HOVERED_TILE_OVERLAY_SOURCE_ID,
+		OVERLAY_TILE_ATLAS_COORDS
 	)
 
 
-func _clear_empty_tile_segment_hover() -> void:
-	if _empty_tile_segment_hover_coords == Vector2i(-1, -1):
-		return
+func _stamp_segment_role_selection(coords: Vector2i) -> void:
+	selection_overlay_layer.set_cell(
+		coords,
+		_get_selection_hover_source_id(coords),
+		OVERLAY_TILE_ATLAS_COORDS
+	)
 
-	var segment_index := get_segment_index(_empty_tile_segment_hover_coords)
-	_empty_tile_segment_hover_coords = Vector2i(-1, -1)
-	clear_hovered_segment_highlight(segment_index)
+
+func _get_selection_hover_source_id(coords: Vector2i) -> int:
+	var is_start := is_first_tile_in_segment(coords)
+	var is_end := is_last_tile_in_segment(coords)
+	if is_start and is_end:
+		return HOVER_OVERLAY_BOTH
+	if is_start:
+		return HOVER_OVERLAY_FIRST
+	if is_end:
+		return HOVER_OVERLAY_LAST
+	return HOVER_OVERLAY_NORMAL
+
+
+func _update_trigger_order_hover(map_coords: Vector2i) -> void:
+	if _sticky_order_numbers or _peek_order_numbers or _placement_preview_cell != Vector2i(-1, -1):
+		return
+	trigger_order_overlay.set_focus_coords(map_coords)
+
+
+func _clear_trigger_order_hover() -> void:
+	if _sticky_order_numbers or _peek_order_numbers or _placement_preview_cell != Vector2i(-1, -1):
+		return
+	trigger_order_overlay.clear_focus()
 
 
 # Light tiles this placed card would affect. Skip the hovered cell, matching placement preview.
@@ -441,13 +555,14 @@ func generate_terrain() -> void:
 	map_data.clear()
 	base_layer.clear()
 	selection_overlay_layer.clear()
+	hovered_tile_overlay_layer.clear()
+	_placement_preview_cell = Vector2i(-1, -1)
 	rune_highlight_overlay_layer.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
 	_disabled_tile_coords.clear()
 	_hovered_segment_coords.clear()
 	_hovered_segment_index = -1
-	_empty_tile_segment_hover_coords = Vector2i(-1, -1)
 	rune_highlight_overlay_layer.modulate = Color.WHITE
 
 	var hex_center := Vector2i(hex_size, hex_size)
@@ -472,6 +587,7 @@ func generate_terrain() -> void:
 	if not RunSaveManager.should_restore_run():
 		_apply_difficulty_disabled_tiles()
 	trigger_order_overlay.rebuild()
+	segment_path_overlay.rebuild()
 
 
 # Randomly disable tiles for difficulty level 5.
@@ -500,10 +616,8 @@ func _apply_difficulty_disabled_tiles() -> void:
 
 
 func _on_map_display_layout_changed(layout: String) -> void:
-	for hex: Hex in map_data.values():
-		hex.set_map_display_layout(layout)
-	# Order numbers are Controls, not atlas tiles. Toggle the overlay instead of a TileMapLayer.
-	trigger_order_overlay.set_active(layout == "order_segments")
+	_sticky_order_numbers = layout == "order_segments"
+	_refresh_trigger_order_overlay()
 
 
 ## Ring index from the map center (0 = center, hex_size = outer edge).
@@ -581,6 +695,11 @@ func get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null
 ## Number of character-specific segments on the current map.
 func get_segment_count() -> int:
 	return _layout.build_segments().size()
+
+
+## Ordered coordinate lists for every segment in trigger order.
+func get_ordered_segments() -> Array[Array]:
+	return _layout.build_segments()
 
 
 ## All hex tiles belonging to one segment index.
@@ -720,23 +839,10 @@ func clear_challenge_segment_highlight() -> void:
 	_challenge_highlighted_coords.clear()
 
 
-## Overlays tiles in a segment while its run-info row or an empty map tile is hovered.
-## exclude_coords skips the hovered empty tile so the cream outline stays the focus.
-func highlight_hovered_segment(
-	segment_index: int,
-	exclude_coords: Vector2i = Vector2i(-1, -1),
-	overlay_modulate: Color = Color.WHITE
-) -> void:
-	# Full-segment UI-row hover replaces any empty-tile segment preview.
-	if exclude_coords == Vector2i(-1, -1) and overlay_modulate == Color.WHITE:
-		_empty_tile_segment_hover_coords = Vector2i(-1, -1)
-
-	# Skip only when an unchanged full-segment UI-row hover is requested again.
-	if (
-		_hovered_segment_index == segment_index
-		and exclude_coords == Vector2i(-1, -1)
-		and overlay_modulate == Color.WHITE
-	):
+## Overlays tiles in a segment while its run-info row is hovered.
+func highlight_hovered_segment(segment_index: int) -> void:
+	# Skip only when the same UI-row hover is requested again.
+	if _hovered_segment_index == segment_index:
 		return
 
 	clear_hovered_segment_highlight()
@@ -744,17 +850,14 @@ func highlight_hovered_segment(
 		return
 
 	_hovered_segment_index = segment_index
-	rune_highlight_overlay_layer.modulate = overlay_modulate
+	rune_highlight_overlay_layer.modulate = Color.WHITE
 	for hex: Hex in get_hexes_in_segment(segment_index):
-		var coords := hex.coordinates
-		if coords == exclude_coords:
-			continue
 		rune_highlight_overlay_layer.set_cell(
-			coords,
+			hex.coordinates,
 			RUNE_HIGHLIGHT_SOURCE_ID,
 			OVERLAY_TILE_ATLAS_COORDS
 		)
-		_hovered_segment_coords.append(coords)
+		_hovered_segment_coords.append(hex.coordinates)
 
 
 ## Clears the hover overlay. Pass segment_index so a row's mouse-exit cannot wipe a newer hover.
@@ -826,7 +929,7 @@ func _rune_highlight_still_needed(
 	return false
 
 
-## True while a run-info segment row or credit flash is lighting this tile.
+## True while a run-info segment row, credit flash, or inspect is lighting this tile.
 func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 	return (
 		coords in _hovered_segment_coords
@@ -1088,14 +1191,6 @@ func _spawn_floating_text(pos: Vector2, text: String, color: Color, icon: Textur
 	return floating_text
 
 
-func _spawn_segment_product_text(pos: Vector2, score: int, multiplier: int) -> FloatingText:
-	var floating_text := preload("res://scenes/animations/floating_text.tscn").instantiate() as FloatingText
-	floating_text.position = pos
-	get_tree().current_scene.add_child(floating_text)
-	floating_text.set_segment_product(score, multiplier)
-	return floating_text
-
-
 ## Runs the enhancement in the same activation. Card floats stack if both emit text.
 func schedule_delayed_enhancement_activation(host_rune: TileCard, tile: Hex, output_scale: float) -> void:
 	if tile.active_tile_card != host_rune or host_rune.enhancement == null:
@@ -1112,16 +1207,25 @@ func map_to_local(coords: Vector2i) -> Vector2i:
 
 
 func _on_tile_card_empowered(rune: TileCard) -> void:
-	AudioManager.play_sfx(UI_SOUNDS.EMPOWER)
 	var hex := get_hex_for_tile_card(rune)
-	if hex != null:
-		hex.start_empower_flash()
+	if hex == null:
+		AudioManager.play_sfx(UI_SOUNDS.EMPOWER)
+		return
+
+	# Strike first, then the looping overcharge. Same beat as a retrigger bolt landing.
+	var strike_travel := trigger_link_overlay.play_empower_strike(hex)
+	await GameManager.create_pauseable_timer(strike_travel / GameManager.game_speed).timeout
+	if not is_instance_valid(hex) or hex.active_tile_card != rune or not rune.is_empowered:
+		return
+
+	AudioManager.play_sfx(UI_SOUNDS.EMPOWER)
+	hex.start_empower_sparks()
 
 
 func _on_tile_card_empower_consumed(rune: TileCard) -> void:
 	var hex := get_hex_for_tile_card(rune)
 	if hex != null:
-		hex.stop_empower_flash()
+		hex.stop_empower_sparks()
 
 
 ## Resolves every placed rune in trigger order when the player ends the turn.
@@ -1218,38 +1322,17 @@ func _wait_between_tile_activations() -> void:
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
 func _play_segment_turn_result_reveals() -> void:
-	var running_total := 0
-	var revealed_any := false
-	var handed_off_to_display := false
 	for segment_index in get_segment_count():
 		var score := get_segment_turn_score(segment_index)
 		var multiplier := get_segment_turn_multiplier(segment_index)
 		var gold := get_segment_turn_gold(segment_index)
 		if score == 0 and gold == 0:
 			continue
-		var contribution := score * multiplier
-		running_total += contribution
-		var grow_into_display := contribution > 0 and not handed_off_to_display
-		await _play_single_segment_reveal(segment_index, contribution, running_total, grow_into_display)
-		if contribution > 0:
-			handed_off_to_display = true
-		revealed_any = true
-
-	if not revealed_any:
-		return
-
-	var display := _get_turn_score_display()
-	if display != null:
-		await display.play_merge_into_round_info()
+		await _play_single_segment_reveal(segment_index, score * multiplier)
 
 
-## Highlights one segment, animates its runes, then flies its Score product into the turn score overlay.
-func _play_single_segment_reveal(
-	segment_index: int,
-	contribution: int,
-	running_total: int,
-	grow_into_display: bool
-) -> void:
+## Highlights one segment, animates its runes, then plays that segment's Score overlay.
+func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
 	_apply_segment_reveal_glow(segment_index)
 
 	for hex: Hex in get_hexes_in_segment(segment_index):
@@ -1261,68 +1344,31 @@ func _play_single_segment_reveal(
 	).timeout
 
 	if contribution > 0:
-		await _play_segment_score_merge(segment_index, contribution, running_total, grow_into_display)
+		await _play_segment_score_merge(segment_index, contribution)
 
 	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 	_clear_segment_reveal_glow()
 	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 
 
-## Rises Energy x Mult, morphs into Score, unlocks the panel cell, then merges the product.
-func _play_segment_score_merge(
-	segment_index: int,
-	contribution: int,
-	running_total: int,
-	grow_into_display: bool
-) -> void:
-	var score := get_segment_turn_score(segment_index)
-	var multiplier := get_segment_turn_multiplier(segment_index)
-	var floating_text := _spawn_segment_product_text(
-		_get_segment_screen_center(segment_index),
-		score,
-		multiplier
-	)
-	await floating_text.play_rise()
-	await floating_text.play_equals_to_product(contribution, _should_linger_on_product())
+## Shows Energy x Mult at the top overlay, morphs into Score, then flies it into the HUD.
+func _play_segment_score_merge(segment_index: int, contribution: int) -> void:
+	var display := _get_turn_score_display()
+	if display != null:
+		await display.present_segment(
+			segment_index,
+			get_segment_turn_score(segment_index),
+			get_segment_turn_multiplier(segment_index),
+			contribution,
+			_should_linger_on_product()
+		)
+		await display.play_merge_into_round_info()
 
+	# Panel totals land with the flying digits, not when the factors first appear.
 	EventBus.segment_score_revealed.emit(segment_index, contribution)
 
-	var display := _get_turn_score_display()
-	if display == null:
-		floating_text.queue_free()
-		return
 
-	var target_world := _canvas_to_world(display.get_label_center_canvas())
-	var target_font := ScoreReadoutStyle.font_size_for_score(running_total)
-	await floating_text.merge_into(target_world, grow_into_display, target_font)
-
-	if grow_into_display:
-		display.appear_from_handoff(running_total)
-		floating_text.queue_free()
-	else:
-		floating_text.queue_free()
-		await display.present_running_total(running_total)
-
-
-## Average tile position for segment-wide floating text placement.
-func _get_segment_screen_center(segment_index: int) -> Vector2:
-	var segments := _layout.build_segments()
-	if segment_index < 0 or segment_index >= segments.size():
-		return Vector2.ZERO
-
-	var center := Vector2.ZERO
-	var segment: Array = segments[segment_index]
-	for coords: Vector2i in segment:
-		center += base_layer.map_to_local(coords)
-	return center / segment.size()
-
-
-## Converts a viewport or CanvasLayer point into world space under the play camera.
-func _canvas_to_world(canvas_pos: Vector2) -> Vector2:
-	return get_viewport().get_canvas_transform().affine_inverse() * canvas_pos
-
-
-## Shared overlay that accumulates segment Score during the post-turn reveal.
+## Shared overlay used for the post-turn segment Score readout.
 func _get_turn_score_display() -> TurnScoreDisplay:
 	return get_tree().get_first_node_in_group("turn_score_display") as TurnScoreDisplay
 

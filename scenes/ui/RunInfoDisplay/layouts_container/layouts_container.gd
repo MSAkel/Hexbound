@@ -3,6 +3,12 @@ extends PanelContainer
 @onready var base_layout: TextureButton = $HBoxContainer/BaseLayout
 @onready var order_segments_layout: TextureButton = $HBoxContainer/OrderSegmentsLayout
 
+
+func _ready() -> void:
+	# Click-to-toggle only. Do not keep keyboard focus or Tab stops working for map peek.
+	base_layout.focus_mode = Control.FOCUS_NONE
+	order_segments_layout.focus_mode = Control.FOCUS_NONE
+
 func _on_base_layout_toggled(toggled_on: bool) -> void:
 	if toggled_on:
 		order_segments_layout.button_pressed = false
@@ -30,7 +36,7 @@ func _restore_if_none_selected(button: TextureButton) -> void:
 
 
 func _on_base_layout_mouse_entered() -> void:
-	var tooltip := "Show Tile Cards"
+	var tooltip := "Show tile cards"
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 
 
@@ -39,7 +45,7 @@ func _on_base_layout_mouse_exited() -> void:
 
 
 func _on_order_segments_layout_mouse_entered() -> void:
-	var tooltip := "Show Card Trigger Order"
+	var tooltip := "Show trigger order numbers (hold Tab to toggle)"
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 
 

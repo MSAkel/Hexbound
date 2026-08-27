@@ -49,7 +49,7 @@ var hover_enabled := true
 var price: int = 0
 
 const HAND_HOVER_ELEVATION_OFFSET := -80.0
-# Lower lift while aiming at a tile so the selected card blocks fewer bottom hexes.
+# Lower lift while the cursor is off the selected card so it blocks fewer bottom hexes.
 const HAND_MAP_TILE_HOVER_ELEVATION_OFFSET := -20.0
 # Subtle pop when a hand card is hovered or selected.
 const HAND_HOVER_SCALE := 1.2
@@ -197,7 +197,7 @@ func is_hover_elevated() -> bool:
 	return _is_hover_elevated
 
 
-# Selected cards dip slightly while the cursor aims at a map tile.
+# Selected cards dip slightly while the cursor is not over this card.
 func set_map_tile_hover_active(active: bool, animate: bool = true) -> void:
 	if _map_tile_hover_active == active:
 		return

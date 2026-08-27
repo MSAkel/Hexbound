@@ -29,6 +29,8 @@ const PLACEMENT_POP_SCALE := 1.16
 const PLACEMENT_SLAM_DURATION := 0.16
 const PLACEMENT_SETTLE_DURATION := 0.18
 const PLACEMENT_STAGGER := 0.05
+# Ghost icons on tiles a dragged passive would occupy.
+const DROP_PREVIEW_ALPHA := 0.42
 
 var _character: CharacterDefinition = null
 var _set_id: String = "A"
@@ -39,12 +41,16 @@ var _content_size: Vector2 = Vector2.ZERO
 var _tiles: Dictionary = {}
 var _tile_segments: Dictionary = {}
 var _tile_icons: Dictionary = {}
+# Faint occupancy preview drawn above placed icons while dragging.
+var _tile_ghosts: Dictionary = {}
 # Slot index of the placed passive occupying each tile, or -1 when empty.
 var _tile_placement_index: Dictionary = {}
 var _selected_segment_index: int = -1
 var _hover_segment_index: int = -1
 var _hover_coords := Vector2i(-999, -999)
 var _placement_tweens: Array[Tween] = []
+# Cache so _can_drop_data mouse-moves do not rebuild the same ghosts.
+var _drop_preview_key: String = ""
 
 
 func _ready() -> void:
@@ -52,6 +58,11 @@ func _ready() -> void:
 	# Tiles handle input. The view itself must not eat clicks outside the hexes.
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(_update_content_transform)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAG_END:
+		_clear_drop_preview()
 
 
 func setup(character: CharacterDefinition, set_id: String) -> void:
@@ -67,6 +78,7 @@ func get_segment_capacity(segment_index: int) -> int:
 
 
 func refresh_placements() -> void:
+	_clear_drop_preview()
 	_refresh_passive_overlays()
 	_refresh_segment_highlights()
 	# Placement can change under a stationary cursor. Refresh the hover panel.
@@ -89,7 +101,9 @@ func cleanup() -> void:
 	_tiles.clear()
 	_tile_segments.clear()
 	_tile_icons.clear()
+	_tile_ghosts.clear()
 	_tile_placement_index.clear()
+	_drop_preview_key = ""
 
 
 func _exit_tree() -> void:
@@ -115,7 +129,9 @@ func _rebuild_map() -> void:
 	_tiles.clear()
 	_tile_segments.clear()
 	_tile_icons.clear()
+	_tile_ghosts.clear()
 	_tile_placement_index.clear()
+	_drop_preview_key = ""
 	_selected_segment_index = -1
 	_hover_segment_index = -1
 	_hover_coords = Vector2i(-999, -999)
@@ -171,9 +187,20 @@ func _rebuild_map() -> void:
 		icon.visible = false
 		tile.add_child(icon)
 
+		var ghost := TextureRect.new()
+		ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ghost.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ghost.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ghost.position = Vector2.ZERO
+		ghost.size = tile_size
+		ghost.visible = false
+		ghost.modulate = Color(1.0, 1.0, 1.0, DROP_PREVIEW_ALPHA)
+		tile.add_child(ghost)
+
 		_tiles[coords] = tile
 		_tile_segments[coords] = segment_index
 		_tile_icons[coords] = icon
+		_tile_ghosts[coords] = ghost
 
 	_update_content_transform()
 	_refresh_passive_overlays()
@@ -242,6 +269,8 @@ func _on_tile_mouse_exited(segment_index: int, coords: Vector2i) -> void:
 		_hover_coords = Vector2i(-999, -999)
 	_refresh_segment_highlights()
 	_hide_placed_passive_tooltip()
+	# Wait a frame so hopping to a neighbor hex does not flash the ghosts off.
+	call_deferred("_clear_drop_preview_if_cursor_left_map")
 
 
 ## Name and description for a placed passive. Empty tiles hide the panel.
@@ -391,37 +420,40 @@ func _kill_placement_tweens() -> void:
 
 func can_accept_passive_drop(data: Variant, segment_index: int, coords: Vector2i) -> bool:
 	if _character == null or not data is Dictionary:
+		_clear_drop_preview()
 		return false
 	_hover_segment_index = segment_index
 	_refresh_segment_highlights()
 	var kind := String(data.get("kind", ""))
+	var can_drop := false
 	if kind == DRAG_KIND:
 		var passive_id := String(data.get("passive_id", ""))
-		if passive_id.is_empty():
-			return false
-		return MetaProgressionManager.can_place_passive(
+		if not passive_id.is_empty():
+			can_drop = MetaProgressionManager.can_place_passive(
+				_character.id,
+				_set_id,
+				segment_index,
+				passive_id,
+				get_segment_capacity(segment_index)
+			)
+	elif kind == DRAG_KIND_BOARD:
+		can_drop = MetaProgressionManager.can_relocate_passive(
 			_character.id,
 			_set_id,
+			int(data.get("from_segment", -1)),
+			int(data.get("from_list_index", -1)),
 			segment_index,
-			passive_id,
+			int(_tile_placement_index.get(coords, -1)),
 			get_segment_capacity(segment_index)
 		)
-	if kind != DRAG_KIND_BOARD:
-		return false
-	return MetaProgressionManager.can_relocate_passive(
-		_character.id,
-		_set_id,
-		int(data.get("from_segment", -1)),
-		int(data.get("from_list_index", -1)),
-		segment_index,
-		int(_tile_placement_index.get(coords, -1)),
-		get_segment_capacity(segment_index)
-	)
+	_update_drop_preview(data, segment_index, coords, can_drop)
+	return can_drop
 
 
 func accept_passive_drop(data: Variant, segment_index: int, coords: Vector2i) -> void:
 	if not data is Dictionary:
 		return
+	_clear_drop_preview()
 	_selected_segment_index = segment_index
 	_refresh_segment_highlights()
 	var kind := String(data.get("kind", ""))
@@ -437,6 +469,156 @@ func accept_passive_drop(data: Variant, segment_index: int, coords: Vector2i) ->
 			segment_index,
 			coords
 		)
+
+
+## Shows the dragged passive icon on the hexes it would occupy if dropped here.
+func _update_drop_preview(data: Dictionary, segment_index: int, coords: Vector2i, can_drop: bool) -> void:
+	if not can_drop:
+		_clear_drop_preview()
+		return
+	var kind := String(data.get("kind", ""))
+	var dest_list_index: int = int(_tile_placement_index.get(coords, -1))
+	var preview_key := "%s:%s:%d:%d" % [
+		kind,
+		String(data.get("passive_id", "")),
+		segment_index,
+		dest_list_index if kind == DRAG_KIND_BOARD else -1,
+	]
+	if preview_key == _drop_preview_key:
+		return
+	var occupancy := _get_drop_occupancy_coords(data, segment_index, coords)
+	var passive := MetaProgressionManager.get_passive_by_id(String(data.get("passive_id", "")))
+	if occupancy.is_empty() or passive == null or passive.icon == null:
+		_clear_drop_preview()
+		return
+	_clear_drop_preview()
+	_drop_preview_key = preview_key
+	for occupy_coords: Vector2i in occupancy:
+		var ghost: TextureRect = _tile_ghosts.get(occupy_coords)
+		if ghost == null:
+			continue
+		ghost.texture = passive.icon
+		ghost.modulate = Color(1.0, 1.0, 1.0, DROP_PREVIEW_ALPHA)
+		ghost.visible = true
+
+
+func _clear_drop_preview() -> void:
+	_drop_preview_key = ""
+	for coords: Vector2i in _tile_ghosts.keys():
+		var ghost: TextureRect = _tile_ghosts[coords]
+		if ghost == null:
+			continue
+		ghost.visible = false
+		ghost.texture = null
+
+
+func _clear_drop_preview_if_cursor_left_map() -> void:
+	var mouse := get_global_mouse_position()
+	for coords: Vector2i in _tiles.keys():
+		var tile: Control = _tiles[coords]
+		if tile != null and tile.get_global_rect().has_point(mouse):
+			return
+	_clear_drop_preview()
+
+
+## Tile span the drop would take. List drops append. Board drops append or take the dest slot.
+func _get_drop_occupancy_coords(data: Dictionary, segment_index: int, coords: Vector2i) -> Array[Vector2i]:
+	var empty: Array[Vector2i] = []
+	if _preview_map == null or _character == null:
+		return empty
+	var kind := String(data.get("kind", ""))
+	var segment_coords := _get_segment_coords(segment_index)
+	if segment_coords.is_empty():
+		return empty
+	if kind == DRAG_KIND:
+		var dest_ids := MetaProgressionManager.get_placed_passive_ids(
+			_character.id, _set_id, segment_index
+		)
+		return _coords_after_append(segment_coords, dest_ids, String(data.get("passive_id", "")))
+	if kind != DRAG_KIND_BOARD:
+		return empty
+	var from_segment: int = int(data.get("from_segment", -1))
+	var from_list_index: int = int(data.get("from_list_index", -1))
+	var dragged_id := String(data.get("passive_id", ""))
+	var dest_list_index: int = int(_tile_placement_index.get(coords, -1))
+	var dest_ids := MetaProgressionManager.get_placed_passive_ids(
+		_character.id, _set_id, segment_index
+	)
+	var simulated: Array = []
+	for passive_id: String in dest_ids:
+		simulated.append(passive_id)
+	if dest_list_index < 0:
+		return _coords_after_append(segment_coords, simulated, dragged_id)
+	if from_segment == segment_index:
+		if from_list_index < 0 or from_list_index >= simulated.size():
+			return empty
+		if dest_list_index >= simulated.size():
+			return empty
+		var target_id: String = String(simulated[dest_list_index])
+		simulated[from_list_index] = target_id
+		simulated[dest_list_index] = dragged_id
+		return _coords_for_list_index(segment_coords, simulated, dest_list_index)
+	if dest_list_index >= simulated.size():
+		return empty
+	simulated[dest_list_index] = dragged_id
+	return _coords_for_list_index(segment_coords, simulated, dest_list_index)
+
+
+func _get_segment_coords(segment_index: int) -> Array[Vector2i]:
+	var segment_coords: Array[Vector2i] = []
+	if _preview_map == null:
+		return segment_coords
+	for coords: Vector2i in _preview_map.get_coords_in_trigger_order():
+		if _preview_map.get_segment_index(coords) == segment_index:
+			segment_coords.append(coords)
+	return segment_coords
+
+
+func _coords_after_append(
+	segment_coords: Array[Vector2i],
+	passive_ids: Array,
+	passive_id: String
+) -> Array[Vector2i]:
+	var slot := _used_slots_from_ids(passive_ids)
+	return _slice_segment_coords(segment_coords, slot, _tile_cost_for_id(passive_id))
+
+
+func _coords_for_list_index(
+	segment_coords: Array[Vector2i],
+	passive_ids: Array,
+	list_index: int
+) -> Array[Vector2i]:
+	var slot := 0
+	for index in passive_ids.size():
+		var cost := _tile_cost_for_id(String(passive_ids[index]))
+		if index == list_index:
+			return _slice_segment_coords(segment_coords, slot, cost)
+		slot += cost
+	return []
+
+
+func _slice_segment_coords(segment_coords: Array[Vector2i], start: int, count: int) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for offset in count:
+		var index := start + offset
+		if index < 0 or index >= segment_coords.size():
+			break
+		result.append(segment_coords[index])
+	return result
+
+
+func _used_slots_from_ids(passive_ids: Array) -> int:
+	var used := 0
+	for entry in passive_ids:
+		used += _tile_cost_for_id(String(entry))
+	return used
+
+
+func _tile_cost_for_id(passive_id: String) -> int:
+	var passive := MetaProgressionManager.get_passive_by_id(passive_id)
+	if passive == null:
+		return 0
+	return maxi(1, passive.tile_cost)
 
 
 ## Starts a board drag from an occupied hex. Empty tiles do not drag.

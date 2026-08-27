@@ -55,7 +55,7 @@ signal enhancement_selected(enhancement: Enhancement)
 ## Emitted when a tile effect creates a card that should animate into the hand
 signal generated_hand_card(card: Card)  
 
-signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2, placement: int)
+signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)
 ## One hover panel per glossary keyword. Source is the CardUI that requested it.
 signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect2, source: Object)
 ## Re-evaluate the control beneath a stationary cursor after a covering UI closes.

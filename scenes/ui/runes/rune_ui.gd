@@ -6,6 +6,7 @@ extends Control
 @onready var enhancement_value_container: PanelContainer = $Container/Identifiers/EnhancementValueContainer
 @onready var enhancement_value: Label = $Container/Identifiers/EnhancementValueContainer/EnhancementValue
 @onready var placement_smoke: GPUParticles2D = $PlacementSmoke
+@onready var empower_sparks: GPUParticles2D = $EmpowerSparks
 @onready var hex_stroke: HexStroke = $HexStroke
 @onready var sigil: TextureRect = $Container/Identifiers/Sigil
 @onready var output_chip: PanelContainer = $Container/OutputChip
@@ -18,9 +19,8 @@ var center_coordinates: Vector2i
 
 # Keeps activation tweens from stacking if triggers overlap.
 var _activation_tween: Tween
-var _empower_flash_tween: Tween
 var _trigger_link_flash_tween: Tween
-# Resting color when no activation or empower tween is running.
+# Resting color when no activation or trigger-link tween is running.
 var _resting_modulate := Color.WHITE
 
 # Pop, squash, then settle. Durations must stay in sync with HexTileMap._wait_for_activation_animation.
@@ -43,8 +43,6 @@ const PLACEMENT_SLAM_DURATION := 0.11
 const PLACEMENT_RECOVER_DURATION := 0.13
 const PLACEMENT_SHAKE_STRENGTH := 8.0
 const PLACEMENT_SHAKE_DURATION := 0.18
-const EMPOWER_FLASH_HIGHLIGHT := Color(1.45, 1.35, 0.15, 1.0)
-const EMPOWER_FLASH_DURATION := 0.45
 const TRIGGER_LINK_FLASH_HIGHLIGHT := Color(1.35, 0.72, 0.22, 1.0)
 const TRIGGER_LINK_FLASH_DURATION := 0.42
 const CHAINED_ACTIVATION_PEAK_SCALE := Vector2(1.06, 1.06)
@@ -198,8 +196,6 @@ func apply_resting_modulate(color: Color) -> void:
 func _can_apply_resting_modulate() -> bool:
 	if _activation_tween != null and _activation_tween.is_valid():
 		return false
-	if _empower_flash_tween != null and _empower_flash_tween.is_valid():
-		return false
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
 		return false
 	return true
@@ -212,7 +208,7 @@ func _apply_resting_modulate() -> void:
 
 # Brief scale pulse + warm flash so the active rune reads clearly during turn resolution.
 func play_activation_animation() -> void:
-	stop_empower_flash()
+	stop_empower_sparks()
 	
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
@@ -280,7 +276,7 @@ func play_activation_animation() -> void:
 
 # Chained fire from another rune. Orange palette and a smaller pop than a primary activation.
 func play_chained_activation_animation() -> void:
-	stop_empower_flash()
+	stop_empower_sparks()
 
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
@@ -361,8 +357,6 @@ static func activation_animation_duration() -> float:
 
 # Gold highlight flash when a segment's turn totals are revealed.
 func play_segment_result_animation() -> void:
-	stop_empower_flash()
-
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
 
@@ -395,38 +389,24 @@ func play_segment_result_animation() -> void:
 	)
 
 
-# Looping yellow pulse while a rune waits to trigger its empowered production.
-func start_empower_flash() -> void:
-	stop_empower_flash()
-	
-	_empower_flash_tween = create_tween()
-	_empower_flash_tween.set_loops()
-	_empower_flash_tween.tween_property(
-		_anim_target,
-		"modulate",
-		EMPOWER_FLASH_HIGHLIGHT,
-		EMPOWER_FLASH_DURATION
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_empower_flash_tween.tween_property(
-		_anim_target,
-		"modulate",
-		_resting_modulate,
-		EMPOWER_FLASH_DURATION
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+# Sparks over the rune while it is waiting to spend an empower charge.
+func start_empower_sparks() -> void:
+	if empower_sparks == null:
+		return
+	if empower_sparks.emitting:
+		return
+
+	empower_sparks.restart()
+	empower_sparks.emitting = true
 
 
-func stop_empower_flash() -> void:
-	if _empower_flash_tween != null and _empower_flash_tween.is_valid():
-		_empower_flash_tween.kill()
-	_empower_flash_tween = null
-	
-	_apply_resting_modulate()
+func stop_empower_sparks() -> void:
+	if empower_sparks != null:
+		empower_sparks.emitting = false
 
 
 # Looping orange pulse on the source rune while its queued triggers resolve.
 func start_trigger_link_flash() -> void:
-	stop_empower_flash()
-
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
 		_trigger_link_flash_tween.kill()
 

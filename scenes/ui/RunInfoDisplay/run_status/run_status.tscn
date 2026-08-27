@@ -113,24 +113,26 @@ theme_override_fonts/font = SubResource("FontVariation_i0xcj")
 theme_override_font_sizes/font_size = 24
 text = "10"
 
-[node name="VDivider3" type="TextureRect" parent="VBoxContainer/HBoxContainer"]
+[node name="VDivider3" type="TextureRect" parent="VBoxContainer/HBoxContainer" unique_id=612236307]
+visible = false
 custom_minimum_size = Vector2(2, 50)
 custom_maximum_size = Vector2(35, 50)
 layout_mode = 2
 texture = ExtResource("3_y7j43")
 expand_mode = 1
 
-[node name="TokenRow" type="HBoxContainer" parent="VBoxContainer/HBoxContainer"]
+[node name="TokenRow" type="HBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=741691803]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TokenTitle" type="Label" parent="VBoxContainer/HBoxContainer/TokenRow"]
+[node name="TokenTitle" type="Label" parent="VBoxContainer/HBoxContainer/TokenRow" unique_id=1388690095]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
 theme_override_font_sizes/font_size = 18
 text = "Tokens"
 
-[node name="TokenAmountLabel" type="Label" parent="VBoxContainer/HBoxContainer/TokenRow"]
+[node name="TokenAmountLabel" type="Label" parent="VBoxContainer/HBoxContainer/TokenRow" unique_id=150557310]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)

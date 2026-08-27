@@ -1,24 +1,22 @@
 extends Control
 
-## Center-screen challenge reveal that docks to a persistent top banner.
+## Center-screen challenge reveal. Stays until click, then flies into ChallengeContainer.
 
 enum Phase { HIDDEN, INTRO, DOCKING, DOCKED }
 
 const INTRO_IN_DURATION := 0.35
-const INTRO_HOLD_DURATION := 1.75
 const DOCK_DURATION := 0.6
-const SKIP_DOCK_DURATION := 0.28
 
 const CENTER_NAME_SIZE := 96
-const DOCKED_NAME_SIZE := 42
+const DOCKED_NAME_SIZE := 18
 const CENTER_KICKER_SIZE := 28
-const DOCKED_KICKER_SIZE := 16
+const DOCKED_KICKER_SIZE := 12
 const CENTER_ICON_SIZE := Vector2(48, 48)
 const DOCKED_ICON_SIZE := Vector2(28, 28)
 const CENTER_WAVE_AMP := 50.0
-const DOCKED_WAVE_AMP := 16.0
+const DOCKED_WAVE_AMP := 8.0
 const CENTER_NAME_OUTLINE := 14
-const DOCKED_NAME_OUTLINE := 8
+const DOCKED_NAME_OUTLINE := 4
 
 const DIM_ALPHA := 0.48
 const BANNER_INTRO_SCALE := Vector2(0.82, 0.82)
@@ -28,12 +26,6 @@ const CENTER_OFFSETS := {
 	"top": -160.0,
 	"right": 560.0,
 	"bottom": 160.0,
-}
-const DOCKED_OFFSETS := {
-	"left": -420.0,
-	"top": 10.0,
-	"right": 420.0,
-	"bottom": 96.0,
 }
 
 @onready var dim_overlay: ColorRect = $DimOverlay
@@ -60,12 +52,12 @@ func _ready() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	# Click anywhere during the center beat to dock early.
+	# Click anywhere after the pop-in to dock. The hold is the read beat.
 	if _phase != Phase.INTRO:
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
-		_begin_dock(true)
+		_begin_dock()
 
 
 func _on_challenge_banner_shown(challenge_name: String, dock_immediately: bool = false) -> void:
@@ -93,6 +85,7 @@ func _on_challenge_banner_hidden() -> void:
 	_kill_tween()
 	_phase = Phase.HIDDEN
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.top_level = false
 	hide()
 
 
@@ -102,7 +95,6 @@ func _play_intro() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var intro_in := INTRO_IN_DURATION / GameManager.game_speed
-	var hold := INTRO_HOLD_DURATION / GameManager.game_speed
 
 	_tween = create_tween()
 	_tween.set_parallel(true)
@@ -115,45 +107,45 @@ func _play_intro() -> void:
 	_tween.tween_property(banner, "scale", Vector2.ONE, intro_in).set_trans(Tween.TRANS_BACK).set_ease(
 		Tween.EASE_OUT
 	)
-	# Leave parallel mode so the hold finishes before docking starts.
-	_tween.chain()
-	_tween.set_parallel(false)
-	_tween.tween_interval(hold)
-	_tween.tween_callback(_begin_dock.bind(false))
 
 
-func _begin_dock(skipped: bool = false) -> void:
+func _begin_dock() -> void:
 	if _phase != Phase.INTRO:
 		return
 
 	_kill_tween()
 	_phase = Phase.DOCKING
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var duration := (SKIP_DOCK_DURATION if skipped else DOCK_DURATION) / GameManager.game_speed
+	var duration := DOCK_DURATION / GameManager.game_speed
 
-	# Drop intro-only rows before measuring. A tall center rect pinned to the top
-	# overshoots the viewport while fonts are still large.
+	# Intro-only copy leaves the overlay. The chip shows name and description after landing.
 	description_label.hide()
 	skip_hint.hide()
-	# Pin top anchors in place, then tween offsets only. Interpolating anchors from
-	# center to top with a negative offset_top drives the banner off-screen.
-	_rebake_banner_to_top_anchors()
+
+	# Leave the layout anchors so the fly-in is a free transform into the chip.
+	var start_global := banner.global_position
+	banner.top_level = true
+	banner.global_position = start_global
 	_center_banner_pivot()
+
+	var start_center := banner.get_global_rect().get_center()
+	var target_rect := _get_dock_target_global_rect()
+	var destination := banner.global_position + (target_rect.get_center() - start_center)
+	var start_size := banner.size
+	var scale_to := Vector2(
+		target_rect.size.x / maxf(start_size.x, 1.0),
+		target_rect.size.y / maxf(start_size.y, 1.0)
+	)
 
 	_tween = create_tween()
 	_tween.set_parallel(true)
-	_tween.tween_property(banner, "offset_left", DOCKED_OFFSETS.left, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
+	_tween.tween_property(banner, "global_position", destination, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
 		Tween.EASE_IN_OUT
 	)
-	_tween.tween_property(banner, "offset_top", DOCKED_OFFSETS.top, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
-		Tween.EASE_IN_OUT
+	_tween.tween_property(banner, "scale", scale_to, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
+		Tween.EASE_IN
 	)
-	_tween.tween_property(banner, "offset_right", DOCKED_OFFSETS.right, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
-		Tween.EASE_IN_OUT
-	)
-	_tween.tween_property(banner, "offset_bottom", DOCKED_OFFSETS.bottom, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
-		Tween.EASE_IN_OUT
-	)
+	_tween.tween_property(banner, "modulate:a", 0.0, duration * 0.85).set_ease(Tween.EASE_IN)
 	_tween.tween_property(dim_overlay, "color:a", 0.0, duration * 0.7).set_trans(Tween.TRANS_QUAD).set_ease(
 		Tween.EASE_IN
 	)
@@ -170,23 +162,19 @@ func _begin_dock(skipped: bool = false) -> void:
 func _finish_dock() -> void:
 	_phase = Phase.DOCKED
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	description_label.hide()
-	skip_hint.hide()
-	_apply_docked_layout()
-	_center_banner_pivot()
-	# RoundFlow holds the round's first turn until the banner has settled.
+	banner.top_level = false
+	banner.scale = Vector2.ONE
+	hide()
+	# RoundFlow holds the first turn until this lands. The chip then shows the copy.
 	EventBus.challenge_reveal_finished.emit()
 
 
 func _show_docked_immediately() -> void:
+	# Save reload already knows the challenge. Skip the overlay and show the chip.
 	_kill_tween()
 	_phase = Phase.DOCKED
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	description_label.hide()
-	skip_hint.hide()
-	_apply_docked_layout()
-	show()
-	_center_banner_pivot()
+	hide()
 	EventBus.challenge_reveal_finished.emit()
 
 
@@ -203,6 +191,7 @@ func _prepare_intro_visuals() -> void:
 	skip_hint.show()
 	skip_hint.modulate.a = 1.0
 	dim_overlay.color.a = 0.0
+	banner.top_level = false
 	banner.modulate.a = 0.0
 	banner.scale = BANNER_INTRO_SCALE
 
@@ -222,29 +211,15 @@ func _apply_center_layout() -> void:
 	banner.offset_top = CENTER_OFFSETS.top
 	banner.offset_right = CENTER_OFFSETS.right
 	banner.offset_bottom = CENTER_OFFSETS.bottom
-	# Center reveal grows evenly so the pop-in stays visually balanced.
 	banner.grow_vertical = Control.GROW_DIRECTION_BOTH
 
 
-func _apply_docked_layout() -> void:
-	banner.anchor_left = 0.5
-	banner.anchor_top = 0.0
-	banner.anchor_right = 0.5
-	banner.anchor_bottom = 0.0
-	banner.offset_left = DOCKED_OFFSETS.left
-	banner.offset_top = DOCKED_OFFSETS.top
-	banner.offset_right = DOCKED_OFFSETS.right
-	banner.offset_bottom = DOCKED_OFFSETS.bottom
-	# Grow downward only so content size changes never push past the top edge.
-	banner.grow_vertical = Control.GROW_DIRECTION_END
-	_set_name_font_size(float(DOCKED_NAME_SIZE))
-	_set_kicker_font_size(float(DOCKED_KICKER_SIZE))
-	_set_wave_amp(DOCKED_WAVE_AMP)
-	_set_name_outline(float(DOCKED_NAME_OUTLINE))
-	challenge_icon.custom_minimum_size = DOCKED_ICON_SIZE
-	banner.scale = Vector2.ONE
-	banner.modulate.a = 1.0
-	dim_overlay.color.a = 0.0
+func _get_dock_target_global_rect() -> Rect2:
+	var slot := get_tree().get_first_node_in_group("challenge_hud_slot") as Control
+	if slot == null:
+		var viewport := get_viewport_rect()
+		return Rect2(viewport.size - Vector2(98.0, 98.0), Vector2(66.0, 66.0))
+	return slot.get_global_rect()
 
 
 func _set_name_font_size(value: float) -> void:
@@ -267,29 +242,6 @@ func _set_name_outline(value: float) -> void:
 
 func _refresh_name_bbcode() -> void:
 	challenge_label.text = "[wave amp=%d freq=2]%s[/wave]" % [int(round(_wave_amp)), _challenge_name]
-
-
-func _rebake_banner_to_top_anchors() -> void:
-	# Capture the on-screen rect, then express a content-sized frame with top
-	# anchors so the dock tween never passes through anchor_top=0 with a large
-	# negative offset_top.
-	var rect := banner.get_rect()
-	var min_size := banner.get_combined_minimum_size()
-	var height := maxf(min_size.y, 1.0)
-	var width := maxf(rect.size.x, min_size.x)
-	var center := rect.get_center()
-	var compact := Rect2(center - Vector2(width, height) * 0.5, Vector2(width, height))
-	var parent_size := size
-
-	banner.anchor_left = 0.5
-	banner.anchor_right = 0.5
-	banner.anchor_top = 0.0
-	banner.anchor_bottom = 0.0
-	banner.grow_vertical = Control.GROW_DIRECTION_END
-	banner.offset_left = compact.position.x - parent_size.x * 0.5
-	banner.offset_right = compact.position.x + compact.size.x - parent_size.x * 0.5
-	banner.offset_top = compact.position.y
-	banner.offset_bottom = compact.position.y + compact.size.y
 
 
 func _center_banner_pivot() -> void:

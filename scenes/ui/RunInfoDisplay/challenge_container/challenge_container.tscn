@@ -13,7 +13,7 @@ content_margin_bottom = 8.0
 texture = ExtResource("2_uh4uk")
 modulate_color = Color(0.9340804, 0.9340805, 0.93408036, 1)
 
-[node name="ChallengePanel" type="PanelContainer" unique_id=948507863]
+[node name="ChallengePanel" type="PanelContainer" unique_id=948507863 groups=["challenge_hud_slot"]]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0

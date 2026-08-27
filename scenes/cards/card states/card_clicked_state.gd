@@ -30,8 +30,10 @@ func on_input(event: InputEvent) -> void:
 
 
 func on_mouse_entered() -> void:
-	pass
+	# Cursor is back on the selected card. Restore the full hover lift.
+	card_ui.set_map_tile_hover_active(false)
 
 
 func on_mouse_exited() -> void:
-	pass
+	# Cursor left the card. Dip so the hand does not cover bottom tiles.
+	card_ui.set_map_tile_hover_active(true)

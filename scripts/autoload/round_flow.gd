@@ -15,8 +15,9 @@ enum Step {
 }
 
 ## Force-completes the reveal step when the banner never reports back, so a missing or
-## freed banner node cannot strand the run mid-transition.
-const CHALLENGE_REVEAL_TIMEOUT := 8.0
+## freed banner node cannot strand the run mid-transition. The overlay waits for a click,
+## so this is only a failsafe, not a read timer.
+const CHALLENGE_REVEAL_TIMEOUT := 120.0
 
 var _step: Step = Step.IDLE
 ## Armed when a round advance lands on a challenge round. RoundFlow owns this, not ChallengeManager.

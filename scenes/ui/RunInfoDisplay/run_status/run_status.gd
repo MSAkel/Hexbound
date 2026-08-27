@@ -19,6 +19,8 @@ var _turn_counter: CountingNumber
 var _required_counter: CountingNumber
 var _round_score_counter: CountingNumber
 var _punch_tweens: Dictionary = {}
+## Segment products already flown into this HUD during the current turn resolve.
+var _preview_turn_score: int = 0
 
 
 func _ready() -> void:
@@ -44,6 +46,8 @@ func _ready() -> void:
 	EventBus.turn_changed.connect(_on_turn_changed)
 	EventBus.total_round_score_changed.connect(_on_total_round_score_changed)
 	EventBus.required_score_changed.connect(_on_required_score_changed)
+	EventBus.segment_score_revealed.connect(_on_segment_score_revealed)
+	EventBus.turn_ended.connect(_on_turn_ended)
 
 
 func _on_gold_changed(new_amount: int) -> void:
@@ -67,8 +71,23 @@ func _on_turn_changed() -> void:
 	_play_counter(_turn_counter, GameManager.remaining_turns, turn_counter_label)
 
 
+func _on_turn_ended() -> void:
+	_preview_turn_score = 0
+
+
 func _on_total_round_score_changed() -> void:
+	_preview_turn_score = 0
 	_play_counter(_round_score_counter, GameManager.total_round_score, score_this_round)
+
+
+## Each flying segment product adds to the HUD as it lands, before the turn score is committed.
+func _on_segment_score_revealed(_segment_index: int, total_score: int) -> void:
+	_preview_turn_score += total_score
+	_play_counter(
+		_round_score_counter,
+		GameManager.total_round_score + _preview_turn_score,
+		score_this_round
+	)
 
 
 func _on_required_score_changed() -> void:

@@ -5,26 +5,6 @@ extends Node2D
 @onready var icon_rect: TextureRect = $Icon
 @onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
 
-## How far a segment readout travels upward, in pixels.
-const RISE_DISTANCE := 60.0
-## Seconds for that rise. Does not fade, so a later merge can still read the digits.
-const SEGMENT_RISE_DURATION := 0.32
-## Seconds for a readout that lands as the main score, flying in and growing to size.
-const GROW_MERGE_DURATION := 0.22
-## Seconds for a readout that is absorbed into the main score, flying in and shrinking away.
-const SHRINK_MERGE_DURATION := 0.15
-## Seconds the factor line holds after rising, before it becomes the product.
-const FACTOR_HOLD_DURATION := 0.55
-## Extra hold during the first tutorial product beat.
-const TUTORIAL_EQUALS_HOLD := 0.55
-## Seconds to grow the factor line into a larger Score number.
-const EQUALS_MORPH_DURATION := 0.34
-## Seconds the product stays readable before it merges into the turn total.
-const PRODUCT_HOLD_DURATION := 0.6
-## Factor line is smaller than the product, even when Mult is 1.
-const FACTOR_FONT_SCALE := 0.72
-## Peak scale overshoot when the product lands.
-const PRODUCT_PUNCH_SCALE := 1.24
 ## Scale each glyph starts at before popping in. Near-zero so they appear from nothing.
 const POP_START_SCALE := 0.05
 ## Seconds for one glyph to scale from POP_START_SCALE to full size.
@@ -65,25 +45,6 @@ func set_text(text: String, color: Color = Color.WHITE, icon: Texture2D = null) 
 	label.text = text
 	_apply_label_style(color, ScoreReadoutStyle.parse_amount(text), true)
 	_apply_icon(icon)
-	audio_stream_player_2d.play()
-
-
-## One readout of "energy x multiplier" with aqua energy and plum multiplier.
-func set_segment_product(score: int, multiplier: int) -> void:
-	if not is_node_ready():
-		await ready
-
-	var score_html := Color.AQUA.to_html(false)
-	var mult_html := Color.PLUM.to_html(false)
-	label.bbcode_enabled = true
-	label.text = "[color=#%s]%s[/color] x [color=#%s]%s[/color]" % [
-		score_html,
-		CountingNumber.format_int(score),
-		mult_html,
-		CountingNumber.format_int(multiplier),
-	]
-	_apply_label_style(Color.WHITE, score * multiplier, false, FACTOR_FONT_SCALE)
-	_apply_icon(null)
 	audio_stream_player_2d.play()
 
 
@@ -226,97 +187,5 @@ func _apply_icon(texture: Texture2D) -> void:
 	icon_rect.size = Vector2(icon_size, icon_size)
 
 
-## Rises without fading so a follow-up merge can keep the digits visible.
-func play_rise() -> void:
-	label.modulate = Color.WHITE
-	var tween := create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
-	tween.tween_property(
-		label,
-		"position",
-		Vector2(0, -RISE_DISTANCE),
-		SEGMENT_RISE_DURATION / GameManager.game_speed
-	)
-	await tween.finished
-
-
-## Turns the factor line into a larger Score product, punches, then holds so it can be read.
-func play_equals_to_product(product: int, linger_extra: bool = false) -> void:
-	await GameManager.create_pauseable_timer(FACTOR_HOLD_DURATION / GameManager.game_speed).timeout
-	if linger_extra:
-		await GameManager.create_pauseable_timer(TUTORIAL_EQUALS_HOLD / GameManager.game_speed).timeout
-	if not is_instance_valid(self):
-		return
-
-	var start_font := float(label.get_theme_font_size("normal_font_size"))
-	var end_font := float(ScoreReadoutStyle.font_size_for_score(product))
-	var product_html := ScoreReadoutStyle.color_for_score(product).to_html(false)
-	label.bbcode_enabled = true
-	label.text = "[color=#%s]%s[/color]" % [product_html, CountingNumber.format_int(product)]
-	label.add_theme_color_override("default_color", Color.WHITE)
-	label.add_theme_constant_override("outline_size", 12)
-	_apply_icon(TileCard.ICON_SCORE)
-	_set_font_size(start_font)
-	_center_label_pivot()
-	label.scale = Vector2.ONE
-	audio_stream_player_2d.play()
-
-	var duration := EQUALS_MORPH_DURATION / GameManager.game_speed
-	var punch := create_tween()
-	punch.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
-	punch.set_parallel(true)
-	punch.tween_method(_set_font_size, start_font, end_font, duration).set_trans(Tween.TRANS_BACK).set_ease(
-		Tween.EASE_OUT
-	)
-	punch.tween_property(
-		label,
-		"scale",
-		Vector2(PRODUCT_PUNCH_SCALE, PRODUCT_PUNCH_SCALE),
-		duration * 0.45
-	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	punch.set_parallel(false)
-	punch.tween_property(label, "scale", Vector2.ONE, duration * 0.55).set_trans(Tween.TRANS_QUAD).set_ease(
-		Tween.EASE_IN
-	)
-	await punch.finished
-	if not is_instance_valid(self):
-		return
-
-	await GameManager.create_pauseable_timer(PRODUCT_HOLD_DURATION / GameManager.game_speed).timeout
-
-
-## Flies the readout toward a world-space point. Grow lands as the main score. Shrink absorbs into it.
-func merge_into(target_world: Vector2, grow: bool, target_font_size: int) -> void:
-	label.modulate = Color.WHITE
-	_center_label_pivot()
-
-	var duration := (GROW_MERGE_DURATION if grow else SHRINK_MERGE_DURATION) / GameManager.game_speed
-	var dest := global_position + (target_world - get_visual_global_center())
-	var start_font := float(label.get_theme_font_size("normal_font_size"))
-
-	var tween := create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
-	tween.set_parallel(true)
-	tween.tween_property(self, "global_position", dest, duration).set_trans(Tween.TRANS_CUBIC).set_ease(
-		Tween.EASE_OUT if grow else Tween.EASE_IN
-	)
-	if grow:
-		tween.tween_method(_set_font_size, start_font, float(target_font_size), duration)
-		tween.tween_property(label, "scale", Vector2.ONE, duration)
-	else:
-		tween.tween_property(self, "scale", Vector2(0.08, 0.08), duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		tween.tween_property(label, "modulate:a", 0.0, duration * 0.9)
-	await tween.finished
-
-
-func get_visual_global_center() -> Vector2:
-	return label.global_position + (label.size * label.scale) * 0.5
-
-
 func _set_font_size(value: float) -> void:
 	label.add_theme_font_size_override("normal_font_size", int(round(value)))
-	_center_label_pivot()
-
-
-func _center_label_pivot() -> void:
-	label.pivot_offset = label.size * 0.5

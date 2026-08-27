@@ -111,7 +111,7 @@ func _on_segment_score_revealed(changed_index: int, total_score: int) -> void:
 	_play_counter(_total_score_counter, total_score, segment_total_score)
 
 
-## Stores tooltip values and updates the row labels.
+## Stores the latest Energy, Mult, Score, and Gold values, then refreshes the row labels.
 func _apply_results(
 	score: int,
 	multiplier: int,
@@ -214,53 +214,14 @@ func _set_segment_no(no: int) -> void:
 			segment_no.text = "%dth" % no
 
 
-## Anchor on the segments panel right edge, vertically aligned to this row.
-func _get_tooltip_anchor_rect() -> Rect2:
-	var segments_container := _get_segments_container()
-	var row_rect := get_global_rect()
-	if segments_container == null:
-		return row_rect
-
-	var container_rect := segments_container.get_global_rect()
-	return Rect2(
-		Vector2(container_rect.end.x, row_rect.position.y),
-		Vector2(0.0, row_rect.size.y)
-	)
-
-
-func _get_segments_container() -> Control:
-	var node: Node = self
-	while node != null:
-		if node.name == "SegmentsContainer" and node is PanelContainer:
-			return node as Control
-		node = node.get_parent()
-	return null
-
-
 func _on_mouse_entered() -> void:
-	var score_line := (
-		"%s × %s = %s" % [_score, _multiplier, _total_score]
-		if _score_revealed
-		else "—"
-	)
-	var tooltip := (
-		"Turn Results:\nEnergy: %s\nMultiplier: %s\nGold: %s\nScore: %s"
-		% [_score, _multiplier, _gold, score_line]
-	)
-	EventBus.toggle_tooltip.emit(
-		true,
-		tooltip,
-		_get_tooltip_anchor_rect(),
-		Tooltip.Placement.RIGHT_OF_ANCHOR
-	)
-	# Highlight this segment's tiles on the map for as long as the tooltip is shown.
+	# Hover still highlights this segment on the map. The row no longer shows a tooltip.
 	var tile_map := _get_tile_map()
 	if tile_map != null:
 		tile_map.highlight_hovered_segment(segment_index)
 
 
 func _on_mouse_exited() -> void:
-	EventBus.toggle_tooltip.emit(false, "")
 	var tile_map := _get_tile_map()
 	if tile_map != null:
 		tile_map.clear_hovered_segment_highlight(segment_index)

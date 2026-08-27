@@ -23,11 +23,14 @@ layer = 80
 script = ExtResource("1_sandbox")
 
 [node name="ToolsPanel" type="PanelContainer" parent="." unique_id=1111735781]
-anchors_preset = 2
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -508.0
-offset_right = 266.0
+offset_left = -288.0
+offset_top = -560.0
+grow_horizontal = 0
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_tools")
 
@@ -42,6 +45,15 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Run Sandbox"
+
+[node name="CharacterRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1982736460]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CharacterOption" type="OptionButton" parent="ToolsPanel/MarginContainer/VBoxContainer/CharacterRow" unique_id=1982736461]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Changing character restarts the run."
 
 [node name="CompleteRoundButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=40927998]
 layout_mode = 2
@@ -164,6 +176,16 @@ text = "Add a card to hand"
 layout_mode = 2
 text = "Close"
 
+[node name="SearchRow" type="HBoxContainer" parent="CardPicker/Panel/MarginContainer/VBoxContainer" unique_id=1565869030]
+layout_mode = 2
+
+[node name="CardSearch" type="LineEdit" parent="CardPicker/Panel/MarginContainer/VBoxContainer/SearchRow" unique_id=2089516584]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search by name..."
+clear_button_enabled = true
+caret_blink = true
+
 [node name="ScrollContainer" type="ScrollContainer" parent="CardPicker/Panel/MarginContainer/VBoxContainer" unique_id=969346425]
 layout_mode = 2
 size_flags_vertical = 3
@@ -175,6 +197,7 @@ theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 columns = 6
 
+[connection signal="item_selected" from="ToolsPanel/MarginContainer/VBoxContainer/CharacterRow/CharacterOption" to="." method="_on_character_option_item_selected"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton" to="." method="_on_complete_round_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton" to="." method="_on_pass_turn_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
@@ -186,3 +209,4 @@ columns = 6
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/OpenRuneSelectionButton" to="." method="_on_open_rune_selection_pressed"]
 [connection signal="gui_input" from="CardPicker/Dim" to="." method="_on_card_picker_dim_gui_input"]
 [connection signal="pressed" from="CardPicker/Panel/MarginContainer/VBoxContainer/HeaderRow/CloseButton" to="." method="_on_close_card_picker_pressed"]
+[connection signal="text_changed" from="CardPicker/Panel/MarginContainer/VBoxContainer/SearchRow/CardSearch" to="." method="_on_card_search_text_changed"]
