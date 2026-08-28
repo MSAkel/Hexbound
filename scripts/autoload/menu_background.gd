@@ -48,6 +48,8 @@ func _process(delta: float) -> void:
 		return
 	# Keep advancing time while hidden so re-entry does not snap the drift angle.
 	_motion_time += delta
+	if _view == null or not _view.visible:
+		return
 	_drift_material.set_shader_parameter("motion_time", _motion_time)
 
 

@@ -1,7 +1,6 @@
 extends Control
 
 const SOUNDTRACK := preload("res://scripts/soundtracks.gd")
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var character_details: CharacterDetails = $SafeArea/Page/CharacterDetails
 @onready var scene_enter_transition: SceneEnterTransition = $SceneEnterTransition
@@ -55,13 +54,13 @@ func _restore_last_character() -> void:
 func _on_prev_selection() -> void:
 	current_index = (current_index - 1 + selections.size()) % selections.size()
 	_update_display()
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 
 func _on_next_selection() -> void:
 	current_index = (current_index + 1) % selections.size()
 	_update_display()
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 
 func _update_display() -> void:
@@ -70,5 +69,5 @@ func _update_display() -> void:
 	GameSettings.set_last_character_selection_id(get_selected_character().id)
 
 func _on_back_button_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

@@ -12,7 +12,6 @@ signal closed
 @onready var v_sync_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox
 @onready var tutorial_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/TutorialCheckBox
 
-const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 const RESOLUTIONS := [
 	Vector2i(1024, 576),
 	Vector2i(1280, 720),
@@ -72,11 +71,11 @@ func _on_game_speed_option_button_item_selected(index: int) -> void:
 	
 
 func _on_back_button_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	closed.emit()
 
 func _on_back_button_mouse_entered() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 
 func _on_v_sync_check_box_toggled(toggled_on: bool) -> void:

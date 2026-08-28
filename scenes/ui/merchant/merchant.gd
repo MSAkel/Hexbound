@@ -4,7 +4,6 @@ extends Control
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const MERCHANT_TILE_CARD_COUNT := 3
 const BASE_REROLL_COST := 5
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/CardsGridContainer
 @onready var gold_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/GoldAmount
@@ -61,8 +60,8 @@ func open() -> void:
 	_apply_sold_indices(sold_indices)
 	if restoring:
 		return
-	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_BELL)
-	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_ENTRY)
+	AudioManager.play_sfx(UISounds.MERCHANT_BELL)
+	AudioManager.play_sfx(UISounds.MERCHANT_ENTRY)
 
 
 func _input(event: InputEvent) -> void:
@@ -178,7 +177,7 @@ func _complete_purchase(pay_with_tokens: bool) -> void:
 		EventBus.tile_card_selected.emit(card as TileCard)
 
 	AudioManager.play_sfx(
-		UI_SOUNDS.CLICK if pay_with_tokens else UI_SOUNDS.MERCHANT_CARD_PURCHASED
+		UISounds.CLICK if pay_with_tokens else UISounds.MERCHANT_CARD_PURCHASED
 	)
 	_clear_selection()
 	_update_reroll_button()
@@ -189,7 +188,7 @@ func _on_reroll_button_pressed() -> void:
 		return
 
 	GoldManager.remove(_reroll_cost)
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_stock_reroll_count += 1
 	_reroll_cost += 1
 	await _refresh_merchant_cards()
@@ -200,8 +199,6 @@ func _on_reroll_button_pressed() -> void:
 func _on_leave_button_pressed() -> void:
 	_set_board_view(false)
 	hide()
-	if UiManager.active_panel == self:
-		UiManager.active_panel = null
 	EventBus.merchant_closed.emit()
 
 

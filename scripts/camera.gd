@@ -13,7 +13,9 @@ var _shake_canvas_layer_bases: Dictionary = {}
 # Map ref
 var map = HexTileMap
 
+
 func _ready() -> void:
+	set_process(false)
 	GameSettings.ensure_loaded()
 	var maps = get_tree().get_nodes_in_group("hex_map_group")
 	if maps.size() > 0:
@@ -22,25 +24,27 @@ func _ready() -> void:
 	EventBus.tile_card_activated.connect(_on_tile_card_activated)
 	_cache_shake_canvas_layers()
 
+
 func _process(delta: float) -> void:
 	_update_screen_shake(delta)
 
+
 func _on_tile_card_activated(_rune: TileCard) -> void:
 	shake(rune_shake_strength, rune_shake_duration)
+
 
 ## Start or intensify a screen shake, duration scales with game speed like other turn effects.
 func shake(strength: float, duration: float) -> void:
 	GameSettings.ensure_loaded()
 	if not GameSettings.screen_shake_enabled:
-		_apply_shake_offset(Vector2.ZERO)
-		_shake_strength = 0.0
-		_shake_duration = 0.0
-		_shake_timer = 0.0
+		_stop_shake()
 		return
 	var scaled_duration := duration / GameManager.game_speed
 	_shake_strength = max(_shake_strength, strength)
 	_shake_duration = max(_shake_duration, scaled_duration)
 	_shake_timer = _shake_duration
+	set_process(true)
+
 
 ## Collect screen-space layers from the scene root so shake hits UI and background too.
 func _cache_shake_canvas_layers() -> void:
@@ -55,6 +59,7 @@ func _cache_shake_canvas_layers() -> void:
 			_shake_canvas_layers.append(layer)
 			_shake_canvas_layer_bases[layer] = layer.offset
 
+
 ## Camera offset moves the board, CanvasLayer offsets move everything drawn in screen space.
 func _apply_shake_offset(shake_offset: Vector2) -> void:
 	offset = shake_offset
@@ -63,20 +68,25 @@ func _apply_shake_offset(shake_offset: Vector2) -> void:
 			continue
 		layer.offset = _shake_canvas_layer_bases.get(layer, Vector2.ZERO) + shake_offset
 
+
+func _stop_shake() -> void:
+	_shake_strength = 0.0
+	_shake_duration = 0.0
+	_shake_timer = 0.0
+	set_process(false)
+	_apply_shake_offset(Vector2.ZERO)
+
+
 func _update_screen_shake(delta: float) -> void:
-	if not GameSettings.screen_shake_enabled:
-		_apply_shake_offset(Vector2.ZERO)
-		_shake_strength = 0.0
-		_shake_duration = 0.0
-		_shake_timer = 0.0
+	if not GameSettings.screen_shake_enabled or _shake_timer <= 0.0:
+		_stop_shake()
 		return
-	if _shake_timer <= 0.0:
-		_apply_shake_offset(Vector2.ZERO)
-		_shake_strength = 0.0
-		_shake_duration = 0.0
-		return
-	
+
 	_shake_timer = max(_shake_timer - delta, 0.0)
+	if _shake_timer <= 0.0:
+		_stop_shake()
+		return
+
 	var progress := _shake_timer / _shake_duration if _shake_duration > 0.0 else 0.0
 	var current_strength := _shake_strength * progress
 	var shake_offset := Vector2(

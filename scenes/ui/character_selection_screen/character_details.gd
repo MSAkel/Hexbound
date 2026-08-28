@@ -1,7 +1,6 @@
 class_name CharacterDetails
 extends HBoxContainer
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const DEFAULT_SEGMENT_COUNT := 7
 
 signal prev_selection_pressed
@@ -47,7 +46,7 @@ func _refresh_passive_set_label(character: CharacterDefinition) -> void:
 func _on_segment_passives_button_pressed() -> void:
 	if _selected_character == null:
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	GameManager.segment_passives_editor_character = _selected_character
 	get_tree().change_scene_to_file(ScenePaths.SEGMENT_PASSIVES)
 
@@ -69,7 +68,7 @@ func display_difficulty(level: Difficulty.Level) -> void:
 
 
 func _on_play_button_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 
 	# A fresh run replaces any saved session from a previous quit.
 	RunSaveManager.delete_save()

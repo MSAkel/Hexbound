@@ -2,7 +2,6 @@ extends PanelContainer
 
 ## One-shot banner at the top of the run HUD.
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 const STEP_TEXTS: PackedStringArray = [
 	"Select a card to place it into an empty tile.\nYou must reach the required score for the current round before your turns reach to 0.",
@@ -129,7 +128,7 @@ func _play_text_change_animation(is_first_show: bool) -> void:
 
 	# Scale from the panel center so the punch reads as a notice, not a layout shift.
 	_update_pivot()
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 	_text_tween = create_tween()
 	_text_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)

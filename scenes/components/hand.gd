@@ -7,7 +7,6 @@ var cards_played := 0
 #TODO Max hand size
 
 const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
-const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 ## Slide the hand off-screen between turns using 4.7 offset transforms (layout-safe).
 const HAND_SLIDE_DURATION := 0.35
 ## Stagger between each card during the run-start entrance from below.
@@ -201,7 +200,7 @@ func _on_card_played(_card_ui: CardUI) -> void:
 	await get_tree().create_timer(0.1).timeout
 	if _get_hand_card_count() < 3:
 		EventBus.turn_ended.emit()
-		AudioManager.play_sfx(UI_SOUNDS.END_TURN)
+		AudioManager.play_sfx(UISounds.END_TURN)
 
 
 func _hide_hand() -> void:
@@ -214,6 +213,8 @@ func _show_hand() -> void:
 	## Don't fight the run-start entrance if a turn signal fires early.
 	if _awaiting_intro:
 		return
+	# New turn, so reparent index math starts from the full current hand.
+	cards_played = 0
 	_hand_hidden = false
 	_animate_hand_slide(false)
 	if _hand_slide_tween != null and _hand_slide_tween.is_valid():

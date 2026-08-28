@@ -1,6 +1,5 @@
 extends Control
 
-const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var pause_menu: Control = $"."
 @onready var panel: Panel = $Panel
@@ -21,12 +20,12 @@ func _ready() -> void:
 
 
 func _on_continue_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_close_pause_menu()
 
 
 func _on_settings_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	panel.hide()
 	settings_container.show()
 
@@ -37,14 +36,14 @@ func _on_settings_closed() -> void:
 
 
 func _on_main_menu_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	RunSaveManager.save_current_run()
 	get_tree().paused = false
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)
 
 
 func _on_exit_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	RunSaveManager.save_current_run()
 	get_tree().paused = false
 	get_tree().quit()

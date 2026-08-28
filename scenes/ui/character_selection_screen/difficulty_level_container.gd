@@ -1,7 +1,6 @@
 class_name DifficultyLevelContainer
 extends HBoxContainer
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var difficulty_level: Label = %DifficultyLevel
 @onready var difficulty_info: Label = %DifficultyInfo
@@ -39,11 +38,11 @@ func _update_display() -> void:
 func _on_prev_selection_button_pressed() -> void:
 	_current_index = (_current_index - 1 + _difficulties.size()) % _difficulties.size()
 	_update_display()
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 
 # Wrap to the first difficulty when moving past the end of the list.
 func _on_next_selection_button_pressed() -> void:
 	_current_index = (_current_index + 1) % _difficulties.size()
 	_update_display()
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)

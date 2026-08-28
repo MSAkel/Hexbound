@@ -2,7 +2,6 @@
 class_name CardPlacementHandler
 extends Node
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 # Reference to the tile map.
 var tile_map: HexTileMap
@@ -152,7 +151,7 @@ func _try_place_card() -> void:
 	_rune_preview.visible = false
 	selected_card.card.play_on(hex)
 	EventBus.card_played.emit(selected_card)
-	AudioManager.play_sfx(UI_SOUNDS.GROUND_IMPACT)
+	AudioManager.play_sfx(UISounds.GROUND_IMPACT)
 	
 	var card_to_remove := selected_card
 	_clear_preview()

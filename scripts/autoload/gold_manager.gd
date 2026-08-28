@@ -3,7 +3,6 @@ extends Node
 ## Tracks spendable gold, merchant tokens, and per-turn or per-round gold earnings.
 ## Gold is used for rune activation and merchant purchases.
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 const MAX_MERCHANT_TOKENS := 5
 const MERCHANT_TOKEN_COST := 1
@@ -132,7 +131,7 @@ func apply_round_speed_rewards(skipped_turns: int) -> void:
 
 	if total_gold > 0:
 		add(total_gold)
-		AudioManager.play_sfx(UI_SOUNDS.GOLD_GAINED)
+		AudioManager.play_sfx(UISounds.GOLD_GAINED)
 
 	_last_speed_reward = {
 		"skipped_turns": skipped_turns,

@@ -17,6 +17,12 @@ var _hex_center: Vector2i = Vector2i.ZERO
 var _ring_distances: Dictionary = {}
 var _segments_cache: Array[Array] = []
 var _segments_cache_valid: bool = false
+# Trigger order is stable until the map is regenerated. Cache it so NUMBERED_GRID
+# lookups do not rebuild and sort the whole grid on every call.
+var _trigger_order_cache: Array[Vector2i] = []
+var _trigger_order_cache_valid: bool = false
+# Vector2i -> segment index, filled whenever segments are rebuilt.
+var _segment_index_by_coords: Dictionary = {}
 # Per-segment score and gold produced during the current turn resolution.
 var _segment_turn_scores: Array[int] = []
 var _segment_turn_multiplier: Array[int] = []
@@ -66,21 +72,12 @@ func get_ring_distance(coords: Vector2i) -> int:
 
 ## All map coordinates sorted by the active character trigger-order rule.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
-	var character := GameManager.selected_character
-	if character == null:
-		return _get_order_top_left_to_bottom_right()
+	if _trigger_order_cache_valid:
+		return _trigger_order_cache
 
-	match character.trigger_order_strategy:
-		CharacterDefinition.TriggerOrderStrategy.ZIGZAG_ROWS:
-			return _get_order_top_left_to_bottom_right()
-		CharacterDefinition.TriggerOrderStrategy.RINGS_OUTWARD:
-			return _get_order_by_rings(true, false)
-		CharacterDefinition.TriggerOrderStrategy.RINGS_INWARD:
-			return _get_order_by_rings(false, true)
-		CharacterDefinition.TriggerOrderStrategy.NUMBERED_GRID:
-			return _get_order_from_numbered_grid(character.numbered_order_grid)
-		_:
-			return _get_order_top_left_to_bottom_right()
+	_trigger_order_cache = _compute_trigger_order()
+	_trigger_order_cache_valid = true
+	return _trigger_order_cache
 
 
 ## All map hex tiles in the same order as get_coords_in_trigger_order().
@@ -93,14 +90,9 @@ func get_hexes_in_trigger_order() -> Array[Hex]:
 
 ## Segment index for coords under the active character's row/ring grouping (-1 when unknown).
 func get_segment_index(coords: Vector2i) -> int:
-	var target_key: Variant = _get_segment_key(coords)
-	for i in range(build_segments().size()):
-		var segment: Array = build_segments()[i]
-		if segment.is_empty():
-			continue
-		if _segment_keys_equal(_get_segment_key(segment[0]), target_key):
-			return i
-	return -1
+	# Ensures the coords lookup is populated. Segment grouping is stable until reset().
+	build_segments()
+	return int(_segment_index_by_coords.get(coords, -1))
 
 
 ## True when coords is the first tile in its segment (trigger-order start).
@@ -157,6 +149,10 @@ func build_segments() -> Array[Array]:
 		return _segments_cache
 
 	_segments_cache = _build_segments_uncached()
+	_segment_index_by_coords.clear()
+	for segment_index in range(_segments_cache.size()):
+		for coords: Vector2i in _segments_cache[segment_index]:
+			_segment_index_by_coords[coords] = segment_index
 	_segments_cache_valid = true
 	return _segments_cache
 
@@ -319,6 +315,9 @@ func apply_turn_results(state: Dictionary) -> void:
 func _invalidate_segments_cache() -> void:
 	_segments_cache_valid = false
 	_segments_cache.clear()
+	_segment_index_by_coords.clear()
+	_trigger_order_cache_valid = false
+	_trigger_order_cache.clear()
 
 
 ## Breadth-first fill of ring distance from the map center tile.
@@ -482,8 +481,28 @@ func _get_order_from_numbered_grid(order_grid: Array) -> Array[Vector2i]:
 	return ordered
 
 
+## Trigger order for the active character, computed once per map generation.
+func _compute_trigger_order() -> Array[Vector2i]:
+	var character := GameManager.selected_character
+	if character == null:
+		return _get_order_top_left_to_bottom_right()
+
+	match character.trigger_order_strategy:
+		CharacterDefinition.TriggerOrderStrategy.ZIGZAG_ROWS:
+			return _get_order_top_left_to_bottom_right()
+		CharacterDefinition.TriggerOrderStrategy.RINGS_OUTWARD:
+			return _get_order_by_rings(true, false)
+		CharacterDefinition.TriggerOrderStrategy.RINGS_INWARD:
+			return _get_order_by_rings(false, true)
+		CharacterDefinition.TriggerOrderStrategy.NUMBERED_GRID:
+			return _get_order_from_numbered_grid(character.numbered_order_grid)
+		_:
+			return _get_order_top_left_to_bottom_right()
+
+
 ## Segment index for custom layouts where yellow preview tiles start a new segment.
 func _get_layout_segment_index(coords: Vector2i, segment_starts: Array[int]) -> int:
+	# Uses the cached trigger-order list. Do not rebuild the numbered grid per tile.
 	var order: int = get_coords_in_trigger_order().find(coords) + 1
 	if order <= 0:
 		return 0

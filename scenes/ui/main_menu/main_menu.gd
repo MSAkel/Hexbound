@@ -1,7 +1,6 @@
 extends Control
 
 const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
-const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 # Subtle hover pop: slight grow + warm brighten
 const HOVER_SCALE := Vector2(1.06, 1.06)
@@ -55,7 +54,7 @@ func _set_button_pivot(button: Button) -> void:
 
 
 func _on_button_hover(button: Button) -> void:
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 	_animate_button_hover(button, true)
 
 
@@ -81,7 +80,7 @@ func _animate_button_hover(button: Button, hovered: bool) -> void:
 
 
 func _on_focus_entered() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 
 func _apply_debug_sandbox_buttons() -> void:
@@ -105,18 +104,18 @@ func _refresh_continue_button() -> void:
 func _on_continue_pressed() -> void:
 	if not RunSaveManager.has_save():
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	RunSaveManager.request_continue_run()
 	get_tree().change_scene_to_file(ScenePaths.MAIN)
 
 
 func _on_play_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.CHARACTER_SELECTION)
 
 
 func _on_options_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	menu_container.hide()
 	settings_container.show()
 
@@ -125,7 +124,7 @@ func _on_settings_closed() -> void:
 	menu_container.show()
 
 func _on_exit_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().quit()
 
 
@@ -136,12 +135,12 @@ func _on_collection_button_pressed() -> void:
 func _on_ui_sandbox_button_pressed() -> void:
 	if not OS.is_debug_build():
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.UI_SANDBOX)
 
 
 func _on_passives_sandbox_button_pressed() -> void:
 	if not OS.is_debug_build():
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.SEGMENT_PASSIVES_SANDBOX)

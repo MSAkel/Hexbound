@@ -9,6 +9,7 @@ extends Control
 
 # Gap between the hovered tile and the panel edge.
 const OFFSET := Vector2(12, 12)
+const EMPTY_TILE_ICON := preload("res://assets/tilesets/tile_dashed.png")
 
 var hex: Hex = null
 var selected_rune: TileCard = null
@@ -50,7 +51,7 @@ func _set_rune_information() -> void:
 		var description_bbcode := CardKeywordGlossary.to_bbcode(card.description)
 		rune_description.text = description_bbcode
 	else:
-		rune_icon.texture = load("res://assets/tilesets/tile_dashed.png")
+		rune_icon.texture = EMPTY_TILE_ICON
 		rune_name.text = "No Rune"
 		rune_subtitle.text = ""
 		rune_subtitle.hide()

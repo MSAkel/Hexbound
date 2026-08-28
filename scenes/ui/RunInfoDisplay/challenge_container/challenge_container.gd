@@ -6,9 +6,9 @@ extends Control
 @onready var challenge_description: Label = $VBoxContainer/ChallengeDescription
 @onready var challenge_icon: TextureRect = $TextureRect
 
-const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 const ACTIVE_ICON_MODULATE := Color(1.35, 1.15, 0.55)
 const IDLE_ICON_MODULATE := Color.WHITE
+
 
 func _ready() -> void:
 	EventBus.round_changed.connect(_update_challenge_preview)

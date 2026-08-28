@@ -1,5 +1,8 @@
 class_name Hex
-extends Node
+extends RefCounted
+
+## One map cell. RefCounted so it does not leak when dropped from map_data.
+## dispose() must run before the dict is cleared, because this object holds the map Node.
 
 const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 
@@ -41,7 +44,21 @@ func setup(map_ref: Node2D) -> void:
 	map.add_child(items_grid)
 
 
-# TODO: adjust icon size so that everything would match in size
+## Drops the map-side Control so regenerate and scene exit do not leave orphan UI.
+func dispose() -> void:
+	if items_grid != null and is_instance_valid(items_grid):
+		items_grid.queue_free()
+	items_grid = null
+	rune_ui = null
+	active_tile_card = null
+	map = null
+
+
+## False after dispose, or before setup, when this hex should not drive animations.
+func is_on_map() -> bool:
+	return map != null and items_grid != null and is_instance_valid(items_grid)
+
+
 func _fit_rune_ui(rune_ui_node: RuneUI) -> void:
 	rune_ui_node.custom_minimum_size = HEX_RUNE_SIZE
 	rune_ui_node.size = HEX_RUNE_SIZE

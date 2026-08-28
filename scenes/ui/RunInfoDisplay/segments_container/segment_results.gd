@@ -377,6 +377,7 @@ func _on_mouse_exited() -> void:
 
 
 func _exit_tree() -> void:
+	_disconnect_event_bus()
 	if _power_counter != null:
 		_power_counter.kill()
 	if _multiplier_counter != null:
@@ -388,3 +389,16 @@ func _exit_tree() -> void:
 	var tile_map := _get_tile_map()
 	if tile_map != null:
 		tile_map.clear_hovered_segment_highlight(segment_index)
+
+
+func _disconnect_event_bus() -> void:
+	if EventBus.segment_turn_results_changed.is_connected(_on_segment_turn_results_changed):
+		EventBus.segment_turn_results_changed.disconnect(_on_segment_turn_results_changed)
+	if EventBus.segment_turn_results_reset.is_connected(_on_segment_turn_results_reset):
+		EventBus.segment_turn_results_reset.disconnect(_on_segment_turn_results_reset)
+	if EventBus.segment_score_revealed.is_connected(_on_segment_score_revealed):
+		EventBus.segment_score_revealed.disconnect(_on_segment_score_revealed)
+	if EventBus.segment_reveal_started.is_connected(_on_segment_reveal_started):
+		EventBus.segment_reveal_started.disconnect(_on_segment_reveal_started)
+	if EventBus.segment_reveal_ended.is_connected(_on_segment_reveal_ended):
+		EventBus.segment_reveal_ended.disconnect(_on_segment_reveal_ended)

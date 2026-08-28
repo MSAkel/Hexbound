@@ -17,6 +17,7 @@ const CARD_FLOAT_SPEED := 1.4
 const CARD_FLOAT_PHASE_OFFSET := 1.85
 
 var _float_time := 0.0
+var _float_wrappers: Array[Control] = []
 
 ## List of rune choices for the current turn
 var runes_pack: Array[TileCard] = []
@@ -36,17 +37,14 @@ func _ready() -> void:
 	UiManager.show_runes_choice_panel.connect(_on_show_panel)
 	EventBus.rerolls_changed.connect(_on_rerolls_changed)
 	_update_reroll_button()
+	set_process(false)
 
 
 func _process(delta: float) -> void:
-	if not visible:
-		return
-
 	_float_time += delta * CARD_FLOAT_SPEED
-	for index in choices_container.get_child_count():
-		var card_slot := choices_container.get_child(index)
-		var float_wrapper := card_slot.get_node_or_null('FloatWrapper') as Control
-		if float_wrapper != null:
+	for index in _float_wrappers.size():
+		var float_wrapper := _float_wrappers[index]
+		if is_instance_valid(float_wrapper):
 			_apply_card_float(float_wrapper, index)
 
 
@@ -63,6 +61,7 @@ func _apply_card_float(float_wrapper: Control, index: int) -> void:
 func _on_show_panel() -> void:
 	_set_board_view(false)
 	UiManager.show_panel(self)
+	set_process(true)
 	_update_reroll_button()
 	if not _restore_state.is_empty():
 		_offer_reroll_count = int(_restore_state.get("offer_reroll_count", 0))
@@ -132,6 +131,7 @@ func instantiate_rune_choices() -> void:
 	
 	## Now create new choices from the current runes_pack
 	_float_time = 0.0
+	_float_wrappers.clear()
 	for rune in runes_pack:
 		_create_choice_card(rune)
 
@@ -149,6 +149,7 @@ func _create_choice_card(rune: TileCard) -> void:
 	float_wrapper.pivot_offset = float_wrapper.size * 0.5
 	float_wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_slot.add_child(float_wrapper)
+	_float_wrappers.append(float_wrapper)
 	_apply_card_float(float_wrapper, card_slot.get_index())
 
 	var card_ui: CardUI = CARD_UI_SCENE.instantiate()
@@ -165,6 +166,7 @@ func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
 	runes_pack.clear()
 	_set_board_view(false)
 	hide()
+	set_process(false)
 	EventBus.tile_card_selected.emit(rune)
 	## Report the pick here rather than on tile_card_selected, which merchant purchases also emit.
 	RoundFlow.notify_rune_picked()

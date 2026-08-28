@@ -2,7 +2,6 @@ extends Control
 
 ## Shows one unlocked passive at a time after leaving victory or game over.
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 ## Live flow consumes pending unlocks. Sandbox instances turn this off.
 @export var auto_present: bool = true
@@ -53,7 +52,7 @@ func _show_passive(passive: SegmentPassive) -> void:
 	name_label.text = passive.display_name
 	description_label.text = passive.description
 	_play_reveal_animation()
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 
 func _center_particles() -> void:
@@ -106,7 +105,7 @@ func _on_continue_pressed() -> void:
 
 
 func _advance() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	if not auto_present:
 		hide()
 		return

@@ -3,7 +3,6 @@ extends CanvasLayer
 ## Debug overlay for a live run. Complete rounds, pass turns, inject cards, and set gold.
 ## Only spawned from main.gd in debug builds.
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 
 @onready var _gold_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/GoldRow/GoldSpinBox
@@ -57,7 +56,7 @@ func _refresh_seed_label() -> void:
 func _on_copy_seed_button_pressed() -> void:
 	if not RunRng.copy_display_seed_to_clipboard():
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 
 
 func _on_gold_changed(new_amount: int) -> void:
@@ -75,13 +74,13 @@ func _on_tokens_changed(new_amount: int) -> void:
 
 func _on_complete_round_pressed() -> void:
 	_dismiss_blocking_panels()
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	GameManager.debug_meet_round_goal_and_complete()
 
 
 func _on_pass_turn_pressed() -> void:
 	_dismiss_blocking_panels()
-	AudioManager.play_sfx(UI_SOUNDS.END_TURN)
+	AudioManager.play_sfx(UISounds.END_TURN)
 	EventBus.turn_ended.emit()
 
 
@@ -89,17 +88,17 @@ func _on_draw_random_card_pressed() -> void:
 	var card := _pick_random_card()
 	if card == null:
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_add_card_to_hand(card)
 
 
 func _on_pick_card_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_open_card_picker()
 
 
 func _on_close_card_picker_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_close_card_picker()
 
 
@@ -109,25 +108,25 @@ func _on_card_picker_dim_gui_input(event: InputEvent) -> void:
 
 
 func _on_set_gold_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	GoldManager.set_amount(int(_gold_spin.value))
 
 
 func _on_set_tokens_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	GoldManager.set_merchant_tokens(int(_token_spin.value))
 	_token_spin.value = GoldManager.merchant_tokens
 
 
 func _on_open_merchant_pressed() -> void:
 	_dismiss_blocking_panels()
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	UiManager.show_merchant_panel.emit()
 
 
 func _on_open_rune_selection_pressed() -> void:
 	_dismiss_blocking_panels()
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	UiManager.show_runes_choice_panel.emit()
 
 
@@ -139,7 +138,7 @@ func _on_character_option_item_selected(index: int) -> void:
 	if GameManager.selected_character != null and GameManager.selected_character.id == character.id:
 		return
 
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_restart_run_as(character)
 
 
@@ -169,7 +168,7 @@ func _populate_character_options() -> void:
 
 func _on_activate_challenge_pressed() -> void:
 	_dismiss_blocking_panels()
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	var challenge_type := _challenge_option.get_selected_id()
 	if challenge_type == -1:
 		ChallengeManager.debug_clear_challenge()
@@ -201,10 +200,9 @@ func _sync_challenge_option(_unused: Variant = null) -> void:
 
 ## Hide a mid-turn pick overlay so the sandbox action owns the next flow step.
 func _dismiss_blocking_panels() -> void:
-	if UiManager.active_panel == null:
-		return
-	UiManager.active_panel.hide()
-	UiManager.active_panel = null
+	if is_instance_valid(UiManager.active_panel):
+		UiManager.active_panel.hide()
+	UiManager.release_panel()
 
 
 func _pick_random_card() -> Card:
@@ -283,6 +281,6 @@ func _add_picker_card(card: Card) -> void:
 func _on_picker_card_selected(card_ui: CardUI) -> void:
 	if card_ui.card == null:
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_add_card_to_hand(card_ui.card)
 	_close_card_picker()

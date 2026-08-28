@@ -1,9 +1,10 @@
 class_name HexTileMap
 extends Node2D
 
-# Live map state: tiles, runes, turn flow, UI
+# Live map state: tiles, runes, overlays, and save. Turn resolve and hover UI live on helpers.
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
+var hover_ui: HexHoverUI
+var turn_resolver: HexTurnResolver
 
 @onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
 @onready var base_layer: TileMapLayer = $BaseLayer
@@ -50,12 +51,6 @@ const BASE_TILE_ATLAS_COORDS := Vector2i(0, 0)
 var hovered_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>
 var map_data: Dictionary = {}
-# Extra rune activations queued by support runes. Resolved before tile flow continues.
-var _pending_trigger_queue: Array[Dictionary] = []
-# Remaining chained triggers keyed by the source hex that queued them.
-var _trigger_link_pending: Dictionary = {}
-# Tile cards that should be removed once their queued trigger link session finishes.
-var _deferred_destroy_after_triggers: Dictionary = {}
 # Ring distances, trigger order, and segment grouping.
 var _layout: HexMapLayout
 
@@ -83,25 +78,11 @@ var _flash_segment_generation: int = 0
 enum FadingOverlayOwner { CHALLENGE, REVEAL }
 
 const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
-const SEGMENT_REVEAL_PAUSE := 0.35
-# Keep in sync with RuneUI segment reveal highlight + fade durations.
-const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
-## Extra hold on the first scoring row during the tutorial.
-const TUTORIAL_SCORE_LINGER := 0.55
 # How long a destination-segment flash stays visible during card activation.
 const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 
-# Delay before showing the tile info panel after hovering a tile with a placed card.
-const TILE_PANEL_HOVER_DELAY := 0.4
-# Pause between tile card activations during turn resolution. Shared by trigger order and queued triggers.
-const TILE_ACTIVATION_PACE_DELAY := 0.5
-# Tile currently being hovered for the info panel (independent of selection overlay).
-var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
-var _tile_panel_timer: Timer
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
-# First scoring row in a tutorial run holds longer.
-var _did_tutorial_product_linger: bool = false
 
 
 func _ready() -> void:
@@ -116,29 +97,25 @@ func _ready() -> void:
 	trigger_link_overlay.setup(self)
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
-	EventBus.tile_card_empowered.connect(_on_tile_card_empowered)
-	EventBus.tile_card_empower_consumed.connect(_on_tile_card_empower_consumed)
-	EventBus.card_drag_started.connect(_on_card_drag_started_hide_tile_panel)
 	EventBus.map_display_layout_changed.connect(_on_map_display_layout_changed)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
 	add_child(card_placement_handler)
 
-	_tile_panel_timer = Timer.new()
-	_tile_panel_timer.one_shot = true
-	_tile_panel_timer.wait_time = TILE_PANEL_HOVER_DELAY
-	_tile_panel_timer.timeout.connect(_on_tile_panel_hover_timeout)
-	add_child(_tile_panel_timer)
-	tile_panel.hide()
+	hover_ui = HexHoverUI.new()
+	hover_ui.name = "HoverUI"
+	add_child(hover_ui)
+	hover_ui.setup(self)
 
-	set_process(true)
+	turn_resolver = HexTurnResolver.new()
+	turn_resolver.name = "TurnResolver"
+	add_child(turn_resolver)
+	turn_resolver.setup(self)
 
 
-func _process(_delta: float) -> void:
-	# Re-anchor while visible so zoom/pan mid-hover stays lined up with the tile.
-	if tile_panel.visible and _tile_panel_hover_coords != Vector2i(-1, -1):
-		tile_panel.update_anchor(_get_tile_screen_rect(_tile_panel_hover_coords))
+func _exit_tree() -> void:
+	_free_map_hexes()
 
 
 # Widen the hex grid cells while keeping the 221x255 textures, creating visible gaps.
@@ -176,10 +153,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event is InputEventMouseMotion:
 		if card_placement_handler.is_card_selected:
-			_hide_tile_panel_hover()
+			if hover_ui != null:
+				hover_ui.hide_tile_panel()
 		else:
 			_update_hover_highlight()
-			_update_tile_panel_hover(_mouse_map_coords())
+			if hover_ui != null:
+				hover_ui.update_tile_panel_hover(_mouse_map_coords())
 
 
 func _update_hover_highlight() -> void:
@@ -201,44 +180,6 @@ func _mouse_map_coords() -> Vector2i:
 	return base_layer.local_to_map(to_local(get_global_mouse_position()))
 
 
-# Start / refresh hover feedback for the tile under the cursor.
-# Empty tiles highlight their segment. Occupied tiles show the tile info panel.
-func _update_tile_panel_hover(map_coords: Vector2i) -> void:
-	if not is_in_map(map_coords) or not is_tile_interactable(map_coords):
-		_hide_tile_panel_hover()
-		return
-
-	var hex: Hex = map_data[map_coords]
-
-	# Empty tiles have nothing for the panel. Segment role tints come from selection hover.
-	if hex.active_tile_card == null:
-		_hide_tile_panel_only()
-		return
-
-	if map_coords == _tile_panel_hover_coords:
-		# Keep the panel glued to the tile while the camera zooms or pans.
-		if tile_panel.visible:
-			tile_panel.update_anchor(_get_tile_screen_rect(map_coords))
-		return
-
-	_tile_panel_hover_coords = map_coords
-	_update_occupied_inspect_overlay(hex)
-	tile_panel.hide()
-	_tile_panel_timer.start()
-
-
-# Hide the panel and stop its timer without clearing empty-tile segment preview.
-func _hide_tile_panel_only() -> void:
-	_tile_panel_hover_coords = Vector2i(-1, -1)
-	_tile_panel_timer.stop()
-	tile_panel.hide()
-	_clear_occupied_inspect_overlay()
-
-
-func _hide_tile_panel_hover() -> void:
-	_hide_tile_panel_only()
-
-
 func _clear_selection_hover_highlight() -> void:
 	if hovered_cell == Vector2i(-1, -1):
 		return
@@ -248,7 +189,8 @@ func _clear_selection_hover_highlight() -> void:
 
 ## Dismisses any map hover feedback when gameplay is covered by another UI.
 func dismiss_hover_feedback() -> void:
-	_hide_tile_panel_hover()
+	if hover_ui != null:
+		hover_ui.hide_tile_panel()
 	_clear_selection_hover_highlight()
 
 
@@ -374,52 +316,6 @@ func _get_selection_hover_source_id(coords: Vector2i) -> int:
 	return HOVER_OVERLAY_NORMAL
 
 
-# Light tiles this placed card would affect. Skip the hovered cell, matching placement preview.
-func _update_occupied_inspect_overlay(hex: Hex) -> void:
-	_clear_occupied_inspect_overlay()
-	if hex == null or hex.active_tile_card == null:
-		return
-	if card_placement_handler != null and card_placement_handler.is_card_selected:
-		return
-
-	var origin := hex.coordinates
-	for coords: Vector2i in hex.active_tile_card.get_trigger_preview_coords(hex):
-		if not is_in_map(coords):
-			continue
-		if coords == origin:
-			continue
-		rune_highlight_overlay_layer.set_cell(
-			coords,
-			RUNE_HIGHLIGHT_SOURCE_ID,
-			OVERLAY_TILE_ATLAS_COORDS
-		)
-		_inspect_highlight_coords.append(coords)
-
-
-func _clear_occupied_inspect_overlay() -> void:
-	for coords: Vector2i in _inspect_highlight_coords:
-		if _rune_highlight_still_needed(coords, false, false, true):
-			continue
-		rune_highlight_overlay_layer.set_cell(coords, -1)
-	_inspect_highlight_coords.clear()
-
-
-func _on_tile_panel_hover_timeout() -> void:
-	if _tile_panel_hover_coords == Vector2i(-1, -1):
-		return
-	if not map_data.has(_tile_panel_hover_coords):
-		return
-	var hex: Hex = map_data[_tile_panel_hover_coords]
-	# Panel is only for tiles with a placed card.
-	if hex.active_tile_card == null:
-		return
-	tile_panel.set_hex(hex, _get_tile_screen_rect(_tile_panel_hover_coords))
-
-
-func _on_card_drag_started_hide_tile_panel(_card: CardUI) -> void:
-	_hide_tile_panel_hover()
-
-
 # Convert a map cell into a viewport/CanvasLayer rect so the panel aligns with the camera.
 func _get_tile_screen_rect(coords: Vector2i) -> Rect2:
 	var tile_size := Vector2(HEX_TEXTURE_SIZE)
@@ -484,6 +380,13 @@ func is_tile_card_active(hex: Hex) -> bool:
 	if hex.is_disabled_by_difficulty:
 		return false
 	return hex.active_tile_card.is_active
+
+
+## Inactive and difficulty-disabled runes are skipped instantly during trigger order.
+func _is_bypassed_in_trigger_order(hex: Hex) -> bool:
+	if hex.active_tile_card == null:
+		return false
+	return not is_tile_card_active(hex)
 
 
 ## True when another card may queue or target this rune this turn.
@@ -557,7 +460,7 @@ func _place_hex_tile(offset: Vector2i) -> void:
 
 ## Builds the hex map from the center tile outward.
 func generate_terrain() -> void:
-	map_data.clear()
+	_free_map_hexes()
 	base_layer.clear()
 	selection_overlay_layer.clear()
 	hovered_tile_overlay_layer.clear()
@@ -590,6 +493,14 @@ func generate_terrain() -> void:
 	_layout.reset_turn_results()
 	trigger_order_overlay.rebuild()
 	segment_path_overlay.rebuild()
+
+
+## Frees Hex UI Controls and drops dict refs so Nodes/RefCounted tiles cannot pile up.
+func _free_map_hexes() -> void:
+	for hex: Hex in map_data.values():
+		if hex != null:
+			hex.dispose()
+	map_data.clear()
 
 
 ## Apply difficulty-driven map randomization after run RNG setup rolls.
@@ -720,11 +631,13 @@ func get_ordered_segments() -> Array[Array]:
 ## All hex tiles belonging to one segment index.
 func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 	var hexes: Array[Hex] = []
-	if segment_index < 0:
+	var segments := _layout.build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
 		return hexes
 
-	for hex: Hex in map_data.values():
-		if get_segment_index(hex.coordinates) == segment_index:
+	for coords: Vector2i in segments[segment_index]:
+		var hex: Hex = map_data.get(coords)
+		if hex != null:
 			hexes.append(hex)
 	return hexes
 
@@ -848,9 +761,10 @@ func highlight_challenge_segment(segment_index: int) -> void:
 	if segment_index < 0:
 		return
 
-	for coords: Vector2i in map_data:
-		if get_segment_index(coords) != segment_index:
-			continue
+	var segments := _layout.build_segments()
+	if segment_index >= segments.size():
+		return
+	for coords: Vector2i in segments[segment_index]:
 		fading_sector_overlay_layer.set_cell(
 			coords,
 			OVERLAY_TILE_SOURCE_ID,
@@ -1093,22 +1007,7 @@ func get_hex_for_tile_card(rune: TileCard) -> Hex:
 
 ## Removes a placed rune from its tile and cancels queued triggers targeting it.
 func destroy_placed_tile_card(rune: TileCard) -> void:
-	var hex := get_hex_for_tile_card(rune)
-	if hex == null:
-		return
-
-	hex.remove_tile_card()
-
-	if _deferred_destroy_after_triggers.has(hex):
-		_deferred_destroy_after_triggers.erase(hex)
-
-	for i in range(_pending_trigger_queue.size() - 1, -1, -1):
-		if _pending_trigger_queue[i]["rune"] == rune:
-			_resolve_trigger_link_entry(_pending_trigger_queue[i])
-			_pending_trigger_queue.remove_at(i)
-
-	if _trigger_link_pending.has(hex):
-		_clear_trigger_link_session(hex)
+	turn_resolver.destroy_placed_tile_card(rune)
 
 
 ## Queues extra rune activations to resolve before the current tile flow continues.
@@ -1117,22 +1016,7 @@ func queue_tile_card_triggers(
 	activation_scales: Array[float] = [],
 	source_hex: Hex = null,
 ) -> void:
-	for i in range(runes.size()):
-		var target_hex := get_hex_for_tile_card(runes[i])
-		if target_hex == null or not is_tile_card_triggerable(target_hex):
-			continue
-
-		var scale_rune := 1.0
-		if i < activation_scales.size():
-			scale_rune = activation_scales[i]
-		var entry := {
-			"rune": runes[i],
-			"activation_scale": scale_rune,
-			"source_hex": source_hex,
-		}
-		_pending_trigger_queue.append(entry)
-		if source_hex != null:
-			_register_trigger_link_pending(source_hex)
+	turn_resolver.queue_tile_card_triggers(runes, activation_scales, source_hex)
 
 
 ## Removes tile_card from the map after every trigger queued from source_hex resolves.
@@ -1141,83 +1025,12 @@ func schedule_destroy_after_trigger_link(
 	tile_card: TileCard,
 	on_destroy: Callable = Callable(),
 ) -> void:
-	if source_hex == null or tile_card == null:
-		return
-	_deferred_destroy_after_triggers[source_hex] = {
-		"tile_card": tile_card,
-		"on_destroy": on_destroy,
-	}
-
-
-func _register_trigger_link_pending(source_hex: Hex) -> void:
-	if source_hex == null:
-		return
-
-	var pending_count: int = int(_trigger_link_pending.get(source_hex, 0))
-	if pending_count == 0:
-		source_hex.start_trigger_link_flash()
-	_trigger_link_pending[source_hex] = pending_count + 1
-
-
-func _resolve_trigger_link_entry(entry: Dictionary) -> void:
-	var source_hex: Variant = entry.get("source_hex")
-	if source_hex == null or not (source_hex is Hex):
-		return
-	if not _trigger_link_pending.has(source_hex):
-		return
-
-	var pending_count: int = int(_trigger_link_pending[source_hex]) - 1
-	if pending_count <= 0:
-		_clear_trigger_link_session(source_hex)
-	else:
-		_trigger_link_pending[source_hex] = pending_count
-
-
-func _clear_trigger_link_session(source_hex: Hex) -> void:
-	if source_hex == null:
-		return
-	_trigger_link_pending.erase(source_hex)
-	if is_instance_valid(source_hex):
-		source_hex.stop_trigger_link_flash()
-	_run_deferred_destroy_after_trigger_link(source_hex)
-
-
-func _run_deferred_destroy_after_trigger_link(source_hex: Hex) -> void:
-	if not _deferred_destroy_after_triggers.has(source_hex):
-		return
-
-	var pending: Dictionary = _deferred_destroy_after_triggers[source_hex]
-	_deferred_destroy_after_triggers.erase(source_hex)
-
-	var tile_card: TileCard = pending.get("tile_card")
-	if tile_card != null:
-		destroy_placed_tile_card(tile_card)
-
-	var on_destroy: Callable = pending.get("on_destroy", Callable())
-	if on_destroy.is_valid():
-		on_destroy.call()
-
-
-func _clear_trigger_link_sessions() -> void:
-	for source_hex: Hex in _trigger_link_pending.keys():
-		if is_instance_valid(source_hex):
-			source_hex.stop_trigger_link_flash()
-	_trigger_link_pending.clear()
-	_deferred_destroy_after_triggers.clear()
+	turn_resolver.schedule_destroy_after_trigger_link(source_hex, tile_card, on_destroy)
 
 
 ## Show floating text at a world position on the current scene.
 func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
-	var floating_text := _spawn_floating_text(pos, text, color, icon)
-	floating_text.play_float_and_free()
-
-
-func _spawn_floating_text(pos: Vector2, text: String, color: Color, icon: Texture2D = null) -> FloatingText:
-	var floating_text := preload("res://scenes/animations/floating_text.tscn").instantiate() as FloatingText
-	floating_text.position = pos
-	get_tree().current_scene.add_child(floating_text)
-	floating_text.set_text(text, color, icon)
-	return floating_text
+	turn_resolver.create_floating_text(pos, text, color, icon)
 
 
 ## Converts map coordinates to local pixel position on the base tile layer.
@@ -1225,198 +1038,9 @@ func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
 
 
-func _on_tile_card_empowered(rune: TileCard) -> void:
-	var hex := get_hex_for_tile_card(rune)
-	if hex == null:
-		AudioManager.play_sfx(UI_SOUNDS.EMPOWER)
-		return
-
-	# Strike first, then the looping overcharge. Same beat as a retrigger bolt landing.
-	var strike_travel := trigger_link_overlay.play_empower_strike(hex)
-	await GameManager.create_pauseable_timer(strike_travel / GameManager.game_speed).timeout
-	if not is_instance_valid(hex) or hex.active_tile_card != rune or not rune.is_empowered:
-		return
-
-	AudioManager.play_sfx(UI_SOUNDS.EMPOWER)
-	hex.start_empower_sparks()
-
-
-func _on_tile_card_empower_consumed(rune: TileCard) -> void:
-	var hex := get_hex_for_tile_card(rune)
-	if hex != null:
-		hex.stop_empower_sparks()
-
-
 ## Resolves every placed rune in trigger order when the player ends the turn.
 func on_turn_ended() -> void:
-	dismiss_hover_feedback()
-	reset_segment_turn_results()
-
-	_pending_trigger_queue.clear()
-	_clear_trigger_link_sessions()
-
-	for tile: Hex in get_hexes_in_trigger_order():
-		if _should_bypass_primary_trigger_order_activation(tile):
-			continue
-
-		await _resolve_rune_activation(tile)
-		await _wait_between_tile_activations()
-
-	await _play_segment_turn_result_reveals()
-	await _wait_for_turn_total_count_finished()
-	_apply_segment_turn_totals_to_game_manager()
-	_check_full_map_cards_achievement()
-	_emit_segment_turn_completed_snapshot()
-	await GameManager.finish_turn_processing()
-
-
-# Resolve one tile: primary activation, then any queued secondary triggers.
-func _resolve_rune_activation(tile: Hex) -> void:
-	await _activate_tile_card_on_tile(tile, 1.0, false)
-
-	while not _pending_trigger_queue.is_empty():
-		var entry: Dictionary = _pending_trigger_queue.pop_front()
-		var source_hex: Hex = entry.get("source_hex") as Hex
-		var target_hex := get_hex_for_tile_card(entry["rune"])
-		if target_hex == null or target_hex.active_tile_card == null:
-			_resolve_trigger_link_entry(entry)
-			continue
-		if not _would_activate_tile_card_on_tile(target_hex, true):
-			_resolve_trigger_link_entry(entry)
-			continue
-		# Match the same pacing gap used between tiles in trigger order.
-		await _wait_between_tile_activations()
-		await _activate_tile_card_on_tile(
-			target_hex,
-			entry["activation_scale"],
-			true,
-			source_hex,
-		)
-		_resolve_trigger_link_entry(entry)
-
-
-func _activate_tile_card_on_tile(
-	tile: Hex,
-	activation_scale: float = 1.0,
-	from_trigger: bool = false,
-	trigger_source_hex: Hex = null,
-) -> void:
-	if not _would_activate_tile_card_on_tile(tile, from_trigger):
-		return
-
-	activation_scale *= ChallengeManager.get_producer_output_multiplier(tile)
-
-	if from_trigger and trigger_source_hex != null:
-		trigger_link_overlay.play_bolt(trigger_source_hex, tile)
-		tile.play_chained_tile_card_activation_animation()
-	else:
-		tile.play_tile_card_activation_animation()
-	await _wait_for_activation_animation()
-
-	tile.apply_tile_card_activation(activation_scale)
-
-
-## Inactive and difficulty-disabled runes are skipped instantly during trigger order.
-func _is_bypassed_in_trigger_order(hex: Hex) -> bool:
-	if hex.active_tile_card == null:
-		return false
-	return not is_tile_card_active(hex)
-
-
-func _should_bypass_primary_trigger_order_activation(tile: Hex) -> bool:
-	return not is_tile_card_active(tile)
-
-
-func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
-	if not is_tile_card_active(tile):
-		return false
-	var card := tile.active_tile_card
-	if card.can_be_triggered_by_other_card(tile):
-		return true
-	# Locked cards (Overdrive, or Mirror Copy copying it) only fire from trigger order once.
-	if from_trigger:
-		return false
-	return not GameManager.has_tile_card_activated_this_turn(card)
-
-
-func _wait_for_activation_animation() -> void:
-	var duration := RuneUI.activation_animation_duration()
-	await GameManager.create_pauseable_timer(duration / GameManager.game_speed).timeout
-
-
-func _wait_between_tile_activations() -> void:
-	await GameManager.create_pauseable_timer(TILE_ACTIVATION_PACE_DELAY / GameManager.game_speed).timeout
-
-
-## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
-func _play_segment_turn_result_reveals() -> void:
-	var turn_total := 0
-	for segment_index in get_segment_count():
-		var score := get_segment_turn_score(segment_index)
-		var multiplier := get_segment_turn_multiplier(segment_index)
-		var gold := get_segment_turn_gold(segment_index)
-		if score == 0 and gold == 0:
-			continue
-		var contribution := GameManager.compute_segment_turn_contribution(
-			segment_index,
-			score,
-			multiplier
-		)
-		turn_total += contribution
-		await _play_single_segment_reveal(segment_index, contribution)
-
-	EventBus.segment_reveals_finished.emit(turn_total)
-
-
-## Highlights one segment on the map and in the output panel, then reveals that segment's Score.
-func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
-	_apply_segment_reveal_glow(segment_index)
-	EventBus.segment_reveal_started.emit(segment_index)
-
-	for hex: Hex in get_hexes_in_segment(segment_index):
-		if hex.active_tile_card != null:
-			hex.play_segment_result_animation()
-
-	await GameManager.create_pauseable_timer(
-		SEGMENT_REVEAL_ANIMATION_DURATION / GameManager.game_speed
-	).timeout
-
-	if contribution > 0:
-		# Show passive-adjusted power before the equals beat lands.
-		_emit_segment_turn_results_changed(segment_index, true)
-		EventBus.segment_score_revealed.emit(segment_index, contribution)
-		await _wait_for_segment_score_count_finished(segment_index)
-		if _should_linger_on_product():
-			await GameManager.create_pauseable_timer(
-				TUTORIAL_SCORE_LINGER / GameManager.game_speed
-			).timeout
-
-	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
-	_clear_segment_reveal_glow()
-	EventBus.segment_reveal_ended.emit()
-	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
-
-
-func _wait_for_segment_score_count_finished(segment_index: int) -> void:
-	while true:
-		var finished_index: int = await EventBus.segment_score_count_finished
-		if finished_index == segment_index:
-			return
-
-
-func _wait_for_turn_total_count_finished() -> void:
-	await EventBus.turn_total_count_finished
-
-
-## First scoring beat in an active tutorial holds longer so the output row can be read.
-func _should_linger_on_product() -> bool:
-	if _did_tutorial_product_linger:
-		return false
-	for node in get_tree().get_nodes_in_group("tutorial_banner"):
-		if node.has_method("is_tutorial_active") and node.is_tutorial_active():
-			_did_tutorial_product_linger = true
-			return true
-	return false
+	await turn_resolver.resolve_turn()
 
 
 func _apply_segment_reveal_glow(segment_index: int) -> void:

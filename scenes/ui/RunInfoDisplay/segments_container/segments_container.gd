@@ -324,5 +324,19 @@ func _build_segment_rows() -> void:
 
 
 func _exit_tree() -> void:
+	_disconnect_event_bus()
 	if _score_total_counter != null:
 		_score_total_counter.kill()
+
+
+func _disconnect_event_bus() -> void:
+	if EventBus.turn_ended.is_connected(_on_turn_ended):
+		EventBus.turn_ended.disconnect(_on_turn_ended)
+	if EventBus.segment_turn_completed.is_connected(_on_segment_turn_completed):
+		EventBus.segment_turn_completed.disconnect(_on_segment_turn_completed)
+	if EventBus.segment_score_revealed.is_connected(_on_segment_score_revealed):
+		EventBus.segment_score_revealed.disconnect(_on_segment_score_revealed)
+	if EventBus.segment_reveals_finished.is_connected(_on_segment_reveals_finished):
+		EventBus.segment_reveals_finished.disconnect(_on_segment_reveals_finished)
+	if EventBus.round_changed.is_connected(_on_round_changed):
+		EventBus.round_changed.disconnect(_on_round_changed)

@@ -6,7 +6,6 @@ extends Control
 @onready var turn_score_label: RichTextLabel = $TurnScoreLabel
 @onready var segment_title: Label = $SegmentTitle
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const TILT_OUT_DURATION := 0.08
 const TILT_BACK_DURATION := 0.14
 const MERGE_DURATION := 0.2
@@ -192,7 +191,7 @@ func _play_product_morph(product: int) -> void:
 	await _morph_tween.finished
 
 	_set_score_line(CountingNumber.format_int(product), start_font)
-	AudioManager.play_sfx(UI_SOUNDS.CARD_REVEAL)
+	AudioManager.play_sfx(UISounds.CARD_REVEAL)
 
 	_morph_tween = create_tween()
 	_morph_tween.set_parallel(true)

@@ -1,6 +1,6 @@
 extends Node
 
-# Audio bus indices (matching audio_bus_setup.gd)
+# Audio bus indices matching default_bus_layout (Master, Music, SFX).
 const MUSIC_BUS = 1
 const SFX_BUS = 2
 
@@ -16,6 +16,7 @@ var sfx_volume: float = 0.35
 # Crossfade settings
 const CROSSFADE_DURATION = 1.0
 var crossfade_tween: Tween
+var _crossfade_generation: int = 0
 # Per-player fade tweens so a reused SFX slot can cancel an in-flight fade.
 var _sfx_fade_tweens: Dictionary = {}
 
@@ -35,23 +36,34 @@ func _ready() -> void:
 	# Load saved volume settings
 	load_volume_settings()
 
+
+func _kill_crossfade_tween() -> void:
+	if crossfade_tween != null and crossfade_tween.is_valid():
+		crossfade_tween.kill()
+	crossfade_tween = null
+
+
 # Play music with optional crossfade
 func play_music(music: AudioStream, fade: bool = true) -> void:
 	if current_music == music and music_player.playing:
 		return
-		
+
 	current_music = music
-	
+	_crossfade_generation += 1
+	var generation := _crossfade_generation
+	_kill_crossfade_tween()
+
 	if fade and music_player.playing:
-		# Start crossfade
 		crossfade_tween = create_tween()
 		crossfade_tween.tween_property(music_player, "volume_db", -80.0, CROSSFADE_DURATION)
 		await crossfade_tween.finished
-		
+		if generation != _crossfade_generation:
+			return
+
 		music_player.stream = music
 		music_player.volume_db = linear_to_db(music_volume)
 		music_player.play()
-		
+
 		crossfade_tween = create_tween()
 		crossfade_tween.tween_property(music_player, "volume_db", linear_to_db(music_volume), CROSSFADE_DURATION)
 	else:
@@ -106,41 +118,34 @@ func get_available_sfx_player() -> AudioStreamPlayer:
 func set_music_volume(volume: float) -> void:
 	music_volume = clamp(volume, 0.0, 1.0)
 	music_player.volume_db = linear_to_db(music_volume)
-	AudioServer.set_bus_volume_db(MUSIC_BUS, linear_to_db(volume))
-	save_volume_settings()
+	AudioServer.set_bus_volume_db(MUSIC_BUS, linear_to_db(music_volume))
+	GameSettings.set_music_volume(music_volume)
 
-# Set SFX volume (0.0 to 1.0)
+
 func set_sfx_volume(volume: float) -> void:
 	sfx_volume = clamp(volume, 0.0, 1.0)
 	for player in sfx_players:
 		if _sfx_fade_tweens.has(player):
 			continue
 		player.volume_db = linear_to_db(sfx_volume)
-	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(volume))
-	save_volume_settings()
+	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
+	GameSettings.set_sfx_volume(sfx_volume)
 
-# Save volume settings
+
 func save_volume_settings() -> void:
-	var settings = {
-		"music_volume": music_volume,
-		"sfx_volume": sfx_volume
-	}
-	var save_file = FileAccess.open("res://audio_settings.save", FileAccess.WRITE)
-	save_file.store_var(settings)
+	GameSettings.set_music_volume(music_volume)
+	GameSettings.set_sfx_volume(sfx_volume)
 
-# Load volume settings
+
 func load_volume_settings() -> void:
-	if FileAccess.file_exists("res://audio_settings.save"):
-		var save_file = FileAccess.open("res://audio_settings.save", FileAccess.READ)
-		var settings = save_file.get_var()
-		
-		if settings is Dictionary:
-			music_volume = settings.get("music_volume", 0.20)  # Use new defaults
-			sfx_volume = settings.get("sfx_volume", 0.35)     # Use new defaults
-			
-			# Apply loaded settings
-			set_music_volume(music_volume)
-			set_sfx_volume(sfx_volume)
+	GameSettings.ensure_loaded()
+	music_volume = GameSettings.music_volume
+	sfx_volume = GameSettings.sfx_volume
+	music_player.volume_db = linear_to_db(music_volume)
+	AudioServer.set_bus_volume_db(MUSIC_BUS, linear_to_db(music_volume))
+	for player in sfx_players:
+		player.volume_db = linear_to_db(sfx_volume)
+	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
 
 # Stop all audio
 func stop_all() -> void:

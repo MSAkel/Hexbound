@@ -1,6 +1,5 @@
 extends Node
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 # Manages round challenges on rounds 3, 6, and 9. Three challenges are picked at run start.
 
@@ -63,7 +62,7 @@ func _ready() -> void:
 	EventBus.tile_card_activated.connect(_on_tile_card_activated)
 
 
-# Pick three unique challenges for rounds 4, 8, and 12 at the start of a run.
+# Pick three unique challenges for rounds 3, 6, and 9 at the start of a run.
 func init_run() -> void:
 	scheduled_challenges.clear()
 	active_challenge = -1
@@ -97,7 +96,7 @@ func play_reveal() -> bool:
 	if active_challenge == -1:
 		return false
 
-	AudioManager.play_sfx(UI_SOUNDS.CHALLENGE_START)
+	AudioManager.play_sfx(UISounds.CHALLENGE_START)
 	EventBus.challenge_banner_shown.emit(get_active_challenge_name(), false)
 	return true
 

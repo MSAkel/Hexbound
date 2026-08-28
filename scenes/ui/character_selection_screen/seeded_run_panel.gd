@@ -1,7 +1,6 @@
 class_name SeededRunPanel
 extends PanelContainer
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var seeded_run_toggle: CheckBox = %SeededRunToggle
 @onready var unlocks_note_label: Label = %UnlocksNoteLabel
@@ -47,7 +46,7 @@ func _on_seed_input_focus_exited() -> void:
 
 func _on_seeded_run_toggled(_toggled_on: bool) -> void:
 	_update_seed_input_visibility()
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 
 
 func _update_seed_input_visibility() -> void:
@@ -77,4 +76,4 @@ func _apply_seed_text(seed_text: String) -> void:
 
 	seed_input.text = seed_text
 	_update_unlocks_note_visibility()
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)

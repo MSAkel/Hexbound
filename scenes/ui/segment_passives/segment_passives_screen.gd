@@ -2,7 +2,6 @@ extends Control
 
 ## Pre-run screen for arranging segment passives into the A/B/C sets of one character.
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const MAP_VIEW_SCRIPT := preload("res://scenes/ui/segment_passives/segment_passives_map_view.gd")
 
 const COLOR_TITLE := Color(0.18, 0.24, 0.17, 1.0)
@@ -103,7 +102,7 @@ func _on_set_tab_pressed(set_id: String) -> void:
 		return
 	_active_set_id = set_id
 	MetaProgressionManager.set_selected_set_id(_character.id, set_id)
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_refresh_set_tab_states()
 	_selected_segment_index = -1
 	if _map_view != null:
@@ -137,7 +136,7 @@ func _rebuild_map_view() -> void:
 
 func _on_segment_selected(segment_index: int) -> void:
 	_selected_segment_index = segment_index
-	AudioManager.play_sfx(UI_SOUNDS.SELECT)
+	AudioManager.play_sfx(UISounds.SELECT)
 	_refresh_passive_list()
 	_refresh_segment_panel()
 
@@ -219,7 +218,7 @@ func _on_passive_moved(
 		_get_segment_capacity(to_segment)
 	)
 	if not bool(result.get("success", false)):
-		AudioManager.play_sfx(UI_SOUNDS.SELECT)
+		AudioManager.play_sfx(UISounds.SELECT)
 		return
 	_selected_segment_index = to_segment
 	_refresh_passive_list()
@@ -229,7 +228,7 @@ func _on_passive_moved(
 
 func _try_place_passive(segment_index: int, passive_id: String) -> void:
 	if _character == null or segment_index < 0:
-		AudioManager.play_sfx(UI_SOUNDS.SELECT)
+		AudioManager.play_sfx(UISounds.SELECT)
 		return
 
 	_selected_segment_index = segment_index
@@ -241,7 +240,7 @@ func _try_place_passive(segment_index: int, passive_id: String) -> void:
 		_get_segment_capacity(segment_index)
 	)
 	if not placed:
-		AudioManager.play_sfx(UI_SOUNDS.SELECT)
+		AudioManager.play_sfx(UISounds.SELECT)
 		return
 	_refresh_passive_list()
 	_refresh_segment_panel()
@@ -381,7 +380,7 @@ func _on_remove_passive_pressed(list_index: int) -> void:
 		_selected_segment_index,
 		list_index
 	)
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_refresh_passive_list()
 	_refresh_segment_panel()
 
@@ -390,14 +389,14 @@ func _on_reset_segment_pressed() -> void:
 	if _character == null or _selected_segment_index < 0:
 		return
 	MetaProgressionManager.reset_segment(_character.id, _active_set_id, _selected_segment_index)
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	_refresh_passive_list()
 	_refresh_segment_panel()
 
 #endregion
 
 func _on_back_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	# SceneTree removes the current scene immediately and instantiates the next
 	# at end of frame. No extra call_deferred is needed.
 	get_tree().change_scene_to_file(ScenePaths.CHARACTER_SELECTION)

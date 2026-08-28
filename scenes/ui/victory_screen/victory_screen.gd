@@ -8,7 +8,6 @@ extends Control
 @onready var card_triggers_value: Label = $RunStatsPanel/VBoxContainer/CardTriggersValue
 @onready var seed_value: Label = $RunStatsPanel/VBoxContainer/SeedContainer/SeedValue
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 const ENTRANCE_DURATION := 0.5
 
 var _entrance_tween: Tween
@@ -54,19 +53,17 @@ func _play_entrance_animation() -> void:
 func _on_copy_seed_button_pressed() -> void:
 	if not RunRng.copy_display_seed_to_clipboard():
 		return
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 
 
 func _on_continue_pressed() -> void:
 	hide()
-	if UiManager.active_panel == self:
-		UiManager.active_panel = null
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	RoundFlow.notify_victory_continue()
 
 
 func _on_main_menu_pressed() -> void:
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(true), true)
 	RunSaveManager.save_current_run()
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

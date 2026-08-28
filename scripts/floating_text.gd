@@ -104,12 +104,15 @@ func _apply_card_stack_offset() -> void:
 	position += CARD_FLOAT_ANCHOR_OFFSET
 	_stack_anchor = position
 	var stack_index := 0
+	var valid_floats: Array[FloatingText] = []
 	for other in _active_card_floats:
 		if not is_instance_valid(other):
 			continue
+		valid_floats.append(other)
 		if other._stack_anchor.distance_to(_stack_anchor) > STACK_GROUP_DISTANCE:
 			continue
 		stack_index += 1
+	_active_card_floats = valid_floats
 	position.y -= float(stack_index) * (
 		float(label.get_theme_font_size("normal_font_size")) * label.scale.y + STACK_GAP
 	)

@@ -15,6 +15,8 @@ static var tutorial_enabled: bool = true
 static var screen_shake_enabled: bool = true
 static var game_speed: float = 1.0
 static var vsync_enabled: bool = false
+static var music_volume: float = 0.20
+static var sfx_volume: float = 0.35
 static var display_mode: int = DISPLAY_MODE_FULLSCREEN
 static var resolution: Vector2i = Vector2i(1920, 1080)
 ## Last character shown on the character selection screen, even if no run was started.
@@ -37,6 +39,8 @@ static func ensure_loaded() -> void:
 		screen_shake_enabled = bool(settings.get("screen_shake_enabled", true))
 		game_speed = clampf(float(settings.get("game_speed", 1.0)), 1.0, 3.0)
 		vsync_enabled = bool(settings.get("vsync_enabled", false))
+		music_volume = clampf(float(settings.get("music_volume", 0.20)), 0.0, 1.0)
+		sfx_volume = clampf(float(settings.get("sfx_volume", 0.35)), 0.0, 1.0)
 		display_mode = clampi(
 			int(settings.get("display_mode", DISPLAY_MODE_FULLSCREEN)),
 			DISPLAY_MODE_FULLSCREEN,
@@ -66,6 +70,24 @@ static func set_game_speed(value: float) -> void:
 	if is_equal_approx(game_speed, new_speed):
 		return
 	game_speed = new_speed
+	_save()
+
+
+static func set_music_volume(value: float) -> void:
+	ensure_loaded()
+	var new_volume := clampf(value, 0.0, 1.0)
+	if is_equal_approx(music_volume, new_volume):
+		return
+	music_volume = new_volume
+	_save()
+
+
+static func set_sfx_volume(value: float) -> void:
+	ensure_loaded()
+	var new_volume := clampf(value, 0.0, 1.0)
+	if is_equal_approx(sfx_volume, new_volume):
+		return
+	sfx_volume = new_volume
 	_save()
 
 
@@ -165,6 +187,8 @@ static func _save() -> void:
 		"screen_shake_enabled": screen_shake_enabled,
 		"game_speed": game_speed,
 		"vsync_enabled": vsync_enabled,
+		"music_volume": music_volume,
+		"sfx_volume": sfx_volume,
 		"display_mode": display_mode,
 		"resolution": resolution,
 		"last_character_selection_id": last_character_selection_id,

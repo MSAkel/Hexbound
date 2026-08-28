@@ -4,7 +4,6 @@ extends Control
 ## Each button seeds plausible autoload state, then opens the target panel the same way
 ## the live game does via UiManager or EventBus.
 
-const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var _trigger_panel: PanelContainer = $TriggerPanel
 
@@ -62,9 +61,9 @@ func _add_trigger_button(parent: VBoxContainer, label: String, callback: Callabl
 
 
 func _hide_active_panel() -> void:
-	if UiManager.active_panel != null:
+	if is_instance_valid(UiManager.active_panel):
 		UiManager.active_panel.hide()
-		UiManager.active_panel = null
+	UiManager.release_panel()
 	var reveal := get_node_or_null("PanelLayer/SegmentPassiveUnlockReveal") as Control
 	if reveal != null:
 		reveal.hide()
@@ -104,7 +103,7 @@ func _show_passive_unlock() -> void:
 
 func _on_close_pressed() -> void:
 	# Same path-based switch as other menu exits. Loads the main menu on demand.
-	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)
 
 
