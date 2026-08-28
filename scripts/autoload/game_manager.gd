@@ -160,6 +160,7 @@ func finish_turn_processing() -> void:
 		_check_run_loss()
 
 	_is_processing_turn = false
+	RunSaveManager.request_autosave()
 
 
 func _wait_for_round_score_count_finished() -> void:
@@ -490,27 +491,39 @@ func capture_run_state() -> Dictionary:
 		"current_round": current_round,
 		"total_rune_activations": _total_rune_activations,
 		"remaining_turns": _remaining_turns,
-		"is_processing_turn": _is_processing_turn,
+		# Always idle in a checkpoint. Restoring mid-resolve would freeze input.
+		"is_processing_turn": false,
 		"required_score": required_score,
 		"total_round_score": _total_round_score,
 		"turn_score": _turn_score,
 		"turn_stamp": turn_stamp,
 		"game_speed": _game_speed,
+		"peak_gold_held": _run_peak_gold_held,
+		"peak_segment_score_single_turn": _run_peak_segment_score_single_turn,
+		"peak_triggers_single_turn": _run_peak_triggers_single_turn,
+		"full_map_cards": _run_full_map_cards_achieved,
 	}
 
 
 func apply_run_state(state: Dictionary) -> void:
 	current_round = int(state.get("current_round", 1))
 	highest_round_score = int(state.get("highest_round_score", state.get("total_round_score", 0)))
-	_total_rune_activations = int(state.get("total_rune_activations"))
+	_total_rune_activations = int(state.get("total_rune_activations", 0))
 	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_ROUND))
-	_is_processing_turn = bool(state.get("is_processing_turn", false))
+	_is_processing_turn = false
 	required_score = int(state.get("required_score", SCORE_PROGRESSION.get_required_score(current_round)))
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
 	turn_stamp = int(state.get("turn_stamp", 0))
 	_activated_tile_cards_this_turn.clear()
 	game_speed = float(state.get("game_speed", 1.0))
+	_run_peak_gold_held = int(state.get("peak_gold_held", 0))
+	_run_peak_segment_score_single_turn = int(state.get("peak_segment_score_single_turn", 0))
+	_run_peak_triggers_single_turn = int(state.get("peak_triggers_single_turn", 0))
+	_run_full_map_cards_achieved = bool(state.get("full_map_cards", false))
+	# Continue does not go through reset_for_new_run, so re-bind the loadout.
+	if selected_character != null:
+		apply_active_segment_passives(selected_character.id)
 
 
 func get_tile_card_by_id(rune_id: String) -> TileCard:

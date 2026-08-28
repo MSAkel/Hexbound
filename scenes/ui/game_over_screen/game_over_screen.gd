@@ -10,6 +10,7 @@ extends Control
 const UI_SOUNDS = preload("res://scripts/resources/ui_sounds.gd")
 
 func _ready() -> void:
+	add_to_group("run_game_over")
 	hide()
 	EventBus.game_ended.connect(_on_game_ended)
 

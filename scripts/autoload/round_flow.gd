@@ -61,6 +61,10 @@ func get_transition_rune_pick_round() -> int:
 	return _transition_rune_pick_round
 
 
+func get_step() -> Step:
+	return _step
+
+
 #region Entry points
 
 ## Starts the transition for a completed round that still has rounds left to play.
@@ -156,6 +160,8 @@ func _enter_step(step: Step) -> void:
 		Step.CHALLENGE_REVEAL:
 			_start_reveal_timeout()
 
+	RunSaveManager.request_autosave()
+
 
 ## The single place a transition ends and play resumes.
 func _finish_transition() -> void:
@@ -166,6 +172,7 @@ func _finish_transition() -> void:
 	_outgoing_challenge = -1
 
 	EventBus.turn_started.emit()
+	RunSaveManager.request_autosave()
 
 
 func _arm_challenge_reveal() -> void:

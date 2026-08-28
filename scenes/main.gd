@@ -53,6 +53,7 @@ func _ready() -> void:
 		hand.build_starting_hand()
 		if debug_starting_round > 1:
 			GameManager.set_starting_round_for_debug(debug_starting_round)
+		RunSaveManager.request_autosave()
 
 	# Spawn after the run seed is applied so the overlay does not show the previous run.
 	if OS.is_debug_build():

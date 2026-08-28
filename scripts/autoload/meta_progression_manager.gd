@@ -2,6 +2,7 @@ extends Node
 
 ## Persistent meta progression: global passive unlocks and per-character passive sets (A/B/C).
 
+const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://player_profile.save"
 const PASSIVES_DIR := "res://resources/segment_passives/"
 const LOADOUT_SET_IDS: Array[String] = ["A", "B", "C"]
@@ -30,18 +31,14 @@ func ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	if not FileAccess.file_exists(SAVE_PATH):
+	if not SAVE_FILE.has_readable(SAVE_PATH):
 		_init_defaults()
 		return
-	var save_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if save_file == null:
+	var data := SAVE_FILE.read_var_dictionary(SAVE_PATH)
+	if data.is_empty():
 		_init_defaults()
 		return
-	var data: Variant = save_file.get_var()
-	if data is Dictionary:
-		_apply_save_data(data)
-	else:
-		_init_defaults()
+	_apply_save_data(data)
 
 
 func save() -> void:
@@ -54,11 +51,8 @@ func save() -> void:
 		"character_loadouts": _character_loadouts.duplicate(true),
 		"pending_unlock_reveals": _pending_unlock_reveals.duplicate(),
 	}
-	var save_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if save_file == null:
+	if not SAVE_FILE.write_var(SAVE_PATH, data):
 		push_error("MetaProgressionManager: failed to write profile save")
-		return
-	save_file.store_var(data)
 
 
 func get_all_passives_for_character(character_id: String) -> Array[SegmentPassive]:

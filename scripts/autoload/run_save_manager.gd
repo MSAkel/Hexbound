@@ -1,9 +1,15 @@
 extends Node
 
 ## Persists in-progress runs to user:// so players can resume from the main menu.
+## Checkpoints, pause, and window-close all write through the same guarded path.
 
+const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://run_save.json"
 const SAVE_VERSION := 3
+const HAND_GROUP := "run_hand"
+const MERCHANT_GROUP := "run_merchant"
+const RUNE_SELECTION_GROUP := "run_rune_selection"
+const GAME_OVER_GROUP := "run_game_over"
 
 # Set before loading main.tscn from the main menu Continue button.
 var continue_run_pending := false
@@ -11,10 +17,42 @@ var continue_run_pending := false
 var scene_enter_transition_pending := false
 var _pending_run_seed: String = ""
 var _has_pending_run_seed := false
+## Coalesces multiple committed actions in one frame into a single write.
+var _autosave_queued := false
+## Blocks checkpoints while restore_run is still applying panel state.
+var _is_restoring := false
+## Prevents close_requested and WM_CLOSE_REQUEST from quitting twice.
+var _is_quitting := false
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().set_auto_accept_quit(false)
+	var window := get_window()
+	if window != null and not window.close_requested.is_connected(_on_window_close_requested):
+		window.close_requested.connect(_on_window_close_requested)
+	EventBus.card_played.connect(_on_committed_card_played)
+	EventBus.tile_card_selected.connect(_on_committed_tile_card_selected)
+	EventBus.merchant_closed.connect(_on_committed_merchant_closed)
+	EventBus.game_ended.connect(_on_game_ended)
+
+
+func _on_window_close_requested() -> void:
+	if _is_quitting:
+		return
+	_is_quitting = true
+	# Immediate write so the file is on disk before the process exits.
+	save_current_run()
+	get_tree().quit()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_on_window_close_requested()
 
 
 func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+	return SAVE_FILE.has_readable(SAVE_PATH)
 
 
 func request_continue_run() -> void:
@@ -31,7 +69,7 @@ func request_continue_run() -> void:
 
 	# Map generation reads character layout rules during _ready, before main.gd restores state.
 	GameManager.selected_character = character
-	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0))
+	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	continue_run_pending = true
 	request_scene_enter_transition()
 
@@ -76,15 +114,27 @@ func clear_continue_run_pending() -> void:
 
 func delete_save() -> void:
 	clear_continue_run_pending()
-	if has_save():
-		DirAccess.remove_absolute(SAVE_PATH)
+	_autosave_queued = false
+	SAVE_FILE.delete_all(SAVE_PATH)
+
+
+## Queue a checkpoint after Hand and other listeners have finished this frame.
+func request_autosave() -> void:
+	if not _can_save_now():
+		return
+	if _autosave_queued:
+		return
+	_autosave_queued = true
+	_flush_autosave_next_frame()
 
 
 func save_current_run() -> void:
+	if not _can_save_now():
+		return
+
 	var tile_map := _find_tile_map()
 	var hand := _find_hand()
 	if tile_map == null or hand == null:
-		push_error("RunSaveManager: cannot save — main scene nodes are missing.")
 		return
 
 	var payload := {
@@ -102,12 +152,17 @@ func save_current_run() -> void:
 		"hand": hand.capture_hand_state(),
 	}
 
+	var merchant = _find_merchant()
+	if merchant != null:
+		payload["merchant"] = merchant.capture_shop_state()
+
+	var rune_selection = _find_rune_selection()
+	if rune_selection != null:
+		payload["rune_offer"] = rune_selection.capture_offer_state()
+
 	var json_text := JSON.stringify(payload, "\t")
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file == null:
-		push_error("RunSaveManager: failed to open save file for writing.")
-		return
-	file.store_string(json_text)
+	if not SAVE_FILE.write_text(SAVE_PATH, json_text):
+		push_error("RunSaveManager: failed to write run save.")
 
 
 func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
@@ -128,8 +183,9 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
 		delete_save()
 		return
 
+	_is_restoring = true
 	GameManager.selected_character = character
-	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0))
+	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	GameManager.apply_run_state(payload.get("game_manager", {}))
 	GoldManager.apply_run_state(payload.get("gold", {}))
 	RerollManager.apply_run_state(payload.get("rerolls", {}))
@@ -138,6 +194,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
 	RunRng.apply_run_state(payload.get("run_rng", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	hand.restore_hand_state(payload.get("hand", {}))
+	_apply_offer_ui_state(payload)
 	ChallengeManager.refresh_challenge_visuals()
 	ChallengeManager.restore_banner_after_load()
 	# Segment rows are built deferred, refresh them once the layout data is restored.
@@ -145,23 +202,71 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
 	_notify_ui_restored()
 	# Re-show the panel the run was sitting on, after the HUD has caught up.
 	RoundFlow.restore_after_load()
+	_restore_idle_rune_pick()
+	_is_restoring = false
+
+
+func _can_save_now() -> bool:
+	if _is_restoring:
+		return false
+	if GameManager.is_processing_turn:
+		return false
+	if _is_game_over_visible():
+		return false
+	if _find_tile_map() == null or _find_hand() == null:
+		return false
+	return true
+
+
+func _flush_autosave_next_frame() -> void:
+	await get_tree().process_frame
+	_autosave_queued = false
+	save_current_run()
+
+
+func _on_committed_card_played(_card_ui: CardUI) -> void:
+	request_autosave()
+
+
+func _on_committed_tile_card_selected(_tile_card: TileCard) -> void:
+	request_autosave()
+
+
+func _on_committed_merchant_closed() -> void:
+	request_autosave()
+
+
+func _on_game_ended() -> void:
+	_autosave_queued = false
+	delete_save()
 
 
 func _load_save_payload() -> Dictionary:
-	if not has_save():
-		return {}
+	return SAVE_FILE.read_json_dictionary(SAVE_PATH)
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if file == null:
-		return {}
 
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if parsed is Dictionary:
-		return parsed
-	return {}
+func _apply_offer_ui_state(payload: Dictionary) -> void:
+	var merchant = _find_merchant()
+	if merchant != null:
+		merchant.apply_shop_state(payload.get("merchant", {}))
+
+	var rune_selection = _find_rune_selection()
+	if rune_selection != null:
+		rune_selection.apply_offer_state(payload.get("rune_offer", {}))
+
+
+func _restore_idle_rune_pick() -> void:
+	var rune_selection = _find_rune_selection()
+	if rune_selection != null:
+		rune_selection.restore_open_if_needed()
+
+	var merchant = _find_merchant()
+	if merchant != null:
+		merchant.restore_open_if_needed()
 
 
 func _find_tile_map() -> HexTileMap:
+	# hex_map_group is also on a child TileMapLayer. Skip anything that is not the map.
 	for node in get_tree().get_nodes_in_group("hex_map_group"):
 		var tile_map := node as HexTileMap
 		if tile_map != null:
@@ -170,11 +275,23 @@ func _find_tile_map() -> HexTileMap:
 
 
 func _find_hand() -> Hand:
-	var root := get_tree().current_scene
-	if root == null:
-		return null
-	var hand_node := root.get_node_or_null("MainUI/CardsHand/Hand")
-	return hand_node as Hand
+	return get_tree().get_first_node_in_group(HAND_GROUP) as Hand
+
+
+func _find_merchant():
+	return get_tree().get_first_node_in_group(MERCHANT_GROUP)
+
+
+func _find_rune_selection():
+	return get_tree().get_first_node_in_group(RUNE_SELECTION_GROUP)
+
+
+func _is_game_over_visible() -> bool:
+	for node in get_tree().get_nodes_in_group(GAME_OVER_GROUP):
+		var overlay := node as Control
+		if overlay != null and overlay.is_visible_in_tree():
+			return true
+	return false
 
 
 func _notify_ui_restored() -> void:

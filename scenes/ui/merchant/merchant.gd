@@ -1,3 +1,4 @@
+class_name Merchant
 extends Control
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
@@ -21,9 +22,12 @@ var _selected_card_ui: CardUI = null
 var _stock_reroll_count := 0
 ## Gold cost for the next merchant reroll. Resets when the shop opens.
 var _reroll_cost := BASE_REROLL_COST
+## Pending shop snapshot applied the next time open() runs after a continue.
+var _restore_state: Dictionary = {}
 
 
 func _ready() -> void:
+	add_to_group("run_merchant")
 	hide()
 	buy_gold_button.pressed.connect(_on_buy_gold_button_pressed)
 	buy_token_button.pressed.connect(_on_buy_token_button_pressed)
@@ -40,12 +44,23 @@ func _ready() -> void:
 
 
 func open() -> void:
+	var restoring := not _restore_state.is_empty()
+	var sold_indices: Array = []
 	_set_board_view(false)
-	_stock_reroll_count = 0
-	_reroll_cost = BASE_REROLL_COST
+	if restoring:
+		_stock_reroll_count = int(_restore_state.get("stock_reroll_count", 0))
+		_reroll_cost = int(_restore_state.get("reroll_cost", BASE_REROLL_COST))
+		sold_indices = _restore_state.get("sold_indices", [])
+		_restore_state.clear()
+	else:
+		_stock_reroll_count = 0
+		_reroll_cost = BASE_REROLL_COST
 	_update_reroll_button()
 	UiManager.show_panel(self)
 	await _refresh_merchant_cards()
+	_apply_sold_indices(sold_indices)
+	if restoring:
+		return
 	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_BELL)
 	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_ENTRY)
 
@@ -157,8 +172,7 @@ func _complete_purchase(pay_with_tokens: bool) -> void:
 	_selected_card_ui.mark_sold()
 	# Keep the control in the grid as an invisible, inert placeholder so the
 	# remaining stock never shifts when an item is purchased.
-	_selected_card_ui.modulate = Color(1.0, 1.0, 1.0, 0.0)
-	_selected_card_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hide_purchased_stock(_selected_card_ui)
 
 	if card is TileCard:
 		EventBus.tile_card_selected.emit(card as TileCard)
@@ -180,6 +194,7 @@ func _on_reroll_button_pressed() -> void:
 	_reroll_cost += 1
 	await _refresh_merchant_cards()
 	_update_reroll_button()
+	RunSaveManager.request_autosave()
 
 
 func _on_leave_button_pressed() -> void:
@@ -227,3 +242,50 @@ func _update_currency_display() -> void:
 func _update_reroll_button() -> void:
 	reroll_button.text = "REROLL - %d" % _reroll_cost
 	reroll_button.disabled = not GoldManager.can_afford(_reroll_cost)
+
+
+func capture_shop_state() -> Dictionary:
+	var sold_indices: Array = []
+	for index in _displayed_cards.size():
+		if _displayed_cards[index].is_sold():
+			sold_indices.append(index)
+	return {
+		"open": is_visible_in_tree(),
+		"stock_reroll_count": _stock_reroll_count,
+		"reroll_cost": _reroll_cost,
+		"sold_indices": sold_indices,
+	}
+
+
+func apply_shop_state(state: Dictionary) -> void:
+	if state.is_empty():
+		_restore_state.clear()
+		return
+	_restore_state = state.duplicate(true)
+
+
+## RoundFlow reopens the merchant. This covers a save where the shop was visible
+## while round flow was already idle.
+func restore_open_if_needed() -> void:
+	if _restore_state.is_empty():
+		return
+	if not bool(_restore_state.get("open", false)):
+		_restore_state.clear()
+		return
+	if RoundFlow.get_step() == RoundFlow.Step.MERCHANT:
+		return
+	open()
+
+
+func _apply_sold_indices(sold_indices: Array) -> void:
+	for entry in sold_indices:
+		var index := int(entry)
+		if index < 0 or index >= _displayed_cards.size():
+			continue
+		_displayed_cards[index].mark_sold()
+		_hide_purchased_stock(_displayed_cards[index])
+
+
+func _hide_purchased_stock(card_ui: CardUI) -> void:
+	card_ui.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	card_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE

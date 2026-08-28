@@ -68,4 +68,5 @@ func _on_continue_pressed() -> void:
 func _on_main_menu_pressed() -> void:
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(true), true)
+	RunSaveManager.save_current_run()
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

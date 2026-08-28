@@ -44,6 +44,7 @@ func _ready() -> void:
 	EventBus.tile_card_selected.connect(_add_tile_card)
 	EventBus.turn_ended.connect(_hide_hand)
 	EventBus.turn_started.connect(_show_hand)
+	add_to_group("run_hand")
 
 	## Saved runs rebuild the hand after the main scene finishes loading.
 	if RunSaveManager.should_restore_run():

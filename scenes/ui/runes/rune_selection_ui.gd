@@ -1,3 +1,4 @@
+class_name RuneSelectionUI
 extends Control
 
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/MarginPanel/ChoicesContainer
@@ -22,9 +23,12 @@ var runes_pack: Array[TileCard] = []
 var _offer_reroll_count := 0
 ## Drops a stale instantiate if the panel is shown again before the last rebuild finishes.
 var _pack_display_token := 0
+## Pending offer snapshot applied the next time the panel opens after a continue.
+var _restore_state: Dictionary = {}
 
 
 func _ready() -> void:
+	add_to_group("run_rune_selection")
 	hide()
 
 	_show_board_button.pressed.connect(_on_show_board_button_pressed)
@@ -60,7 +64,11 @@ func _on_show_panel() -> void:
 	_set_board_view(false)
 	UiManager.show_panel(self)
 	_update_reroll_button()
-	_offer_reroll_count = 0
+	if not _restore_state.is_empty():
+		_offer_reroll_count = int(_restore_state.get("offer_reroll_count", 0))
+		_restore_state.clear()
+	else:
+		_offer_reroll_count = 0
 	runes_pack.clear()
 	create_runes_pack()
 	instantiate_rune_choices()
@@ -94,6 +102,7 @@ func _on_reroll_button_pressed() -> void:
 	create_runes_pack()
 	instantiate_rune_choices()
 	_update_reroll_button()
+	RunSaveManager.request_autosave()
 
 
 func _on_rerolls_changed(_remaining: int) -> void:
@@ -206,3 +215,29 @@ func animate_and_free(node: Node) -> void:
 		var tween := create_tween()
 		tween.tween_property(node, "modulate:a", 0.0, 0.3)
 		tween.tween_callback(Callable(node, "queue_free"))
+
+
+func capture_offer_state() -> Dictionary:
+	return {
+		"open": is_visible_in_tree(),
+		"offer_reroll_count": _offer_reroll_count,
+	}
+
+
+func apply_offer_state(state: Dictionary) -> void:
+	if state.is_empty():
+		_restore_state.clear()
+		return
+	_restore_state = state.duplicate(true)
+
+
+## Fail-turn picks happen while RoundFlow is idle, so Continue must reopen this panel itself.
+func restore_open_if_needed() -> void:
+	if _restore_state.is_empty():
+		return
+	if not bool(_restore_state.get("open", false)):
+		_restore_state.clear()
+		return
+	if RoundFlow.is_transition_rune_pick():
+		return
+	_on_show_panel()
