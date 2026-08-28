@@ -22,12 +22,14 @@ func _on_game_ended() -> void:
 	round_value.text = str(GameManager.current_round)
 	gold_earned_value.text = CountingNumber.format_int(GoldManager.total_earned_this_run)
 	card_triggers_value.text = CountingNumber.format_int(GameManager.total_rune_activations)
+	seed_value.text = RunRng.get_display_seed()
 	UiManager.show_panel(self)
 	AudioManager.play_sfx(UI_SOUNDS.GAME_OVER)
 
 
 func _on_copy_seed_button_pressed() -> void:
-	DisplayServer.clipboard_set(seed_value.text)
+	if not RunRng.copy_display_seed_to_clipboard():
+		return
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 
 

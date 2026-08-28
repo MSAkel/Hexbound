@@ -3,8 +3,6 @@ extends Control
 
 @onready var rune_button: TextureButton = $Container/RuneButton
 @onready var _anim_target: Control = $Container
-@onready var enhancement_value_container: PanelContainer = $Container/Identifiers/EnhancementValueContainer
-@onready var enhancement_value: Label = $Container/Identifiers/EnhancementValueContainer/EnhancementValue
 @onready var placement_smoke: GPUParticles2D = $PlacementSmoke
 @onready var empower_sparks: GPUParticles2D = $EmpowerSparks
 @onready var hex_stroke: HexStroke = $HexStroke
@@ -57,9 +55,6 @@ func setup(rune: TileCard) -> void:
 	if sigil != null:
 		sigil.hide()
 	refresh_output_chip(rune)
-	# Show enhancement if it exists on loading a game
-	if rune.enhancement != null:
-		show_enhancement(rune.enhancement)
 
 
 # Refresh the output chip after bonuses, chance, or progress change.
@@ -93,31 +88,6 @@ func _show_output_chip(rune: TileCard) -> void:
 	else:
 		output_chip_icon.texture = icon
 		output_chip_icon.show()
-
-
-## Called by Hex when an enhancement is attached to this tile.
-func show_enhancement(enhancement: Enhancement) -> void:
-	if enhancement == null:
-		enhancement_value_container.hide()
-		return
-
-	enhancement_value_container.show()
-	enhancement_value.text = enhancement.short_description
-
-	# Dark tints on the panel only; the label stays white with a thin outline.
-	match enhancement.type:
-		Enhancement.Type.SCORE:
-			enhancement_value.text = "+ %s" % str(enhancement.score_bonus)
-			enhancement_value_container.self_modulate = Color(0.08, 0.38, 0.40)
-		Enhancement.Type.MULTIPLIER:
-			enhancement_value.text = "+ %s" % str(enhancement.mult_bonus)
-			enhancement_value_container.self_modulate = Color(0.52, 0.10, 0.12)
-		Enhancement.Type.GOLD:
-			enhancement_value.text = "+ %s" % str(enhancement.gold_bonus)
-			enhancement_value_container.self_modulate = Color(0.715, 0.509, 0.05)
-		Enhancement.Type.TRIGGER:
-			enhancement_value.text = "+ %s" % str(enhancement.trigger_count)
-			enhancement_value_container.self_modulate = Color(0.58, 0.28, 0.06)
 
 
 #region Animations and colors

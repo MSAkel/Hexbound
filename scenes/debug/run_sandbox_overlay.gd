@@ -8,6 +8,7 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 
 @onready var _gold_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/GoldRow/GoldSpinBox
 @onready var _token_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/TokenRow/TokenSpinBox
+@onready var _seed_label: Label = $ToolsPanel/MarginContainer/VBoxContainer/SeedRow/SeedLabel
 @onready var _complete_round_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton
 @onready var _pass_turn_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton
 @onready var _open_merchant_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenMerchantButton
@@ -32,10 +33,12 @@ func _ready() -> void:
 	_populate_challenge_options()
 	_sync_challenge_option()
 	_refresh_action_buttons()
+	_refresh_seed_label()
 
 
 func _process(_delta: float) -> void:
 	_refresh_action_buttons()
+	_refresh_seed_label()
 
 
 func _refresh_action_buttons() -> void:
@@ -45,6 +48,16 @@ func _refresh_action_buttons() -> void:
 	_activate_challenge_button.disabled = busy
 	_open_merchant_button.disabled = busy
 	_open_rune_selection_button.disabled = busy
+
+
+func _refresh_seed_label() -> void:
+	_seed_label.text = "Run seed: %s" % RunRng.get_display_seed()
+
+
+func _on_copy_seed_button_pressed() -> void:
+	if not RunRng.copy_display_seed_to_clipboard():
+		return
+	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 
 
 func _on_gold_changed(new_amount: int) -> void:
@@ -135,6 +148,7 @@ func _restart_run_as(character: CharacterDefinition) -> void:
 	GameManager.selected_character = character
 	GameManager.apply_active_segment_passives(character.id)
 	RunSaveManager.delete_save()
+	RunRng.restart_same_seed()
 	RunSaveManager.request_scene_enter_transition()
 	get_tree().change_scene_to_file(ScenePaths.MAIN)
 
@@ -197,8 +211,6 @@ func _pick_random_card() -> Card:
 	var pool: Array[Card] = []
 	for rune in GameManager.tile_cards_pool:
 		pool.append(rune)
-	for enhancement in GameManager.enhancements_pool:
-		pool.append(enhancement)
 	if pool.is_empty():
 		return null
 	return pool.pick_random() as Card
@@ -254,8 +266,6 @@ func _all_cards_sorted() -> Array[Card]:
 	var cards: Array[Card] = []
 	for rune in GameManager.tile_cards_pool:
 		cards.append(rune)
-	for enhancement in GameManager.enhancements_pool:
-		cards.append(enhancement)
 	cards.sort_custom(func(a: Card, b: Card) -> bool:
 		return a.name.naturalnocasecmp_to(b.name) < 0
 	)

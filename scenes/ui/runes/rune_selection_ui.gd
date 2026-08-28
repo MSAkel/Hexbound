@@ -19,6 +19,9 @@ var _float_time := 0.0
 
 ## List of rune choices for the current turn
 var runes_pack: Array[TileCard] = []
+var _offer_reroll_count := 0
+## Drops a stale instantiate if the panel is shown again before the last rebuild finishes.
+var _pack_display_token := 0
 
 
 func _ready() -> void:
@@ -57,6 +60,8 @@ func _on_show_panel() -> void:
 	_set_board_view(false)
 	UiManager.show_panel(self)
 	_update_reroll_button()
+	_offer_reroll_count = 0
+	runes_pack.clear()
 	create_runes_pack()
 	instantiate_rune_choices()
 
@@ -85,6 +90,7 @@ func _on_reroll_button_pressed() -> void:
 	reroll_button.disabled = true
 	await clear_choices()
 	runes_pack.clear()
+	_offer_reroll_count += 1
 	create_runes_pack()
 	instantiate_rune_choices()
 	_update_reroll_button()
@@ -104,12 +110,16 @@ func _update_reroll_button() -> void:
 	reroll_button.disabled = not RerollManager.can_reroll()
 
 func instantiate_rune_choices() -> void:
+	_pack_display_token += 1
+	var display_token := _pack_display_token
 	## Always clear existing choices first to ensure fresh display
 	for node in choices_container.get_children():
 		node.queue_free()
 	
 	## Wait one frame to ensure nodes are freed
 	await get_tree().process_frame
+	if display_token != _pack_display_token:
+		return
 	
 	## Now create new choices from the current runes_pack
 	_float_time = 0.0
@@ -152,18 +162,32 @@ func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
 
 
 ## Pick random runes for the selection panel from the shared pool.
-## Only fills an empty pack so an unconsumed offer cannot be overwritten.
+## Isolated RNG means rebuilding this offer always yields the same cards for this moment.
 func create_runes_pack() -> void:
-	if not runes_pack.is_empty():
-		return
-
 	if GameManager.tile_cards_pool.is_empty():
 		push_error("Cannot create runes pack: runes pool is empty")
 		return
 
-	# Rarity-weighted draft (common / uncommon / rare) from the shared pool.
+	# Isolated loot RNG. Combat rolls cannot advance this sequence.
 	var pack_size := ChallengeManager.get_runes_pack_size()
-	runes_pack = RuneLoot.draw_runes(pack_size, GameManager.tile_cards_pool)
+	var stream_name: String = RunRng.build_rune_offer_stream_name(
+		_get_offer_round_number(),
+		GameManager.remaining_turns,
+		_is_round_reward_offer(),
+		_offer_reroll_count
+	)
+	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
+	runes_pack = RuneLoot.draw_runes(pack_size, GameManager.tile_cards_pool, true, loot_rng)
+
+
+func _get_offer_round_number() -> int:
+	if RoundFlow.is_transition_rune_pick():
+		return RoundFlow.get_transition_rune_pick_round()
+	return GameManager.current_round
+
+
+func _is_round_reward_offer() -> bool:
+	return RoundFlow.is_transition_rune_pick()
 
 
 func clear_choices() -> void:

@@ -11,7 +11,11 @@ func apply_on_placement(tile: Hex) -> void:
 		return
 
 	var higher_rarity := (target.rarity + 1) as TileCardRarity
-	var replacement := _pick_random_placeable_tile_card(higher_rarity)
+	var replacement := _pick_random_placeable_tile_card(
+		higher_rarity,
+		"",
+		RunRng.create_card_effect_rng(tile, self, "upgrade")
+	)
 	if replacement == null:
 		failed_tile_card_text(tile)
 		return

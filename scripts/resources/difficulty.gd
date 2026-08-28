@@ -59,7 +59,6 @@ static func get_level_info(level: Level) -> String:
 
 # How many starting-hand cards to remove for the given difficulty.
 static func get_starting_hand_reduction(level: Level) -> int:
-	print("Starting hand reduction: ", level)
 	if level >= Level.LEVEL_1:
 		return 1
 	return 0

@@ -228,10 +228,6 @@ func _card_from_save_entry(entry: Dictionary) -> Card:
 		var template := GameManager.get_tile_card_by_id(card_id)
 		if template != null:
 			return template.duplicate(true)
-	elif kind == "enhancement":
-		var template := GameManager.get_enhancement_by_id(card_id)
-		if template != null:
-			return template.duplicate(true)
 	return null
 
 

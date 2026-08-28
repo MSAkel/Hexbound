@@ -399,12 +399,15 @@ func reset_segment(character_id: String, set_id: String, segment_index: int) -> 
 
 
 func add_lifetime_triggers(amount: int) -> void:
-	if amount <= 0:
+	if amount <= 0 or RunRng.is_unlock_progress_disabled():
 		return
 	_lifetime_stats["total_triggers"] = int(_lifetime_stats.get("total_triggers", 0)) + amount
 
 
 func record_run_snapshot(snapshot: Dictionary, finalize_unlocks: bool) -> void:
+	if RunRng.is_unlock_progress_disabled():
+		return
+
 	var is_win := bool(snapshot.get("is_win", false))
 	if is_win:
 		_lifetime_stats["wins"] = int(_lifetime_stats.get("wins", 0)) + 1

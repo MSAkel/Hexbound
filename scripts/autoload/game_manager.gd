@@ -63,12 +63,10 @@ var turn_score: int:
 
 #endregion
 
-#region Runes and enhancements pools
+#region Tile card pool
 
 ## Every rune resource loaded from disk at startup.
 var tile_cards_pool: Array[TileCard] = []
-## Every enhancement resource loaded from disk at startup.
-var enhancements_pool: Array[Enhancement] = []
 
 #endregion
 
@@ -123,13 +121,11 @@ func _ready() -> void:
 		selected_character = PlayerCharacter.get_default_character()
 
 	_load_tile_cards_from_directory("res://resources/tile_cards/")
-	_load_enhancements_from_directory("res://resources/enhancements/")
 
 	if tile_cards_pool.is_empty():
 		push_error("No tile cards loaded into pool")
 
-	if enhancements_pool.is_empty():
-		push_warning("No enhancements loaded into pool")
+	_sort_tile_cards_pool()
 
 	EventBus.turn_ended.connect(end_turn)
 	EventBus.turn_started.connect(_on_turn_started)
@@ -204,7 +200,7 @@ func get_skipped_turns() -> int:
 
 
 ## Debug helper. Sets the round score to the goal and starts the normal complete-round flow.
-## Skips tile resolution so a sandbox can jump straight to the summary and merchant.
+## Skips tile resolution so a sandbox can jump straight to the summary, rune pick, and merchant.
 func debug_meet_round_goal_and_complete() -> void:
 	if _is_processing_turn or RoundFlow.is_transitioning():
 		return
@@ -252,7 +248,8 @@ func register_tile_card_activation(rune: TileCard) -> void:
 	_total_rune_activations += 1
 	_current_turn_trigger_count += 1
 	_run_peak_triggers_single_turn = maxi(_run_peak_triggers_single_turn, _current_turn_trigger_count)
-	MetaProgressionManager.add_lifetime_triggers(1)
+	if not RunRng.is_unlock_progress_disabled():
+		MetaProgressionManager.add_lifetime_triggers(1)
 
 ## Read rune activation to check if it has already fired this turn.
 ## Used by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
@@ -319,20 +316,24 @@ func get_segment_passive_output_mult_factor(segment_index: int) -> float:
 	return 1.0 + bonus
 
 
-func roll_segment_support_retrigger(segment_index: int) -> bool:
-	for passive in get_passives_for_segment(segment_index):
-		if passive.effect_type != SegmentPassive.EffectType.SUPPORT_RETRIGGER:
-			continue
-		if randf() < passive.effect_value:
-			return true
-	return false
+func roll_segment_support_retrigger(tile: Hex) -> bool:
+	return _roll_segment_retrigger(tile, SegmentPassive.EffectType.SUPPORT_RETRIGGER, "support_retrigger")
 
 
-func roll_segment_production_retrigger(segment_index: int) -> bool:
+func roll_segment_production_retrigger(tile: Hex) -> bool:
+	return _roll_segment_retrigger(tile, SegmentPassive.EffectType.PRODUCTION_RETRIGGER, "production_retrigger")
+
+
+## Retrigger chance is keyed to the source tile so other combat rolls cannot change it.
+func _roll_segment_retrigger(tile: Hex, effect_type: SegmentPassive.EffectType, tag: String) -> bool:
+	if tile == null or tile.map == null:
+		return false
+	var segment_index := tile.map.get_segment_index(tile.coordinates)
+	var rng := RunRng.create_card_effect_rng(tile, tile.active_tile_card, tag)
 	for passive in get_passives_for_segment(segment_index):
-		if passive.effect_type != SegmentPassive.EffectType.PRODUCTION_RETRIGGER:
+		if passive.effect_type != effect_type:
 			continue
-		if randf() < passive.effect_value:
+		if rng.randf() < passive.effect_value:
 			return true
 	return false
 
@@ -406,7 +407,7 @@ func set_game_speed(speed: float) -> void:
 func create_pauseable_timer(duration: float) -> SceneTreeTimer:
 	return get_tree().create_timer(duration, false)
 
-#region tile cards and enhancement cards pool loading
+#region tile card pool loading
 
 ## Recursively load every .tres rune under the runes folder, skipping duplicate ids.
 ## ResourceLoader.list_directory works in exported builds, DirAccess only sees .gd files in PCK.
@@ -446,40 +447,11 @@ func _has_tile_card_with_id(rune_id: String) -> bool:
 	return false
 
 
-## Load every .tres enhancement under the enhancements folder, skipping duplicate ids.
-func _load_enhancements_from_directory(dir_path: String) -> void:
-	var normalized_path := dir_path
-	if not normalized_path.ends_with("/"):
-		normalized_path += "/"
+func _sort_tile_cards_pool() -> void:
+	tile_cards_pool.sort_custom(func(a: TileCard, b: TileCard) -> bool:
+		return a.id < b.id
+	)
 
-	for entry in ResourceLoader.list_directory(normalized_path):
-		if entry == "./" or entry == "../":
-			continue
-
-		if entry.ends_with("/"):
-			_load_enhancements_from_directory(normalized_path.path_join(entry.trim_suffix("/")))
-			continue
-
-		if not entry.ends_with(".tres"):
-			continue
-
-		var resource_path := normalized_path.path_join(entry)
-		var enhancement := ResourceLoader.load(resource_path) as Enhancement
-		if enhancement == null:
-			push_error("Failed to load enhancement: " + resource_path)
-			continue
-
-		if _has_enhancement_with_id(enhancement.id):
-			continue
-
-		enhancements_pool.append(enhancement)
-
-
-func _has_enhancement_with_id(enhancement_id: String) -> bool:
-	for existing_enhancement in enhancements_pool:
-		if existing_enhancement.id == enhancement_id:
-			return true
-	return false
 
 #endregion
 
@@ -547,11 +519,5 @@ func get_tile_card_by_id(rune_id: String) -> TileCard:
 			return rune
 	return null
 
-
-func get_enhancement_by_id(enhancement_id: String) -> Enhancement:
-	for enhancement in enhancements_pool:
-		if enhancement.id == enhancement_id:
-			return enhancement
-	return null
 
 #endregion

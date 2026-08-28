@@ -48,10 +48,6 @@ func _set_rune_information() -> void:
 		rune_subtitle.visible = not rune_subtitle.text.is_empty()
 		_set_chip_line(card)
 		var description_bbcode := CardKeywordGlossary.to_bbcode(card.description)
-		if card.enhancement != null:
-			description_bbcode += "\n\nEnhancement: %s" % CardKeywordGlossary.to_bbcode(
-				card.enhancement.short_description
-			)
 		rune_description.text = description_bbcode
 	else:
 		rune_icon.texture = load("res://assets/tilesets/tile_dashed.png")

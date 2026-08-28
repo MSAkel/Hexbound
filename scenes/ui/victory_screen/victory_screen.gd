@@ -25,6 +25,7 @@ func _on_all_challenges_completed() -> void:
 	round_value.text = str(GameManager.current_round)
 	gold_earned_value.text = CountingNumber.format_int(GoldManager.total_earned_this_run)
 	card_triggers_value.text = CountingNumber.format_int(GameManager.total_rune_activations)
+	seed_value.text = RunRng.get_display_seed()
 	UiManager.show_panel(self)
 	_play_entrance_animation()
 
@@ -51,7 +52,8 @@ func _play_entrance_animation() -> void:
 
 
 func _on_copy_seed_button_pressed() -> void:
-	DisplayServer.clipboard_set(seed_value.text)
+	if not RunRng.copy_display_seed_to_clipboard():
+		return
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 
 

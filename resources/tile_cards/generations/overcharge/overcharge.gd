@@ -16,7 +16,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		_chance_turn_stamp = GameManager.turn_stamp
 
 	_destroy_chance_this_turn += DESTROY_CHANCE_PER_TRIGGER
-	if randf() < _destroy_chance_this_turn:
+	if RunRng.create_card_effect_rng(tile, self).randf() < _destroy_chance_this_turn:
 		_destroy_placed_tile_card(tile, self)
 		AudioManager.play_sfx(UISounds.RUNE_BREAK)
 

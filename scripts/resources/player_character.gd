@@ -60,7 +60,7 @@ static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Til
 
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
 	_apply_starting_hand_reduction(hand, reduction)
-	hand.shuffle()
+	RunRng.shuffle(hand)
 	return hand
 
 

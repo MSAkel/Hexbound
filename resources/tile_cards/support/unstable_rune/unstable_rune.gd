@@ -13,8 +13,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		return
 
 	# Each adjacent producer rolled independently. One failed roll destroys this tile card.
+	var rng: RandomNumberGenerator = RunRng.create_card_effect_rng(tile, self)
 	for _i in range(adjacent_producers.size()):
-		if randf() < DESTROY_CHANCE_PER_ADJACENT:
+		if rng.randf() < DESTROY_CHANCE_PER_ADJACENT:
 			_destroy_placed_tile_card(tile, self)
 			AudioManager.play_sfx(UISounds.RUNE_BREAK)
 			break

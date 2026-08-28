@@ -3,12 +3,14 @@ extends Node
 ## Persists in-progress runs to user:// so players can resume from the main menu.
 
 const SAVE_PATH := "user://run_save.json"
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 
 # Set before loading main.tscn from the main menu Continue button.
 var continue_run_pending := false
 ## One-shot request set before entering a scene that supports the rune reveal transition.
 var scene_enter_transition_pending := false
+var _pending_run_seed: String = ""
+var _has_pending_run_seed := false
 
 
 func has_save() -> bool:
@@ -52,6 +54,18 @@ func consume_main_scene_transition_request() -> bool:
 	return consume_scene_enter_transition_request()
 
 
+func set_pending_run_seed(seed_text: String) -> void:
+	_pending_run_seed = RunRng.normalize_seed_text(seed_text)
+	_has_pending_run_seed = true
+
+
+func consume_pending_run_seed() -> Dictionary:
+	if not _has_pending_run_seed:
+		return {"requested": false, "seed_text": ""}
+	_has_pending_run_seed = false
+	return {"requested": true, "seed_text": _pending_run_seed}
+
+
 func should_restore_run() -> bool:
 	return continue_run_pending
 
@@ -83,6 +97,7 @@ func save_current_run() -> void:
 		"rerolls": RerollManager.capture_run_state(),
 		"challenges": ChallengeManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
+		"run_rng": RunRng.capture_run_state(),
 		"map": tile_map.capture_map_state(),
 		"hand": hand.capture_hand_state(),
 	}
@@ -120,6 +135,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
 	RerollManager.apply_run_state(payload.get("rerolls", {}))
 	ChallengeManager.apply_run_state(payload.get("challenges", {}))
 	RoundFlow.apply_run_state(payload.get("round_flow", {}))
+	RunRng.apply_run_state(payload.get("run_rng", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	hand.restore_hand_state(payload.get("hand", {}))
 	ChallengeManager.refresh_challenge_visuals()

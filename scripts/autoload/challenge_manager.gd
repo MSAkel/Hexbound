@@ -72,7 +72,7 @@ func init_run() -> void:
 	_clear_fading_sector_visuals()
 
 	var pool := ALL_CHALLENGES.duplicate()
-	pool.shuffle()
+	RunRng.shuffle_with(RunRng.create_rng("challenges"), pool)
 	for i in CHALLENGE_ROUNDS.size():
 		scheduled_challenges.append(pool[i])
 
@@ -218,7 +218,16 @@ func _apply_blackout() -> void:
 		return
 
 	var hexes_with_runes := tile_map.get_all_hexes_with_runes()
-	hexes_with_runes.shuffle()
+	hexes_with_runes.sort_custom(func(a: Hex, b: Hex) -> bool:
+		if a.coordinates.x != b.coordinates.x:
+			return a.coordinates.x < b.coordinates.x
+		return a.coordinates.y < b.coordinates.y
+	)
+	var rng := RunRng.create_rng("challenge:blackout:r%d:s%d" % [
+		GameManager.current_round,
+		GameManager.turn_stamp,
+	])
+	RunRng.shuffle_with(rng, hexes_with_runes)
 
 	for i in mini(5, hexes_with_runes.size()):
 		var hex := hexes_with_runes[i]
@@ -255,7 +264,10 @@ func _pick_halved_segment() -> void:
 		_halved_segment_index = -1
 		return
 
-	_halved_segment_index = randi() % segment_count
+	_halved_segment_index = RunRng.create_rng("challenge:fading_sector:r%d:s%d" % [
+		GameManager.current_round,
+		GameManager.turn_stamp,
+	]).randi() % segment_count
 	_apply_fading_sector_visuals()
 	EventBus.challenge_changed.emit()
 

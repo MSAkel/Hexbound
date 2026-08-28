@@ -1,7 +1,7 @@
 class_name Card
 extends Resource
 
-# Shared hand and shop payload for TileCard and Enhancement. CardUI binds to this type.
+# Shared hand and shop payload for TileCard. CardUI binds to this type.
 
 @export var id: String
 @export var name: String
@@ -21,12 +21,12 @@ func is_placement_candidate(_hex: Hex) -> bool:
 	return false
 
 
-# Apply this card to hex. TileCard places or modifies, Enhancement attaches.
+# Apply this card to hex. TileCard places or modifies the board.
 func play_on(_hex: Hex) -> void:
 	pass
 
 
-# Short type strip for CardUI, such as PRODUCER or Enhancement.
+# Short type strip for CardUI, such as PRODUCER or SUPPORT.
 func get_card_kind_label() -> String:
 	return ""
 

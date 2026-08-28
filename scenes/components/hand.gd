@@ -24,7 +24,6 @@ const DEFAULT_CARD_WIDTH := 214.0
 ## Debug-only cards appended to the opening hand.
 @export_group("Debug Starting Hand")
 @export var debug_starting_runes: Array[TileCard] = []
-@export var debug_starting_enhancements: Array[Enhancement] = []
 
 @onready var _generated_reveal: GeneratedCardReveal = $"../GeneratedCardReveal"
 
@@ -43,7 +42,6 @@ func _ready() -> void:
 	_base_separation = get_theme_constant("separation")
 	EventBus.card_played.connect(_on_card_played)
 	EventBus.tile_card_selected.connect(_add_tile_card)
-	EventBus.enhancement_selected.connect(_add_enhancement_card)
 	EventBus.turn_ended.connect(_hide_hand)
 	EventBus.turn_started.connect(_show_hand)
 
@@ -51,16 +49,30 @@ func _ready() -> void:
 	if RunSaveManager.should_restore_run():
 		return
 
-	## Starting hand depends on the character selected before the run begins
-	var starting_runes := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
-	for rune in starting_runes:
-		_add_tile_card(rune)
 
-	_add_debug_starting_cards()
+## Deal the opening hand after run RNG has been seeded and setup rolls have finished.
+func build_starting_hand() -> void:
+	if RunSaveManager.should_restore_run():
+		return
 
-	## Snap immediately so the first frame never flashes cards at rest before the intro.
-	if _awaiting_intro:
-		_snap_hand_offscreen()
+	var character := GameManager.selected_character
+	if character == null:
+		return
+
+	var stream_name := "starting_hand:%s:%d" % [
+		character.id,
+		int(GameManager.selected_difficulty),
+	]
+	RunRng.using_fresh_stream(stream_name, func() -> void:
+		var starting_runes := PlayerCharacter.get_starting_hand_runes(character)
+		for rune in starting_runes:
+			_add_tile_card(rune)
+
+		_add_debug_starting_cards()
+
+		if _awaiting_intro:
+			_snap_hand_offscreen()
+	)
 
 
 func _notification(what: int) -> void:
@@ -68,7 +80,7 @@ func _notification(what: int) -> void:
 		call_deferred("_refresh_hand_layout")
 
 
-## Extra inspector cards for testing a specific rune or enhancement without merchant luck.
+## Extra inspector cards for testing a specific rune without merchant luck.
 func _add_debug_starting_cards() -> void:
 	if not OS.is_debug_build():
 		return
@@ -77,17 +89,9 @@ func _add_debug_starting_cards() -> void:
 		if rune != null:
 			_add_tile_card(rune)
 
-	for enhancement in debug_starting_enhancements:
-		if enhancement != null:
-			_add_enhancement_card(enhancement)
-
 
 func _add_tile_card(rune: TileCard) -> void:
 	_add_card(rune)
-
-
-func _add_enhancement_card(enhancement: Enhancement) -> void:
-	_add_card(enhancement)
 
 
 func create_hand_card(data: Card) -> CardUI:
@@ -371,7 +375,7 @@ func capture_hand_state() -> Dictionary:
 		var card_ui := child as CardUI
 		if card_ui.card == null:
 			continue
-		# Writes "tile_card" or "enhancement". Older saves used "rune".
+		# Writes "tile_card". Older saves used "rune".
 		cards.append({"kind": card_ui.card.get_save_kind(), "id": card_ui.card.id})
 
 	return {
@@ -399,9 +403,5 @@ func restore_hand_state(state: Dictionary) -> void:
 			var tile_card := GameManager.get_tile_card_by_id(card_id)
 			if tile_card != null:
 				_add_tile_card(tile_card)
-		elif kind == "enhancement":
-			var enhancement := GameManager.get_enhancement_by_id(card_id)
-			if enhancement != null:
-				_add_enhancement_card(enhancement)
 
 	_generated_reveal.restore_pending(state.get("pending_generated_cards", []))

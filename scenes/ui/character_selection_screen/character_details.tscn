@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="10_start"]
 [ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="11_end"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
+[ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/character_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parchment"]
 content_margin_left = 42.0
@@ -378,7 +379,11 @@ layout_mode = 2
 size_flags_vertical = 4
 span = 82.0
 
-[node name="PlayButton" type="Button" parent="UnifiedPanel/Content/Footer" unique_id=1794758867]
+[node name="HBox" type="VBoxContainer" parent="UnifiedPanel/Content/Footer" unique_id=1161585173]
+layout_mode = 2
+
+[node name="PlayButton" type="Button" parent="UnifiedPanel/Content/Footer/HBox" unique_id=1794758867]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(270, 76)
 layout_mode = 2
 size_flags_vertical = 4
@@ -390,6 +395,10 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_play_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_play_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_play_hover")
 text = "PLAY"
+
+[node name="SeededRunPanel" parent="UnifiedPanel/Content/Footer/HBox" unique_id=1300363034 instance=ExtResource("13_seeded_run")]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="NextSelectionButton" type="TextureButton" parent="." unique_id=1794269466]
 custom_minimum_size = Vector2(76, 76)
@@ -403,5 +412,5 @@ stretch_mode = 3
 
 [connection signal="pressed" from="PrevSelectionButton" to="." method="_on_prev_selection_pressed"]
 [connection signal="pressed" from="UnifiedPanel/Content/OverviewRow/ProfileColumn/SegmentPassivesButton" to="." method="_on_segment_passives_button_pressed"]
-[connection signal="pressed" from="UnifiedPanel/Content/Footer/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="UnifiedPanel/Content/Footer/HBox/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="NextSelectionButton" to="." method="_on_next_selection_pressed"]

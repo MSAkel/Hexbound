@@ -10,7 +10,7 @@ func apply_on_placement(tile: Hex) -> void:
 	_destroy_placed_tile_card(tile, target)
 	AudioManager.play_sfx(UISounds.RUNE_BREAK)
 
-	var drafted := RuneLoot.draw_runes(1)
+	var drafted := RuneLoot.draw_runes(1, [], true, RunRng.create_card_effect_rng(tile, self, "extract"))
 	if drafted.is_empty():
 		failed_tile_card_text(tile)
 		return

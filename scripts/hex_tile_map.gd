@@ -580,11 +580,15 @@ func generate_terrain() -> void:
 
 	_layout.reset(hex_center)
 	_layout.reset_turn_results()
-	# Disabled tiles are restored from the save file when continuing a run.
-	if not RunSaveManager.should_restore_run():
-		_apply_difficulty_disabled_tiles()
 	trigger_order_overlay.rebuild()
 	segment_path_overlay.rebuild()
+
+
+## Apply difficulty-driven map randomization after run RNG setup rolls.
+func apply_run_start_randomization() -> void:
+	if RunSaveManager.should_restore_run():
+		return
+	_apply_difficulty_disabled_tiles()
 
 
 # Randomly disable tiles for difficulty level 5.
@@ -597,7 +601,13 @@ func _apply_difficulty_disabled_tiles() -> void:
 	for coords: Vector2i in map_data:
 		candidates.append(coords)
 
-	candidates.shuffle()
+	# Sort first so dictionary iteration order cannot change which tiles are disabled.
+	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		if a.x != b.x:
+			return a.x < b.x
+		return a.y < b.y
+	)
+	RunRng.shuffle_with(RunRng.create_rng("map_setup"), candidates)
 	disable_count = mini(disable_count, candidates.size())
 
 	for i in disable_count:
@@ -1202,16 +1212,6 @@ func _spawn_floating_text(pos: Vector2, text: String, color: Color, icon: Textur
 	return floating_text
 
 
-## Runs the enhancement in the same activation. Card floats stack if both emit text.
-func schedule_delayed_enhancement_activation(host_rune: TileCard, tile: Hex, output_scale: float) -> void:
-	if tile.active_tile_card != host_rune or host_rune.enhancement == null:
-		return
-
-	host_rune._activation_output_scale = output_scale
-	host_rune.enhancement.activate(host_rune, tile)
-	host_rune._activation_output_scale = 1.0
-
-
 ## Converts map coordinates to local pixel position on the base tile layer.
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
@@ -1543,10 +1543,7 @@ func _serialize_placed_tile_card(rune: TileCard) -> Dictionary:
 		"is_active": rune.is_active,
 		"bonus_production_amount": rune.bonus_production_amount,
 		"is_empowered": rune.is_empowered,
-		"enhancement_id": "",
 	}
-	if rune.enhancement != null:
-		data["enhancement_id"] = rune.enhancement.id
 	return data
 
 
@@ -1560,12 +1557,6 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	rune.is_active = bool(data.get("is_active", true))
 	rune.bonus_production_amount = int(data.get("bonus_production_amount", 0))
 	rune.is_empowered = bool(data.get("is_empowered", false))
-
-	var enhancement_id: String = data.get("enhancement_id", "")
-	if not enhancement_id.is_empty():
-		var enhancement_template := GameManager.get_enhancement_by_id(enhancement_id)
-		if enhancement_template != null:
-			rune.enhancement = enhancement_template.duplicate(true)
 	return rune
 
 #endregion

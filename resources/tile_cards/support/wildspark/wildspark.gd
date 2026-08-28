@@ -14,8 +14,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		trigger_count = BONUS_TRIGGER_COUNT
 
 	var to_trigger: Array[TileCard] = []
+	var rng: RandomNumberGenerator = RunRng.create_card_effect_rng(tile, self)
 	for _i in range(trigger_count):
-		to_trigger.append(adjacent_runes.pick_random())
+		to_trigger.append(RunRng.pick_random_placed_tile_card(adjacent_runes, rng, tile.map))
 
 	if not _try_queue_tile_card_triggers(tile, to_trigger):
 		return

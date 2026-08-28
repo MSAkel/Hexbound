@@ -19,6 +19,7 @@ var _selected_character: CharacterDefinition = null
 @onready var trigger_order_description: Label = %TriggerOrderDescription
 @onready var trigger_order_image: TextureRect = %TriggerOrderImage
 @onready var segment_count_label: Label = %SegmentCountTitle
+@onready var seeded_run_panel: SeededRunPanel = %SeededRunPanel
 
 
 func display_selection(character: CharacterDefinition) -> void:
@@ -77,6 +78,7 @@ func _on_play_button_pressed() -> void:
 	GameManager.selected_character = _selected_character
 	GameManager.selected_difficulty = get_selected_difficulty()
 	GameManager.apply_active_segment_passives(_selected_character.id)
+	RunSaveManager.set_pending_run_seed(seeded_run_panel.get_effective_seed_text())
 	RunSaveManager.request_scene_enter_transition()
 
 	get_tree().change_scene_to_file(ScenePaths.MAIN)

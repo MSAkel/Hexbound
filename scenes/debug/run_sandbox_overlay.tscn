@@ -46,6 +46,21 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Run Sandbox"
 
+[node name="SeedRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1847293010]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SeedLabel" type="Label" parent="ToolsPanel/MarginContainer/VBoxContainer/SeedRow" unique_id=1847293011]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.9303785, 0.8507871, 0.4908229, 1)
+theme_override_font_sizes/font_size = 14
+text = "Run seed: --------"
+
+[node name="CopySeedButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/SeedRow" unique_id=1847293012]
+layout_mode = 2
+text = "Copy"
+
 [node name="CharacterRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1982736460]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -198,6 +213,7 @@ theme_override_constants/v_separation = 12
 columns = 6
 
 [connection signal="item_selected" from="ToolsPanel/MarginContainer/VBoxContainer/CharacterRow/CharacterOption" to="." method="_on_character_option_item_selected"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/SeedRow/CopySeedButton" to="." method="_on_copy_seed_button_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton" to="." method="_on_complete_round_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton" to="." method="_on_pass_turn_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]

@@ -1,8 +1,8 @@
 extends Node
 
 ## Owns the ordered round-transition sequence so no single screen decides what comes next.
-## Round goal met -> summary -> merchant -> challenge reveal -> first turn of the round.
-## Mid-turn rune picks still use rune_selection_ui outside this transition.
+## Round goal met -> summary -> rune pick -> merchant -> challenge reveal -> first turn of the round.
+## Mid-turn rune picks also use rune_selection_ui outside this transition.
 
 enum Step {
 	## Normal play. No transition is running.
@@ -27,6 +27,8 @@ var _advance_round_after_merchant := false
 ## Challenge that governed the round being left. The reward rune pick still belongs to that
 ## round, so a challenge starting on the next round must not change it.
 var _outgoing_challenge := -1
+## Round that owns a transition rune pick. Set when entering RUNE_PICK.
+var _transition_rune_pick_round := 1
 ## Identity check so a stale timeout cannot complete a newer reveal.
 var _reveal_timeout_token: SceneTreeTimer = null
 
@@ -49,6 +51,14 @@ func has_armed_challenge_reveal() -> bool:
 ## Only meaningful while a transition is running.
 func get_outgoing_challenge() -> int:
 	return _outgoing_challenge
+
+
+func is_transition_rune_pick() -> bool:
+	return _step == Step.RUNE_PICK
+
+
+func get_transition_rune_pick_round() -> int:
+	return _transition_rune_pick_round
 
 
 #region Entry points
@@ -78,7 +88,7 @@ func notify_summary_confirmed() -> void:
 	# The round bonus has to land before the merchant so the player can spend it there.
 	GameManager.advance_round()
 	_arm_challenge_reveal()
-	_enter_step(Step.MERCHANT)
+	_enter_step(Step.RUNE_PICK)
 
 
 func notify_victory_continue() -> void:
@@ -135,6 +145,11 @@ func _enter_step(step: Step) -> void:
 			EventBus.challenge_banner_hidden.emit()
 			EventBus.all_challenges_completed.emit()
 		Step.RUNE_PICK:
+			# Summary already advanced the round. Victory keeps the completed round number.
+			if _advance_round_after_merchant:
+				_transition_rune_pick_round = GameManager.current_round
+			else:
+				_transition_rune_pick_round = maxi(1, GameManager.current_round - 1)
 			UiManager.show_runes_choice_panel.emit()
 		Step.MERCHANT:
 			UiManager.show_merchant_panel.emit()
@@ -176,6 +191,7 @@ func reset_for_new_run() -> void:
 	_challenge_reveal_armed = false
 	_advance_round_after_merchant = false
 	_outgoing_challenge = -1
+	_transition_rune_pick_round = 1
 
 
 func capture_run_state() -> Dictionary:
@@ -184,6 +200,7 @@ func capture_run_state() -> Dictionary:
 		"challenge_reveal_armed": _challenge_reveal_armed,
 		"advance_round_after_merchant": _advance_round_after_merchant,
 		"outgoing_challenge": _outgoing_challenge,
+		"transition_rune_pick_round": _transition_rune_pick_round,
 	}
 
 
@@ -193,6 +210,7 @@ func apply_run_state(state: Dictionary) -> void:
 	_challenge_reveal_armed = bool(state.get("challenge_reveal_armed", false))
 	_advance_round_after_merchant = bool(state.get("advance_round_after_merchant", false))
 	_outgoing_challenge = int(state.get("outgoing_challenge", -1))
+	_transition_rune_pick_round = int(state.get("transition_rune_pick_round", GameManager.current_round))
 
 
 ## Re-shows the panel the saved run was sitting on so a mid-transition save resumes in place.

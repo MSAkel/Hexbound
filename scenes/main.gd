@@ -24,9 +24,6 @@ var _is_restarting := false
 
 func _ready() -> void:
 	var play_entry_transition := RunSaveManager.consume_scene_enter_transition_request()
-	# Debug-only cheat panel for completing rounds, passing turns, and injecting cards.
-	if OS.is_debug_build():
-		add_child(RUN_SANDBOX_OVERLAY.instantiate())
 
 	if play_entry_transition:
 		scene_enter_transition.show()
@@ -39,13 +36,27 @@ func _ready() -> void:
 		RunSaveManager.restore_run(hand, tile_map)
 		RunSaveManager.clear_continue_run_pending()
 	else:
+		var pending_run := RunSaveManager.consume_pending_run_seed()
+		if pending_run["requested"]:
+			RunRng.begin_new_run(pending_run["seed_text"])
+		elif RunRng.get_display_seed().is_empty():
+			RunRng.begin_new_run()
+		else:
+			# In-run restart and editor reloads keep the seed but must start streams over.
+			RunRng.restart_same_seed()
 		GameManager.reset_for_new_run()
 		# Set starting gold after character selection has chosen the run difficulty.
 		GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
 		RerollManager.reset_for_new_run()
 		ChallengeManager.init_run()
+		tile_map.apply_run_start_randomization()
+		hand.build_starting_hand()
 		if debug_starting_round > 1:
 			GameManager.set_starting_round_for_debug(debug_starting_round)
+
+	# Spawn after the run seed is applied so the overlay does not show the previous run.
+	if OS.is_debug_build():
+		add_child(RUN_SANDBOX_OVERLAY.instantiate())
 
 	if play_entry_transition:
 		await scene_enter_transition.play()
@@ -121,6 +132,8 @@ func _commit_restart() -> void:
 	_is_restarting = true
 	# A restarted run is a new session. Drop any in-progress save for this character.
 	RunSaveManager.delete_save()
+	# Hold-R is a fresh run, not a seed replay. Generate a new display seed.
+	RunRng.begin_new_run()
 	# Hold registered. Play the same enter transition used when starting a fresh run.
 	RunSaveManager.request_scene_enter_transition()
 	get_tree().change_scene_to_file(ScenePaths.MAIN)

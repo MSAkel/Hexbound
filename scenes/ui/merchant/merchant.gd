@@ -1,8 +1,7 @@
 extends Control
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
-const MERCHANT_TILE_CARD_COUNT := 2
-const MERCHANT_ENHANCEMENT_COUNT := 1
+const MERCHANT_TILE_CARD_COUNT := 3
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/CardsGridContainer
@@ -18,6 +17,7 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 var _displayed_cards: Array[CardUI] = []
 var _selected_card_ui: CardUI = null
+var _stock_reroll_count := 0
 
 
 func _ready() -> void:
@@ -40,6 +40,7 @@ func _ready() -> void:
 func open() -> void:
 	_set_board_view(false)
 	_update_reroll_button()
+	_stock_reroll_count = 0
 	UiManager.show_panel(self)
 	await _refresh_merchant_cards()
 	AudioManager.play_sfx(UI_SOUNDS.MERCHANT_BELL)
@@ -76,17 +77,20 @@ func _refresh_merchant_cards() -> void:
 	_clear_selection()
 
 	var inventory: Array[Card] = []
-	var drafted_runes := RuneLoot.draw_runes(MERCHANT_TILE_CARD_COUNT, GameManager.tile_cards_pool)
+	var stream_name: String = RunRng.build_merchant_stream_name(
+		GameManager.current_round,
+		_stock_reroll_count
+	)
+	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
+	var drafted_runes := RuneLoot.draw_runes(
+		MERCHANT_TILE_CARD_COUNT,
+		GameManager.tile_cards_pool,
+		true,
+		loot_rng
+	)
 	for rune in drafted_runes:
 		inventory.append(rune)
 
-	var shuffled_enhancements := GameManager.enhancements_pool.duplicate()
-	shuffled_enhancements.shuffle()
-
-	for i in mini(MERCHANT_ENHANCEMENT_COUNT, shuffled_enhancements.size()):
-		inventory.append(shuffled_enhancements[i])
-
-	inventory.shuffle()
 	await _display_merchant_cards(inventory)
 
 
@@ -155,8 +159,6 @@ func _complete_purchase(pay_with_tokens: bool) -> void:
 
 	if card is TileCard:
 		EventBus.tile_card_selected.emit(card as TileCard)
-	elif card is Enhancement:
-		EventBus.enhancement_selected.emit(card as Enhancement)
 
 	AudioManager.play_sfx(
 		UI_SOUNDS.CLICK if pay_with_tokens else UI_SOUNDS.MERCHANT_CARD_PURCHASED
@@ -173,6 +175,7 @@ func _on_reroll_button_pressed() -> void:
 		return
 
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
+	_stock_reroll_count += 1
 	await _refresh_merchant_cards()
 	_update_reroll_button()
 

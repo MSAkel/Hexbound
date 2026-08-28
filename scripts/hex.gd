@@ -92,23 +92,6 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 		map.refresh_dashed_outlines()
 
 
-# Attach an enhancement to the placed rune. Returns false when the tile is empty or already enhanced.
-func try_apply_enhancement(enhancement: Enhancement) -> bool:
-	if is_disabled_by_difficulty:
-		return false
-
-	if not Enhancement.can_apply_to(self):
-		return false
-
-	# Each placement needs its own instance so map state does not leak between cards.
-	active_tile_card.enhancement = enhancement.duplicate(true)
-	## Handle enhancement UI display
-	if rune_ui != null:
-		rune_ui.show_enhancement(active_tile_card.enhancement)
-
-	return true
-
-
 func _apply_display_mode() -> void:
 	var has_rune := rune_ui != null and active_tile_card != null
 	if rune_ui != null:

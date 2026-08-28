@@ -9,8 +9,9 @@ var current_chance: float = BASE_CHANCE
 
 # Free activation with a 3% stackable chance to gain 500 Energy or 3 gold. Resets on success.
 func _on_activate_tile_card(tile: Hex) -> void:
-	if randf() < current_chance:
-		if randf() < 0.5:
+	var rng: RandomNumberGenerator = RunRng.create_card_effect_rng(tile, self)
+	if rng.randf() < current_chance:
+		if rng.randf() < 0.5:
 			add_score(tile, SCORE_REWARD)
 		else:
 			add_gold(tile, GOLD_REWARD)

@@ -19,12 +19,13 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 
+	var rng: RandomNumberGenerator = RunRng.create_card_effect_rng(tile, self)
 	for rune in empowered_sources:
 		if unempowered_runes.is_empty():
 			failed_tile_card_text(tile)
 			return
 
-		var target: TileCard = unempowered_runes.pick_random()
+		var target: TileCard = RunRng.pick_random_placed_tile_card(unempowered_runes, rng, tile.map)
 		if not _try_empower_tile_card(tile, target):
 			failed_tile_card_text(tile)
 			return

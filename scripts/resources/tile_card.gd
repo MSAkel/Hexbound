@@ -77,8 +77,6 @@ const BASE_PRICE_BY_RARITY := {
 
 var activation_count: int = 0
 var is_active: bool = true
-# Optional player-applied bonus resolved whenever this tile card activates.
-var enhancement: Enhancement = null
 # Runtime buffs from other tile cards, added to the base production amount.
 var bonus_production_amount: int = 0
 # Empowered tile cards triple their output once on trigger.
@@ -291,7 +289,6 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		TileCardType.PRODUCER,
 		GameManager.roll_segment_production_retrigger
 	)
-	_schedule_enhancement_activation(tile)
 	_activation_output_scale = 1.0
 
 # Queue extra tile card activations to resolve before tile flow continues.
@@ -335,9 +332,24 @@ func _try_segment_passive_retrigger(tile: Hex, card_type: TileCardType, roll: Ca
 	var segment_index := tile.map.get_segment_index(tile.coordinates)
 	if segment_index < 0:
 		return
-	if not roll.call(segment_index):
+	if not roll.call(tile):
 		return
 	_try_queue_tile_card_triggers(tile, [self])
+
+
+## Isolated RNG for this card's current activation. Same seed and same play replay.
+func _effect_rng(tile: Hex, tag: String = "effect") -> RandomNumberGenerator:
+	return RunRng.create_card_effect_rng(tile, self, tag)
+
+
+## Pick a placed rune using this activation's RNG and a coordinate-stable order.
+func _pick_random_placed_tile_card(
+	tile: Hex,
+	candidates: Array[TileCard],
+	rng: RandomNumberGenerator
+) -> TileCard:
+	var tile_map: HexTileMap = tile.map if tile != null else null
+	return RunRng.pick_random_placed_tile_card(candidates, rng, tile_map)
 
 
 func has_placement_restriction() -> bool:
@@ -446,12 +458,6 @@ func _empower() -> void:
 
 func _on_activate_tile_card(_tile: Hex) -> void:
 	pass
-
-# Enhancement text stacks above the host rune float. No delay is needed.
-func _schedule_enhancement_activation(tile: Hex) -> void:
-	if enhancement == null:
-		return
-	tile.map.schedule_delayed_enhancement_activation(self, tile, _activation_output_scale)
 
 # Check if the tile is on the edge of the map.
 func _is_on_map_edge(tile: Hex) -> bool:
@@ -727,7 +733,8 @@ func _destroy_placed_tile_card_after_queued_triggers(
 ## Pass exclude_id to omit one template so transforms can pick a different card.
 func _pick_random_placeable_tile_card(
 	rarity: Variant = null,
-	exclude_id: String = ""
+	exclude_id: String = "",
+	rng: RandomNumberGenerator = null
 ) -> TileCard:
 	var candidates: Array[TileCard] = []
 	for template: TileCard in GameManager.tile_cards_pool:
@@ -742,20 +749,24 @@ func _pick_random_placeable_tile_card(
 	if candidates.is_empty():
 		return null
 
-	return candidates.pick_random()
+	if rng == null:
+		return RunRng.pick_random_tile_card(candidates)
+
+	var sorted := candidates.duplicate()
+	sorted.sort_custom(func(a: TileCard, b: TileCard) -> bool:
+		return a.id < b.id
+	)
+	return RunRng.pick_random_with(rng, sorted) as TileCard
 
 
 ## Swaps the tile occupant for a fresh instance built from replacement_template.
-## Keeps runtime bonus production and any attached enhancement on the new card.
+## Keeps runtime bonus production on the new card.
 func _replace_placed_tile_card(tile: Hex, replacement_template: TileCard) -> void:
 	if tile.active_tile_card == null or replacement_template == null:
 		return
 
 	var old_card := tile.active_tile_card
 	var retained_bonus := old_card.bonus_production_amount
-	var retained_enhancement: Enhancement = null
-	if old_card.enhancement != null:
-		retained_enhancement = old_card.enhancement.duplicate(true)
 
 	_destroy_placed_tile_card(tile, old_card)
 	tile.place_tile_card(replacement_template)
@@ -765,10 +776,3 @@ func _replace_placed_tile_card(tile: Hex, replacement_template: TileCard) -> voi
 		return
 
 	new_card.bonus_production_amount = retained_bonus
-	if retained_enhancement == null:
-		return
-
-	new_card.enhancement = retained_enhancement
-	# setup() may have already finished before the enhancement was copied.
-	if tile.rune_ui != null:
-		tile.rune_ui.show_enhancement(retained_enhancement)

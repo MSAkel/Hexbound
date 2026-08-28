@@ -8,8 +8,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		return
 
 	var to_trigger: Array[TileCard] = []
+	var rng: RandomNumberGenerator = RunRng.create_card_effect_rng(tile, self)
 	for _i in range(2):
-		to_trigger.append(other_segments_runes.pick_random())
+		to_trigger.append(RunRng.pick_random_placed_tile_card(other_segments_runes, rng, tile.map))
 
 	_try_queue_tile_card_triggers(tile, to_trigger)
 

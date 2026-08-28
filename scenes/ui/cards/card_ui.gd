@@ -9,7 +9,7 @@ const BASE_STYLEBOX := preload("res://themes/card_base_stylebox.tres")
 const HOVER_STYLEBOX := preload("res://themes/card_hover_stylebox.tres")
 const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 
-# TileCardType.PRODUCER uses the production frame. Enhancement cards keep the scene default.
+# TileCardType.PRODUCER uses the production frame. Other cards keep the scene default.
 @export var frame_producer: Texture2D
 @export var frame_support: Texture2D
 @export var frame_utility: Texture2D
@@ -41,7 +41,7 @@ enum InteractionMode {
 	PREVIEW,
 }
 
-# Typed payload. TileCard occupies hexes, Enhancement attaches to a placed TileCard.
+# Typed payload. TileCard occupies hexes on the board.
 var card: Card = null
 var interaction_mode: InteractionMode = InteractionMode.HAND
 # Preview cards (e.g. character select) should not play hover elevation.
