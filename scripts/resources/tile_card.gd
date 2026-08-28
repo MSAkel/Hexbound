@@ -412,6 +412,12 @@ func failed_tile_card_text(tile: Hex) -> void:
 	_create_floating_text(tile, "Failed", Color.RED)
 
 
+## False when this card only resolves from its own trigger-order slot (e.g. Overdrive).
+## tile is the hex this instance occupies. Mirror Copy uses it to inherit Overdrive's lock.
+func can_be_triggered_by_other_card(_tile: Hex = null) -> bool:
+	return not single_activation_per_turn
+
+
 func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
 	if tile_card == null or source_tile.map == null:
 		return false

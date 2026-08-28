@@ -477,13 +477,21 @@ func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
 	return runes
 
 
-## True when a placed rune can be targeted or triggered by another effect this turn.
-func is_tile_card_triggerable(hex: Hex) -> bool:
+## True when a placed rune can fire during its own trigger-order slot this turn.
+func is_tile_card_active(hex: Hex) -> bool:
 	if hex == null or hex.active_tile_card == null:
 		return false
 	if hex.is_disabled_by_difficulty:
 		return false
 	return hex.active_tile_card.is_active
+
+
+## True when another card may queue or target this rune this turn.
+func is_tile_card_triggerable(hex: Hex) -> bool:
+	if not is_tile_card_active(hex):
+		return false
+	# Overdrive and a Mirror Copy facing it only fire from trigger order.
+	return hex.active_tile_card.can_be_triggered_by_other_card(hex)
 
 
 ## Hex tiles that currently hold a rune.
@@ -1312,15 +1320,23 @@ func _activate_tile_card_on_tile(
 func _is_bypassed_in_trigger_order(hex: Hex) -> bool:
 	if hex.active_tile_card == null:
 		return false
-	return not is_tile_card_triggerable(hex)
+	return not is_tile_card_active(hex)
 
 
 func _should_bypass_primary_trigger_order_activation(tile: Hex) -> bool:
-	return not is_tile_card_triggerable(tile)
+	return not is_tile_card_active(tile)
 
 
-func _would_activate_tile_card_on_tile(tile: Hex, _from_trigger: bool) -> bool:
-	return is_tile_card_triggerable(tile)
+func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
+	if not is_tile_card_active(tile):
+		return false
+	var card := tile.active_tile_card
+	if card.can_be_triggered_by_other_card(tile):
+		return true
+	# Locked cards (Overdrive, or Mirror Copy copying it) only fire from trigger order once.
+	if from_trigger:
+		return false
+	return not GameManager.has_tile_card_activated_this_turn(card)
 
 
 func _wait_for_activation_animation() -> void:

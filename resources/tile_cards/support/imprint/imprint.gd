@@ -9,6 +9,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	# Run each prior rune's effect from this tile without re-triggering them on their hexes.
 	var output_scale := _activation_output_scale
 	for prior_rune: TileCard in prior_runes:
+		var prior_hex := tile.map.get_hex_for_tile_card(prior_rune)
+		if not prior_rune.can_be_triggered_by_other_card(prior_hex):
+			continue
 		prior_rune._activation_output_scale = output_scale
 		prior_rune._on_activate_tile_card(tile)
 		prior_rune._activation_output_scale = 1.0

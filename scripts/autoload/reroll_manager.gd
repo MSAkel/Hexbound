@@ -1,6 +1,6 @@
 extends Node
 
-## Tracks the shared reroll budget for a run. Rune picks and the merchant draw from the same pool.
+## Tracks the shared reroll budget for a run. Rune selection draws from this pool.
 
 const MAX_REROLLS_PER_RUN := 3
 

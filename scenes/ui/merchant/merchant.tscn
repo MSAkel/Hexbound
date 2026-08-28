@@ -271,7 +271,7 @@ theme_override_styles/normal = SubResource("ParchmentButton")
 theme_override_styles/pressed = SubResource("ParchmentButton")
 theme_override_styles/hover = SubResource("ParchmentButton")
 theme_override_styles/disabled = SubResource("DisabledButton")
-text = "REROLL (3 LEFT)"
+text = "REROLL - 5"
 icon = ExtResource("3_die")
 expand_icon = true
 

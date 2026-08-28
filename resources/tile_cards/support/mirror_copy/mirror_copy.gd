@@ -14,9 +14,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 
-	# Always read the live occupant. A later replacement on that tile is what gets copied.
+	# Copy even Overdrive. Triggerability is inherited separately so others cannot retrigger this copy.
 	var copied := opposite.active_tile_card
-	if copied == null or not tile.map.is_tile_card_triggerable(opposite):
+	if copied == null or not tile.map.is_tile_card_active(opposite):
 		failed_tile_card_text(tile)
 		return
 
@@ -29,3 +29,22 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	return _coords_for_opposite_tile(hover_tile)
+
+
+## When facing Overdrive, this copy also refuses queued triggers from other cards.
+func can_be_triggered_by_other_card(tile: Hex = null) -> bool:
+	if not super.can_be_triggered_by_other_card(tile):
+		return false
+	var copied := _copied_card_on_tile(tile)
+	if copied == null:
+		return true
+	return not copied.single_activation_per_turn
+
+
+func _copied_card_on_tile(tile: Hex) -> TileCard:
+	if tile == null:
+		return null
+	var opposite := _get_opposite_hex(tile)
+	if opposite == null or opposite == tile:
+		return null
+	return opposite.active_tile_card
