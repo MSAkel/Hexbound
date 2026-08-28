@@ -42,6 +42,7 @@ func _ready() -> void:
 		GameManager.reset_for_new_run()
 		# Set starting gold after character selection has chosen the run difficulty.
 		GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
+		RerollManager.reset_for_new_run()
 		ChallengeManager.init_run()
 		if debug_starting_round > 1:
 			GameManager.set_starting_round_for_debug(debug_starting_round)

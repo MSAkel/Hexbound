@@ -1,16 +1,8 @@
 [gd_scene format=3 uid="uid://gd4rito42dyr"]
 
 [ext_resource type="Script" uid="uid://b6oc5xxbytb4f" path="res://scenes/ui/main_menu/main_menu.gd" id="1_fe2o3"]
-[ext_resource type="Texture2D" uid="uid://cnstyqt8k8wlr" path="res://assets/background/test_bg.png" id="2_cmwxi"]
 [ext_resource type="Texture2D" uid="uid://8fw2v0boq1q8" path="res://assets/title/6_aklatros.png" id="3_cmwxi"]
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="4_cmwxi"]
-
-[sub_resource type="Gradient" id="Gradient_cmwxi"]
-colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_1g8jr"]
-gradient = SubResource("Gradient_cmwxi")
-width = 50
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7pmlo"]
 
@@ -66,25 +58,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fe2o3")
-
-[node name="Background" type="TextureRect" parent="." unique_id=842968339]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2_cmwxi")
-expand_mode = 1
-
-[node name="Foreground" type="TextureRect" parent="." unique_id=1115512543]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("GradientTexture1D_1g8jr")
 
 [node name="MenuContainer" type="MarginContainer" parent="." unique_id=1400102353]
 layout_mode = 1

@@ -2,9 +2,6 @@
 
 [ext_resource type="Script" uid="uid://dokobqfpi35ci" path="res://scenes/components/hand.gd" id="1_0y3yv"]
 [ext_resource type="Script" uid="uid://bgesqtywkhtmh" path="res://scenes/components/generated_card_reveal.gd" id="1_reveal"]
-[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_6x5t0"]
-[ext_resource type="Resource" uid="uid://bms421c4eq14w" path="res://resources/tile_cards/support/chain_effect/chain_effect.tres" id="3_33g05"]
-[ext_resource type="Resource" uid="uid://y3m3p4rtvqcl" path="res://resources/tile_cards/support/break_glass/break_glass.tres" id="4_33g05"]
 
 [node name="CardsHand" type="Control" unique_id=19796645 groups=["ui_layer"]]
 custom_minimum_size = Vector2(600, 125)
@@ -35,7 +32,6 @@ grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 script = ExtResource("1_0y3yv")
-debug_starting_runes = Array[ExtResource("2_6x5t0")]([ExtResource("3_33g05"), ExtResource("4_33g05")])
 
 [node name="GeneratedCardReveal" type="Node" parent="." unique_id=856140927]
 script = ExtResource("1_reveal")

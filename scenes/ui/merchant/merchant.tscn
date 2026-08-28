@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dhgcsvr4lsi58" path="res://scenes/ui/merchant/merchant.gd" id="1_wha7e"]
 [ext_resource type="Texture2D" uid="uid://fvko4m74t6xh" path="res://assets/characters/NPC_Gramps.png" id="2_b5a5w"]
+[ext_resource type="Texture2D" uid="uid://s2somxs47c70" path="res://assets/icons/others/die.png" id="3_die"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="3_gold"]
 [ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="4_token"]
 
@@ -270,8 +271,8 @@ theme_override_styles/normal = SubResource("ParchmentButton")
 theme_override_styles/pressed = SubResource("ParchmentButton")
 theme_override_styles/hover = SubResource("ParchmentButton")
 theme_override_styles/disabled = SubResource("DisabledButton")
-text = "REROLL - 5"
-icon = ExtResource("3_gold")
+text = "REROLL (3 LEFT)"
+icon = ExtResource("3_die")
 expand_icon = true
 
 [node name="LeaveButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=411611746]

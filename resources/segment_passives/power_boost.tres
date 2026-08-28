@@ -1,14 +1,21 @@
 [gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://idwquqcordij"]
 
-[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="1_passive_script"]
-[ext_resource type="Texture2D" uid="uid://c4jtcbxdocryv" path="res://assets/passives/icons/steady_growth.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://c4jtcbxdocryv" path="res://assets/passives/icons/steady_growth.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_power_boost"]
+script = ExtResource("1_unlock_script")
+condition_type = 1
+threshold = 1
+description = "Win a run"
 
 [resource]
-script = ExtResource("1_passive_script")
+script = ExtResource("2_passive_script")
 id = "power_boost"
 display_name = "Power Boost"
 description = "+5% power output for cards in this segment."
-icon = ExtResource("2_icon")
+icon = ExtResource("3_icon")
 effect_type = 3
 effect_value = 0.05
-starts_unlocked = true
+unlock_condition = SubResource("UnlockCondition_power_boost")

@@ -43,13 +43,18 @@ func rebuild() -> void:
 	_apply_display_state()
 
 
+## Reapply visibility and backdrops after map occupancy changes.
+func refresh_display_state() -> void:
+	_apply_display_state()
+
+
 ## Sticky layout toggle or Tab peek. Shows every trigger index on top of the cards.
 func set_full_reveal(active: bool) -> void:
 	_full_reveal = active
 	_apply_display_state()
 
 
-## Hover focus. Shows every trigger index in the focused tile's segment.
+## Focus one segment. include_center hides the hovered placement tile while keeping neighbors.
 func set_focus_coords(coords: Vector2i, include_center: bool = true) -> void:
 	_focus_coords = coords
 	_focus_include_center = include_center
@@ -82,7 +87,6 @@ func _apply_display_state() -> void:
 		var is_focus_cell := coords == _focus_coords
 		# Placement preview can hide the hovered cell while still showing the rest of the segment.
 		var show_number := _full_reveal or (in_focus_segment and (_focus_include_center or not is_focus_cell))
-		marker.set_show_background(false)
 		marker.set_number_backdrop_visible(show_number and _coords_has_card(coords))
 		marker.set_number_visible(show_number)
 

@@ -1,8 +1,8 @@
-[gd_resource type="Resource" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://c542y5rlsp03d"]
 
-[ext_resource type="Script" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
-[ext_resource type="Script" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
-[ext_resource type="Texture2D" path="res://assets/passives/icons/steady_growth.png" id="3_icon"]
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://c4jtcbxdocryv" path="res://assets/passives/icons/steady_growth.png" id="3_icon"]
 
 [sub_resource type="Resource" id="UnlockCondition_steady"]
 script = ExtResource("1_unlock_script")
@@ -16,8 +16,6 @@ id = "steady_growth"
 display_name = "Steady Growth"
 description = "+5 power each turn in this segment."
 icon = ExtResource("3_icon")
-tile_cost = 1
-max_copies = 1
 effect_type = 1
 effect_value = 5.0
 unlock_condition = SubResource("UnlockCondition_steady")

@@ -9,20 +9,13 @@ var tile_map: HexTileMap
 
 # True while a hand card is selected for placement.
 var is_card_selected: bool = false
-# Backwards-compatible alias used by HexTileMap hover logic.
-var is_card_dragging: bool:
-	get:
-		return is_card_selected
 
 var selected_card: CardUI = null
-var last_hovered_tile: Vector2i = Vector2i(-1, -1)
 var _rune_preview: Sprite2D
 # Prevents deselect cleanup when swapping from one selected card to another.
 var _switching_selection: bool = false
 # Tiles temporarily marked invalid while placing a restricted rune card.
 var _restricted_invalid_coords: Array[Vector2i] = []
-# Tile currently targeted for placement while hovering.
-var _placement_target_coord: Vector2i = Vector2i(-1, -1)
 # Tiles currently showing trigger-effect preview highlights.
 var _effect_preview_coords: Array[Vector2i] = []
 # Valid placement tiles highlighted for first, last, or edge restrictions.
@@ -112,7 +105,6 @@ func _update_rune_preview() -> void:
 		return
 	
 	var map_coords := _get_mouse_map_coords()
-	last_hovered_tile = map_coords
 	
 	var hex: Hex = tile_map.map_data.get(map_coords) if tile_map.is_in_map(map_coords) else null
 	var over_valid_tile := hex != null \
@@ -172,7 +164,6 @@ func _clear_preview() -> void:
 	if selected_card != null:
 		selected_card.set_map_tile_hover_active(false, false)
 	_rune_preview.visible = false
-	last_hovered_tile = Vector2i(-1, -1)
 	_clear_placement_overlays()
 
 
@@ -203,7 +194,6 @@ func _clear_valid_restriction_highlights() -> void:
 func _clear_hover_highlights() -> void:
 	_clear_rune_highlights_at(_effect_preview_coords)
 	_effect_preview_coords.clear()
-	_placement_target_coord = Vector2i(-1, -1)
 
 
 func _clear_rune_highlights_at(coords_list: Array[Vector2i]) -> void:
@@ -267,16 +257,15 @@ func _update_placement_overlays() -> void:
 func _update_hover_highlights(hover_hex: Hex) -> void:
 	_clear_hover_highlights()
 	
-	_placement_target_coord = hover_hex.coordinates
-	
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:
 		return
 	
+	var placement_coords := hover_hex.coordinates
 	for coords: Vector2i in tile_card.get_trigger_preview_coords(hover_hex):
 		if not tile_map.is_in_map(coords):
 			continue
-		if coords == _placement_target_coord:
+		if coords == placement_coords:
 			continue
 		_stamp_rune_highlight(coords)
 		_effect_preview_coords.append(coords)

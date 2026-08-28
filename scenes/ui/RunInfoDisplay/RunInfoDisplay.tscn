@@ -17,7 +17,7 @@ mouse_filter = 1
 
 [node name="LeftContainer" type="MarginContainer" parent="." unique_id=2009317428]
 layout_mode = 1
-offset_right = 258.0
+offset_right = 494.0
 offset_bottom = 567.0
 mouse_filter = 0
 theme_override_constants/margin_left = 32

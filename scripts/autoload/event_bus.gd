@@ -26,13 +26,28 @@ signal card_drag_ended()
 ## Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 signal merchant_tokens_changed(new_amount: int)
+## Emitted when the shared run reroll budget changes.
+signal rerolls_changed(remaining: int)
 
 signal total_round_score_changed()
 ## Per-segment energy, multiplier, product (energy x mult), and gold during turn resolution.
 signal segment_turn_results_changed(segment_index: int, score: int, multiplier: int, total_score: int, gold: int)
 signal segment_turn_results_reset()
-## Product unlocked for one segment after its Energy × Mult equals beat.
+## Product unlocked for one segment after its Score lands in the output panel.
 signal segment_score_revealed(segment_index: int, total_score: int)
+## Segment row counter and punch finished for one reveal beat.
+signal segment_score_count_finished(segment_index: int)
+## Map glow and output-row highlight for the segment currently revealing.
+signal segment_reveal_started(segment_index: int)
+signal segment_reveal_ended()
+## All segment score rows have finished resolving for this turn.
+signal segment_reveals_finished(turn_total_score: int)
+## Turn-total footer counter and punch finished for the current resolve.
+signal turn_total_count_finished()
+## Play the top-panel round score after the segment turn total lands.
+signal round_score_commit_animation_requested()
+## Top-panel round score counter finished after a turn commits.
+signal round_score_count_finished()
 ## Fired once per resolved turn with a full per-segment snapshot for the run-info history UI.
 signal segment_turn_completed(turn_number: int, snapshot: Dictionary)
 

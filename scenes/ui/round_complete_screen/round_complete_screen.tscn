@@ -25,10 +25,10 @@ color = Color(0.35, 0.38, 0.18, 0.72)
 thickness = 3
 
 [sub_resource type="StyleBoxFlat" id="RewardBreakdown"]
-content_margin_left = 20.0
-content_margin_top = 8.0
-content_margin_right = 16.0
-content_margin_bottom = 8.0
+content_margin_left = 18.0
+content_margin_top = 7.0
+content_margin_right = 14.0
+content_margin_bottom = 7.0
 bg_color = Color(0.9, 0.79, 0.51, 0.28)
 border_width_left = 2
 border_width_top = 2
@@ -41,10 +41,10 @@ corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
 [sub_resource type="StyleBoxFlat" id="ButtonNormal"]
-content_margin_left = 34.0
-content_margin_top = 13.0
-content_margin_right = 34.0
-content_margin_bottom = 13.0
+content_margin_left = 30.0
+content_margin_top = 11.0
+content_margin_right = 30.0
+content_margin_bottom = 11.0
 bg_color = Color(0.075, 0.245, 0.11, 1)
 border_width_left = 4
 border_width_top = 4
@@ -57,10 +57,10 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="ButtonPressed"]
-content_margin_left = 34.0
-content_margin_top = 15.0
-content_margin_right = 34.0
-content_margin_bottom = 11.0
+content_margin_left = 30.0
+content_margin_top = 13.0
+content_margin_right = 30.0
+content_margin_bottom = 9.0
 bg_color = Color(0.055, 0.17, 0.08, 1)
 border_width_left = 4
 border_width_top = 4
@@ -73,10 +73,10 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="ButtonHover"]
-content_margin_left = 34.0
-content_margin_top = 13.0
-content_margin_right = 34.0
-content_margin_bottom = 13.0
+content_margin_left = 30.0
+content_margin_top = 11.0
+content_margin_right = 30.0
+content_margin_bottom = 11.0
 bg_color = Color(0.105, 0.335, 0.155, 1)
 border_width_left = 4
 border_width_top = 4
@@ -100,17 +100,17 @@ theme_override_styles/panel = SubResource("Overlay")
 script = ExtResource("1_script")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=486542318]
-custom_minimum_size = Vector2(760, 880)
+custom_minimum_size = Vector2(684, 792)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -380.0
-offset_top = -440.0
-offset_right = 380.0
-offset_bottom = 440.0
+offset_left = -342.0
+offset_top = -396.0
+offset_right = 342.0
+offset_bottom = 396.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("Card")
@@ -124,29 +124,29 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 1.0
-offset_top = 35.0
+offset_top = 31.0
 offset_right = 1.0
-offset_bottom = 102.0
+offset_bottom = 92.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
 theme_override_colors/font_shadow_color = Color(1, 0.96, 0.82, 0.42)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 43
 text = "Round Complete"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ContentMarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=188331323]
 layout_mode = 2
-theme_override_constants/margin_left = 58
-theme_override_constants/margin_top = 112
-theme_override_constants/margin_right = 58
-theme_override_constants/margin_bottom = 30
+theme_override_constants/margin_left = 52
+theme_override_constants/margin_top = 101
+theme_override_constants/margin_right = 52
+theme_override_constants/margin_bottom = 27
 
 [node name="ContentBoxContainer" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer" unique_id=954891927]
 layout_mode = 2
-theme_override_constants/separation = 13
+theme_override_constants/separation = 12
 
 [node name="HeaderRule" type="HSeparator" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1951790989]
 custom_minimum_size = Vector2(0, 4)
@@ -154,22 +154,22 @@ layout_mode = 2
 theme_override_styles/separator = SubResource("Rule")
 
 [node name="ScoreContainer" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=1132703847]
-custom_minimum_size = Vector2(0, 88)
+custom_minimum_size = Vector2(0, 79)
 layout_mode = 2
 
 [node name="RoundScoreLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/ScoreContainer" unique_id=991979453]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 34
 text = "Total Score"
 vertical_alignment = 1
 
 [node name="RoundScore" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/ScoreContainer" unique_id=759433246]
-custom_minimum_size = Vector2(170, 0)
+custom_minimum_size = Vector2(153, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 52
+theme_override_font_sizes/font_size = 47
 text = "660"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -183,17 +183,17 @@ theme_override_styles/separator = SubResource("Rule")
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.29, 0.32, 0.17, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 23
 text = "REWARDS"
 
 [node name="GoldContainer" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=802449603]
 visible = false
-custom_minimum_size = Vector2(0, 68)
+custom_minimum_size = Vector2(0, 61)
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
 [node name="GoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/GoldContainer" unique_id=1414532253]
-custom_minimum_size = Vector2(62, 62)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 texture = ExtResource("2_gold")
 expand_mode = 3
@@ -203,22 +203,22 @@ stretch_mode = 5
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 29
 text = "Gold Earned"
 vertical_alignment = 1
 
 [node name="GoldEarned" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/GoldContainer" unique_id=425993568]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 34
 text = "6"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="RemainingTurnsRewardsContainer" type="VBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=606713706]
 layout_mode = 2
-theme_override_constants/separation = 7
+theme_override_constants/separation = 6
 
 [node name="RewardBreakdownPanel" type="PanelContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=147335529]
 layout_mode = 2
@@ -229,92 +229,92 @@ layout_mode = 2
 theme_override_constants/separation = 4
 
 [node name="BaseGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows" unique_id=2096311997]
-custom_minimum_size = Vector2(0, 58)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 11
 
 [node name="BaseGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=425057028]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 24
 text = "Round completion"
 vertical_alignment = 1
 
 [node name="BaseGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=1998184864]
-custom_minimum_size = Vector2(70, 0)
+custom_minimum_size = Vector2(63, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.43, 0.06, 1)
-theme_override_font_sizes/font_size = 31
+theme_override_font_sizes/font_size = 28
 text = "+5"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="BaseGoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=677500682]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 texture = ExtResource("2_gold")
 expand_mode = 3
 stretch_mode = 5
 
 [node name="EarlyGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows" unique_id=191041374]
-custom_minimum_size = Vector2(0, 58)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 11
 
 [node name="EarlyGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow" unique_id=1436574429]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 23
 text = "Early finish (x1 per turn)"
 vertical_alignment = 1
 
 [node name="EarlyGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow" unique_id=2135349268]
-custom_minimum_size = Vector2(70, 0)
+custom_minimum_size = Vector2(63, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.43, 0.06, 1)
-theme_override_font_sizes/font_size = 31
+theme_override_font_sizes/font_size = 28
 text = "+1"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="EarlyGoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow" unique_id=767788315]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 texture = ExtResource("2_gold")
 expand_mode = 3
 stretch_mode = 5
 
 [node name="TokenRule" type="HSeparator" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=45285921]
-custom_minimum_size = Vector2(0, 13)
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 theme_override_styles/separator = SubResource("Rule")
 
 [node name="MerchantTokensRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=1010758444]
-custom_minimum_size = Vector2(0, 58)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 16
 
 [node name="MerchantTokensTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1060675684]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 24
 text = "Merchant Token (x1 per turn)"
 vertical_alignment = 1
 
 [node name="MerchantTokensValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1461419900]
-custom_minimum_size = Vector2(76, 0)
+custom_minimum_size = Vector2(68, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.06, 0.43, 0.43, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 31
 text = "+1"
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="MerchantTokenIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1524448279]
-custom_minimum_size = Vector2(72, 58)
+custom_minimum_size = Vector2(65, 52)
 layout_mode = 2
 texture = ExtResource("3_token")
 expand_mode = 3
@@ -325,7 +325,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_colors/font_color = Color(0.62, 0.16, 0.12, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 text = "Max tokens reached"
 horizontal_alignment = 1
 
@@ -337,14 +337,14 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_bottom = 22
 
 [node name="ContinueButton" type="Button" parent="PanelContainer/ContinueButtonMargin" unique_id=1354820777]
 layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.97, 0.97, 0.9, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 0.94, 1)
-theme_override_font_sizes/font_size = 29
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")

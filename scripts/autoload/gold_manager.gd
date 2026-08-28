@@ -1,7 +1,7 @@
 extends Node
 
 ## Tracks spendable gold, merchant tokens, and per-turn or per-round gold earnings.
-## Gold is used for rune activation, merchant purchases, and rerolls.
+## Gold is used for rune activation and merchant purchases.
 
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 

@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="6_arrow_normal"]
 [ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="7_arrow_pressed"]
 [ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="8_arrow_hover"]
+[ext_resource type="Texture2D" uid="uid://cgypbaahjtjcf" path="res://assets/map/segment_icons/tile_normal.png" id="9_r66gk"]
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="9_segment"]
 [ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="10_start"]
 [ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="11_end"]
@@ -154,20 +155,6 @@ theme_override_font_sizes/font_size = 16
 text = "Set A"
 horizontal_alignment = 1
 
-[node name="ProfileRule" type="ColorRect" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=1760315152]
-custom_minimum_size = Vector2(220, 2)
-layout_mode = 2
-size_flags_horizontal = 4
-mouse_filter = 2
-color = Color(0.43, 0.33, 0.19, 0.32)
-
-[node name="ProfileCaption" type="Label" parent="UnifiedPanel/Content/OverviewRow/ProfileColumn" unique_id=1417530207]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.38, 0.31, 0.21, 1)
-theme_override_font_sizes/font_size = 18
-text = "CHARACTER"
-horizontal_alignment = 1
-
 [node name="ProfileDivider" parent="UnifiedPanel/Content/OverviewRow" unique_id=760577234 instance=ExtResource("12_vertical_divider")]
 
 [node name="MapColumn" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow" unique_id=1036898751]
@@ -235,6 +222,75 @@ size_flags_horizontal = 4
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.26)
 
+[node name="TileItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=1231202640]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
+
+[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/TileItem" unique_id=1611088363]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/TileItem/Row" unique_id=807110556]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("9_r66gk")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/TileItem/Row" unique_id=446284814]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/TileItem/Row/Copy" unique_id=234335101]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
+theme_override_font_sizes/font_size = 19
+text = "Tiles"
+
+[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/TileItem/Row/Copy" unique_id=1924780569]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 15
+text = "Cards are played on tiles"
+autowrap_mode = 3
+
+[node name="SegmentCountItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=1830704522]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
+
+[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem" unique_id=1564500937]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row" unique_id=539106452]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("9_segment")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row" unique_id=1432686884]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SegmentCountTitle" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy" unique_id=1735213286]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
+theme_override_font_sizes/font_size = 19
+text = "7 Segments"
+
+[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy" unique_id=337615501]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 15
+text = "Each segment consists of one or more tiles"
+autowrap_mode = 3
+
 [node name="SegmentStartItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=180812953]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
@@ -301,41 +357,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
 text = "Last tile in a segment"
-autowrap_mode = 3
-
-[node name="SegmentCountItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=1830704522]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
-
-[node name="Row" type="HBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem" unique_id=1564500937]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Icon" type="TextureRect" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row" unique_id=539106452]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-size_flags_vertical = 4
-texture = ExtResource("9_segment")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Copy" type="VBoxContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row" unique_id=1432686884]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="SegmentCountTitle" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy" unique_id=1735213286]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
-theme_override_font_sizes/font_size = 19
-text = "7 Segments"
-
-[node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/SegmentCountItem/Row/Copy" unique_id=337615501]
-custom_minimum_size = Vector2(180, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
-theme_override_font_sizes/font_size = 15
-text = "Each segment calculates its output separately."
 autowrap_mode = 3
 
 [node name="FooterRule" type="ColorRect" parent="UnifiedPanel/Content" unique_id=749394700]

@@ -1,12 +1,7 @@
 extends Camera2D
 
-@export var velocity: int = 15
-@export var zoom_speed: float = 0.02
 @export var rune_shake_strength: float = 10.0
 @export var rune_shake_duration: float = 0.3
-
-var mouse_wheel_scrolling_up := false
-var mouse_wheel_scrolling_down := false
 
 ## Screen shake state: applied via offset so world position stays fixed.
 var _shake_strength: float = 0.0
@@ -17,8 +12,6 @@ var _shake_canvas_layers: Array[CanvasLayer] = []
 var _shake_canvas_layer_bases: Dictionary = {}
 # Map ref
 var map = HexTileMap
-
-@onready var zoom_sound: AudioStreamPlayer2D = $ZoomSound
 
 func _ready() -> void:
 	GameSettings.ensure_loaded()
@@ -31,19 +24,6 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_update_screen_shake(delta)
-
-func _physics_process(_delta: float) -> void:
-	if Input.is_action_pressed("zoom_in") || mouse_wheel_scrolling_up:
-		if zoom < Vector2(2.0, 2.0):
-			zoom += Vector2(zoom_speed, zoom_speed)
-	
-	if Input.is_action_pressed("zoom_out") || mouse_wheel_scrolling_down:
-		if zoom > Vector2(0.4, 0.4):
-			zoom -= Vector2(zoom_speed, zoom_speed)
-			
-	mouse_wheel_scrolling_up = Input.is_action_just_released("mouse_zoom_in")
-	mouse_wheel_scrolling_down = Input.is_action_just_released("mouse_zoom_out")
-
 
 func _on_tile_card_activated(_rune: TileCard) -> void:
 	shake(rune_shake_strength, rune_shake_duration)

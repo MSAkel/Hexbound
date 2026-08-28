@@ -3,7 +3,6 @@ extends Control
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const MERCHANT_TILE_CARD_COUNT := 2
 const MERCHANT_ENHANCEMENT_COUNT := 1
-const BASE_REROLL_COST := 5
 const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/CardsGridContainer
@@ -17,7 +16,6 @@ const UI_SOUNDS := preload("res://scripts/resources/ui_sounds.gd")
 @onready var _show_board_button: Button = $ContainerPanel/ShowBoardButton
 @onready var _show_merchant_button: Button = $ShowMerchantButton
 
-var reroll_cost := BASE_REROLL_COST
 var _displayed_cards: Array[CardUI] = []
 var _selected_card_ui: CardUI = null
 
@@ -32,6 +30,7 @@ func _ready() -> void:
 	_show_merchant_button.pressed.connect(_on_show_merchant_button_pressed)
 	EventBus.gold_changed.connect(_on_currency_changed)
 	EventBus.merchant_tokens_changed.connect(_on_currency_changed)
+	EventBus.rerolls_changed.connect(_on_rerolls_changed)
 	UiManager.show_merchant_panel.connect(open)
 	_update_currency_display()
 	_update_reroll_button()
@@ -40,7 +39,6 @@ func _ready() -> void:
 
 func open() -> void:
 	_set_board_view(false)
-	reroll_cost = BASE_REROLL_COST
 	_update_reroll_button()
 	UiManager.show_panel(self)
 	await _refresh_merchant_cards()
@@ -168,13 +166,14 @@ func _complete_purchase(pay_with_tokens: bool) -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if not GoldManager.can_afford(reroll_cost):
+	if not RerollManager.can_reroll():
 		return
 
-	GoldManager.remove(reroll_cost)
+	if not RerollManager.use_reroll():
+		return
+
 	AudioManager.play_sfx(UI_SOUNDS.CLICK)
 	await _refresh_merchant_cards()
-	reroll_cost += 1
 	_update_reroll_button()
 
 
@@ -190,8 +189,11 @@ func _on_currency_changed(_new_amount: int = 0) -> void:
 	_update_currency_display()
 	for card_ui in _displayed_cards:
 		card_ui.refresh_affordability()
-	_update_reroll_button()
 	_update_purchase_panel()
+
+
+func _on_rerolls_changed(_remaining: int) -> void:
+	_update_reroll_button()
 
 
 func _clear_selection() -> void:
@@ -221,5 +223,9 @@ func _update_currency_display() -> void:
 
 
 func _update_reroll_button() -> void:
-	reroll_button.text = "REROLL - %d" % reroll_cost
-	reroll_button.disabled = not GoldManager.can_afford(reroll_cost)
+	var remaining := RerollManager.remaining
+	if remaining <= 0:
+		reroll_button.text = "NO REROLLS LEFT"
+	else:
+		reroll_button.text = "REROLL (%d LEFT)" % remaining
+	reroll_button.disabled = not RerollManager.can_reroll()

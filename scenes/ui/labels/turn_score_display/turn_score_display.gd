@@ -16,9 +16,11 @@ const MAX_SCREEN_SHAKE := 28.0
 const BASE_TEXT_SHAKE := 4.0
 const MAX_TEXT_SHAKE := 20.0
 const SHAKE_DURATION := 0.28
-const FACTOR_HOLD_DURATION := 0.55
+## Hold Energy x Mult long enough to read the factors and the Segment N title.
+const FACTOR_HOLD_DURATION := 1.05
 const TUTORIAL_EQUALS_HOLD := 0.55
-const PRODUCT_HOLD_DURATION := 0.45
+## Hold the product before it flies so the player can match Score to its segment.
+const PRODUCT_HOLD_DURATION := 0.9
 const APPEAR_DURATION := 0.16
 const FACTOR_FONT_SCALE := 0.72
 ## Peak overshoot when Energy x Mult becomes the product.

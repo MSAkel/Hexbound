@@ -80,6 +80,7 @@ func save_current_run() -> void:
 		"difficulty": GameManager.selected_difficulty,
 		"game_manager": GameManager.capture_run_state(),
 		"gold": GoldManager.capture_run_state(),
+		"rerolls": RerollManager.capture_run_state(),
 		"challenges": ChallengeManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
 		"map": tile_map.capture_map_state(),
@@ -116,6 +117,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0))
 	GameManager.apply_run_state(payload.get("game_manager", {}))
 	GoldManager.apply_run_state(payload.get("gold", {}))
+	RerollManager.apply_run_state(payload.get("rerolls", {}))
 	ChallengeManager.apply_run_state(payload.get("challenges", {}))
 	RoundFlow.apply_run_state(payload.get("round_flow", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
@@ -161,6 +163,7 @@ func _find_hand() -> Hand:
 
 func _notify_ui_restored() -> void:
 	EventBus.gold_changed.emit(GoldManager.amount)
+	EventBus.rerolls_changed.emit(RerollManager.remaining)
 	EventBus.total_round_score_changed.emit()
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(GameManager.current_round)

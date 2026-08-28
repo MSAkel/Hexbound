@@ -104,8 +104,8 @@ func _add_card(data: Card) -> CardUI:
 		var new_index := clampi(child.starting_hand_position - cards_played, 0, _get_hand_card_count())
 		move_child.call_deferred(child, new_index)
 	)
-	# Cards dealt during the enter-run intro stay hidden below the viewport.
-	if _awaiting_intro:
+	# Cards dealt during intro or while the hand is slid away stay below the viewport.
+	if _awaiting_intro or _hand_hidden:
 		_snap_card_offscreen(new_rune_card)
 	call_deferred("_refresh_hand_layout")
 	return new_rune_card
@@ -231,9 +231,9 @@ func get_card_rest_offset() -> Vector2:
 	return Vector2.ZERO
 
 
-## True while this card's offset_transform is owned by intro or a generated reveal.
+## True while this card's offset_transform is owned by intro, a hidden hand, or a generated reveal.
 func is_preserving_offset_for(card_ui: CardUI) -> bool:
-	if _awaiting_intro:
+	if _awaiting_intro or _hand_hidden:
 		return true
 	return _generated_reveal != null and _generated_reveal.is_animating_card(card_ui)
 

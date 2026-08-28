@@ -7,6 +7,79 @@
 content_margin_top = 150.0
 bg_color = Color(0.12614134, 0.32311276, 0.39601648, 0.70980394)
 
+[sub_resource type="StyleBoxFlat" id="RerollButtonNormal"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.03308226, 0.36537462, 0.4017386, 0.98039216)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.9, 0.94, 0.45)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.22)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="RerollButtonPressed"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.02, 0.28, 0.31, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.74, 0.78, 0.55)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.12)
+shadow_size = 2
+shadow_offset = Vector2(0, 1)
+
+[sub_resource type="StyleBoxFlat" id="RerollButtonHover"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.08, 0.48, 0.52, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.82, 0.96, 1, 0.62)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.28)
+shadow_size = 5
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="RerollButtonDisabled"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.18, 0.24, 0.27, 0.72)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.4, 0.42, 0.45)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
 [node name="RuneSelectionUI" type="Control" unique_id=1995601468]
 layout_mode = 3
 anchors_preset = 15
@@ -63,10 +136,22 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="RerollButton" type="Button" parent="Panel/VBoxContainer" unique_id=16000875]
+custom_minimum_size = Vector2(220, 52)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
-text = "Reroll (free)"
+theme_override_colors/font_color = Color(0.94, 0.98, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.82, 0.9, 0.93, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.62, 0.66, 0.68, 0.78)
+theme_override_constants/icon_max_width = 28
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("RerollButtonNormal")
+theme_override_styles/pressed = SubResource("RerollButtonPressed")
+theme_override_styles/hover = SubResource("RerollButtonHover")
+theme_override_styles/disabled = SubResource("RerollButtonDisabled")
+text = "Reroll (3 left)"
+expand_icon = true
 
 [node name="ShowBoardButton" type="Button" parent="Panel" unique_id=1982736401]
 z_index = 1

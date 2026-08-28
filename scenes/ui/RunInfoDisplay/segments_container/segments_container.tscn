@@ -1,237 +1,246 @@
 [gd_scene format=3 uid="uid://crffik30sf5rg"]
 
-[ext_resource type="Texture2D" uid="uid://b85eh86cnkj4i" path="res://assets/gui/panels/v_bar_light.png" id="1_jevqn"]
-[ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="2_amxqk"]
-[ext_resource type="Texture2D" uid="uid://bsyc5shwtko4o" path="res://assets/icons/others/navigation_arrow.png" id="3_csip5"]
-[ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="3_jevqn"]
-[ext_resource type="Texture2D" uid="uid://cvbbkxidyytat" path="res://assets/icons/sigils/mult_sigil.png" id="5_csip5"]
-[ext_resource type="Texture2D" uid="uid://saywmnnvcfvg" path="res://assets/icons/sigils/energy_sigil.png" id="5_n62da"]
-[ext_resource type="Texture2D" uid="uid://bygbf1c3537ay" path="res://assets/icons/sigils/score_sigil.png" id="7_csip5"]
-[ext_resource type="Texture2D" uid="uid://xqslk1n7ms1o" path="res://assets/icons/sigils/gold_sigil.png" id="8_ewesi"]
+[ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bsyc5shwtko4o" path="res://assets/icons/others/navigation_arrow.png" id="2_arrow"]
+[ext_resource type="Script" uid="uid://bj3fm6loe7jfv" path="res://scenes/ui/RunInfoDisplay/segments_container/round_score_footer.gd" id="2_round_score"]
+[ext_resource type="Texture2D" uid="uid://b85eh86cnkj4i" path="res://assets/gui/panels/v_bar_light.png" id="7_panel"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g5bg1"]
+[sub_resource type="StyleBoxTexture" id="PanelMain"]
 content_margin_left = 16.0
 content_margin_top = 16.0
 content_margin_right = 16.0
 content_margin_bottom = 16.0
-texture = ExtResource("1_jevqn")
+texture = ExtResource("7_panel")
+
+[sub_resource type="StyleBoxFlat" id="HeaderStrip"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.898, 0.808, 0.639, 0.58)
+border_width_bottom = 1
+border_color = Color(0.545, 0.431, 0.243, 0.42)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="TotalPanel"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 11.0
+bg_color = Color(0.965, 0.92, 0.79, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(0.545, 0.431, 0.243, 0.78)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.24, 0.18, 0.09, 0.18)
+shadow_size = 3
 
 [node name="SegmentsContainer" type="PanelContainer" unique_id=1933303425]
 texture_filter = 1
-custom_minimum_size = Vector2(400, 0)
+custom_minimum_size = Vector2(430, 0)
 size_flags_horizontal = 0
 size_flags_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxTexture_g5bg1")
-script = ExtResource("2_amxqk")
+theme_override_styles/panel = SubResource("PanelMain")
+script = ExtResource("1_script")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1508546180]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="Title" type="Label" parent="VBoxContainer" unique_id=49207560 groups=["main_ui"]]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-theme_override_font_sizes/font_size = 18
-text = "Segment Output"
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
+theme_override_font_sizes/font_size = 20
+text = "Score Breakdown"
 horizontal_alignment = 1
 
 [node name="TurnsContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=201524887]
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 4
+theme_override_constants/separation = 12
 
 [node name="PrevTurnButton" type="TextureButton" parent="VBoxContainer/TurnsContainer" unique_id=1802224109]
+modulate = Color(0.32, 0.28, 0.16, 1)
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
-texture_normal = ExtResource("3_csip5")
+texture_normal = ExtResource("2_arrow")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="TurnLabel" type="Label" parent="VBoxContainer/TurnsContainer" unique_id=1392901756 groups=["main_ui"]]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
+theme_override_colors/font_outline_color = Color(0.96, 0.9, 0.72, 0.75)
+theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 18
-text = "Turn 1"
+text = "TURN 1"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="NextTurnButton" type="TextureButton" parent="VBoxContainer/TurnsContainer" unique_id=405219008]
+modulate = Color(0.32, 0.28, 0.16, 1)
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
-texture_normal = ExtResource("3_csip5")
+texture_normal = ExtResource("2_arrow")
+ignore_texture_size = true
+stretch_mode = 5
 flip_h = true
 
-[node name="LabelsMargin" type="MarginContainer" parent="VBoxContainer" unique_id=2001090623]
-layout_mode = 2
-theme_override_constants/margin_left = 6
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 0
-
-[node name="LabelsContainer" type="HBoxContainer" parent="VBoxContainer/LabelsMargin" unique_id=2001090622]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="SegContainer" type="VBoxContainer" parent="VBoxContainer/LabelsMargin/LabelsContainer" unique_id=2070398045]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="SegIcon" type="TextureRect" parent="VBoxContainer/LabelsMargin/LabelsContainer/SegContainer" unique_id=18482919]
-custom_minimum_size = Vector2(35, 35)
-custom_maximum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("3_jevqn")
-expand_mode = 2
-
-[node name="SegLabel" type="Label" parent="VBoxContainer/LabelsMargin/LabelsContainer/SegContainer" unique_id=896540620]
+[node name="ColumnHeader" type="PanelContainer" parent="VBoxContainer" unique_id=1758466040]
 visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-text = "SEG"
+theme_override_styles/panel = SubResource("HeaderStrip")
+
+[node name="HeaderRow" type="HBoxContainer" parent="VBoxContainer/ColumnHeader" unique_id=663174480]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="SegmentLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1083075877]
+custom_minimum_size = Vector2(46, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.72)
+theme_override_font_sizes/font_size = 11
+text = "#"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="PowerContainer" type="VBoxContainer" parent="VBoxContainer/LabelsMargin/LabelsContainer" unique_id=1550503]
+[node name="EnergyLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=378371480]
+custom_minimum_size = Vector2(68, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="EnergyIcon" type="TextureRect" parent="VBoxContainer/LabelsMargin/LabelsContainer/PowerContainer" unique_id=1999179184]
-custom_minimum_size = Vector2(35, 35)
-custom_maximum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("5_n62da")
-
-[node name="PowerLabel" type="Label" parent="VBoxContainer/LabelsMargin/LabelsContainer/PowerContainer" unique_id=1349359424]
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+size_flags_stretch_ratio = 0.8
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.88)
+theme_override_font_sizes/font_size = 11
 text = "ENERGY"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="MultContainer" type="VBoxContainer" parent="VBoxContainer/LabelsMargin/LabelsContainer" unique_id=342287358]
+[node name="Times" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1489884249]
+custom_minimum_size = Vector2(14, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.72)
+theme_override_font_sizes/font_size = 16
+text = "x"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MultLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1744533715]
+custom_minimum_size = Vector2(54, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="MultIcon" type="TextureRect" parent="VBoxContainer/LabelsMargin/LabelsContainer/MultContainer" unique_id=1581906745]
-custom_minimum_size = Vector2(35, 35)
-custom_maximum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("5_csip5")
-expand_mode = 2
-
-[node name="MultLabel" type="Label" parent="VBoxContainer/LabelsMargin/LabelsContainer/MultContainer" unique_id=1364882027]
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+size_flags_stretch_ratio = 0.7
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.88)
+theme_override_font_sizes/font_size = 11
 text = "MULT"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="ScoreContainer" type="VBoxContainer" parent="VBoxContainer/LabelsMargin/LabelsContainer" unique_id=1914754647]
+[node name="Equals" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=536594487]
+custom_minimum_size = Vector2(14, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 1)
+theme_override_font_sizes/font_size = 17
+text = "="
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1635139380]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="ScoreIcon" type="TextureRect" parent="VBoxContainer/LabelsMargin/LabelsContainer/ScoreContainer" unique_id=647290778]
-custom_minimum_size = Vector2(35, 35)
-custom_maximum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("7_csip5")
-expand_mode = 2
-
-[node name="ScoreLabel" type="Label" parent="VBoxContainer/LabelsMargin/LabelsContainer/ScoreContainer" unique_id=2089369518]
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
+size_flags_stretch_ratio = 1.7
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
+theme_override_font_sizes/font_size = 11
 text = "SCORE"
-horizontal_alignment = 1
-
-[node name="GoldContainer" type="VBoxContainer" parent="VBoxContainer/LabelsMargin/LabelsContainer" unique_id=144165341]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="GoldIcon" type="TextureRect" parent="VBoxContainer/LabelsMargin/LabelsContainer/GoldContainer" unique_id=438535138]
-custom_minimum_size = Vector2(35, 35)
-custom_maximum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("8_ewesi")
-expand_mode = 2
-
-[node name="GoldLabel" type="Label" parent="VBoxContainer/LabelsMargin/LabelsContainer/GoldContainer" unique_id=1072490368]
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-text = "GOLD"
-horizontal_alignment = 1
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="SegmentResultsList" type="VBoxContainer" parent="VBoxContainer" unique_id=1045123781]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 3
 
-[node name="TurnTotalLabel" type="Label" parent="VBoxContainer" unique_id=1035631326 groups=["main_ui"]]
+[node name="TurnTotalContainer" type="PanelContainer" parent="VBoxContainer" unique_id=1366490092]
+layout_mode = 2
+theme_override_styles/panel = SubResource("TotalPanel")
+
+[node name="TotalRow" type="HBoxContainer" parent="VBoxContainer/TurnTotalContainer" unique_id=1477728965]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TotalCopy" type="VBoxContainer" parent="VBoxContainer/TurnTotalContainer/TotalRow" unique_id=2069702492]
+layout_mode = 2
+theme_override_constants/separation = -2
+
+[node name="TurnTotalLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/TotalRow/TotalCopy" unique_id=1035631326 groups=["main_ui"]]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.178, 0.417, 0.426, 1)
+theme_override_font_sizes/font_size = 18
+text = "TURN TOTAL"
+
+[node name="PayoffLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/TotalRow/TotalCopy" unique_id=698713244]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 0.9)
+theme_override_font_sizes/font_size = 16
+text = "COMBINED SCORE"
+
+[node name="ScoreTotalNumber" type="Label" parent="VBoxContainer/TurnTotalContainer/TotalRow" unique_id=934089326 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-theme_override_font_sizes/font_size = 18
-text = "Turn Total"
-horizontal_alignment = 1
-
-[node name="TurnTotalContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1366490092]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="ScoreContainer" type="HBoxContainer" parent="VBoxContainer/TurnTotalContainer" unique_id=516123702]
-layout_mode = 2
-size_flags_horizontal = 6
-
-[node name="ScoreTotalNumber" type="Label" parent="VBoxContainer/TurnTotalContainer/ScoreContainer" unique_id=934089326 groups=["main_ui"]]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
+theme_override_colors/font_outline_color = Color(0.98, 0.94, 0.82, 0.9)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 3
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 38
 text = "-"
-horizontal_alignment = 1
+horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="ScoreLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/ScoreContainer" unique_id=641981863 groups=["main_ui"]]
+[node name="RoundScoreContainer" type="PanelContainer" parent="VBoxContainer" unique_id=-1447774245 groups=["round_info_panel"]]
+layout_mode = 2
+theme_override_styles/panel = SubResource("TotalPanel")
+script = ExtResource("2_round_score")
+
+[node name="TotalRow" type="HBoxContainer" parent="VBoxContainer/RoundScoreContainer" unique_id=-447774244]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TotalCopy" type="VBoxContainer" parent="VBoxContainer/RoundScoreContainer/TotalRow" unique_id=552225757]
+layout_mode = 2
+theme_override_constants/separation = -2
+
+[node name="RoundScoreLabel" type="Label" parent="VBoxContainer/RoundScoreContainer/TotalRow/TotalCopy" unique_id=1552225758 groups=["main_ui"]]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.178, 0.417, 0.426, 1)
+theme_override_font_sizes/font_size = 18
+text = "ROUND SCORE"
+
+[node name="TargetLabel" type="Label" parent="VBoxContainer/RoundScoreContainer/TotalRow/TotalCopy" unique_id=-1742741537 groups=["main_ui"]]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 0.9)
+theme_override_font_sizes/font_size = 16
+text = "TARGET 0"
+
+[node name="ScoreThisRound" type="Label" parent="VBoxContainer/RoundScoreContainer/TotalRow" unique_id=1290935108 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-theme_override_font_sizes/font_size = 18
-text = "Score"
-horizontal_alignment = 1
-
-[node name="GoldContainer" type="HBoxContainer" parent="VBoxContainer/TurnTotalContainer" unique_id=1546850971]
-layout_mode = 2
-size_flags_horizontal = 6
-
-[node name="GoldTotalNumber" type="Label" parent="VBoxContainer/TurnTotalContainer/GoldContainer" unique_id=928560663 groups=["main_ui"]]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-theme_override_font_sizes/font_size = 18
-text = "-"
-horizontal_alignment = 1
-
-[node name="GoldLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/GoldContainer" unique_id=1930296286 groups=["main_ui"]]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.37254903, 0.2784314, 0.14901961, 1)
-theme_override_font_sizes/font_size = 18
-text = "Gold"
-horizontal_alignment = 1
-
-[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/SegContainer/SegIcon" to="." method="_on_seg_icon_mouse_entered"]
-[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/SegContainer/SegIcon" to="." method="_on_seg_icon_mouse_exited"]
-[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/PowerContainer/EnergyIcon" to="." method="_on_energy_icon_mouse_entered"]
-[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/PowerContainer/EnergyIcon" to="." method="_on_energy_icon_mouse_exited"]
-[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/MultContainer/MultIcon" to="." method="_on_mult_icon_mouse_entered"]
-[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/MultContainer/MultIcon" to="." method="_on_mult_icon_mouse_exited"]
-[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/ScoreContainer/ScoreIcon" to="." method="_on_score_icon_mouse_entered"]
-[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/ScoreContainer/ScoreIcon" to="." method="_on_score_icon_mouse_exited"]
-[connection signal="mouse_entered" from="VBoxContainer/LabelsMargin/LabelsContainer/GoldContainer/GoldIcon" to="." method="_on_gold_icon_mouse_entered"]
-[connection signal="mouse_exited" from="VBoxContainer/LabelsMargin/LabelsContainer/GoldContainer/GoldIcon" to="." method="_on_gold_icon_mouse_exited"]
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
+theme_override_colors/font_outline_color = Color(0.98, 0.94, 0.82, 0.9)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 3
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 38
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 1

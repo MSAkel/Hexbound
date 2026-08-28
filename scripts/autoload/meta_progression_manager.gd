@@ -5,7 +5,10 @@ extends Node
 const SAVE_PATH := "user://player_profile.save"
 const PASSIVES_DIR := "res://resources/segment_passives/"
 const LOADOUT_SET_IDS: Array[String] = ["A", "B", "C"]
-const RETIRED_PASSIVE_IDS: Array[String] = ["spark", "spark_surge"]
+const RETIRED_PASSIVE_IDS: Array[String] = ["spark", "spark_surge", "steady_growth"]
+const PASSIVE_ID_MIGRATIONS: Dictionary = {
+	"steady_growth": "power_boost",
+}
 const SANDBOX_CHARACTER_ID := "_ui_sandbox"
 const SANDBOX_MAX_COPIES := 8
 
@@ -617,38 +620,46 @@ func _grant_starting_unlocks() -> void:
 		save()
 
 
-## Drops removed spark ids from unlocks and placed loadouts so old saves stay valid.
+## Drops retired passive ids from unlocks and placed loadouts so old saves stay valid.
 func _strip_retired_passives() -> bool:
 	var changed := false
 	for retired_id: String in RETIRED_PASSIVE_IDS:
+		var replacement_id := String(PASSIVE_ID_MIGRATIONS.get(retired_id, ""))
 		if _unlocked_passive_ids.has(retired_id):
 			_unlocked_passive_ids.erase(retired_id)
+			if not replacement_id.is_empty() and not _unlocked_passive_ids.has(replacement_id):
+				_unlocked_passive_ids.append(replacement_id)
 			changed = true
 		if _pending_unlock_reveals.has(retired_id):
 			_pending_unlock_reveals.erase(retired_id)
+			if not replacement_id.is_empty() and not _pending_unlock_reveals.has(replacement_id):
+				_pending_unlock_reveals.append(replacement_id)
 			changed = true
-	for character_id: String in _character_loadouts.keys():
-		var char_data: Dictionary = _character_loadouts[character_id]
-		var sets: Dictionary = char_data.get("sets", {})
-		for set_id: String in sets.keys():
-			var set_data: Variant = sets[set_id]
-			if not set_data is Dictionary:
-				continue
-			var segments: Dictionary = set_data.get("segments", {})
-			for segment_key: String in segments.keys():
-				var list: Variant = segments[segment_key]
-				if not list is Array:
+		for character_id: String in _character_loadouts.keys():
+			var char_data: Dictionary = _character_loadouts[character_id]
+			var sets: Dictionary = char_data.get("sets", {})
+			for set_id: String in sets.keys():
+				var set_data: Variant = sets[set_id]
+				if not set_data is Dictionary:
 					continue
-				var filtered: Array = []
-				for entry in list:
-					if RETIRED_PASSIVE_IDS.has(String(entry)):
-						changed = true
+				var segments: Dictionary = set_data.get("segments", {})
+				for segment_key: String in segments.keys():
+					var list: Variant = segments[segment_key]
+					if not list is Array:
 						continue
-					filtered.append(entry)
-				if filtered.is_empty():
-					segments.erase(segment_key)
-				else:
-					segments[segment_key] = filtered
+					var filtered: Array = []
+					for entry in list:
+						var passive_id := String(entry)
+						if RETIRED_PASSIVE_IDS.has(passive_id):
+							changed = true
+							if not replacement_id.is_empty():
+								filtered.append(replacement_id)
+							continue
+						filtered.append(passive_id)
+					if filtered.is_empty():
+						segments.erase(segment_key)
+					else:
+						segments[segment_key] = filtered
 	return changed
 
 

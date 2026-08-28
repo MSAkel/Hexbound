@@ -15,14 +15,18 @@ const CHAR_STAGGER := 0.018
 const HOLD_AFTER_POP := 0.85
 ## Seconds for the finished line to scale down to zero and then free itself.
 const SHRINK_DURATION := 0.14
-## Card floats are a bit smaller than the shared score-readout curve.
-const CARD_FONT_SCALE := 0.9
+## Readable on a hex, still smaller than the old score-curve sizes that overlapped.
+const CARD_FONT_SIZE := 60
+## Long phrases shrink a little, but never below a size you can still read.
+const CARD_LONG_TEXT_START := 12
+const CARD_MIN_FONT_SIZE := 40
 ## Treat nearby spawns as the same tile when stacking extra lines upward.
 const STACK_GROUP_DISTANCE := 8.0
 ## Extra pixels between stacked card floats, on top of the previous line's font height.
-const STACK_GAP := 10.0
+const STACK_GAP := 6.0
 ## Centers card activation text over its rune, slightly above the rune's midpoint.
 const CARD_FLOAT_ANCHOR_OFFSET := Vector2(0.0, -24.0)
+const GLOW_SHADER := preload("res://scenes/animations/floating_text_glow.gdshader")
 
 ## Live card floats. Used to stack extra lines above the first at that tile.
 static var _active_card_floats: Array[FloatingText] = []
@@ -37,13 +41,16 @@ func _ready() -> void:
 	icon_rect.visible = false
 
 
-func set_text(text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
+func set_text(text: String, _color: Color = Color.WHITE, icon: Texture2D = null) -> void:
 	if not is_node_ready():
 		await ready
 
 	label.bbcode_enabled = false
 	label.text = text
-	_apply_label_style(color, ScoreReadoutStyle.parse_amount(text), true)
+	# Scene preview uses 1.2 scale. Card floats stay at 1 so size matches CARD_FONT_SIZE.
+	label.scale = Vector2.ONE
+	# One color for every tile-card float. Icons still distinguish Energy, Gold, and Mult.
+	_apply_label_style(Color.WHITE, ScoreReadoutStyle.parse_amount(text), true)
 	_apply_icon(icon)
 	audio_stream_player_2d.play()
 
@@ -56,11 +63,19 @@ func _apply_label_style(
 ) -> void:
 	label.add_theme_color_override("default_color", color)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 10 if card_float else 12)
-	var font_size := float(ScoreReadoutStyle.font_size_for_score(amount_for_size))
+	label.add_theme_constant_override("outline_size", 9 if card_float else 12)
+	var font_size: float
 	if card_float:
-		font_size *= CARD_FONT_SCALE
+		font_size = _card_font_size_for_text(label.text)
+	else:
+		font_size = float(ScoreReadoutStyle.font_size_for_score(amount_for_size))
 	_set_font_size(font_size * font_scale)
+
+
+## Shorter numbers stay at CARD_FONT_SIZE. Longer phrases step down toward CARD_MIN_FONT_SIZE.
+func _card_font_size_for_text(text: String) -> float:
+	var extra := maxi(text.length() - CARD_LONG_TEXT_START, 0)
+	return maxf(CARD_MIN_FONT_SIZE, CARD_FONT_SIZE - float(extra) * 0.4)
 
 
 ## Pops each character in from a tiny scale, holds, then shrinks the whole line away.
@@ -144,11 +159,16 @@ func _play_character_pop() -> bool:
 	row.position = -row.size * 0.5
 	_text_root.scale = label.scale
 
+	var glow := _make_glow_backdrop(row.size)
+	_text_root.add_child(glow)
+	_text_root.move_child(glow, 0)
+
 	var pop_dur := CHAR_POP_DURATION / GameManager.game_speed
 	var stagger := CHAR_STAGGER / GameManager.game_speed
 	var pop_tween := create_tween()
 	pop_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	pop_tween.set_parallel(true)
+	pop_tween.tween_property(glow, "modulate:a", 1.0, pop_dur).set_ease(Tween.EASE_OUT)
 	for i in pop_items.size():
 		var pop_item := pop_items[i]
 		pop_item.pivot_offset = pop_item.size * 0.5
@@ -160,6 +180,24 @@ func _play_character_pop() -> bool:
 	_text_root.visible = true
 	await pop_tween.finished
 	return is_instance_valid(self)
+
+
+## Soft ink capsule behind the glyphs. Covers the card art without a hard rectangle.
+func _make_glow_backdrop(row_size: Vector2) -> ColorRect:
+	var glow := ColorRect.new()
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var pad := Vector2(maxf(18.0, row_size.y * 0.4), row_size.y * 0.32)
+	glow.size = row_size + pad * 2.0
+	glow.position = -glow.size * 0.5
+	glow.pivot_offset = glow.size * 0.5
+	glow.z_index = -1
+	glow.modulate.a = 0.0
+
+	var mat := ShaderMaterial.new()
+	mat.shader = GLOW_SHADER
+	mat.set_shader_parameter("aspect", glow.size.x / maxf(glow.size.y, 1.0))
+	glow.material = mat
+	return glow
 
 
 func _make_character_label(character: String, color: Color) -> Label:

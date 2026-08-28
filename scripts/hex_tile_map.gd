@@ -23,7 +23,7 @@ const HOVER_OVERLAY_LAST := 2
 const HOVER_OVERLAY_BOTH := 3
 const HOVERED_TILE_OVERLAY_SOURCE_ID := 0
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
-# Darken the tile under the cursor so it stands out within a highlighted segment.
+# Light white wash on the tile under the cursor so it stands out within a highlighted segment.
 const HOVERED_TILE_OVERLAY_MODULATE := Color(0.9, 0.9, 0.9, 0.45)
 # TileCard placement / trigger preview overlay on RuneHighlightOverlayLayer.
 const RUNE_HIGHLIGHT_SOURCE_ID := 0
@@ -86,6 +86,8 @@ const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
 const SEGMENT_REVEAL_PAUSE := 0.35
 # Keep in sync with RuneUI segment reveal highlight + fade durations.
 const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
+## Extra hold on the first scoring row during the tutorial.
+const TUTORIAL_SCORE_LINGER := 0.55
 # How long a destination-segment flash stays visible during card activation.
 const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 
@@ -98,7 +100,7 @@ var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
 var _tile_panel_timer: Timer
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
-# First Energy × Mult equals beat in a tutorial run holds longer.
+# First scoring row in a tutorial run holds longer.
 var _did_tutorial_product_linger: bool = false
 
 
@@ -188,13 +190,11 @@ func _update_hover_highlight() -> void:
 		if map_coords == hovered_cell:
 			return
 		hovered_cell = map_coords
-		_update_trigger_order_hover(map_coords)
 	else:
 		hovered_cell = Vector2i(-1, -1)
-		_clear_trigger_order_hover()
 
 	if hovered_cell != previous_hovered:
-		_refresh_segment_role_highlights()
+		_refresh_map_focus_overlays()
 
 
 func _mouse_map_coords() -> Vector2i:
@@ -243,8 +243,7 @@ func _clear_selection_hover_highlight() -> void:
 	if hovered_cell == Vector2i(-1, -1):
 		return
 	hovered_cell = Vector2i(-1, -1)
-	_clear_trigger_order_hover()
-	_refresh_segment_role_highlights()
+	_refresh_map_focus_overlays()
 
 
 ## Dismisses any map hover feedback when gameplay is covered by another UI.
@@ -257,11 +256,20 @@ func _set_peek_order_numbers(active: bool) -> void:
 	if _peek_order_numbers == active:
 		return
 	_peek_order_numbers = active
+	_refresh_map_focus_overlays()
+
+
+func _is_order_view_active() -> bool:
+	return _sticky_order_numbers or _peek_order_numbers
+
+
+## Refreshes trigger-order numbers, segment role tints, tile emphasis, and dashed outlines.
+func _refresh_map_focus_overlays() -> void:
 	_refresh_trigger_order_overlay()
 
 
 func _refresh_trigger_order_overlay() -> void:
-	var overlay_on := _sticky_order_numbers or _peek_order_numbers
+	var overlay_on := _is_order_view_active()
 	trigger_order_overlay.set_full_reveal(overlay_on)
 	# Paths share the order/segments and Tab peek gate. They stay off during idle hover.
 	segment_path_overlay.set_visible_for_order_view(overlay_on)
@@ -282,7 +290,7 @@ func set_placement_preview_cell(coords: Vector2i) -> void:
 	if _placement_preview_cell == coords:
 		return
 	_placement_preview_cell = coords
-	_refresh_trigger_order_overlay()
+	_refresh_map_focus_overlays()
 
 
 func clear_placement_preview() -> void:
@@ -299,7 +307,7 @@ func _refresh_segment_role_highlights() -> void:
 	selection_overlay_layer.clear()
 
 	# Tab peek and the layout toggle show every segment at once.
-	if _sticky_order_numbers or _peek_order_numbers:
+	if _is_order_view_active():
 		for coords: Vector2i in map_data:
 			_stamp_segment_role_selection(coords)
 	else:
@@ -321,11 +329,12 @@ func refresh_dashed_outlines() -> void:
 			base_layer.set_cell(coords, -1)
 		else:
 			base_layer.set_cell(coords, 0, BASE_TILE_ATLAS_COORDS)
+	trigger_order_overlay.refresh_display_state()
 
 
 func _should_hide_dashed_outline(coords: Vector2i) -> bool:
 	# Hover numbers keep the dashed outline. Tab and the layout toggle hide every tile.
-	if _sticky_order_numbers or _peek_order_numbers:
+	if _is_order_view_active():
 		return true
 	var hex: Hex = map_data[coords]
 	return hex.active_tile_card != null
@@ -363,18 +372,6 @@ func _get_selection_hover_source_id(coords: Vector2i) -> int:
 	if is_end:
 		return HOVER_OVERLAY_LAST
 	return HOVER_OVERLAY_NORMAL
-
-
-func _update_trigger_order_hover(map_coords: Vector2i) -> void:
-	if _sticky_order_numbers or _peek_order_numbers or _placement_preview_cell != Vector2i(-1, -1):
-		return
-	trigger_order_overlay.set_focus_coords(map_coords)
-
-
-func _clear_trigger_order_hover() -> void:
-	if _sticky_order_numbers or _peek_order_numbers or _placement_preview_cell != Vector2i(-1, -1):
-		return
-	trigger_order_overlay.clear_focus()
 
 
 # Light tiles this placed card would affect. Skip the hovered cell, matching placement preview.
@@ -617,7 +614,7 @@ func _apply_difficulty_disabled_tiles() -> void:
 
 func _on_map_display_layout_changed(layout: String) -> void:
 	_sticky_order_numbers = layout == "order_segments"
-	_refresh_trigger_order_overlay()
+	_refresh_map_focus_overlays()
 
 
 ## Ring index from the map center (0 = center, hex_size = outer edge).
@@ -759,11 +756,25 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	_emit_segment_turn_results_changed(segment_index)
 
 
-## Notifies UI of the latest per-segment Energy, multiplier, and Energy x Mult product.
-func _emit_segment_turn_results_changed(segment_index: int) -> void:
+## Notifies UI of the latest per-segment Energy, multiplier, and scored contribution.
+func _emit_segment_turn_results_changed(segment_index: int, use_passive_adjustments: bool = false) -> void:
 	var score := _layout.get_segment_turn_score(segment_index)
 	var multiplier := _layout.get_segment_turn_multiplier(segment_index)
 	var gold := _layout.get_segment_turn_gold(segment_index)
+	if use_passive_adjustments:
+		var breakdown := GameManager.get_segment_turn_contribution_breakdown(
+			segment_index,
+			score,
+			multiplier
+		)
+		EventBus.segment_turn_results_changed.emit(
+			segment_index,
+			breakdown.display_energy,
+			breakdown.display_multiplier,
+			breakdown.contribution,
+			gold
+		)
+		return
 	EventBus.segment_turn_results_changed.emit(segment_index, score, multiplier, score * multiplier, gold)
 
 
@@ -1244,10 +1255,11 @@ func on_turn_ended() -> void:
 		await _wait_between_tile_activations()
 
 	await _play_segment_turn_result_reveals()
+	await _wait_for_turn_total_count_finished()
 	_apply_segment_turn_totals_to_game_manager()
 	_check_full_map_cards_achievement()
 	_emit_segment_turn_completed_snapshot()
-	GameManager.finish_turn_processing()
+	await GameManager.finish_turn_processing()
 
 
 # Resolve one tile: primary activation, then any queued secondary triggers.
@@ -1322,18 +1334,28 @@ func _wait_between_tile_activations() -> void:
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
 func _play_segment_turn_result_reveals() -> void:
+	var turn_total := 0
 	for segment_index in get_segment_count():
 		var score := get_segment_turn_score(segment_index)
 		var multiplier := get_segment_turn_multiplier(segment_index)
 		var gold := get_segment_turn_gold(segment_index)
 		if score == 0 and gold == 0:
 			continue
-		await _play_single_segment_reveal(segment_index, score * multiplier)
+		var contribution := GameManager.compute_segment_turn_contribution(
+			segment_index,
+			score,
+			multiplier
+		)
+		turn_total += contribution
+		await _play_single_segment_reveal(segment_index, contribution)
+
+	EventBus.segment_reveals_finished.emit(turn_total)
 
 
-## Highlights one segment, animates its runes, then plays that segment's Score overlay.
+## Highlights one segment on the map and in the output panel, then reveals that segment's Score.
 func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
 	_apply_segment_reveal_glow(segment_index)
+	EventBus.segment_reveal_started.emit(segment_index)
 
 	for hex: Hex in get_hexes_in_segment(segment_index):
 		if hex.active_tile_card != null:
@@ -1344,36 +1366,33 @@ func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
 	).timeout
 
 	if contribution > 0:
-		await _play_segment_score_merge(segment_index, contribution)
+		# Show passive-adjusted power before the equals beat lands.
+		_emit_segment_turn_results_changed(segment_index, true)
+		EventBus.segment_score_revealed.emit(segment_index, contribution)
+		await _wait_for_segment_score_count_finished(segment_index)
+		if _should_linger_on_product():
+			await GameManager.create_pauseable_timer(
+				TUTORIAL_SCORE_LINGER / GameManager.game_speed
+			).timeout
 
 	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 	_clear_segment_reveal_glow()
+	EventBus.segment_reveal_ended.emit()
 	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 
 
-## Shows Energy x Mult at the top overlay, morphs into Score, then flies it into the HUD.
-func _play_segment_score_merge(segment_index: int, contribution: int) -> void:
-	var display := _get_turn_score_display()
-	if display != null:
-		await display.present_segment(
-			segment_index,
-			get_segment_turn_score(segment_index),
-			get_segment_turn_multiplier(segment_index),
-			contribution,
-			_should_linger_on_product()
-		)
-		await display.play_merge_into_round_info()
-
-	# Panel totals land with the flying digits, not when the factors first appear.
-	EventBus.segment_score_revealed.emit(segment_index, contribution)
+func _wait_for_segment_score_count_finished(segment_index: int) -> void:
+	while true:
+		var finished_index: int = await EventBus.segment_score_count_finished
+		if finished_index == segment_index:
+			return
 
 
-## Shared overlay used for the post-turn segment Score readout.
-func _get_turn_score_display() -> TurnScoreDisplay:
-	return get_tree().get_first_node_in_group("turn_score_display") as TurnScoreDisplay
+func _wait_for_turn_total_count_finished() -> void:
+	await EventBus.turn_total_count_finished
 
 
-## First product beat in an active tutorial holds longer so Energy × Mult can be read.
+## First scoring beat in an active tutorial holds longer so the output row can be read.
 func _should_linger_on_product() -> bool:
 	if _did_tutorial_product_linger:
 		return false
@@ -1465,14 +1484,18 @@ func capture_segment_turn_snapshot() -> Dictionary:
 		var score := get_segment_turn_score(segment_index)
 		var multiplier := get_segment_turn_multiplier(segment_index)
 		var gold := get_segment_turn_gold(segment_index)
-		var segment_total := score * multiplier
+		var breakdown := GameManager.get_segment_turn_contribution_breakdown(
+			segment_index,
+			score,
+			multiplier
+		)
 		segments.append({
-			"score": score,
-			"multiplier": multiplier,
-			"total_score": segment_total,
+			"score": breakdown.display_energy,
+			"multiplier": breakdown.display_multiplier,
+			"total_score": breakdown.contribution,
 			"gold": gold,
 		})
-		total_score += segment_total
+		total_score += breakdown.contribution
 		total_gold += gold
 	return {
 		"segments": segments,

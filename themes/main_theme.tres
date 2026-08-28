@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://d4kymlgb3fxc4"]
 
-[sub_resource type="FontVariation" id="FontVariation_h430w"]
+[sub_resource type="FontVariation" id="FontVariation_r66gk"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rjgu6"]
 content_margin_left = 6.0
@@ -60,10 +60,7 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
 
-[sub_resource type="FontVariation" id="FontVariation_kwqlr"]
-
-[sub_resource type="FontVariation" id="FontVariation_yk3s8"]
-base_font = SubResource("FontVariation_kwqlr")
+[sub_resource type="FontVariation" id="FontVariation_x6eud"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vxwtt"]
 bg_color = Color(0.047058824, 0.09019608, 0.09803922, 1)
@@ -77,13 +74,13 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
-[sub_resource type="FontVariation" id="FontVariation_mrudk"]
+[sub_resource type="FontVariation" id="FontVariation_ayqni"]
 
 [resource]
-default_font = SubResource("FontVariation_mrudk")
+default_font = SubResource("FontVariation_ayqni")
 default_font_size = 18
 Button/font_sizes/font_size = 18
-Button/fonts/font = SubResource("FontVariation_h430w")
+Button/fonts/font = SubResource("FontVariation_r66gk")
 Button/styles/disabled = SubResource("StyleBoxFlat_rjgu6")
 Button/styles/focus = SubResource("StyleBoxFlat_vu6l5")
 Button/styles/hover = SubResource("StyleBoxFlat_ydht1")
@@ -91,7 +88,7 @@ Button/styles/normal = SubResource("StyleBoxFlat_8gw6x")
 Button/styles/pressed = SubResource("StyleBoxFlat_g21io")
 Label/constants/outline_size = 0
 Label/font_sizes/font_size = 16
-Label/fonts/font = SubResource("FontVariation_yk3s8")
+Label/fonts/font = SubResource("FontVariation_x6eud")
 MarginContainer/constants/margin_bottom = 16
 MarginContainer/constants/margin_left = 16
 MarginContainer/constants/margin_right = 16

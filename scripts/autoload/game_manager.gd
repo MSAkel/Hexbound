@@ -135,18 +135,22 @@ func _ready() -> void:
 	EventBus.turn_started.connect(_on_turn_started)
 #region Turn flow
 
+## Pause after the top-panel round score lands before rune pick or round summary.
+const POST_ROUND_SCORE_PANEL_DELAY := 0.75
+
 func end_turn() -> void:
 	_is_processing_turn = true
 
 
 func finish_turn_processing() -> void:
-	_is_processing_turn = false
-
 	# A turn is only consumed when it failed to reach the round goal.
 	var should_consume_turn := remaining_turns > 0 and total_round_score + turn_score < required_score
 
 	total_round_score += turn_score
 	turn_score = 0
+	EventBus.round_score_commit_animation_requested.emit()
+	await _wait_for_round_score_count_finished()
+	await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
 
 	if _has_met_round_goal():
 		_complete_current_round()
@@ -158,6 +162,12 @@ func finish_turn_processing() -> void:
 		remaining_turns -= 1
 		EventBus.turn_changed.emit()
 		_check_run_loss()
+
+	_is_processing_turn = false
+
+
+func _wait_for_round_score_count_finished() -> void:
+	await EventBus.round_score_count_finished
 
 
 func _on_turn_started() -> void:
@@ -327,10 +337,27 @@ func roll_segment_production_retrigger(segment_index: int) -> bool:
 	return false
 
 
+## Segment passives adjust power and the final product. UI and turn resolve must share this breakdown.
+func get_segment_turn_contribution_breakdown(
+	segment_index: int,
+	energy: int,
+	multiplier: int
+) -> Dictionary:
+	var display_energy := energy + get_segment_passive_flat_bonus(segment_index)
+	var contribution := int(
+		round(float(display_energy * multiplier) * get_segment_passive_score_mult_factor(segment_index))
+	)
+	return {
+		"display_energy": display_energy,
+		"display_multiplier": multiplier,
+		"contribution": contribution,
+	}
+
+
 func compute_segment_turn_contribution(segment_index: int, energy: int, multiplier: int) -> int:
-	var adjusted_energy := energy + get_segment_passive_flat_bonus(segment_index)
-	var product := adjusted_energy * multiplier
-	return int(round(float(product) * get_segment_passive_score_mult_factor(segment_index)))
+	return int(
+		get_segment_turn_contribution_breakdown(segment_index, energy, multiplier)["contribution"]
+	)
 
 
 func record_turn_segment_peaks(segment_contributions: Array[int]) -> void:

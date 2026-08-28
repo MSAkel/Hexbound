@@ -1,22 +1,14 @@
 class_name TriggerOrderMarker
 extends Control
 
-# One hex in the trigger-order overlay. Numbers can show alone on top of cards,
-# or with the full hex tint used by the character-select preview.
+# One hex in the trigger-order overlay. Numbers float above cards and can pick up
+# a compact backdrop when the tile is occupied.
 
-const TILE_NORMAL := preload("res://assets/map/segment_icons/tile_normal.png")
-const TILE_START := preload("res://assets/map/segment_icons/tile_segment_start.png")
-const TILE_END := preload("res://assets/map/segment_icons/tile_segment_end.png")
-
-@onready var background: TextureRect = $Background
 @onready var number_group: Control = $NumberGroup
 @onready var number_backdrop: Panel = $NumberGroup/NumberBackdrop
 @onready var order_label: Label = $NumberGroup/OrderLabel
 
 var _order: int = 0
-var _is_start: bool = false
-var _is_end: bool = false
-var _show_background: bool = false
 var _show_number_backdrop: bool = false
 var _number_visible: bool = false
 
@@ -30,20 +22,13 @@ const FLOAT_HALF_CYCLE_MIN := 1.15
 var _float_tween: Tween
 
 
-func setup(order: int, is_start: bool, is_end: bool) -> void:
+func setup(order: int, _is_start: bool, _is_end: bool) -> void:
 	_ensure_nodes()
 	_order = order
-	_is_start = is_start
-	_is_end = is_end
 	size = Hex.HEX_TILE_SIZE
 	custom_minimum_size = Hex.HEX_TILE_SIZE
 	order_label.text = str(order)
 	_apply_group_y_offset(ORDER_LABEL_Y_OFFSET)
-	_apply_visual_state()
-
-
-func set_show_background(show_bg: bool) -> void:
-	_show_background = show_bg
 	_apply_visual_state()
 
 
@@ -59,17 +44,6 @@ func set_number_visible(number_shown: bool) -> void:
 
 func _apply_visual_state() -> void:
 	_ensure_nodes()
-	if _show_background:
-		background.show()
-		if _is_start:
-			background.texture = TILE_START
-		elif _is_end:
-			background.texture = TILE_END
-		else:
-			background.texture = TILE_NORMAL
-	else:
-		background.hide()
-
 	var show_backdrop := _number_visible and _show_number_backdrop
 	number_backdrop.visible = show_backdrop
 	number_group.visible = _number_visible
@@ -116,8 +90,6 @@ func _apply_group_y_offset(y: float) -> void:
 
 
 func _ensure_nodes() -> void:
-	if background == null:
-		background = $Background
 	if number_group == null:
 		number_group = $NumberGroup
 	if number_backdrop == null:

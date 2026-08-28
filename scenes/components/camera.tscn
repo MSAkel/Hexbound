@@ -1,13 +1,9 @@
 [gd_scene format=3 uid="uid://cjc15mdf1smci"]
 
 [ext_resource type="Script" uid="uid://dva4ricpy060v" path="res://scripts/camera.gd" id="1_q64wr"]
-[ext_resource type="AudioStream" uid="uid://3fjfjumjxyl3" path="res://assets/audio/sfx/zoom_in.mp3" id="2_fombx"]
 
 [node name="Camera" type="Camera2D" unique_id=797898644]
 zoom = Vector2(0.43, 0.43)
 script = ExtResource("1_q64wr")
 rune_shake_strength = 4.0
 rune_shake_duration = 0.2
-
-[node name="ZoomSound" type="AudioStreamPlayer2D" parent="." unique_id=5027154]
-stream = ExtResource("2_fombx")

@@ -9,11 +9,16 @@ extends Control
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CHOICE_CARD_SCALE := 1.45
 const CHOICE_CARD_BASE_SIZE := Vector2(214, 317)
+const CARD_FLOAT_HEIGHT := 4.0
+const CARD_FLOAT_SWAY_WIDTH := 1.25
+const CARD_FLOAT_ROTATION := 0.0045
+const CARD_FLOAT_SPEED := 1.4
+const CARD_FLOAT_PHASE_OFFSET := 1.85
+
+var _float_time := 0.0
 
 ## List of rune choices for the current turn
 var runes_pack: Array[TileCard] = []
-## Gold cost to reroll the current pack, rises by 10 after each reroll.
-var runes_reroll_cost: int = 10
 
 
 func _ready() -> void:
@@ -22,8 +27,30 @@ func _ready() -> void:
 	_show_board_button.pressed.connect(_on_show_board_button_pressed)
 	_show_options_button.pressed.connect(_on_show_options_button_pressed)
 	UiManager.show_runes_choice_panel.connect(_on_show_panel)
-	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.rerolls_changed.connect(_on_rerolls_changed)
 	_update_reroll_button()
+
+
+func _process(delta: float) -> void:
+	if not visible:
+		return
+
+	_float_time += delta * CARD_FLOAT_SPEED
+	for index in choices_container.get_child_count():
+		var card_slot := choices_container.get_child(index)
+		var float_wrapper := card_slot.get_node_or_null('FloatWrapper') as Control
+		if float_wrapper != null:
+			_apply_card_float(float_wrapper, index)
+
+
+func _apply_card_float(float_wrapper: Control, index: int) -> void:
+	var phase := _float_time + float(index) * CARD_FLOAT_PHASE_OFFSET
+	## Slightly different frequencies keep the motion soft instead of mechanical.
+	float_wrapper.position = Vector2(
+		cos(phase * 0.55) * CARD_FLOAT_SWAY_WIDTH,
+		sin(phase) * CARD_FLOAT_HEIGHT
+	)
+	float_wrapper.rotation = sin(phase * 0.7) * CARD_FLOAT_ROTATION
 
 
 func _on_show_panel() -> void:
@@ -51,28 +78,30 @@ func _set_board_view(active: bool) -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if not GoldManager.can_afford(runes_reroll_cost):
+	if not RerollManager.use_reroll():
+		_update_reroll_button()
 		return
 
 	reroll_button.disabled = true
-
 	await clear_choices()
 	runes_pack.clear()
 	create_runes_pack()
-	GoldManager.remove(runes_reroll_cost)
-	runes_reroll_cost += 10
 	instantiate_rune_choices()
 	_update_reroll_button()
 
 
-func _on_gold_changed(_new_amount: int) -> void:
+func _on_rerolls_changed(_remaining: int) -> void:
 	_update_reroll_button()
 
 
-## Keep reroll label and disabled state in sync with the current gold balance.
+## Keep reroll label and disabled state in sync with the shared run budget.
 func _update_reroll_button() -> void:
-	reroll_button.text = "Reroll (%s)" % runes_reroll_cost
-	reroll_button.disabled = not GoldManager.can_afford(runes_reroll_cost)
+	var remaining := RerollManager.remaining
+	if remaining <= 0:
+		reroll_button.text = "No Rerolls Left"
+	else:
+		reroll_button.text = "Reroll (%d left)" % remaining
+	reroll_button.disabled = not RerollManager.can_reroll()
 
 func instantiate_rune_choices() -> void:
 	## Always clear existing choices first to ensure fresh display
@@ -83,6 +112,7 @@ func instantiate_rune_choices() -> void:
 	await get_tree().process_frame
 	
 	## Now create new choices from the current runes_pack
+	_float_time = 0.0
 	for rune in runes_pack:
 		_create_choice_card(rune)
 
@@ -93,8 +123,17 @@ func _create_choice_card(rune: TileCard) -> void:
 	card_slot.custom_minimum_size = CHOICE_CARD_BASE_SIZE * CHOICE_CARD_SCALE
 	choices_container.add_child(card_slot)
 
+	## Float a wrapper so CardUI remains free to run its own interaction animations.
+	var float_wrapper := Control.new()
+	float_wrapper.name = 'FloatWrapper'
+	float_wrapper.size = card_slot.custom_minimum_size
+	float_wrapper.pivot_offset = float_wrapper.size * 0.5
+	float_wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card_slot.add_child(float_wrapper)
+	_apply_card_float(float_wrapper, card_slot.get_index())
+
 	var card_ui: CardUI = CARD_UI_SCENE.instantiate()
-	card_slot.add_child(card_ui)
+	float_wrapper.add_child(card_ui)
 	card_ui.scale = Vector2.ONE * CHOICE_CARD_SCALE
 	card_ui.configure_interaction(CardUI.InteractionMode.CHOICE)
 	card_ui.set_card(rune)

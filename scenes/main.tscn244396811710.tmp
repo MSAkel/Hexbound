@@ -33,5 +33,5 @@ position = Vector2(2, 0)
 
 [node name="Camera" parent="." unique_id=321380676 instance=ExtResource("3_tbgi4")]
 position = Vector2(911, 878)
-[node name="SceneEnterTransition" parent="." unique_id=742454740 instance=ExtResource("4_transition")]
 
+[node name="SceneEnterTransition" parent="." unique_id=742454740 instance=ExtResource("4_transition")]

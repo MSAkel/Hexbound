@@ -1,70 +1,156 @@
 [gd_scene format=3 uid="uid://behfllgh3b7fc"]
 
-[ext_resource type="Script" uid="uid://cw5fm7tuluw1w" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.gd" id="1_bo2vp"]
+[ext_resource type="Script" uid="uid://cw5fm7tuluw1w" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.gd" id="1_script"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r6dd1"]
-content_margin_left = 16.0
-content_margin_right = 16.0
-bg_color = Color(0.106126174, 0.41277742, 0.3703063, 0.53000003)
-corner_radius_top_left = 100
-corner_radius_top_right = 100
-corner_radius_bottom_right = 100
-corner_radius_bottom_left = 100
+[sub_resource type="StyleBoxFlat" id="RowPanel"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.94, 0.885, 0.73, 0.82)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.545, 0.431, 0.243, 0.48)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SegmentBadge"]
+content_margin_left = 3.0
+content_margin_top = 1.0
+content_margin_right = 3.0
+content_margin_bottom = 1.0
+bg_color = Color(0.16, 0.43, 0.42, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.545, 0.431, 0.243, 0.72)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ScorePanel"]
+content_margin_left = 8.0
+content_margin_top = 2.0
+content_margin_right = 8.0
+content_margin_bottom = 2.0
+bg_color = Color(0.98, 0.945, 0.84, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.65, 0.48, 0.2, 0.58)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+shadow_color = Color(0.24, 0.16, 0.06, 0.14)
+shadow_size = 1
 
 [node name="SegmentResultsPanel" type="PanelContainer" unique_id=1594320159]
-offset_right = 349.0
-offset_bottom = 40.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_r6dd1")
-script = ExtResource("1_bo2vp")
+custom_minimum_size = Vector2(0, 40)
+mouse_default_cursor_shape = 2
+theme_override_styles/panel = SubResource("RowPanel")
+script = ExtResource("1_script")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=817973673]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 7
 
-[node name="SegmentNo" type="Label" parent="HBoxContainer" unique_id=1315648677]
+[node name="SegmentBadge" type="PanelContainer" parent="HBoxContainer" unique_id=51434357]
+custom_minimum_size = Vector2(46, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
+theme_override_styles/panel = SubResource("SegmentBadge")
+
+[node name="SegmentNo" type="Label" parent="HBoxContainer/SegmentBadge" unique_id=1315648677]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.96, 0.82, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.2, 0.19, 1)
+theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 18
-text = "1st"
+text = "01"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="SegmentPower" type="Label" parent="HBoxContainer" unique_id=1004428651]
+[node name="EnergyContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=632288051]
+custom_minimum_size = Vector2(68, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
+size_flags_stretch_ratio = 0.8
+
+[node name="SegmentPower" type="Label" parent="HBoxContainer/EnergyContainer" unique_id=1004428651]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.0549, 0.3569, 0.3686, 1)
+theme_override_colors/font_outline_color = Color(0.98, 0.94, 0.82, 0.9)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 19
 text = "-"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="MultiplierContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1537264061]
+[node name="Times" type="Label" parent="HBoxContainer" unique_id=252860522]
+custom_minimum_size = Vector2(14, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 0.85)
+theme_override_font_sizes/font_size = 17
+text = "x"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MultiplierContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=1537264061]
+custom_minimum_size = Vector2(54, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="x" type="Label" parent="HBoxContainer/MultiplierContainer" unique_id=291974523]
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
-text = "x"
+size_flags_stretch_ratio = 0.7
 
 [node name="SegmentMultiplier" type="Label" parent="HBoxContainer/MultiplierContainer" unique_id=1993148651]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.64, 0.35, 0.11, 1)
+theme_override_colors/font_outline_color = Color(0.98, 0.94, 0.82, 0.9)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 19
 text = "-"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="SegmentTotalScore" type="Label" parent="HBoxContainer" unique_id=577569526]
+[node name="Equals" type="Label" parent="HBoxContainer" unique_id=767748739]
+visible = false
+custom_minimum_size = Vector2(14, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 1)
+theme_override_colors/font_outline_color = Color(0.98, 0.94, 0.82, 0.8)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 19
+text = "="
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScoreContainer" type="PanelContainer" parent="HBoxContainer" unique_id=201998490]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
-text = "-"
+size_flags_stretch_ratio = 1.7
+theme_override_styles/panel = SubResource("ScorePanel")
 
-[node name="SegmentGold" type="Label" parent="HBoxContainer" unique_id=90959331]
+[node name="SegmentTotalScore" type="Label" parent="HBoxContainer/ScoreContainer" unique_id=577569526]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 0.89411765, 1)
-theme_override_font_sizes/font_size = 21
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
+theme_override_colors/font_outline_color = Color(0.995, 0.97, 0.88, 0.95)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 3
+theme_override_constants/shadow_outline_size = 1
+theme_override_font_sizes/font_size = 24
 text = "-"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
