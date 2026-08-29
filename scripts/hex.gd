@@ -77,12 +77,12 @@ func place_tile_card(rune: TileCard) -> void:
 	new_rune_instance.map = map
 	new_rune_instance.tile = self
 	new_rune_instance.center_coordinates = coordinates
-
-	new_rune_instance.setup(active_tile_card)
 	_fit_rune_ui(new_rune_instance)
-	
+	# Add first so setup is not deferred. Deferred setup can run after the hex is disposed.
 	items_grid.add_child(new_rune_instance)
-	new_rune_instance.play_placement_animation()
+	new_rune_instance.setup(active_tile_card)
+	if not GameManager.skip_presentation:
+		new_rune_instance.play_placement_animation()
 	_apply_display_mode()
 	refresh_tile_card_visual_state()
 	if map != null:

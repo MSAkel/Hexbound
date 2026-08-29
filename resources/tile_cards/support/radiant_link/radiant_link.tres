@@ -11,5 +11,5 @@ sigil_kind = 7
 id = "radiant_link"
 name = "Radiant Link"
 icon = ExtResource("1_11jx1")
-description = "Up to 3 adjacent Energy cards permanently gain +3 Energy"
+description = "Up to 3 adjacent Downstream Energy cards permanently gain +3 Energy"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

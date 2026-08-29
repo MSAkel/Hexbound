@@ -51,3 +51,21 @@ enum SegmentKeyStrategy {
 
 # Number of segments in the map for this character.
 @export var segments_count: int = 0
+# Tile counts per segment in trigger order. Used by loot filters without a live map.
+@export var segment_sizes: Array[int] = []
+
+
+## True when this layout has at least one segment with exactly `size` tiles.
+func has_segment_of_size(size: int) -> bool:
+	for segment_size: int in segment_sizes:
+		if segment_size == size:
+			return true
+	return false
+
+
+## Largest segment on this layout, or 0 when sizes are unset.
+func get_max_segment_size() -> int:
+	var largest := 0
+	for segment_size: int in segment_sizes:
+		largest = maxi(largest, segment_size)
+	return largest

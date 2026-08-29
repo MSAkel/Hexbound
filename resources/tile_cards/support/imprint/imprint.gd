@@ -1,12 +1,15 @@
 extends TileCard
 
-# Gains the effect of the last two runes triggered before it
+## Copies the effects of the two tiles directly before this one. Empty tiles are skipped, not walked past.
+
 func _on_activate_tile_card(tile: Hex) -> void:
-	var prior_runes := _get_previous_tile_cards_in_trigger_order(tile, 2)
+	var prior_runes := _get_tile_cards_on_immediately_previous_hexes(tile, 2)
 	if prior_runes.is_empty():
+		failed_tile_card_text(tile)
 		return
-	
-	# Run each prior rune's effect from this tile without re-triggering them on their hexes.
+
+	# Replay those effects from this hex. The source tiles are not retriggered.
+	# Copied retriggers skip this host, so a prior Break Glass cannot loop Imprint.
 	var output_scale := _activation_output_scale
 	for prior_rune: TileCard in prior_runes:
 		var prior_hex := tile.map.get_hex_for_tile_card(prior_rune)
@@ -18,5 +21,4 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	var prior_runes := _get_previous_tile_cards_in_trigger_order(hover_tile, 2)
-	return _coords_for_placed_tile_cards(hover_tile, prior_runes)
+	return _coords_for_immediately_previous_hexes(hover_tile, 2)

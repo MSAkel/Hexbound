@@ -30,6 +30,13 @@ enum PlacementRestriction {
 	EDGE_TILE,
 	SEGMENT_FIRST_TILE,
 	SEGMENT_LAST_TILE,
+	ONE_TILE_SEGMENT,
+}
+
+# Drops this card from a layout's packs when the map cannot satisfy the requirement.
+enum LayoutRequirement {
+	NONE,
+	REQUIRES_EXACT_SEGMENT_SIZE,
 }
 
 # Small icon on placed runes that identifies the card's main role.
@@ -87,6 +94,8 @@ var run_trigger_count: int = 0
 var is_empowered: bool = false
 # Scales all tile card output during this activation (score, gold, generated multiplier resource).
 var _activation_output_scale: float = 1.0
+# True when this activation consumed Empower. Checked by cards that pay extra on Empower.
+var _activation_was_empowered: bool = false
 
 @export var base_production_amount: int = 0
 @export var rarity: TileCardRarity
@@ -100,6 +109,22 @@ var _activation_output_scale: float = 1.0
 @export var sigil_kind: SigilKind = SigilKind.NONE
 ## When true, this common score producer may appear in flat-score starter draws.
 @export var starting_hand_eligible: bool = false
+# Packs and shop omit this card when the selected layout cannot host it.
+@export var layout_requirement: LayoutRequirement = LayoutRequirement.NONE
+@export var layout_requirement_size: int = 0
+# Utilities default to one occupied tile. Transposition uses two.
+@export var utility_target_count: int = 1
+
+
+## False when this layout has no segment that can host the card's requirement.
+func is_legal_for_layout(character: CharacterDefinition) -> bool:
+	if character == null:
+		return true
+	match layout_requirement:
+		LayoutRequirement.REQUIRES_EXACT_SEGMENT_SIZE:
+			return character.has_segment_of_size(layout_requirement_size)
+		_:
+			return true
 
 
 func get_sigil_kind() -> SigilKind:
@@ -293,6 +318,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		GameManager.passive_runtime.before_activation(tile, self)
 
 	var output_scale := activation_scale
+	_activation_was_empowered = is_empowered
 	if is_empowered:
 		output_scale *= EMPOWER_OUTPUT_SCALE
 		is_empowered = false
@@ -312,10 +338,24 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 			MetaProgressionManager.note_one_tile_same_card_triggers(run_trigger_count)
 	_try_segment_passive_retrigger(tile)
 	_activation_output_scale = 1.0
+	_activation_was_empowered = false
 
 # Queue extra tile card activations to resolve before tile flow continues.
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
 	source_tile.map.queue_tile_card_triggers(tile_cards, activation_scales, source_tile)
+
+
+## Card occupying the hex this effect is resolving from. Copied scripts (Mirror Copy, Imprint) are not that occupant.
+func _activation_host_card(tile: Hex) -> TileCard:
+	if tile != null and tile.active_tile_card != null:
+		return tile.active_tile_card
+	return self
+
+
+## True when this script is running from another card's hex (Mirror Copy or Imprint replay).
+func _is_copied_activation(tile: Hex) -> bool:
+	var host := _activation_host_card(tile)
+	return host != null and host != self
 
 
 ## Queues only triggerable runes. Shows Failed when nothing valid can fire.
@@ -326,8 +366,12 @@ func _try_queue_tile_card_triggers(
 ) -> bool:
 	var triggerable: Array[TileCard] = []
 	var aligned_scales: Array[float] = []
+	var host := _activation_host_card(source_tile)
 	for i in range(tile_cards.size()):
 		var card := tile_cards[i]
+		# Copied effects must not retrigger their host. Skip-self on the copied card misses that instance.
+		if _is_copied_activation(source_tile) and card == host:
+			continue
 		if not _is_triggerable_tile_card(source_tile, card):
 			continue
 		triggerable.append(card)
@@ -350,6 +394,25 @@ func _try_queue_tile_card_triggers(
 
 # Utility cards resolve immediately on placement instead of occupying a tile.
 func apply_on_placement(_tile: Hex) -> void:
+	pass
+
+
+## Multi-target utilities collect hexes in the placement handler, then resolve here.
+func apply_on_targets(tiles: Array[Hex]) -> void:
+	if tiles.is_empty():
+		return
+	apply_on_placement(tiles[0])
+
+
+## Occupied-tile utilities cannot retarget a hex already chosen this play.
+func can_utility_target(hex: Hex, already_selected: Array[Hex]) -> bool:
+	if hex in already_selected:
+		return false
+	return can_play_on(hex)
+
+
+## Another card on this segment broke. Salvage Core grows from this hook.
+func on_other_segment_card_broke(_broken: TileCard, _tile: Hex) -> void:
 	pass
 
 
@@ -389,6 +452,8 @@ func can_place_on_tile(tile: Hex) -> bool:
 			return tile.map.is_first_tile_in_segment(tile.coordinates)
 		PlacementRestriction.SEGMENT_LAST_TILE:
 			return tile.map.is_last_tile_in_segment(tile.coordinates)
+		PlacementRestriction.ONE_TILE_SEGMENT:
+			return tile.map.get_segment_size(tile.map.get_segment_index(tile.coordinates)) == 1
 		_:
 			return true
 
@@ -411,8 +476,10 @@ func add_gold(tile: Hex, base_amount: Variant) -> void:
 	tile.map.add_turn_gold_for_tile(tile, amount)
 	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD)
 
-func add_multiplier(tile: Hex, base_amount: Variant) -> void:
-	var amount := float(base_amount) * _activation_output_scale
+func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
+	var amount := float(base_amount)
+	if scaled:
+		amount *= _activation_output_scale
 	tile.map.add_turn_multiplier_for_tile(tile, amount)
 	_create_floating_text(tile, "+%s" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
 
@@ -421,7 +488,8 @@ func add_multiplier(tile: Hex, base_amount: Variant) -> void:
 func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
 	tile.map.add_turn_score_for_segment(segment_index, points)
-	_create_floating_text(tile, "+%d → next" % points, Color.AQUA, ICON_ENERGY)
+	tile.map.mark_segment_received_relay(segment_index)
+	_create_floating_text(tile, "+%d →" % points, Color.AQUA, ICON_ENERGY)
 	tile.map.flash_segment_highlight(segment_index)
 
 
@@ -429,7 +497,8 @@ func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -
 func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: Variant) -> void:
 	var amount := float(base_amount) * _activation_output_scale
 	tile.map.add_turn_multiplier_for_segment(segment_index, amount)
-	_create_floating_text(tile, "+%s → next" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
+	tile.map.mark_segment_received_relay(segment_index)
+	_create_floating_text(tile, "+%s →" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
 	tile.map.flash_segment_highlight(segment_index)
 
 
@@ -522,6 +591,100 @@ func _count_all_occupied_adjacent_tile_cards(tile: Hex, filter_type: Variant = n
 func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards(tile, filter_type)
 
+
+## Adjacent hexes that activate after this tile in trigger order, including empty tiles.
+func _get_downstream_adjacent_hexes(tile: Hex) -> Array[Hex]:
+	if tile == null or tile.map == null:
+		return []
+	return tile.map.get_downstream_adjacent_hexes(tile)
+
+
+## Occupied adjacent Downstream hexes, optionally filtered by card type.
+func _get_downstream_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	return tile.map.get_downstream_adjacent_tile_cards(tile, filter_type)
+
+
+## Adjacent Downstream Energy producers.
+func _get_downstream_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	for tile_card: TileCard in _get_downstream_adjacent_tile_cards(tile, TileCardType.PRODUCER):
+		if tile_card.product != filter_product:
+			continue
+		result.append(tile_card)
+	return result
+
+
+## Adjacent Downstream Energy producers on this segment.
+func _get_downstream_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
+	var segment_index := _get_segment_index(tile)
+	var result: Array[TileCard] = []
+	for tile_card: TileCard in _get_downstream_adjacent_tile_cards_by_product(tile, filter_product):
+		var hex := tile.map.get_hex_for_tile_card(tile_card)
+		if hex == null:
+			continue
+		if tile.map.get_segment_index(hex.coordinates) != segment_index:
+			continue
+		result.append(tile_card)
+	return result
+
+
+## Cards on this segment that activate after this tile, in trigger order.
+func _get_later_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	var self_index := tile.map._get_hex_trigger_order_index(tile)
+	var result: Array[TileCard] = []
+	for tile_card: TileCard in _get_all_tile_cards_on_same_segment(tile, filter_type):
+		var hex := tile.map.get_hex_for_tile_card(tile_card)
+		if hex == null:
+			continue
+		if tile.map._get_hex_trigger_order_index(hex) > self_index:
+			result.append(tile_card)
+	result.sort_custom(func(a: TileCard, b: TileCard) -> bool:
+		var hex_a := tile.map.get_hex_for_tile_card(a)
+		var hex_b := tile.map.get_hex_for_tile_card(b)
+		if hex_a == null or hex_b == null:
+			return hex_a != null
+		return tile.map._get_hex_trigger_order_index(hex_a) < tile.map._get_hex_trigger_order_index(hex_b)
+	)
+	return result
+
+
+func _coords_for_downstream_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(tile, _get_downstream_adjacent_tile_cards_by_product(tile, filter_product))
+
+
+func _coords_for_downstream_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(tile, _get_downstream_same_segment_producers_by_product(tile, filter_product))
+
+
+func _is_first_producer_in_segment(tile: Hex) -> bool:
+	for hex: Hex in tile.map.get_hexes_in_segment(_get_segment_index(tile)):
+		var card := _effective_producer_on_hex(hex, tile)
+		if card == null:
+			continue
+		return card == self
+	return false
+
+
+func _is_last_producer_in_segment(tile: Hex) -> bool:
+	var last: TileCard = null
+	for hex: Hex in tile.map.get_hexes_in_segment(_get_segment_index(tile)):
+		var card := _effective_producer_on_hex(hex, tile)
+		if card == null:
+			continue
+		last = card
+	return last == self
+
+
+## Treats a hover-preview tile as if this producer were already sitting there.
+func _effective_producer_on_hex(hex: Hex, preview_tile: Hex) -> TileCard:
+	if hex.active_tile_card != null:
+		if hex.active_tile_card.type != TileCardType.PRODUCER:
+			return null
+		return hex.active_tile_card
+	if hex == preview_tile and type == TileCardType.PRODUCER:
+		return self
+	return null
+
 #endregion --- Adjacent tile card helpers ---
 
 #region --- Trigger order helpers ---
@@ -546,6 +709,38 @@ func _get_previous_tile_cards_in_trigger_order(
 ) -> Array[TileCard]:
 	return tile.map.get_previous_tile_cards_in_trigger_order(tile, count, filter_type)
 
+
+## The count hexes immediately before this tile in trigger order, including empties.
+func _get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
+	var result: Array[Hex] = []
+	var hexes := tile.map.get_hexes_in_trigger_order()
+	var self_index := tile.map._get_hex_trigger_order_index(tile)
+	if self_index < 0:
+		return result
+	for i in range(1, count + 1):
+		var prev_index := self_index - i
+		if prev_index < 0:
+			break
+		result.append(hexes[prev_index])
+	return result
+
+
+## Cards sitting on those immediately previous hexes. Empty slots are omitted, not skipped over.
+func _get_tile_cards_on_immediately_previous_hexes(tile: Hex, count: int) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	for hex: Hex in _get_immediately_previous_hexes(tile, count):
+		if hex.active_tile_card == null:
+			continue
+		result.append(hex.active_tile_card)
+	return result
+
+
+func _coords_for_immediately_previous_hexes(tile: Hex, count: int) -> Array[Vector2i]:
+	var coords: Array[Vector2i] = []
+	for hex: Hex in _get_immediately_previous_hexes(tile, count):
+		coords.append(hex.coordinates)
+	return coords
+
 # Tile card on the next occupied hex in global trigger order (null when empty).
 func _get_next_tile_card_in_trigger_order(tile: Hex) -> TileCard:
 	return tile.map.get_next_tile_card_in_trigger_order(tile)
@@ -562,6 +757,8 @@ func _can_consume_next_tile_card_in_trigger_order(tile: Hex) -> bool:
 
 # Segment index for tile under the active character grouping (-1 when unknown).
 func _get_segment_index(tile: Hex) -> int:
+	if tile == null or tile.map == null:
+		return -1
 	return tile.map.get_segment_index(tile.coordinates)
 
 # Number of tiles in this card's segment (0 when the segment is unknown).
@@ -586,6 +783,8 @@ func _get_all_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null)
 
 # Activations on this tile's segment so far this turn, including the current activation.
 func _get_segment_trigger_count_this_turn(tile: Hex) -> int:
+	if tile == null or tile.map == null:
+		return 0
 	return tile.map.get_segment_turn_trigger_count(_get_segment_index(tile))
 
 
@@ -601,6 +800,30 @@ func _get_segment_retrigger_count_this_turn(tile: Hex) -> int:
 
 func _get_segment_turn_gold(tile: Hex) -> int:
 	return tile.map.get_segment_turn_gold(_get_segment_index(tile))
+
+
+## Gold that cards before this tile on the same segment would produce.
+## Used by chips so leftover gold from later cards does not inflate the preview.
+func _get_earlier_segment_gold_preview(tile: Hex) -> int:
+	if tile == null or tile.map == null:
+		return 0
+	var self_index := tile.map._get_hex_trigger_order_index(tile)
+	if self_index < 0:
+		return 0
+	var gold := 0
+	for hex: Hex in tile.map.get_hexes_in_segment(_get_segment_index(tile)):
+		if tile.map._get_hex_trigger_order_index(hex) >= self_index:
+			continue
+		var card := hex.active_tile_card
+		if card == null or card.product != Product.GOLD:
+			continue
+		gold += int(round(card._get_production_amount()))
+	return gold
+
+
+## Energy piled on this segment so far this turn, before Mult.
+func _get_segment_turn_score(tile: Hex) -> int:
+	return tile.map.get_segment_turn_score(_get_segment_index(tile))
 
 ## All placed tile cards on the same segment whose product matches filter_product.
 func _get_all_tile_cards_on_same_segment_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
@@ -650,6 +873,41 @@ func _get_adjacent_same_segment_producers_by_product(tile: Hex, filter_product: 
 
 func _get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_tile_cards_on_other_segments(tile, filter_type)
+
+
+func _get_all_tile_cards_on_later_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	return tile.map.get_all_tile_cards_on_later_segments(tile, filter_type)
+
+
+## Other segments that either host a Producer or do not, depending on want_producer.
+func _count_other_segments_by_producer(tile: Hex, want_producer: bool) -> int:
+	var self_index := _get_segment_index(tile)
+	var count := 0
+	for segment_index in range(_get_segment_count(tile)):
+		if segment_index == self_index:
+			continue
+		var has_producer := not tile.map.get_all_tile_cards_on_segment(
+			segment_index, TileCardType.PRODUCER
+		).is_empty()
+		if has_producer == want_producer:
+			count += 1
+	return count
+
+
+## Preview tiles in other segments that match Wide Ratio or Tall Cell.
+func _coords_for_other_segments_matching_producer(tile: Hex, want_producer: bool) -> Array[Vector2i]:
+	var self_index := _get_segment_index(tile)
+	var coords: Array[Vector2i] = []
+	for segment_index in range(_get_segment_count(tile)):
+		if segment_index == self_index:
+			continue
+		var has_producer := not tile.map.get_all_tile_cards_on_segment(
+			segment_index, TileCardType.PRODUCER
+		).is_empty()
+		if has_producer != want_producer:
+			continue
+		coords.append_array(_coords_for_segment(tile, segment_index))
+	return coords
 
 # Returns the first or last placed tile card in a map segment near this tile.
 #
@@ -749,14 +1007,19 @@ func _coords_for_next_segment(tile: Hex) -> Array[Vector2i]:
 
 ## Remove a placed tile card instance from the map (clears its tile and cancels queued triggers).
 func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard, counts_as_break: bool = true) -> void:
+	if source_tile == null or source_tile.map == null or tile_card == null:
+		return
+	var broken_hex := source_tile.map.get_hex_for_tile_card(tile_card)
+	if broken_hex == null:
+		broken_hex = source_tile
 	if counts_as_break:
 		if GameManager.passive_runtime.try_prevent_break(source_tile, tile_card):
 			_create_floating_text(source_tile, "Saved", Color(0.55, 0.85, 0.7, 1.0))
 			return
-		var segment_index := -1
-		if source_tile.map != null:
-			segment_index = source_tile.map.get_segment_index(source_tile.coordinates)
-		MetaProgressionManager.record_card_broken(segment_index == -1 or source_tile.map.get_segment_size(segment_index) == 1)
+		var segment_index := source_tile.map.get_segment_index(broken_hex.coordinates)
+		var on_one_tile := segment_index == -1 or source_tile.map.get_segment_size(segment_index) == 1
+		MetaProgressionManager.record_card_broken(on_one_tile)
+		source_tile.map.notify_card_broke(tile_card)
 	source_tile.map.destroy_placed_tile_card(tile_card)
 
 
@@ -784,6 +1047,8 @@ func _pick_random_placeable_tile_card(
 		if rarity != null and template.rarity != rarity:
 			continue
 		if not exclude_id.is_empty() and template.id == exclude_id:
+			continue
+		if not template.is_legal_for_layout(GameManager.selected_character):
 			continue
 		candidates.append(template)
 

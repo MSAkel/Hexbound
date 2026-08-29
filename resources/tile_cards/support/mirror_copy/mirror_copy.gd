@@ -22,6 +22,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 	_is_resolving_copy = true
 	copied._activation_output_scale = _activation_output_scale
+	# Copied retriggers resolve from this hex. TileCard skips queuing this host so Break Glass cannot loop.
 	copied._on_activate_tile_card(tile)
 	copied._activation_output_scale = 1.0
 	_is_resolving_copy = false

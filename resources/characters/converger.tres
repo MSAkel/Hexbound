@@ -17,3 +17,4 @@ numbered_order_grid = [[1, 2, 3, 4], [10, 19, 20, 21, 5], [11, 25, 31, 32, 22, 6
 segment_starts = Array[int]([1, 10, 19, 25, 31, 34, 37])
 segment_key_strategy = 2
 segments_count = 6
+segment_sizes = Array[int]([9, 9, 6, 6, 3, 3, 1])

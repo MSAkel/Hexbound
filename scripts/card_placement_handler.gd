@@ -10,7 +10,7 @@ var tile_map: HexTileMap
 var is_card_selected: bool = false
 
 var selected_card: CardUI = null
-var _rune_preview: Sprite2D
+var _rune_preview: RuneUI
 # Prevents deselect cleanup when swapping from one selected card to another.
 var _switching_selection: bool = false
 # Tiles temporarily marked invalid while placing a restricted rune card.
@@ -19,9 +19,13 @@ var _restricted_invalid_coords: Array[Vector2i] = []
 var _effect_preview_coords: Array[Vector2i] = []
 # Valid placement tiles highlighted for first, last, or edge restrictions.
 var _valid_restriction_coords: Array[Vector2i] = []
+# Occupied hexes already chosen for a multi-target utility such as Transposition.
+var _utility_target_hexes: Array[Hex] = []
+var _utility_target_coords: Array[Vector2i] = []
 
 const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
+const RUNE_UI_SCENE: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
 
 
 func _ready() -> void:
@@ -31,11 +35,15 @@ func _ready() -> void:
 
 
 func _setup_rune_preview() -> void:
-	_rune_preview = Sprite2D.new()
-	_rune_preview.centered = true
+	_rune_preview = RUNE_UI_SCENE.instantiate() as RuneUI
 	_rune_preview.visible = false
 	_rune_preview.z_index = 5
+	_rune_preview.custom_minimum_size = HexTileMap.HEX_RUNE_SIZE
+	_rune_preview.size = HexTileMap.HEX_RUNE_SIZE
+	_rune_preview.pivot_offset = HexTileMap.HEX_RUNE_SIZE / 2.0
+	_rune_preview.scale = Vector2(RuneUI.PLACEMENT_HOVER_SCALE, RuneUI.PLACEMENT_HOVER_SCALE)
 	tile_map.add_child(_rune_preview)
+	_rune_preview.prepare_placement_ghost()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -65,6 +73,8 @@ func _on_card_selected(card: CardUI) -> void:
 		_switching_selection = true
 		selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
 		_switching_selection = false
+		_utility_target_hexes.clear()
+		_utility_target_coords.clear()
 	
 	is_card_selected = true
 	selected_card = card
@@ -86,17 +96,11 @@ func _deselect_card() -> void:
 
 
 func _update_preview_texture() -> void:
-	if selected_card == null or selected_card.card == null:
+	var tile_card := _get_selected_tile_card()
+	if tile_card == null:
 		return
-	
-	var icon: Texture2D = selected_card.card.icon
-	_rune_preview.texture = icon
-	if icon:
-		# Match the placed rune's hover size, slightly larger than the hex art.
-		var tex_size := icon.get_size()
-		var preview_pixel_size := float(HexTileMap.HEX_TEXTURE_SIZE.y) * RuneUI.PLACEMENT_HOVER_SCALE
-		var scale_factor := preview_pixel_size / maxf(tex_size.x, tex_size.y)
-		_rune_preview.scale = Vector2(scale_factor, scale_factor)
+	_rune_preview.prepare_placement_ghost()
+	_rune_preview.setup(tile_card)
 
 
 func _update_rune_preview() -> void:
@@ -114,15 +118,22 @@ func _update_rune_preview() -> void:
 	
 	if over_valid_tile:
 		var tile_center: Vector2 = tile_map.base_layer.map_to_local(map_coords)
-		_rune_preview.global_position = tile_map.to_global(tile_center)
+		_rune_preview.map = tile_map
+		_rune_preview.tile = hex
+		_rune_preview.global_position = tile_map.to_global(tile_center) - HexTileMap.HEX_RUNE_SIZE / 2.0
 		_rune_preview.modulate = VALID_PREVIEW_COLOR
 		_rune_preview.visible = true
+		# Mark the hover cell occupied before the chip reads empty-tile counts.
 		tile_map.set_placement_preview_cell(map_coords)
+		var tile_card := _get_selected_tile_card()
+		if tile_card != null:
+			_rune_preview.refresh_output_chip(tile_card)
 		_update_hover_highlights(hex)
 	else:
 		_rune_preview.visible = false
 		tile_map.clear_placement_preview()
 		_clear_hover_highlights()
+		_restamp_utility_target_highlights()
 
 
 func _get_mouse_map_coords() -> Vector2i:
@@ -147,16 +158,15 @@ func _try_place_card() -> void:
 	if not _can_place_on_hex(hex):
 		return
 
+	var tile_card := _get_selected_tile_card()
+	if tile_card != null and tile_card.utility_target_count > 1:
+		_collect_utility_target(hex)
+		return
+
 	# Hide the hover sprite so the placed rune can take over the same oversized pose.
 	_rune_preview.visible = false
 	selected_card.card.play_on(hex)
-	EventBus.card_played.emit(selected_card)
-	AudioManager.play_sfx(UISounds.GROUND_IMPACT)
-	
-	var card_to_remove := selected_card
-	_clear_preview()
-	_reset_state()
-	card_to_remove.queue_free()
+	_finish_playing_selected_card()
 
 
 func _clear_preview() -> void:
@@ -171,6 +181,7 @@ func _clear_placement_overlays() -> void:
 	_clear_hover_highlights()
 	_clear_restriction_overlays()
 	_clear_valid_restriction_highlights()
+	_clear_rune_highlights_at(_utility_target_coords)
 	tile_map.rune_highlight_overlay_layer.modulate = Color.WHITE
 
 
@@ -209,7 +220,7 @@ func _clear_rune_highlight_at(coords: Vector2i) -> void:
 
 ## True while this handler currently stamps an effect-preview or valid-restriction highlight on coords.
 func is_highlighting_coord(coords: Vector2i) -> bool:
-	return coords in _effect_preview_coords or coords in _valid_restriction_coords
+	return coords in _effect_preview_coords or coords in _valid_restriction_coords or coords in _utility_target_coords
 
 
 func _stamp_rune_highlight(coords: Vector2i) -> void:
@@ -223,6 +234,8 @@ func _stamp_rune_highlight(coords: Vector2i) -> void:
 func _reset_state() -> void:
 	selected_card = null
 	is_card_selected = false
+	_utility_target_hexes.clear()
+	_utility_target_coords.clear()
 
 
 # Disables invalid tiles and highlights valid ones for runes with placement restrictions.
@@ -255,6 +268,7 @@ func _update_placement_overlays() -> void:
 # Highlights tiles the hovered card would affect. The placement tile itself stays unhighlighted.
 func _update_hover_highlights(hover_hex: Hex) -> void:
 	_clear_hover_highlights()
+	_restamp_utility_target_highlights()
 	
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:
@@ -287,4 +301,39 @@ func _is_placement_candidate(hex: Hex) -> bool:
 func _can_place_on_hex(hex: Hex) -> bool:
 	if selected_card == null or selected_card.card == null:
 		return false
+	var tile_card := _get_selected_tile_card()
+	if tile_card != null and tile_card.utility_target_count > 1:
+		return tile_card.can_utility_target(hex, _utility_target_hexes)
 	return selected_card.card.can_play_on(hex)
+
+
+## Stores one occupied hex for a multi-target utility. Resolves when the last target is chosen.
+func _collect_utility_target(hex: Hex) -> void:
+	var tile_card := _get_selected_tile_card()
+	if tile_card == null:
+		return
+
+	_utility_target_hexes.append(hex)
+	_utility_target_coords.append(hex.coordinates)
+	_stamp_rune_highlight(hex.coordinates)
+
+	if _utility_target_hexes.size() < tile_card.utility_target_count:
+		return
+
+	_rune_preview.visible = false
+	tile_card.apply_on_targets(_utility_target_hexes)
+	_finish_playing_selected_card()
+
+
+func _finish_playing_selected_card() -> void:
+	EventBus.card_played.emit(selected_card)
+	AudioManager.play_sfx(UISounds.GROUND_IMPACT)
+	var card_to_remove := selected_card
+	_clear_preview()
+	_reset_state()
+	card_to_remove.queue_free()
+
+
+func _restamp_utility_target_highlights() -> void:
+	for coords: Vector2i in _utility_target_coords:
+		_stamp_rune_highlight(coords)

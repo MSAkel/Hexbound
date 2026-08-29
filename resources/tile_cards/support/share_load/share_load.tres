@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/tile_cards/support/share_load/share_load.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+rarity = 1
+type = 1
+sigil_kind = 6
+id = "share_load"
+name = "Share Load"
+icon = ExtResource("1_icon")
+description = "Relay 30% of this segment's Energy pile so far to the next segment"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -111,6 +111,8 @@ func _on_continue_pressed() -> void:
 
 func _on_play_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
+	# Play chooses a new run. Do not keep a Continue request from the same menu.
+	RunSaveManager.clear_continue_run_pending()
 	get_tree().change_scene_to_file(ScenePaths.CHARACTER_SELECTION)
 
 

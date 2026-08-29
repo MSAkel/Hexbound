@@ -15,6 +15,10 @@ const SEGMENT_SCORE_COUNT_TIMEOUT := 2.0
 const TURN_TOTAL_COUNT_TIMEOUT := 2.0
 ## Extra hold on the first scoring row during the tutorial.
 const TUTORIAL_SCORE_LINGER := 0.55
+## Headless resolves skip animation awaits. Yield every so often so a retrigger storm cannot freeze the process.
+const SKIP_PRESENTATION_YIELD_EVERY := 64
+## Abort a single tile's retrigger drain after this many activations and dump the board.
+const SKIP_PRESENTATION_STORM_LIMIT := 400
 
 var map: HexTileMap
 # Extra rune activations queued by support runes. Resolved before tile flow continues.
@@ -25,6 +29,10 @@ var _trigger_link_pending: Dictionary = {}
 var _deferred_destroy_after_triggers: Dictionary = {}
 # First scoring row in a tutorial run holds longer.
 var _did_tutorial_product_linger: bool = false
+var _skip_presentation_steps := 0
+var _storm_resolved := 0
+var _storm_counts: Dictionary = {}
+var _storm_edges: Dictionary = {}
 
 
 func setup(tile_map: HexTileMap) -> void:
@@ -41,16 +49,22 @@ func resolve_turn() -> void:
 
 	pending_trigger_queue.clear()
 	_clear_trigger_link_sessions()
+	_skip_presentation_steps = 0
 
 	for tile: Hex in map.get_hexes_in_trigger_order():
 		if _should_bypass_primary_trigger_order_activation(tile):
+			_mark_segment_resolved_if_natural_pass_done(tile)
 			continue
 
 		await _resolve_rune_activation(tile)
 		await _wait_between_tile_activations()
+		_mark_segment_resolved_if_natural_pass_done(tile)
 
-	await _play_segment_turn_result_reveals()
-	await _wait_for_turn_total_count_finished()
+	if GameManager.skip_presentation:
+		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
+	else:
+		await _play_segment_turn_result_reveals()
+		await _wait_for_turn_total_count_finished()
 	map._apply_segment_turn_totals_to_game_manager()
 	map._check_full_map_cards_achievement()
 	map._emit_segment_turn_completed_snapshot()
@@ -59,6 +73,7 @@ func resolve_turn() -> void:
 
 # Resolve one tile: primary activation, then any queued secondary triggers.
 func _resolve_rune_activation(tile: Hex) -> void:
+	_reset_storm_tracking()
 	await _activate_tile_card_on_tile(tile, 1.0, false)
 
 	while not pending_trigger_queue.is_empty():
@@ -71,7 +86,6 @@ func _resolve_rune_activation(tile: Hex) -> void:
 		if not _would_activate_tile_card_on_tile(target_hex, true):
 			_resolve_trigger_link_entry(entry)
 			continue
-		# Match the same pacing gap used between tiles in trigger order.
 		await _wait_between_tile_activations()
 		await _activate_tile_card_on_tile(
 			target_hex,
@@ -80,6 +94,106 @@ func _resolve_rune_activation(tile: Hex) -> void:
 			source_hex,
 		)
 		_resolve_trigger_link_entry(entry)
+		if _note_storm_activation(source_hex, target_hex):
+			push_warning("HexTurnResolver: retrigger storm aborted after %d activations." % SKIP_PRESENTATION_STORM_LIMIT)
+			pending_trigger_queue.clear()
+			break
+		await _yield_if_skip_presentation()
+
+
+func _reset_storm_tracking() -> void:
+	_storm_resolved = 0
+	_storm_counts.clear()
+	_storm_edges.clear()
+
+
+## Counts one queued activation. True when the skip-presentation safety cap tripped.
+func _note_storm_activation(source_hex: Hex, target_hex: Hex) -> bool:
+	if not GameManager.skip_presentation:
+		return false
+	_storm_resolved += 1
+	var target_id := "?"
+	if target_hex != null and target_hex.active_tile_card != null:
+		target_id = target_hex.active_tile_card.id
+	_storm_counts[target_id] = int(_storm_counts.get(target_id, 0)) + 1
+	var source_id := "?"
+	if source_hex != null and source_hex.active_tile_card != null:
+		source_id = source_hex.active_tile_card.id
+	var edge := "%s -> %s" % [source_id, target_id]
+	_storm_edges[edge] = int(_storm_edges.get(edge, 0)) + 1
+	if _storm_resolved != SKIP_PRESENTATION_STORM_LIMIT:
+		return false
+	_dump_retrigger_storm()
+	return true
+
+
+func _dump_retrigger_storm() -> void:
+	print("[playtest] RETRIGGER STORM round=%d activations=%d queue=%d" % [
+		GameManager.current_round,
+		_storm_resolved,
+		pending_trigger_queue.size(),
+	])
+	var count_keys: Array = _storm_counts.keys()
+	count_keys.sort_custom(func(a: Variant, b: Variant) -> bool:
+		var ca := int(_storm_counts[a])
+		var cb := int(_storm_counts[b])
+		if ca != cb:
+			return ca > cb
+		return str(a) < str(b)
+	)
+	for key: Variant in count_keys:
+		print("[playtest]   fired %s x%d" % [str(key), int(_storm_counts[key])])
+	var edge_keys: Array = _storm_edges.keys()
+	edge_keys.sort_custom(func(a: Variant, b: Variant) -> bool:
+		var ca := int(_storm_edges[a])
+		var cb := int(_storm_edges[b])
+		if ca != cb:
+			return ca > cb
+		return str(a) < str(b)
+	)
+	var shown := 0
+	for key: Variant in edge_keys:
+		print("[playtest]   edge %s x%d" % [str(key), int(_storm_edges[key])])
+		shown += 1
+		if shown >= 12:
+			break
+	if map == null:
+		return
+	print("[playtest]   board:")
+	for hex: Hex in map.get_hexes_in_trigger_order():
+		if hex.active_tile_card == null:
+			continue
+		print(
+			"[playtest]     seg=%d %s %s %s"
+			% [
+				map.get_segment_index(hex.coordinates),
+				str(hex.coordinates),
+				hex.active_tile_card.id,
+				_card_type_label(hex.active_tile_card),
+			]
+		)
+
+
+func _card_type_label(card: TileCard) -> String:
+	match card.type:
+		TileCard.TileCardType.PRODUCER:
+			return "producer"
+		TileCard.TileCardType.SUPPORT:
+			return "support"
+		TileCard.TileCardType.UTILITY:
+			return "utility"
+		_:
+			return "other"
+
+
+func _yield_if_skip_presentation() -> void:
+	if not GameManager.skip_presentation:
+		return
+	_skip_presentation_steps += 1
+	if _skip_presentation_steps < SKIP_PRESENTATION_YIELD_EVERY:
+		return
+	_skip_presentation_steps = 0
+	await get_tree().process_frame
 
 
 func _activate_tile_card_on_tile(
@@ -94,9 +208,10 @@ func _activate_tile_card_on_tile(
 	activation_scale *= ChallengeManager.get_producer_output_multiplier(tile)
 
 	if from_trigger and trigger_source_hex != null:
-		map.trigger_link_overlay.play_bolt(trigger_source_hex, tile)
-		tile.play_chained_tile_card_activation_animation()
-	else:
+		if not GameManager.skip_presentation:
+			map.trigger_link_overlay.play_bolt(trigger_source_hex, tile)
+			tile.play_chained_tile_card_activation_animation()
+	elif not GameManager.skip_presentation:
 		tile.play_tile_card_activation_animation()
 	await _wait_for_activation_animation()
 
@@ -105,6 +220,25 @@ func _activate_tile_card_on_tile(
 
 func _should_bypass_primary_trigger_order_activation(tile: Hex) -> bool:
 	return not map.is_tile_card_active(tile)
+
+
+## Close the segment once no later tile in that line still has a primary activation waiting.
+func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> void:
+	var segment_index := map.get_segment_index(current.coordinates)
+	if segment_index < 0:
+		return
+	var seen_current := false
+	for hex: Hex in map.get_hexes_in_trigger_order():
+		if hex == current:
+			seen_current = true
+			continue
+		if not seen_current:
+			continue
+		if map.get_segment_index(hex.coordinates) != segment_index:
+			break
+		if map.is_tile_card_active(hex):
+			return
+	map.mark_segment_resolved(segment_index)
 
 
 func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
@@ -120,12 +254,28 @@ func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
 
 
 func _wait_for_activation_animation() -> void:
+	if GameManager.skip_presentation:
+		return
 	var duration := RuneUI.activation_animation_duration()
 	await GameManager.create_pauseable_timer(duration / GameManager.game_speed).timeout
 
 
 func _wait_between_tile_activations() -> void:
+	if GameManager.skip_presentation:
+		return
 	await GameManager.create_pauseable_timer(TILE_ACTIVATION_PACE_DELAY / GameManager.game_speed).timeout
+
+
+## Energy x Mult summed across segments. Used when reveal UI is skipped.
+func _sum_segment_contributions() -> int:
+	var total := 0
+	for segment_index in map.get_segment_count():
+		total += GameManager.compute_segment_turn_contribution(
+			segment_index,
+			map.get_segment_turn_score(segment_index),
+			map.get_segment_turn_multiplier(segment_index)
+		)
+	return total
 
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
@@ -251,6 +401,9 @@ func queue_tile_card_triggers(
 		var target_hex := map.get_hex_for_tile_card(runes[i])
 		if target_hex == null or not map.is_tile_card_triggerable(target_hex):
 			continue
+		# Finished segments stay closed. Do not retrigger cards on them.
+		if map.is_segment_resolved(map.get_segment_index(target_hex.coordinates)):
+			continue
 
 		var scale_rune := 1.0
 		if i < activation_scales.size():
@@ -338,6 +491,8 @@ func _clear_trigger_link_sessions() -> void:
 
 ## Show floating text at a world position on the current scene.
 func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
+	if GameManager.skip_presentation:
+		return
 	var floating_text := _spawn_floating_text(pos, text, color, icon)
 	floating_text.play_float_and_free()
 
@@ -354,6 +509,11 @@ func _on_tile_card_empowered(rune: TileCard) -> void:
 	var hex := map.get_hex_for_tile_card(rune)
 	if hex == null:
 		AudioManager.play_sfx(UISounds.EMPOWER)
+		return
+
+	if GameManager.skip_presentation:
+		if hex != null and hex.is_on_map() and hex.active_tile_card == rune and rune.is_empowered:
+			hex.start_empower_sparks()
 		return
 
 	# Strike first, then the looping overcharge. Same beat as a retrigger bolt landing.

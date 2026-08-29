@@ -10,7 +10,7 @@ const RUNE_TEXTURES: Array[Texture2D] = [
 	preload("res://assets/icons/runes/support/radiant_link.png"),
 	preload("res://assets/icons/runes/hybrid/unstable_concoction.png"),
 	preload("res://assets/icons/runes/modifier/gold_extraction.png"),
-	preload("res://assets/icons/runes/production/golden_ratio.png"),
+	preload("res://assets/icons/runes/production/overcharge.png"),
 	preload("res://assets/icons/runes/production/overcharge.png"),
 ]
 

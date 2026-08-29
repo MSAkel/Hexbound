@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/tile_cards/generations/opening_volt/opening_volt.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+rarity = 1
+product = 1
+id = "opening_volt"
+name = "Opening Volt"
+icon = ExtResource("1_icon")
+description = "+24 Energy if this is the first Producer in the segment, otherwise +8 Energy"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

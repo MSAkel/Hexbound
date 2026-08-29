@@ -12,5 +12,5 @@ single_activation_per_turn = true
 id = "overdrive"
 name = "Overdrive"
 icon = ExtResource("1_42ohc")
-description = "Triggers the next adjacent card twice. Can only be activated once per turn from trigger order."
+description = "Triggers the next card in trigger order twice. Can only be activated once per turn from trigger order."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

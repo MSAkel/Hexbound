@@ -5,10 +5,10 @@
 
 [resource]
 script = ExtResource("1_6imw7")
-base_production_amount = 4
+base_production_amount = 8
 product = 1
 id = "prosperity"
 name = "Prosperity"
 icon = ExtResource("1_psaim")
-description = "+4 Energy per Gold produced earlier in this segment."
+description = "+8 Energy, plus +4 Energy per Gold produced earlier in this segment."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

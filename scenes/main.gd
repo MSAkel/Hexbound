@@ -30,30 +30,12 @@ func _ready() -> void:
 	else:
 		scene_enter_transition.queue_free()
 
-	var is_continue_run := RunSaveManager.should_restore_run()
-
-	if is_continue_run:
-		RunSaveManager.restore_run(hand, tile_map)
+	var restored := false
+	if RunSaveManager.should_restore_run():
+		restored = RunSaveManager.restore_run(hand, tile_map)
 		RunSaveManager.clear_continue_run_pending()
-	else:
-		var pending_run := RunSaveManager.consume_pending_run_seed()
-		if pending_run["requested"]:
-			RunRng.begin_new_run(pending_run["seed_text"])
-		elif RunRng.get_display_seed().is_empty():
-			RunRng.begin_new_run()
-		else:
-			# In-run restart and editor reloads keep the seed but must start streams over.
-			RunRng.restart_same_seed()
-		GameManager.reset_for_new_run()
-		# Set starting gold after character selection has chosen the run difficulty.
-		GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
-		RerollManager.reset_for_new_run()
-		ChallengeManager.init_run()
-		tile_map.apply_run_start_randomization()
-		hand.build_starting_hand()
-		if debug_starting_round > 1:
-			GameManager.set_starting_round_for_debug(debug_starting_round)
-		RunSaveManager.request_autosave()
+	if not restored:
+		_begin_fresh_run()
 
 	# Spawn after the run seed is applied so the overlay does not show the previous run.
 	if OS.is_debug_build():
@@ -70,6 +52,28 @@ func _ready() -> void:
 		var music = SOUNDTRACK.get_music_for_scene(scene_file_path)
 		if music:
 			AudioManager.play_music(music)
+
+
+## Character-select Play, hold-R, and a failed Continue all share this path.
+func _begin_fresh_run() -> void:
+	var pending_run := RunSaveManager.consume_pending_run_seed()
+	if pending_run["requested"]:
+		RunRng.begin_new_run(pending_run["seed_text"])
+	elif RunRng.get_display_seed().is_empty():
+		RunRng.begin_new_run()
+	else:
+		# In-run restart and editor reloads keep the seed but must start streams over.
+		RunRng.restart_same_seed()
+	GameManager.reset_for_new_run()
+	# Set starting gold after character selection has chosen the run difficulty.
+	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
+	RerollManager.reset_for_new_run()
+	ChallengeManager.init_run()
+	tile_map.apply_run_start_randomization()
+	hand.build_starting_hand()
+	if debug_starting_round > 1:
+		GameManager.set_starting_round_for_debug(debug_starting_round)
+	RunSaveManager.request_autosave()
 
 
 func _input(event: InputEvent) -> void:

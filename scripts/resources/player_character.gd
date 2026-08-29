@@ -55,7 +55,7 @@ static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Til
 		return hand
 
 	hand.append_array(_get_guaranteed_starter_runes())
-	hand.append_array(_get_random_filler_producer_runes(1))
+	hand.append_array(_draw_flat_score_starter(1))
 	hand.append_array(_get_random_common_runes(2, TileCard.TileCardType.SUPPORT))
 
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
@@ -76,25 +76,6 @@ static func _get_guaranteed_starter_runes() -> Array[TileCard]:
 	return runes
 
 
-# Random common producer excluding the locked starter ids.
-static func _get_random_filler_producer_runes(count: int) -> Array[TileCard]:
-	if count <= 0:
-		return []
-
-	var available_pool: Array[TileCard] = []
-	for rune in GameManager.tile_cards_pool:
-		if rune.id in GUARANTEED_STARTER_IDS:
-			continue
-		available_pool.append(rune)
-
-	return RuneLoot.draw_filtered(
-		count,
-		available_pool,
-		TileCard.TileCardRarity.COMMON,
-		TileCard.TileCardType.PRODUCER
-	)
-
-
 # Common score producers tagged for reliable turn-1 output.
 static func _get_flat_score_starter_pool() -> Array[TileCard]:
 	var pool: Array[TileCard] = []
@@ -106,6 +87,10 @@ static func _get_flat_score_starter_pool() -> Array[TileCard]:
 		if rune.product != TileCard.Product.SCORE:
 			continue
 		if not rune.starting_hand_eligible:
+			continue
+		if rune.id in GUARANTEED_STARTER_IDS:
+			continue
+		if not rune.is_legal_for_layout(GameManager.selected_character):
 			continue
 		pool.append(rune)
 	return pool

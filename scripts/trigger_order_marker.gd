@@ -33,11 +33,15 @@ func setup(order: int, _is_start: bool, _is_end: bool) -> void:
 
 
 func set_number_backdrop_visible(show_backdrop: bool) -> void:
+	if _show_number_backdrop == show_backdrop:
+		return
 	_show_number_backdrop = show_backdrop
 	_apply_visual_state()
 
 
 func set_number_visible(number_shown: bool) -> void:
+	if _number_visible == number_shown:
+		return
 	_number_visible = number_shown
 	_apply_visual_state()
 
@@ -47,10 +51,15 @@ func _apply_visual_state() -> void:
 	var show_backdrop := _number_visible and _show_number_backdrop
 	number_backdrop.visible = show_backdrop
 	number_group.visible = _number_visible
-
 	order_label.visible = _number_visible
+	_sync_float_state()
+
+
+func _sync_float_state() -> void:
+	# Hover refreshes revisit visible markers often. Only start float when it is not already running.
 	if _number_visible:
-		_start_float()
+		if _float_tween == null or not _float_tween.is_valid():
+			_start_float()
 	else:
 		_stop_float()
 

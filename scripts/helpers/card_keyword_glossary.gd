@@ -42,6 +42,7 @@ const COLOR_SCORE := Color(0.0, 0.42, 0.55)
 const COLOR_MULT := Color(0.52, 0.16, 0.48)
 const COLOR_GOLD := Color(0.62, 0.42, 0.0)
 const COLOR_EMPOWER := Color(0.78, 0.34, 0.0)
+const COLOR_DOWNSTREAM := Color(0.18, 0.52, 0.36)
 
 
 static func _static_init() -> void:
@@ -69,6 +70,13 @@ static func _static_init() -> void:
 		"Empower",
 		COLOR_EMPOWER,
 		"Doubles the output of a production card."
+	)
+	register(
+		"downstream",
+		["downstream"],
+		"Downstream",
+		COLOR_DOWNSTREAM,
+		"Later in trigger order.\nAdjacent Downstream means a touching hex that fires after this card."
 	)
 
 

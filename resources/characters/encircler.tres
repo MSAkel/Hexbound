@@ -15,3 +15,4 @@ trigger_order_description = "Outer ring cards activate first, moving inward towa
 trigger_order_preview = ExtResource("2_trigger_preview")
 segment_key_strategy = 1
 segments_count = 4
+segment_sizes = Array[int]([18, 12, 6, 1])

@@ -11,5 +11,5 @@ sigil_kind = 7
 id = "helping_hand"
 name = "Helping Hand"
 icon = ExtResource("1_8khpv")
-description = "Gives the lowest Energy producer +5 permanently"
+description = "Gives the lowest Downstream Energy producer +5 permanently"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

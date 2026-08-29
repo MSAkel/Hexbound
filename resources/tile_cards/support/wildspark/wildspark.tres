@@ -10,5 +10,5 @@ sigil_kind = 5
 id = "wildspark"
 name = "Wildspark"
 icon = ExtResource("1_sfxj2")
-description = "Triggers a random adjacent card, if all adjacent tiles contain a different card, triggers 3 instead. (Rework?)"
+description = "Trigger the earliest adjacent Downstream card. If every adjacent Downstream hex has a unique card, trigger all instead"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,7 +1,0 @@
-[gd_resource type="Resource" script_class="ScoreProgression" format=3 uid="uid://bkm2eam77elge"]
-
-[ext_resource type="Script" uid="uid://dmryuu4sdlrn4" path="res://scripts/resources/score_progression.gd" id="1_score_progression"]
-
-[resource]
-script = ExtResource("1_score_progression")
-round_1_score = 650

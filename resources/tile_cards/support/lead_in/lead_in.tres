@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/tile_cards/support/lead_in/lead_in.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+type = 1
+sigil_kind = 5
+id = "lead_in"
+name = "Lead-In"
+icon = ExtResource("1_icon")
+description = "Retrigger the first Producer in the next segment"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

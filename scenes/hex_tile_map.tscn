@@ -116,11 +116,11 @@ tile_set = SubResource("TileSet_ekk8a")
 tile_set = SubResource("TileSet_3rbfx")
 
 [node name="HoveredTileOverlayLayer" type="TileMapLayer" parent="."]
-z_index = 2
+z_index = 0
 tile_set = SubResource("TileSet_hovered_tile")
 
 [node name="RuneHighlightOverlayLayer" type="TileMapLayer" parent="." unique_id=272160682]
-z_index = 20
+z_index = 0
 tile_set = SubResource("TileSet_047vf")
 
 [node name="DisabledTileOverlayLayer" type="TileMapLayer" parent="." unique_id=1424799643]

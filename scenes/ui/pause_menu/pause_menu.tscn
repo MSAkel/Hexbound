@@ -77,10 +77,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -238.0
-offset_top = -74.0
-offset_right = 238.0
-offset_bottom = 74.0
+offset_left = -244.5
+offset_top = -240.0
+offset_right = 244.5
+offset_bottom = 179.5
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 4
@@ -98,27 +98,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
-text = "Continue"
-
-[node name="LayoutPassives" type="Button" parent="Panel/MenuItemsContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
-theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
-text = "Layout Passives"
-
-[node name="Collection" type="Button" parent="Panel/MenuItemsContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
-theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
-text = "Collection"
+text = "Resume"
 
 [node name="Settings" type="Button" parent="Panel/MenuItemsContainer" unique_id=1838627620]
 layout_mode = 2
@@ -130,6 +110,26 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Settings"
 
+[node name="LayoutPassives" type="Button" parent="Panel/MenuItemsContainer" unique_id=360128381]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+text = "Layout Passives"
+
+[node name="Collection" type="Button" parent="Panel/MenuItemsContainer" unique_id=730216108]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+text = "Collection"
+
 [node name="MainMenu" type="Button" parent="Panel/MenuItemsContainer" unique_id=847775209]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
@@ -140,7 +140,8 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Main Menu"
 
-[node name="NewRun" type="Button" parent="Panel/MenuItemsContainer"]
+[node name="NewRun" type="Button" parent="Panel/MenuItemsContainer" unique_id=1982479467]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
@@ -150,20 +151,14 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "New Run"
 
-[node name="LayoutPassivesViewer" parent="Panel" instance=ExtResource("3_layout")]
+[node name="LayoutPassivesViewer" parent="Panel" unique_id=1694693761 instance=ExtResource("3_layout")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 
 [connection signal="pressed" from="Panel/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="Panel/MenuItemsContainer/Settings" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/LayoutPassives" to="." method="_on_layout_passives_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/Collection" to="." method="_on_collection_pressed"]
-[connection signal="pressed" from="Panel/MenuItemsContainer/Settings" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/NewRun" to="." method="_on_new_run_pressed"]
 [connection signal="closed" from="Panel/LayoutPassivesViewer" to="." method="_on_layout_passives_closed"]

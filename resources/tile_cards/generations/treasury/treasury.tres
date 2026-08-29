@@ -5,10 +5,11 @@
 
 [resource]
 script = ExtResource("1_ab01l")
-base_production_amount = 2
+base_production_amount = 6
+rarity = 1
 product = 1
 id = "treasury"
 name = "Treasury"
 icon = ExtResource("1_mv8hq")
-description = "+2 Energy for every Gold you have"
+description = "+6 Energy, plus +1 Energy for every Gold you have"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

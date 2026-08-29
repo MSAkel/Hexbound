@@ -13,3 +13,4 @@ trigger_order_display_name = "Top-left → bottom-right"
 trigger_order_description = "Cards activate from top-left to bottom-right across the map."
 trigger_order_preview = ExtResource("2_trigger_preview")
 segments_count = 7
+segment_sizes = Array[int]([4, 5, 6, 7, 6, 5, 4])

@@ -19,6 +19,8 @@ var _pending_run_seed: String = ""
 var _has_pending_run_seed := false
 ## Coalesces multiple committed actions in one frame into a single write.
 var _autosave_queued := false
+## Bumped when a save is discarded so an in-flight autosave cannot rewrite it.
+var _autosave_generation := 0
 ## Blocks checkpoints while restore_run is still applying panel state.
 var _is_restoring := false
 ## Prevents close_requested and WM_CLOSE_REQUEST from quitting twice.
@@ -105,7 +107,8 @@ func consume_pending_run_seed() -> Dictionary:
 
 
 func should_restore_run() -> bool:
-	return continue_run_pending
+	# A dangling Continue click must not restore after Play has already deleted the file.
+	return continue_run_pending and has_save()
 
 
 func clear_continue_run_pending() -> void:
@@ -115,6 +118,7 @@ func clear_continue_run_pending() -> void:
 func delete_save() -> void:
 	clear_continue_run_pending()
 	_autosave_queued = false
+	_autosave_generation += 1
 	SAVE_FILE.delete_all(SAVE_PATH)
 
 
@@ -165,23 +169,24 @@ func save_current_run() -> void:
 		push_error("RunSaveManager: failed to write run save.")
 
 
-func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
+func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	var payload := _load_save_payload()
 	if payload.is_empty():
 		push_error("RunSaveManager: no save data to restore.")
-		return
+		clear_continue_run_pending()
+		return false
 
 	if int(payload.get("version", 0)) != SAVE_VERSION:
 		push_error("RunSaveManager: unsupported save version.")
 		delete_save()
-		return
+		return false
 
 	var character_id: String = payload.get("character_id", "")
 	var character := PlayerCharacter.get_character_by_id(character_id)
 	if character == null:
 		push_error("RunSaveManager: unknown character id '%s'." % character_id)
 		delete_save()
-		return
+		return false
 
 	_is_restoring = true
 	GameManager.selected_character = character
@@ -204,9 +209,12 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> void:
 	RoundFlow.restore_after_load()
 	_restore_idle_rune_pick()
 	_is_restoring = false
+	return true
 
 
 func _can_save_now() -> bool:
+	if GameManager.skip_presentation:
+		return false
 	if _is_restoring:
 		return false
 	if GameManager.is_processing_turn:
@@ -219,7 +227,10 @@ func _can_save_now() -> bool:
 
 
 func _flush_autosave_next_frame() -> void:
+	var generation := _autosave_generation
 	await get_tree().process_frame
+	if generation != _autosave_generation:
+		return
 	_autosave_queued = false
 	save_current_run()
 

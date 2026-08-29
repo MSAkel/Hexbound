@@ -5,10 +5,10 @@
 
 [resource]
 script = ExtResource("2_eh6vm")
-base_production_amount = 3
+base_production_amount = 2
 product = 2
 id = "turn_up"
 name = "Turn Up"
 icon = ExtResource("1_eh6vm")
-description = "+3 Mult per current turn."
+description = "+2 Mult per current turn."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

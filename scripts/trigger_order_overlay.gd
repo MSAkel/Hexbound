@@ -50,12 +50,17 @@ func refresh_display_state() -> void:
 
 ## Sticky layout toggle or Tab peek. Shows every trigger index on top of the cards.
 func set_full_reveal(active: bool) -> void:
+	# Hover refreshes call this every cell change. Reapply only on a real on/off flip.
+	if _full_reveal == active:
+		return
 	_full_reveal = active
 	_apply_display_state()
 
 
-## Focus one segment. include_center hides the hovered placement tile while keeping neighbors.
+## Focus one segment. include_center false hides the hovered tile's number.
 func set_focus_coords(coords: Vector2i, include_center: bool = true) -> void:
+	if _focus_coords == coords and _focus_include_center == include_center:
+		return
 	_focus_coords = coords
 	_focus_include_center = include_center
 	_apply_display_state()
@@ -85,7 +90,7 @@ func _apply_display_state() -> void:
 		var marker: TriggerOrderMarker = _markers_by_coords[coords]
 		var in_focus_segment := coords in focus_segment
 		var is_focus_cell := coords == _focus_coords
-		# Placement preview can hide the hovered cell while still showing the rest of the segment.
+		# Full reveal, or this tile's segment. Numbers stay above hex fills.
 		var show_number := _full_reveal or (in_focus_segment and (_focus_include_center or not is_focus_cell))
 		marker.set_number_backdrop_visible(show_number and _coords_has_card(coords))
 		marker.set_number_visible(show_number)

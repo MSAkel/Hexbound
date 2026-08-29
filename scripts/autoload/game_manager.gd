@@ -4,7 +4,6 @@ extends Node
 
 signal game_speed_changed(new_speed: float)
 
-const SCORE_PROGRESSION := preload("res://resources/score_progression.tres")
 ## Number of runes in a rune pack, picked at the end of each turn
 const RUNES_PACK_SIZE := 3
 const MAX_TURNS_PER_ROUND := 5
@@ -40,7 +39,7 @@ var is_processing_turn: bool:
 #region Score and round progression
 
 ## Score needed to complete the current round and open the merchant.
-var required_score: int = SCORE_PROGRESSION.get_required_score(1)
+var required_score: int = ScoreProgression.get_required_score(1)
 
 ## total score earned in the current round. 
 var _total_round_score: int = 0
@@ -102,6 +101,9 @@ var _run_full_map_cards_achieved: bool = false
 
 #endregion
 
+## Headless playtests skip UI awaits, rune-pick panels, and round-flow screens.
+var skip_presentation: bool = false
+
 #region Game speed
 
 var _game_speed: float = 1.0
@@ -145,14 +147,20 @@ func finish_turn_processing() -> void:
 
 	total_round_score += turn_score
 	turn_score = 0
-	EventBus.round_score_commit_animation_requested.emit()
-	await _wait_for_round_score_count_finished()
-	await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
+	if not skip_presentation:
+		EventBus.round_score_commit_animation_requested.emit()
+		await _wait_for_round_score_count_finished()
+		await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
 
 	if _has_met_round_goal():
-		_complete_current_round()
+		if skip_presentation:
+			# RoundFlow waits on summary UI. Playtests record the clear and stop here.
+			pass
+		else:
+			_complete_current_round()
 	else:
-		UiManager.show_runes_choice_panel.emit()
+		if not skip_presentation:
+			UiManager.show_runes_choice_panel.emit()
 		EventBus.turn_started.emit()
 
 	if should_consume_turn:
@@ -233,7 +241,7 @@ func advance_round() -> void:
 
 ## Round-dependent state and HUD refresh, shared by the round advance and the debug start.
 func _apply_round_state() -> void:
-	required_score = SCORE_PROGRESSION.get_required_score(current_round)
+	required_score = ScoreProgression.get_required_score(current_round)
 	# Apply the challenge first so Rush Hour's reduced max is reflected in remaining turns.
 	ChallengeManager.on_round_advanced(current_round)
 	remaining_turns = get_max_turns_per_round()
@@ -437,7 +445,7 @@ func reset_for_new_run() -> void:
 	_total_rune_activations = 0
 	_remaining_turns = MAX_TURNS_PER_ROUND
 	_is_processing_turn = false
-	required_score = SCORE_PROGRESSION.get_required_score(current_round)
+	required_score = ScoreProgression.get_required_score(current_round)
 	_total_round_score = 0
 	_turn_score = 0
 	_activated_tile_cards_this_turn.clear()
@@ -503,7 +511,7 @@ func apply_run_state(state: Dictionary) -> void:
 	_total_rune_activations = int(state.get("total_rune_activations", 0))
 	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_ROUND))
 	_is_processing_turn = false
-	required_score = int(state.get("required_score", SCORE_PROGRESSION.get_required_score(current_round)))
+	required_score = int(state.get("required_score", ScoreProgression.get_required_score(current_round)))
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
 	turn_stamp = int(state.get("turn_stamp", 0))

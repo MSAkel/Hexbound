@@ -77,6 +77,7 @@ func _on_play_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 
 	# A fresh run replaces any saved session from a previous quit.
+	# delete_save also clears Continue-pending so main.tscn cannot restore that file.
 	RunSaveManager.delete_save()
 
 	# Character choice locks in layout rules for the entire run.

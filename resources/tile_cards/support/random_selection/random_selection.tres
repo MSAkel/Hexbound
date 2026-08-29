@@ -11,5 +11,5 @@ sigil_kind = 5
 id = "random_selection"
 name = "Random Selection"
 icon = ExtResource("1_ills5")
-description = "Triggers two random cards on a different segment"
+description = "Triggers two random cards on Downstream segments"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

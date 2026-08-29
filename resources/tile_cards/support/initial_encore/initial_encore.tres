@@ -12,5 +12,5 @@ placement_restriction = 2
 id = "initial_encore"
 name = "Initial Encore"
 icon = ExtResource("1_cffhq")
-description = "Triggers the first card of each segment after it. Must be placed on a first segment tile."
+description = "Triggers the first card of each Downstream segment. Must be placed on a first segment tile."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

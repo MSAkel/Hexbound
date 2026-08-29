@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/tile_cards/utilities/transposition/transposition.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+rarity = 1
+type = 2
+utility_target_count = 2
+id = "transposition"
+name = "Transposition"
+icon = ExtResource("1_icon")
+description = "Swap two placed cards"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

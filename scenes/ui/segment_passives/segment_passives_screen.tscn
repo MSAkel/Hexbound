@@ -213,6 +213,15 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
+[node name="SlotsLabel2" type="Label" parent="SafeArea/Page/Body/Sections/CenterColumn" unique_id=1059238735]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
+theme_override_font_sizes/font_size = 18
+text = "Drag a passive into any of the segmetns to 
+apply its effect to the segment"
+horizontal_alignment = 1
+
 [node name="MapHost" type="Control" parent="SafeArea/Page/Body/Sections/CenterColumn" unique_id=1040784302]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 360)

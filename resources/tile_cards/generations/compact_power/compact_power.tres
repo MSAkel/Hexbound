@@ -5,10 +5,11 @@
 
 [resource]
 script = ExtResource("2_d1fck")
-base_production_amount = 15
+base_production_amount = 6
+rarity = 1
 product = 2
 id = "compact_power"
 name = "Compact Power"
 icon = ExtResource("1_dmkn0")
-description = "+15 Mult if segment size is less than 6"
+description = "+6 Mult if segment size is less than 6"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/tile_cards/generations/backed_current/backed_current.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+base_production_amount = 20
+rarity = 1
+product = 1
+id = "backed_current"
+name = "Backed Current"
+icon = ExtResource("1_icon")
+description = "+20 Energy. If the previous card in trigger order is a Support, retrigger this card once"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

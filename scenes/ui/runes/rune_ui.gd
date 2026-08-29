@@ -48,13 +48,26 @@ const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
 
 func setup(rune: TileCard) -> void:
 	if not is_node_ready():
-		await ready
+		call_deferred("setup", rune)
+		return
 	
 	rune_button.texture_normal = rune.icon
 	# Role lives on the bottom chip. The corner sigil would duplicate producer icons.
 	if sigil != null:
 		sigil.hide()
 	refresh_output_chip(rune)
+
+
+## Ghost copy used while aiming a hand card. Same chip as a placed rune, no input.
+func prepare_placement_ghost() -> void:
+	mouse_filter = MOUSE_FILTER_IGNORE
+	if rune_button != null:
+		rune_button.mouse_filter = MOUSE_FILTER_IGNORE
+		rune_button.disabled = true
+	if hex_stroke != null:
+		hex_stroke.visible = false
+	if output_chip != null:
+		output_chip.mouse_filter = MOUSE_FILTER_IGNORE
 
 
 # Refresh the output chip after bonuses, chance, or progress change.

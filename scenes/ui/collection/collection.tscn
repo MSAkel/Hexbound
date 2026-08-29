@@ -144,7 +144,8 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 columns = 5
 
-[node name="Tooltip" parent="." instance=ExtResource("3_tooltip")]
+[node name="Tooltip" parent="." unique_id=1750094709 instance=ExtResource("3_tooltip")]
+layout_mode = 0
 
 [connection signal="pressed" from="PanelContainer/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="tab_changed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]

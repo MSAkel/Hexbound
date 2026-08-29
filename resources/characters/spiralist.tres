@@ -15,3 +15,4 @@ trigger_order_description = "Cards activate in a clockwise spiral, starting at t
 trigger_order_preview = ExtResource("2_trigger_preview")
 segment_key_strategy = 1
 segments_count = 4
+segment_sizes = Array[int]([1, 6, 12, 18])

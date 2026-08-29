@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/tile_cards/generations/long_line/long_line.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+rarity = 1
+product = 1
+id = "long_line"
+name = "Long Line"
+icon = ExtResource("1_icon")
+description = "+3 Energy per tile in this segment, up to 30"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,13 +1,13 @@
 extends TileCard
 
 const BASE_CHANCE := 0.03
-const SCORE_REWARD := 500
-const GOLD_REWARD := 3
+const SCORE_REWARD := 400
+const GOLD_REWARD := 8
 
 # Stacks +3% after each failed roll. Resets when a reward is generated.
 var current_chance: float = BASE_CHANCE
 
-# Free activation with a 3% stackable chance to gain 500 Energy or 3 gold. Resets on success.
+# Free activation with a 3% stackable chance to gain 400 Energy or 8 Gold. Resets on success.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var rng: RandomNumberGenerator = RunRng.create_card_effect_rng(tile, self)
 	if rng.randf() < current_chance:
@@ -27,5 +27,5 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 		"%d%%" % percent,
 		null,
 		get_chip_panel_color(),
-		"Chance for 500 Energy or 3 Gold"
+		"Chance for 400 Energy or 8 Gold"
 	)

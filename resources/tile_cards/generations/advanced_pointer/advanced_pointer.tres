@@ -5,11 +5,11 @@
 
 [resource]
 script = ExtResource("2_oa308")
-base_production_amount = 15
+base_production_amount = 14
 rarity = 1
 product = 1
 id = "advanced_pointer"
 name = "Advanced Pointer"
 icon = ExtResource("1_asyvl")
-description = "+15 Energy for every adjacent Energy card. +50 Energy if all adjacent tiles are Energy cards (Rework)"
+description = "+14 Energy per adjacent Downstream Energy card. +20 if 2 or more"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://dcro8ytjwl0xd"]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://c75gpxxvahck" path="res://resources/tile_cards/support/pair_bond/pair_bond.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+type = 1
+sigil_kind = 5
+id = "pair_bond"
+name = "Pair Bond"
+icon = ExtResource("1_icon")
+description = "Retrigger one adjacent Downstream card in this segment. Twice if that card is the same rarity"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -5,11 +5,11 @@
 
 [resource]
 script = ExtResource("2_13ivt")
-base_production_amount = 40
+base_production_amount = 28
 product = 1
 placement_restriction = 1
 id = "edge_card"
 name = "Edge Card"
 icon = ExtResource("1_42myd")
-description = "+40 Energy. Must be placed on an edge tile."
+description = "+28 Energy. Must be placed on an edge tile."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

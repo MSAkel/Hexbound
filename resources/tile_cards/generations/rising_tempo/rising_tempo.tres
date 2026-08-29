@@ -11,4 +11,5 @@ id = "rising_tempo"
 name = "Rising Tempo"
 icon = ExtResource("1_ud82v")
 description = "+5 Energy for every trigger on this segment so far this turn"
+starting_hand_eligible = true
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -6,7 +6,7 @@ extends Node2D
 var hover_ui: HexHoverUI
 var turn_resolver: HexTurnResolver
 
-@onready var tile_panel: TilePanel = $"../MainUI/TerrainTileUI"
+@onready var tile_panel: TilePanel = get_node_or_null("../MainUI/TerrainTileUI")
 @onready var base_layer: TileMapLayer = $BaseLayer
 @onready var trigger_order_overlay: TriggerOrderOverlay = $TriggerOrderOverlay
 @onready var segment_path_overlay: SegmentPathOverlay = $SegmentPathOverlay
@@ -28,8 +28,8 @@ const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
 const HOVERED_TILE_OVERLAY_MODULATE := Color(0.9, 0.9, 0.9, 0.45)
 # TileCard placement / trigger preview overlay on RuneHighlightOverlayLayer.
 const RUNE_HIGHLIGHT_SOURCE_ID := 0
-# Draw above hex tiles (0) and rune UI (resting 0, activation/reveal animations 10).
-const RUNE_HIGHLIGHT_LAYER_Z_INDEX := 20
+# Tile-shaped overlays sit under rune icons. Trigger-order numbers stay above at z 25.
+const TILE_OVERLAY_LAYER_Z_INDEX := 0
 # Disabled and fading-sector layers each expose a single tile on source 0.
 const OVERLAY_TILE_SOURCE_ID := 0
 
@@ -88,8 +88,9 @@ var _inspect_highlight_coords: Array[Vector2i] = []
 func _ready() -> void:
 	_layout = HexMapLayout.new()
 	_layout.setup(self)
-	# Keep the rune highlight above tiles and placed runes so segment/placement overlays stay visible.
-	rune_highlight_overlay_layer.z_index = RUNE_HIGHLIGHT_LAYER_Z_INDEX
+	# Hex fills stay under card icons. Order numbers on TriggerOrderOverlay sit above both.
+	rune_highlight_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
+	hovered_tile_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	hovered_tile_overlay_layer.self_modulate = HOVERED_TILE_OVERLAY_MODULATE
 	_apply_tile_spacing()
 	trigger_order_overlay.setup(self)
@@ -103,10 +104,12 @@ func _ready() -> void:
 	card_placement_handler.tile_map = self
 	add_child(card_placement_handler)
 
-	hover_ui = HexHoverUI.new()
-	hover_ui.name = "HoverUI"
-	add_child(hover_ui)
-	hover_ui.setup(self)
+	# Headless playtests have no TerrainTileUI. Hover setup would null-deref.
+	if tile_panel != null:
+		hover_ui = HexHoverUI.new()
+		hover_ui.name = "HoverUI"
+		add_child(hover_ui)
+		hover_ui.setup(self)
 
 	turn_resolver = HexTurnResolver.new()
 	turn_resolver.name = "TurnResolver"
@@ -220,8 +223,7 @@ func _refresh_trigger_order_overlay() -> void:
 	else:
 		var focus_cell := _get_map_focus_cell()
 		if focus_cell != Vector2i(-1, -1):
-			var include_center := _placement_preview_cell == Vector2i(-1, -1)
-			trigger_order_overlay.set_focus_coords(focus_cell, include_center)
+			trigger_order_overlay.set_focus_coords(focus_cell, true)
 		else:
 			trigger_order_overlay.clear_focus()
 	_refresh_segment_role_highlights()
@@ -259,6 +261,9 @@ func _refresh_segment_role_highlights() -> void:
 			var segment_index := get_segment_index(focus_cell)
 			if segment_index >= 0:
 				for hex: Hex in get_hexes_in_segment(segment_index):
+					# The placement ghost occupies this cell. Do not wash it with the hex fill.
+					if hex.coordinates == _placement_preview_cell:
+						continue
 					_stamp_segment_role_selection(hex.coordinates)
 
 	_refresh_hovered_tile_emphasis()
@@ -286,6 +291,9 @@ func _refresh_hovered_tile_emphasis() -> void:
 	hovered_tile_overlay_layer.clear()
 	var emphasis_cell := _get_map_focus_cell()
 	if emphasis_cell == Vector2i(-1, -1):
+		return
+	# Placement ghost already marks this tile. A fill here tints the icon.
+	if emphasis_cell == _placement_preview_cell:
 		return
 	if not is_in_map(emphasis_cell) or not is_tile_interactable(emphasis_cell):
 		return
@@ -424,6 +432,38 @@ func count_all_occupied_adjacent_tile_cards(coords: Vector2i, rune_type: Variant
 func get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	var result: Array[TileCard] = []
 	for hex: Hex in get_all_adjacent_hexes(tile.coordinates):
+		if hex.active_tile_card == null:
+			continue
+		if not is_tile_card_triggerable(hex):
+			continue
+		if filter_type != null and hex.active_tile_card.type != filter_type:
+			continue
+		result.append(hex.active_tile_card)
+	return result
+
+
+## Adjacent hexes that activate after this tile in trigger order, including empty tiles.
+## Returned earliest-first so the first adjacent Downstream card is always result[0].
+func get_downstream_adjacent_hexes(tile: Hex) -> Array[Hex]:
+	var result: Array[Hex] = []
+	var self_index := _get_hex_trigger_order_index(tile)
+	if self_index < 0:
+		return result
+	var neighbors := get_all_adjacent_hexes(tile.coordinates)
+	for hex: Hex in get_hexes_in_trigger_order():
+		if hex == tile:
+			continue
+		if not neighbors.has(hex):
+			continue
+		if _get_hex_trigger_order_index(hex) > self_index:
+			result.append(hex)
+	return result
+
+
+## Occupied adjacent Downstream hexes, optionally filtered by card type.
+func get_downstream_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	for hex: Hex in get_downstream_adjacent_hexes(tile):
 		if hex.active_tile_card == null:
 			continue
 		if not is_tile_card_triggerable(hex):
@@ -621,6 +661,66 @@ func get_all_tile_cards_on_segment(segment_index: int, filter_type: Variant = nu
 ## All placed runes on other segments, optionally filtered by rune type.
 func get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return _layout.get_all_tile_cards_on_other_segments(tile, filter_type)
+
+
+## Cards on segments after this tile's segment.
+func get_all_tile_cards_on_later_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	var current_index := get_segment_index(tile.coordinates)
+	var result: Array[TileCard] = []
+	if current_index < 0:
+		return result
+	for segment_index in range(current_index + 1, get_segment_count()):
+		for card: TileCard in get_all_tile_cards_on_segment(segment_index, filter_type):
+			result.append(card)
+	return result
+
+
+## Playable tiles in a segment that currently have no card.
+## A placement-preview cell counts as occupied so hover chips match the tile after you drop.
+func get_empty_tile_count_in_segment(segment_index: int) -> int:
+	var empty := 0
+	for hex: Hex in get_hexes_in_segment(segment_index):
+		if hex.is_disabled_by_difficulty:
+			continue
+		if hex.coordinates == _placement_preview_cell:
+			continue
+		if hex.active_tile_card == null:
+			empty += 1
+	return empty
+
+
+func mark_segment_resolved(segment_index: int) -> void:
+	_layout.mark_segment_resolved(segment_index)
+
+
+func is_segment_resolved(segment_index: int) -> bool:
+	return _layout.is_segment_resolved(segment_index)
+
+
+func mark_segment_received_relay(segment_index: int) -> void:
+	_layout.mark_segment_received_relay(segment_index)
+
+
+func count_segments_that_received_relay() -> int:
+	return _layout.count_segments_that_received_relay()
+
+
+func get_segment_breaks(segment_index: int) -> int:
+	return _layout.get_segment_breaks(segment_index)
+
+
+## Records a break on the card's segment and notifies remaining cards on that line.
+func notify_card_broke(tile_card: TileCard) -> void:
+	var hex := get_hex_for_tile_card(tile_card)
+	if hex == null:
+		return
+	var segment_index := get_segment_index(hex.coordinates)
+	_layout.add_segment_break(segment_index)
+	for other: Hex in get_hexes_in_segment(segment_index):
+		var card := other.active_tile_card
+		if card == null or card == tile_card:
+			continue
+		card.on_other_segment_card_broke(tile_card, other)
 
 ## Number of character-specific segments on the current map.
 func get_segment_count() -> int:
@@ -1008,6 +1108,20 @@ func get_hex_for_tile_card(rune: TileCard) -> Hex:
 		if hex.active_tile_card == rune:
 			return hex
 	return null
+
+
+## Moves two placed cards onto each other's tiles without duplicating their resources.
+func swap_placed_tile_cards(hex_a: Hex, hex_b: Hex) -> void:
+	if hex_a == null or hex_b == null or hex_a == hex_b:
+		return
+	var card_a := hex_a.active_tile_card
+	var card_b := hex_b.active_tile_card
+	if card_a == null or card_b == null:
+		return
+	hex_a.remove_tile_card()
+	hex_b.remove_tile_card()
+	hex_a.restore_placed_tile_card(card_b)
+	hex_b.restore_placed_tile_card(card_a)
 
 
 ## Removes a placed rune from its tile and cancels queued triggers targeting it.

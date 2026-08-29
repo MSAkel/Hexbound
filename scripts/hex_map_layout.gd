@@ -29,6 +29,12 @@ var _segment_turn_multiplier: Array[float] = []
 var _segment_turn_gold: Array[int] = []
 # Completed tile card activations on each segment during the current turn.
 var _segment_turn_triggers: Array[int] = []
+# True after a segment's natural trigger pass has finished this turn.
+var _segment_resolved: Array[bool] = []
+# True when another segment relayed Energy or Mult into this one this turn.
+var _segment_received_relay: Array[bool] = []
+# Cards that actually broke on each segment this turn.
+var _segment_breaks: Array[int] = []
 
 
 ## Binds this layout helper to a live map instance.
@@ -227,12 +233,18 @@ func reset_turn_results() -> void:
 	_segment_turn_multiplier.resize(segment_count)
 	_segment_turn_gold.resize(segment_count)
 	_segment_turn_triggers.resize(segment_count)
+	_segment_resolved.resize(segment_count)
+	_segment_received_relay.resize(segment_count)
+	_segment_breaks.resize(segment_count)
 	for i in segment_count:
 		_segment_turn_scores[i] = 0
 		# Base multiplier is 1 so score is unchanged when no mult runes fire in a segment.
 		_segment_turn_multiplier[i] = 1.0
 		_segment_turn_gold[i] = 0
 		_segment_turn_triggers[i] = 0
+		_segment_resolved[i] = false
+		_segment_received_relay[i] = false
+		_segment_breaks[i] = 0
 
 
 # Adds score produced by a rune on the given segment index.
@@ -281,6 +293,50 @@ func get_segment_turn_trigger_count(segment_index: int) -> int:
 	if segment_index < 0 or segment_index >= _segment_turn_triggers.size():
 		return 0
 	return _segment_turn_triggers[segment_index]
+
+
+func mark_segment_resolved(segment_index: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_resolved.size():
+		return
+	_segment_resolved[segment_index] = true
+
+
+func is_segment_resolved(segment_index: int) -> bool:
+	if segment_index < 0 or segment_index >= _segment_resolved.size():
+		return false
+	return _segment_resolved[segment_index]
+
+
+func mark_segment_received_relay(segment_index: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_received_relay.size():
+		return
+	_segment_received_relay[segment_index] = true
+
+
+func did_segment_receive_relay(segment_index: int) -> bool:
+	if segment_index < 0 or segment_index >= _segment_received_relay.size():
+		return false
+	return _segment_received_relay[segment_index]
+
+
+func count_segments_that_received_relay() -> int:
+	var count := 0
+	for received: bool in _segment_received_relay:
+		if received:
+			count += 1
+	return count
+
+
+func add_segment_break(segment_index: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_breaks.size():
+		return
+	_segment_breaks[segment_index] += 1
+
+
+func get_segment_breaks(segment_index: int) -> int:
+	if segment_index < 0 or segment_index >= _segment_breaks.size():
+		return 0
+	return _segment_breaks[segment_index]
 
 
 func capture_turn_results() -> Dictionary:

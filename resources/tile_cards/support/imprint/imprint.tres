@@ -10,5 +10,5 @@ type = 1
 id = "imprint"
 name = "Imprint"
 icon = ExtResource("1_gs6j3")
-description = "Gains the effect of the last two cards before it"
+description = "Copies the effects of the two tiles directly before this one"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
