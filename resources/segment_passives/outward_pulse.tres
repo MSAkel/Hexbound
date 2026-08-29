@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://c0eef6ut1vtcx" path="res://assets/passives/icons/empowered_output.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 31
+threshold = 9
+character_id = "spiralist"
+description = "The Spiralist level 9"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "outward_pulse"
+character_id = "spiralist"
+display_name = "Outward Pulse"
+description = "After the immediately inner ring resolves, the first Producer in this ring is Empowered. Once per turn."
+icon = ExtResource("3_icon")
+tile_cost = 3
+max_copies = 1
+effect_type = 26
+effect_value = 1.0
+unlock_condition = SubResource("UnlockCondition_main")

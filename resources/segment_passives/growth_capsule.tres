@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://8cwr6rhuf56k"]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive"]
+[ext_resource type="Texture2D" uid="uid://ctwtbu880drr1" path="res://assets/passives/icons/locked_modifier.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_growth_capsule"]
+script = ExtResource("1_unlock")
+condition_type = 7
+description = "Trigger the same card 15 times in one run on a one-tile segment"
+
+[resource]
+script = ExtResource("2_passive")
+id = "growth_capsule"
+display_name = "Growth Capsule"
+description = "Every third activation grants +5% personal output for this run, capped at +30%."
+icon = ExtResource("3_icon")
+effect_type = 15
+effect_value = 0.05
+unlock_condition = SubResource("UnlockCondition_growth_capsule")

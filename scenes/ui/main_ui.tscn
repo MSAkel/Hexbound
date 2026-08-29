@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
 [ext_resource type="PackedScene" uid="uid://casabnpm08k0k" path="res://scenes/ui/tutorial/tutorial_text_container.tscn" id="17_tutorial"]
+[ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -65,6 +66,11 @@ visible = false
 
 [node name="SettingsContainer" parent="." unique_id=897472805 instance=ExtResource("14_8s2gp")]
 visible = false
+
+[node name="Collection" parent="." instance=ExtResource("18_collection")]
+unique_name_in_owner = true
+visible = false
+z_index = 120
 
 [node name="RoundCompleteScreen" parent="." unique_id=142012728 instance=ExtResource("13_m82f4")]
 visible = false

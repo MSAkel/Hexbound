@@ -29,7 +29,7 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -288.0
-offset_top = -560.0
+offset_top = -596.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_tools")
@@ -73,6 +73,25 @@ tooltip_text = "Changing character restarts the run."
 [node name="CompleteRoundButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=40927998]
 layout_mode = 2
 text = "Complete round"
+
+[node name="RoundJumpRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=40927999]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="JumpRoundSpinBox" type="SpinBox" parent="ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow" unique_id=40928000]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 100.0
+value = 1.0
+rounded = true
+allow_greater = true
+tooltip_text = "Skip straight to this round without playing the rounds in between."
+
+[node name="JumpRoundButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow" unique_id=40928001]
+layout_mode = 2
+text = "Jump to round"
 
 [node name="PassTurnButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=186988538]
 layout_mode = 2
@@ -215,6 +234,7 @@ columns = 6
 [connection signal="item_selected" from="ToolsPanel/MarginContainer/VBoxContainer/CharacterRow/CharacterOption" to="." method="_on_character_option_item_selected"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/SeedRow/CopySeedButton" to="." method="_on_copy_seed_button_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton" to="." method="_on_complete_round_pressed"]
+[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow/JumpRoundButton" to="." method="_on_jump_round_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton" to="." method="_on_pass_turn_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
 [connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PickCardButton" to="." method="_on_pick_card_pressed"]

@@ -2,6 +2,7 @@ extends Control
 
 @onready var run_stats_panel: PanelContainer = $RunStatsPanel
 @onready var played_as_label: Label = $RunStatsPanel/VBoxContainer/PlayedAsLabel
+@onready var layout_xp_bar: LayoutXpBar = %LayoutXpBar
 @onready var highest_score_value: Label = $RunStatsPanel/VBoxContainer/HighestScoreValue
 @onready var round_value: Label = $RunStatsPanel/VBoxContainer/RoundValue
 @onready var gold_earned_value: Label = $RunStatsPanel/VBoxContainer/GoldEarnedValue
@@ -27,6 +28,14 @@ func _on_all_challenges_completed() -> void:
 	seed_value.text = RunRng.get_display_seed()
 	UiManager.show_panel(self)
 	_play_entrance_animation()
+	# Victory XP is committed when leaving to the menu. Preview the grant here.
+	var from_xp := 0
+	if GameManager.selected_character != null:
+		from_xp = MetaProgressionManager.get_layout_xp(GameManager.selected_character.id)
+	var xp_gain := MetaProgressionManager.get_layout_xp_gain_from_snapshot(
+		GameManager.build_run_snapshot(true)
+	)
+	layout_xp_bar.play_gain(from_xp, xp_gain, 0.65)
 
 
 func _play_entrance_animation() -> void:

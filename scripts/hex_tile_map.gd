@@ -604,6 +604,10 @@ func get_segment_size(segment_index: int) -> int:
 	return _layout.get_segment_size(segment_index)
 
 
+func build_segments() -> Array[Array]:
+	return _layout.build_segments()
+
+
 ## All placed runes on the same segment as tile, optionally filtered by rune type.
 func get_all_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return _layout.get_all_tile_cards_on_segment(get_segment_index(tile.coordinates), filter_type)
@@ -663,13 +667,13 @@ func add_turn_score_for_segment(segment_index: int, amount: int) -> void:
 
 
 ## Records multiplier produced by a rune on its tile's segment.
-func add_turn_multiplier_for_tile(tile: Hex, amount: int) -> void:
+func add_turn_multiplier_for_tile(tile: Hex, amount: float) -> void:
 	add_turn_multiplier_for_segment(get_segment_index(tile.coordinates), amount)
 
 
 ## Records multiplier on a segment by index. Used when a card credits another segment.
-func add_turn_multiplier_for_segment(segment_index: int, amount: int) -> void:
-	if amount == 0:
+func add_turn_multiplier_for_segment(segment_index: int, amount: float) -> void:
+	if is_zero_approx(amount):
 		return
 
 	_layout.add_segment_turn_multiplier(segment_index, amount)
@@ -706,11 +710,12 @@ func _emit_segment_turn_results_changed(segment_index: int, use_passive_adjustme
 			gold
 		)
 		return
-	EventBus.segment_turn_results_changed.emit(segment_index, score, multiplier, score * multiplier, gold)
+	EventBus.segment_turn_results_changed.emit(segment_index, score, multiplier, int(round(float(score) * multiplier)), gold)
 
 
 ## Each segment scores independently (Energy x Mult), then products are summed for the turn.
 func _apply_segment_turn_totals_to_game_manager() -> void:
+	GameManager.passive_runtime.on_turn_resolved(self)
 	var total := 0
 	var contributions: Array[int] = []
 	for segment_index in get_segment_count():
@@ -737,7 +742,7 @@ func get_segment_turn_score(segment_index: int) -> int:
 	return _layout.get_segment_turn_score(segment_index)
 
 
-func get_segment_turn_multiplier(segment_index: int) -> int:
+func get_segment_turn_multiplier(segment_index: int) -> float:
 	return _layout.get_segment_turn_multiplier(segment_index)
 
 func get_segment_turn_gold(segment_index: int) -> int:
@@ -1182,6 +1187,8 @@ func _serialize_placed_tile_card(rune: TileCard) -> Dictionary:
 		"activation_count": rune.activation_count,
 		"is_active": rune.is_active,
 		"bonus_production_amount": rune.bonus_production_amount,
+		"personal_output_bonus": rune.personal_output_bonus,
+		"run_trigger_count": rune.run_trigger_count,
 		"is_empowered": rune.is_empowered,
 	}
 	return data
@@ -1195,7 +1202,9 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	var rune := template.duplicate(true)
 	rune.activation_count = int(data.get("activation_count", 0))
 	rune.is_active = bool(data.get("is_active", true))
-	rune.bonus_production_amount = int(data.get("bonus_production_amount", 0))
+	rune.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
+	rune.personal_output_bonus = float(data.get("personal_output_bonus", 0.0))
+	rune.run_trigger_count = int(data.get("run_trigger_count", 0))
 	rune.is_empowered = bool(data.get("is_empowered", false))
 	return rune
 

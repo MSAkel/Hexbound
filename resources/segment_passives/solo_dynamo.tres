@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://c4jtcbxdocryv" path="res://assets/passives/icons/steady_growth.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 25
+threshold = 80
+description = "80 activations on one-tile segments"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "solo_dynamo"
+display_name = "Solo Dynamo"
+description = "On a one-tile segment, that card's Energy, Mult, or Gold output +30%."
+icon = ExtResource("3_icon")
+tile_cost = 1
+max_copies = 1
+effect_type = 17
+effect_value = 0.3
+unlock_condition = SubResource("UnlockCondition_main")

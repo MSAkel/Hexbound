@@ -11,7 +11,7 @@ var segment_index: int = -1
 @onready var segment_total_score: Label = $HBoxContainer/ScoreContainer/SegmentTotalScore
 
 var _score: int = 0
-var _multiplier: int = 1
+var _multiplier: float = 1.0
 var _total_score: int = 0
 ## Live resolve hides Score until this segment's reveal beat.
 var _score_revealed: bool = true
@@ -46,10 +46,9 @@ func _ready() -> void:
 	_power_counter = _make_stat_counter(segment_power)
 	_multiplier_counter = CountingNumber.new(
 		self,
-		func(_text: String) -> void: pass,
-		false,
-		func(as_int: int) -> void: _apply_multiplier_display(as_int)
+		func(text: String) -> void: segment_multiplier.text = text
 	)
+	_multiplier_counter.set_format_as_mult(true)
 	_total_score_counter = CountingNumber.new(
 		self,
 		func(_text: String) -> void: pass,
@@ -95,7 +94,7 @@ func set_accepts_live_updates(enabled: bool) -> void:
 
 func apply_turn_snapshot(
 	score: int,
-	multiplier: int,
+	multiplier: float,
 	total_score: int,
 	animate: bool = true,
 	reveal_score: bool = true
@@ -126,13 +125,25 @@ func _sync_from_tile_map() -> void:
 func _on_segment_turn_results_changed(
 	changed_index: int,
 	score: int,
-	multiplier: int,
+	multiplier: float,
 	_total_score: int,
 	_ignored_reward: int
 ) -> void:
 	if not _accepts_live_updates or changed_index != segment_index:
 		return
-	# Keep Score hidden until the equals beat; factors continue updating live.
+	# After Score starts counting, do not restart that tween. Turn resolve awaits it.
+	if _is_revealing and _score_revealed:
+		_score = score
+		_multiplier = multiplier
+		_play_counter(_power_counter, score, segment_power)
+		var idle_mult := multiplier <= 1.0 + 0.0001 and score == 0 and _total_score == 0
+		if idle_mult:
+			_multiplier_counter.snap_to(multiplier)
+		else:
+			_play_counter(_multiplier_counter, multiplier, segment_multiplier)
+		_apply_multiplier_display(multiplier)
+		return
+	# Keep Score hidden until the equals beat. Factors continue updating live.
 	_apply_results(score, multiplier, 0)
 
 
@@ -180,7 +191,7 @@ func _on_segment_reveal_ended() -> void:
 ## Stores the latest factors and payoff, then refreshes the row labels.
 func _apply_results(
 	score: int,
-	multiplier: int,
+	multiplier: float,
 	total_score: int,
 	animate: bool = true
 ) -> void:
@@ -190,7 +201,11 @@ func _apply_results(
 
 	if animate:
 		_play_counter(_power_counter, score, segment_power)
-		_play_counter(_multiplier_counter, multiplier, segment_multiplier)
+		var idle_mult := multiplier <= 1.0 + 0.0001 and score == 0 and total_score == 0
+		if idle_mult:
+			_multiplier_counter.snap_to(multiplier)
+		else:
+			_play_counter(_multiplier_counter, multiplier, segment_multiplier)
 		if _score_revealed:
 			_play_counter(_total_score_counter, total_score, segment_total_score)
 		else:
@@ -215,12 +230,12 @@ func _format_stat(value: int) -> String:
 	return "-" if value == 0 else CountingNumber.format_int(value)
 
 
-func _apply_multiplier_display(multiplier: int) -> void:
+func _apply_multiplier_display(multiplier: float) -> void:
 	var has_activity := _score > 0 or _total_score > 0
-	if multiplier <= 1 and not has_activity:
+	if multiplier <= 1.0 + 0.0001 and not has_activity:
 		segment_multiplier.text = "-"
 	else:
-		segment_multiplier.text = CountingNumber.format_int(multiplier)
+		segment_multiplier.text = CountingNumber.format_mult(multiplier)
 
 
 func _apply_score_style(value: int) -> void:
@@ -281,10 +296,10 @@ func _apply_row_style(intensity: float, score_color: Color) -> void:
 	_row_style.shadow_color = Color(1.0, 0.72, 0.2, 0.35 if _is_revealing else 0.0)
 
 
-func _play_counter(counter: CountingNumber, target: int, punch_target: Control) -> void:
+func _play_counter(counter: CountingNumber, target: float, punch_target: Control) -> void:
 	var tween := counter.play(target)
 	if tween != null:
-		var intensity := ScoreReadoutStyle.intensity_for_score(target)
+		var intensity := ScoreReadoutStyle.intensity_for_score(int(round(target)))
 		var punch_scale := lerpf(SCORE_PUNCH_MIN, SCORE_PUNCH_MAX, intensity)
 		if punch_target != segment_total_score:
 			punch_scale = lerpf(1.08, 1.16, intensity)
@@ -292,14 +307,25 @@ func _play_counter(counter: CountingNumber, target: int, punch_target: Control) 
 
 
 func _await_counter_tween(counter_tween: Tween) -> void:
-	if counter_tween != null and counter_tween.is_valid():
-		await counter_tween.finished
+	await _await_tween_finished(counter_tween)
 
 
 func _await_punch_tween(punch_target: Control) -> void:
 	var punch_tween: Variant = _punch_tweens.get(punch_target)
-	if punch_tween is Tween and (punch_tween as Tween).is_valid():
-		await (punch_tween as Tween).finished
+	if punch_tween is Tween:
+		await _await_tween_finished(punch_tween as Tween)
+
+
+## Awaits a tween without hanging if it already finished or was killed.
+## Tween.finished does not fire again after completion, and kill() never emits it.
+func _await_tween_finished(tween: Tween) -> void:
+	if tween == null:
+		return
+	while tween.is_valid():
+		if tween.is_running() or get_tree().paused:
+			await get_tree().process_frame
+			continue
+		return
 
 
 func _punch(control: Control, punch_scale: float) -> void:

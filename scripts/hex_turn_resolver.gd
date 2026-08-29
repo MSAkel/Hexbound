@@ -9,6 +9,10 @@ const TILE_ACTIVATION_PACE_DELAY := 0.5
 const SEGMENT_REVEAL_PAUSE := 0.35
 # Keep in sync with RuneUI segment reveal highlight and fade durations.
 const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
+## Fallback if the score-breakdown row never emits count-finished (killed or already-done tween).
+const SEGMENT_SCORE_COUNT_TIMEOUT := 2.0
+## Fallback if the turn-total footer never emits count-finished.
+const TURN_TOTAL_COUNT_TIMEOUT := 2.0
 ## Extra hold on the first scoring row during the tutorial.
 const TUTORIAL_SCORE_LINGER := 0.55
 
@@ -173,15 +177,37 @@ func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
 	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
 
 
+## Waits for this segment's Score count. Times out so a missed UI signal cannot stall the turn.
 func _wait_for_segment_score_count_finished(segment_index: int) -> void:
-	while true:
-		var finished_index: int = await EventBus.segment_score_count_finished
+	var state := {"done": false}
+	var on_finished := func(finished_index: int) -> void:
 		if finished_index == segment_index:
-			return
+			state.done = true
+	EventBus.segment_score_count_finished.connect(on_finished)
+	var timer := GameManager.create_pauseable_timer(
+		SEGMENT_SCORE_COUNT_TIMEOUT / GameManager.game_speed
+	)
+	timer.timeout.connect(func() -> void: state.done = true)
+	while not state.done and is_inside_tree():
+		await get_tree().process_frame
+	if EventBus.segment_score_count_finished.is_connected(on_finished):
+		EventBus.segment_score_count_finished.disconnect(on_finished)
 
 
+## Waits for the turn-total footer count. Times out so a missed UI signal cannot stall the turn.
 func _wait_for_turn_total_count_finished() -> void:
-	await EventBus.turn_total_count_finished
+	var state := {"done": false}
+	var on_finished := func() -> void:
+		state.done = true
+	EventBus.turn_total_count_finished.connect(on_finished)
+	var timer := GameManager.create_pauseable_timer(
+		TURN_TOTAL_COUNT_TIMEOUT / GameManager.game_speed
+	)
+	timer.timeout.connect(func() -> void: state.done = true)
+	while not state.done and is_inside_tree():
+		await get_tree().process_frame
+	if EventBus.turn_total_count_finished.is_connected(on_finished):
+		EventBus.turn_total_count_finished.disconnect(on_finished)
 
 
 ## First scoring beat in an active tutorial holds longer so the output row can be read.

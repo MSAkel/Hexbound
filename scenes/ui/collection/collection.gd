@@ -2,6 +2,8 @@ extends Panel
 
 ## Collection screen for browsing every rune, character, challenge, and passive in the game.
 
+signal closed
+
 @onready var tab_bar: TabBar = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar
 @onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
 
@@ -237,4 +239,10 @@ func _on_tab_bar_tab_changed(tab: int) -> void:
 
 
 func _on_back_button_pressed() -> void:
-	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)
+	AudioManager.play_sfx(UISounds.CLICK)
+	EventBus.toggle_tooltip.emit(false, "")
+	# Scene root goes back to the main menu. Overlay instances return to the host.
+	if get_tree().current_scene == self:
+		get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)
+		return
+	closed.emit()

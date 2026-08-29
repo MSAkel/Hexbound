@@ -128,14 +128,25 @@ func _store_land_tween(target: Control, tween: Tween) -> void:
 
 
 func _await_counter_tween(counter_tween: Tween) -> void:
-	if counter_tween != null and counter_tween.is_valid():
-		await counter_tween.finished
+	await _await_tween_finished(counter_tween)
 
 
 func _await_land_tween(land_target: Control) -> void:
 	var land_tween: Variant = _land_tweens.get(land_target)
-	if land_tween is Tween and (land_tween as Tween).is_valid():
-		await (land_tween as Tween).finished
+	if land_tween is Tween:
+		await _await_tween_finished(land_tween as Tween)
+
+
+## Awaits a tween without hanging if it already finished or was killed.
+## Tween.finished does not fire again after completion, and kill() never emits it.
+func _await_tween_finished(tween: Tween) -> void:
+	if tween == null:
+		return
+	while tween.is_valid():
+		if tween.is_running() or get_tree().paused:
+			await get_tree().process_frame
+			continue
+		return
 
 
 func _exit_tree() -> void:

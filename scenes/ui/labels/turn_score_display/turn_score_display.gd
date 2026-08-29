@@ -97,7 +97,7 @@ func _draw() -> void:
 func present_segment(
 	segment_index: int,
 	energy: int,
-	multiplier: int,
+	multiplier: float,
 	product: int,
 	linger_extra: bool = false
 ) -> void:
@@ -105,7 +105,7 @@ func present_segment(
 	segment_title.text = "Segment %d" % (segment_index + 1)
 	segment_title.modulate = Color.WHITE
 	_set_score_line(
-		"%s x %s" % [CountingNumber.format_int(energy), CountingNumber.format_int(multiplier)],
+		"%s x %s" % [CountingNumber.format_int(energy), CountingNumber.format_mult(multiplier)],
 		float(ScoreReadoutStyle.font_size_for_score(product)) * FACTOR_FONT_SCALE
 	)
 	show()

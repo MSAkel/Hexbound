@@ -44,7 +44,8 @@ func _exit_tree() -> void:
 func open_for_character(character: CharacterDefinition) -> void:
 	_character = character
 	_active_set_id = MetaProgressionManager.get_selected_set_id(character.id)
-	subtitle_label.text = character.display_name.to_upper()
+	var layout_level := MetaProgressionManager.get_layout_level(character.id)
+	subtitle_label.text = "%s  ·  LAYOUT LEVEL %d" % [character.display_name.to_upper(), layout_level]
 	if MetaProgressionManager.is_ui_sandbox():
 		subtitle_label.text = "SANDBOX  ·  %s" % character.display_name.to_upper()
 	_selected_segment_index = -1
@@ -337,37 +338,12 @@ func _build_placed_row(passive: SegmentPassive, list_index: int) -> HBoxContaine
 	return row
 
 
-## Collapses placed passives into one readable line per effect type.
+## Collapses placed passives into one readable line per placement.
 func _build_effect_lines(passives: Array[SegmentPassive]) -> Array[String]:
-	var score_mult := 0.0
-	var score_flat := 0.0
-	var support_retrigger := 0.0
-	var power_output := 0.0
-	var production_retrigger := 0.0
-	for passive in passives:
-		match passive.effect_type:
-			SegmentPassive.EffectType.SEGMENT_SCORE_MULT:
-				score_mult += passive.effect_value
-			SegmentPassive.EffectType.SEGMENT_SCORE_FLAT:
-				score_flat += passive.effect_value
-			SegmentPassive.EffectType.SUPPORT_RETRIGGER:
-				support_retrigger += passive.effect_value
-			SegmentPassive.EffectType.CARD_OUTPUT_MULT:
-				power_output += passive.effect_value
-			SegmentPassive.EffectType.PRODUCTION_RETRIGGER:
-				production_retrigger += passive.effect_value
-
 	var lines: Array[String] = []
-	if score_mult > 0.0:
-		lines.append("+%d%% Score" % int(round(score_mult * 100.0)))
-	if score_flat > 0.0:
-		lines.append("+%d Power each turn" % int(score_flat))
-	if power_output > 0.0:
-		lines.append("+%d%% Power output" % int(round(power_output * 100.0)))
-	if support_retrigger > 0.0:
-		lines.append("Support cards: %d%% retrigger" % int(round(support_retrigger * 100.0)))
-	if production_retrigger > 0.0:
-		lines.append("Production cards: %d%% retrigger" % int(round(production_retrigger * 100.0)))
+	for passive in passives:
+		if not passive.description.is_empty():
+			lines.append(passive.description)
 	return lines
 
 

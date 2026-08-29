@@ -177,7 +177,7 @@ func _apply_snapshot(snapshot: Dictionary, animate: bool) -> void:
 		var segment_data: Dictionary = segments[segment_index]
 		child.apply_turn_snapshot(
 			int(segment_data.get("score", 0)),
-			int(segment_data.get("multiplier", 1)),
+			float(segment_data.get("multiplier", 1.0)),
 			int(segment_data.get("total_score", 0)),
 			animate
 		)
@@ -201,7 +201,7 @@ func _sync_rows_from_tile_map(animate: bool) -> void:
 		var segment_index: int = child.segment_index
 		var score := tile_map.get_segment_turn_score(segment_index)
 		var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
-		child.apply_turn_snapshot(score, multiplier, score * multiplier, animate, false)
+		child.apply_turn_snapshot(score, multiplier, int(round(float(score) * multiplier)), animate, false)
 
 	_score_total_counter.snap_to(_live_revealed_score)
 
@@ -287,14 +287,25 @@ func _store_land_tween(target: Control, tween: Tween) -> void:
 
 
 func _await_counter_tween(counter_tween: Tween) -> void:
-	if counter_tween != null and counter_tween.is_valid():
-		await counter_tween.finished
+	await _await_tween_finished(counter_tween)
 
 
 func _await_punch_tween(punch_target: Control) -> void:
 	var punch_tween: Variant = _punch_tweens.get(punch_target)
-	if punch_tween is Tween and (punch_tween as Tween).is_valid():
-		await (punch_tween as Tween).finished
+	if punch_tween is Tween:
+		await _await_tween_finished(punch_tween as Tween)
+
+
+## Awaits a tween without hanging if it already finished or was killed.
+## Tween.finished does not fire again after completion, and kill() never emits it.
+func _await_tween_finished(tween: Tween) -> void:
+	if tween == null:
+		return
+	while tween.is_valid():
+		if tween.is_running() or get_tree().paused:
+			await get_tree().process_frame
+			continue
+		return
 
 
 func _shake_screen(value: int) -> void:

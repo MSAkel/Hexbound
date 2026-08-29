@@ -1,21 +1,24 @@
-[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://c542y5rlsp03d"]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
 
 [ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
 [ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
 [ext_resource type="Texture2D" uid="uid://c4jtcbxdocryv" path="res://assets/passives/icons/steady_growth.png" id="3_icon"]
 
-[sub_resource type="Resource" id="UnlockCondition_steady"]
+[sub_resource type="Resource" id="UnlockCondition_main"]
 script = ExtResource("1_unlock_script")
-condition_type = 1
-threshold = 1
-description = "Win a run"
+condition_type = 12
+threshold = 3
+difficulty_level = 3
+description = "Win a run on Difficulty 3"
 
 [resource]
 script = ExtResource("2_passive_script")
-id = "steady_growth"
-display_name = "Steady Growth"
-description = "+5 power each turn in this segment."
+id = "energy_amplifier"
+display_name = "Energy Amplifier"
+description = "Energy cards on this segment produce +10% Energy."
 icon = ExtResource("3_icon")
-effect_type = 1
-effect_value = 5.0
-unlock_condition = SubResource("UnlockCondition_steady")
+tile_cost = 2
+max_copies = 1
+effect_type = 0
+effect_value = 0.1
+unlock_condition = SubResource("UnlockCondition_main")

@@ -1,7 +1,8 @@
 extends Resource
 class_name PlayerCharacter
 
-# Registry for playable character definitions loaded from resources/characters/.
+# Registry for playable layout definitions loaded from resources/characters/.
+# Wildcard stays in that folder but is not selectable. No layout-specific passives for it.
 
 const CHARACTER_PATHS: Array[String] = [
 	"res://resources/characters/surveyor.tres",
@@ -9,7 +10,6 @@ const CHARACTER_PATHS: Array[String] = [
 	"res://resources/characters/spiralist.tres",
 	"res://resources/characters/columnist.tres",
 	"res://resources/characters/converger.tres",
-	"res://resources/characters/wildcard.tres",
 ]
 
 ## Always included in the opening hand. Never removed by difficulty trimming.

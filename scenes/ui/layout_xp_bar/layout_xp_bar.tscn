@@ -1,0 +1,159 @@
+[gd_scene format=3 uid="uid://b8layoutxpbar01"]
+
+[ext_resource type="Script" path="res://scenes/ui/layout_xp_bar/layout_xp_bar.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cdm36d1lebdgh" path="res://assets/particles/spark/spark_03.png" id="2_spark"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.02, 0.02, 0.02, 0.28)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0.05, 0.04, 0.03, 0.5)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(0.95, 0.78, 0.32, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_burst"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_burst"]
+offsets = PackedFloat32Array(0, 0.12, 0.55, 1)
+colors = PackedColorArray(1.2, 1.05, 0.55, 0.9, 1.15, 0.92, 0.4, 1, 1, 0.72, 0.28, 0.7, 1, 0.6, 0.2, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_burst"]
+gradient = SubResource("Gradient_burst")
+
+[sub_resource type="Curve" id="Curve_burst_scale"]
+_data = [Vector2(0, 0.35), 0.0, 0.0, 0, 0, Vector2(0.18, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_burst_scale"]
+curve = SubResource("Curve_burst_scale")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_burst"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 10.0
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 36.0
+initial_velocity_max = 92.0
+gravity = Vector3(0, 28, 0)
+damping_min = 6.0
+damping_max = 14.0
+scale_min = 0.08
+scale_max = 0.18
+scale_curve = SubResource("CurveTexture_burst_scale")
+color = Color(1.2, 1.02, 0.5, 1)
+color_ramp = SubResource("GradientTexture1D_burst")
+
+[node name="LayoutXpBar" type="PanelContainer"]
+z_index = 2
+custom_minimum_size = Vector2(0, 76)
+mouse_filter = 2
+clip_contents = false
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+script = ExtResource("1_script")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LevelBadge" type="Control" parent="Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 60)
+layout_mode = 2
+mouse_filter = 2
+clip_contents = false
+
+[node name="LevelBurst" type="GPUParticles2D" parent="Row/LevelBadge"]
+unique_name_in_owner = true
+z_index = 8
+material = SubResource("CanvasItemMaterial_burst")
+position = Vector2(32, 30)
+emitting = false
+amount = 26
+texture = ExtResource("2_spark")
+lifetime = 0.48
+one_shot = true
+explosiveness = 1.0
+randomness = 0.45
+visibility_rect = Rect2(-96, -96, 192, 192)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_burst")
+
+[node name="LevelLabel" type="Label" parent="Row/LevelBadge"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.55, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.05, 0.02, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 36
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Info" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="Header" type="HBoxContainer" parent="Row/Info"]
+layout_mode = 2
+
+[node name="CaptionLabel" type="Label" parent="Row/Info/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.86, 0.82, 0.74, 1)
+theme_override_font_sizes/font_size = 16
+text = "Layout Level"
+
+[node name="GainLabel" type="Label" parent="Row/Info/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "+0 XP"
+horizontal_alignment = 2
+
+[node name="XpBar" type="ProgressBar" parent="Row/Info"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+max_value = 1.0
+step = 0.001
+value = 0.0
+show_percentage = false
+
+[node name="ProgressLabel" type="Label" parent="Row/Info"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 14
+text = "0 / 3"
+horizontal_alignment = 1

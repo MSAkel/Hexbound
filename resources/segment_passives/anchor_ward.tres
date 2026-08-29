@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://dxqkqu47g1ep5" path="res://assets/passives/icons/second_wind.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 26
+threshold = 8
+description = "Lose 8 cards to break effects on one-tile segments"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "anchor_ward"
+display_name = "Anchor Ward"
+description = "On a one-tile segment, the first time each turn that card would break, the break is prevented."
+icon = ExtResource("3_icon")
+tile_cost = 1
+max_copies = 1
+effect_type = 20
+effect_value = 1.0
+unlock_condition = SubResource("UnlockCondition_main")

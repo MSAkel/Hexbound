@@ -24,7 +24,7 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 # Among Energy producers, pick the lowest current output. Ties go to the earliest in trigger order.
 func _get_lowest_score_producer(tile: Hex) -> TileCard:
 	var lowest: TileCard = null
-	var lowest_amount := 0
+	var lowest_amount := 0.0
 	for hex: Hex in tile.map.get_hexes_in_trigger_order():
 		if not tile.map.is_tile_card_triggerable(hex):
 			continue

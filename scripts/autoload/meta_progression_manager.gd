@@ -6,20 +6,28 @@ const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://player_profile.save"
 const PASSIVES_DIR := "res://resources/segment_passives/"
 const LOADOUT_SET_IDS: Array[String] = ["A", "B", "C"]
-const RETIRED_PASSIVE_IDS: Array[String] = ["spark", "spark_surge", "steady_growth"]
+const RETIRED_PASSIVE_IDS: Array[String] = ["spark_surge", "steady_growth", "power_boost"]
 const PASSIVE_ID_MIGRATIONS: Dictionary = {
-	"steady_growth": "power_boost",
+	"steady_growth": "energy_boost",
+	"power_boost": "energy_boost",
+	"spark_surge": "spark",
 }
 const SANDBOX_CHARACTER_ID := "_ui_sandbox"
 const SANDBOX_MAX_COPIES := 8
+## Cumulative XP to reach layout levels 1 through 9.
+## A full win grants about 12 XP (9 rounds + 3 bonus). One win should reach level 2 only.
+## Layout-exclusive passive gates sit at levels 3, 6, and 9.
+const LAYOUT_LEVEL_XP: Array[int] = [0, 10, 30, 55, 80, 110, 140, 170, 200]
 
 var _loaded: bool = false
 var _sandbox_mode: bool = false
 var _passives_by_id: Dictionary = {}
 var _unlocked_passive_ids: Array[String] = []
 var _lifetime_stats: Dictionary = {}
+var _layout_xp: Dictionary = {}
 var _character_loadouts: Dictionary = {}
 var _pending_unlock_reveals: Array[String] = []
+var _run_peaks: Dictionary = {}
 
 
 func _ready() -> void:
@@ -48,6 +56,7 @@ func save() -> void:
 		"version": 1,
 		"unlocked_passive_ids": _unlocked_passive_ids.duplicate(),
 		"lifetime_stats": _lifetime_stats.duplicate(),
+		"layout_xp": _layout_xp.duplicate(),
 		"character_loadouts": _character_loadouts.duplicate(true),
 		"pending_unlock_reveals": _pending_unlock_reveals.duplicate(),
 	}
@@ -121,7 +130,114 @@ func get_max_copies(passive: SegmentPassive) -> int:
 		return 0
 	if _sandbox_mode:
 		return SANDBOX_MAX_COPIES
-	return maxi(1, passive.max_copies)
+	return get_unlocked_copy_count(passive)
+
+
+func get_unlocked_copy_count(passive: SegmentPassive) -> int:
+	if passive == null:
+		return 0
+	if _sandbox_mode:
+		return SANDBOX_MAX_COPIES
+	if not is_unlocked(passive.id) and not passive.starts_unlocked:
+		return 0
+	var max_copies := maxi(1, passive.max_copies)
+	if passive.copy_thresholds.is_empty():
+		return max_copies
+	var copies := 0
+	for i in range(mini(max_copies, passive.copy_thresholds.size())):
+		if _copy_threshold_met(passive, i):
+			copies += 1
+	return maxi(copies, 1 if is_unlocked(passive.id) or passive.starts_unlocked else 0)
+
+
+## Unlocked copies vs max, plus progress toward the next gated copy.
+func get_copy_unlock_state(passive: SegmentPassive) -> Dictionary:
+	var unlocked_copies := get_unlocked_copy_count(passive)
+	var max_copies := maxi(1, passive.max_copies)
+	if _sandbox_mode:
+		return {
+			"unlocked_copies": SANDBOX_MAX_COPIES,
+			"max_copies": SANDBOX_MAX_COPIES,
+			"all_unlocked": true,
+			"progress": 0,
+			"needed": 0,
+			"label": "",
+		}
+	if unlocked_copies >= max_copies or unlocked_copies >= passive.copy_thresholds.size():
+		return {
+			"unlocked_copies": unlocked_copies,
+			"max_copies": max_copies,
+			"all_unlocked": true,
+			"progress": 0,
+			"needed": 0,
+			"label": "",
+		}
+	var needed := passive.copy_thresholds[unlocked_copies]
+	var progress := _progress_value_for_copy(passive, unlocked_copies)
+	return {
+		"unlocked_copies": unlocked_copies,
+		"max_copies": max_copies,
+		"all_unlocked": false,
+		"progress": progress,
+		"needed": needed,
+		"label": "%d / %d" % [mini(progress, needed), needed],
+	}
+
+
+func get_layout_xp_for_next_level(layout_id: String) -> int:
+	var level := get_layout_level(layout_id)
+	if level >= LAYOUT_LEVEL_XP.size():
+		return LAYOUT_LEVEL_XP[LAYOUT_LEVEL_XP.size() - 1]
+	return LAYOUT_LEVEL_XP[level]
+
+
+func get_max_layout_level() -> int:
+	return LAYOUT_LEVEL_XP.size()
+
+
+func get_layout_level_for_xp(xp: int) -> int:
+	var level := 1
+	for i in range(LAYOUT_LEVEL_XP.size()):
+		if xp >= LAYOUT_LEVEL_XP[i]:
+			level = i + 1
+	return level
+
+
+## XP granted by a finished run. Seeded runs that disable unlocks grant none.
+func get_layout_xp_gain_from_snapshot(snapshot: Dictionary) -> int:
+	if RunRng.is_unlock_progress_disabled():
+		return 0
+	return _compute_layout_xp_gain(snapshot)
+
+
+## Fill amount inside the current layout level, used by the end-of-run XP bar.
+func get_layout_level_progress(xp: int) -> Dictionary:
+	var level := get_layout_level_for_xp(xp)
+	var max_level := get_max_layout_level()
+	var floor_index := mini(level - 1, LAYOUT_LEVEL_XP.size() - 1)
+	var floor_xp := LAYOUT_LEVEL_XP[floor_index]
+	if level >= max_level:
+		return {
+			"level": max_level,
+			"is_max": true,
+			"xp_into_level": 0,
+			"xp_for_level": 1,
+			"ratio": 1.0,
+			"total_xp": xp,
+			"next_total_xp": floor_xp,
+		}
+	var next_xp := LAYOUT_LEVEL_XP[level]
+	var span := maxi(1, next_xp - floor_xp)
+	var into := clampi(xp - floor_xp, 0, span)
+	return {
+		"level": level,
+		"is_max": false,
+		"xp_into_level": into,
+		"xp_for_level": span,
+		"ratio": float(into) / float(span),
+		"total_xp": xp,
+		"next_total_xp": next_xp,
+	}
 
 
 func has_pending_unlock_reveals() -> bool:
@@ -393,9 +509,158 @@ func reset_segment(character_id: String, set_id: String, segment_index: int) -> 
 
 
 func add_lifetime_triggers(amount: int) -> void:
+	_add_stat("total_triggers", amount)
+
+
+func add_producer_trigger() -> void:
+	_add_stat("producer_triggers", 1)
+
+
+func add_support_trigger() -> void:
+	_add_stat("support_triggers", 1)
+
+
+func add_producer_retrigger() -> void:
+	_add_stat("producer_retriggers", 1)
+
+
+func add_support_retrigger() -> void:
+	_add_stat("support_retriggers", 1)
+	_run_peaks["support_retriggers"] = int(_run_peaks.get("support_retriggers", 0)) + 1
+	_lifetime_stats["peak_support_retriggers_in_run"] = maxi(
+		int(_lifetime_stats.get("peak_support_retriggers_in_run", 0)),
+		int(_run_peaks.get("support_retriggers", 0))
+	)
+
+
+func add_last_producer_trigger() -> void:
+	_add_stat("last_producer_triggers", 1)
+
+
+func add_alternating_activation() -> void:
+	_add_stat("alternating_activations", 1)
+
+
+func add_spectrum_turn() -> void:
+	_add_stat("spectrum_turns", 1)
+
+
+func add_support_then_producer() -> void:
+	_add_stat("support_then_producer", 1)
+
+
+func add_support_affected_producer() -> void:
+	_add_stat("support_affected_producers", 1)
+
+
+func add_adjacent_same_product_trigger() -> void:
+	_add_stat("adjacent_same_product_triggers", 1)
+
+
+func add_full_segment_turn() -> void:
+	_add_stat("full_segment_turns", 1)
+
+
+func note_resonant_array_fill() -> void:
+	_lifetime_stats["resonant_array_fill"] = true
+
+
+func record_card_broken(on_one_tile: bool) -> void:
+	_add_stat("cards_broken", 1)
+	if on_one_tile:
+		_add_stat("one_tile_breaks", 1)
+
+
+func add_break_prevented_by_fuse() -> void:
+	_add_stat("breaks_prevented_by_fuse", 1)
+
+
+func add_one_tile_activation() -> void:
+	_add_stat("one_tile_activations", 1)
+
+
+func note_energy_card_triggers(count_on_card: int) -> void:
+	_lifetime_stats["peak_energy_card_triggers_in_run"] = maxi(
+		int(_lifetime_stats.get("peak_energy_card_triggers_in_run", 0)),
+		count_on_card
+	)
+
+
+func note_mult_card_triggers(count_on_card: int) -> void:
+	_lifetime_stats["peak_mult_card_triggers_in_run"] = maxi(
+		int(_lifetime_stats.get("peak_mult_card_triggers_in_run", 0)),
+		count_on_card
+	)
+
+
+func note_energy_bonus(bonus: float) -> void:
+	_lifetime_stats["peak_energy_bonus_in_run"] = maxi(
+		int(_lifetime_stats.get("peak_energy_bonus_in_run", 0)),
+		int(round(bonus))
+	)
+
+
+func note_mult_bonus(bonus: float) -> void:
+	var tenths := int(round(bonus * 10.0))
+	_lifetime_stats["peak_mult_bonus_tenths_in_run"] = maxi(
+		int(_lifetime_stats.get("peak_mult_bonus_tenths_in_run", 0)),
+		tenths
+	)
+
+
+func note_one_tile_same_card_triggers(count_on_card: int) -> void:
+	_lifetime_stats["peak_one_tile_same_card_triggers"] = maxi(
+		int(_lifetime_stats.get("peak_one_tile_same_card_triggers", 0)),
+		count_on_card
+	)
+
+
+func begin_run_tracking() -> void:
+	_run_peaks = {"support_retriggers": 0}
+
+
+func get_layout_xp(layout_id: String) -> int:
+	return int(_layout_xp.get(layout_id, 0))
+
+
+func get_layout_level(layout_id: String) -> int:
+	return get_layout_level_for_xp(get_layout_xp(layout_id))
+
+
+func _compute_layout_xp_gain(snapshot: Dictionary) -> int:
+	# Completed rounds grant 1 XP each. A win adds a flat bonus on top.
+	var xp_gain := int(snapshot.get("rounds_completed", 0))
+	if bool(snapshot.get("is_win", false)):
+		xp_gain += 3
+	return maxi(0, xp_gain)
+
+
+func _add_stat(key: String, amount: int) -> void:
 	if amount <= 0 or RunRng.is_unlock_progress_disabled():
 		return
-	_lifetime_stats["total_triggers"] = int(_lifetime_stats.get("total_triggers", 0)) + amount
+	_lifetime_stats[key] = int(_lifetime_stats.get(key, 0)) + amount
+
+
+func _copy_threshold_met(passive: SegmentPassive, copy_index: int) -> bool:
+	if copy_index < 0 or copy_index >= passive.copy_thresholds.size():
+		return false
+	var needed := passive.copy_thresholds[copy_index]
+	if needed <= 0:
+		return true
+	return _progress_value_for_copy(passive, copy_index) >= needed
+
+
+## Gilded Contact copy 2 gates on peak gold held. Other copies use the unlock stat.
+func _progress_value_for_copy(passive: SegmentPassive, copy_index: int) -> int:
+	if passive.unlock_condition == null:
+		return 0
+	if (
+		copy_index > 0
+		and passive.unlock_condition.extra_threshold > 0
+		and passive.unlock_condition.condition_type == UnlockCondition.Type.GOLD_EARNED_IN_RUN
+	):
+		return int(_lifetime_stats.get("peak_gold_held", 0))
+	return _progress_for_condition(passive.unlock_condition, {})
 
 
 func record_run_snapshot(snapshot: Dictionary, finalize_unlocks: bool) -> void:
@@ -407,22 +672,39 @@ func record_run_snapshot(snapshot: Dictionary, finalize_unlocks: bool) -> void:
 		_lifetime_stats["wins"] = int(_lifetime_stats.get("wins", 0)) + 1
 	else:
 		_lifetime_stats["losses"] = int(_lifetime_stats.get("losses", 0)) + 1
+	_lifetime_stats["runs_completed"] = int(_lifetime_stats.get("runs_completed", 0)) + 1
 
-	var peak_gold := int(snapshot.get("peak_gold_held", 0))
+	var layout_id := String(snapshot.get("character_id", ""))
+	if not layout_id.is_empty():
+		_layout_xp[layout_id] = get_layout_xp(layout_id) + _compute_layout_xp_gain(snapshot)
+
 	_lifetime_stats["peak_gold_held"] = maxi(
 		int(_lifetime_stats.get("peak_gold_held", 0)),
-		peak_gold
+		int(snapshot.get("peak_gold_held", 0))
 	)
-	var peak_segment_score := int(snapshot.get("peak_segment_score_single_turn", 0))
+	_lifetime_stats["peak_gold_earned_in_run"] = maxi(
+		int(_lifetime_stats.get("peak_gold_earned_in_run", 0)),
+		int(snapshot.get("gold_earned", 0))
+	)
 	_lifetime_stats["peak_segment_score_single_turn"] = maxi(
 		int(_lifetime_stats.get("peak_segment_score_single_turn", 0)),
-		peak_segment_score
+		int(snapshot.get("peak_segment_score_single_turn", 0))
 	)
-	var peak_turn_triggers := int(snapshot.get("peak_triggers_single_turn", 0))
 	_lifetime_stats["peak_triggers_single_turn"] = maxi(
 		int(_lifetime_stats.get("peak_triggers_single_turn", 0)),
-		peak_turn_triggers
+		int(snapshot.get("peak_triggers_single_turn", 0))
 	)
+	if is_win:
+		var win_difficulty := int(snapshot.get("difficulty", 0)) + 1
+		_lifetime_stats["highest_win_difficulty"] = maxi(
+			int(_lifetime_stats.get("highest_win_difficulty", 0)),
+			win_difficulty
+		)
+		if int(snapshot.get("peak_gold_held", 0)) >= 40:
+			_lifetime_stats["win_difficulty_with_40_gold"] = maxi(
+				int(_lifetime_stats.get("win_difficulty_with_40_gold", 0)),
+				win_difficulty
+			)
 	if bool(snapshot.get("full_map_cards", false)):
 		_lifetime_stats["full_map_cards_achieved"] = true
 
@@ -432,9 +714,43 @@ func record_run_snapshot(snapshot: Dictionary, finalize_unlocks: bool) -> void:
 
 
 func get_unlock_progress_value(passive: SegmentPassive) -> int:
-	if passive.unlock_condition == null:
+	if passive == null or passive.unlock_condition == null:
 		return 0
-	match passive.unlock_condition.condition_type:
+	return _progress_for_condition(passive.unlock_condition, {})
+
+
+## Ratio and caption for locked rows, including OR unlocks with two gates.
+func get_unlock_progress_display(passive: SegmentPassive) -> Dictionary:
+	if passive == null or passive.unlock_condition == null:
+		return {"ratio": 0.0, "label": ""}
+	var condition := passive.unlock_condition
+	if condition.condition_type == UnlockCondition.Type.PRODUCER_RETRIGGERS_OR_TURN_TRIGGERS:
+		var retriggers := int(_lifetime_stats.get("producer_retriggers", 0))
+		var turn_peak := int(_lifetime_stats.get("peak_triggers_single_turn", 0))
+		var retrigger_gate := maxi(condition.threshold, 1)
+		var turn_gate := maxi(condition.extra_threshold, 1)
+		var ratio := maxf(
+			clampf(float(retriggers) / float(retrigger_gate), 0.0, 1.0),
+			clampf(float(turn_peak) / float(turn_gate), 0.0, 1.0)
+		)
+		return {
+			"ratio": ratio,
+			"label": "%d / %d retriggers, or %d / %d in one turn" % [
+				mini(retriggers, retrigger_gate),
+				retrigger_gate,
+				mini(turn_peak, turn_gate),
+				turn_gate,
+			],
+		}
+	var current := _progress_for_condition(condition, {})
+	return {
+		"ratio": condition.get_progress_ratio(current),
+		"label": condition.get_progress_label(current),
+	}
+
+
+func _progress_for_condition(condition: UnlockCondition, snapshot: Dictionary) -> int:
+	match condition.condition_type:
 		UnlockCondition.Type.LIFETIME_TRIGGERS:
 			return int(_lifetime_stats.get("total_triggers", 0))
 		UnlockCondition.Type.WIN_RUN:
@@ -447,6 +763,66 @@ func get_unlock_progress_value(passive: SegmentPassive) -> int:
 			return int(_lifetime_stats.get("peak_triggers_single_turn", 0))
 		UnlockCondition.Type.FULL_MAP_CARDS:
 			return 1 if bool(_lifetime_stats.get("full_map_cards_achieved", false)) else 0
+		UnlockCondition.Type.PRODUCER_TRIGGERS:
+			return int(_lifetime_stats.get("producer_triggers", 0))
+		UnlockCondition.Type.SUPPORT_TRIGGERS:
+			return int(_lifetime_stats.get("support_triggers", 0))
+		UnlockCondition.Type.PRODUCER_RETRIGGERS:
+			return int(_lifetime_stats.get("producer_retriggers", 0))
+		UnlockCondition.Type.SUPPORT_RETRIGGERS_IN_RUN:
+			return int(_lifetime_stats.get("peak_support_retriggers_in_run", 0))
+		UnlockCondition.Type.RUNS_COMPLETED:
+			return int(_lifetime_stats.get("runs_completed", 0))
+		UnlockCondition.Type.WIN_DIFFICULTY:
+			return int(_lifetime_stats.get("highest_win_difficulty", 0))
+		UnlockCondition.Type.GOLD_EARNED_IN_RUN:
+			return int(_lifetime_stats.get("peak_gold_earned_in_run", 0))
+		UnlockCondition.Type.ENERGY_CARD_TRIGGERS_IN_RUN:
+			return int(_lifetime_stats.get("peak_energy_card_triggers_in_run", 0))
+		UnlockCondition.Type.MULT_CARD_TRIGGERS_IN_RUN:
+			return int(_lifetime_stats.get("peak_mult_card_triggers_in_run", 0))
+		UnlockCondition.Type.ENERGY_BONUS_IN_RUN:
+			return int(_lifetime_stats.get("peak_energy_bonus_in_run", 0))
+		UnlockCondition.Type.MULT_BONUS_IN_RUN:
+			return int(_lifetime_stats.get("peak_mult_bonus_tenths_in_run", 0))
+		UnlockCondition.Type.CARDS_BROKEN:
+			return int(_lifetime_stats.get("cards_broken", 0))
+		UnlockCondition.Type.BREAKS_PREVENTED_BY_FUSE:
+			return int(_lifetime_stats.get("breaks_prevented_by_fuse", 0))
+		UnlockCondition.Type.ALTERNATING_ACTIVATIONS:
+			return int(_lifetime_stats.get("alternating_activations", 0))
+		UnlockCondition.Type.SPECTRUM_TURNS:
+			return int(_lifetime_stats.get("spectrum_turns", 0))
+		UnlockCondition.Type.SUPPORT_THEN_PRODUCER:
+			return int(_lifetime_stats.get("support_then_producer", 0))
+		UnlockCondition.Type.SUPPORT_AFFECTED_PRODUCERS:
+			return int(_lifetime_stats.get("support_affected_producers", 0))
+		UnlockCondition.Type.ADJACENT_SAME_PRODUCT_TRIGGERS:
+			return int(_lifetime_stats.get("adjacent_same_product_triggers", 0))
+		UnlockCondition.Type.ONE_TILE_ACTIVATIONS:
+			return int(_lifetime_stats.get("one_tile_activations", 0))
+		UnlockCondition.Type.ONE_TILE_BREAKS:
+			return int(_lifetime_stats.get("one_tile_breaks", 0))
+		UnlockCondition.Type.ONE_TILE_SAME_CARD_TRIGGERS_IN_RUN:
+			return int(_lifetime_stats.get("peak_one_tile_same_card_triggers", 0))
+		UnlockCondition.Type.LAST_PRODUCER_TRIGGERS:
+			return int(_lifetime_stats.get("last_producer_triggers", 0))
+		UnlockCondition.Type.FULL_SEGMENT_TURNS:
+			return int(_lifetime_stats.get("full_segment_turns", 0))
+		UnlockCondition.Type.RESONANT_ARRAY_FILL:
+			return 1 if bool(_lifetime_stats.get("resonant_array_fill", false)) else 0
+		UnlockCondition.Type.LAYOUT_LEVEL:
+			var layout_id := condition.character_id
+			if layout_id.is_empty():
+				layout_id = String(snapshot.get("character_id", ""))
+			return get_layout_level(layout_id)
+		UnlockCondition.Type.PRODUCER_RETRIGGERS_OR_TURN_TRIGGERS:
+			return maxi(
+				int(_lifetime_stats.get("producer_retriggers", 0)),
+				int(_lifetime_stats.get("peak_triggers_single_turn", 0))
+			)
+		UnlockCondition.Type.WIN_DIFFICULTY_AND_GOLD:
+			return int(_lifetime_stats.get("win_difficulty_with_40_gold", 0))
 		_:
 			return 0
 
@@ -457,13 +833,17 @@ func _init_defaults() -> void:
 		"total_triggers": 0,
 		"wins": 0,
 		"losses": 0,
+		"runs_completed": 0,
 		"peak_gold_held": 0,
+		"peak_gold_earned_in_run": 0,
 		"peak_segment_score_single_turn": 0,
 		"peak_triggers_single_turn": 0,
 		"full_map_cards_achieved": false,
 	}
+	_layout_xp.clear()
 	_character_loadouts.clear()
 	_pending_unlock_reveals.clear()
+	begin_run_tracking()
 
 
 func _apply_save_data(data: Dictionary) -> void:
@@ -471,6 +851,7 @@ func _apply_save_data(data: Dictionary) -> void:
 	for entry in data.get("unlocked_passive_ids", []):
 		_unlocked_passive_ids.append(String(entry))
 	_lifetime_stats = data.get("lifetime_stats", {}).duplicate(true)
+	_layout_xp = data.get("layout_xp", {}).duplicate(true)
 	_character_loadouts = data.get("character_loadouts", {}).duplicate(true)
 	_pending_unlock_reveals.clear()
 	for entry in data.get("pending_unlock_reveals", []):
@@ -580,26 +961,13 @@ func _passive_meets_unlock(passive: SegmentPassive, run_snapshot: Dictionary) ->
 	if passive.unlock_condition == null:
 		return false
 	var condition := passive.unlock_condition
-	match condition.condition_type:
-		UnlockCondition.Type.MANUAL_LOCK:
-			return false
-		UnlockCondition.Type.LIFETIME_TRIGGERS:
-			return int(_lifetime_stats.get("total_triggers", 0)) >= condition.threshold
-		UnlockCondition.Type.WIN_RUN:
-			if not bool(run_snapshot.get("is_win", false)):
-				return false
-			if condition.character_id.is_empty():
-				return true
-			return String(run_snapshot.get("character_id", "")) == condition.character_id
-		UnlockCondition.Type.GOLD_HELD:
-			return int(_lifetime_stats.get("peak_gold_held", 0)) >= condition.threshold
-		UnlockCondition.Type.SEGMENT_SCORE_SINGLE_TURN:
-			return int(_lifetime_stats.get("peak_segment_score_single_turn", 0)) >= condition.threshold
-		UnlockCondition.Type.TRIGGERS_SINGLE_TURN:
-			return int(_lifetime_stats.get("peak_triggers_single_turn", 0)) >= condition.threshold
-		UnlockCondition.Type.FULL_MAP_CARDS:
-			return bool(_lifetime_stats.get("full_map_cards_achieved", false))
-	return false
+	if condition.condition_type == UnlockCondition.Type.MANUAL_LOCK:
+		return false
+	if condition.condition_type == UnlockCondition.Type.PRODUCER_RETRIGGERS_OR_TURN_TRIGGERS:
+		var retriggers := int(_lifetime_stats.get("producer_retriggers", 0))
+		var turn_peak := int(_lifetime_stats.get("peak_triggers_single_turn", 0))
+		return retriggers >= condition.threshold or turn_peak >= maxi(condition.extra_threshold, 1)
+	return _progress_for_condition(condition, run_snapshot) >= condition.threshold
 
 
 ## Starter passives skip the deferred reveal queue. Existing saves pick them up on load.

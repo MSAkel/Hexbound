@@ -31,7 +31,7 @@ signal rerolls_changed(remaining: int)
 
 signal total_round_score_changed()
 ## Per-segment energy, multiplier, product (energy x mult), and gold during turn resolution.
-signal segment_turn_results_changed(segment_index: int, score: int, multiplier: int, total_score: int, gold: int)
+signal segment_turn_results_changed(segment_index: int, score: int, multiplier: float, total_score: int, gold: int)
 signal segment_turn_results_reset()
 ## Product unlocked for one segment after its Score lands in the output panel.
 signal segment_score_revealed(segment_index: int, total_score: int)

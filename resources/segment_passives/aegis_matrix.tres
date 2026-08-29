@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://c0eef6ut1vtcx" path="res://assets/passives/icons/empowered_output.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 19
+threshold = 20
+description = "Prevent 20 breaks while Safety Fuse is placed"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "aegis_matrix"
+display_name = "Aegis Matrix"
+description = "A card that would break has a 50% chance to ignore the break."
+icon = ExtResource("3_icon")
+tile_cost = 3
+max_copies = 1
+effect_type = 11
+effect_value = 0.5
+unlock_condition = SubResource("UnlockCondition_main")

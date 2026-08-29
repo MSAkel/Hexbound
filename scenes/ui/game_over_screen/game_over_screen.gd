@@ -1,6 +1,7 @@
 extends Control
 
 @onready var played_as_label: Label = $RunStatsPanel/VBoxContainer/PlayedAsLabel
+@onready var layout_xp_bar: LayoutXpBar = %LayoutXpBar
 @onready var highest_score_value: Label = $RunStatsPanel/VBoxContainer/HighestScoreValue
 @onready var round_value: Label = $RunStatsPanel/VBoxContainer/RoundValue
 @onready var gold_earned_value: Label = $RunStatsPanel/VBoxContainer/GoldEarnedValue
@@ -16,7 +17,11 @@ func _ready() -> void:
 
 func _on_game_ended() -> void:
 	RunSaveManager.delete_save()
-	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(false), true)
+	# Capture XP before the snapshot writes so the bar can animate from the old total.
+	var from_xp := _current_layout_xp()
+	var snapshot := GameManager.build_run_snapshot(false)
+	var xp_gain := MetaProgressionManager.get_layout_xp_gain_from_snapshot(snapshot)
+	MetaProgressionManager.record_run_snapshot(snapshot, true)
 	played_as_label.text = GameManager.selected_character.display_name if GameManager.selected_character else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
 	round_value.text = str(GameManager.current_round)
@@ -25,6 +30,13 @@ func _on_game_ended() -> void:
 	seed_value.text = RunRng.get_display_seed()
 	UiManager.show_panel(self)
 	AudioManager.play_sfx(UISounds.GAME_OVER)
+	layout_xp_bar.play_gain(from_xp, xp_gain, 0.45)
+
+
+func _current_layout_xp() -> int:
+	if GameManager.selected_character == null:
+		return 0
+	return MetaProgressionManager.get_layout_xp(GameManager.selected_character.id)
 
 
 func _on_copy_seed_button_pressed() -> void:

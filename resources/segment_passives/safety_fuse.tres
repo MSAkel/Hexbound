@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://dxqkqu47g1ep5" path="res://assets/passives/icons/second_wind.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 18
+threshold = 5
+description = "Lose 5 / 20 cards to break effects"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "safety_fuse"
+display_name = "Safety Fuse"
+description = "A card that would break has an independent 20% chance to ignore the break."
+icon = ExtResource("3_icon")
+tile_cost = 1
+max_copies = 2
+copy_thresholds = Array[int]([5, 20])
+effect_type = 11
+effect_value = 0.2
+unlock_condition = SubResource("UnlockCondition_main")

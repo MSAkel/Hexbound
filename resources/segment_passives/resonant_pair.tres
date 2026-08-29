@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://c4jtcbxdocryv" path="res://assets/passives/icons/steady_growth.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 24
+threshold = 80
+description = "Trigger qualifying adjacent Producers 80 / 400 times"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "resonant_pair"
+display_name = "Resonant Pair"
+description = "A Producer adjacent to another Producer of the same product gains +10% output."
+icon = ExtResource("3_icon")
+tile_cost = 1
+max_copies = 2
+copy_thresholds = Array[int]([80, 400])
+effect_type = 15
+effect_value = 0.1
+extra_int = 1
+unlock_condition = SubResource("UnlockCondition_main")

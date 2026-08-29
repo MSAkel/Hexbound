@@ -25,7 +25,7 @@ var _trigger_order_cache_valid: bool = false
 var _segment_index_by_coords: Dictionary = {}
 # Per-segment score and gold produced during the current turn resolution.
 var _segment_turn_scores: Array[int] = []
-var _segment_turn_multiplier: Array[int] = []
+var _segment_turn_multiplier: Array[float] = []
 var _segment_turn_gold: Array[int] = []
 # Completed tile card activations on each segment during the current turn.
 var _segment_turn_triggers: Array[int] = []
@@ -230,7 +230,7 @@ func reset_turn_results() -> void:
 	for i in segment_count:
 		_segment_turn_scores[i] = 0
 		# Base multiplier is 1 so score is unchanged when no mult runes fire in a segment.
-		_segment_turn_multiplier[i] = 1
+		_segment_turn_multiplier[i] = 1.0
 		_segment_turn_gold[i] = 0
 		_segment_turn_triggers[i] = 0
 
@@ -242,7 +242,7 @@ func add_segment_turn_score(segment_index: int, amount: int) -> void:
 	_segment_turn_scores[segment_index] += amount
 
 
-func add_segment_turn_multiplier(segment_index: int, amount: int) -> void:
+func add_segment_turn_multiplier(segment_index: int, amount: float) -> void:
 	if segment_index < 0 or segment_index >= _segment_turn_multiplier.size():
 		return
 	_segment_turn_multiplier[segment_index] += amount
@@ -259,9 +259,9 @@ func get_segment_turn_score(segment_index: int) -> int:
 		return 0
 	return _segment_turn_scores[segment_index]
 
-func get_segment_turn_multiplier(segment_index: int) -> int:
+func get_segment_turn_multiplier(segment_index: int) -> float:
 	if segment_index < 0 or segment_index >= _segment_turn_multiplier.size():
-		return 0
+		return 1.0
 	return _segment_turn_multiplier[segment_index]
 
 func get_segment_turn_gold(segment_index: int) -> int:
@@ -306,7 +306,7 @@ func apply_turn_results(state: Dictionary) -> void:
 
 	for i in segment_count:
 		_segment_turn_scores[i] = int(scores[i]) if i < scores.size() else 0
-		_segment_turn_multiplier[i] = int(multipliers[i]) if i < multipliers.size() else 1
+		_segment_turn_multiplier[i] = float(multipliers[i]) if i < multipliers.size() else 1.0
 		_segment_turn_gold[i] = int(gold_amounts[i]) if i < gold_amounts.size() else 0
 		_segment_turn_triggers[i] = int(triggers[i]) if i < triggers.size() else 0
 

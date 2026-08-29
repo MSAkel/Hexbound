@@ -12,6 +12,8 @@ var _on_value: Callable
 var _displayed: float = 0.0
 var _tween: Tween
 var _use_thousands_separator: bool = false
+## When true, the readout keeps one decimal instead of rounding to an integer.
+var _format_as_mult: bool = false
 
 
 func _init(
@@ -56,18 +58,23 @@ static func for_rich_text_label(
 	)
 
 
+## Mult readouts tween the true float and print one decimal.
+func set_format_as_mult(enabled: bool) -> void:
+	_format_as_mult = enabled
+
+
 ## Sets the displayed value immediately and stops any running count.
-func snap_to(value: int) -> void:
+func snap_to(value: float) -> void:
 	kill()
-	_displayed = float(value)
+	_displayed = value
 	_write(_displayed)
 
 
 ## Starts a count from the current displayed value to target. Await the returned tween to wait.
-func play(target: int) -> Tween:
+func play(target: float) -> Tween:
 	var from := _displayed
-	var delta := absf(float(target) - from)
-	if delta < 0.5 or not _is_host_valid():
+	var delta := absf(target - from)
+	if delta < 0.05 or not _is_host_valid():
 		snap_to(target)
 		return null
 
@@ -97,6 +104,10 @@ func kill() -> void:
 
 func _write(value: float) -> void:
 	_displayed = value
+	if _format_as_mult:
+		if _apply_text.is_valid():
+			_apply_text.call(format_mult(value))
+		return
 	var as_int := int(round(value))
 	if _apply_text.is_valid():
 		_apply_text.call(format_int(as_int) if _use_thousands_separator else str(as_int))
@@ -119,3 +130,8 @@ static func format_int(value: int) -> String:
 		grouped = digits[i] + grouped
 		count += 1
 	return sign_prefix + grouped
+
+
+## One decimal, matching the Mult UI rule from the passives catalog.
+static func format_mult(value: float) -> String:
+	return "%.1f" % snappedf(value, 0.1)

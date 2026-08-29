@@ -6,4 +6,4 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 
 func get_board_chip(_tile: Hex = null) -> Dictionary:
-	return _amount_board_chip(_get_production_amount() + GoldManager.spent_this_round)
+	return _amount_board_chip_float(_get_production_amount() + float(GoldManager.spent_this_round))

@@ -40,7 +40,13 @@ func display_selection(character: CharacterDefinition) -> void:
 
 func _refresh_passive_set_label(character: CharacterDefinition) -> void:
 	var set_id := MetaProgressionManager.get_selected_set_id(character.id)
-	passive_set_label.text = "Set %s" % set_id
+	var level := MetaProgressionManager.get_layout_level(character.id)
+	if level >= MetaProgressionManager.LAYOUT_LEVEL_XP.size():
+		passive_set_label.text = "Set %s  ·  Layout level %d" % [set_id, level]
+		return
+	var xp := MetaProgressionManager.get_layout_xp(character.id)
+	var next_xp := MetaProgressionManager.get_layout_xp_for_next_level(character.id)
+	passive_set_label.text = "Set %s  ·  Layout level %d  (%d/%d XP)" % [set_id, level, xp, next_xp]
 
 
 func _on_segment_passives_button_pressed() -> void:

@@ -20,6 +20,8 @@ const SEGMENT_PASSIVES_PREVIEW_MAP = preload("res://scenes/ui/segment_passives/s
 const PASSIVES_TILE = preload("uid://ccxxa581gp0it")
 
 const MAX_CONTENT_SCALE := 1.0
+# Pause overlay can cap this so the hex cluster stays compact.
+var max_content_scale: float = MAX_CONTENT_SCALE
 const HIGHLIGHT_SELECTED := Color(0.7, 0.88, 1.0, 1.0)
 const SELECTED_BLEND := 0.72
 const HIGHLIGHT_HOVER := Color(0.82, 0.92, 1.0, 1.0)
@@ -34,6 +36,8 @@ const DROP_PREVIEW_ALPHA := 0.42
 
 var _character: CharacterDefinition = null
 var _set_id: String = "A"
+# Pause-menu inspector uses this. Clicks, drags, and right-click remove stay off.
+var read_only: bool = false
 var _preview_map: SegmentPassivesPreviewMap = null
 # Authored-size hex grid. Scaled as a unit so the 37 tiles always fit the panel.
 var _content: Control = null
@@ -218,7 +222,10 @@ func _make_tile_button(tile_size: Vector2, segment_index: int, coords: Vector2i)
 	tile.custom_minimum_size = tile_size
 	tile.size = tile_size
 	tile.mouse_filter = Control.MOUSE_FILTER_STOP
-	tile.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	# Read-only still needs hover for tooltips, but it should not look clickable.
+	tile.mouse_default_cursor_shape = (
+		Control.CURSOR_ARROW if read_only else Control.CURSOR_POINTING_HAND
+	)
 	return tile
 
 
@@ -230,12 +237,14 @@ func _update_content_transform() -> void:
 		return
 
 	var fit_scale := minf(size.x / _content_size.x, size.y / _content_size.y)
-	fit_scale = minf(fit_scale, MAX_CONTENT_SCALE)
+	fit_scale = minf(fit_scale, max_content_scale)
 	_content.scale = Vector2(fit_scale, fit_scale)
 	_content.position = (size - _content_size * fit_scale) * 0.5
 
 
 func _on_tile_gui_input(event: InputEvent, segment_index: int, coords: Vector2i) -> void:
+	if read_only:
+		return
 	if not event is InputEventMouseButton or not event.pressed:
 		return
 	if event.button_index == MOUSE_BUTTON_LEFT:
@@ -664,7 +673,7 @@ class HexTile extends TextureRect:
 	var coords := Vector2i.ZERO
 
 	func _get_drag_data(_at_position: Vector2) -> Variant:
-		if host == null:
+		if host == null or host.read_only:
 			return null
 		var data: Variant = host.begin_board_drag(coords)
 		if not data is Dictionary:
@@ -678,10 +687,11 @@ class HexTile extends TextureRect:
 		return payload
 
 	func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-		if host == null:
+		if host == null or host.read_only:
 			return false
 		return host.can_accept_passive_drop(data, segment_index, coords)
 
 	func _drop_data(_at_position: Vector2, data: Variant) -> void:
-		if host != null:
-			host.accept_passive_drop(data, segment_index, coords)
+		if host == null or host.read_only:
+			return
+		host.accept_passive_drop(data, segment_index, coords)

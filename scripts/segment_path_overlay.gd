@@ -23,17 +23,8 @@ const PARTICLES_PER_PIXEL := 1.0 / 26.0
 const EDGE_AMOUNT_MIN := 8
 const EDGE_AMOUNT_MAX := 18
 
-# Muted hues so neighboring segments do not read as one continuous loop.
-const SEGMENT_COLORS: Array[Color] = [
-	Color(0.92, 0.78, 0.38, 0.95),
-	Color(0.38, 0.72, 0.78, 0.95),
-	Color(0.82, 0.52, 0.38, 0.95),
-	Color(0.55, 0.72, 0.42, 0.95),
-	Color(0.72, 0.48, 0.78, 0.95),
-	Color(0.42, 0.58, 0.88, 0.95),
-	Color(0.88, 0.62, 0.52, 0.95),
-	Color(0.48, 0.78, 0.62, 0.95),
-]
+# One shared hue for every segment. Distinct colors read as extra meaning.
+const PATH_COLOR := Color(0.92, 0.78, 0.38, 0.95)
 
 var _map: HexTileMap
 var _order_view_active: bool = false
@@ -49,6 +40,9 @@ func setup(map: HexTileMap) -> void:
 
 
 func set_visible_for_order_view(active: bool) -> void:
+	# Hover refreshes call this every cell change. Restart only on a real on/off flip.
+	if _order_view_active == active:
+		return
 	_order_view_active = active
 	visible = active
 	_set_tree_emitting(self, active)
@@ -61,17 +55,16 @@ func rebuild() -> void:
 		return
 
 	var segments := _map.get_ordered_segments()
-	for segment_index in range(segments.size()):
-		var coords_list: Array = segments[segment_index]
+	for coords_list in segments:
 		if coords_list.is_empty():
 			continue
-		_add_segment_visuals(segment_index, coords_list)
+		_add_segment_visuals(coords_list)
 
 	_set_tree_emitting(self, _order_view_active)
 
 
-func _add_segment_visuals(segment_index: int, coords_list: Array) -> void:
-	var color := SEGMENT_COLORS[segment_index % SEGMENT_COLORS.size()]
+func _add_segment_visuals(coords_list: Array) -> void:
+	var color := PATH_COLOR
 	var points := PackedVector2Array()
 	for coords: Vector2i in coords_list:
 		points.append(_map.base_layer.map_to_local(coords))

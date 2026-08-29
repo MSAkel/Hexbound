@@ -138,3 +138,10 @@ func _commit_restart() -> void:
 	# Hold registered. Play the same enter transition used when starting a fresh run.
 	RunSaveManager.request_scene_enter_transition()
 	get_tree().change_scene_to_file(ScenePaths.MAIN)
+
+
+## Same path as holding R. Used by the pause menu New Run button.
+func restart_run() -> void:
+	if _is_restarting:
+		return
+	_commit_restart()

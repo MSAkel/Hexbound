@@ -1,20 +1,24 @@
-[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://dfg2b1fdb8xj6"]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://dairebo6vetc2"]
 
 [ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
 [ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
 [ext_resource type="Texture2D" uid="uid://cl0u0jj7pcmpx" path="res://assets/passives/icons/focused_growth.png" id="3_icon"]
 
-[sub_resource type="Resource" id="UnlockCondition_focused"]
+[sub_resource type="Resource" id="UnlockCondition_main"]
 script = ExtResource("1_unlock_script")
-condition_type = 0
-threshold = 500
-description = "Unlock at 500 lifetime triggers"
+condition_type = 14
+threshold = 8
+description = "Trigger one Energy card 8 / 25 times in a single run"
 
 [resource]
 script = ExtResource("2_passive_script")
 id = "focused_growth"
 display_name = "Focused Growth"
-description = "+10% Score in this segment."
+description = "Every 5th activation, an Energy card on this segment permanently gains +1 Energy for the run."
 icon = ExtResource("3_icon")
-effect_value = 0.1
-unlock_condition = SubResource("UnlockCondition_focused")
+max_copies = 2
+copy_thresholds = Array[int]([8, 25])
+effect_type = 3
+effect_value = 1.0
+extra_int = 5
+unlock_condition = SubResource("UnlockCondition_main")

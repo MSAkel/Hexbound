@@ -172,7 +172,7 @@ func _build_copies_badge(remaining: int) -> Control:
 func _build_copy_column(
 	passive: SegmentPassive,
 	unlocked: bool,
-	progress_value: int
+	_progress_value: int
 ) -> VBoxContainer:
 	var copy := VBoxContainer.new()
 	copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -182,17 +182,36 @@ func _build_copy_column(
 	if unlocked:
 		copy.add_child(_make_label(passive.display_name, 19, COLOR_TITLE))
 		copy.add_child(_make_label(passive.description, 14, COLOR_BODY, true))
+		_add_copy_progress_rows(copy, passive)
 		return copy
 
 	copy.add_child(_make_label(_requirement_text(passive), 15, COLOR_MUTED, true))
-	if passive.unlock_condition != null:
-		var ratio := passive.unlock_condition.get_progress_ratio(progress_value)
-		if ratio > 0.0:
-			copy.add_child(_make_progress_bar(ratio))
-		var progress_text := passive.unlock_condition.get_progress_label(progress_value)
-		if not progress_text.is_empty():
-			copy.add_child(_make_label(progress_text, 13, COLOR_MUTED))
+	var display := MetaProgressionManager.get_unlock_progress_display(passive)
+	var ratio := float(display.get("ratio", 0.0))
+	if ratio > 0.0:
+		copy.add_child(_make_progress_bar(ratio))
+	var progress_text := String(display.get("label", ""))
+	if not progress_text.is_empty():
+		copy.add_child(_make_label(progress_text, 13, COLOR_MUTED))
 	return copy
+
+
+## Unlocked passives with extra gated copies show 2/3 plus the next threshold.
+func _add_copy_progress_rows(copy: VBoxContainer, passive: SegmentPassive) -> void:
+	if maxi(1, passive.max_copies) <= 1:
+		return
+	var state := MetaProgressionManager.get_copy_unlock_state(passive)
+	var unlocked_copies := int(state.get("unlocked_copies", 1))
+	var max_copies := int(state.get("max_copies", 1))
+	copy.add_child(_make_label("%d/%d copies" % [unlocked_copies, max_copies], 13, COLOR_MUTED))
+	if bool(state.get("all_unlocked", true)):
+		return
+	var needed := int(state.get("needed", 0))
+	if needed <= 0:
+		return
+	var progress := int(state.get("progress", 0))
+	copy.add_child(_make_progress_bar(clampf(float(progress) / float(needed), 0.0, 1.0)))
+	copy.add_child(_make_label(String(state.get("label", "")), 13, COLOR_MUTED))
 
 
 ## Tile pips mirror how many segment slots this passive will occupy.

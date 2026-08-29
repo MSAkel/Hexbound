@@ -9,6 +9,8 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 @onready var _token_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/TokenRow/TokenSpinBox
 @onready var _seed_label: Label = $ToolsPanel/MarginContainer/VBoxContainer/SeedRow/SeedLabel
 @onready var _complete_round_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton
+@onready var _jump_round_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow/JumpRoundSpinBox
+@onready var _jump_round_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow/JumpRoundButton
 @onready var _pass_turn_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton
 @onready var _open_merchant_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenMerchantButton
 @onready var _open_rune_selection_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenRuneSelectionButton
@@ -26,7 +28,9 @@ func _ready() -> void:
 	_token_spin.value = GoldManager.merchant_tokens
 	EventBus.gold_changed.connect(_on_gold_changed)
 	EventBus.merchant_tokens_changed.connect(_on_tokens_changed)
+	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.challenge_changed.connect(_sync_challenge_option)
+	_jump_round_spin.value = GameManager.current_round
 	_card_picker.hide()
 	_populate_character_options()
 	_populate_challenge_options()
@@ -43,6 +47,7 @@ func _process(_delta: float) -> void:
 func _refresh_action_buttons() -> void:
 	var busy := GameManager.is_processing_turn or RoundFlow.is_transitioning()
 	_complete_round_button.disabled = busy
+	_jump_round_button.disabled = busy
 	_pass_turn_button.disabled = busy
 	_activate_challenge_button.disabled = busy
 	_open_merchant_button.disabled = busy
@@ -76,6 +81,19 @@ func _on_complete_round_pressed() -> void:
 	_dismiss_blocking_panels()
 	AudioManager.play_sfx(UISounds.CLICK)
 	GameManager.debug_meet_round_goal_and_complete()
+
+
+func _on_round_changed(new_round: int) -> void:
+	# Keep the jump field in sync unless the player is mid-edit.
+	if _jump_round_spin.has_focus():
+		return
+	_jump_round_spin.value = new_round
+
+
+func _on_jump_round_pressed() -> void:
+	_dismiss_blocking_panels()
+	AudioManager.play_sfx(UISounds.CLICK)
+	GameManager.debug_jump_to_round(int(_jump_round_spin.value))
 
 
 func _on_pass_turn_pressed() -> void:

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://c4jtcbxdocryv" path="res://assets/passives/icons/steady_growth.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 30
+threshold = 1
+description = "Fill a segment of at least six tiles with one Producer product and complete a turn"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "resonant_array"
+display_name = "Resonant Array"
+description = "A Producer with at least two adjacent Producers of the same product gains +25% output."
+icon = ExtResource("3_icon")
+tile_cost = 2
+max_copies = 1
+effect_type = 15
+effect_value = 0.25
+extra_int = 2
+unlock_condition = SubResource("UnlockCondition_main")

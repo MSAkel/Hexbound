@@ -93,6 +93,7 @@ var segment_passives_editor_character: CharacterDefinition = null
 
 ## segment_index -> placed passives for the current run.
 var _active_passives_by_segment: Dictionary = {}
+var passive_runtime := SegmentPassiveRuntime.new()
 var _run_peak_triggers_single_turn: int = 0
 var _run_peak_segment_score_single_turn: int = 0
 var _run_peak_gold_held: int = 0
@@ -172,6 +173,7 @@ func _on_turn_started() -> void:
 	_activated_tile_cards_this_turn.clear()
 	_current_turn_trigger_count = 0
 	GoldManager.reset_turn_tracking()
+	passive_runtime.reset_turn()
 
 
 func _has_met_round_goal() -> bool:
@@ -251,6 +253,19 @@ func register_tile_card_activation(rune: TileCard) -> void:
 	_run_peak_triggers_single_turn = maxi(_run_peak_triggers_single_turn, _current_turn_trigger_count)
 	if not RunRng.is_unlock_progress_disabled():
 		MetaProgressionManager.add_lifetime_triggers(1)
+		if rune.type == TileCard.TileCardType.PRODUCER:
+			MetaProgressionManager.add_producer_trigger()
+			if rune.product == TileCard.Product.SCORE:
+				MetaProgressionManager.note_energy_card_triggers(rune.run_trigger_count)
+			elif rune.product == TileCard.Product.MULTIPLIER:
+				MetaProgressionManager.note_mult_card_triggers(rune.run_trigger_count)
+		elif rune.type == TileCard.TileCardType.SUPPORT:
+			MetaProgressionManager.add_support_trigger()
+		if _activated_tile_cards_this_turn.count(rune) >= 2:
+			if rune.type == TileCard.TileCardType.PRODUCER:
+				MetaProgressionManager.add_producer_retrigger()
+			elif rune.type == TileCard.TileCardType.SUPPORT:
+				MetaProgressionManager.add_support_retrigger()
 
 ## Read rune activation to check if it has already fired this turn.
 ## Used by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
@@ -265,6 +280,10 @@ func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
 #endregion
 
 #region Segment passive runtime
+
+func get_current_turn_trigger_count() -> int:
+	return _current_turn_trigger_count
+
 
 func apply_active_segment_passives(character_id: String) -> void:
 	_active_passives_by_segment.clear()
@@ -281,82 +300,29 @@ func apply_active_segment_passives(character_id: String) -> void:
 			if passive != null:
 				passives.append(passive)
 		_active_passives_by_segment[segment_index] = passives
+	passive_runtime.bind(_active_passives_by_segment)
+	passive_runtime.reset_turn()
 
 
 func get_passives_for_segment(segment_index: int) -> Array[SegmentPassive]:
-	var raw: Variant = _active_passives_by_segment.get(segment_index, [])
-	var result: Array[SegmentPassive] = []
-	if raw is Array:
-		for entry in raw:
-			if entry is SegmentPassive:
-				result.append(entry)
-	return result
+	return passive_runtime.get_passives(segment_index)
 
 
-func get_segment_passive_flat_bonus(segment_index: int) -> int:
-	var total := 0
-	for passive in get_passives_for_segment(segment_index):
-		if passive.effect_type == SegmentPassive.EffectType.SEGMENT_SCORE_FLAT:
-			total += int(passive.effect_value)
-	return total
-
-
-func get_segment_passive_score_mult_factor(segment_index: int) -> float:
-	var bonus := 0.0
-	for passive in get_passives_for_segment(segment_index):
-		if passive.effect_type == SegmentPassive.EffectType.SEGMENT_SCORE_MULT:
-			bonus += passive.effect_value
-	return 1.0 + bonus
-
-
-func get_segment_passive_output_mult_factor(segment_index: int) -> float:
-	var bonus := 0.0
-	for passive in get_passives_for_segment(segment_index):
-		if passive.effect_type == SegmentPassive.EffectType.CARD_OUTPUT_MULT:
-			bonus += passive.effect_value
-	return 1.0 + bonus
-
-
-func roll_segment_support_retrigger(tile: Hex) -> bool:
-	return _roll_segment_retrigger(tile, SegmentPassive.EffectType.SUPPORT_RETRIGGER, "support_retrigger")
-
-
-func roll_segment_production_retrigger(tile: Hex) -> bool:
-	return _roll_segment_retrigger(tile, SegmentPassive.EffectType.PRODUCTION_RETRIGGER, "production_retrigger")
-
-
-## Retrigger chance is keyed to the source tile so other combat rolls cannot change it.
-func _roll_segment_retrigger(tile: Hex, effect_type: SegmentPassive.EffectType, tag: String) -> bool:
-	if tile == null or tile.map == null:
-		return false
-	var segment_index := tile.map.get_segment_index(tile.coordinates)
-	var rng := RunRng.create_card_effect_rng(tile, tile.active_tile_card, tag)
-	for passive in get_passives_for_segment(segment_index):
-		if passive.effect_type != effect_type:
-			continue
-		if rng.randf() < passive.effect_value:
-			return true
-	return false
-
-
-## Segment passives adjust power and the final product. UI and turn resolve must share this breakdown.
+## Score is Energy x Mult, rounded at the segment. Passives must already be on the cards.
 func get_segment_turn_contribution_breakdown(
-	segment_index: int,
+	_segment_index: int,
 	energy: int,
-	multiplier: int
+	multiplier: float
 ) -> Dictionary:
-	var display_energy := energy + get_segment_passive_flat_bonus(segment_index)
-	var contribution := int(
-		round(float(display_energy * multiplier) * get_segment_passive_score_mult_factor(segment_index))
-	)
+	var contribution := int(round(float(energy) * multiplier))
 	return {
-		"display_energy": display_energy,
+		"display_energy": energy,
 		"display_multiplier": multiplier,
 		"contribution": contribution,
 	}
 
 
-func compute_segment_turn_contribution(segment_index: int, energy: int, multiplier: int) -> int:
+func compute_segment_turn_contribution(segment_index: int, energy: int, multiplier: float) -> int:
 	return int(
 		get_segment_turn_contribution_breakdown(segment_index, energy, multiplier)["contribution"]
 	)
@@ -381,7 +347,10 @@ func build_run_snapshot(is_win: bool) -> Dictionary:
 	return {
 		"is_win": is_win,
 		"character_id": character_id,
+		"difficulty": int(selected_difficulty),
+		"rounds_completed": current_round if is_win else maxi(0, current_round - 1),
 		"peak_gold_held": _run_peak_gold_held,
+		"gold_earned": GoldManager.total_earned_this_run,
 		"peak_segment_score_single_turn": _run_peak_segment_score_single_turn,
 		"peak_triggers_single_turn": _run_peak_triggers_single_turn,
 		"full_map_cards": _run_full_map_cards_achieved,
@@ -390,11 +359,14 @@ func build_run_snapshot(is_win: bool) -> Dictionary:
 
 func clear_run_peak_tracking() -> void:
 	_active_passives_by_segment.clear()
+	passive_runtime.bind({})
+	passive_runtime.reset_turn()
 	_run_peak_triggers_single_turn = 0
 	_run_peak_segment_score_single_turn = 0
 	_run_peak_gold_held = 0
 	_current_turn_trigger_count = 0
 	_run_full_map_cards_achieved = false
+	MetaProgressionManager.begin_run_tracking()
 
 #endregion
 
@@ -479,10 +451,30 @@ func reset_for_new_run() -> void:
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.
 func set_starting_round_for_debug(starting_round: int) -> void:
-	current_round = maxi(1, starting_round)
+	_debug_apply_round_jump(maxi(1, starting_round))
+
+
+## Debug helper. Teleports the live run to a round without playing the skipped rounds.
+func debug_jump_to_round(target_round: int) -> void:
+	if _is_processing_turn or RoundFlow.is_transitioning():
+		return
+	_debug_apply_round_jump(maxi(1, target_round))
+
+
+## Shared round teleport used by run-start debug and the live sandbox jump field.
+func _debug_apply_round_jump(target_round: int) -> void:
+	RoundFlow.debug_abort_transition()
+	_is_processing_turn = false
+	_turn_score = 0
+	total_round_score = 0
+	GoldManager.reset_round_tracking()
+	current_round = target_round
 	_apply_round_state()
-	# No merchant visit precedes a debug start, so the reveal plays right away.
+	passive_runtime.reset_turn()
+	EventBus.turn_started.emit()
+	# No merchant visit precedes a debug jump, so the reveal plays right away.
 	ChallengeManager.play_reveal()
+	RunSaveManager.request_autosave()
 
 
 func capture_run_state() -> Dictionary:

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://cl0u0jj7pcmpx" path="res://assets/passives/icons/focused_growth.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 31
+threshold = 9
+character_id = "encircler"
+description = "The Encircler level 9"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "closed_orbit"
+character_id = "encircler"
+display_name = "Closed Orbit"
+description = "After every active card in a ring of at least 6 resolves, Energy cards in that ring permanently gain +1 Energy. Once per qualifying ring per turn."
+icon = ExtResource("3_icon")
+tile_cost = 3
+max_copies = 1
+effect_type = 24
+effect_value = 1.0
+unlock_condition = SubResource("UnlockCondition_main")

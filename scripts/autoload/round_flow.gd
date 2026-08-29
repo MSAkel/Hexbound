@@ -193,6 +193,15 @@ func _start_reveal_timeout() -> void:
 #region Run save / load
 
 func reset_for_new_run() -> void:
+	_abort_transition()
+
+
+## Drops any in-flight round transition so sandbox tools can teleport the run.
+func debug_abort_transition() -> void:
+	_abort_transition()
+
+
+func _abort_transition() -> void:
 	_reveal_timeout_token = null
 	_step = Step.IDLE
 	_challenge_reveal_armed = false

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
+[ext_resource type="Texture2D" uid="uid://cl0u0jj7pcmpx" path="res://assets/passives/icons/focused_growth.png" id="3_icon"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("1_unlock_script")
+condition_type = 15
+threshold = 8
+description = "Trigger one Mult card 8 / 25 times in a single run"
+
+[resource]
+script = ExtResource("2_passive_script")
+id = "ratio_step"
+display_name = "Ratio Step"
+description = "Every 5th activation, a Mult card on this segment permanently gains +0.1 Mult for the run."
+icon = ExtResource("3_icon")
+tile_cost = 1
+max_copies = 2
+copy_thresholds = Array[int]([8, 25])
+effect_type = 4
+effect_value = 0.1
+extra_int = 5
+unlock_condition = SubResource("UnlockCondition_main")

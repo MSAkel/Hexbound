@@ -100,7 +100,6 @@ theme_override_styles/panel = SubResource("Overlay")
 script = ExtResource("1_script")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=486542318]
-custom_minimum_size = Vector2(684, 792)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -109,8 +108,8 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -342.0
 offset_top = -396.0
-offset_right = 342.0
-offset_bottom = 396.0
+offset_right = 312.0
+offset_bottom = 304.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("Card")
@@ -132,7 +131,7 @@ theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
 theme_override_colors/font_shadow_color = Color(1, 0.96, 0.82, 0.42)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 43
+theme_override_font_sizes/font_size = 38
 text = "Round Complete"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -161,7 +160,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 32
 text = "Total Score"
 vertical_alignment = 1
 
@@ -169,7 +168,7 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(153, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 47
+theme_override_font_sizes/font_size = 36
 text = "660"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -237,7 +236,7 @@ theme_override_constants/separation = 11
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Round completion"
 vertical_alignment = 1
 
@@ -252,7 +251,9 @@ vertical_alignment = 1
 
 [node name="BaseGoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=677500682]
 custom_minimum_size = Vector2(40, 40)
+custom_maximum_size = Vector2(40, 40)
 layout_mode = 2
+size_flags_vertical = 4
 texture = ExtResource("2_gold")
 expand_mode = 3
 stretch_mode = 5
@@ -266,7 +267,7 @@ theme_override_constants/separation = 11
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 22
 text = "Early finish (x1 per turn)"
 vertical_alignment = 1
 
@@ -281,7 +282,9 @@ vertical_alignment = 1
 
 [node name="EarlyGoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow" unique_id=767788315]
 custom_minimum_size = Vector2(40, 40)
+custom_maximum_size = Vector2(40, 40)
 layout_mode = 2
+size_flags_vertical = 4
 texture = ExtResource("2_gold")
 expand_mode = 3
 stretch_mode = 5
@@ -300,7 +303,7 @@ theme_override_constants/separation = 16
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Merchant Token (x1 per turn)"
 vertical_alignment = 1
 
@@ -314,7 +317,8 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="MerchantTokenIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1524448279]
-custom_minimum_size = Vector2(65, 52)
+custom_minimum_size = Vector2(60, 47)
+custom_maximum_size = Vector2(60, 47)
 layout_mode = 2
 texture = ExtResource("3_token")
 expand_mode = 3

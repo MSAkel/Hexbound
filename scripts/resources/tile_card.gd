@@ -78,8 +78,12 @@ const BASE_PRICE_BY_RARITY := {
 var activation_count: int = 0
 var is_active: bool = true
 # Runtime buffs from other tile cards, added to the base production amount.
-var bonus_production_amount: int = 0
-# Empowered tile cards triple their output once on trigger.
+var bonus_production_amount: float = 0.0
+# Extra % output from passives such as Growth Capsule, applied on top of other scales.
+var personal_output_bonus: float = 0.0
+# Activations of this instance during the current run, used by growth passives.
+var run_trigger_count: int = 0
+# Empowered tile cards double their output once on trigger.
 var is_empowered: bool = false
 # Scales all tile card output during this activation (score, gold, generated multiplier resource).
 var _activation_output_scale: float = 1.0
@@ -177,9 +181,11 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 	if product == Product.HYBRID or product == Product.NONE:
 		return _hidden_board_chip()
 	var amount := _get_production_amount()
-	if amount <= 0:
+	if amount <= 0.0:
 		return _hidden_board_chip()
-	return _amount_board_chip(amount)
+	if product == Product.MULTIPLIER:
+		return _amount_board_chip_float(amount)
+	return _amount_board_chip(int(round(amount)))
 
 
 func _sigil_board_chip() -> Dictionary:
@@ -193,9 +199,25 @@ func _hidden_board_chip() -> Dictionary:
 	return _make_board_chip(BoardChipMode.HIDDEN, "", null, Color.WHITE)
 
 
-func _amount_board_chip(amount: int, icon: Texture2D = null) -> Dictionary:
+## Energy and Gold chips round to a whole number. Pass a float from production helpers.
+func _amount_board_chip(amount: Variant, icon: Texture2D = null) -> Dictionary:
 	var chip_icon: Texture2D = icon if icon != null else get_product_icon()
-	return _make_board_chip(BoardChipMode.AMOUNT, str(amount), chip_icon, get_chip_panel_color())
+	return _make_board_chip(
+		BoardChipMode.AMOUNT,
+		str(int(round(float(amount)))),
+		chip_icon,
+		get_chip_panel_color()
+	)
+
+
+func _amount_board_chip_float(amount: float, icon: Texture2D = null) -> Dictionary:
+	var chip_icon: Texture2D = icon if icon != null else get_product_icon()
+	return _make_board_chip(
+		BoardChipMode.AMOUNT,
+		CountingNumber.format_mult(amount),
+		chip_icon,
+		get_chip_panel_color()
+	)
 
 
 func _make_board_chip(
@@ -263,8 +285,12 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	if not is_active:
 		return
 
+	run_trigger_count += 1
 	GameManager.register_tile_card_activation(self)
 	EventBus.tile_card_activated.emit(self)
+
+	if tile.map != null:
+		GameManager.passive_runtime.before_activation(tile, self)
 
 	var output_scale := activation_scale
 	if is_empowered:
@@ -272,23 +298,19 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		is_empowered = false
 		EventBus.tile_card_empower_consumed.emit(self)
 	if tile.map != null:
-		var segment_index := tile.map.get_segment_index(tile.coordinates)
-		output_scale *= GameManager.get_segment_passive_output_mult_factor(segment_index)
+		output_scale *= GameManager.passive_runtime.get_output_scale_bonus(tile, self)
 
 	_activation_output_scale = output_scale
 	# Count this activation before the card resolves so "triggers so far" includes the current one.
 	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
-	_try_segment_passive_retrigger(
-		tile,
-		TileCardType.SUPPORT,
-		GameManager.roll_segment_support_retrigger
-	)
-	_try_segment_passive_retrigger(
-		tile,
-		TileCardType.PRODUCER,
-		GameManager.roll_segment_production_retrigger
-	)
+	if tile.map != null:
+		GameManager.passive_runtime.after_activation(tile, self)
+		var segment_index := tile.map.get_segment_index(tile.coordinates)
+		if tile.map.get_segment_size(segment_index) == 1:
+			MetaProgressionManager.add_one_tile_activation()
+			MetaProgressionManager.note_one_tile_same_card_triggers(run_trigger_count)
+	_try_segment_passive_retrigger(tile)
 	_activation_output_scale = 1.0
 
 # Queue extra tile card activations to resolve before tile flow continues.
@@ -318,6 +340,11 @@ func _try_queue_tile_card_triggers(
 		failed_tile_card_text(source_tile)
 		return false
 
+	if type == TileCardType.SUPPORT:
+		for card in triggerable:
+			if card.type == TileCardType.PRODUCER:
+				MetaProgressionManager.add_support_affected_producer()
+
 	queue_tile_card_triggers(source_tile, triggerable, aligned_scales)
 	return true
 
@@ -326,13 +353,10 @@ func apply_on_placement(_tile: Hex) -> void:
 	pass
 
 
-func _try_segment_passive_retrigger(tile: Hex, card_type: TileCardType, roll: Callable) -> void:
-	if type != card_type or tile.map == null:
+func _try_segment_passive_retrigger(tile: Hex) -> void:
+	if tile == null or tile.map == null:
 		return
-	var segment_index := tile.map.get_segment_index(tile.coordinates)
-	if segment_index < 0:
-		return
-	if not roll.call(tile):
+	if not GameManager.passive_runtime.should_retrigger(tile, self):
 		return
 	_try_queue_tile_card_triggers(tile, [self])
 
@@ -376,35 +400,36 @@ func get_trigger_preview_coords(_hover_tile: Hex) -> Array[Vector2i]:
 
 
 #region --- Energy, gold, and multiplier, and floating text helpers ---
-func add_score(tile: Hex, base_points: int) -> void:
-	var points := int(round(base_points * _activation_output_scale))
+func add_score(tile: Hex, base_points: Variant) -> void:
+	var points := int(round(float(base_points) * _activation_output_scale))
 	tile.map.add_turn_score_for_tile(tile, points)
 	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_ENERGY)
 
-func add_gold(tile: Hex, base_amount: int) -> void:
-	var amount := int(round(base_amount * _activation_output_scale))
+func add_gold(tile: Hex, base_amount: Variant) -> void:
+	var amount := int(round(float(base_amount) * _activation_output_scale))
+	amount += GameManager.passive_runtime.extra_gold_for_card(tile, self)
 	tile.map.add_turn_gold_for_tile(tile, amount)
 	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD)
 
-func add_multiplier(tile: Hex, base_amount: int) -> void:
-	var amount := int(round(base_amount * _activation_output_scale))
+func add_multiplier(tile: Hex, base_amount: Variant) -> void:
+	var amount := float(base_amount) * _activation_output_scale
 	tile.map.add_turn_multiplier_for_tile(tile, amount)
-	_create_floating_text(tile, "+%d" % amount, Color.PLUM, ICON_MULT)
+	_create_floating_text(tile, "+%s" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
 
 
 # Credits another segment's Energy. Float stays on this tile, destination segment flashes.
-func add_score_to_segment(tile: Hex, segment_index: int, base_points: int) -> void:
-	var points := int(round(base_points * _activation_output_scale))
+func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -> void:
+	var points := int(round(float(base_points) * _activation_output_scale))
 	tile.map.add_turn_score_for_segment(segment_index, points)
 	_create_floating_text(tile, "+%d → next" % points, Color.AQUA, ICON_ENERGY)
 	tile.map.flash_segment_highlight(segment_index)
 
 
 # Credits another segment's turn multiplier. Float stays on this tile, destination segment flashes.
-func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: int) -> void:
-	var amount := int(round(base_amount * _activation_output_scale))
+func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: Variant) -> void:
+	var amount := float(base_amount) * _activation_output_scale
 	tile.map.add_turn_multiplier_for_segment(segment_index, amount)
-	_create_floating_text(tile, "+%d → next" % amount, Color.PLUM, ICON_MULT)
+	_create_floating_text(tile, "+%s → next" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
 	tile.map.flash_segment_highlight(segment_index)
 
 
@@ -438,6 +463,8 @@ func _try_empower_tile_card(source_tile: Hex, target: TileCard) -> bool:
 	if not _is_triggerable_tile_card(source_tile, target) or target.is_empowered:
 		return false
 	target._empower()
+	if type == TileCardType.SUPPORT:
+		MetaProgressionManager.add_support_affected_producer()
 	return true
 
 
@@ -452,8 +479,8 @@ func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE, 
 
 #endregion --- Energy, gold, and multiplier, and floating text helpers ---
 
-func _get_production_amount() -> int:
-	return base_production_amount + bonus_production_amount
+func _get_production_amount() -> float:
+	return float(base_production_amount) + bonus_production_amount
 
 func _empower() -> void:
 	if is_empowered:
@@ -721,7 +748,15 @@ func _coords_for_next_segment(tile: Hex) -> Array[Vector2i]:
 
 
 ## Remove a placed tile card instance from the map (clears its tile and cancels queued triggers).
-func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard) -> void:
+func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard, counts_as_break: bool = true) -> void:
+	if counts_as_break:
+		if GameManager.passive_runtime.try_prevent_break(source_tile, tile_card):
+			_create_floating_text(source_tile, "Saved", Color(0.55, 0.85, 0.7, 1.0))
+			return
+		var segment_index := -1
+		if source_tile.map != null:
+			segment_index = source_tile.map.get_segment_index(source_tile.coordinates)
+		MetaProgressionManager.record_card_broken(segment_index == -1 or source_tile.map.get_segment_size(segment_index) == 1)
 	source_tile.map.destroy_placed_tile_card(tile_card)
 
 
@@ -774,7 +809,7 @@ func _replace_placed_tile_card(tile: Hex, replacement_template: TileCard) -> voi
 	var old_card := tile.active_tile_card
 	var retained_bonus := old_card.bonus_production_amount
 
-	_destroy_placed_tile_card(tile, old_card)
+	_destroy_placed_tile_card(tile, old_card, false)
 	tile.place_tile_card(replacement_template)
 
 	var new_card := tile.active_tile_card
