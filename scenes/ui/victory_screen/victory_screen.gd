@@ -16,10 +16,10 @@ var _entrance_tween: Tween
 
 func _ready() -> void:
 	hide()
-	EventBus.all_challenges_completed.connect(_on_all_challenges_completed)
+	EventBus.all_events_completed.connect(_on_all_events_completed)
 
 
-func _on_all_challenges_completed() -> void:
+func _on_all_events_completed() -> void:
 	played_as_label.text = GameManager.selected_character.display_name if GameManager.selected_character else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
 	round_value.text = str(GameManager.current_round)

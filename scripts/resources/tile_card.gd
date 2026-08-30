@@ -282,7 +282,7 @@ func get_shop_price(discount: float = 0.0) -> int:
 
 # Occupied tile for modifiers, empty tile plus placement restrictions for all others.
 func can_play_on(hex: Hex) -> bool:
-	if hex.is_disabled_by_difficulty:
+	if hex.is_placement_blocked():
 		return false
 	if type == TileCardType.UTILITY:
 		return hex.active_tile_card != null
@@ -292,7 +292,7 @@ func can_play_on(hex: Hex) -> bool:
 
 
 func is_placement_candidate(hex: Hex) -> bool:
-	if hex.is_disabled_by_difficulty:
+	if hex.is_placement_blocked():
 		return false
 	if type == TileCardType.UTILITY:
 		return hex.active_tile_card != null
@@ -322,7 +322,9 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	var output_scale := activation_scale
 	_activation_was_empowered = is_empowered
 	if is_empowered:
-		output_scale *= EMPOWER_OUTPUT_SCALE
+		# Null Charge still spends Empower. The doubled output never applies.
+		if not EventManager.are_empowers_blocked():
+			output_scale *= EMPOWER_OUTPUT_SCALE
 		is_empowered = false
 		EventBus.tile_card_empower_consumed.emit(self)
 	if tile.map != null:
@@ -345,6 +347,8 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 
 # Queue extra tile card activations to resolve before tile flow continues.
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
+	if EventManager.are_retriggers_blocked():
+		return
 	source_tile.map.queue_tile_card_triggers(tile_cards, activation_scales, source_tile)
 
 
@@ -367,6 +371,9 @@ func _try_queue_tile_card_triggers(
 	tile_cards: Array[TileCard],
 	activation_scales: Array[float] = [],
 ) -> bool:
+	if EventManager.are_retriggers_blocked():
+		failed_tile_card_text(source_tile)
+		return false
 	var triggerable: Array[TileCard] = []
 	var aligned_scales: Array[float] = []
 	var host := _activation_host_card(source_tile)
@@ -475,6 +482,8 @@ func add_score(tile: Hex, base_points: Variant) -> void:
 	PotionManager.relay_product_if_needed(tile, Product.SCORE, points)
 
 func add_gold(tile: Hex, base_amount: Variant) -> void:
+	if not EventManager.can_gain_gold():
+		return
 	var amount := int(round(float(base_amount) * _activation_output_scale))
 	amount += GameManager.passive_runtime.extra_gold_for_card(tile, self)
 	tile.map.add_turn_gold_for_tile(tile, amount)
@@ -492,6 +501,9 @@ func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> voi
 
 # Credits another segment's Energy. Float stays on this tile, destination segment flashes.
 func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -> void:
+	if EventManager.are_relays_blocked():
+		failed_tile_card_text(tile)
+		return
 	var points := int(round(float(base_points) * _activation_output_scale))
 	tile.map.add_turn_score_for_segment(segment_index, points)
 	tile.map.mark_segment_received_relay(segment_index)
@@ -501,6 +513,9 @@ func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -
 
 # Credits another segment's turn multiplier. Float stays on this tile, destination segment flashes.
 func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: Variant) -> void:
+	if EventManager.are_relays_blocked():
+		failed_tile_card_text(tile)
+		return
 	var amount := float(base_amount) * _activation_output_scale
 	tile.map.add_turn_multiplier_for_segment(segment_index, amount)
 	tile.map.mark_segment_received_relay(segment_index)

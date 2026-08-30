@@ -138,15 +138,15 @@ text = "Draw random card"
 layout_mode = 2
 text = "Pick a card..."
 
-[node name="ChallengeRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1982736451]
+[node name="EventRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1982736451]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ChallengeOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow" unique_id=1982736452]
+[node name="EventOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow" unique_id=1982736452]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ActivateChallengeButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow" unique_id=1982736453]
+[node name="ActivateEventButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow" unique_id=1982736453]
 layout_mode = 2
 text = "Activate"
 
@@ -272,7 +272,7 @@ columns = 6
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PassTurnButton" to="." method="_on_pass_turn_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PickCardButton" to="." method="_on_pick_card_pressed"]
-[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow/ActivateChallengeButton" to="." method="_on_activate_challenge_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/ActivateEventButton" to="." method="_on_activate_event_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow/SetTokensButton" to="." method="_on_set_tokens_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton" to="." method="_on_open_merchant_pressed"]

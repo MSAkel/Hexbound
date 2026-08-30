@@ -1,6 +1,6 @@
 extends Panel
 
-## Collection screen for browsing every rune, character, challenge, and passive in the game.
+## Collection screen for browsing every rune, character, event, and passive in the game.
 
 signal closed
 
@@ -8,7 +8,7 @@ signal closed
 @onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
-const CHALLENGE_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
+const EVENT_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
 const PASSIVE_TILE := preload("res://assets/passives/passives_tile.png")
 const LOCKED_PASSIVE_ICON := preload("res://assets/passives/icons/locked_modifier.png")
 
@@ -21,7 +21,7 @@ const ITEM_BORDER := Color("617575")
 enum CollectionTab {
 	CARDS,
 	CHARACTERS,
-	CHALLENGES,
+	EVENTS,
 	PASSIVES,
 }
 
@@ -37,8 +37,8 @@ func _show_tab(tab: int) -> void:
 			_show_cards()
 		CollectionTab.CHARACTERS:
 			_show_characters()
-		CollectionTab.CHALLENGES:
-			_show_challenges()
+		CollectionTab.EVENTS:
+			_show_events()
 		CollectionTab.PASSIVES:
 			_show_passives()
 
@@ -65,10 +65,10 @@ func _show_characters() -> void:
 		collection_grid_container.add_child(_create_character_entry(character))
 
 
-func _show_challenges() -> void:
+func _show_events() -> void:
 	collection_grid_container.columns = 3
-	for challenge_type: ChallengeManager.Type in ChallengeManager.ALL_CHALLENGES:
-		collection_grid_container.add_child(_create_challenge_entry(challenge_type))
+	for event_type: EventManager.Type in EventManager.ALL_EVENTS:
+		collection_grid_container.add_child(_create_event_entry(event_type))
 
 
 func _show_passives() -> void:
@@ -174,8 +174,8 @@ func _create_character_entry(character: CharacterDefinition) -> PanelContainer:
 	return panel
 
 
-func _create_challenge_entry(challenge_type: ChallengeManager.Type) -> PanelContainer:
-	var panel := _create_item_panel(Vector2(500, 190))
+func _create_event_entry(event_type: EventManager.Type) -> PanelContainer:
+	var panel := _create_item_panel(Vector2(500, 210))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 18)
 	panel.add_child(row)
@@ -183,7 +183,7 @@ func _create_challenge_entry(challenge_type: ChallengeManager.Type) -> PanelCont
 	var icon := TextureRect.new()
 	icon.custom_minimum_size = Vector2(72, 72)
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	icon.texture = CHALLENGE_ICON
+	icon.texture = EVENT_ICON
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	row.add_child(icon)
@@ -193,12 +193,13 @@ func _create_challenge_entry(challenge_type: ChallengeManager.Type) -> PanelCont
 	details.add_theme_constant_override("separation", 10)
 	row.add_child(details)
 
-	details.add_child(_create_label(ChallengeManager.get_challenge_name(challenge_type).to_upper(), 25, TEXT_PRIMARY))
+	details.add_child(_create_label(EventManager.get_event_name(event_type).to_upper(), 25, TEXT_PRIMARY))
 	details.add_child(_create_separator())
-	var description := _create_label(ChallengeManager.get_challenge_description(challenge_type), 17, TEXT_SECONDARY)
+	var description := _create_label(EventManager.get_event_description(event_type), 17, TEXT_SECONDARY)
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	details.add_child(description)
+	details.add_child(_create_label(EventManager.get_allowed_rounds_label(event_type).to_upper(), 14, ACCENT))
 	return panel
 
 

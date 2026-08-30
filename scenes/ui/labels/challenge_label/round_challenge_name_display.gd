@@ -1,6 +1,6 @@
 extends Control
 
-## Center-screen challenge reveal. Stays until click, then flies into ChallengeContainer.
+## Center-screen event reveal. Stays until click, then flies into EventContainer.
 
 enum Phase { HIDDEN, INTRO, DOCKING, DOCKED }
 
@@ -30,15 +30,15 @@ const CENTER_OFFSETS := {
 
 @onready var dim_overlay: ColorRect = $DimOverlay
 @onready var banner: VBoxContainer = $Banner
-@onready var challenge_icon: TextureRect = $Banner/KickerRow/ChallengeIcon
+@onready var event_icon: TextureRect = $Banner/KickerRow/EventIcon
 @onready var kicker_label: Label = $Banner/KickerRow/KickerLabel
-@onready var challenge_label: RichTextLabel = $Banner/ChallengeName
+@onready var event_label: RichTextLabel = $Banner/EventName
 @onready var description_label: Label = $Banner/Description
 @onready var skip_hint: Label = $Banner/SkipHint
 
 var _phase: Phase = Phase.HIDDEN
 var _reveal_id := 0
-var _challenge_name := ""
+var _event_name := ""
 var _tween: Tween
 var _name_font_size := float(CENTER_NAME_SIZE)
 var _wave_amp := CENTER_WAVE_AMP
@@ -47,8 +47,8 @@ var _wave_amp := CENTER_WAVE_AMP
 func _ready() -> void:
 	hide()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	EventBus.challenge_banner_shown.connect(_on_challenge_banner_shown)
-	EventBus.challenge_banner_hidden.connect(_on_challenge_banner_hidden)
+	EventBus.event_banner_shown.connect(_on_event_banner_shown)
+	EventBus.event_banner_hidden.connect(_on_event_banner_hidden)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -60,10 +60,10 @@ func _gui_input(event: InputEvent) -> void:
 		_begin_dock()
 
 
-func _on_challenge_banner_shown(challenge_name: String, dock_immediately: bool = false) -> void:
+func _on_event_banner_shown(event_name: String, dock_immediately: bool = false) -> void:
 	_reveal_id += 1
 	var reveal_id := _reveal_id
-	_challenge_name = challenge_name
+	_event_name = event_name
 	_apply_copy()
 
 	if dock_immediately:
@@ -80,7 +80,7 @@ func _on_challenge_banner_shown(challenge_name: String, dock_immediately: bool =
 	_play_intro()
 
 
-func _on_challenge_banner_hidden() -> void:
+func _on_event_banner_hidden() -> void:
 	_reveal_id += 1
 	_kill_tween()
 	_phase = Phase.HIDDEN
@@ -149,7 +149,7 @@ func _begin_dock() -> void:
 	_tween.tween_property(dim_overlay, "color:a", 0.0, duration * 0.7).set_trans(Tween.TRANS_QUAD).set_ease(
 		Tween.EASE_IN
 	)
-	_tween.tween_property(challenge_icon, "custom_minimum_size", DOCKED_ICON_SIZE, duration)
+	_tween.tween_property(event_icon, "custom_minimum_size", DOCKED_ICON_SIZE, duration)
 	_tween.tween_method(_set_name_font_size, _name_font_size, float(DOCKED_NAME_SIZE), duration)
 	_tween.tween_method(_set_kicker_font_size, float(CENTER_KICKER_SIZE), float(DOCKED_KICKER_SIZE), duration)
 	_tween.tween_method(_set_wave_amp, _wave_amp, DOCKED_WAVE_AMP, duration)
@@ -166,16 +166,16 @@ func _finish_dock() -> void:
 	banner.scale = Vector2.ONE
 	hide()
 	# RoundFlow holds the first turn until this lands. The chip then shows the copy.
-	EventBus.challenge_reveal_finished.emit()
+	EventBus.event_reveal_finished.emit()
 
 
 func _show_docked_immediately() -> void:
-	# Save reload already knows the challenge. Skip the overlay and show the chip.
+	# Save reload already knows the event. Skip the overlay and show the chip.
 	_kill_tween()
 	_phase = Phase.DOCKED
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hide()
-	EventBus.challenge_reveal_finished.emit()
+	EventBus.event_reveal_finished.emit()
 
 
 func _prepare_intro_visuals() -> void:
@@ -185,7 +185,7 @@ func _prepare_intro_visuals() -> void:
 	_set_kicker_font_size(float(CENTER_KICKER_SIZE))
 	_set_wave_amp(CENTER_WAVE_AMP)
 	_set_name_outline(float(CENTER_NAME_OUTLINE))
-	challenge_icon.custom_minimum_size = CENTER_ICON_SIZE
+	event_icon.custom_minimum_size = CENTER_ICON_SIZE
 	description_label.show()
 	description_label.modulate.a = 1.0
 	skip_hint.show()
@@ -198,8 +198,8 @@ func _prepare_intro_visuals() -> void:
 
 func _apply_copy() -> void:
 	_refresh_name_bbcode()
-	description_label.text = ChallengeManager.get_challenge_description(ChallengeManager.active_challenge)
-	kicker_label.text = "CHALLENGE ROUND %d" % GameManager.current_round
+	description_label.text = EventManager.get_event_description(EventManager.active_event)
+	kicker_label.text = "EVENT ROUND %d" % GameManager.current_round
 
 
 func _apply_center_layout() -> void:
@@ -215,7 +215,7 @@ func _apply_center_layout() -> void:
 
 
 func _get_dock_target_global_rect() -> Rect2:
-	var slot := get_tree().get_first_node_in_group("challenge_hud_slot") as Control
+	var slot := get_tree().get_first_node_in_group("event_hud_slot") as Control
 	if slot == null:
 		var viewport := get_viewport_rect()
 		return Rect2(viewport.size - Vector2(98.0, 98.0), Vector2(66.0, 66.0))
@@ -224,7 +224,7 @@ func _get_dock_target_global_rect() -> Rect2:
 
 func _set_name_font_size(value: float) -> void:
 	_name_font_size = value
-	challenge_label.add_theme_font_size_override("normal_font_size", int(round(value)))
+	event_label.add_theme_font_size_override("normal_font_size", int(round(value)))
 
 
 func _set_kicker_font_size(value: float) -> void:
@@ -237,11 +237,11 @@ func _set_wave_amp(value: float) -> void:
 
 
 func _set_name_outline(value: float) -> void:
-	challenge_label.add_theme_constant_override("outline_size", int(round(value)))
+	event_label.add_theme_constant_override("outline_size", int(round(value)))
 
 
 func _refresh_name_bbcode() -> void:
-	challenge_label.text = "[wave amp=%d freq=2]%s[/wave]" % [int(round(_wave_amp)), _challenge_name]
+	event_label.text = "[wave amp=%d freq=2]%s[/wave]" % [int(round(_wave_amp)), _event_name]
 
 
 func _center_banner_pivot() -> void:

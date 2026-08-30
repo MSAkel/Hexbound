@@ -24,8 +24,8 @@ const MAX_BODY_HEIGHT := 350.0
 @onready var _open_merchant_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton
 @onready var _open_rune_selection_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenRuneSelectionButton
 @onready var _character_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CharacterRow/CharacterOption
-@onready var _challenge_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow/ChallengeOption
-@onready var _activate_challenge_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow/ActivateChallengeButton
+@onready var _event_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/EventOption
+@onready var _activate_event_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/ActivateEventButton
 @onready var _card_picker: Control = $CardPicker
 @onready var _card_search: LineEdit = $CardPicker/Panel/MarginContainer/VBoxContainer/SearchRow/CardSearch
 @onready var _card_grid: GridContainer = $CardPicker/Panel/MarginContainer/VBoxContainer/ScrollContainer/CardGrid
@@ -40,12 +40,12 @@ func _ready() -> void:
 	EventBus.gold_changed.connect(_on_gold_changed)
 	EventBus.merchant_tokens_changed.connect(_on_tokens_changed)
 	EventBus.round_changed.connect(_on_round_changed)
-	EventBus.challenge_changed.connect(_sync_challenge_option)
+	EventBus.event_changed.connect(_sync_event_option)
 	_jump_round_spin.value = GameManager.current_round
 	_card_picker.hide()
 	_populate_character_options()
-	_populate_challenge_options()
-	_sync_challenge_option()
+	_populate_event_options()
+	_sync_event_option()
 	_refresh_action_buttons()
 	_refresh_seed_label()
 	_collapsed = _load_collapsed_state()
@@ -64,7 +64,7 @@ func _refresh_action_buttons() -> void:
 	_complete_round_button.disabled = busy
 	_jump_round_button.disabled = busy
 	_pass_turn_button.disabled = busy
-	_activate_challenge_button.disabled = busy
+	_activate_event_button.disabled = busy
 	_open_merchant_button.disabled = busy
 	_open_rune_selection_button.disabled = busy
 
@@ -259,35 +259,38 @@ func _populate_character_options() -> void:
 			_character_option.select(index)
 
 
-func _on_activate_challenge_pressed() -> void:
+func _on_activate_event_pressed() -> void:
 	_dismiss_blocking_panels()
 	AudioManager.play_sfx(UISounds.CLICK)
-	var challenge_type := _challenge_option.get_selected_id()
-	if challenge_type == -1:
-		ChallengeManager.debug_clear_challenge()
+	var event_type := _event_option.get_selected_id()
+	if event_type == -1:
+		EventManager.debug_clear_event()
 	else:
-		ChallengeManager.debug_activate_challenge(challenge_type)
+		EventManager.debug_activate_event(event_type)
 
 
-func _populate_challenge_options() -> void:
-	_challenge_option.clear()
-	_challenge_option.add_item("(none)", -1)
-	for challenge_type in ChallengeManager.ALL_CHALLENGES:
-		_challenge_option.add_item(
-			ChallengeManager.get_challenge_name(challenge_type),
-			challenge_type
+func _populate_event_options() -> void:
+	_event_option.clear()
+	_event_option.add_item("(none)", -1)
+	for event_type in EventManager.ALL_EVENTS:
+		_event_option.add_item(
+			"%s (%s)" % [
+				EventManager.get_event_name(event_type),
+				EventManager.get_allowed_rounds_label(event_type),
+			],
+			event_type
 		)
 
 
-func _sync_challenge_option(_unused: Variant = null) -> void:
-	var active_challenge := ChallengeManager.active_challenge
-	if active_challenge == -1:
-		_challenge_option.select(0)
+func _sync_event_option(_unused: Variant = null) -> void:
+	var active_event := EventManager.active_event
+	if active_event == -1:
+		_event_option.select(0)
 		return
 
-	for index in _challenge_option.item_count:
-		if _challenge_option.get_item_id(index) == active_challenge:
-			_challenge_option.select(index)
+	for index in _event_option.item_count:
+		if _event_option.get_item_id(index) == active_event:
+			_event_option.select(index)
 			return
 
 

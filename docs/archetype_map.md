@@ -2,7 +2,24 @@
 
 Named builds for the current tile-card pool. Use this when balancing, adding cards, or writing unlock gates.
 
-Keep this file in sync with [tile_cards_catalog.md](tile_cards_catalog.md) and [segment_passives_catalog.md](segment_passives_catalog.md). Card text lives on the `.tres`. This file records **intent**.
+Keep this file in sync with [tile_cards_catalog.md](tile_cards_catalog.md), [segment_passives_catalog.md](segment_passives_catalog.md), and [events_catalog.md](events_catalog.md). Card text lives on the `.tres`. This file records **intent**.
+
+Headless pick and win rates: [playtest_findings.md](playtest_findings.md). Player bot, 50 runs (10 seeds × 5 layouts, Spark). No card is mandatory. The bot's real plan is Relay + Mult + Energy stamps. Gold Ledger, Bookend, Solo Cell, and Share Load barely show up.
+
+## Playtest evidence (bot floor)
+
+| Build | 50-run read |
+|-------|-------------|
+| Segment Relay | Dominant. Forward Mult 78%, Forward Energy 76%, Load Splitter 62%. Share Load 2%, Relay Sink 30%. |
+| Downstream Cluster | Stamps are staples (Segment Bond 72%, Helping Hand 64%). Advanced Pointer 36%. |
+| Break Cycle | Thicker than expected. Overcharge 56%, Gluttonous 52%, Salvage Core 42%. |
+| Retrigger Engine | Mid. Wildspark 40%, Overdrive 34%, Aftershock 20%. |
+| Empower Burst | Thin payoff. Turntake 14%, Endless Power 32%. |
+| Bookend | Almost unused. Opening Volt / Last Surge / Initial Encore all ≤14%. |
+| Gold Ledger | Dead. Basic Allowance / Lucky Draw / Unstable Concoction 2%. Golden Ratio 0%. |
+| Solo Cell | Lone Cell 8% even on layouts that have a size-1 tile. |
+
+Highest-value card jobs below still stand. Playtests add: the Relay *core* is fine, the Relay *payoffs* (Share Load, Relay Sink) are what the bot will not take.
 
 ## How to read a build
 
@@ -164,7 +181,7 @@ Gold is shop fuel and a scoring stat. A few cards treat the wallet as Energy or 
 | Core | Basic Allowance, Treasury, Prosperity, Golden Ratio, Great Value |
 | Payoff | Treasury, Prosperity, Golden Ratio |
 | Enabler | Lucky Draw, Unstable Concoction, Gold Extraction, Mint Sip, Gilded Contact / Minting Press |
-| Trap | Spending the wallet Treasury wanted to count. Taxation challenge vs Support-heavy Gold plans |
+| Trap | Spending the wallet Treasury wanted to count. Austerity event vs Gold plans that lean on round income |
 
 **Passives.** Gilded Contact, Minting Press.
 
@@ -180,7 +197,7 @@ This is the weakest of the seven. Treat new Gold cards as filling this hole, not
 
 ## Engines and tools (not win conditions)
 
-These feed several primary builds. Do not count them as a eighth "build" until they have a dedicated payoff.
+These feed several primary builds. Do not count them as an eighth build until they have a dedicated payoff.
 
 ### Growth stamps
 

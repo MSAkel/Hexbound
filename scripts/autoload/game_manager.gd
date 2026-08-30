@@ -161,7 +161,10 @@ func finish_turn_processing() -> void:
 			_complete_current_round()
 	else:
 		if not skip_presentation:
-			UiManager.show_runes_choice_panel.emit()
+			if EventManager.should_auto_grant_rune(false):
+				EventManager.grant_auto_rune(false, remaining_turns)
+			elif EventManager.get_runes_pack_size(false) > 0:
+				UiManager.show_runes_choice_panel.emit()
 		EventBus.turn_started.emit()
 
 	if should_consume_turn:
@@ -197,7 +200,7 @@ func _check_run_loss() -> void:
 
 
 func get_max_turns_per_round() -> int:
-	return ChallengeManager.get_max_turns_per_round()
+	return EventManager.get_max_turns_per_round()
 
 
 ## Ascending turn index within the round (1 on the first turn, max on the last).
@@ -211,7 +214,7 @@ func get_skipped_turns() -> int:
 	return maxi(0, remaining_turns - 1)
 
 
-## Borrowed Time and similar drinks add a turn without changing the challenge.
+## Borrowed Time and similar drinks add a turn without changing the event.
 func add_bonus_turn() -> void:
 	remaining_turns += 1
 	EventBus.turn_changed.emit()
@@ -231,7 +234,7 @@ func debug_meet_round_goal_and_complete() -> void:
 ## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
 func _complete_current_round() -> void:
 	GoldManager.apply_round_speed_rewards(get_skipped_turns())
-	if ChallengeManager.is_completing_final_challenge_round():
+	if EventManager.is_completing_final_event_round():
 		RoundFlow.begin_victory_transition()
 		return
 
@@ -249,8 +252,9 @@ func advance_round() -> void:
 ## Round-dependent state and HUD refresh, shared by the round advance and the debug start.
 func _apply_round_state() -> void:
 	required_score = ScoreProgression.get_required_score(current_round)
-	# Apply the challenge first so Rush Hour's reduced max is reflected in remaining turns.
-	ChallengeManager.on_round_advanced(current_round)
+	# Apply the event first so Rush Hour's reduced max is reflected in remaining turns.
+	EventManager.on_round_advanced(current_round)
+	required_score = EventManager.apply_score_modifier(required_score)
 	remaining_turns = get_max_turns_per_round()
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(current_round)
@@ -504,7 +508,7 @@ func _debug_apply_round_jump(target_round: int) -> void:
 	passive_runtime.reset_turn()
 	EventBus.turn_started.emit()
 	# No merchant visit precedes a debug jump, so the reveal plays right away.
-	ChallengeManager.play_reveal()
+	EventManager.play_reveal()
 	RunSaveManager.request_autosave()
 
 

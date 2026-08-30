@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://yv8aveeajv8r" path="res://scenes/ui/labels/challenge_label/round_challenge_name_display.gd" id="1_wdo53"]
 [ext_resource type="Texture2D" uid="uid://yjsyynwlyscq" path="res://assets/gui/map_layouts/challenge_icon.png" id="2_icon"]
 
-[node name="RoundChallengeNameDisplay" type="Control"]
+[node name="RoundEventNameDisplay" type="Control"]
 z_index = 40
 layout_mode = 3
 anchors_preset = 15
@@ -48,7 +48,7 @@ mouse_filter = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="ChallengeIcon" type="TextureRect" parent="Banner/KickerRow"]
+[node name="EventIcon" type="TextureRect" parent="Banner/KickerRow"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 mouse_filter = 2
@@ -63,11 +63,11 @@ theme_override_colors/font_color = Color(1, 0.78, 0.28, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 28
-text = "CHALLENGE ROUND"
+text = "EVENT ROUND"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ChallengeName" type="RichTextLabel" parent="Banner"]
+[node name="EventName" type="RichTextLabel" parent="Banner"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/default_color = Color(1, 0.88, 0.38, 1)
@@ -75,7 +75,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 14
 theme_override_font_sizes/normal_font_size = 96
 bbcode_enabled = true
-text = "[wave amp=50 freq=2]The Challenge[/wave]"
+text = "[wave amp=50 freq=2]The Event[/wave]"
 fit_content = true
 scroll_active = false
 autowrap_mode = 0
@@ -91,7 +91,7 @@ theme_override_colors/font_color = Color(0.95, 0.92, 0.82, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 28
-text = "Challenge description"
+text = "Event description"
 horizontal_alignment = 1
 autowrap_mode = 2
 

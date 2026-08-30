@@ -57,8 +57,10 @@ var _layout: HexMapLayout
 # Card placement handler
 var card_placement_handler: CardPlacementHandler
 
-var _challenge_highlighted_coords: Array[Vector2i] = []
+var _event_highlighted_coords: Array[Vector2i] = []
 var _disabled_tile_coords: Array[Vector2i] = []
+# Empty tiles locked by the Sealed Hexes event. Shares the disabled overlay layer.
+var _event_sealed_coords: Array[Vector2i] = []
 # Tiles currently lit during the post-turn segment result reveal.
 var _segment_reveal_glow_coords: Array[Vector2i] = []
 # Tiles highlighted while hovering a segment-results row in the run-info panel.
@@ -77,7 +79,7 @@ var _flash_segment_generation: int = 0
 var _potion_target_coords: Array[Vector2i] = []
 
 # Owners of cells on fading_sector_overlay_layer, used so one overlay does not erase another.
-enum FadingOverlayOwner { CHALLENGE, REVEAL }
+enum FadingOverlayOwner { EVENT, REVEAL }
 
 const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
 # How long a destination-segment flash stays visible during card activation.
@@ -350,11 +352,11 @@ func is_in_map(coords: Vector2i) -> bool:
 	return map_data.has(coords)
 
 
-## Disabled difficulty tiles exist on the map but cannot be hovered or played on.
+## Disabled difficulty tiles and event-sealed tiles exist on the map but cannot be played on.
 func is_tile_interactable(coords: Vector2i) -> bool:
 	if not is_in_map(coords):
 		return false
-	return not map_data[coords].is_disabled_by_difficulty
+	return not map_data[coords].is_placement_blocked()
 
 
 ## Returns map-adjacent hex tiles that exist on this map (up to six neighbors).
@@ -590,6 +592,36 @@ func _apply_difficulty_disabled_tiles() -> void:
 		_disabled_tile_coords.append(coords)
 
 
+## Stamps the disabled overlay on empty tiles locked by Sealed Hexes. Skips difficulty tiles.
+func set_event_sealed_overlay(coords: Array[Vector2i]) -> void:
+	clear_event_sealed_overlay()
+	for cell: Vector2i in coords:
+		if not is_in_map(cell):
+			continue
+		if cell in _disabled_tile_coords:
+			continue
+		disabled_tile_overlay_layer.set_cell(
+			cell,
+			OVERLAY_TILE_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+		_event_sealed_coords.append(cell)
+
+
+## Removes Sealed Hexes overlay cells without wiping difficulty-disabled tiles.
+func clear_event_sealed_overlay() -> void:
+	for cell: Vector2i in _event_sealed_coords:
+		if cell in _disabled_tile_coords:
+			continue
+		disabled_tile_overlay_layer.set_cell(cell, -1)
+	_event_sealed_coords.clear()
+
+
+## True when the disabled overlay currently belongs to Sealed Hexes rather than difficulty.
+func has_event_sealed_overlay_at(coords: Vector2i) -> bool:
+	return coords in _event_sealed_coords
+
+
 func _on_map_display_layout_changed(layout: String) -> void:
 	_sticky_order_numbers = layout == "order_segments"
 	_refresh_map_focus_overlays()
@@ -793,6 +825,9 @@ func add_turn_multiplier_for_segment(segment_index: int, amount: float) -> void:
 func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	if amount == 0:
 		return
+	# Austerity must not credit the segment ledger either, or the HUD would lie.
+	if not EventManager.can_gain_gold():
+		return
 
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
@@ -803,6 +838,8 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 ## Records gold on a segment by index. Used when a drink relays gold to the next segment.
 func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 	if amount == 0:
+		return
+	if not EventManager.can_gain_gold():
 		return
 	_layout.add_segment_turn_gold(segment_index, amount)
 	GoldManager.add(amount)
@@ -878,9 +915,9 @@ func record_segment_trigger_for_tile(tile: Hex) -> void:
 	_layout.add_segment_turn_trigger(segment_index)
 
 
-## Overlays every tile in a segment for challenge UI highlighting.
-func highlight_challenge_segment(segment_index: int) -> void:
-	clear_challenge_segment_highlight()
+## Overlays every tile in a segment for event UI highlighting.
+func highlight_event_segment(segment_index: int) -> void:
+	clear_event_segment_highlight()
 	if segment_index < 0:
 		return
 
@@ -893,16 +930,16 @@ func highlight_challenge_segment(segment_index: int) -> void:
 			OVERLAY_TILE_SOURCE_ID,
 			OVERLAY_TILE_ATLAS_COORDS
 		)
-		_challenge_highlighted_coords.append(coords)
+		_event_highlighted_coords.append(coords)
 
 
-## Clears the challenge segment overlay stamped by highlight_challenge_segment().
-func clear_challenge_segment_highlight() -> void:
-	for coords: Vector2i in _challenge_highlighted_coords:
-		if _fading_overlay_still_needed(coords, FadingOverlayOwner.CHALLENGE):
+## Clears the event segment overlay stamped by highlight_event_segment().
+func clear_event_segment_highlight() -> void:
+	for coords: Vector2i in _event_highlighted_coords:
+		if _fading_overlay_still_needed(coords, FadingOverlayOwner.EVENT):
 			continue
 		fading_sector_overlay_layer.set_cell(coords, -1)
-	_challenge_highlighted_coords.clear()
+	_event_highlighted_coords.clear()
 
 
 ## Overlays tiles in a segment while its run-info row is hovered.
@@ -1032,7 +1069,7 @@ func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 
 ## True when another fading-sector overlay still owns this cell.
 func _fading_overlay_still_needed(coords: Vector2i, owner: FadingOverlayOwner) -> bool:
-	if owner != FadingOverlayOwner.CHALLENGE and coords in _challenge_highlighted_coords:
+	if owner != FadingOverlayOwner.EVENT and coords in _event_highlighted_coords:
 		return true
 	if owner != FadingOverlayOwner.REVEAL and coords in _segment_reveal_glow_coords:
 		return true
@@ -1320,6 +1357,7 @@ func _restore_disabled_tiles(coords_list: Array) -> void:
 			map_data[coords].is_disabled_by_difficulty = false
 
 	_disabled_tile_coords.clear()
+	_event_sealed_coords.clear()
 	disabled_tile_overlay_layer.clear()
 
 	for coords_data: Variant in coords_list:

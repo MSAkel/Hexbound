@@ -8,8 +8,8 @@
 [ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="6_arrow_normal"]
 [ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="7_arrow_pressed"]
 [ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="8_arrow_hover"]
-[ext_resource type="Texture2D" uid="uid://cgypbaahjtjcf" path="res://assets/map/segment_icons/tile_normal.png" id="9_r66gk"]
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="9_segment"]
+[ext_resource type="Texture2D" uid="uid://bgo1gw2tf12cq" path="res://assets/map/segment_icons/trigger_order.png" id="9_x6eud"]
 [ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="10_start"]
 [ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="11_end"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
@@ -235,7 +235,7 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
-texture = ExtResource("9_r66gk")
+texture = ExtResource("9_x6eud")
 expand_mode = 1
 stretch_mode = 5
 
@@ -247,14 +247,14 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
-text = "Tiles"
+text = "Trigger Order"
 
 [node name="Description" type="Label" parent="UnifiedPanel/Content/OverviewRow/LegendColumn/TileItem/Row/Copy" unique_id=1924780569]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
-text = "Cards are played on tiles"
+text = "The order in which the cards activate in"
 autowrap_mode = 3
 
 [node name="SegmentCountItem" type="PanelContainer" parent="UnifiedPanel/Content/OverviewRow/LegendColumn" unique_id=1830704522]

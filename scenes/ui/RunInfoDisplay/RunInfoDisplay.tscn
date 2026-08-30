@@ -57,7 +57,7 @@ size_flags_horizontal = 8
 size_flags_vertical = 0
 theme_override_constants/separation = 8
 
-[node name="ChallengeContainer" parent="RightContainer/VBoxContainer" unique_id=521758828 instance=ExtResource("8_lsngd")]
+[node name="EventContainer" parent="RightContainer/VBoxContainer" unique_id=521758828 instance=ExtResource("8_lsngd")]
 layout_mode = 2
 size_flags_horizontal = 10
 

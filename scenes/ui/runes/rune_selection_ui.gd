@@ -59,6 +59,8 @@ func _apply_card_float(float_wrapper: Control, index: int) -> void:
 
 
 func _on_show_panel() -> void:
+	if not RoundFlow.is_transition_rune_pick() and EventManager.should_auto_grant_rune(false):
+		return
 	_set_board_view(false)
 	UiManager.show_panel(self)
 	set_process(true)
@@ -180,7 +182,7 @@ func create_runes_pack() -> void:
 		return
 
 	# Isolated loot RNG. Combat rolls cannot advance this sequence.
-	var pack_size := ChallengeManager.get_runes_pack_size()
+	var pack_size := EventManager.get_runes_pack_size(_is_round_reward_offer())
 	var stream_name: String = RunRng.build_rune_offer_stream_name(
 		_get_offer_round_number(),
 		GameManager.remaining_turns,

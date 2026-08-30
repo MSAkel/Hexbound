@@ -13,7 +13,7 @@ content_margin_bottom = 8.0
 texture = ExtResource("2_uh4uk")
 modulate_color = Color(0.9340804, 0.9340805, 0.93408036, 1)
 
-[node name="ChallengePanel" type="PanelContainer" unique_id=948507863 groups=["challenge_hud_slot"]]
+[node name="EventPanel" type="PanelContainer" unique_id=948507863 groups=["event_hud_slot"]]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -31,7 +31,7 @@ layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
 
-[node name="NextChallengeRound" type="Label" parent="VBoxContainer" unique_id=1915613817]
+[node name="NextEventRound" type="Label" parent="VBoxContainer" unique_id=1915613817]
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.17838323, 0.4173505, 0.42574936, 1)
@@ -39,7 +39,7 @@ theme_override_font_sizes/font_size = 24
 text = "Round 4"
 horizontal_alignment = 1
 
-[node name="ChallengeName" type="Label" parent="VBoxContainer" unique_id=1094373895]
+[node name="EventName" type="Label" parent="VBoxContainer" unique_id=1094373895]
 visible = false
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
@@ -47,7 +47,7 @@ size_flags_horizontal = 4
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.211032, 0.20218796, 0, 1)
 theme_override_font_sizes/font_size = 21
-text = "Challenge"
+text = "Event"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -58,13 +58,13 @@ size_flags_horizontal = 4
 texture = ExtResource("2_kls1t")
 stretch_mode = 2
 
-[node name="ChallengeDescription" type="Label" parent="VBoxContainer" unique_id=712698428]
+[node name="EventDescription" type="Label" parent="VBoxContainer" unique_id=712698428]
 visible = false
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.211032, 0.20218796, 0, 1)
 theme_override_font_sizes/font_size = 16
-text = "Challenge information"
+text = "Event information"
 horizontal_alignment = 1
 autowrap_mode = 2
 

@@ -150,7 +150,7 @@ func save_current_run() -> void:
 		"gold": GoldManager.capture_run_state(),
 		"rerolls": RerollManager.capture_run_state(),
 		"potions": PotionManager.capture_run_state(),
-		"challenges": ChallengeManager.capture_run_state(),
+		"events": EventManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
 		"run_rng": RunRng.capture_run_state(),
 		"map": tile_map.capture_map_state(),
@@ -195,15 +195,15 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	GameManager.apply_run_state(payload.get("game_manager", {}))
 	GoldManager.apply_run_state(payload.get("gold", {}))
 	RerollManager.apply_run_state(payload.get("rerolls", {}))
-	ChallengeManager.apply_run_state(payload.get("challenges", {}))
+	EventManager.apply_run_state(payload.get("events", {}))
 	RoundFlow.apply_run_state(payload.get("round_flow", {}))
 	RunRng.apply_run_state(payload.get("run_rng", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	PotionManager.apply_run_state(payload.get("potions", {}))
 	hand.restore_hand_state(payload.get("hand", {}))
 	_apply_offer_ui_state(payload)
-	ChallengeManager.refresh_challenge_visuals()
-	ChallengeManager.restore_banner_after_load()
+	EventManager.refresh_event_visuals()
+	EventManager.restore_banner_after_load()
 	# Segment rows are built deferred, refresh them once the layout data is restored.
 	tile_map.call_deferred("refresh_segment_turn_results_ui")
 	_notify_ui_restored()
@@ -314,5 +314,5 @@ func _notify_ui_restored() -> void:
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(GameManager.current_round)
 	EventBus.required_score_changed.emit()
-	EventBus.challenge_schedule_changed.emit()
-	EventBus.challenge_changed.emit()
+	EventBus.event_schedule_changed.emit()
+	EventBus.event_changed.emit()

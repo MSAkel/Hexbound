@@ -15,8 +15,8 @@ var is_disabled_by_difficulty: bool = false
 
 var map: HexTileMap
 var items_grid: Control
-# Optional challenge tint layered on top of the normal active/inactive state.
-var _challenge_rune_modulate: Color = Color.WHITE
+# Optional event tint layered on top of the normal active/inactive state.
+var _event_rune_modulate: Color = Color.WHITE
 
 # Match the dashed hex art size so overlays sit on the tile texture.
 const HEX_TILE_SIZE := Vector2(HexTileMap.HEX_TEXTURE_SIZE)
@@ -65,9 +65,16 @@ func _fit_rune_ui(rune_ui_node: RuneUI) -> void:
 	rune_ui_node.position = (HEX_TILE_SIZE - HEX_RUNE_SIZE) * 0.5
 
 
+## True when this hex cannot receive a new card. Difficulty locks and Sealed Hexes both count.
+func is_placement_blocked() -> bool:
+	if is_disabled_by_difficulty:
+		return true
+	return EventManager.is_hex_sealed(coordinates)
+
+
 func place_tile_card(rune: TileCard) -> void:
-	# Prevent placing a rune if one already exists or the tile is disabled by difficulty.
-	if active_tile_card != null or is_disabled_by_difficulty:
+	# Prevent placing a rune if one already exists or the tile is locked for placement.
+	if active_tile_card != null or is_placement_blocked():
 		return
 	
 	# Each tile needs its own rune instance. hand/pool cards often share one .tres reference.
@@ -122,8 +129,8 @@ func refresh_tile_card_visual_state() -> void:
 	var target_modulate := Color.WHITE
 	if not active_tile_card.is_active:
 		target_modulate = RUNE_INACTIVE_MODULATE
-	elif _challenge_rune_modulate != Color.WHITE:
-		target_modulate = _challenge_rune_modulate
+	elif _event_rune_modulate != Color.WHITE:
+		target_modulate = _event_rune_modulate
 
 	rune_ui.apply_resting_modulate(target_modulate)
 	rune_ui.refresh_output_chip(active_tile_card)
@@ -135,13 +142,13 @@ func refresh_tile_card_visual_state() -> void:
 		rune_ui.stop_empower_sparks()
 
 
-func set_tile_card_challenge_modulate(modulate: Color) -> void:
-	_challenge_rune_modulate = modulate
+func set_tile_card_event_modulate(modulate: Color) -> void:
+	_event_rune_modulate = modulate
 	refresh_tile_card_visual_state()
 
 
-func clear_tile_card_challenge_modulate() -> void:
-	_challenge_rune_modulate = Color.WHITE
+func clear_tile_card_event_modulate() -> void:
+	_event_rune_modulate = Color.WHITE
 	refresh_tile_card_visual_state()
 
 
@@ -151,7 +158,7 @@ func remove_tile_card() -> void:
 		return
 	
 	active_tile_card = null
-	_challenge_rune_modulate = Color.WHITE
+	_event_rune_modulate = Color.WHITE
 	if rune_ui != null:
 		rune_ui.queue_free()
 		rune_ui = null

@@ -63,7 +63,7 @@ z_index = 90
 visible = false
 rotation = -0.00022035485
 
-[node name="RoundChallengeNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
+[node name="RoundEventNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
 visible = false
 
 [node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]

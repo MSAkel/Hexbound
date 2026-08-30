@@ -22,10 +22,16 @@ var _valid_restriction_coords: Array[Vector2i] = []
 # Occupied hexes already chosen for a multi-target utility such as Transposition.
 var _utility_target_hexes: Array[Hex] = []
 var _utility_target_coords: Array[Vector2i] = []
+# True until the mouse-up that belongs to the click that selected the card.
+var _awaiting_pointer_release: bool = false
+# Screen position of that selecting press, used to tell a click from a drag.
+var _select_press_position := Vector2.ZERO
 
 const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
 const RUNE_UI_SCENE: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
+# Pointer travel from the selecting press before a release is treated as a drop.
+const DRAG_PLACE_THRESHOLD_PX := 8.0
 
 
 func _ready() -> void:
@@ -44,6 +50,33 @@ func _setup_rune_preview() -> void:
 	_rune_preview.scale = Vector2(RuneUI.PLACEMENT_HOVER_SCALE, RuneUI.PLACEMENT_HOVER_SCALE)
 	tile_map.add_child(_rune_preview)
 	_rune_preview.prepare_placement_ghost()
+
+
+func _input(event: InputEvent) -> void:
+	if not is_card_selected:
+		return
+
+	# The selecting Control keeps mouse focus, so _unhandled_input never sees this drag.
+	if event is InputEventMouseMotion:
+		_update_rune_preview()
+		return
+
+	if not (event is InputEventMouseButton and not event.pressed):
+		return
+	if event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if not _awaiting_pointer_release:
+		return
+
+	_awaiting_pointer_release = false
+	# Stay in click-to-select when the pointer never left the card, or barely moved.
+	if selected_card != null and selected_card.is_mouse_over():
+		return
+	if not _has_dragged_from_select():
+		return
+
+	_try_place_card()
+	get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -78,6 +111,9 @@ func _on_card_selected(card: CardUI) -> void:
 	
 	is_card_selected = true
 	selected_card = card
+	# The card is selected on mouse-down. A later mouse-up over a hex should place it.
+	_awaiting_pointer_release = true
+	_select_press_position = tile_map.get_global_mouse_position()
 	_update_preview_texture()
 	_update_placement_overlays()
 	_update_rune_preview()
@@ -187,7 +223,7 @@ func _clear_placement_overlays() -> void:
 
 func _clear_restriction_overlays() -> void:
 	for coords: Vector2i in _restricted_invalid_coords:
-		if tile_map.map_data[coords].is_disabled_by_difficulty:
+		if tile_map.map_data[coords].is_placement_blocked():
 			continue
 		tile_map.disabled_tile_overlay_layer.set_cell(coords, -1)
 	_restricted_invalid_coords.clear()
@@ -234,8 +270,14 @@ func _stamp_rune_highlight(coords: Vector2i) -> void:
 func _reset_state() -> void:
 	selected_card = null
 	is_card_selected = false
+	_awaiting_pointer_release = false
+	_select_press_position = Vector2.ZERO
 	_utility_target_hexes.clear()
 	_utility_target_coords.clear()
+
+
+func _has_dragged_from_select() -> bool:
+	return tile_map.get_global_mouse_position().distance_to(_select_press_position) >= DRAG_PLACE_THRESHOLD_PX
 
 
 # Disables invalid tiles and highlights valid ones for runes with placement restrictions.
@@ -257,7 +299,7 @@ func _update_placement_overlays() -> void:
 			continue
 		
 		_restricted_invalid_coords.append(coords)
-		if not hex.is_disabled_by_difficulty:
+		if not hex.is_placement_blocked():
 			tile_map.disabled_tile_overlay_layer.set_cell(
 				coords,
 				tile_map.OVERLAY_TILE_SOURCE_ID,

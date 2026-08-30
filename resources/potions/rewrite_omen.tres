@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "rewrite_omen"
 display_name = "Rewrite Omen"
-description = "Change the upcoming challenge to a different law."
+description = "Change the upcoming event to a different law that can appear on that round."
 icon = ExtResource("2_icon")
 liquid_color = Color(0.62, 0.38, 0.86, 1)
 base_price = 6

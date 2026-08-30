@@ -151,7 +151,7 @@ func pick_random_placed_tile_card(
 
 
 ## Build a stable stream key from run position so the same moment always rolls the same pack.
-## Fail offers include remaining_turns so they do not depend on challenge turn-cap math.
+## Fail offers include remaining_turns so they do not depend on event turn-cap math.
 func build_rune_offer_stream_name(
 	round_number: int,
 	remaining_turns: int,

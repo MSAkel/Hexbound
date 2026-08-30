@@ -79,6 +79,8 @@ func get_targeting_potion() -> Potion:
 
 
 func can_drink_now() -> bool:
+	if EventManager.are_potions_blocked():
+		return false
 	if _consuming:
 		return false
 	if GameManager.is_processing_turn:
@@ -90,7 +92,7 @@ func can_use(potion: Potion) -> bool:
 	if potion == null or not can_drink_now():
 		return false
 	if potion.effect_type == Potion.EffectType.REWRITE_OMEN:
-		return ChallengeManager.get_next_challenge_round() != -1
+		return EventManager.can_rewrite_upcoming()
 	return true
 
 
@@ -180,6 +182,8 @@ func try_prevent_break(card: TileCard) -> bool:
 
 
 func relay_product_if_needed(tile: Hex, product: TileCard.Product, amount: Variant) -> void:
+	if EventManager.are_relays_blocked():
+		return
 	if tile == null or tile.map == null or tile.active_tile_card == null:
 		return
 	if not _card_has_fuse(tile.active_tile_card, Potion.EffectType.FORWARD_GIFT):
@@ -216,7 +220,8 @@ func after_card_activated(tile: Hex, card: TileCard) -> void:
 	if _take_activation_fuse(card, Potion.EffectType.BATON):
 		_empower_next_producer(tile, card)
 	if _take_activation_fuse(card, Potion.EffectType.ECHO):
-		card.queue_tile_card_triggers(tile, [card])
+		if not EventManager.are_retriggers_blocked():
+			card.queue_tile_card_triggers(tile, [card])
 	EventBus.potion_fuses_changed.emit()
 
 
@@ -340,7 +345,7 @@ func _apply_instant(potion: Potion) -> void:
 		Potion.EffectType.BORROWED_TIME:
 			GameManager.add_bonus_turn()
 		Potion.EffectType.REWRITE_OMEN:
-			ChallengeManager.rewrite_upcoming_challenge(_rewrite_use_count)
+			EventManager.rewrite_upcoming_event(_rewrite_use_count)
 			_rewrite_use_count += 1
 		Potion.EffectType.FREE_REROLL:
 			RerollManager.add_rerolls(1)

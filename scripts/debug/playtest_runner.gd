@@ -500,7 +500,7 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String)
 			"turns_used": turns_used,
 			"gold": GoldManager.amount,
 			"cleared": cleared,
-			"challenge": ChallengeManager.get_active_challenge_name(),
+			"event": EventManager.get_active_event_name(),
 		}
 		if round_number in SEGMENT_SNAPSHOT_ROUNDS:
 			var snapshot := _segment_contribution_snapshot()
@@ -567,6 +567,8 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String)
 
 
 func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_turns: int) -> TileCard:
+	if EventManager.get_runes_pack_size(is_reward) <= 0:
+		return null
 	if _active_bot == "player":
 		return _draft_and_pick_pack_player(is_reward, round_number, fail_remaining_turns)
 	var stream_name := RunRng.build_rune_offer_stream_name(
@@ -576,7 +578,7 @@ func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_tur
 		0
 	)
 	var pack := RuneLoot.draw_runes(
-		ChallengeManager.get_runes_pack_size(),
+		EventManager.get_runes_pack_size(is_reward),
 		GameManager.tile_cards_pool,
 		true,
 		RunRng.create_rng(stream_name)
@@ -606,7 +608,7 @@ func _draft_and_pick_pack_player(
 			reroll_index
 		)
 		var pack := RuneLoot.draw_runes(
-			ChallengeManager.get_runes_pack_size(),
+			EventManager.get_runes_pack_size(is_reward),
 			GameManager.tile_cards_pool,
 			true,
 			RunRng.create_rng(stream_name)
@@ -770,7 +772,10 @@ func _shop_player_round() -> Array[String]:
 				_apply_spark_on_engine()
 		if buys_this_visit > 0:
 			return bought
-		if gold_rerolls >= MAX_MERCHANT_GOLD_REROLLS or not GoldManager.can_afford(reroll_cost):
+		if (
+			gold_rerolls >= MAX_MERCHANT_GOLD_REROLLS
+			or not GoldManager.can_afford(reroll_cost)
+		):
 			# Leave rather than stuffing a tiny segment with leftover shop junk.
 			return bought
 		GoldManager.remove(reroll_cost)
@@ -1401,7 +1406,7 @@ func _potion_player_value(potion: Potion) -> float:
 		Potion.EffectType.FREE_REROLL:
 			return 28.0 if RerollManager.remaining <= 1 else 14.0
 		Potion.EffectType.REWRITE_OMEN:
-			if ChallengeManager.get_next_challenge_round() == -1:
+			if EventManager.get_next_event_round() == -1:
 				return 0.0
 			return 26.0
 		Potion.EffectType.OPENING_ROUND, Potion.EffectType.CLOSING_ROUND:
@@ -1466,7 +1471,7 @@ func _player_use_belt_before_resolve() -> void:
 		if potion == null:
 			continue
 		if potion.effect_type == Potion.EffectType.REWRITE_OMEN:
-			if ChallengeManager.get_next_challenge_round() != -1 and GameManager.current_round >= 4:
+			if EventManager.get_next_event_round() != -1 and GameManager.current_round >= 4:
 				PotionManager.headless_use_slot(i)
 				return
 
@@ -1495,7 +1500,7 @@ func _can_bot_place_card(card: TileCard) -> bool:
 	if not card.is_legal_for_layout(GameManager.selected_character):
 		return false
 	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_disabled_by_difficulty or hex.active_tile_card != null:
+		if hex.is_placement_blocked() or hex.active_tile_card != null:
 			continue
 		if card.can_place_on_tile(hex):
 			return true
@@ -1584,7 +1589,7 @@ func _place_one_card(card: TileCard) -> bool:
 
 func _place_first_legal_empty(card: TileCard) -> bool:
 	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_disabled_by_difficulty or hex.active_tile_card != null:
+		if hex.is_placement_blocked() or hex.active_tile_card != null:
 			continue
 		if not card.can_place_on_tile(hex):
 			continue
@@ -1878,7 +1883,7 @@ func _begin_run(character_id: String, seed_text: String) -> void:
 	GameManager.reset_for_new_run()
 	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
 	RerollManager.reset_for_new_run()
-	ChallengeManager.init_run()
+	EventManager.init_run()
 	_clear_board()
 	_map.generate_terrain()
 	_map.apply_run_start_randomization()
@@ -1907,7 +1912,7 @@ func _place_by_id(hex: Hex, card_id: String) -> void:
 
 func _first_empty_hex() -> Hex:
 	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.active_tile_card == null and not hex.is_disabled_by_difficulty:
+		if hex.active_tile_card == null and not hex.is_placement_blocked():
 			return hex
 	return null
 
@@ -1916,7 +1921,7 @@ func _two_hexes_in_same_segment() -> Array[Hex]:
 	var found: Array[Hex] = []
 	var segment_index := -1
 	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_disabled_by_difficulty:
+		if hex.is_placement_blocked():
 			continue
 		var index := _map.get_segment_index(hex.coordinates)
 		if found.is_empty():
@@ -2025,7 +2030,7 @@ func _empty_hexes_in_segment(segment_index: int) -> Array[Hex]:
 	for hex: Hex in _map.get_hexes_in_trigger_order():
 		if _map.get_segment_index(hex.coordinates) != segment_index:
 			continue
-		if hex.active_tile_card != null or hex.is_disabled_by_difficulty:
+		if hex.active_tile_card != null or hex.is_placement_blocked():
 			continue
 		hexes.append(hex)
 	return hexes

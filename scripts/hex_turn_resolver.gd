@@ -205,7 +205,7 @@ func _activate_tile_card_on_tile(
 	if not _would_activate_tile_card_on_tile(tile, from_trigger):
 		return
 
-	activation_scale *= ChallengeManager.get_producer_output_multiplier(tile)
+	activation_scale *= EventManager.get_producer_output_multiplier(tile)
 
 	if from_trigger and trigger_source_hex != null:
 		if not GameManager.skip_presentation:

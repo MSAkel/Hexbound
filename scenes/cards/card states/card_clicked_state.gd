@@ -18,6 +18,8 @@ func exit(_next_state: State = State.BASE) -> void:
 
 
 func on_gui_input(event: InputEvent) -> void:
+	# A second press on this card cancels selection. Drag-to-place is handled by
+	# CardPlacementHandler, which sees the mouse-up even while this Control has focus.
 	if event.is_action_pressed("left_mouse"):
 		card_ui.get_viewport().set_input_as_handled()
 		transition_requested.emit(self, CardState.State.BASE)

@@ -121,7 +121,7 @@ current_tab = 0
 tab_count = 4
 tab_0/title = "Cards"
 tab_1/title = "Characters"
-tab_2/title = "Challenges"
+tab_2/title = "Events"
 tab_3/title = "Passives"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]

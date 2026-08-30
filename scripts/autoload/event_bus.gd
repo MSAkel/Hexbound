@@ -11,14 +11,14 @@ signal turn_changed
 ## Emitted when the round changes
 signal round_changed(new_round: int)
 
-## Challenge signals
-signal challenge_schedule_changed
-signal challenge_changed
-signal challenge_banner_shown(challenge_name: String, dock_immediately: bool)
-signal challenge_banner_hidden
+## Event signals
+signal event_schedule_changed
+signal event_changed
+signal event_banner_shown(event_name: String, dock_immediately: bool)
+signal event_banner_hidden
 ## Emitted once the reveal banner has settled into its docked position.
-signal challenge_reveal_finished
-signal all_challenges_completed
+signal event_reveal_finished
+signal all_events_completed
 
 signal card_drag_started(card: CardUI)
 signal card_drag_ended()
@@ -86,5 +86,5 @@ signal potion_fuses_changed
 signal potion_consume_started(slot_index: int, potion: Potion)
 ## Belt drink animation finished. PotionManager waits on this before applying.
 signal potion_consume_animation_finished
-## Drink was requested but cannot be used (for example no upcoming challenge).
+## Drink was requested but cannot be used (for example no upcoming event).
 signal potion_use_failed(potion: Potion)
