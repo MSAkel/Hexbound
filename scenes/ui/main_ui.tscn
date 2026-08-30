@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
 [ext_resource type="PackedScene" uid="uid://casabnpm08k0k" path="res://scenes/ui/tutorial/tutorial_text_container.tscn" id="17_tutorial"]
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
+[ext_resource type="PackedScene" path="res://scenes/ui/potions/potion_belt.tscn" id="19_potion_belt"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -33,6 +34,8 @@ offset_top = 0.0
 offset_right = 0.0
 rotation = 0.0016232448
 
+[node name="PotionBelt" parent="." instance=ExtResource("19_potion_belt")]
+
 [node name="RuneSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
 
@@ -41,6 +44,7 @@ visible = false
 
 [node name="PauseMenu" parent="." unique_id=1402050020 instance=ExtResource("7_oxwcw")]
 visible = false
+z_index = 90
 
 [node name="Tooltip" parent="." unique_id=430342025 instance=ExtResource("13_tooltip")]
 visible = false
@@ -53,6 +57,7 @@ visible = false
 
 [node name="GameOverScreen" parent="." unique_id=725350368 instance=ExtResource("9_b65ll")]
 visible = false
+z_index = 90
 
 [node name="Merchant" parent="." unique_id=613414351 instance=ExtResource("10_b65ll")]
 visible = false
@@ -63,6 +68,7 @@ visible = false
 
 [node name="VictoryScreen" parent="." unique_id=1984974034 instance=ExtResource("14_victory")]
 visible = false
+z_index = 90
 
 [node name="SettingsContainer" parent="." unique_id=897472805 instance=ExtResource("14_8s2gp")]
 visible = false

@@ -20,6 +20,8 @@ var _activation_tween: Tween
 var _trigger_link_flash_tween: Tween
 # Resting color when no activation or trigger-link tween is running.
 var _resting_modulate := Color.WHITE
+var _fuse_bar: HBoxContainer
+var _potion_splash: GPUParticles2D
 
 # Pop, squash, then settle. Durations must stay in sync with HexTileMap._wait_for_activation_animation.
 const ACTIVATION_PEAK_SCALE := Vector2(1.12, 1.12)
@@ -56,6 +58,7 @@ func setup(rune: TileCard) -> void:
 	if sigil != null:
 		sigil.hide()
 	refresh_output_chip(rune)
+	refresh_potion_badges(rune, center_coordinates)
 
 
 ## Ghost copy used while aiming a hand card. Same chip as a placed rune, no input.
@@ -372,7 +375,7 @@ func play_segment_result_animation() -> void:
 	)
 
 
-# Sparks over the rune while it is waiting to spend an empower charge.
+# Sparks sit under the chip so the icon and output stay readable.
 func start_empower_sparks() -> void:
 	if empower_sparks == null:
 		return
@@ -421,4 +424,120 @@ func stop_trigger_link_flash() -> void:
 		hex_stroke.stop_trigger_link_ring()
 
 	_apply_resting_modulate()
+
+
+func refresh_potion_badges(card: TileCard, coords: Vector2i) -> void:
+	_ensure_fuse_ui()
+	for child in _fuse_bar.get_children():
+		child.queue_free()
+	var badges := PotionManager.get_badge_fuses(card, coords)
+	_fuse_bar.visible = not badges.is_empty()
+	for fuse in badges:
+		var potion := PotionCatalog.get_by_id(str(fuse.get("potion_id", "")))
+		if potion == null:
+			continue
+		_fuse_bar.add_child(_make_fuse_badge(potion, int(fuse.get("remaining_turns", 0))))
+
+
+func _make_fuse_badge(potion: Potion, turns: int) -> PanelContainer:
+	# Olive well on the hex face so the flask reads against grass and chip art.
+	var well := PanelContainer.new()
+	well.custom_minimum_size = Vector2(36, 36)
+	well.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	well.add_theme_stylebox_override("panel", _fuse_badge_style())
+
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(26, 26)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.texture = potion.icon
+	icon.self_modulate = Color.WHITE
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	well.add_child(icon)
+
+	if turns > 0:
+		var count := Label.new()
+		count.text = str(turns)
+		count.add_theme_font_size_override("font_size", 12)
+		count.add_theme_color_override("font_color", Color(1, 0.95, 0.7, 1))
+		count.add_theme_color_override("font_outline_color", Color(0.05, 0.06, 0.04, 1))
+		count.add_theme_constant_override("outline_size", 4)
+		count.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+		count.offset_left = -16.0
+		count.offset_top = -16.0
+		count.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		well.add_child(count)
+	return well
+
+
+func _fuse_badge_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("536044")
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = Color("F7E9C4")
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_right = 8
+	style.corner_radius_bottom_left = 8
+	style.content_margin_left = 4
+	style.content_margin_top = 4
+	style.content_margin_right = 4
+	style.content_margin_bottom = 4
+	return style
+
+
+func play_potion_splash(color: Color) -> void:
+	_ensure_fuse_ui()
+	if _potion_splash == null:
+		return
+	_potion_splash.modulate = color
+	_potion_splash.restart()
+	_potion_splash.emitting = true
+
+
+func _ensure_fuse_ui() -> void:
+	if _fuse_bar != null:
+		return
+	_fuse_bar = HBoxContainer.new()
+	_fuse_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fuse_bar.z_index = 3
+	_fuse_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+	_fuse_bar.add_theme_constant_override("separation", 4)
+	# Sit on the hex face, below the top vertex and above the center art.
+	_fuse_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_fuse_bar.offset_left = -72.0
+	_fuse_bar.offset_top = 44.0
+	_fuse_bar.offset_right = 72.0
+	_fuse_bar.offset_bottom = 86.0
+	if _anim_target != null:
+		_anim_target.add_child(_fuse_bar)
+	else:
+		add_child(_fuse_bar)
+
+	_potion_splash = GPUParticles2D.new()
+	_potion_splash.one_shot = true
+	_potion_splash.amount = 18
+	_potion_splash.lifetime = 0.45
+	_potion_splash.explosiveness = 0.85
+	_potion_splash.position = size * 0.5
+	_potion_splash.z_index = 12
+	_potion_splash.emitting = false
+	var material := ParticleProcessMaterial.new()
+	material.particle_flag_disable_z = true
+	material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	material.emission_sphere_radius = 18.0
+	material.direction = Vector3(0, -1, 0)
+	material.spread = 80.0
+	material.initial_velocity_min = 40.0
+	material.initial_velocity_max = 90.0
+	material.gravity = Vector3(0, 80, 0)
+	material.scale_min = 0.08
+	material.scale_max = 0.18
+	_potion_splash.process_material = material
+	_potion_splash.texture = preload("res://assets/particles/spark/spark_03.png")
+	add_child(_potion_splash)
 #endregion Animations and colors

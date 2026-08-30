@@ -11,5 +11,5 @@ product = 2
 id = "compact_power"
 name = "Compact Power"
 icon = ExtResource("1_dmkn0")
-description = "+6 Mult if segment size is less than 6"
+description = "+6 Mult if this segment has 7 tiles or fewer"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

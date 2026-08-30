@@ -22,63 +22,96 @@ corner_radius_bottom_left = 8
 layer = 80
 script = ExtResource("1_sandbox")
 
-[node name="ToolsPanel" type="PanelContainer" parent="." unique_id=1111735781]
+[node name="OverlayRoot" type="Control" parent="." unique_id=474466521]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ToolsPanel" type="PanelContainer" parent="OverlayRoot" unique_id=1111735781]
+layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -288.0
-offset_top = -596.0
+offset_top = -48.0
 grow_horizontal = 0
 grow_vertical = 0
+custom_minimum_size = Vector2(288, 0)
 theme_override_styles/panel = SubResource("StyleBoxFlat_tools")
 
-[node name="MarginContainer" type="MarginContainer" parent="ToolsPanel" unique_id=873198453]
+[node name="MarginContainer" type="MarginContainer" parent="OverlayRoot/ToolsPanel" unique_id=873198453]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ToolsPanel/MarginContainer" unique_id=985784572]
+[node name="VBoxContainer" type="VBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer" unique_id=985784572]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TitleLabel" type="Label" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1554267519]
+[node name="TitleRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer" unique_id=1554267518]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/TitleRow" unique_id=1554267519]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
 text = "Run Sandbox"
 
-[node name="SeedRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1847293010]
+[node name="CollapseButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/TitleRow" unique_id=1554267520]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Expand sandbox"
+text = "▸"
+
+[node name="ToolsScroll" type="ScrollContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer" unique_id=1554267522]
+visible = false
+custom_minimum_size = Vector2(0, 350)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ToolsBody" type="VBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll" unique_id=1554267521]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SeedRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1847293010]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SeedLabel" type="Label" parent="ToolsPanel/MarginContainer/VBoxContainer/SeedRow" unique_id=1847293011]
+[node name="SeedLabel" type="Label" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SeedRow" unique_id=1847293011]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9303785, 0.8507871, 0.4908229, 1)
 theme_override_font_sizes/font_size = 14
 text = "Run seed: --------"
 
-[node name="CopySeedButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/SeedRow" unique_id=1847293012]
+[node name="CopySeedButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SeedRow" unique_id=1847293012]
 layout_mode = 2
 text = "Copy"
 
-[node name="CharacterRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1982736460]
+[node name="CharacterRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1982736460]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CharacterOption" type="OptionButton" parent="ToolsPanel/MarginContainer/VBoxContainer/CharacterRow" unique_id=1982736461]
+[node name="CharacterOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CharacterRow" unique_id=1982736461]
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Changing character restarts the run."
 
-[node name="CompleteRoundButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=40927998]
+[node name="CompleteRoundButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=40927998]
 layout_mode = 2
 text = "Complete round"
 
-[node name="RoundJumpRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=40927999]
+[node name="RoundJumpRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=40927999]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="JumpRoundSpinBox" type="SpinBox" parent="ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow" unique_id=40928000]
+[node name="JumpRoundSpinBox" type="SpinBox" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow" unique_id=40928000]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -89,39 +122,39 @@ rounded = true
 allow_greater = true
 tooltip_text = "Skip straight to this round without playing the rounds in between."
 
-[node name="JumpRoundButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow" unique_id=40928001]
+[node name="JumpRoundButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow" unique_id=40928001]
 layout_mode = 2
 text = "Jump to round"
 
-[node name="PassTurnButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=186988538]
+[node name="PassTurnButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=186988538]
 layout_mode = 2
 text = "Pass turn"
 
-[node name="DrawRandomCardButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1653087712]
+[node name="DrawRandomCardButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1653087712]
 layout_mode = 2
 text = "Draw random card"
 
-[node name="PickCardButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1438743610]
+[node name="PickCardButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1438743610]
 layout_mode = 2
 text = "Pick a card..."
 
-[node name="ChallengeRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=1982736451]
+[node name="ChallengeRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1982736451]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ChallengeOption" type="OptionButton" parent="ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow" unique_id=1982736452]
+[node name="ChallengeOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow" unique_id=1982736452]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ActivateChallengeButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow" unique_id=1982736453]
+[node name="ActivateChallengeButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow" unique_id=1982736453]
 layout_mode = 2
 text = "Activate"
 
-[node name="GoldRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=469025335]
+[node name="GoldRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=469025335]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="GoldSpinBox" type="SpinBox" parent="ToolsPanel/MarginContainer/VBoxContainer/GoldRow" unique_id=319026014]
+[node name="GoldSpinBox" type="SpinBox" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow" unique_id=319026014]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -129,30 +162,30 @@ max_value = 99999.0
 rounded = true
 allow_greater = true
 
-[node name="SetGoldButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/GoldRow" unique_id=2072866727]
+[node name="SetGoldButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow" unique_id=2072866727]
 layout_mode = 2
 text = "Set gold"
 
-[node name="TokenRow" type="HBoxContainer" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=469025336]
+[node name="TokenRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=469025336]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TokenSpinBox" type="SpinBox" parent="ToolsPanel/MarginContainer/VBoxContainer/TokenRow" unique_id=319026015]
+[node name="TokenSpinBox" type="SpinBox" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow" unique_id=319026015]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 5.0
 rounded = true
 
-[node name="SetTokensButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer/TokenRow" unique_id=2072866728]
+[node name="SetTokensButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow" unique_id=2072866728]
 layout_mode = 2
 text = "Set tokens"
 
-[node name="OpenMerchantButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=2072866729]
+[node name="OpenMerchantButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=2072866729]
 layout_mode = 2
 text = "Open merchant"
 
-[node name="OpenRuneSelectionButton" type="Button" parent="ToolsPanel/MarginContainer/VBoxContainer" unique_id=2072866730]
+[node name="OpenRuneSelectionButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=2072866730]
 layout_mode = 2
 text = "Open rune selection"
 
@@ -231,18 +264,19 @@ theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 columns = 6
 
-[connection signal="item_selected" from="ToolsPanel/MarginContainer/VBoxContainer/CharacterRow/CharacterOption" to="." method="_on_character_option_item_selected"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/SeedRow/CopySeedButton" to="." method="_on_copy_seed_button_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton" to="." method="_on_complete_round_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow/JumpRoundButton" to="." method="_on_jump_round_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton" to="." method="_on_pass_turn_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/PickCardButton" to="." method="_on_pick_card_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ActivateChallengeButton" to="." method="_on_activate_challenge_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/TokenRow/SetTokensButton" to="." method="_on_set_tokens_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/OpenMerchantButton" to="." method="_on_open_merchant_pressed"]
-[connection signal="pressed" from="ToolsPanel/MarginContainer/VBoxContainer/OpenRuneSelectionButton" to="." method="_on_open_rune_selection_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/TitleRow/CollapseButton" to="." method="_on_collapse_button_pressed"]
+[connection signal="item_selected" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CharacterRow/CharacterOption" to="." method="_on_character_option_item_selected"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SeedRow/CopySeedButton" to="." method="_on_copy_seed_button_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CompleteRoundButton" to="." method="_on_complete_round_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow/JumpRoundButton" to="." method="_on_jump_round_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PassTurnButton" to="." method="_on_pass_turn_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PickCardButton" to="." method="_on_pick_card_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow/ActivateChallengeButton" to="." method="_on_activate_challenge_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow/SetTokensButton" to="." method="_on_set_tokens_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton" to="." method="_on_open_merchant_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenRuneSelectionButton" to="." method="_on_open_rune_selection_pressed"]
 [connection signal="gui_input" from="CardPicker/Dim" to="." method="_on_card_picker_dim_gui_input"]
 [connection signal="pressed" from="CardPicker/Panel/MarginContainer/VBoxContainer/HeaderRow/CloseButton" to="." method="_on_close_card_picker_pressed"]
 [connection signal="text_changed" from="CardPicker/Panel/MarginContainer/VBoxContainer/SearchRow/CardSearch" to="." method="_on_card_search_text_changed"]

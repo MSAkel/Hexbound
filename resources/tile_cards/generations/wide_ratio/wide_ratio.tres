@@ -5,11 +5,11 @@
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 1
+base_production_amount = 2
 rarity = 1
 product = 2
 id = "wide_ratio"
 name = "Wide Ratio"
 icon = ExtResource("1_icon")
-description = "+1 Mult per other segment that contains a Producer"
+description = "+2 Mult per other segment that contains a Producer"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

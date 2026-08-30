@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Potion" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/potion.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/potions/potion_1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "gold_drop"
+display_name = "Gold Drop"
+description = "Gain 8 Gold."
+icon = ExtResource("2_icon")
+liquid_color = Color(0.95, 0.78, 0.22, 1)
+base_price = 4
+effect_type = 0
+effect_value = 8.0
+target_kind = 0

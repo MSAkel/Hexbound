@@ -5,26 +5,89 @@
 [ext_resource type="Texture2D" uid="uid://s2somxs47c70" path="res://assets/icons/others/die.png" id="3_die"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="3_gold"]
 [ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="4_token"]
+[ext_resource type="Texture2D" uid="uid://b3xttnqg1hd8a" path="res://assets/gui/shelf.png" id="5_shelf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aum3v"]
 bg_color = Color(0.025840001, 0.050708726, 0.03876, 0.259)
 
 [sub_resource type="StyleBoxFlat" id="ShopPanel"]
-bg_color = Color(0.9323934, 0.87570566, 0.7169422, 1)
+bg_color = Color(0.95686275, 0.9019608, 0.76862746, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.32348415, 0.24706376, 0.07231019, 1)
-corner_radius_top_left = 28
-corner_radius_top_right = 28
-corner_radius_bottom_right = 28
-corner_radius_bottom_left = 28
+border_color = Color(0.41960785, 0.3529412, 0.19607843, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0, 0, 0, 0.16470589)
+shadow_size = 10
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="Gradient" id="PanelWash"]
+colors = PackedColorArray(1, 0.95686275, 0.827451, 1, 0.93333334, 0.8666667, 0.7176471, 1)
+
+[sub_resource type="GradientTexture2D" id="PanelWashTex"]
+gradient = SubResource("PanelWash")
+width = 128
+height = 128
+fill_from = Vector2(0.5, 0)
+fill_to = Vector2(0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="InnerHighlight"]
+bg_color = Color(1, 1, 1, 0)
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_color = Color(1, 0.9764706, 0.9019608, 0.627451)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="MerchandiseInset"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 1, 1, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56078434, 0.46666667, 0.2901961, 0.14901961)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="Gradient" id="ShelfGlow"]
+colors = PackedColorArray(1, 0.9764706, 0.8627451, 0.3764706, 1, 0.9764706, 0.8627451, 0)
+
+[sub_resource type="GradientTexture2D" id="ShelfGlowTex"]
+gradient = SubResource("ShelfGlow")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.45)
+fill_to = Vector2(1, 0.45)
 
 [sub_resource type="StyleBoxLine" id="Divider"]
 color = Color(0.42, 0.36, 0.23, 0.42)
 thickness = 2
 vertical = true
+
+[sub_resource type="StyleBoxFlat" id="MerchantSideWash"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.8509804, 0.7882353, 0.627451, 0.2)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
 [sub_resource type="StyleBoxFlat" id="GreenButton"]
 content_margin_left = 18.0
@@ -124,7 +187,7 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_aum3v")
 
 [node name="ShopPanel" type="PanelContainer" parent="ContainerPanel" unique_id=1781192049]
-custom_minimum_size = Vector2(1480, 820)
+custom_minimum_size = Vector2(1480, 900)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -132,12 +195,23 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -740.0
-offset_top = -395.0
+offset_top = -430.0
 offset_right = 740.0
-offset_bottom = 425.0
+offset_bottom = 470.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("ShopPanel")
+
+[node name="ContentWash" type="TextureRect" parent="ContainerPanel/ShopPanel" unique_id=251483619]
+layout_mode = 2
+mouse_filter = 2
+texture = SubResource("PanelWashTex")
+expand_mode = 1
+
+[node name="InnerHighlight" type="Panel" parent="ContainerPanel/ShopPanel" unique_id=1973329341]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("InnerHighlight")
 
 [node name="MarginContainer" type="MarginContainer" parent="ContainerPanel/ShopPanel" unique_id=211312420]
 layout_mode = 2
@@ -189,28 +263,88 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 34
 
-[node name="CardsCenter" type="CenterContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=472283362]
+[node name="CardsCenter" type="PanelContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=472283362]
 custom_minimum_size = Vector2(970, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("MerchandiseInset")
 
-[node name="CardsGridContainer" type="GridContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter" unique_id=1594343347]
+[node name="MerchandiseColumn" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter" unique_id=33221293]
 layout_mode = 2
+theme_override_constants/separation = 72
+
+[node name="ShelfRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1760726572]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="PotionShelf" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow" unique_id=711787578]
+custom_minimum_size = Vector2(480, 210)
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="ShelfGlow" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf" unique_id=1357287190]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("ShelfGlowTex")
+expand_mode = 1
+
+[node name="ShelfImage" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf" unique_id=1777218441]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -92.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("5_shelf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PotionsGrid" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf" unique_id=682950715]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 36.0
+offset_right = -36.0
+offset_bottom = 140.0
+grow_horizontal = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="CardsGridContainer" type="GridContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1594343347]
+layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/h_separation = 26
 columns = 3
 
 [node name="Separator" type="VSeparator" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=739848913]
+visible = false
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 2
 theme_override_styles/separator = SubResource("Divider")
 
-[node name="MerchantSide" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=1617271380]
+[node name="MerchantSideFrame" type="PanelContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body" unique_id=616747618]
 custom_minimum_size = Vector2(310, 0)
 layout_mode = 2
 size_flags_horizontal = 8
+mouse_filter = 2
+theme_override_styles/panel = SubResource("MerchantSideWash")
+
+[node name="MerchantSide" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame" unique_id=1617271380]
+layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Gramps" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=204440647]
+[node name="Gramps" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=204440647]
+texture_filter = 1
 custom_minimum_size = Vector2(310, 320)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -218,11 +352,11 @@ texture = ExtResource("2_b5a5w")
 expand_mode = 3
 stretch_mode = 5
 
-[node name="PurchasePanel" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=1817095346]
+[node name="PurchasePanel" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=1817095346]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="BuyGoldButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide/PurchasePanel" unique_id=922827488]
+[node name="BuyGoldButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/PurchasePanel" unique_id=922827488]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.95, 0.85, 1)
@@ -237,7 +371,7 @@ text = "BUY"
 icon = ExtResource("3_gold")
 expand_icon = true
 
-[node name="BuyTokenButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide/PurchasePanel" unique_id=1221982560]
+[node name="BuyTokenButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/PurchasePanel" unique_id=1221982560]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.16, 0.2, 0.15, 1)
@@ -254,11 +388,11 @@ text = "USE TOKEN"
 icon = ExtResource("4_token")
 expand_icon = true
 
-[node name="ActionSpacer" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=981416549]
+[node name="ActionSpacer" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=981416549]
 custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
-[node name="RerollButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=2052932522]
+[node name="RerollButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=2052932522]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.16, 0.19, 0.14, 1)
@@ -275,7 +409,7 @@ text = "REROLL - 5"
 icon = ExtResource("3_die")
 expand_icon = true
 
-[node name="LeaveButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSide" unique_id=411611746]
+[node name="LeaveButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=411611746]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 size_flags_vertical = 8

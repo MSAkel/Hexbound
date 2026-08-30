@@ -4,22 +4,33 @@ extends CanvasLayer
 ## Only spawned from main.gd in debug builds.
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
+const STATE_PATH := "user://run_sandbox_overlay.cfg"
+const STATE_SECTION := "overlay"
+const STATE_KEY_COLLAPSED := "collapsed"
+## Original panel was 596px. Cap the tool list at ~70% of that and scroll the rest.
+const MAX_BODY_HEIGHT := 350.0
 
-@onready var _gold_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/GoldRow/GoldSpinBox
-@onready var _token_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/TokenRow/TokenSpinBox
-@onready var _seed_label: Label = $ToolsPanel/MarginContainer/VBoxContainer/SeedRow/SeedLabel
-@onready var _complete_round_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/CompleteRoundButton
-@onready var _jump_round_spin: SpinBox = $ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow/JumpRoundSpinBox
-@onready var _jump_round_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/RoundJumpRow/JumpRoundButton
-@onready var _pass_turn_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/PassTurnButton
-@onready var _open_merchant_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenMerchantButton
-@onready var _open_rune_selection_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/OpenRuneSelectionButton
-@onready var _character_option: OptionButton = $ToolsPanel/MarginContainer/VBoxContainer/CharacterRow/CharacterOption
-@onready var _challenge_option: OptionButton = $ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ChallengeOption
-@onready var _activate_challenge_button: Button = $ToolsPanel/MarginContainer/VBoxContainer/ChallengeRow/ActivateChallengeButton
+@onready var _tools_panel: PanelContainer = $OverlayRoot/ToolsPanel
+@onready var _tools_scroll: ScrollContainer = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll
+@onready var _tools_body: VBoxContainer = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody
+@onready var _collapse_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/TitleRow/CollapseButton
+@onready var _gold_spin: SpinBox = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow/GoldSpinBox
+@onready var _token_spin: SpinBox = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow/TokenSpinBox
+@onready var _seed_label: Label = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SeedRow/SeedLabel
+@onready var _complete_round_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CompleteRoundButton
+@onready var _jump_round_spin: SpinBox = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow/JumpRoundSpinBox
+@onready var _jump_round_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow/JumpRoundButton
+@onready var _pass_turn_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PassTurnButton
+@onready var _open_merchant_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton
+@onready var _open_rune_selection_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenRuneSelectionButton
+@onready var _character_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CharacterRow/CharacterOption
+@onready var _challenge_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow/ChallengeOption
+@onready var _activate_challenge_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChallengeRow/ActivateChallengeButton
 @onready var _card_picker: Control = $CardPicker
 @onready var _card_search: LineEdit = $CardPicker/Panel/MarginContainer/VBoxContainer/SearchRow/CardSearch
 @onready var _card_grid: GridContainer = $CardPicker/Panel/MarginContainer/VBoxContainer/ScrollContainer/CardGrid
+
+var _collapsed := false
 
 
 func _ready() -> void:
@@ -37,9 +48,13 @@ func _ready() -> void:
 	_sync_challenge_option()
 	_refresh_action_buttons()
 	_refresh_seed_label()
+	_collapsed = _load_collapsed_state()
+	_apply_collapsed()
 
 
 func _process(_delta: float) -> void:
+	if _collapsed:
+		return
 	_refresh_action_buttons()
 	_refresh_seed_label()
 
@@ -56,6 +71,66 @@ func _refresh_action_buttons() -> void:
 
 func _refresh_seed_label() -> void:
 	_seed_label.text = "Run seed: %s" % RunRng.get_display_seed()
+
+
+func _on_collapse_button_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	_collapsed = not _collapsed
+	_apply_collapsed()
+	_save_collapsed_state()
+
+
+## Hide the tool rows and shrink the panel so it sits as a compact header.
+func _apply_collapsed() -> void:
+	_tools_scroll.visible = not _collapsed
+	_collapse_button.text = "▸" if _collapsed else "▾"
+	_collapse_button.tooltip_text = "Expand sandbox" if _collapsed else "Collapse sandbox"
+	if _collapsed:
+		_tools_scroll.custom_minimum_size.y = 0.0
+	else:
+		_refresh_action_buttons()
+		_refresh_seed_label()
+		_fit_scroll_height()
+	_pin_to_bottom_right()
+	# Min size updates after the hidden scroll leaves the layout.
+	call_deferred("_pin_to_bottom_right")
+
+
+## Keep the bottom-right corner on the viewport even when the panel shrinks.
+func _pin_to_bottom_right() -> void:
+	var min_size := _tools_panel.get_combined_minimum_size()
+	var width := maxf(_tools_panel.custom_minimum_size.x, min_size.x)
+	var height := min_size.y
+	_tools_panel.anchor_left = 1.0
+	_tools_panel.anchor_top = 1.0
+	_tools_panel.anchor_right = 1.0
+	_tools_panel.anchor_bottom = 1.0
+	_tools_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_tools_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_tools_panel.offset_right = 0.0
+	_tools_panel.offset_bottom = 0.0
+	_tools_panel.offset_left = -width
+	_tools_panel.offset_top = -height
+
+
+## Keep the list from growing past MAX_BODY_HEIGHT. Extra rows scroll.
+func _fit_scroll_height() -> void:
+	var content_height := _tools_body.get_combined_minimum_size().y
+	_tools_scroll.custom_minimum_size.y = minf(content_height, MAX_BODY_HEIGHT)
+
+
+func _load_collapsed_state() -> bool:
+	var cfg := ConfigFile.new()
+	if cfg.load(STATE_PATH) != OK:
+		return true
+	return bool(cfg.get_value(STATE_SECTION, STATE_KEY_COLLAPSED, true))
+
+
+func _save_collapsed_state() -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(STATE_PATH)
+	cfg.set_value(STATE_SECTION, STATE_KEY_COLLAPSED, _collapsed)
+	cfg.save(STATE_PATH)
 
 
 func _on_copy_seed_button_pressed() -> void:

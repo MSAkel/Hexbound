@@ -37,8 +37,9 @@ RoundFlow="*res://scripts/autoload/round_flow.gd"
 RunSaveManager="*res://scripts/autoload/run_save_manager.gd"
 RunRng="*res://scripts/autoload/run_rng.gd"
 MetaProgressionManager="*res://scripts/autoload/meta_progression_manager.gd"
-RerollManager="*res://scripts/autoload/reroll_manager.gd"
-MenuBackground="*res://scripts/autoload/menu_background.gd"
+	RerollManager="*res://scripts/autoload/reroll_manager.gd"
+	PotionManager="*res://scripts/autoload/potion_manager.gd"
+	MenuBackground="*res://scripts/autoload/menu_background.gd"
 
 [debug]
 

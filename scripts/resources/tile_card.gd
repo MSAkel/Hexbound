@@ -92,6 +92,8 @@ var personal_output_bonus: float = 0.0
 var run_trigger_count: int = 0
 # Empowered tile cards double their output once on trigger.
 var is_empowered: bool = false
+## Short-lived potion fuses sitting on this placed instance.
+var potion_fuses: Array[Dictionary] = []
 # Scales all tile card output during this activation (score, gold, generated multiplier resource).
 var _activation_output_scale: float = 1.0
 # True when this activation consumed Empower. Checked by cards that pay extra on Empower.
@@ -337,6 +339,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 			MetaProgressionManager.add_one_tile_activation()
 			MetaProgressionManager.note_one_tile_same_card_triggers(run_trigger_count)
 	_try_segment_passive_retrigger(tile)
+	PotionManager.after_card_activated(tile, _activation_host_card(tile))
 	_activation_output_scale = 1.0
 	_activation_was_empowered = false
 
@@ -469,12 +472,14 @@ func add_score(tile: Hex, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
 	tile.map.add_turn_score_for_tile(tile, points)
 	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_ENERGY)
+	PotionManager.relay_product_if_needed(tile, Product.SCORE, points)
 
 func add_gold(tile: Hex, base_amount: Variant) -> void:
 	var amount := int(round(float(base_amount) * _activation_output_scale))
 	amount += GameManager.passive_runtime.extra_gold_for_card(tile, self)
 	tile.map.add_turn_gold_for_tile(tile, amount)
 	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD)
+	PotionManager.relay_product_if_needed(tile, Product.GOLD, amount)
 
 func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
 	var amount := float(base_amount)
@@ -482,6 +487,7 @@ func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> voi
 		amount *= _activation_output_scale
 	tile.map.add_turn_multiplier_for_tile(tile, amount)
 	_create_floating_text(tile, "+%s" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
+	PotionManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
 
 
 # Credits another segment's Energy. Float stays on this tile, destination segment flashes.
@@ -825,6 +831,12 @@ func _get_earlier_segment_gold_preview(tile: Hex) -> int:
 func _get_segment_turn_score(tile: Hex) -> int:
 	return tile.map.get_segment_turn_score(_get_segment_index(tile))
 
+
+## Turn Mult piled on this segment so far, including the 1.0 base.
+func _get_segment_turn_multiplier(tile: Hex) -> float:
+	return tile.map.get_segment_turn_multiplier(_get_segment_index(tile))
+
+
 ## All placed tile cards on the same segment whose product matches filter_product.
 func _get_all_tile_cards_on_same_segment_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
 	var result: Array[TileCard] = []
@@ -1013,6 +1025,9 @@ func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard, counts_as_
 	if broken_hex == null:
 		broken_hex = source_tile
 	if counts_as_break:
+		if PotionManager.try_prevent_break(tile_card):
+			_create_floating_text(source_tile, "Warded", Color(0.45, 0.88, 0.58, 1.0))
+			return
 		if GameManager.passive_runtime.try_prevent_break(source_tile, tile_card):
 			_create_floating_text(source_tile, "Saved", Color(0.55, 0.85, 0.7, 1.0))
 			return

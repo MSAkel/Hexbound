@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dinaslb47ov38"
-path="res://.godot/imported/3 Aklatros.png-92faa40a0de6dbb390c7cfd648de0db1.ctex"
+uid="uid://pxuifnpxaway"
+path="res://.godot/imported/potion_3.png-89f58ec1d5b193610f6eb806a2a8d7ce.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/title/3 Aklatros.png"
-dest_files=["res://.godot/imported/3 Aklatros.png-92faa40a0de6dbb390c7cfd648de0db1.ctex"]
+source_file="res://assets/icons/potions/potion_3.png"
+dest_files=["res://.godot/imported/potion_3.png-89f58ec1d5b193610f6eb806a2a8d7ce.ctex"]
 
 [params]
 

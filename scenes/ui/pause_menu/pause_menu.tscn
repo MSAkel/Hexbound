@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://br3dhulnhrxyl"]
 
 [ext_resource type="Script" uid="uid://16ej6vcxnuhw" path="res://scenes/ui/pause_menu/pause_menu.gd" id="1_kgchh"]
-[ext_resource type="Texture2D" uid="uid://dinaslb47ov38" path="res://assets/title/3 Aklatros.png" id="2_rbnsh"]
+[ext_resource type="Texture2D" uid="uid://8fw2v0boq1q8" path="res://assets/title/6_aklatros.png" id="2_xgg5q"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu/layout_passives_viewer.tscn" id="3_layout"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
@@ -88,7 +88,7 @@ theme_override_constants/separation = 16
 
 [node name="TextureRect" type="TextureRect" parent="Panel/MenuItemsContainer" unique_id=799428981]
 layout_mode = 2
-texture = ExtResource("2_rbnsh")
+texture = ExtResource("2_xgg5q")
 
 [node name="Continue" type="Button" parent="Panel/MenuItemsContainer" unique_id=2074081055]
 layout_mode = 2
@@ -118,7 +118,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
-text = "Layout Passives"
+text = "Passives"
 
 [node name="Collection" type="Button" parent="Panel/MenuItemsContainer" unique_id=730216108]
 layout_mode = 2

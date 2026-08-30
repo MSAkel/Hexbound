@@ -144,6 +144,7 @@ func end_turn() -> void:
 func finish_turn_processing() -> void:
 	# A turn is only consumed when it failed to reach the round goal.
 	var should_consume_turn := remaining_turns > 0 and total_round_score + turn_score < required_score
+	PotionManager.on_turn_resolved()
 
 	total_round_score += turn_score
 	turn_score = 0
@@ -208,6 +209,12 @@ func get_turn_number() -> int:
 ## Turns not used before the round goal was met. Rewards use this, not raw remaining_turns.
 func get_skipped_turns() -> int:
 	return maxi(0, remaining_turns - 1)
+
+
+## Borrowed Time and similar drinks add a turn without changing the challenge.
+func add_bonus_turn() -> void:
+	remaining_turns += 1
+	EventBus.turn_changed.emit()
 
 
 ## Debug helper. Sets the round score to the goal and starts the normal complete-round flow.
@@ -307,6 +314,21 @@ func apply_active_segment_passives(character_id: String) -> void:
 			var passive := MetaProgressionManager.get_passive_by_id(String(entry))
 			if passive != null:
 				passives.append(passive)
+		_active_passives_by_segment[segment_index] = passives
+	passive_runtime.bind(_active_passives_by_segment)
+	passive_runtime.reset_turn()
+
+
+## Playtest and sandbox helper. Does not write the player profile.
+func bind_segment_passives_for_debug(by_segment: Dictionary) -> void:
+	_active_passives_by_segment.clear()
+	for segment_key: Variant in by_segment.keys():
+		var segment_index := int(segment_key)
+		var source: Array = by_segment[segment_key]
+		var passives: Array[SegmentPassive] = []
+		for entry in source:
+			if entry is SegmentPassive:
+				passives.append(entry)
 		_active_passives_by_segment[segment_index] = passives
 	passive_runtime.bind(_active_passives_by_segment)
 	passive_runtime.reset_turn()
@@ -455,6 +477,7 @@ func reset_for_new_run() -> void:
 	# Peak tracking clears the loadout. Re-apply the selected character's passives for this run.
 	if selected_character != null:
 		apply_active_segment_passives(selected_character.id)
+	PotionManager.reset_for_new_run()
 
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.

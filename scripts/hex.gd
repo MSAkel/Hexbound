@@ -127,6 +127,7 @@ func refresh_tile_card_visual_state() -> void:
 
 	rune_ui.apply_resting_modulate(target_modulate)
 	rune_ui.refresh_output_chip(active_tile_card)
+	rune_ui.refresh_potion_badges(active_tile_card, coordinates)
 	# Restore overcharge sparks after load or chip refresh. The strike itself is not replayed.
 	if active_tile_card.is_empowered:
 		rune_ui.start_empower_sparks()

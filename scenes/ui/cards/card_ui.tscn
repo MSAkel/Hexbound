@@ -83,13 +83,6 @@ offset_right = -4.0
 offset_bottom = 310.0
 grow_horizontal = 2
 
-[node name="PriceLabel" type="Label" parent="Content" unique_id=1732701792]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.43634328, 0.572599, 0.42167145, 1)
-theme_override_font_sizes/font_size = 32
-text = "$100"
-horizontal_alignment = 1
-
 [node name="NameContainer" type="PanelContainer" parent="Content" unique_id=322151785]
 layout_mode = 2
 size_flags_vertical = 0
@@ -214,6 +207,23 @@ theme_override_constants/outline_size = 4
 theme_override_fonts/font = SubResource("FontVariation_m82f4")
 theme_override_font_sizes/font_size = 46
 text = "SOLD"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PriceLabel" type="Label" parent="." unique_id=1732701792]
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.43634328, 0.572599, 0.42167145, 1)
+theme_override_font_sizes/font_size = 28
+text = "$100"
 horizontal_alignment = 1
 vertical_alignment = 1
 

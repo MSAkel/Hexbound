@@ -19,6 +19,9 @@ var crossfade_tween: Tween
 var _crossfade_generation: int = 0
 # Per-player fade tweens so a reused SFX slot can cancel an in-flight fade.
 var _sfx_fade_tweens: Dictionary = {}
+## Dedicated hover player so potion hover never stacks and can be stopped.
+var _potion_hover_player: AudioStreamPlayer
+var _potion_hover_use_b := false
 
 func _ready() -> void:
 	# Initialize audio players
@@ -33,6 +36,10 @@ func _ready() -> void:
 		add_child(player)
 		sfx_players.append(player)
 	
+	_potion_hover_player = AudioStreamPlayer.new()
+	_potion_hover_player.bus = "SFX"
+	add_child(_potion_hover_player)
+
 	# Load saved volume settings
 	load_volume_settings()
 
@@ -84,6 +91,22 @@ func play_sfx(sfx: AudioStream, fade_out_after: float = -1.0, fade_out_duration:
 		_fade_out_sfx(player, fade_out_after, fade_out_duration)
 
 
+## Stops any in-flight hover clip, then plays the other potion hover file.
+func play_potion_hover() -> void:
+	if _potion_hover_player == null:
+		return
+	_potion_hover_player.stop()
+	_potion_hover_use_b = not _potion_hover_use_b
+	_potion_hover_player.stream = UISounds.POTION_HOVER_B if _potion_hover_use_b else UISounds.POTION_HOVER_A
+	_potion_hover_player.volume_db = linear_to_db(sfx_volume)
+	_potion_hover_player.play()
+
+
+func stop_potion_hover() -> void:
+	if _potion_hover_player != null:
+		_potion_hover_player.stop()
+
+
 ## Fades an SFX player to silence, then stops it so the pool slot is free.
 func _fade_out_sfx(player: AudioStreamPlayer, fade_out_after: float, fade_out_duration: float) -> void:
 	var tween := create_tween()
@@ -128,6 +151,8 @@ func set_sfx_volume(volume: float) -> void:
 		if _sfx_fade_tweens.has(player):
 			continue
 		player.volume_db = linear_to_db(sfx_volume)
+	if _potion_hover_player != null:
+		_potion_hover_player.volume_db = linear_to_db(sfx_volume)
 	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
 	GameSettings.set_sfx_volume(sfx_volume)
 
@@ -152,6 +177,7 @@ func stop_all() -> void:
 	music_player.stop()
 	for player in sfx_players:
 		player.stop()
+	stop_potion_hover()
 
 # Pause all audio
 func pause_all() -> void:

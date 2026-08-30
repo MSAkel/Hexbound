@@ -5,11 +5,11 @@
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 5
+base_production_amount = 12
 rarity = 1
 product = 1
 id = "census_cell"
 name = "Census Cell"
 icon = ExtResource("1_icon")
-description = "+5 Energy for every segment on the map"
+description = "+12 Energy for every segment on the map"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

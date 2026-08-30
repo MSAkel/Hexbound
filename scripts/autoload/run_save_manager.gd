@@ -149,6 +149,7 @@ func save_current_run() -> void:
 		"game_manager": GameManager.capture_run_state(),
 		"gold": GoldManager.capture_run_state(),
 		"rerolls": RerollManager.capture_run_state(),
+		"potions": PotionManager.capture_run_state(),
 		"challenges": ChallengeManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
 		"run_rng": RunRng.capture_run_state(),
@@ -198,6 +199,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	RoundFlow.apply_run_state(payload.get("round_flow", {}))
 	RunRng.apply_run_state(payload.get("run_rng", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
+	PotionManager.apply_run_state(payload.get("potions", {}))
 	hand.restore_hand_state(payload.get("hand", {}))
 	_apply_offer_ui_state(payload)
 	ChallengeManager.refresh_challenge_visuals()

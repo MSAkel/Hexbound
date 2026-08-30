@@ -132,6 +132,33 @@ func get_next_challenge_type() -> int:
 	return get_challenge_for_round(next_round)
 
 
+## Replaces the next unstarted challenge with a type not already on the calendar.
+func rewrite_upcoming_challenge(use_index: int) -> bool:
+	var next_round := get_next_challenge_round()
+	if next_round == -1:
+		return false
+	var slot := CHALLENGE_ROUNDS.find(next_round)
+	if slot < 0 or slot >= scheduled_challenges.size():
+		return false
+
+	var unused: Array = []
+	for challenge_type in ALL_CHALLENGES:
+		if scheduled_challenges.has(challenge_type):
+			continue
+		unused.append(challenge_type)
+	if unused.is_empty():
+		return false
+
+	var rng := RunRng.create_rng("potion:rewrite_omen:r%d:n%d" % [
+		GameManager.current_round,
+		use_index,
+	])
+	RunRng.shuffle_with(rng, unused)
+	scheduled_challenges[slot] = unused[0] as Type
+	EventBus.challenge_schedule_changed.emit()
+	return true
+
+
 func get_challenge_name(challenge_type: int) -> String:
 	if challenge_type == -1:
 		return ""

@@ -19,7 +19,7 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @onready var card_description: RichTextLabel = $Content/DescriptionContainer/CardDescription
 @onready var resource_cost_container: HBoxContainer = $Content/ResourceCostContainer
 @onready var card_type_label: Label = $Content/CardTypeLabel
-@onready var price_label: Label = $Content/PriceLabel
+@onready var price_label: Label = $PriceLabel
 
 @onready var drop_point_area: Area2D = $DropPointArea
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
@@ -29,6 +29,7 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 # Textured card frame. Used for hover tint and to ignore mouse so the root Control gets clicks.
 @onready var panel: Panel = $CardBackground
 @onready var content_container: VBoxContainer = $Content
+@onready var overlays: Control = $Overlays
 # Scene-authored border glow; toggled when the card enters/exits the clicked placement state.
 @onready var selection_glow: Panel = $Overlays/SelectionGlow
 @onready var sold_overlay: Panel = $Overlays/SoldOverlay
@@ -57,6 +58,9 @@ const HAND_ELEVATED_Z_INDEX := 10
 const PANEL_HOVER_ELEVATION_OFFSET := -12.0
 const MERCHANT_SELECTED_ELEVATION_OFFSET := -28.0
 const HOVER_ANIMATION_DURATION := 0.2
+# Room under the frame so merchant gold sits outside the card art.
+const PRICE_BELOW_HEIGHT := 30.0
+const HAND_CONTENT_HEIGHT := 310.0
 var _is_hover_elevated := false
 var _map_tile_hover_active := false
 var _resting_z_index := 0
@@ -99,7 +103,6 @@ func _apply_interaction_mode() -> void:
 		InteractionMode.HAND:
 			hover_enabled = true
 			_configure_click_routing(true)
-			price_label.visible = false
 			sold_overlay.visible = false
 			# Grow from the bottom edge so the card lifts and scales upward in the fan.
 			offset_transform_pivot_ratio = Vector2(0.5, 1.0)
@@ -107,33 +110,49 @@ func _apply_interaction_mode() -> void:
 		InteractionMode.MERCHANT:
 			hover_enabled = true
 			_configure_click_routing(true)
-			price_label.visible = true
 			sold_overlay.visible = _is_sold
 			_refresh_merchant_price()
 			_update_affordability()
 		InteractionMode.MERCHANT_STOCK:
 			hover_enabled = true
 			_configure_click_routing(true)
-			price_label.visible = true
 			sold_overlay.visible = _is_sold
 			_refresh_merchant_price()
 			_update_stock_affordability()
 		InteractionMode.CHOICE:
 			hover_enabled = true
 			_configure_click_routing(true)
-			price_label.visible = false
 			sold_overlay.visible = false
 		InteractionMode.PREVIEW:
 			hover_enabled = false
 			_configure_click_routing(false)
-			price_label.visible = false
 			sold_overlay.visible = false
+
+	_layout_price_below(
+		interaction_mode == InteractionMode.MERCHANT
+		or interaction_mode == InteractionMode.MERCHANT_STOCK
+	)
 
 	# Hand cards animate scale via offset transform; other modes stay at default size.
 	if interaction_mode != InteractionMode.HAND:
 		offset_transform_scale = Vector2.ONE
 
 	drop_point_area.monitoring = false
+
+
+## Merchant price sits under the frame. Hand cards keep the original full-bleed layout.
+func _layout_price_below(enabled: bool) -> void:
+	price_label.visible = enabled
+	if enabled:
+		panel.offset_bottom = -PRICE_BELOW_HEIGHT - 3.0
+		overlays.offset_bottom = -PRICE_BELOW_HEIGHT
+		content_container.anchor_bottom = 1.0
+		content_container.offset_bottom = -PRICE_BELOW_HEIGHT - 7.0
+		return
+	panel.offset_bottom = -3.0
+	overlays.offset_bottom = 0.0
+	content_container.anchor_bottom = 0.0
+	content_container.offset_bottom = HAND_CONTENT_HEIGHT
 
 
 # Route all pointer events to the root control so merchant/choice clicks are not eaten by child labels.
@@ -344,7 +363,6 @@ func _handle_merchant_gui_input(event: InputEvent) -> void:
 			and event.button_index == MOUSE_BUTTON_LEFT:
 		if not GoldManager.can_afford(price):
 			return
-
 		action_requested.emit(self)
 		accept_event()
 

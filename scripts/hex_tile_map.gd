@@ -73,6 +73,8 @@ var _placement_preview_cell: Vector2i = Vector2i(-1, -1)
 # Tiles lit when a card credits another segment's turn total.
 var _flashed_segment_coords: Array[Vector2i] = []
 var _flash_segment_generation: int = 0
+## Occupied tiles lit while aiming a tile-target potion.
+var _potion_target_coords: Array[Vector2i] = []
 
 # Owners of cells on fading_sector_overlay_layer, used so one overlay does not erase another.
 enum FadingOverlayOwner { CHALLENGE, REVEAL }
@@ -99,6 +101,7 @@ func _ready() -> void:
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
 	EventBus.map_display_layout_changed.connect(_on_map_display_layout_changed)
+	EventBus.potion_fuses_changed.connect(_refresh_potion_fuse_badges)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
@@ -115,6 +118,12 @@ func _ready() -> void:
 	turn_resolver.name = "TurnResolver"
 	add_child(turn_resolver)
 	turn_resolver.setup(self)
+
+
+func _refresh_potion_fuse_badges() -> void:
+	for hex: Hex in map_data.values():
+		if hex.rune_ui != null and hex.active_tile_card != null:
+			hex.rune_ui.refresh_potion_badges(hex.active_tile_card, hex.coordinates)
 
 
 func _exit_tree() -> void:
@@ -791,6 +800,15 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	_emit_segment_turn_results_changed(segment_index)
 
 
+## Records gold on a segment by index. Used when a drink relays gold to the next segment.
+func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
+	if amount == 0:
+		return
+	_layout.add_segment_turn_gold(segment_index, amount)
+	GoldManager.add(amount)
+	_emit_segment_turn_results_changed(segment_index)
+
+
 ## Notifies UI of the latest per-segment Energy, multiplier, and scored contribution.
 func _emit_segment_turn_results_changed(segment_index: int, use_passive_adjustments: bool = false) -> void:
 	var score := _layout.get_segment_turn_score(segment_index)
@@ -959,6 +977,29 @@ func _clear_flashed_segment_highlight() -> void:
 	_flashed_segment_coords.clear()
 
 
+## Lights occupied tiles while a tile-target potion is being aimed.
+func set_potion_target_highlights(coords: Array[Vector2i]) -> void:
+	clear_potion_target_highlights()
+	_potion_target_coords = coords.duplicate()
+	rune_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
+	for cell in _potion_target_coords:
+		rune_highlight_overlay_layer.set_cell(
+			cell,
+			OVERLAY_TILE_SOURCE_ID,
+			OVERLAY_TILE_ATLAS_COORDS
+		)
+
+
+func clear_potion_target_highlights() -> void:
+	var previous := _potion_target_coords.duplicate()
+	_potion_target_coords.clear()
+	for cell in previous:
+		if _rune_highlight_still_needed(cell, false, false):
+			continue
+		rune_highlight_overlay_layer.set_cell(cell, -1)
+	rune_highlight_overlay_layer.modulate = Color.WHITE
+
+
 ## True while hover, placement preview, a credit flash, or inspect still owns this overlay cell.
 func _rune_highlight_still_needed(
 	coords: Vector2i,
@@ -974,6 +1015,8 @@ func _rune_highlight_still_needed(
 		return true
 	if not from_inspect and coords in _inspect_highlight_coords:
 		return true
+	if coords in _potion_target_coords:
+		return true
 	return false
 
 
@@ -983,6 +1026,7 @@ func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 		coords in _hovered_segment_coords
 		or coords in _flashed_segment_coords
 		or coords in _inspect_highlight_coords
+		or coords in _potion_target_coords
 	)
 
 
@@ -1304,6 +1348,7 @@ func _serialize_placed_tile_card(rune: TileCard) -> Dictionary:
 		"personal_output_bonus": rune.personal_output_bonus,
 		"run_trigger_count": rune.run_trigger_count,
 		"is_empowered": rune.is_empowered,
+		"potion_fuses": rune.potion_fuses.duplicate(true),
 	}
 	return data
 
@@ -1320,6 +1365,10 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	rune.personal_output_bonus = float(data.get("personal_output_bonus", 0.0))
 	rune.run_trigger_count = int(data.get("run_trigger_count", 0))
 	rune.is_empowered = bool(data.get("is_empowered", false))
+	rune.potion_fuses.clear()
+	for fuse in data.get("potion_fuses", []):
+		if fuse is Dictionary:
+			rune.potion_fuses.append(fuse.duplicate(true))
 	return rune
 
 #endregion

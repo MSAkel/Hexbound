@@ -11,5 +11,5 @@ sigil_kind = 6
 id = "share_load"
 name = "Share Load"
 icon = ExtResource("1_icon")
-description = "Relay 30% of this segment's Energy pile so far to the next segment"
+description = "Relay 45% of this segment's Energy pile and 20% of its bonus Mult to the next segment"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
