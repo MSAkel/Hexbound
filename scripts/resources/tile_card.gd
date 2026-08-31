@@ -300,11 +300,11 @@ func is_placement_candidate(hex: Hex) -> bool:
 
 
 # Instant-resolve modifiers, otherwise occupy the hex.
-func play_on(hex: Hex) -> void:
+func play_on(hex: Hex, animate: bool = true) -> void:
 	if type == TileCardType.UTILITY:
 		apply_on_placement(hex)
 	else:
-		hex.place_tile_card(self)
+		hex.place_tile_card(self, animate)
 
 
 # Entry point for tile card activation. Mainly called by Hex.apply_tile_card_activation()

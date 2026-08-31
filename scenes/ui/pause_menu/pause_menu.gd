@@ -74,6 +74,7 @@ func _on_collection_closed() -> void:
 
 func _on_main_menu_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
+	# Skips the write when the run is mid-action so the last stable file is kept.
 	RunSaveManager.save_current_run()
 	get_tree().paused = false
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

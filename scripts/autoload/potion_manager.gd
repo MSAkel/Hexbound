@@ -85,6 +85,9 @@ func can_drink_now() -> bool:
 		return false
 	if GameManager.is_processing_turn:
 		return false
+	var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+	if hand != null and hand.has_pending_auto_end():
+		return false
 	return true
 
 
@@ -169,6 +172,11 @@ func cancel_targeting() -> void:
 
 func is_targeting() -> bool:
 	return targeting_slot >= 0
+
+
+## True while aiming or playing a drink animation. Belt and fuses are not settled yet.
+func is_mid_use() -> bool:
+	return _consuming or targeting_slot >= 0
 
 
 func try_prevent_break(card: TileCard) -> bool:

@@ -11,12 +11,18 @@ const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
 const HAND_SLIDE_DURATION := 0.35
 ## Stagger between each card during the run-start entrance from below.
 const INTRO_CARD_STAGGER := 0.07
-## Hands of this size and smaller keep full spacing. Larger hands start to overlap.
+## Hands larger than this pack tighter toward a five-card footprint.
 const SPACED_HAND_COUNT := 5
+## Negative separation for small hands so the fan overlaps like a full grip.
+const HAND_SLIGHT_OVERLAP_SEPARATION := -18
 ## Never overlap so far that a card is left with a sliver too small to click.
 const MIN_VISIBLE_CARD_WIDTH := 56.0
 ## Extra gap opened around a featured card so the 1.2 hover scale does not cover neighbors.
 const HOVER_PUSH_PADDING := 10.0
+## Adjacent cards take full push. Farther cards ease off with this exponent.
+const HOVER_SPREAD_FALLOFF_POWER := 0.85
+## Extra fan tilt on neighbors while a card is featured.
+const HOVER_SPREAD_MAX_ROTATION_DEG := 3.5
 ## Fallback width before a card has been laid out.
 const DEFAULT_CARD_WIDTH := 214.0
 
@@ -35,6 +41,8 @@ var _hand_slide_tween: Tween = null
 var _base_separation := 0
 ## Card currently lifted in the hand, if any.
 var _featured_card: CardUI = null
+## Lets the next hovered card claim featured before neighbors collapse to rest.
+var _spread_clear_pending := false
 
 ## Reparent cards to hand when they are dragged or released
 func _ready() -> void:
@@ -116,8 +124,18 @@ func _add_card(data: Card) -> CardUI:
 
 
 ## Guard against non-card children
-func _get_hand_card_count() -> int:
+func get_hand_card_count() -> int:
 	return _get_hand_cards().size()
+
+
+func _get_hand_card_count() -> int:
+	return get_hand_card_count()
+
+
+## True after a play that should auto-end the turn, before resolve starts.
+## Saving here would persist a 2-card hand with no draft and no resolve.
+func has_pending_auto_end() -> bool:
+	return cards_played > 0 and get_hand_card_count() < 3
 
 
 func _get_hand_cards() -> Array[CardUI]:
@@ -131,10 +149,29 @@ func _get_hand_cards() -> Array[CardUI]:
 # Called from CardUI when a hand card lifts or settles so neighbors can slide aside.
 func notify_card_featured(card: CardUI, featured: bool, animate: bool = true) -> void:
 	if featured:
+		_spread_clear_pending = false
 		_featured_card = card
-	elif _featured_card == card:
-		_featured_card = null
-	_apply_hover_spread(animate)
+		_apply_hover_spread(animate)
+		return
+	if _featured_card != card:
+		return
+	_featured_card = null
+	if not animate:
+		_spread_clear_pending = false
+		_apply_hover_spread(false)
+		return
+	# Defer the collapse one frame so moving A -> B does not snap the fan shut first.
+	if _spread_clear_pending:
+		return
+	_spread_clear_pending = true
+	call_deferred("_finish_unfeature_spread")
+
+
+func _finish_unfeature_spread() -> void:
+	_spread_clear_pending = false
+	if _featured_card != null:
+		return
+	_apply_hover_spread(true)
 
 
 func _refresh_hand_layout() -> void:
@@ -153,14 +190,21 @@ func _update_card_overlap() -> void:
 func _compute_hand_separation() -> int:
 	var cards := _get_hand_cards()
 	var count := cards.size()
-	if count <= SPACED_HAND_COUNT:
+	if count <= 1:
 		return _base_separation
 
 	var card_width := _get_card_width()
+	var min_sep := -(card_width - MIN_VISIBLE_CARD_WIDTH)
+
+	if count < SPACED_HAND_COUNT:
+		return int(round(maxf(float(HAND_SLIGHT_OVERLAP_SEPARATION), min_sep)))
+
+	if count == SPACED_HAND_COUNT:
+		return _base_separation
+
 	# Keep the packed row about as wide as a five-card hand.
 	var target_width := SPACED_HAND_COUNT * card_width + (SPACED_HAND_COUNT - 1) * _base_separation
 	var packed_sep := (target_width - count * card_width) / float(count - 1)
-	var min_sep := -(card_width - MIN_VISIBLE_CARD_WIDTH)
 	return int(round(maxf(packed_sep, min_sep)))
 
 
@@ -188,10 +232,27 @@ func _apply_hover_spread(animate: bool) -> void:
 		var card := cards[i]
 		if is_preserving_offset_for(card):
 			continue
-		var spread := 0.0
-		if featured_index >= 0 and i != featured_index:
-			spread = -push if i < featured_index else push
-		card.set_hand_spread_x(spread, animate)
+		var spread := _compute_card_spread_offset(i, featured_index, push)
+		var spread_rotation := _compute_card_spread_rotation(i, featured_index)
+		card.set_hand_spread_pose(spread, spread_rotation, animate)
+
+
+func _compute_card_spread_offset(card_index: int, featured_index: int, max_push: float) -> float:
+	if featured_index < 0 or is_zero_approx(max_push) or card_index == featured_index:
+		return 0.0
+	var distance := absi(card_index - featured_index)
+	var direction := -1.0 if card_index < featured_index else 1.0
+	var weight := 1.0 / pow(float(distance), HOVER_SPREAD_FALLOFF_POWER)
+	return direction * max_push * weight
+
+
+func _compute_card_spread_rotation(card_index: int, featured_index: int) -> float:
+	if featured_index < 0 or card_index == featured_index:
+		return 0.0
+	var distance := absi(card_index - featured_index)
+	var direction := -1.0 if card_index < featured_index else 1.0
+	var weight := 1.0 / pow(float(distance), HOVER_SPREAD_FALLOFF_POWER)
+	return deg_to_rad(direction * HOVER_SPREAD_MAX_ROTATION_DEG * weight)
 
 
 func _on_card_played(_card_ui: CardUI) -> void:

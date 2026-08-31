@@ -72,7 +72,7 @@ func is_placement_blocked() -> bool:
 	return EventManager.is_hex_sealed(coordinates)
 
 
-func place_tile_card(rune: TileCard) -> void:
+func place_tile_card(rune: TileCard, animate: bool = true) -> void:
 	# Prevent placing a rune if one already exists or the tile is locked for placement.
 	if active_tile_card != null or is_placement_blocked():
 		return
@@ -88,7 +88,7 @@ func place_tile_card(rune: TileCard) -> void:
 	# Add first so setup is not deferred. Deferred setup can run after the hex is disposed.
 	items_grid.add_child(new_rune_instance)
 	new_rune_instance.setup(active_tile_card)
-	if not GameManager.skip_presentation:
+	if animate and not GameManager.skip_presentation:
 		new_rune_instance.play_placement_animation()
 	_apply_display_mode()
 	refresh_tile_card_visual_state()

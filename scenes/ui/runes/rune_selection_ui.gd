@@ -26,6 +26,8 @@ var _offer_reroll_count := 0
 var _pack_display_token := 0
 ## Pending offer snapshot applied the next time the panel opens after a continue.
 var _restore_state: Dictionary = {}
+## True from the moment an offer is shown until the player picks a card.
+var _awaiting_pick := false
 
 
 func _ready() -> void:
@@ -61,6 +63,7 @@ func _apply_card_float(float_wrapper: Control, index: int) -> void:
 func _on_show_panel() -> void:
 	if not RoundFlow.is_transition_rune_pick() and EventManager.should_auto_grant_rune(false):
 		return
+	_awaiting_pick = true
 	_set_board_view(false)
 	UiManager.show_panel(self)
 	set_process(true)
@@ -165,6 +168,7 @@ func _create_choice_card(rune: TileCard) -> void:
 func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
 	var rune := card_ui.card as TileCard
 	## Selecting a rune consumes the pack so a new one can be offered later.
+	_awaiting_pick = false
 	runes_pack.clear()
 	_set_board_view(false)
 	hide()
@@ -222,8 +226,10 @@ func animate_and_free(node: Node) -> void:
 
 
 func capture_offer_state() -> Dictionary:
+	# Persist the pick obligation, not Control visibility. Quit can hide the tree first.
 	return {
-		"open": is_visible_in_tree(),
+		"awaiting": _awaiting_pick,
+		"open": _awaiting_pick,
 		"offer_reroll_count": _offer_reroll_count,
 	}
 
@@ -239,9 +245,15 @@ func apply_offer_state(state: Dictionary) -> void:
 func restore_open_if_needed() -> void:
 	if _restore_state.is_empty():
 		return
-	if not bool(_restore_state.get("open", false)):
+	var awaiting := bool(_restore_state.get("awaiting", _restore_state.get("open", false)))
+	if not awaiting:
 		_restore_state.clear()
 		return
 	if RoundFlow.is_transition_rune_pick():
+		return
+	if EventManager.should_auto_grant_rune(false):
+		_restore_state.clear()
+		_awaiting_pick = false
+		EventManager.grant_auto_rune(false)
 		return
 	_on_show_panel()

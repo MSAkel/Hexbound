@@ -27,6 +27,8 @@ var _stock_reroll_count := 0
 var _reroll_cost := BASE_REROLL_COST
 ## Pending shop snapshot applied the next time open() runs after a continue.
 var _restore_state: Dictionary = {}
+## True from open() until Leave. Independent of board-peek visibility.
+var _session_open := false
 
 
 func _ready() -> void:
@@ -53,6 +55,7 @@ func open() -> void:
 	var restoring := not _restore_state.is_empty()
 	var sold_card_indices: Array = []
 	var sold_potion_indices: Array = []
+	_session_open = true
 	_set_board_view(false)
 	if restoring:
 		_stock_reroll_count = int(_restore_state.get("stock_reroll_count", 0))
@@ -276,6 +279,7 @@ func _on_reroll_button_pressed() -> void:
 
 
 func _on_leave_button_pressed() -> void:
+	_session_open = false
 	_set_board_view(false)
 	hide()
 	EventBus.merchant_closed.emit()
@@ -354,7 +358,7 @@ func capture_shop_state() -> Dictionary:
 		if _displayed_potions[index].is_sold():
 			sold_potion_indices.append(index)
 	return {
-		"open": is_visible_in_tree(),
+		"open": _session_open,
 		"stock_reroll_count": _stock_reroll_count,
 		"reroll_cost": _reroll_cost,
 		"sold_indices": sold_indices,

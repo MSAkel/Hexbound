@@ -1,11 +1,13 @@
 extends Node
 
 ## Persists in-progress runs to user:// so players can resume from the main menu.
-## Checkpoints, pause, and window-close all write through the same guarded path.
+## Only stable checkpoints are written. Mid-action quits keep the last good file.
 
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://run_save.json"
+## New fields are optional. Older v3 files still load and get repaired on restore.
 const SAVE_VERSION := 3
+const MIN_SUPPORTED_SAVE_VERSION := 3
 const HAND_GROUP := "run_hand"
 const MERCHANT_GROUP := "run_merchant"
 const RUNE_SELECTION_GROUP := "run_rune_selection"
@@ -25,6 +27,8 @@ var _autosave_generation := 0
 var _is_restoring := false
 ## Prevents close_requested and WM_CLOSE_REQUEST from quitting twice.
 var _is_quitting := false
+## Set during restore when the save captured a play that never finished resolving.
+var _pending_turn_resume := false
 
 
 func _ready() -> void:
@@ -43,8 +47,11 @@ func _on_window_close_requested() -> void:
 	if _is_quitting:
 		return
 	_is_quitting = true
-	# Immediate write so the file is on disk before the process exits.
-	save_current_run()
+	# Unstable moments keep the previous checkpoint instead of writing a partial turn.
+	if _can_save_now():
+		save_current_run()
+	else:
+		push_warning("RunSaveManager: quit during an in-flight action. Kept the last stable save.")
 	get_tree().quit()
 
 
@@ -177,7 +184,8 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 		clear_continue_run_pending()
 		return false
 
-	if int(payload.get("version", 0)) != SAVE_VERSION:
+	var version := int(payload.get("version", 0))
+	if version < MIN_SUPPORTED_SAVE_VERSION or version > SAVE_VERSION:
 		push_error("RunSaveManager: unsupported save version.")
 		delete_save()
 		return false
@@ -190,6 +198,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 		return false
 
 	_is_restoring = true
+	_pending_turn_resume = false
 	GameManager.selected_character = character
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	GameManager.apply_run_state(payload.get("game_manager", {}))
@@ -207,11 +216,26 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	# Segment rows are built deferred, refresh them once the layout data is restored.
 	tile_map.call_deferred("refresh_segment_turn_results_ui")
 	_notify_ui_restored()
+	_queue_interrupted_turn_resume(hand)
 	# Re-show the panel the run was sitting on, after the HUD has caught up.
 	RoundFlow.restore_after_load()
-	_restore_idle_rune_pick()
+	if not _pending_turn_resume:
+		_restore_idle_rune_pick()
 	_is_restoring = false
 	return true
+
+
+## Call after the hand intro so a repaired turn does not fight the entrance tween.
+func finish_restore_after_intro() -> void:
+	if not _pending_turn_resume:
+		return
+	_pending_turn_resume = false
+	var hand := _find_hand()
+	if hand == null or not hand.has_pending_auto_end():
+		return
+	if RoundFlow.is_transitioning() or GameManager.is_processing_turn:
+		return
+	EventBus.turn_ended.emit()
 
 
 func _can_save_now() -> bool:
@@ -219,13 +243,34 @@ func _can_save_now() -> bool:
 		return false
 	if _is_restoring:
 		return false
-	if GameManager.is_processing_turn:
-		return false
 	if _is_game_over_visible():
 		return false
-	if _find_tile_map() == null or _find_hand() == null:
+	var tile_map := _find_tile_map()
+	var hand := _find_hand()
+	if tile_map == null or hand == null:
+		return false
+	return _is_checkpoint_stable(hand, tile_map)
+
+
+## A checkpoint the run can sit in indefinitely. Partial plays and animations are not this.
+func _is_checkpoint_stable(hand: Hand, tile_map: HexTileMap) -> bool:
+	if GameManager.is_processing_turn:
+		return false
+	if hand.has_pending_auto_end():
+		return false
+	if tile_map.is_card_placement_in_progress():
+		return false
+	if PotionManager.is_mid_use():
 		return false
 	return true
+
+
+func _queue_interrupted_turn_resume(hand: Hand) -> void:
+	if RoundFlow.is_transitioning():
+		return
+	if not hand.has_pending_auto_end():
+		return
+	_pending_turn_resume = true
 
 
 func _flush_autosave_next_frame() -> void:
@@ -238,6 +283,7 @@ func _flush_autosave_next_frame() -> void:
 
 
 func _on_committed_card_played(_card_ui: CardUI) -> void:
+	# Plays that auto-end the turn wait for finish_turn_processing. Mid-hand plays are stable.
 	request_autosave()
 
 

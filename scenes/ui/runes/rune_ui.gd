@@ -43,6 +43,11 @@ const PLACEMENT_SLAM_DURATION := 0.11
 const PLACEMENT_RECOVER_DURATION := 0.13
 const PLACEMENT_SHAKE_STRENGTH := 8.0
 const PLACEMENT_SHAKE_DURATION := 0.18
+# Drag-drop lands from the hover pose. Softer than the click-to-place slam.
+const DRAG_SEAT_SQUASH_SCALE := Vector2(1.03, 0.96)
+const DRAG_SEAT_SQUASH_DURATION := 0.08
+const DRAG_SEAT_SETTLE_DURATION := 0.12
+const DRAG_PLACEMENT_SHAKE_STRENGTH := 4.0
 const TRIGGER_LINK_FLASH_HIGHLIGHT := Color(1.35, 0.72, 0.22, 1.0)
 const TRIGGER_LINK_FLASH_DURATION := 0.42
 const CHAINED_ACTIVATION_PEAK_SCALE := Vector2(1.06, 1.06)
@@ -71,6 +76,32 @@ func prepare_placement_ghost() -> void:
 		hex_stroke.visible = false
 	if output_chip != null:
 		output_chip.mouse_filter = MOUSE_FILTER_IGNORE
+	reset_ghost_visuals()
+
+
+## Hover scale lives on the inner container so seat tweens read correctly.
+func set_ghost_float_scale(pulse: float = 1.0) -> void:
+	scale = Vector2.ONE
+	if _anim_target == null:
+		return
+	# Scale from the icon center. A top-left pivot drifts the preview off the tile.
+	_anim_target.pivot_offset = _anim_target.size / 2
+	_anim_target.position = Vector2.ZERO
+	_anim_target.scale = Vector2.ONE * PLACEMENT_HOVER_SCALE * pulse
+
+
+func reset_ghost_visuals() -> void:
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	if _anim_target != null:
+		_anim_target.pivot_offset = _anim_target.size / 2
+		_anim_target.position = Vector2.ZERO
+		_anim_target.scale = Vector2(PLACEMENT_HOVER_SCALE, PLACEMENT_HOVER_SCALE)
+
+
+func hide_output_chip() -> void:
+	if output_chip != null:
+		output_chip.hide()
 
 
 # Refresh the output chip after bonuses, chance, or progress change.
@@ -156,6 +187,69 @@ func play_placement_animation() -> void:
 		_anim_target.scale = Vector2.ONE
 		_anim_target.position = Vector2.ZERO
 	)
+
+
+## Glide the dragged ghost into the hex center. Ease-out so it decelerates on arrival.
+func animate_ghost_snap_to(target_pos: Vector2, duration: float) -> void:
+	modulate = Color.WHITE
+	_anim_target.pivot_offset = _anim_target.size / 2
+	if _anim_target.pivot_offset == Vector2.ZERO:
+		_anim_target.pivot_offset = size / 2
+	if duration <= 0.0:
+		global_position = target_pos
+		_anim_target.scale = Vector2.ONE
+		return
+	var snap_tween := create_tween().set_parallel(true)
+	snap_tween.tween_property(
+		self,
+		"global_position",
+		target_pos,
+		duration
+	).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	snap_tween.tween_property(
+		_anim_target,
+		"scale",
+		Vector2.ONE,
+		duration
+	).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	await snap_tween.finished
+
+
+## Seat a dragged ghost that is already over the hex. Gentle squash, then settle.
+func play_drag_seat_animation() -> void:
+	_anim_target.pivot_offset = _anim_target.size / 2
+	if _anim_target.pivot_offset == Vector2.ZERO:
+		_anim_target.pivot_offset = size / 2
+	modulate = Color.WHITE
+
+	var squash_duration := DRAG_SEAT_SQUASH_DURATION / GameManager.game_speed
+	var settle_duration := DRAG_SEAT_SETTLE_DURATION / GameManager.game_speed
+	var seat_tween := create_tween()
+	seat_tween.tween_property(
+		_anim_target,
+		"scale",
+		DRAG_SEAT_SQUASH_SCALE,
+		squash_duration
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	seat_tween.tween_callback(_on_drag_placement_impact)
+	seat_tween.tween_property(
+		_anim_target,
+		"scale",
+		Vector2.ONE,
+		settle_duration
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	seat_tween.tween_callback(func() -> void:
+		_anim_target.scale = Vector2.ONE
+		_anim_target.position = Vector2.ZERO
+	)
+	await seat_tween.finished
+
+
+func _on_drag_placement_impact() -> void:
+	_shake_screen(DRAG_PLACEMENT_SHAKE_STRENGTH, PLACEMENT_SHAKE_DURATION * 0.7)
+	_play_placement_smoke()
+	if hex_stroke != null:
+		hex_stroke.play_clockwise_draw()
 
 
 func _on_placement_impact() -> void:

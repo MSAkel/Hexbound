@@ -303,9 +303,6 @@ func _refresh_hovered_tile_emphasis() -> void:
 	var emphasis_cell := _get_map_focus_cell()
 	if emphasis_cell == Vector2i(-1, -1):
 		return
-	# Placement ghost already marks this tile. A fill here tints the icon.
-	if emphasis_cell == _placement_preview_cell:
-		return
 	if not is_in_map(emphasis_cell) or not is_tile_interactable(emphasis_cell):
 		return
 	hovered_tile_overlay_layer.set_cell(
@@ -1236,6 +1233,11 @@ func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE
 ## Converts map coordinates to local pixel position on the base tile layer.
 func map_to_local(coords: Vector2i) -> Vector2i:
 	return base_layer.map_to_local(coords)
+
+
+## True while a hand card is snapping onto a hex and has not committed yet.
+func is_card_placement_in_progress() -> bool:
+	return card_placement_handler != null and card_placement_handler.is_placement_in_progress()
 
 
 ## Resolves every placed rune in trigger order when the player ends the turn.

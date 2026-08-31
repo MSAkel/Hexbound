@@ -3,6 +3,10 @@ extends CardState
 
 var mouse_over_card := false
 var _enter_generation := 0
+var _press_held := false
+var _press_screen_pos := Vector2.ZERO
+
+const DRAG_START_THRESHOLD_PX := 8.0
 
 
 func enter() -> void:
@@ -10,6 +14,7 @@ func enter() -> void:
 		await card_ui.ready
 	
 	card_ui.pivot_offset = Vector2.ZERO
+	_press_held = false
 	_enter_generation += 1
 	var generation := _enter_generation
 	
@@ -22,6 +27,7 @@ func enter() -> void:
 
 func exit(next_state: State = State.BASE) -> void:
 	_enter_generation += 1
+	_press_held = false
 	
 	# Keep elevation when selecting so the card does not dip and rise again.
 	if next_state != State.CLICKED and card_ui.is_hover_elevated():
@@ -32,7 +38,30 @@ func exit(next_state: State = State.BASE) -> void:
 
 
 func on_gui_input(event: InputEvent) -> void:
-	if mouse_over_card and event.is_action_pressed("left_mouse"):
+	if not mouse_over_card:
+		return
+	if event.is_action_pressed("left_mouse"):
+		# Remember the press. A click with no drag must not start placement.
+		_press_held = true
+		_press_screen_pos = card_ui.get_global_mouse_position()
+		card_ui.get_viewport().set_input_as_handled()
+
+
+func on_input(event: InputEvent) -> void:
+	if not _press_held:
+		return
+	if event is InputEventMouseButton \
+			and event.button_index == MOUSE_BUTTON_LEFT \
+			and not event.pressed:
+		_press_held = false
+		# Nudge is click feedback only. Dragging into placement must not shake the card.
+		if card_ui.get_global_mouse_position().distance_to(_press_screen_pos) < DRAG_START_THRESHOLD_PX:
+			card_ui.play_click_nudge()
+		return
+	if event is InputEventMouseMotion:
+		if card_ui.get_global_mouse_position().distance_to(_press_screen_pos) < DRAG_START_THRESHOLD_PX:
+			return
+		_press_held = false
 		card_ui.get_viewport().set_input_as_handled()
 		transition_requested.emit(self, CardState.State.CLICKED)
 

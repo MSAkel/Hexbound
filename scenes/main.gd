@@ -47,6 +47,9 @@ func _ready() -> void:
 	if hand:
 		await hand.play_intro_entrance()
 
+	if restored:
+		RunSaveManager.finish_restore_after_intro()
+
 	# Check if music is playing and play if it's not
 	if not AudioManager.music_player.playing:
 		var music = SOUNDTRACK.get_music_for_scene(scene_file_path)

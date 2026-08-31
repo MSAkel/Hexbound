@@ -15,4 +15,8 @@ export_credentials.cfg
 data_*/
 mono_crash.*.json
 
+
 .cursor
+.cursor_video_frames
+tools
+docs

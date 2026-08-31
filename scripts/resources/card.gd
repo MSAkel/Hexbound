@@ -22,7 +22,7 @@ func is_placement_candidate(_hex: Hex) -> bool:
 
 
 # Apply this card to hex. TileCard places or modifies the board.
-func play_on(_hex: Hex) -> void:
+func play_on(_hex: Hex, _animate: bool = true) -> void:
 	pass
 
 

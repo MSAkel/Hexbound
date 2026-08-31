@@ -173,6 +173,7 @@ func finish_turn_processing() -> void:
 		_check_run_loss()
 
 	_is_processing_turn = false
+	# Committed turn boundary. Card plays themselves are not checkpoints.
 	RunSaveManager.request_autosave()
 
 
