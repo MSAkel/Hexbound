@@ -295,10 +295,14 @@ func get_segment_turn_trigger_count(segment_index: int) -> int:
 	return _segment_turn_triggers[segment_index]
 
 
-func mark_segment_resolved(segment_index: int) -> void:
+## Returns true the first time this segment is closed this turn.
+func mark_segment_resolved(segment_index: int) -> bool:
 	if segment_index < 0 or segment_index >= _segment_resolved.size():
-		return
+		return false
+	if _segment_resolved[segment_index]:
+		return false
 	_segment_resolved[segment_index] = true
+	return true
 
 
 func is_segment_resolved(segment_index: int) -> bool:
@@ -537,9 +541,19 @@ func _get_order_from_numbered_grid(order_grid: Array) -> Array[Vector2i]:
 	return ordered
 
 
+## Character that owns this map. Preview maps expose get_layout_character() so
+## layout select can compute order without changing GameManager.selected_character.
+func _active_character() -> CharacterDefinition:
+	if _map != null and _map.has_method("get_layout_character"):
+		var mapped: Variant = _map.get_layout_character()
+		if mapped is CharacterDefinition:
+			return mapped
+	return GameManager.selected_character
+
+
 ## Trigger order for the active character, computed once per map generation.
 func _compute_trigger_order() -> Array[Vector2i]:
-	var character := GameManager.selected_character
+	var character := _active_character()
 	if character == null:
 		return _get_order_top_left_to_bottom_right()
 
@@ -572,7 +586,7 @@ func _get_layout_segment_index(coords: Vector2i, segment_starts: Array[int]) -> 
 
 ## Segment grouping key for the active character (row Y, ring index, or layout segment).
 func _get_segment_key(coords: Vector2i) -> Variant:
-	var character := GameManager.selected_character
+	var character := _active_character()
 	if character == null:
 		return _get_screen_position(coords).y
 

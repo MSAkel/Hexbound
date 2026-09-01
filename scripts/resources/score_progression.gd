@@ -8,8 +8,8 @@ const MAX_SCORE := 9223372036854775807
 ## Round 1 through 9, indexed as AUTHORED_ROUND_SCORES[round - 1].
 const AUTHORED_ROUND_SCORES: Array[int] = [
 	435,
-	1200,
-	3600,
+	2000,
+	4000,
 	6800,
 	11155,
 	17500,

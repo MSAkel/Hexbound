@@ -193,6 +193,19 @@ func play_segment_result_animation() -> void:
 	rune_ui.play_segment_result_animation()
 
 
+## Tiny forward-order slam used when this tile's segment closes mid-turn.
+func play_segment_seal_animation() -> void:
+	if rune_ui == null:
+		return
+	rune_ui.play_segment_seal_animation()
+
+
+func clear_segment_sealed() -> void:
+	if rune_ui == null:
+		return
+	rune_ui.clear_segment_sealed()
+
+
 func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
 	if active_tile_card == null:
 		return

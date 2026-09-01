@@ -37,6 +37,8 @@ signal segment_turn_results_reset()
 signal segment_score_revealed(segment_index: int, total_score: int)
 ## Segment row counter and punch finished for one reveal beat.
 signal segment_score_count_finished(segment_index: int)
+## Natural pass finished for this segment. Retriggers into it are now blocked.
+signal segment_resolved(segment_index: int)
 ## Map glow and output-row highlight for the segment currently revealing.
 signal segment_reveal_started(segment_index: int)
 signal segment_reveal_ended()

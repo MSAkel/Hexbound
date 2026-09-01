@@ -12,5 +12,5 @@ sigil_kind = 5
 id = "initial_encore"
 name = "Initial Encore"
 icon = ExtResource("1_cffhq")
-description = "Triggers the first card of each Following segment. Must be placed on a segment's first tile."
+description = "Triggers the first card of each Following segment. Must be placed on a segment'sfirst tile."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

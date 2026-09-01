@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
 [ext_resource type="PackedScene" path="res://scenes/ui/potions/potion_belt.tscn" id="19_potion_belt"]
 [ext_resource type="PackedScene" path="res://scenes/ui/turn_resolve_skip_overlay.tscn" id="20_skip_overlay"]
+[ext_resource type="PackedScene" path="res://scenes/ui/potions/potion_edge_glow.tscn" id="21_potion_glow"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -81,5 +82,7 @@ z_index = 120
 
 [node name="RoundCompleteScreen" parent="." unique_id=142012728 instance=ExtResource("13_m82f4")]
 visible = false
+
+[node name="PotionEdgeGlow" parent="." instance=ExtResource("21_potion_glow")]
 
 [node name="TurnResolveSkipOverlay" parent="." instance=ExtResource("20_skip_overlay")]

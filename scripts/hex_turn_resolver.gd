@@ -61,6 +61,7 @@ func resolve_turn() -> void:
 		_mark_segment_resolved_if_natural_pass_done(tile)
 
 	if GameManager.should_skip_turn_presentation():
+		map._clear_segment_sealed_look()
 		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 	else:
 		await _play_segment_turn_result_reveals()
@@ -305,6 +306,7 @@ func _play_segment_turn_result_reveals() -> void:
 		await _play_single_segment_reveal(segment_index, contribution)
 
 	if GameManager.should_skip_turn_presentation():
+		map._clear_segment_sealed_look()
 		map._clear_segment_reveal_glow()
 		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 		return

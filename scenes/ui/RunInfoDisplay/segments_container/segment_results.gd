@@ -4,7 +4,8 @@ extends PanelContainer
 
 var segment_index: int = -1
 
-@onready var segment_no: Label = $HBoxContainer/SegmentBadge/SegmentNo
+@onready var segment_no: Label = $HBoxContainer/SegmentBadge/BadgeRow/SegmentNo
+@onready var seal_mark: Label = $HBoxContainer/SegmentBadge/BadgeRow/SealMark
 @onready var segment_power: Label = $HBoxContainer/EnergyContainer/SegmentPower
 @onready var segment_multiplier: Label = $HBoxContainer/MultiplierContainer/SegmentMultiplier
 @onready var score_container: PanelContainer = $HBoxContainer/ScoreContainer
@@ -24,6 +25,7 @@ var _row_style: StyleBoxFlat
 var _score_style: StyleBoxFlat
 var _is_hovered: bool = false
 var _is_revealing: bool = false
+var _is_sealed: bool = false
 var _pulse_tween: Tween
 var _shake_timer: float = 0.0
 var _shake_duration: float = 0.0
@@ -60,6 +62,7 @@ func _ready() -> void:
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
 	EventBus.segment_turn_results_reset.connect(_on_segment_turn_results_reset)
 	EventBus.segment_score_revealed.connect(_on_segment_score_revealed)
+	EventBus.segment_resolved.connect(_on_segment_resolved)
 	EventBus.segment_reveal_started.connect(_on_segment_reveal_started)
 	EventBus.segment_reveal_ended.connect(_on_segment_reveal_ended)
 	_set_segment_no(segment_index + 1)
@@ -88,6 +91,8 @@ func _process(delta: float) -> void:
 
 func set_accepts_live_updates(enabled: bool) -> void:
 	_accepts_live_updates = enabled
+	if not enabled:
+		_set_sealed_active(false)
 	if enabled:
 		_score_revealed = false
 
@@ -148,6 +153,7 @@ func _on_segment_turn_results_changed(
 
 
 func _on_segment_turn_results_reset() -> void:
+	_set_sealed_active(false)
 	if not _accepts_live_updates:
 		return
 	_score_revealed = false
@@ -180,7 +186,16 @@ func _await_segment_score_count_animation(changed_index: int, counter_tween: Twe
 	EventBus.segment_score_count_finished.emit(changed_index)
 
 
+func _on_segment_resolved(changed_index: int) -> void:
+	if not _accepts_live_updates or changed_index != segment_index:
+		return
+	if GameManager.should_skip_turn_presentation():
+		return
+	_set_sealed_active(true)
+
+
 func _on_segment_reveal_started(changed_index: int) -> void:
+	_set_sealed_active(false)
 	_set_reveal_active(changed_index == segment_index)
 
 
@@ -279,21 +294,22 @@ func _apply_row_style(intensity: float, score_color: Color) -> void:
 		return
 	var hover_amount := 1.0 if _is_hovered else 0.0
 	var reveal_amount := 1.0 if _is_revealing else 0.0
+	var seal_amount := 1.0 if _is_sealed and not _is_revealing else 0.0
 	_row_style.bg_color = Color(
-		0.94 + hover_amount * 0.035 + reveal_amount * 0.05,
-		0.885 + hover_amount * 0.035 + reveal_amount * 0.02,
-		0.73 + hover_amount * 0.055 - reveal_amount * 0.08,
-		0.86 + reveal_amount * 0.08
+		0.94 + hover_amount * 0.035 + reveal_amount * 0.05 + seal_amount * 0.045,
+		0.885 + hover_amount * 0.035 + reveal_amount * 0.02 + seal_amount * 0.02,
+		0.73 + hover_amount * 0.055 - reveal_amount * 0.08 - seal_amount * 0.06,
+		0.86 + reveal_amount * 0.08 + seal_amount * 0.08
 	)
 	_row_style.border_color = Color(
-		lerpf(lerpf(0.545, score_color.r, intensity), 1.0, reveal_amount * 0.72),
-		lerpf(lerpf(0.431, score_color.g, intensity), 0.78, reveal_amount * 0.72),
-		lerpf(lerpf(0.243, score_color.b, intensity), 0.22, reveal_amount * 0.72),
-		0.48 + intensity * 0.35 + hover_amount * 0.12 + reveal_amount * 0.4
+		lerpf(lerpf(lerpf(0.545, score_color.r, intensity), 0.95, seal_amount * 0.8), 1.0, reveal_amount * 0.72),
+		lerpf(lerpf(lerpf(0.431, score_color.g, intensity), 0.74, seal_amount * 0.8), 0.78, reveal_amount * 0.72),
+		lerpf(lerpf(lerpf(0.243, score_color.b, intensity), 0.18, seal_amount * 0.8), 0.22, reveal_amount * 0.72),
+		0.48 + intensity * 0.35 + hover_amount * 0.12 + reveal_amount * 0.4 + seal_amount * 0.32
 	)
-	_row_style.border_width_left = 4 if _is_revealing else 2
-	_row_style.shadow_size = 4 if _is_revealing else 0
-	_row_style.shadow_color = Color(1.0, 0.72, 0.2, 0.35 if _is_revealing else 0.0)
+	_row_style.border_width_left = 4 if _is_revealing else (3 if _is_sealed else 2)
+	_row_style.shadow_size = 4 if _is_revealing else (2 if _is_sealed else 0)
+	_row_style.shadow_color = Color(1.0, 0.72, 0.2, 0.35 if _is_revealing else (0.22 if _is_sealed else 0.0))
 
 
 func _play_counter(counter: CountingNumber, target: float, punch_target: Control) -> void:
@@ -353,6 +369,17 @@ func _start_score_shake(value: int) -> void:
 	_shake_timer = _shake_duration
 	segment_total_score.pivot_offset = segment_total_score.size * 0.5
 	set_process(true)
+
+
+func _set_sealed_active(active: bool) -> void:
+	if _is_sealed == active:
+		return
+	_is_sealed = active
+	if seal_mark != null:
+		seal_mark.visible = active
+	_apply_score_style(_total_score if _score_revealed else 0)
+	if active:
+		_punch(self, 1.1)
 
 
 func _set_reveal_active(active: bool) -> void:
@@ -422,6 +449,8 @@ func _disconnect_event_bus() -> void:
 		EventBus.segment_turn_results_changed.disconnect(_on_segment_turn_results_changed)
 	if EventBus.segment_turn_results_reset.is_connected(_on_segment_turn_results_reset):
 		EventBus.segment_turn_results_reset.disconnect(_on_segment_turn_results_reset)
+	if EventBus.segment_resolved.is_connected(_on_segment_resolved):
+		EventBus.segment_resolved.disconnect(_on_segment_resolved)
 	if EventBus.segment_score_revealed.is_connected(_on_segment_score_revealed):
 		EventBus.segment_score_revealed.disconnect(_on_segment_score_revealed)
 	if EventBus.segment_reveal_started.is_connected(_on_segment_reveal_started):

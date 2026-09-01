@@ -12,7 +12,9 @@ const DRAG_START_THRESHOLD_PX := 8.0
 func enter() -> void:
 	if not card_ui.is_node_ready():
 		await card_ui.ready
-	
+
+	# Clicked state turns this on for drop targeting. Turn it off when idle again.
+	card_ui.drop_point_area.monitoring = false
 	card_ui.pivot_offset = Vector2.ZERO
 	_press_held = false
 	_enter_generation += 1

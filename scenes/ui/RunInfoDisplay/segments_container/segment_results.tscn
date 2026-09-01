@@ -63,17 +63,34 @@ layout_mode = 2
 theme_override_constants/separation = 7
 
 [node name="SegmentBadge" type="PanelContainer" parent="HBoxContainer" unique_id=51434357]
-custom_minimum_size = Vector2(46, 0)
+custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("SegmentBadge")
 
-[node name="SegmentNo" type="Label" parent="HBoxContainer/SegmentBadge" unique_id=1315648677]
+[node name="BadgeRow" type="HBoxContainer" parent="HBoxContainer/SegmentBadge"]
 layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="SegmentNo" type="Label" parent="HBoxContainer/SegmentBadge/BadgeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.96, 0.82, 1)
 theme_override_colors/font_outline_color = Color(0.08, 0.2, 0.19, 1)
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 18
 text = "01"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SealMark" type="Label" parent="HBoxContainer/SegmentBadge/BadgeRow"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.45, 1)
+theme_override_colors/font_outline_color = Color(0.16, 0.12, 0.04, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
+text = "✓"
 horizontal_alignment = 1
 vertical_alignment = 1
 

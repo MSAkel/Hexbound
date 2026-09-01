@@ -2,12 +2,14 @@
 
 [ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/layout_details.gd" id="1_details"]
 [ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="3_character"]
-[ext_resource type="Texture2D" uid="uid://cpkbpjt0rbyto" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_preview"]
+[ext_resource type="PackedScene" uid="uid://bq8n4m2k7p1xw" path="res://scenes/ui/character_selection_screen/layout_preview_map.tscn" id="4_preview_map"]
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="9_segment"]
 [ext_resource type="Texture2D" uid="uid://bgo1gw2tf12cq" path="res://assets/map/segment_icons/trigger_order.png" id="9_x6eud"]
 [ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="10_start"]
 [ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="11_end"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
+
+[sub_resource type="FontVariation" id="FontVariation_x6eud"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_passives_normal"]
 content_margin_left = 22.0
@@ -57,8 +59,6 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="FontVariation" id="FontVariation_x6eud"]
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_legend_item"]
 content_margin_left = 14.0
 content_margin_top = 12.0
@@ -85,7 +85,6 @@ custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 14
-alignment = 0
 
 [node name="CharacterIcon" type="TextureRect" parent="ProfileColumn" unique_id=1967071723]
 unique_name_in_owner = true
@@ -175,21 +174,16 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="MapRule" type="ColorRect" parent="MapColumn" unique_id=2064269478]
+visible = false
 custom_minimum_size = Vector2(280, 2)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.26)
 
-[node name="TriggerOrderImage" type="TextureRect" parent="MapColumn" unique_id=1258443105]
+[node name="LayoutPreviewMap" parent="MapColumn" unique_id=1258443105 instance=ExtResource("4_preview_map")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(600, 430)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-texture = ExtResource("4_preview")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="LegendDivider" parent="." unique_id=1517365727 instance=ExtResource("12_vertical_divider")]
 
@@ -212,33 +206,38 @@ size_flags_horizontal = 4
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.26)
 
-[node name="TileItem" type="PanelContainer" parent="LegendColumn" unique_id=1231202640]
+[node name="LegendTriggerOrder" type="PanelContainer" parent="LegendColumn" unique_id=1231202640]
+unique_name_in_owner = true
 layout_mode = 2
+mouse_default_cursor_shape = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
 
-[node name="Row" type="HBoxContainer" parent="LegendColumn/TileItem" unique_id=1611088363]
+[node name="Row" type="HBoxContainer" parent="LegendColumn/LegendTriggerOrder" unique_id=1611088363]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="LegendColumn/TileItem/Row" unique_id=807110556]
+[node name="Icon" type="TextureRect" parent="LegendColumn/LegendTriggerOrder/Row" unique_id=807110556]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
+mouse_filter = 2
 texture = ExtResource("9_x6eud")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Copy" type="VBoxContainer" parent="LegendColumn/TileItem/Row" unique_id=446284814]
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/LegendTriggerOrder/Row" unique_id=446284814]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
-[node name="Title" type="Label" parent="LegendColumn/TileItem/Row/Copy" unique_id=234335101]
+[node name="Title" type="Label" parent="LegendColumn/LegendTriggerOrder/Row/Copy" unique_id=234335101]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "Trigger Order"
 
-[node name="Description" type="Label" parent="LegendColumn/TileItem/Row/Copy" unique_id=1924780569]
+[node name="Description" type="Label" parent="LegendColumn/LegendTriggerOrder/Row/Copy" unique_id=1924780569]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
@@ -246,34 +245,39 @@ theme_override_font_sizes/font_size = 15
 text = "The order in which the cards activate in"
 autowrap_mode = 3
 
-[node name="SegmentCountItem" type="PanelContainer" parent="LegendColumn" unique_id=1830704522]
+[node name="LegendSegments" type="PanelContainer" parent="LegendColumn" unique_id=1830704522]
+unique_name_in_owner = true
 layout_mode = 2
+mouse_default_cursor_shape = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
 
-[node name="Row" type="HBoxContainer" parent="LegendColumn/SegmentCountItem" unique_id=1564500937]
+[node name="Row" type="HBoxContainer" parent="LegendColumn/LegendSegments" unique_id=1564500937]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="LegendColumn/SegmentCountItem/Row" unique_id=539106452]
+[node name="Icon" type="TextureRect" parent="LegendColumn/LegendSegments/Row" unique_id=539106452]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
+mouse_filter = 2
 texture = ExtResource("9_segment")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Copy" type="VBoxContainer" parent="LegendColumn/SegmentCountItem/Row" unique_id=1432686884]
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/LegendSegments/Row" unique_id=1432686884]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
-[node name="SegmentCountTitle" type="Label" parent="LegendColumn/SegmentCountItem/Row/Copy" unique_id=1735213286]
+[node name="SegmentCountTitle" type="Label" parent="LegendColumn/LegendSegments/Row/Copy" unique_id=1735213286]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "7 Segments"
 
-[node name="Description" type="Label" parent="LegendColumn/SegmentCountItem/Row/Copy" unique_id=337615501]
+[node name="Description" type="Label" parent="LegendColumn/LegendSegments/Row/Copy" unique_id=337615501]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
@@ -281,33 +285,38 @@ theme_override_font_sizes/font_size = 15
 text = "Each segment consists of one or more tiles"
 autowrap_mode = 3
 
-[node name="SegmentStartItem" type="PanelContainer" parent="LegendColumn" unique_id=180812953]
+[node name="LegendSegmentStart" type="PanelContainer" parent="LegendColumn" unique_id=180812953]
+unique_name_in_owner = true
 layout_mode = 2
+mouse_default_cursor_shape = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
 
-[node name="Row" type="HBoxContainer" parent="LegendColumn/SegmentStartItem" unique_id=2029940309]
+[node name="Row" type="HBoxContainer" parent="LegendColumn/LegendSegmentStart" unique_id=2029940309]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="LegendColumn/SegmentStartItem/Row" unique_id=1280471497]
+[node name="Icon" type="TextureRect" parent="LegendColumn/LegendSegmentStart/Row" unique_id=1280471497]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
+mouse_filter = 2
 texture = ExtResource("10_start")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Copy" type="VBoxContainer" parent="LegendColumn/SegmentStartItem/Row" unique_id=1511279492]
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/LegendSegmentStart/Row" unique_id=1511279492]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
-[node name="Title" type="Label" parent="LegendColumn/SegmentStartItem/Row/Copy" unique_id=652107057]
+[node name="Title" type="Label" parent="LegendColumn/LegendSegmentStart/Row/Copy" unique_id=652107057]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "Segment Start"
 
-[node name="Description" type="Label" parent="LegendColumn/SegmentStartItem/Row/Copy" unique_id=1246581272]
+[node name="Description" type="Label" parent="LegendColumn/LegendSegmentStart/Row/Copy" unique_id=1246581272]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
@@ -315,33 +324,38 @@ theme_override_font_sizes/font_size = 15
 text = "First tile in a segment"
 autowrap_mode = 3
 
-[node name="SegmentEndItem" type="PanelContainer" parent="LegendColumn" unique_id=991141475]
+[node name="LegendSegmentEnd" type="PanelContainer" parent="LegendColumn" unique_id=991141475]
+unique_name_in_owner = true
 layout_mode = 2
+mouse_default_cursor_shape = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
 
-[node name="Row" type="HBoxContainer" parent="LegendColumn/SegmentEndItem" unique_id=1791736046]
+[node name="Row" type="HBoxContainer" parent="LegendColumn/LegendSegmentEnd" unique_id=1791736046]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="LegendColumn/SegmentEndItem/Row" unique_id=1758719954]
+[node name="Icon" type="TextureRect" parent="LegendColumn/LegendSegmentEnd/Row" unique_id=1758719954]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
+mouse_filter = 2
 texture = ExtResource("11_end")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Copy" type="VBoxContainer" parent="LegendColumn/SegmentEndItem/Row" unique_id=1633252311]
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/LegendSegmentEnd/Row" unique_id=1633252311]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
-[node name="Title" type="Label" parent="LegendColumn/SegmentEndItem/Row/Copy" unique_id=1278969653]
+[node name="Title" type="Label" parent="LegendColumn/LegendSegmentEnd/Row/Copy" unique_id=1278969653]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
 text = "Segment End"
 
-[node name="Description" type="Label" parent="LegendColumn/SegmentEndItem/Row/Copy" unique_id=558677291]
+[node name="Description" type="Label" parent="LegendColumn/LegendSegmentEnd/Row/Copy" unique_id=558677291]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)

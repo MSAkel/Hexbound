@@ -110,15 +110,15 @@ func _input(event: InputEvent) -> void:
 	# A press-and-release on the card, or a tiny drag, is not a drop.
 	if selected_card != null and selected_card.is_mouse_over_visual():
 		_deselect_card()
-		get_viewport().set_input_as_handled()
 		return
 	if not _has_dragged_from_select():
 		_deselect_card()
-		get_viewport().set_input_as_handled()
 		return
 
 	_try_place_card()
-	get_viewport().set_input_as_handled()
+	# Leave this mouse-up unhandled. The card Control that took the press must
+	# still see the release, or Viewport keeps GUI mouse focus on the hand card
+	# and map hover, tooltips, and highlights stop receiving motion.
 
 
 func _unhandled_input(event: InputEvent) -> void:

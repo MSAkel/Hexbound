@@ -17,6 +17,7 @@ var turn_resolver: HexTurnResolver
 @onready var rune_highlight_overlay_layer: TileMapLayer = $RuneHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
+@onready var gold_overlay_layer: TileMapLayer = $GoldOverlayLayer
 
 # Selection overlay tileset sources in hex_tile_map.tscn.
 const HOVER_OVERLAY_NORMAL := 0
@@ -67,6 +68,9 @@ var _disabled_tile_coords: Array[Vector2i] = []
 var _event_sealed_coords: Array[Vector2i] = []
 # Tiles currently lit during the post-turn segment result reveal.
 var _segment_reveal_glow_coords: Array[Vector2i] = []
+# Quiet gold wash on segments that have finished their natural pass this turn.
+var _segment_sealed_coords: Array[Vector2i] = []
+var _segment_seal_tweens: Array[Tween] = []
 # Tiles highlighted while hovering a segment-results row in the run-info panel.
 var _hovered_segment_coords: Array[Vector2i] = []
 var _hovered_segment_index: int = -1
@@ -86,6 +90,9 @@ var _potion_target_coords: Array[Vector2i] = []
 enum FadingOverlayOwner { EVENT, REVEAL }
 
 const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
+# Occupied-card zip budget. Stagger shrinks on long rings so this never grows.
+const SEGMENT_SEAL_BUDGET := 0.28
+const SEGMENT_SEAL_MAX_STAGGER := 0.045
 # How long a destination-segment flash stays visible during card activation.
 const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 
@@ -102,6 +109,7 @@ func _ready() -> void:
 	hovered_tile_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	hovered_tile_overlay_layer.self_modulate = HOVERED_TILE_OVERLAY_MODULATE
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
+	gold_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	_apply_tile_spacing()
 	trigger_order_overlay.setup(self)
 	segment_path_overlay.setup(self)
@@ -152,6 +160,7 @@ func _apply_tile_spacing() -> void:
 		rune_highlight_overlay_layer,
 		disabled_tile_overlay_layer,
 		fading_sector_overlay_layer,
+		gold_overlay_layer,
 	]:
 		layer.tile_set.tile_size = spaced_tile_size
 
@@ -537,6 +546,7 @@ func generate_terrain() -> void:
 	rune_highlight_overlay_layer.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
+	gold_overlay_layer.clear()
 	_disabled_tile_coords.clear()
 	_hovered_segment_coords.clear()
 	_hovered_segment_index = -1
@@ -749,7 +759,11 @@ func get_empty_tile_count_in_segment(segment_index: int) -> int:
 
 
 func mark_segment_resolved(segment_index: int) -> void:
-	_layout.mark_segment_resolved(segment_index)
+	if not _layout.mark_segment_resolved(segment_index):
+		return
+	EventBus.segment_resolved.emit(segment_index)
+	# Fire-and-forget. Later tiles in the next segment keep resolving.
+	_play_segment_seal(segment_index)
 
 
 func is_segment_resolved(segment_index: int) -> bool:
@@ -807,6 +821,7 @@ func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 
 ## Clears per-segment turn totals at the start of turn resolution.
 func reset_segment_turn_results() -> void:
+	_clear_segment_sealed_look()
 	_layout.reset_turn_results()
 	EventBus.segment_turn_results_reset.emit()
 
@@ -1266,7 +1281,64 @@ func on_turn_ended() -> void:
 	await turn_resolver.resolve_turn()
 
 
+## Gold wash lands at once. Occupied cards zip in trigger order. Never awaited.
+func _play_segment_seal(segment_index: int) -> void:
+	if GameManager.should_skip_turn_presentation():
+		return
+
+	var hexes := get_hexes_in_segment(segment_index)
+	if hexes.is_empty():
+		return
+
+	# Light the whole row immediately so empty tiles still read as closed.
+	for hex: Hex in hexes:
+		_stamp_segment_sealed_overlay(hex.coordinates)
+
+	var occupied: Array[Hex] = []
+	for hex: Hex in hexes:
+		if hex.active_tile_card != null and hex.rune_ui != null:
+			occupied.append(hex)
+	if occupied.is_empty():
+		return
+
+	var stagger_steps := maxi(occupied.size() - 1, 1)
+	var stagger := minf(SEGMENT_SEAL_MAX_STAGGER, SEGMENT_SEAL_BUDGET / float(stagger_steps))
+	stagger /= GameManager.game_speed
+
+	var seal_tween := create_tween()
+	_segment_seal_tweens.append(seal_tween)
+	seal_tween.set_parallel(true)
+	for i in occupied.size():
+		var delay := stagger * float(i)
+		seal_tween.tween_callback(occupied[i].play_segment_seal_animation).set_delay(delay)
+
+
+func _stamp_segment_sealed_overlay(coords: Vector2i) -> void:
+	if coords in _segment_sealed_coords:
+		return
+	_segment_sealed_coords.append(coords)
+	gold_overlay_layer.set_cell(
+		coords,
+		OVERLAY_TILE_SOURCE_ID,
+		OVERLAY_TILE_ATLAS_COORDS
+	)
+
+
+func _clear_segment_sealed_look() -> void:
+	for seal_tween: Tween in _segment_seal_tweens:
+		if seal_tween != null and seal_tween.is_valid():
+			seal_tween.kill()
+	_segment_seal_tweens.clear()
+	for hex: Hex in map_data.values():
+		hex.clear_segment_sealed()
+	for coords: Vector2i in _segment_sealed_coords:
+		gold_overlay_layer.set_cell(coords, -1)
+	_segment_sealed_coords.clear()
+
+
 func _apply_segment_reveal_glow(segment_index: int) -> void:
+	# Reveal gold would fight the quieter sealed wash. Drop the seal first.
+	_clear_segment_sealed_look()
 	_clear_segment_reveal_glow()
 	fading_sector_overlay_layer.modulate = SEGMENT_REVEAL_GLOW_COLOR
 

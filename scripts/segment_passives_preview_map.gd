@@ -24,9 +24,14 @@ func setup_character(char: CharacterDefinition) -> void:
 	_sync_map_data_from_tiles()
 
 
+func get_layout_character() -> CharacterDefinition:
+	return character
+
+
 func restore_character_context() -> void:
 	if _saved_character != null:
 		GameManager.selected_character = _saved_character
+	_saved_character = null
 
 
 func get_coords_in_trigger_order() -> Array[Vector2i]:

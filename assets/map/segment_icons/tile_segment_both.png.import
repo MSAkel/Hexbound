@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cf3p2ckr4iaxm"
-path="res://.godot/imported/the_wildcard.png-32f7665ab7613cc250aa17226500aec0.ctex"
+uid="uid://dl353d1m8331m"
+path="res://.godot/imported/tile_segment_both.png-451b8dc68e0cad6046061aeea0fbf9de.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/characters/the_wildcard.png"
-dest_files=["res://.godot/imported/the_wildcard.png-32f7665ab7613cc250aa17226500aec0.ctex"]
+source_file="res://assets/map/segment_icons/tile_segment_both.png"
+dest_files=["res://.godot/imported/tile_segment_both.png-451b8dc68e0cad6046061aeea0fbf9de.ctex"]
 
 [params]
 
