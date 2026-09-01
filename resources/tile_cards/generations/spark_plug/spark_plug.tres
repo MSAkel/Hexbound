@@ -10,6 +10,6 @@ product = 1
 id = "spark_plug"
 name = "Spark Plug"
 icon = ExtResource("1_icon")
-description = "+18 Energy. +4 if an adjacent Downstream hex is empty"
+description = "+18 Energy. +4 if a Following adjacent hex is empty"
 starting_hand_eligible = true
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

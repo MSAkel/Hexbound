@@ -91,12 +91,23 @@ func set_ghost_float_scale(pulse: float = 1.0) -> void:
 
 
 func reset_ghost_visuals() -> void:
+	_silence_particle_emitters()
 	modulate = Color.WHITE
 	scale = Vector2.ONE
 	if _anim_target != null:
 		_anim_target.pivot_offset = _anim_target.size / 2
 		_anim_target.position = Vector2.ZERO
 		_anim_target.scale = Vector2(PLACEMENT_HOVER_SCALE, PLACEMENT_HOVER_SCALE)
+
+
+# Hide emitters without restart(). restart() starts a new burst in Godot.
+func _silence_particle_emitters() -> void:
+	if placement_smoke != null:
+		placement_smoke.emitting = false
+		placement_smoke.visible = false
+	if empower_sparks != null:
+		empower_sparks.emitting = false
+		empower_sparks.visible = false
 
 
 func hide_output_chip() -> void:
@@ -262,7 +273,8 @@ func _on_placement_impact() -> void:
 func _play_placement_smoke() -> void:
 	if placement_smoke == null:
 		return
-	# One-shot emitters stay off until this restart. Emitting must be set true after.
+	# Stay hidden until impact so showing a drag ghost cannot flash a leftover burst.
+	placement_smoke.visible = true
 	placement_smoke.restart()
 	placement_smoke.emitting = true
 
@@ -476,6 +488,7 @@ func start_empower_sparks() -> void:
 	if empower_sparks.emitting:
 		return
 
+	empower_sparks.visible = true
 	empower_sparks.restart()
 	empower_sparks.emitting = true
 
@@ -483,6 +496,7 @@ func start_empower_sparks() -> void:
 func stop_empower_sparks() -> void:
 	if empower_sparks != null:
 		empower_sparks.emitting = false
+		empower_sparks.visible = false
 
 
 # Looping orange pulse on the source rune while its queued triggers resolve.

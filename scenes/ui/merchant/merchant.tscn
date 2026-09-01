@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://b3xttnqg1hd8a" path="res://assets/gui/shelf.png" id="5_shelf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aum3v"]
-bg_color = Color(0.025840001, 0.050708726, 0.03876, 0.259)
+bg_color = Color(0.025840001, 0.050708726, 0.03876, 0.675)
 
 [sub_resource type="StyleBoxFlat" id="ShopPanel"]
 bg_color = Color(0.95686275, 0.9019608, 0.76862746, 1)
@@ -25,42 +25,12 @@ shadow_color = Color(0, 0, 0, 0.16470589)
 shadow_size = 10
 shadow_offset = Vector2(0, 6)
 
-[sub_resource type="Gradient" id="PanelWash"]
-colors = PackedColorArray(1, 0.95686275, 0.827451, 1, 0.93333334, 0.8666667, 0.7176471, 1)
-
-[sub_resource type="GradientTexture2D" id="PanelWashTex"]
-gradient = SubResource("PanelWash")
-width = 128
-height = 128
-fill_from = Vector2(0.5, 0)
-fill_to = Vector2(0.5, 1)
-
-[sub_resource type="StyleBoxFlat" id="InnerHighlight"]
-bg_color = Color(1, 1, 1, 0)
-draw_center = false
-border_width_left = 1
-border_width_top = 1
-border_color = Color(1, 0.9764706, 0.9019608, 0.627451)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
-[sub_resource type="StyleBoxFlat" id="MerchandiseInset"]
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
-bg_color = Color(1, 1, 1, 0)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.56078434, 0.46666667, 0.2901961, 0.14901961)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_21gju"]
+bg_color = Color(0.96324366, 0.8858293, 0.74721456, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [sub_resource type="Gradient" id="ShelfGlow"]
 colors = PackedColorArray(1, 0.9764706, 0.8627451, 0.3764706, 1, 0.9764706, 0.8627451, 0)
@@ -83,59 +53,11 @@ content_margin_left = 8.0
 content_margin_top = 8.0
 content_margin_right = 8.0
 content_margin_bottom = 8.0
-bg_color = Color(0.8509804, 0.7882353, 0.627451, 0.2)
+bg_color = Color(0.9647059, 0.8901961, 0.75686276, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-
-[sub_resource type="StyleBoxFlat" id="GreenButton"]
-content_margin_left = 18.0
-content_margin_top = 7.0
-content_margin_right = 18.0
-content_margin_bottom = 7.0
-bg_color = Color(0.17, 0.42, 0.25, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.1, 0.27, 0.14, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="DisabledButton"]
-content_margin_left = 18.0
-content_margin_top = 7.0
-content_margin_right = 18.0
-content_margin_bottom = 7.0
-bg_color = Color(0.68, 0.67, 0.61, 0.76)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.4, 0.4, 0.37, 0.68)
-corner_radius_top_left = 9
-corner_radius_top_right = 9
-corner_radius_bottom_right = 9
-corner_radius_bottom_left = 9
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wha7e"]
-content_margin_left = 18.0
-content_margin_top = 7.0
-content_margin_right = 18.0
-content_margin_bottom = 7.0
-bg_color = Color(0.7992013, 0.87371975, 0.95663863, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.49, 0.39, 0.23, 1)
-corner_radius_top_left = 9
-corner_radius_top_right = 9
-corner_radius_bottom_right = 9
-corner_radius_bottom_left = 9
 
 [sub_resource type="StyleBoxFlat" id="ParchmentButton"]
 content_margin_left = 18.0
@@ -148,6 +70,22 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.49, 0.39, 0.23, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="DisabledButton"]
+content_margin_left = 18.0
+content_margin_top = 7.0
+content_margin_right = 18.0
+content_margin_bottom = 7.0
+bg_color = Color(0.68, 0.67, 0.61, 0.76)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.4, 0.37, 0.68)
 corner_radius_top_left = 9
 corner_radius_top_right = 9
 corner_radius_bottom_right = 9
@@ -201,17 +139,6 @@ offset_bottom = 470.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("ShopPanel")
-
-[node name="ContentWash" type="TextureRect" parent="ContainerPanel/ShopPanel" unique_id=251483619]
-layout_mode = 2
-mouse_filter = 2
-texture = SubResource("PanelWashTex")
-expand_mode = 1
-
-[node name="InnerHighlight" type="Panel" parent="ContainerPanel/ShopPanel" unique_id=1973329341]
-layout_mode = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("InnerHighlight")
 
 [node name="MarginContainer" type="MarginContainer" parent="ContainerPanel/ShopPanel" unique_id=211312420]
 layout_mode = 2
@@ -268,7 +195,7 @@ custom_minimum_size = Vector2(970, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
-theme_override_styles/panel = SubResource("MerchandiseInset")
+theme_override_styles/panel = SubResource("StyleBoxFlat_21gju")
 
 [node name="MerchandiseColumn" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter" unique_id=33221293]
 layout_mode = 2
@@ -351,42 +278,6 @@ size_flags_horizontal = 4
 texture = ExtResource("2_b5a5w")
 expand_mode = 3
 stretch_mode = 5
-
-[node name="PurchasePanel" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=1817095346]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="BuyGoldButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/PurchasePanel" unique_id=922827488]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.97, 0.95, 0.85, 1)
-theme_override_colors/font_disabled_color = Color(0.36, 0.36, 0.34, 0.72)
-theme_override_constants/icon_max_width = 32
-theme_override_font_sizes/font_size = 21
-theme_override_styles/normal = SubResource("GreenButton")
-theme_override_styles/pressed = SubResource("GreenButton")
-theme_override_styles/hover = SubResource("GreenButton")
-theme_override_styles/disabled = SubResource("DisabledButton")
-text = "BUY"
-icon = ExtResource("3_gold")
-expand_icon = true
-
-[node name="BuyTokenButton" type="Button" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/PurchasePanel" unique_id=1221982560]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.16, 0.2, 0.15, 1)
-theme_override_colors/font_pressed_color = Color(0.12, 0.16, 0.11, 1)
-theme_override_colors/font_hover_color = Color(0.16, 0.2, 0.15, 1)
-theme_override_colors/font_disabled_color = Color(0.36, 0.36, 0.34, 0.72)
-theme_override_constants/icon_max_width = 34
-theme_override_font_sizes/font_size = 21
-theme_override_styles/normal = SubResource("StyleBoxFlat_wha7e")
-theme_override_styles/pressed = SubResource("ParchmentButton")
-theme_override_styles/hover = SubResource("ParchmentButton")
-theme_override_styles/disabled = SubResource("DisabledButton")
-text = "USE TOKEN"
-icon = ExtResource("4_token")
-expand_icon = true
 
 [node name="ActionSpacer" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=981416549]
 custom_minimum_size = Vector2(0, 12)

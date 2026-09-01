@@ -27,6 +27,8 @@ func _ready() -> void:
 	# Initialize audio players
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = "Music"
+	# Keep background music playing while the pause menu freezes the scene tree.
+	music_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(music_player)
 	
 	# Create pool of SFX players (also used for former UI sounds)

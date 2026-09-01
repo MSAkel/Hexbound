@@ -12,5 +12,5 @@ sigil_kind = 4
 id = "great_value"
 name = "Great Value"
 icon = ExtResource("1_645dx")
-description = "Spend 1 Gold to empower a random Downstream Producer in this segment"
+description = "Spend 1 Gold to empower a random Following Producer in this segment"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

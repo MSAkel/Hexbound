@@ -219,11 +219,74 @@ func _update_rune_preview() -> void:
 		_clear_hover_highlights()
 		_restamp_utility_target_highlights()
 
+	_update_placed_card_tile_panel(map_coords, mouse_over_card)
+
 
 func _get_mouse_map_coords() -> Vector2i:
 	return tile_map.base_layer.local_to_map(
 		tile_map.to_local(tile_map.get_global_mouse_position())
 	)
+
+
+# Occupied tiles under the cursor show the placed card inspect panel while dragging to place.
+func _update_placed_card_tile_panel(map_coords: Vector2i, mouse_over_card: bool) -> void:
+	if tile_map.hover_ui == null:
+		return
+	if mouse_over_card:
+		tile_map.hover_ui.hide_tile_panel()
+		return
+	if not tile_map.is_in_map(map_coords) or not tile_map.is_tile_interactable(map_coords):
+		tile_map.hover_ui.hide_tile_panel()
+		return
+	var hex: Hex = tile_map.map_data[map_coords]
+	if hex.active_tile_card == null:
+		tile_map.hover_ui.hide_tile_panel()
+		return
+	tile_map.hover_ui.update_tile_panel_hover(map_coords, true)
+
+
+func _placement_failure_message(hex: Hex) -> String:
+	if hex.is_placement_blocked():
+		return "Tile locked"
+	var tile_card := _get_selected_tile_card()
+	if tile_card == null:
+		return "Can't place here"
+	if tile_card.type == TileCard.TileCardType.UTILITY:
+		if hex.active_tile_card == null:
+			return "Needs an occupied tile"
+		return "Can't target this tile"
+	if hex.active_tile_card != null:
+		if tile_card.type == TileCard.TileCardType.UTILITY:
+			return "Can't target this tile"
+		return ""
+	if not tile_card.can_place_on_tile(hex):
+		return _placement_restriction_message(tile_card)
+	return "Can't place here"
+
+
+func _placement_restriction_message(tile_card: TileCard) -> String:
+	match tile_card.placement_restriction:
+		TileCard.PlacementRestriction.EDGE_TILE:
+			return "Must be an edge tile"
+		TileCard.PlacementRestriction.SEGMENT_FIRST_TILE:
+			return "Must be a first segment tile"
+		TileCard.PlacementRestriction.SEGMENT_LAST_TILE:
+			return "Must be a last segment tile"
+		TileCard.PlacementRestriction.ONE_TILE_SEGMENT:
+			return "Must be a 1-tile segment"
+		_:
+			return "Can't place here"
+
+
+func _show_placement_failed_feedback(hex: Hex, message: String) -> void:
+	if message.is_empty():
+		return
+	var world_pos: Vector2
+	if hex != null and hex.is_on_map():
+		world_pos = tile_map.to_global(tile_map.base_layer.map_to_local(hex.coordinates))
+	else:
+		world_pos = tile_map.get_global_mouse_position()
+	tile_map.create_floating_text(world_pos, message, Color(1.0, 0.45, 0.45, 1.0))
 
 
 func _try_place_card() -> void:
@@ -238,6 +301,9 @@ func _try_place_card() -> void:
 	
 	var hex: Hex = tile_map.map_data[map_coords]
 	if not tile_map.is_tile_interactable(map_coords) or not _can_place_on_hex(hex):
+		var failure_message := _placement_failure_message(hex)
+		if not failure_message.is_empty():
+			_show_placement_failed_feedback(hex, failure_message)
 		_deselect_card()
 		return
 
@@ -252,6 +318,8 @@ func _try_place_card() -> void:
 func _clear_preview() -> void:
 	_ghost_follow_mouse = false
 	_is_placing = false
+	if tile_map.hover_ui != null:
+		tile_map.hover_ui.hide_tile_panel()
 	if selected_card != null:
 		selected_card.set_map_tile_hover_active(false, false)
 		selected_card.reset_placement_morph()
@@ -279,10 +347,7 @@ func _clear_restriction_overlays() -> void:
 
 
 func _clear_valid_restriction_highlights() -> void:
-	for coords: Vector2i in _valid_restriction_coords:
-		if tile_map.has_hovered_segment_highlight_at(coords):
-			continue
-		tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
+	tile_map.clear_placement_valid_highlights()
 	_valid_restriction_coords.clear()
 
 
@@ -303,12 +368,16 @@ func _clear_rune_highlight_at(coords: Vector2i) -> void:
 	tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
 
 
-## True while this handler currently stamps an effect-preview or valid-restriction highlight on coords.
+## True while this handler currently stamps an effect-preview highlight on coords.
 func is_highlighting_coord(coords: Vector2i) -> bool:
-	return coords in _effect_preview_coords or coords in _valid_restriction_coords or coords in _utility_target_coords
+	return coords in _effect_preview_coords or coords in _utility_target_coords
 
 
-func _stamp_rune_highlight(coords: Vector2i) -> void:
+func _stamp_valid_placement_highlight(coords: Vector2i) -> void:
+	tile_map.stamp_placement_valid_highlight(coords)
+
+
+func _stamp_effect_preview_highlight(coords: Vector2i) -> void:
 	tile_map.rune_highlight_overlay_layer.set_cell(
 		coords,
 		tile_map.RUNE_HIGHLIGHT_SOURCE_ID,
@@ -383,6 +452,8 @@ func _place_card_on_hex(hex: Hex) -> void:
 	_is_placing = true
 	_ghost_follow_mouse = false
 	_hide_tile_landing_preview()
+	if tile_map.hover_ui != null:
+		tile_map.hover_ui.hide_tile_panel()
 	await _animate_ghost_snap_into_hex(hex)
 	if selected_card == null or selected_card.card == null:
 		_is_placing = false
@@ -416,7 +487,7 @@ func _update_placement_overlays() -> void:
 			continue
 		
 		if tile_card.can_place_on_tile(hex):
-			_stamp_rune_highlight(coords)
+			_stamp_valid_placement_highlight(coords)
 			_valid_restriction_coords.append(coords)
 			continue
 		
@@ -444,7 +515,7 @@ func _update_hover_highlights(hover_hex: Hex) -> void:
 			continue
 		if coords == placement_coords:
 			continue
-		_stamp_rune_highlight(coords)
+		_stamp_effect_preview_highlight(coords)
 		_effect_preview_coords.append(coords)
 
 
@@ -479,7 +550,7 @@ func _collect_utility_target(hex: Hex) -> void:
 
 	_utility_target_hexes.append(hex)
 	_utility_target_coords.append(hex.coordinates)
-	_stamp_rune_highlight(hex.coordinates)
+	_stamp_effect_preview_highlight(hex.coordinates)
 
 	if _utility_target_hexes.size() < tile_card.utility_target_count:
 		return
@@ -492,6 +563,8 @@ func _place_utility_on_targets(tile_card: TileCard) -> void:
 	_is_placing = true
 	_ghost_follow_mouse = false
 	_hide_tile_landing_preview()
+	if tile_map.hover_ui != null:
+		tile_map.hover_ui.hide_tile_panel()
 	if last_hex != null:
 		await _animate_ghost_snap_into_hex(last_hex)
 	if selected_card == null:
@@ -513,4 +586,4 @@ func _finish_playing_selected_card() -> void:
 
 func _restamp_utility_target_highlights() -> void:
 	for coords: Vector2i in _utility_target_coords:
-		_stamp_rune_highlight(coords)
+		_stamp_effect_preview_highlight(coords)

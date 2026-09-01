@@ -1,6 +1,6 @@
 extends TileCard
 
-## Triggers the first card of each Downstream segment. Must sit on a first segment tile.
+## Triggers the first card of each Following segment. Must sit on a first segment tile.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var current_index: int = _get_segment_index(tile)
 	var segment_count := _get_segment_count(tile)

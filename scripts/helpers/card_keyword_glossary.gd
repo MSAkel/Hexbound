@@ -40,9 +40,12 @@ static var _match_regex: RegEx = null
 const COLOR_ENERGY := Color(0.0, 0.52, 0.66)
 const COLOR_SCORE := Color(0.0, 0.42, 0.55)
 const COLOR_MULT := Color(0.52, 0.16, 0.48)
-const COLOR_GOLD := Color(0.62, 0.42, 0.0)
 const COLOR_EMPOWER := Color(0.78, 0.34, 0.0)
-const COLOR_DOWNSTREAM := Color(0.18, 0.52, 0.36)
+const COLOR_FOLLOWING := Color(0.18, 0.52, 0.36)
+const COLOR_RETRIGGER := Color(0.45, 0.35, 0.72)
+const COLOR_BREAK := Color(0.72, 0.22, 0.22)
+const COLOR_RELAY := Color(0.28, 0.48, 0.62)
+const COLOR_PRODUCER := Color(0.42, 0.52, 0.28)
 
 
 static func _static_init() -> void:
@@ -53,17 +56,16 @@ static func _static_init() -> void:
 		["energy"],
 		"Energy",
 		COLOR_ENERGY,
-		"Added by producers in a segment.\nENERGY x MULT = SCORE"
+		"A segment’s base points before Mult is applied to produce Score"
 	)
 	register(
 		"score",
 		["score"],
 		"Score",
 		COLOR_SCORE,
-		"Energy × Mult for a segment. Segment Scores add for the turn."
+		"The resource needed to win a round"
 	)
 	register("mult", ["mult"], "Mult", COLOR_MULT, "Multiplies Energy in the same segment. Starts at 1.")
-	register("gold", ["gold"], "Gold", COLOR_GOLD, "Currency. Not multiplied by Mult.")
 	register(
 		"empower",
 		["empower", "empowers", "empowered", "empowerment"],
@@ -72,11 +74,46 @@ static func _static_init() -> void:
 		"Doubles the output of a production card."
 	)
 	register(
-		"downstream",
-		["downstream"],
-		"Downstream",
-		COLOR_DOWNSTREAM,
-		"Later in trigger order.\nAdjacent Downstream means a touching hex that fires after this card."
+		"following",
+		["following"],
+		"Following",
+		COLOR_FOLLOWING,
+		"Later in trigger order"
+	)
+	register(
+		"following",
+		["following"],
+		"Following",
+		COLOR_FOLLOWING,
+		"Later in trigger order on the map"
+	)
+	register(
+		"retrigger",
+		["retrigger", "retriggers", "retriggered"],
+		"Retrigger",
+		COLOR_RETRIGGER,
+		"Triggers the card again this turn."
+	)
+	register(
+		"break",
+		["break", "breaks", "broken"],
+		"Break",
+		COLOR_BREAK,
+		"Destroys the card"
+	)
+	register(
+		"relay",
+		["relay", "relays", "relayed"],
+		"Relay",
+		COLOR_RELAY,
+		"Sends Energy, Mult, or Gold to another segment."
+	)
+	register(
+		"producer",
+		["producer", "producers"],
+		"Producer",
+		COLOR_PRODUCER,
+		"Generates Energy, Mult, or Gold when triggered."
 	)
 
 

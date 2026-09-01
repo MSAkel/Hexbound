@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://cm7k781kw6ho"]
+
+[ext_resource type="Script" uid="uid://b8nf8fpxpsti4" path="res://scenes/ui/turn_resolve_skip_overlay.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f3t6u"]
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.02424044, 0.21291327, 0.2826277, 1)
+
+[node name="TurnResolveSkipOverlay" type="Control" unique_id=827105186]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Hint" type="Label" parent="." unique_id=317641929]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -160.0
+offset_right = 120.0
+offset_bottom = -110.5
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 0.55)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_f3t6u")
+text = "Skip"
+horizontal_alignment = 1

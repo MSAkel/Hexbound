@@ -11,5 +11,5 @@ product = 1
 id = "advanced_pointer"
 name = "Advanced Pointer"
 icon = ExtResource("1_asyvl")
-description = "+14 Energy per adjacent Downstream Energy card. +20 if 2 or more"
+description = "+14 Energy per Following adjacent Energy card. +20 if 2 or more"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

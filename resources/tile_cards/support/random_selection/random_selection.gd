@@ -1,6 +1,6 @@
 extends TileCard
 
-## Triggers two random cards on Downstream segments.
+## Triggers two random cards on Following segments.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var later_runes := _get_all_tile_cards_on_later_segments(tile)
 	if later_runes.is_empty():

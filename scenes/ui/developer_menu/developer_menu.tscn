@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://b8devmenu4scn01"]
+
+[ext_resource type="Script" uid="uid://c7k3m9p2devmenu" path="res://scenes/ui/developer_menu/developer_menu.gd" id="1_devmenu"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7pmlo"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ftetl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7nsra"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x7o2x"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xld13"]
+
+[node name="DeveloperMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_devmenu")
+
+[node name="MenuContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 365.0
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="MenuItemsContainer" type="VBoxContainer" parent="MenuContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 21
+
+[node name="TitleLabel" type="Label" parent="MenuContainer/MenuItemsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "DEVELOPER MENU"
+
+[node name="BackButton" type="Button" parent="MenuContainer/MenuItemsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
+text = "BACK"
+alignment = 0
+
+[node name="UISandboxButton" type="Button" parent="MenuContainer/MenuItemsContainer"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
+text = "UI SANDBOX"
+alignment = 0
+
+[node name="PassivesSandboxButton" type="Button" parent="MenuContainer/MenuItemsContainer"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
+text = "PASSIVES SANDBOX"
+alignment = 0
+
+[node name="ResetProgressionButton" type="Button" parent="MenuContainer/MenuItemsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
+text = "RESET PROGRESSION"
+alignment = 0
+
+[connection signal="pressed" from="MenuContainer/MenuItemsContainer/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="MenuContainer/MenuItemsContainer/UISandboxButton" to="." method="_on_ui_sandbox_button_pressed"]
+[connection signal="pressed" from="MenuContainer/MenuItemsContainer/PassivesSandboxButton" to="." method="_on_passives_sandbox_button_pressed"]
+[connection signal="pressed" from="MenuContainer/MenuItemsContainer/ResetProgressionButton" to="." method="_on_reset_progression_pressed"]

@@ -161,6 +161,37 @@ func try_apply_to_hex_under_mouse() -> bool:
 	return true
 
 
+## Short map feedback when a tile potion is dropped on an invalid hex.
+func show_tile_drop_failure_feedback() -> void:
+	var tile_map := _tile_map()
+	if tile_map == null:
+		return
+	var message := _tile_drop_failure_message()
+	if message.is_empty():
+		return
+	var world_pos := tile_map.get_global_mouse_position()
+	var hex := _hex_under_mouse()
+	if hex != null and hex.is_on_map():
+		world_pos = tile_map.to_global(tile_map.base_layer.map_to_local(hex.coordinates))
+	tile_map.create_floating_text(world_pos, message, Color(1.0, 0.45, 0.45, 1.0))
+
+
+func _tile_drop_failure_message() -> String:
+	var tile_map := _tile_map()
+	if tile_map == null:
+		return "Can't use here"
+	var hex := _hex_under_mouse()
+	if hex == null:
+		return ""
+	if not tile_map.is_in_map(hex.coordinates):
+		return ""
+	if not tile_map.is_tile_interactable(hex.coordinates):
+		return "Can't use on this tile"
+	if hex.active_tile_card == null:
+		return ""
+	return "Can't use here"
+
+
 func cancel_targeting() -> void:
 	if targeting_slot < 0:
 		return
@@ -225,8 +256,8 @@ func after_card_activated(tile: Hex, card: TileCard) -> void:
 		tile.map.create_floating_text(pos, "+1", Color(1.0, 0.85, 0.2, 1.0))
 	if _take_activation_fuse(card, Potion.EffectType.EMPOWER):
 		pass
-	if _take_activation_fuse(card, Potion.EffectType.BATON):
-		_empower_next_producer(tile, card)
+	_apply_next_trigger_energy_fuse(tile, card)
+	_apply_next_trigger_mult_fuse(tile, card)
 	if _take_activation_fuse(card, Potion.EffectType.ECHO):
 		if not EventManager.are_retriggers_blocked():
 			card.queue_tile_card_triggers(tile, [card])
@@ -375,7 +406,7 @@ func _apply_to_card(potion: Potion, hex: Hex) -> void:
 		Potion.EffectType.EMPOWER:
 			card._empower()
 			_add_fuse(card, potion, 0, 1)
-		Potion.EffectType.ECHO, Potion.EffectType.WARD, Potion.EffectType.BATON:
+		Potion.EffectType.ECHO, Potion.EffectType.WARD, Potion.EffectType.NEXT_TRIGGER_ENERGY, Potion.EffectType.NEXT_TRIGGER_MULT:
 			_add_fuse(card, potion, 0, 1)
 		Potion.EffectType.FORWARD_GIFT, Potion.EffectType.MINT_SIP:
 			_add_fuse(card, potion, TWO_TURN_FUSE, 0)
@@ -437,23 +468,47 @@ func _first_or_last_producers(want_first: bool) -> Array[Hex]:
 	return result
 
 
-func _empower_next_producer(tile: Hex, source: TileCard) -> void:
-	var tile_map := tile.map
-	var seen_source := false
-	for hex in tile_map.get_hexes_in_trigger_order():
-		if hex.active_tile_card == source:
-			seen_source = true
-			continue
-		if not seen_source:
-			continue
-		var card := hex.active_tile_card
-		if card == null or card.type != TileCard.TileCardType.PRODUCER:
-			continue
-		if not tile_map.is_tile_card_triggerable(hex):
-			continue
-		card._empower()
-		hex.refresh_tile_card_visual_state()
+func _apply_next_trigger_energy_fuse(tile: Hex, card: TileCard) -> void:
+	var fuse := _take_activation_fuse(card, Potion.EffectType.NEXT_TRIGGER_ENERGY)
+	if fuse.is_empty():
 		return
+	var potion := PotionCatalog.get_by_id(str(fuse.get("potion_id", "")))
+	var amount := int(potion.effect_value) if potion != null else 0
+	if amount <= 0:
+		return
+	_grant_next_trigger_energy(tile, amount)
+
+
+func _apply_next_trigger_mult_fuse(tile: Hex, card: TileCard) -> void:
+	var fuse := _take_activation_fuse(card, Potion.EffectType.NEXT_TRIGGER_MULT)
+	if fuse.is_empty():
+		return
+	var potion := PotionCatalog.get_by_id(str(fuse.get("potion_id", "")))
+	var amount := float(potion.effect_value) if potion != null else 0.0
+	if amount <= 0.0:
+		return
+	_grant_next_trigger_mult(tile, amount)
+
+
+func _grant_next_trigger_energy(tile: Hex, amount: int) -> void:
+	if tile == null or tile.map == null:
+		return
+	tile.map.add_turn_score_for_tile(tile, amount)
+	var pos := tile.map.base_layer.map_to_local(tile.coordinates)
+	tile.map.create_floating_text(pos, "+%d" % amount, Color.AQUA, TileCard.ICON_SCORE)
+
+
+func _grant_next_trigger_mult(tile: Hex, amount: float) -> void:
+	if tile == null or tile.map == null:
+		return
+	tile.map.add_turn_multiplier_for_tile(tile, amount)
+	var pos := tile.map.base_layer.map_to_local(tile.coordinates)
+	tile.map.create_floating_text(
+		pos,
+		"+%s" % CountingNumber.format_mult(amount),
+		Color.PLUM,
+		TileCard.ICON_MULT
+	)
 
 
 func _add_fuse(card: TileCard, potion: Potion, remaining_turns: int, remaining_activations: int) -> void:

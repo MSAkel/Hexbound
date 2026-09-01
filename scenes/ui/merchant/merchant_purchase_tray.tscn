@@ -1,0 +1,133 @@
+[gd_scene format=3 uid="uid://dwveidib2jxhc"]
+
+[ext_resource type="Script" uid="uid://5h4y0ta207qh" path="res://scenes/ui/merchant/merchant_purchase_tray.gd" id="1_tray"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="2_gold"]
+[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="3_token"]
+
+[sub_resource type="StyleBoxFlat" id="TrayButtonNormal"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.17, 0.42, 0.25, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1, 0.27, 0.14, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="TrayButtonGoldHover"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.24, 0.55, 0.33, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.14, 0.34, 0.19, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="TrayButtonDisabled"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.68, 0.67, 0.61, 0.76)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.4, 0.37, 0.68)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="TrayButtonToken"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.7992013, 0.87371975, 0.95663863, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.49, 0.39, 0.23, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="TrayButtonTokenHover"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.58, 0.72, 0.9, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.36, 0.48, 0.64, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="MerchantPurchaseTray" type="HBoxContainer" unique_id=1155474741]
+custom_minimum_size = Vector2(0, 40)
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+script = ExtResource("1_tray")
+
+[node name="GoldButton" type="Button" parent="." unique_id=228641547]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.97, 0.95, 0.85, 1)
+theme_override_colors/font_pressed_color = Color(0.97, 0.95, 0.85, 1)
+theme_override_colors/font_hover_color = Color(0.97, 0.95, 0.85, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.36, 0.34, 0.72)
+theme_override_constants/icon_max_width = 22
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("TrayButtonNormal")
+theme_override_styles/pressed = SubResource("TrayButtonGoldHover")
+theme_override_styles/hover = SubResource("TrayButtonGoldHover")
+theme_override_styles/disabled = SubResource("TrayButtonDisabled")
+text = "Buy"
+icon = ExtResource("2_gold")
+
+[node name="TokenButton" type="Button" parent="." unique_id=775998909]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.22, 1)
+theme_override_colors/font_pressed_color = Color(0.08, 0.11, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.08, 0.11, 0.18, 1)
+theme_override_colors/font_disabled_color = Color(0.36, 0.36, 0.34, 0.72)
+theme_override_constants/icon_max_width = 24
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("TrayButtonToken")
+theme_override_styles/pressed = SubResource("TrayButtonTokenHover")
+theme_override_styles/hover = SubResource("TrayButtonTokenHover")
+theme_override_styles/disabled = SubResource("TrayButtonDisabled")
+text = "1 Token"
+icon = ExtResource("3_token")
+
+[connection signal="pressed" from="GoldButton" to="." method="_on_gold_button_pressed"]
+[connection signal="pressed" from="TokenButton" to="." method="_on_token_button_pressed"]

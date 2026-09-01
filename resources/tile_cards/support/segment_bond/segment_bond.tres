@@ -11,5 +11,5 @@ sigil_kind = 7
 id = "segment_bond"
 name = "Segment Bond"
 icon = ExtResource("1_k0ops")
-description = "Adjacent Downstream Energy cards in this segment permanently gain +10 Energy"
+description = "Adjacent Following Energy cards in this segment permanently gain +10 Energy"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

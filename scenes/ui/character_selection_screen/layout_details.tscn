@@ -1,0 +1,352 @@
+[gd_scene format=3 uid="uid://cdi5v4a8f6h2x"]
+
+[ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/layout_details.gd" id="1_details"]
+[ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="3_character"]
+[ext_resource type="Texture2D" uid="uid://cpkbpjt0rbyto" path="res://assets/map/trigger_order/the_surveyor_map.png" id="4_preview"]
+[ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="9_segment"]
+[ext_resource type="Texture2D" uid="uid://bgo1gw2tf12cq" path="res://assets/map/segment_icons/trigger_order.png" id="9_x6eud"]
+[ext_resource type="Texture2D" uid="uid://vwnahpskecqv" path="res://assets/map/segment_icons/tile_segment_start.png" id="10_start"]
+[ext_resource type="Texture2D" uid="uid://ds65oo0em21l2" path="res://assets/map/segment_icons/tile_segment_end.png" id="11_end"]
+[ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_passives_normal"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.055, 0.22, 0.25, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.61, 0.45, 0.22, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_passives_pressed"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.035, 0.14, 0.17, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.53, 0.39, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_passives_hover"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.075, 0.3, 0.33, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.61, 0.31, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="FontVariation" id="FontVariation_x6eud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_legend_item"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.39, 0.31, 0.19, 0.055)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.43, 0.33, 0.19, 0.22)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="LayoutDetails" type="HBoxContainer" unique_id=1598077284]
+size_flags_vertical = 3
+theme_override_constants/separation = 28
+script = ExtResource("1_details")
+
+[node name="ProfileColumn" type="VBoxContainer" parent="." unique_id=1601771923]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+alignment = 0
+
+[node name="CharacterIcon" type="TextureRect" parent="ProfileColumn" unique_id=1967071723]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 250)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("3_character")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CharacterNameLabel" type="Label" parent="ProfileColumn" unique_id=593003074]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_font_sizes/font_size = 34
+text = "THE SURVEYOR"
+horizontal_alignment = 1
+
+[node name="LayoutLevelLabel" type="Label" parent="ProfileColumn" unique_id=841203901]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.24, 0.16, 1)
+theme_override_fonts/font = SubResource("FontVariation_x6eud")
+theme_override_font_sizes/font_size = 22
+text = "Level 1"
+horizontal_alignment = 1
+
+[node name="LayoutXpLabel" type="Label" parent="ProfileColumn" unique_id=841203902]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.31, 0.21, 1)
+theme_override_fonts/font = SubResource("FontVariation_x6eud")
+theme_override_font_sizes/font_size = 16
+text = "0/10 EXP"
+horizontal_alignment = 1
+
+[node name="SegmentPassivesButton" type="Button" parent="ProfileColumn" unique_id=2091026106]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_passives_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_passives_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_passives_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_passives_hover")
+text = "SEGMENT PASSIVES"
+
+[node name="PassiveSetLabel" type="Label" parent="ProfileColumn" unique_id=1709617180]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.31, 0.21, 1)
+theme_override_fonts/font = SubResource("FontVariation_x6eud")
+theme_override_font_sizes/font_size = 18
+text = "Set A"
+horizontal_alignment = 1
+
+[node name="ProfileDivider" parent="." unique_id=760577234 instance=ExtResource("12_vertical_divider")]
+
+[node name="MapColumn" type="VBoxContainer" parent="." unique_id=1036898751]
+custom_minimum_size = Vector2(610, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 7
+
+[node name="TriggerOrderLabel" type="Label" parent="MapColumn" unique_id=441515204]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_font_sizes/font_size = 32
+text = "TOP-LEFT → BOTTOM-RIGHT"
+horizontal_alignment = 1
+
+[node name="TriggerOrderDescription" type="Label" parent="MapColumn" unique_id=262045084]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(580, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
+theme_override_font_sizes/font_size = 18
+text = "Cards activate from top-left to bottom-right across the map."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="MapRule" type="ColorRect" parent="MapColumn" unique_id=2064269478]
+custom_minimum_size = Vector2(280, 2)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+color = Color(0.43, 0.33, 0.19, 0.26)
+
+[node name="TriggerOrderImage" type="TextureRect" parent="MapColumn" unique_id=1258443105]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 430)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture = ExtResource("4_preview")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LegendDivider" parent="." unique_id=1517365727 instance=ExtResource("12_vertical_divider")]
+
+[node name="LegendColumn" type="VBoxContainer" parent="." unique_id=644988371]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="LegendTitle" type="Label" parent="LegendColumn" unique_id=1666208586]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_font_sizes/font_size = 26
+text = "MAP LEGEND"
+horizontal_alignment = 1
+
+[node name="LegendRule" type="ColorRect" parent="LegendColumn" unique_id=354711576]
+custom_minimum_size = Vector2(180, 2)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+color = Color(0.43, 0.33, 0.19, 0.26)
+
+[node name="TileItem" type="PanelContainer" parent="LegendColumn" unique_id=1231202640]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
+
+[node name="Row" type="HBoxContainer" parent="LegendColumn/TileItem" unique_id=1611088363]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="LegendColumn/TileItem/Row" unique_id=807110556]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("9_x6eud")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/TileItem/Row" unique_id=446284814]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="LegendColumn/TileItem/Row/Copy" unique_id=234335101]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
+theme_override_font_sizes/font_size = 19
+text = "Trigger Order"
+
+[node name="Description" type="Label" parent="LegendColumn/TileItem/Row/Copy" unique_id=1924780569]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 15
+text = "The order in which the cards activate in"
+autowrap_mode = 3
+
+[node name="SegmentCountItem" type="PanelContainer" parent="LegendColumn" unique_id=1830704522]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
+
+[node name="Row" type="HBoxContainer" parent="LegendColumn/SegmentCountItem" unique_id=1564500937]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="LegendColumn/SegmentCountItem/Row" unique_id=539106452]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("9_segment")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/SegmentCountItem/Row" unique_id=1432686884]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SegmentCountTitle" type="Label" parent="LegendColumn/SegmentCountItem/Row/Copy" unique_id=1735213286]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
+theme_override_font_sizes/font_size = 19
+text = "7 Segments"
+
+[node name="Description" type="Label" parent="LegendColumn/SegmentCountItem/Row/Copy" unique_id=337615501]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 15
+text = "Each segment consists of one or more tiles"
+autowrap_mode = 3
+
+[node name="SegmentStartItem" type="PanelContainer" parent="LegendColumn" unique_id=180812953]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
+
+[node name="Row" type="HBoxContainer" parent="LegendColumn/SegmentStartItem" unique_id=2029940309]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="LegendColumn/SegmentStartItem/Row" unique_id=1280471497]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("10_start")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/SegmentStartItem/Row" unique_id=1511279492]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="LegendColumn/SegmentStartItem/Row/Copy" unique_id=652107057]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
+theme_override_font_sizes/font_size = 19
+text = "Segment Start"
+
+[node name="Description" type="Label" parent="LegendColumn/SegmentStartItem/Row/Copy" unique_id=1246581272]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 15
+text = "First tile in a segment"
+autowrap_mode = 3
+
+[node name="SegmentEndItem" type="PanelContainer" parent="LegendColumn" unique_id=991141475]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_legend_item")
+
+[node name="Row" type="HBoxContainer" parent="LegendColumn/SegmentEndItem" unique_id=1791736046]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="LegendColumn/SegmentEndItem/Row" unique_id=1758719954]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("11_end")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Copy" type="VBoxContainer" parent="LegendColumn/SegmentEndItem/Row" unique_id=1633252311]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="LegendColumn/SegmentEndItem/Row/Copy" unique_id=1278969653]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
+theme_override_font_sizes/font_size = 19
+text = "Segment End"
+
+[node name="Description" type="Label" parent="LegendColumn/SegmentEndItem/Row/Copy" unique_id=558677291]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 15
+text = "Last tile in a segment"
+autowrap_mode = 3
+
+[connection signal="pressed" from="ProfileColumn/SegmentPassivesButton" to="." method="_on_segment_passives_button_pressed"]

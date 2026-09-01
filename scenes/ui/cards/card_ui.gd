@@ -4,23 +4,23 @@ extends Control
 signal reparent_requested(which_card_ui: CardUI)
 # Emitted in MERCHANT and CHOICE modes when the player clicks an actionable card.
 signal action_requested(card_ui: CardUI)
-
-const BASE_STYLEBOX := preload("res://themes/card_base_stylebox.tres")
-const HOVER_STYLEBOX := preload("res://themes/card_hover_stylebox.tres")
-const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
+signal gold_purchase_requested(card_ui: CardUI)
+signal token_purchase_requested(card_ui: CardUI)
 
 # TileCardType.PRODUCER uses the production frame. Other cards keep the scene default.
 @export var frame_producer: Texture2D
 @export var frame_support: Texture2D
 @export var frame_utility: Texture2D
+# Name-bar fills are authored on the scene so rarity color is not rebuilt in code.
+@export var rarity_style_common: StyleBoxFlat
+@export var rarity_style_uncommon: StyleBoxFlat
+@export var rarity_style_rare: StyleBoxFlat
 
+@onready var name_container: PanelContainer = $Content/NameContainer
 @onready var card_name: Label = $Content/NameContainer/CardName
 @onready var icon: TextureRect = $Content/IconContainer/Icon
-@onready var icon_container: PanelContainer = $Content/IconContainer
 @onready var card_description: RichTextLabel = $Content/DescriptionContainer/CardDescription
-@onready var resource_cost_container: HBoxContainer = $Content/ResourceCostContainer
 @onready var card_type_label: Label = $Content/CardTypeLabel
-@onready var price_label: Label = $PriceLabel
 
 @onready var drop_point_area: Area2D = $DropPointArea
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
@@ -31,9 +31,13 @@ const DRAG_STYLEBOX := preload("res://themes/card_drag_stylebox.tres")
 @onready var panel: Panel = $CardBackground
 @onready var content_container: VBoxContainer = $Content
 @onready var overlays: Control = $Overlays
-# Scene-authored border glow; toggled when the card enters/exits the clicked placement state.
+# Scene-authored border glow, toggled when the card enters or exits the clicked placement state.
 @onready var selection_glow: Panel = $Overlays/SelectionGlow
 @onready var sold_overlay: Panel = $Overlays/SoldOverlay
+# Merchant chrome lives in the scene and is shown only in shop interaction modes.
+@onready var _price_chip_row: VBoxContainer = $MerchantPriceRow
+@onready var _price_chip_label: Label = $MerchantPriceRow/PriceCenter/PriceChip/PriceChipLabel
+@onready var _purchase_tray: MerchantPurchaseTray = $MerchantPurchaseTray
 
 enum InteractionMode {
 	HAND,
@@ -61,8 +65,16 @@ const MERCHANT_SELECTED_ELEVATION_OFFSET := -28.0
 const HOVER_ANIMATION_DURATION := 0.22
 # Neighbor spread uses a slightly longer ease so the fan feels weighted.
 const HAND_SPREAD_ANIMATION_DURATION := 0.28
-# Room under the frame so merchant gold sits outside the card art.
-const PRICE_BELOW_HEIGHT := 30.0
+# Room beneath merchant stock cards for the compact purchase tray.
+const MERCHANT_TRAY_HEIGHT := 44.0
+# Space between the card frame and the purchase tray.
+const MERCHANT_TRAY_GAP := -25.0
+# Reserved band above the card frame for the price chip.
+const PRICE_CHIP_ROW_HEIGHT := 24.0
+const MERCHANT_STOCK_CARD_HEIGHT := 340.0
+const MERCHANT_STOCK_SLOT_HEIGHT := (
+	MERCHANT_STOCK_CARD_HEIGHT + PRICE_CHIP_ROW_HEIGHT + MERCHANT_TRAY_GAP + MERCHANT_TRAY_HEIGHT
+)
 const HAND_CONTENT_HEIGHT := 310.0
 # How long the leftover morph tweens when the cursor leaves the card quickly.
 const PLACEMENT_MORPH_TWEEN_DURATION := 0.2
@@ -113,77 +125,99 @@ func _apply_interaction_mode() -> void:
 	match interaction_mode:
 		InteractionMode.HAND:
 			hover_enabled = true
-			_configure_click_routing(true)
 			sold_overlay.visible = false
 			# Grow from the bottom edge so the card lifts and scales upward in the fan.
 			offset_transform_pivot_ratio = Vector2(0.5, 1.0)
 			card_state_machine.init(self)
 		InteractionMode.MERCHANT:
 			hover_enabled = true
-			_configure_click_routing(true)
 			sold_overlay.visible = _is_sold
 			_refresh_merchant_price()
 			_update_affordability()
 		InteractionMode.MERCHANT_STOCK:
 			hover_enabled = true
-			_configure_click_routing(true)
 			sold_overlay.visible = _is_sold
 			_refresh_merchant_price()
 			_update_stock_affordability()
 		InteractionMode.CHOICE:
 			hover_enabled = true
-			_configure_click_routing(true)
 			sold_overlay.visible = false
 		InteractionMode.PREVIEW:
 			hover_enabled = false
-			_configure_click_routing(false)
 			sold_overlay.visible = false
 
-	_layout_price_below(
+	_layout_merchant_price(
 		interaction_mode == InteractionMode.MERCHANT
 		or interaction_mode == InteractionMode.MERCHANT_STOCK
 	)
 
-	# Hand cards animate scale via offset transform; other modes stay at default size.
+	# Hand cards animate scale via offset transform. Other modes stay at default size.
 	if interaction_mode != InteractionMode.HAND:
 		offset_transform_scale = Vector2.ONE
 
 	drop_point_area.monitoring = false
 
 
-## Merchant price sits under the frame. Hand cards keep the original full-bleed layout.
-func _layout_price_below(enabled: bool) -> void:
-	price_label.visible = enabled
+## Merchant price chip sits above the frame. Hand cards keep the original full-bleed layout.
+func _layout_merchant_price(enabled: bool) -> void:
+	_price_chip_row.visible = enabled
 	if enabled:
-		panel.offset_bottom = -PRICE_BELOW_HEIGHT - 3.0
-		overlays.offset_bottom = -PRICE_BELOW_HEIGHT
-		content_container.anchor_bottom = 1.0
-		content_container.offset_bottom = -PRICE_BELOW_HEIGHT - 7.0
+		_apply_merchant_card_insets(true)
+		_update_merchant_stock_height()
 		return
+	_purchase_tray.visible = false
+	_apply_merchant_card_insets(false)
+	_reset_merchant_stock_lift_targets()
+
+
+func _apply_merchant_card_insets(enabled: bool) -> void:
+	if enabled:
+		panel.offset_top = PRICE_CHIP_ROW_HEIGHT - 1.0
+		panel.offset_bottom = _merchant_card_frame_bottom_offset()
+		overlays.offset_top = PRICE_CHIP_ROW_HEIGHT
+		overlays.offset_bottom = _merchant_card_frame_bottom_offset()
+		content_container.offset_top = PRICE_CHIP_ROW_HEIGHT + 6.0
+		content_container.offset_bottom = HAND_CONTENT_HEIGHT
+		return
+	panel.offset_top = -1.0
 	panel.offset_bottom = -3.0
+	overlays.offset_top = 0.0
 	overlays.offset_bottom = 0.0
-	content_container.anchor_bottom = 0.0
+	content_container.offset_top = 6.0
 	content_container.offset_bottom = HAND_CONTENT_HEIGHT
 
 
-# Route all pointer events to the root control so merchant/choice clicks are not eaten by child labels.
-func _configure_click_routing(interactive: bool) -> void:
-	if interactive:
-		mouse_filter = MOUSE_FILTER_STOP
-		panel.mouse_filter = MOUSE_FILTER_IGNORE
-		content_container.mouse_filter = MOUSE_FILTER_IGNORE
-		_set_controls_mouse_filter(content_container, MOUSE_FILTER_IGNORE)
-	else:
-		mouse_filter = MOUSE_FILTER_IGNORE
-		panel.mouse_filter = MOUSE_FILTER_STOP
-		content_container.mouse_filter = MOUSE_FILTER_STOP
+func _merchant_card_frame_bottom_offset() -> float:
+	# Always reserve tray space so the card frame never resizes on selection.
+	if interaction_mode != InteractionMode.MERCHANT_STOCK:
+		return -3.0
+	return -(MERCHANT_TRAY_GAP + MERCHANT_TRAY_HEIGHT + 3.0)
 
 
-func _set_controls_mouse_filter(node: Node, filter: Control.MouseFilter) -> void:
-	for child in node.get_children():
-		if child is Control:
-			(child as Control).mouse_filter = filter
-		_set_controls_mouse_filter(child, filter)
+func _update_merchant_stock_height() -> void:
+	if interaction_mode != InteractionMode.MERCHANT_STOCK:
+		return
+	custom_minimum_size.y = MERCHANT_STOCK_SLOT_HEIGHT
+	if _price_chip_row.visible:
+		_apply_merchant_card_insets(true)
+	_purchase_tray.offset_top = _purchase_tray_top()
+	_purchase_tray.offset_bottom = _purchase_tray_top() + MERCHANT_TRAY_HEIGHT
+
+
+func _purchase_tray_top() -> float:
+	return _card_frame_bottom_y() + MERCHANT_TRAY_GAP
+
+
+func _card_frame_bottom_y() -> float:
+	return MERCHANT_STOCK_SLOT_HEIGHT + _merchant_card_frame_bottom_offset()
+
+
+func _on_gold_purchase_pressed() -> void:
+	gold_purchase_requested.emit(self)
+
+
+func _on_token_purchase_pressed() -> void:
+	token_purchase_requested.emit(self)
 
 
 func _get_hover_elevation_offset() -> float:
@@ -301,6 +335,10 @@ func _apply_offset_transform(animate: bool) -> void:
 		_apply_placement_morph(_placement_morph_progress, modulate.a < 0.01)
 		return
 
+	if interaction_mode == InteractionMode.MERCHANT_STOCK:
+		_apply_merchant_stock_lift(animate)
+		return
+
 	if _elevation_tween and _elevation_tween.is_valid():
 		_elevation_tween.kill()
 		_elevation_tween = null
@@ -349,6 +387,66 @@ func _apply_offset_transform(animate: bool) -> void:
 	)
 
 
+func _merchant_stock_lift_targets() -> Array[Control]:
+	var lift_targets: Array[Control] = []
+	lift_targets.append(_price_chip_row)
+	lift_targets.append(panel)
+	lift_targets.append(content_container)
+	lift_targets.append(overlays)
+	return lift_targets
+
+
+func _apply_merchant_stock_lift(animate: bool) -> void:
+	# Root offset_transform is draw-only. Lift card art only so tray buttons stay clickable.
+	offset_transform_enabled = false
+	offset_transform_position = Vector2.ZERO
+	offset_transform_scale = Vector2.ONE
+
+	if _elevation_tween and _elevation_tween.is_valid():
+		_elevation_tween.kill()
+		_elevation_tween = null
+
+	var target_offset := _composed_offset_position()
+	var lift_targets := _merchant_stock_lift_targets()
+	var at_target := true
+	for node in lift_targets:
+		if node.offset_transform_position.distance_to(target_offset) >= 0.5:
+			at_target = false
+			break
+
+	if not animate or at_target:
+		for node in lift_targets:
+			node.offset_transform_enabled = true
+			node.offset_transform_position = target_offset
+			node.offset_transform_scale = Vector2.ONE
+		return
+
+	var duration := HOVER_ANIMATION_DURATION if _is_hover_elevated else HAND_SPREAD_ANIMATION_DURATION
+	_elevation_tween = create_tween()
+	_elevation_tween.set_parallel(true)
+	for node in lift_targets:
+		node.offset_transform_enabled = true
+		_elevation_tween.tween_property(
+			node,
+			"offset_transform_position",
+			target_offset,
+			duration
+		).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	_elevation_tween.finished.connect(func() -> void:
+		_elevation_tween = null
+	)
+
+
+func _reset_merchant_stock_lift_targets() -> void:
+	offset_transform_enabled = false
+	offset_transform_position = Vector2.ZERO
+	offset_transform_scale = Vector2.ONE
+	for node in _merchant_stock_lift_targets():
+		node.offset_transform_enabled = false
+		node.offset_transform_position = Vector2.ZERO
+		node.offset_transform_scale = Vector2.ONE
+
+
 func _input(event: InputEvent) -> void:
 	if interaction_mode == InteractionMode.HAND:
 		card_state_machine.on_input(event)
@@ -375,6 +473,8 @@ func _on_mouse_entered() -> void:
 			if _is_sold:
 				return
 			set_hover_elevated(true)
+			_show_keyword_tooltips()
+		InteractionMode.PREVIEW:
 			_show_keyword_tooltips()
 
 
@@ -426,6 +526,7 @@ func set_card(data: Card) -> void:
 
 	card = data
 	card_name.text = data.name
+	_apply_rarity_name_background(data)
 	icon.texture = data.icon
 	# Keywords such as Energy, Mult, and Score are colored in CardKeywordGlossary.
 	card_description.text = CardKeywordGlossary.to_bbcode(data.description)
@@ -656,6 +757,9 @@ func mark_sold() -> void:
 	sold_overlay.visible = true
 	hide_selection_glow()
 	set_hover_elevated(false, false)
+	_purchase_tray.visible = false
+	if interaction_mode == InteractionMode.MERCHANT_STOCK:
+		custom_minimum_size.y = MERCHANT_STOCK_SLOT_HEIGHT
 	mouse_default_cursor_shape = Control.CURSOR_ARROW
 	_hide_keyword_tooltips()
 
@@ -689,19 +793,39 @@ func _refresh_merchant_price() -> void:
 
 	price = card.get_shop_price(_discount)
 	_token_cost = GoldManager.MERCHANT_TOKEN_COST
-	price_label.text = "$%d" % price
+	_price_chip_label.text = MerchantShopStyling.format_price(price)
+	_refresh_price_chip_affordability()
+
+
+func _refresh_price_chip_affordability() -> void:
+	var can_afford := GoldManager.can_afford(price)
+	_price_chip_label.add_theme_color_override(
+		"font_color",
+		MerchantShopStyling.price_label_color(can_afford)
+	)
 
 
 func _update_affordability() -> void:
-	var can_afford := GoldManager.can_afford(price)
-	price_label.modulate = Color.WHITE if can_afford else Color.RED
-	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if can_afford else Control.CURSOR_ARROW
+	_refresh_price_chip_affordability()
+	mouse_default_cursor_shape = (
+		Control.CURSOR_POINTING_HAND
+		if GoldManager.can_afford(price)
+		else Control.CURSOR_ARROW
+	)
 
 
 ## Stock cards are selectable even when the player cannot afford gold yet.
 func _update_stock_affordability() -> void:
-	price_label.modulate = Color.WHITE
+	_refresh_price_chip_affordability()
 	mouse_default_cursor_shape = Control.CURSOR_ARROW if _is_sold else Control.CURSOR_POINTING_HAND
+	refresh_purchase_tray()
+
+
+func refresh_purchase_tray() -> void:
+	var gold_enabled := not _is_sold and GoldManager.can_afford(price)
+	var token_enabled := not _is_sold and GoldManager.can_afford_tokens(_token_cost)
+	_purchase_tray.set_gold_enabled(gold_enabled)
+	_purchase_tray.set_token_enabled(token_enabled)
 
 
 func get_token_cost() -> int:
@@ -711,19 +835,26 @@ func get_token_cost() -> int:
 func set_merchant_selected(selected: bool) -> void:
 	_merchant_selected = selected
 	z_index = 2 if selected else _resting_z_index
-	if selected:
+	if interaction_mode == InteractionMode.MERCHANT_STOCK:
+		hide_selection_glow()
+	elif selected:
 		show_selection_glow()
 	else:
 		hide_selection_glow()
+	# The buy tray is only used on the merchant shelf, not in the older single-click buy mode.
+	_purchase_tray.visible = (
+		selected
+		and not _is_sold
+		and interaction_mode == InteractionMode.MERCHANT_STOCK
+	)
+	if selected:
+		refresh_purchase_tray()
 	_apply_offset_transform(true)
 
 
 func _show_keyword_tooltips() -> void:
 	if card == null or _is_sold:
 		return
-	if interaction_mode == InteractionMode.PREVIEW:
-		return
-
 	# Always emit a hover claim so an empty keyword list closes the previous card's tips.
 	var entries := CardKeywordGlossary.tooltip_entries(card.description)
 	EventBus.toggle_keyword_tooltips.emit(true, entries, get_keyword_tooltip_anchor_rect(), self)
@@ -736,6 +867,8 @@ func get_keyword_tooltip_anchor_rect() -> Rect2:
 	if interaction_mode == InteractionMode.HAND:
 		pose_offset = Vector2(_hand_spread_x, _get_hover_elevation_offset())
 		pose_scale = _get_hand_hover_scale()
+	elif interaction_mode == InteractionMode.MERCHANT_STOCK or interaction_mode == InteractionMode.MERCHANT:
+		pose_offset = _composed_offset_position()
 	elif _is_hover_elevated:
 		pose_offset = Vector2(0.0, _get_hover_elevation_offset())
 		pose_scale = Vector2.ONE
@@ -757,24 +890,30 @@ func _hide_keyword_tooltips() -> void:
 	EventBus.toggle_keyword_tooltips.emit(false, [], Rect2(), self)
 
 
+func _apply_rarity_name_background(data: Card) -> void:
+	var rarity := TileCard.TileCardRarity.COMMON
+	if data is TileCard:
+		rarity = (data as TileCard).rarity
+
+	var style := rarity_style_common
+	match rarity:
+		TileCard.TileCardRarity.UNCOMMON:
+			style = rarity_style_uncommon
+		TileCard.TileCardRarity.RARE:
+			style = rarity_style_rare
+	if style != null:
+		name_container.add_theme_stylebox_override("panel", style)
+
+
 func _apply_card_frame() -> void:
 	var frame := _frame_texture_for_card(card)
 	if frame == null:
 		return
 
 	var current_style := panel.get_theme_stylebox("panel")
-	var textured: StyleBoxTexture
 	if current_style is StyleBoxTexture:
-		# Duplicate so swapping one card's frame does not change other instances.
-		textured = (current_style as StyleBoxTexture).duplicate() as StyleBoxTexture
-	else:
-		textured = StyleBoxTexture.new()
-		textured.content_margin_left = 4.0
-		textured.content_margin_top = 4.0
-		textured.content_margin_right = 4.0
-
-	textured.texture = frame
-	panel.add_theme_stylebox_override("panel", textured)
+		# Scene stylebox is local-to-scene, so this instance can swap texture in place.
+		(current_style as StyleBoxTexture).texture = frame
 
 
 func _frame_texture_for_card(data: Card) -> Texture2D:

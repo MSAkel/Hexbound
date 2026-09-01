@@ -1,19 +1,18 @@
 [gd_scene format=3 uid="uid://bvqrwh8folnlg"]
 
 [ext_resource type="Script" uid="uid://roesvq1wbu3x" path="res://scenes/ui/character_selection_screen/seeded_run_panel.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://cj6lbtbh35041" path="res://assets/icons/others/seed_paste.png" id="2_xtf7t"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 16.0
-content_margin_top = 12.0
-content_margin_right = 16.0
-content_margin_bottom = 12.0
-bg_color = Color(0.67851543, 0.56108564, 0.38109186, 0.84300005)
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.78, 0.66, 0.46, 0.38)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.43, 0.33, 0.19, 0.22)
+border_color = Color(0.43, 0.33, 0.19, 0.32)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -30,76 +29,147 @@ corner_radius_bottom_left = 8
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x7o2x"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_seed_input"]
-content_margin_left = 14.0
-content_margin_top = 10.0
-content_margin_right = 14.0
-content_margin_bottom = 10.0
-bg_color = Color(0.055, 0.14, 0.17, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.93, 0.86, 0.72, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.43, 0.33, 0.19, 0.45)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paste"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.055, 0.22, 0.25, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.61, 0.45, 0.22, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paste_hover"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.075, 0.3, 0.33, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.61, 0.31, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="SeededRunPanel" type="PanelContainer" unique_id=1496029994]
-size_flags_horizontal = 0
+custom_minimum_size = Vector2(280, 0)
+size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 script = ExtResource("1_script")
 
-[node name="HBox" type="HBoxContainer" parent="." unique_id=1274451996]
+[node name="Body" type="VBoxContainer" parent="." unique_id=1274451996]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
-[node name="HeaderRow" type="HBoxContainer" parent="HBox" unique_id=1801150615]
+[node name="HeaderRow" type="HBoxContainer" parent="Body" unique_id=1801150615]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="SeededRunToggle" type="CheckBox" parent="HBox/HeaderRow" unique_id=1799371459]
+[node name="SeededRunToggle" type="CheckBox" parent="Body/HeaderRow" unique_id=1799371459]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.18039216, 0.23921569, 0.16862746, 1)
-theme_override_colors/font_pressed_color = Color(0.2, 0.25, 0.18, 1)
-theme_override_colors/font_hover_color = Color(0.2, 0.25, 0.18, 1)
-theme_override_font_sizes/font_size = 20
+size_flags_vertical = 4
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_7nsra")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_xld13")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_x7o2x")
+
+[node name="SeededRunLabel" type="Label" parent="Body/HeaderRow" unique_id=1801150616]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.18039216, 0.23921569, 0.16862746, 1)
+theme_override_font_sizes/font_size = 18
 text = "Seeded Run"
+vertical_alignment = 1
 
-[node name="UnlocksNoteLabel" type="Label" parent="HBox/HeaderRow" unique_id=629116842]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
-theme_override_font_sizes/font_size = 15
-text = "(Unlocks are disabled)"
-
-[node name="SeedInputRow" type="HBoxContainer" parent="HBox" unique_id=1445381064]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_constants/separation = -4
-
-[node name="SeedInput" type="LineEdit" parent="HBox/SeedInputRow" unique_id=1254515366]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 40)
+[node name="SeedBody" type="Control" parent="Body" unique_id=1445381063]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+mouse_filter = 2
+
+[node name="UnlocksNoteLabel" type="Label" parent="Body/SeedBody" unique_id=629116842]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
+theme_override_font_sizes/font_size = 15
+text = "Unlocks are disabled"
+vertical_alignment = 1
+
+[node name="SeedInputRow" type="HBoxContainer" parent="Body/SeedBody" unique_id=1445381064]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="SeedInput" type="LineEdit" parent="Body/SeedBody/SeedInputRow" unique_id=1254515366]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_colors/font_placeholder_color = Color(0.38, 0.31, 0.21, 0.7)
+theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_seed_input")
 theme_override_styles/focus = SubResource("StyleBoxFlat_seed_input")
 placeholder_text = "Enter Seed..."
 max_length = 32
 caret_blink = true
 
-[node name="PasteSeedButton" type="TextureButton" parent="HBox/SeedInputRow" unique_id=1225789431]
+[node name="PasteSeedButton" type="Button" parent="Body/SeedBody/SeedInputRow" unique_id=1225789431]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(78, 40)
 layout_mode = 2
 size_flags_vertical = 4
-texture_normal = ExtResource("2_xtf7t")
-ignore_texture_size = true
-stretch_mode = 5
+tooltip_text = "Paste seed from clipboard"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_paste")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_paste")
+theme_override_styles/hover = SubResource("StyleBoxFlat_paste_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_paste_hover")
+text = "Paste"
 
-[connection signal="pressed" from="HBox/SeedInputRow/PasteSeedButton" to="." method="_on_paste_seed_button_pressed"]
+[connection signal="pressed" from="Body/SeedBody/SeedInputRow/PasteSeedButton" to="." method="_on_paste_seed_button_pressed"]

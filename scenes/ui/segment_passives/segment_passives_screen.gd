@@ -3,6 +3,7 @@ extends Control
 ## Pre-run screen for arranging segment passives into the A/B/C sets of one character.
 
 const MAP_VIEW_SCRIPT := preload("res://scenes/ui/segment_passives/segment_passives_map_view.gd")
+const LIST_ITEM_SCENE := preload("res://scenes/ui/segment_passives/segment_passive_list_item.tscn")
 
 const COLOR_TITLE := Color(0.18, 0.24, 0.17, 1.0)
 const COLOR_BODY := Color(0.39, 0.31, 0.2, 1.0)
@@ -177,7 +178,7 @@ func _refresh_passive_list() -> void:
 			passive.id,
 			capacity
 		)
-		var item := SegmentPassiveListItem.new()
+		var item: SegmentPassiveListItem = LIST_ITEM_SCENE.instantiate()
 		passive_list.add_child(item)
 		item.setup(
 			passive,

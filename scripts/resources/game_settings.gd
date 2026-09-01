@@ -155,6 +155,14 @@ static func _shrink_fullscreen_sized_resolution() -> void:
 		resolution = DEFAULT_WINDOWED_RESOLUTION
 
 
+## Clears progression-related preferences while keeping audio, display, and control options.
+static func reset_progression_preferences() -> void:
+	ensure_loaded()
+	tutorial_enabled = true
+	last_character_selection_id = ""
+	_save()
+
+
 static func set_last_character_selection_id(character_id: String) -> void:
 	ensure_loaded()
 	if last_character_selection_id == character_id:

@@ -1,0 +1,220 @@
+[gd_scene format=3 uid="uid://dfrdqirhqvops"]
+
+[ext_resource type="Script" uid="uid://cqxh67b8qdfpg" path="res://scenes/ui/segment_passives/segment_passive_list_item.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://chy3efib51cem" path="res://assets/passives/panels/unlocked_modifier_panel.png" id="2_unlocked"]
+[ext_resource type="Texture2D" uid="uid://df5t2enjpvm04" path="res://assets/passives/panels/locked_modifier_panel.png" id="3_locked"]
+[ext_resource type="Texture2D" uid="uid://ccxxa581gp0it" path="res://assets/passives/passives_tile.png" id="4_tile"]
+
+[sub_resource type="StyleBoxTexture" id="UnlockedPanel"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+texture = ExtResource("2_unlocked")
+
+[sub_resource type="StyleBoxTexture" id="LockedPanel"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+texture = ExtResource("3_locked")
+
+[sub_resource type="StyleBoxFlat" id="BadgeStyle"]
+bg_color = Color(0.055, 0.22, 0.25, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.96, 0.84, 0.62, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="ProgressBackground"]
+bg_color = Color(0.35, 0.31, 0.24, 0.35)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="ProgressFill"]
+bg_color = Color(0.36, 0.45, 0.3, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="SegmentPassiveListItem" type="PanelContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("UnlockedPanel")
+script = ExtResource("1_script")
+unlocked_panel_style = SubResource("UnlockedPanel")
+locked_panel_style = SubResource("LockedPanel")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="HexIcon" type="TextureRect" parent="Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 65)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_tile")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="Row/HexIcon"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 12.0
+offset_right = -10.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CopiesBadge" type="Panel" parent="Row/HexIcon"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -20.0
+offset_top = -4.0
+offset_right = 6.0
+offset_bottom = 22.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BadgeStyle")
+
+[node name="CopiesBadgeLabel" type="Label" parent="Row/HexIcon/CopiesBadge"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.96, 0.84, 0.62, 1)
+theme_override_font_sizes/font_size = 11
+text = "x1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CopyColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="TitleLabel" type="Label" parent="Row/CopyColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_font_sizes/font_size = 19
+text = "Passive"
+
+[node name="BodyLabel" type="Label" parent="Row/CopyColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Description"
+autowrap_mode = 3
+
+[node name="RequirementLabel" type="Label" parent="Row/CopyColumn"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
+theme_override_font_sizes/font_size = 15
+text = "Locked"
+autowrap_mode = 3
+
+[node name="CopiesProgressLabel" type="Label" parent="Row/CopyColumn"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
+theme_override_font_sizes/font_size = 13
+text = "1/1 copies"
+
+[node name="ProgressBar" type="ProgressBar" parent="Row/CopyColumn"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("ProgressBackground")
+theme_override_styles/fill = SubResource("ProgressFill")
+max_value = 1.0
+step = 0.001
+show_percentage = false
+
+[node name="ProgressDetailLabel" type="Label" parent="Row/CopyColumn"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="CostColumn" type="VBoxContainer" parent="Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="TileCountLabel" type="Label" parent="Row/CostColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
+theme_override_font_sizes/font_size = 12
+text = "1 TILE"
+horizontal_alignment = 2
+
+[node name="Pips" type="HBoxContainer" parent="Row/CostColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="Pip1" type="TextureRect" parent="Row/CostColumn/Pips"]
+custom_minimum_size = Vector2(16, 18)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_tile")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip2" type="TextureRect" parent="Row/CostColumn/Pips"]
+visible = false
+custom_minimum_size = Vector2(16, 18)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_tile")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pip3" type="TextureRect" parent="Row/CostColumn/Pips"]
+visible = false
+custom_minimum_size = Vector2(16, 18)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_tile")
+expand_mode = 1
+stretch_mode = 5

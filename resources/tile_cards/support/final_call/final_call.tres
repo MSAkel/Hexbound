@@ -12,5 +12,5 @@ sigil_kind = 4
 id = "final_call"
 name = "Final Call"
 icon = ExtResource("1_1w7xl")
-description = "On the final turn, empower every Downstream Producer in this segment."
+description = "On the final turn, empower every Following Producer in this segment."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -3,18 +3,24 @@ extends PanelContainer
 
 
 @onready var seeded_run_toggle: CheckBox = %SeededRunToggle
+@onready var seeded_run_label: Label = %SeededRunLabel
 @onready var unlocks_note_label: Label = %UnlocksNoteLabel
 @onready var seed_input_row: HBoxContainer = %SeedInputRow
 @onready var seed_input: LineEdit = %SeedInput
-@onready var paste_seed_button: TextureButton = %PasteSeedButton
 
 
 func _ready() -> void:
 	seeded_run_toggle.toggled.connect(_on_seeded_run_toggled)
-	seed_input.text_changed.connect(_on_seed_input_changed)
 	seed_input.focus_exited.connect(_on_seed_input_focus_exited)
-	paste_seed_button.tooltip_text = "Paste seed from clipboard"
-	_update_seed_input_visibility()
+	# Label is separate from the checkbox so hover cannot restyle or clip the text.
+	seeded_run_label.gui_input.connect(_on_seeded_run_label_gui_input)
+	_update_seed_body_visibility()
+
+
+func _on_seeded_run_label_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		seeded_run_toggle.button_pressed = not seeded_run_toggle.button_pressed
+		seeded_run_label.accept_event()
 
 
 func is_seeded_mode_enabled() -> bool:
@@ -32,33 +38,25 @@ func uses_custom_seed() -> bool:
 	return not get_effective_seed_text().is_empty()
 
 
-func _on_seed_input_changed(_new_text: String) -> void:
-	_update_unlocks_note_visibility()
-
-
 func _on_seed_input_focus_exited() -> void:
 	var normalized := RunRng.normalize_seed_text(seed_input.text)
 	if seed_input.text == normalized:
 		return
 	seed_input.text = normalized
-	_update_unlocks_note_visibility()
 
 
 func _on_seeded_run_toggled(_toggled_on: bool) -> void:
-	_update_seed_input_visibility()
+	_update_seed_body_visibility()
 	AudioManager.play_sfx(UISounds.SELECT)
 
 
-func _update_seed_input_visibility() -> void:
+# Seeded mode swaps the unlocks note for the seed field and paste button.
+func _update_seed_body_visibility() -> void:
 	var seeded_mode := is_seeded_mode_enabled()
 	seed_input_row.visible = seeded_mode
+	unlocks_note_label.visible = not seeded_mode
 	if seeded_mode:
 		seed_input.grab_focus()
-	_update_unlocks_note_visibility()
-
-
-func _update_unlocks_note_visibility() -> void:
-	unlocks_note_label.visible = uses_custom_seed()
 
 
 func _on_paste_seed_button_pressed() -> void:
@@ -72,8 +70,7 @@ func _apply_seed_text(seed_text: String) -> void:
 	# Paste should turn seeded mode on so the value is not ignored when Play is pressed.
 	if not seeded_run_toggle.button_pressed:
 		seeded_run_toggle.button_pressed = true
-		_update_seed_input_visibility()
+		_update_seed_body_visibility()
 
 	seed_input.text = seed_text
-	_update_unlocks_note_visibility()
 	AudioManager.play_sfx(UISounds.CLICK)

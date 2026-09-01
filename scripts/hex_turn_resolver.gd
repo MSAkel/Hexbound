@@ -60,7 +60,7 @@ func resolve_turn() -> void:
 		await _wait_between_tile_activations()
 		_mark_segment_resolved_if_natural_pass_done(tile)
 
-	if GameManager.skip_presentation:
+	if GameManager.should_skip_turn_presentation():
 		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 	else:
 		await _play_segment_turn_result_reveals()
@@ -208,10 +208,10 @@ func _activate_tile_card_on_tile(
 	activation_scale *= EventManager.get_producer_output_multiplier(tile)
 
 	if from_trigger and trigger_source_hex != null:
-		if not GameManager.skip_presentation:
+		if not GameManager.should_skip_turn_presentation():
 			map.trigger_link_overlay.play_bolt(trigger_source_hex, tile)
 			tile.play_chained_tile_card_activation_animation()
-	elif not GameManager.skip_presentation:
+	elif not GameManager.should_skip_turn_presentation():
 		tile.play_tile_card_activation_animation()
 	await _wait_for_activation_animation()
 
@@ -254,16 +254,23 @@ func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
 
 
 func _wait_for_activation_animation() -> void:
-	if GameManager.skip_presentation:
-		return
-	var duration := RuneUI.activation_animation_duration()
-	await GameManager.create_pauseable_timer(duration / GameManager.game_speed).timeout
+	await _wait_pace(RuneUI.activation_animation_duration())
 
 
 func _wait_between_tile_activations() -> void:
-	if GameManager.skip_presentation:
+	await _wait_pace(TILE_ACTIVATION_PACE_DELAY)
+
+
+func _wait_pace(duration: float) -> void:
+	if GameManager.should_skip_turn_presentation():
 		return
-	await GameManager.create_pauseable_timer(TILE_ACTIVATION_PACE_DELAY / GameManager.game_speed).timeout
+	var timer := GameManager.create_pauseable_timer(duration / GameManager.game_speed)
+	while timer.time_left > 0.0:
+		if GameManager.should_skip_turn_presentation():
+			return
+		if not is_inside_tree():
+			return
+		await get_tree().process_frame
 
 
 ## Energy x Mult summed across segments. Used when reveal UI is skipped.
@@ -282,6 +289,8 @@ func _sum_segment_contributions() -> int:
 func _play_segment_turn_result_reveals() -> void:
 	var turn_total := 0
 	for segment_index in map.get_segment_count():
+		if GameManager.should_skip_turn_presentation():
+			break
 		var score := map.get_segment_turn_score(segment_index)
 		var multiplier := map.get_segment_turn_multiplier(segment_index)
 		var gold := map.get_segment_turn_gold(segment_index)
@@ -295,11 +304,18 @@ func _play_segment_turn_result_reveals() -> void:
 		turn_total += contribution
 		await _play_single_segment_reveal(segment_index, contribution)
 
+	if GameManager.should_skip_turn_presentation():
+		map._clear_segment_reveal_glow()
+		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
+		return
+
 	EventBus.segment_reveals_finished.emit(turn_total)
 
 
 ## Highlights one segment on the map and in the output panel, then reveals that segment's Score.
 func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
+	if GameManager.should_skip_turn_presentation():
+		return
 	map._apply_segment_reveal_glow(segment_index)
 	EventBus.segment_reveal_started.emit(segment_index)
 
@@ -307,9 +323,7 @@ func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
 		if hex.active_tile_card != null:
 			hex.play_segment_result_animation()
 
-	await GameManager.create_pauseable_timer(
-		SEGMENT_REVEAL_ANIMATION_DURATION / GameManager.game_speed
-	).timeout
+	await _wait_pace(SEGMENT_REVEAL_ANIMATION_DURATION)
 
 	if contribution > 0:
 		# Show passive-adjusted power before the equals beat lands.
@@ -317,14 +331,12 @@ func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
 		EventBus.segment_score_revealed.emit(segment_index, contribution)
 		await _wait_for_segment_score_count_finished(segment_index)
 		if _should_linger_on_product():
-			await GameManager.create_pauseable_timer(
-				TUTORIAL_SCORE_LINGER / GameManager.game_speed
-			).timeout
+			await _wait_pace(TUTORIAL_SCORE_LINGER)
 
-	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
+	await _wait_pace(SEGMENT_REVEAL_PAUSE)
 	map._clear_segment_reveal_glow()
 	EventBus.segment_reveal_ended.emit()
-	await GameManager.create_pauseable_timer(SEGMENT_REVEAL_PAUSE / GameManager.game_speed).timeout
+	await _wait_pace(SEGMENT_REVEAL_PAUSE)
 
 
 ## Waits for this segment's Score count. Times out so a missed UI signal cannot stall the turn.
@@ -339,6 +351,8 @@ func _wait_for_segment_score_count_finished(segment_index: int) -> void:
 	)
 	timer.timeout.connect(func() -> void: state.done = true)
 	while not state.done and is_inside_tree():
+		if GameManager.should_skip_turn_presentation():
+			return
 		await get_tree().process_frame
 	if EventBus.segment_score_count_finished.is_connected(on_finished):
 		EventBus.segment_score_count_finished.disconnect(on_finished)
@@ -355,6 +369,8 @@ func _wait_for_turn_total_count_finished() -> void:
 	)
 	timer.timeout.connect(func() -> void: state.done = true)
 	while not state.done and is_inside_tree():
+		if GameManager.should_skip_turn_presentation():
+			return
 		await get_tree().process_frame
 	if EventBus.turn_total_count_finished.is_connected(on_finished):
 		EventBus.turn_total_count_finished.disconnect(on_finished)
@@ -491,7 +507,7 @@ func _clear_trigger_link_sessions() -> void:
 
 ## Show floating text at a world position on the current scene.
 func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
-	if GameManager.skip_presentation:
+	if GameManager.should_skip_turn_presentation():
 		return
 	var floating_text := _spawn_floating_text(pos, text, color, icon)
 	floating_text.play_float_and_free()
@@ -511,14 +527,14 @@ func _on_tile_card_empowered(rune: TileCard) -> void:
 		AudioManager.play_sfx(UISounds.EMPOWER)
 		return
 
-	if GameManager.skip_presentation:
+	if GameManager.should_skip_turn_presentation():
 		if hex != null and hex.is_on_map() and hex.active_tile_card == rune and rune.is_empowered:
 			hex.start_empower_sparks()
 		return
 
 	# Strike first, then the looping overcharge. Same beat as a retrigger bolt landing.
 	var strike_travel := map.trigger_link_overlay.play_empower_strike(hex)
-	await GameManager.create_pauseable_timer(strike_travel / GameManager.game_speed).timeout
+	await _wait_pace(strike_travel)
 	if hex == null or not hex.is_on_map() or hex.active_tile_card != rune or not rune.is_empowered:
 		return
 

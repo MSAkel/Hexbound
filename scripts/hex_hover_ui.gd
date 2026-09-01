@@ -30,7 +30,8 @@ func _process(_delta: float) -> void:
 
 
 ## Start or refresh hover feedback for the tile under the cursor.
-func update_tile_panel_hover(map_coords: Vector2i) -> void:
+## immediate skips the hover delay. Placement drag uses this on occupied tiles.
+func update_tile_panel_hover(map_coords: Vector2i, immediate: bool = false) -> void:
 	if not map.is_in_map(map_coords) or not map.is_tile_interactable(map_coords):
 		hide_tile_panel()
 		return
@@ -45,13 +46,19 @@ func update_tile_panel_hover(map_coords: Vector2i) -> void:
 	if map_coords == _tile_panel_hover_coords:
 		if map.tile_panel.visible:
 			map.tile_panel.update_anchor(map._get_tile_screen_rect(map_coords))
+		elif immediate:
+			_show_tile_panel_at_hover_coords()
 		return
 
 	_tile_panel_hover_coords = map_coords
 	_update_occupied_inspect_overlay(hex)
 	map.tile_panel.hide()
 	_set_panel_process(false)
-	_tile_panel_timer.start()
+	if immediate:
+		_tile_panel_timer.stop()
+		_show_tile_panel_at_hover_coords()
+	else:
+		_tile_panel_timer.start()
 
 
 func hide_tile_panel() -> void:
@@ -67,6 +74,10 @@ func _set_panel_process(enabled: bool) -> void:
 
 
 func _on_tile_panel_hover_timeout() -> void:
+	_show_tile_panel_at_hover_coords()
+
+
+func _show_tile_panel_at_hover_coords() -> void:
 	if _tile_panel_hover_coords == Vector2i(-1, -1):
 		return
 	if not map.map_data.has(_tile_panel_hover_coords):

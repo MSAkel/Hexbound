@@ -23,6 +23,8 @@ var total_rune_activations: int:
 var _remaining_turns := MAX_TURNS_PER_ROUND
 ## Blocks player input while runes are resolving after end turn.
 var _is_processing_turn := false
+## Player clicked skip during turn resolve. Clears at the next turn boundary.
+var _turn_presentation_skip_requested := false
 
 var remaining_turns: int:
 	get:
@@ -33,6 +35,22 @@ var remaining_turns: int:
 var is_processing_turn: bool:
 	get:
 		return _is_processing_turn
+
+
+## True while headless tests or the player skip overlay want resolve animations skipped.
+func should_skip_turn_presentation() -> bool:
+	return skip_presentation or _turn_presentation_skip_requested
+
+
+## Skip remaining turn resolve presentation. Ignored outside turn processing.
+func request_turn_presentation_skip() -> void:
+	if not _is_processing_turn:
+		return
+	_turn_presentation_skip_requested = true
+
+
+func _reset_turn_presentation_skip() -> void:
+	_turn_presentation_skip_requested = false
 
 #endregion
 
@@ -148,7 +166,7 @@ func finish_turn_processing() -> void:
 
 	total_round_score += turn_score
 	turn_score = 0
-	if not skip_presentation:
+	if not should_skip_turn_presentation():
 		EventBus.round_score_commit_animation_requested.emit()
 		await _wait_for_round_score_count_finished()
 		await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
@@ -173,6 +191,7 @@ func finish_turn_processing() -> void:
 		_check_run_loss()
 
 	_is_processing_turn = false
+	_reset_turn_presentation_skip()
 	# Committed turn boundary. Card plays themselves are not checkpoints.
 	RunSaveManager.request_autosave()
 
@@ -182,6 +201,7 @@ func _wait_for_round_score_count_finished() -> void:
 
 
 func _on_turn_started() -> void:
+	_reset_turn_presentation_skip()
 	turn_stamp += 1
 	_activated_tile_cards_this_turn.clear()
 	_current_turn_trigger_count = 0

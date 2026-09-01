@@ -49,6 +49,16 @@ func ensure_loaded() -> void:
 	_apply_save_data(data)
 
 
+## Wipes unlocks, layout XP, loadouts, lifetime stats, and pending reveals back to a fresh profile.
+func reset_progression() -> void:
+	if _sandbox_mode:
+		end_ui_sandbox()
+	SAVE_FILE.delete_all(SAVE_PATH)
+	_init_defaults()
+	_grant_starting_unlocks()
+	save()
+
+
 func save() -> void:
 	if _sandbox_mode:
 		return

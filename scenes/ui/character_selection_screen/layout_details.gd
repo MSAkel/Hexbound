@@ -1,24 +1,20 @@
-class_name CharacterDetails
+class_name LayoutDetails
 extends HBoxContainer
 
 const DEFAULT_SEGMENT_COUNT := 7
 
-signal prev_selection_pressed
-signal next_selection_pressed
-
-# Kept in sync by display_selection so Play can lock in the visible character.
+# Kept in sync by display_selection so Play can lock in the visible layout.
 var _selected_character: CharacterDefinition = null
 
 @onready var character_name_label: Label = %CharacterNameLabel
-@onready var segment_passives_button: Button = %SegmentPassivesButton
+@onready var layout_level_label: Label = %LayoutLevelLabel
+@onready var layout_xp_label: Label = %LayoutXpLabel
 @onready var passive_set_label: Label = %PassiveSetLabel
 @onready var character_icon: TextureRect = %CharacterIcon
-@onready var difficulty_container: DifficultyLevelContainer = %DifficultyLevelContainer
 @onready var trigger_order_label: Label = %TriggerOrderLabel
 @onready var trigger_order_description: Label = %TriggerOrderDescription
 @onready var trigger_order_image: TextureRect = %TriggerOrderImage
 @onready var segment_count_label: Label = %SegmentCountTitle
-@onready var seeded_run_panel: SeededRunPanel = %SeededRunPanel
 
 
 func display_selection(character: CharacterDefinition) -> void:
@@ -35,18 +31,29 @@ func display_selection(character: CharacterDefinition) -> void:
 	elif character.segments_count > 0:
 		segment_count = character.segments_count
 	segment_count_label.text = "%d SEGMENTS" % segment_count
+	_refresh_layout_progress(character)
 	_refresh_passive_set_label(character)
+
+
+func get_selected_character() -> CharacterDefinition:
+	return _selected_character
+
+
+func _refresh_layout_progress(character: CharacterDefinition) -> void:
+	var level := MetaProgressionManager.get_layout_level(character.id)
+	layout_level_label.text = "Level %d" % level
+	if level >= MetaProgressionManager.LAYOUT_LEVEL_XP.size():
+		layout_xp_label.hide()
+		return
+	var xp := MetaProgressionManager.get_layout_xp(character.id)
+	var next_xp := MetaProgressionManager.get_layout_xp_for_next_level(character.id)
+	layout_xp_label.text = "%d/%d EXP" % [xp, next_xp]
+	layout_xp_label.show()
 
 
 func _refresh_passive_set_label(character: CharacterDefinition) -> void:
 	var set_id := MetaProgressionManager.get_selected_set_id(character.id)
-	var level := MetaProgressionManager.get_layout_level(character.id)
-	if level >= MetaProgressionManager.LAYOUT_LEVEL_XP.size():
-		passive_set_label.text = "Set %s  ·  Layout level %d" % [set_id, level]
-		return
-	var xp := MetaProgressionManager.get_layout_xp(character.id)
-	var next_xp := MetaProgressionManager.get_layout_xp_for_next_level(character.id)
-	passive_set_label.text = "Set %s  ·  Layout level %d  (%d/%d XP)" % [set_id, level, xp, next_xp]
+	passive_set_label.text = "Set %s" % set_id
 
 
 func _on_segment_passives_button_pressed() -> void:
@@ -55,36 +62,3 @@ func _on_segment_passives_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	GameManager.segment_passives_editor_character = _selected_character
 	get_tree().change_scene_to_file(ScenePaths.SEGMENT_PASSIVES)
-
-
-func _on_prev_selection_pressed() -> void:
-	prev_selection_pressed.emit()
-
-
-func _on_next_selection_pressed() -> void:
-	next_selection_pressed.emit()
-
-
-func get_selected_difficulty() -> Difficulty.Level:
-	return difficulty_container.get_selected_difficulty()
-
-
-func display_difficulty(level: Difficulty.Level) -> void:
-	difficulty_container.display_difficulty(level)
-
-
-func _on_play_button_pressed() -> void:
-	AudioManager.play_sfx(UISounds.CLICK)
-
-	# A fresh run replaces any saved session from a previous quit.
-	# delete_save also clears Continue-pending so main.tscn cannot restore that file.
-	RunSaveManager.delete_save()
-
-	# Character choice locks in layout rules for the entire run.
-	GameManager.selected_character = _selected_character
-	GameManager.selected_difficulty = get_selected_difficulty()
-	GameManager.apply_active_segment_passives(_selected_character.id)
-	RunSaveManager.set_pending_run_seed(seeded_run_panel.get_effective_seed_text())
-	RunSaveManager.request_scene_enter_transition()
-
-	get_tree().change_scene_to_file(ScenePaths.MAIN)

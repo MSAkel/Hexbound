@@ -10,5 +10,5 @@ sigil_kind = 4
 id = "catalyst"
 name = "Catalyst"
 icon = ExtResource("1_hq5bc")
-description = "After 3 retriggers in this segment, empower the next Producer. Once per turn"
+description = "Empowers the Following Producer"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

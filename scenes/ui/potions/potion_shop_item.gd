@@ -2,29 +2,36 @@ class_name PotionShopItem
 extends Control
 
 ## Merchant shelf bottle. Icon and price only. Name and text live on the hover tooltip.
+## Layout lives in potion_shop_item.tscn.
 
 signal selected(item: PotionShopItem)
+signal gold_purchase_requested(item: PotionShopItem)
+signal token_purchase_requested(item: PotionShopItem)
 
-# 72px icon grown by about 15 percent. The well can be larger than its 80px minimum.
-const ICON_SIZE := Vector2(83, 83)
-const WELL_MIN := Vector2(80, 80)
 const SIZE := Vector2(108, 136)
+const MERCHANT_TRAY_HEIGHT := 44.0
+const MERCHANT_TRAY_GAP := 10.0
+
+@export var well_idle_style: StyleBoxFlat
+@export var well_selected_style: StyleBoxFlat
+
+@onready var _price_label: Label = %PriceLabel
+@onready var _well: PanelContainer = %Well
+@onready var _icon: TextureRect = %Icon
+@onready var _tray_gap: Control = %TrayGap
+@onready var _purchase_tray: MerchantPurchaseTray = %PurchaseTray
 
 var potion: Potion
 var price: int = 0
 var _token_cost := 1
 var _sold := false
 var _chosen := false
-var _icon: TextureRect
-var _price_label: Label
-var _well: PanelContainer
 
 
 func _ready() -> void:
 	custom_minimum_size = SIZE
 	size = SIZE
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	_build()
 	gui_input.connect(_on_gui_input)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
@@ -48,12 +55,37 @@ func mark_sold() -> void:
 	_chosen = false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	modulate = Color(1, 1, 1, 0.0)
+	_purchase_tray.visible = false
+	_tray_gap.visible = false
+	_update_layout_height()
 	_refresh()
 
 
 func set_merchant_selected(active: bool) -> void:
 	_chosen = active
+	var show_tray := active and not _sold
+	_tray_gap.visible = show_tray
+	_purchase_tray.visible = show_tray
+	if active:
+		refresh_purchase_tray()
+	_update_layout_height()
 	_refresh()
+
+
+func _update_layout_height() -> void:
+	var height := SIZE.y
+	if _purchase_tray.visible:
+		height += MERCHANT_TRAY_GAP + MERCHANT_TRAY_HEIGHT
+	custom_minimum_size = Vector2(SIZE.x, height)
+	size.y = height
+
+
+func refresh_purchase_tray() -> void:
+	var belt_full := not PotionManager.can_add()
+	var gold_enabled := not _sold and not belt_full and GoldManager.can_afford(price)
+	var token_enabled := not _sold and not belt_full and GoldManager.can_afford_tokens(_token_cost)
+	_purchase_tray.set_gold_enabled(gold_enabled)
+	_purchase_tray.set_token_enabled(token_enabled)
 
 
 func get_token_cost() -> int:
@@ -62,85 +94,15 @@ func get_token_cost() -> int:
 
 func refresh_affordability() -> void:
 	_refresh()
+	refresh_purchase_tray()
 
 
-func _build() -> void:
-	var column := VBoxContainer.new()
-	column.set_anchors_preset(Control.PRESET_FULL_RECT)
-	column.add_theme_constant_override("separation", 6)
-	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(column)
-
-	var price_panel := PanelContainer.new()
-	price_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	price_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	price_panel.add_theme_stylebox_override("panel", _price_tag_style())
-	column.add_child(price_panel)
-
-	_price_label = Label.new()
-	_price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_price_label.add_theme_font_size_override("font_size", 16)
-	_price_label.add_theme_color_override("font_color", Color(0.28, 0.2, 0.08, 1.0))
-	price_panel.add_child(_price_label)
-
-	_well = PanelContainer.new()
-	_well.custom_minimum_size = WELL_MIN
-	_well.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_well.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(_well)
-
-	_icon = TextureRect.new()
-	_icon.custom_minimum_size = ICON_SIZE
-	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	# Pixel flasks stay crisp instead of blurring when scaled up.
-	_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_well.add_child(_icon)
+func _on_gold_purchase_pressed() -> void:
+	gold_purchase_requested.emit(self)
 
 
-func _price_tag_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("F9EDCF")
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_color = Color("C9AB6B")
-	style.corner_radius_top_left = 7
-	style.corner_radius_top_right = 7
-	style.corner_radius_bottom_right = 7
-	style.corner_radius_bottom_left = 7
-	style.shadow_size = 2
-	style.shadow_color = Color(0, 0, 0, 0.22)
-	style.content_margin_left = 12
-	style.content_margin_top = 3
-	style.content_margin_right = 12
-	style.content_margin_bottom = 3
-	return style
-
-
-func _well_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("536044")
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color("F4D48A") if _chosen else Color("F7E9C4")
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	style.shadow_size = 4
-	style.shadow_offset = Vector2(0, 3)
-	style.shadow_color = Color("00000040")
-	style.content_margin_left = 8
-	style.content_margin_top = 8
-	style.content_margin_right = 8
-	style.content_margin_bottom = 8
-	return style
+func _on_token_purchase_pressed() -> void:
+	token_purchase_requested.emit(self)
 
 
 func _refresh() -> void:
@@ -149,12 +111,13 @@ func _refresh() -> void:
 	_icon.texture = potion.icon
 	# Keep the authored flask colors. Do not tint with liquid_color.
 	_icon.self_modulate = Color.WHITE
-	_price_label.text = "$%d" % price
-	_well.add_theme_stylebox_override("panel", _well_style())
-	if not GoldManager.can_afford(price) and not _sold:
-		_price_label.add_theme_color_override("font_color", Color(0.62, 0.18, 0.14, 1.0))
-	else:
-		_price_label.add_theme_color_override("font_color", Color(0.28, 0.2, 0.08, 1.0))
+	_price_label.text = MerchantShopStyling.format_price(price)
+	_well.add_theme_stylebox_override("panel", well_selected_style if _chosen else well_idle_style)
+	var can_afford := GoldManager.can_afford(price)
+	_price_label.add_theme_color_override(
+		"font_color",
+		MerchantShopStyling.price_label_color(can_afford and not _sold)
+	)
 
 
 func _tooltip_text() -> String:

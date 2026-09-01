@@ -7,12 +7,11 @@ const HOVER_SCALE := Vector2(1.06, 1.06)
 const HOVER_MODULATE := Color(1.2, 1.15, 1.05, 1.0)
 const HOVER_DURATION := 0.12
 
-@onready var game_version: Label = $GameVersion
+@onready var game_version: Label = $TopRightContainer/GameVersion
+@onready var developer_menu_button: Button = $TopRightContainer/DeveloperMenuButton
 @onready var menu_container: MarginContainer = $MenuContainer
 @onready var settings_container: PanelContainer = $SettingsContainer
 @onready var continue_button: Button = $MenuContainer/MenuItemsContainer/ContinueButton
-@onready var ui_sandbox_button: Button = $MenuContainer/MenuItemsContainer/UISandboxButton
-@onready var passives_sandbox_button: Button = $MenuContainer/MenuItemsContainer/PassivesSandboxButton
 
 # Tracks in-flight hover tweens so rapid enter/exit does not stack.
 var _hover_tweens: Dictionary = {}
@@ -22,8 +21,6 @@ func _ready() -> void:
 	get_tree().paused = false
 	game_version.text = ProjectSettings.get_setting("application/config/version")
 	_refresh_continue_button()
-	# Sandbox entries match the in-run overlay. They exist only in debug builds.
-	_apply_debug_sandbox_buttons()
 	SegmentPassiveUnlockPresenter.present_if_needed(self)
 
 	# Play main menu music
@@ -40,6 +37,12 @@ func _ready() -> void:
 			button.mouse_entered.connect(_on_button_hover.bind(button))
 			button.mouse_exited.connect(_on_button_unhover.bind(button))
 			button.focus_entered.connect(_on_focus_entered)
+
+	_set_button_pivot(developer_menu_button)
+	developer_menu_button.resized.connect(_on_button_resized.bind(developer_menu_button))
+	developer_menu_button.mouse_entered.connect(_on_button_hover.bind(developer_menu_button))
+	developer_menu_button.mouse_exited.connect(_on_button_unhover.bind(developer_menu_button))
+	developer_menu_button.focus_entered.connect(_on_focus_entered)
 	
 	settings_container.closed.connect(_on_settings_closed)
 
@@ -83,18 +86,6 @@ func _on_focus_entered() -> void:
 	AudioManager.play_sfx(UISounds.SELECT)
 
 
-func _apply_debug_sandbox_buttons() -> void:
-	var sandbox_buttons: Array[Button] = [ui_sandbox_button, passives_sandbox_button]
-	var debug := OS.is_debug_build()
-	for button in sandbox_buttons:
-		if button == null:
-			continue
-		if debug:
-			button.visible = true
-		else:
-			button.queue_free()
-
-
 func _refresh_continue_button() -> void:
 	var has_save := RunSaveManager.has_save()
 	continue_button.visible = has_save
@@ -125,6 +116,7 @@ func _on_settings_closed() -> void:
 	settings_container.hide()
 	menu_container.show()
 
+
 func _on_exit_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().quit()
@@ -134,15 +126,6 @@ func _on_collection_button_pressed() -> void:
 	get_tree().change_scene_to_file(ScenePaths.COLLECTION)
 
 
-func _on_ui_sandbox_button_pressed() -> void:
-	if not OS.is_debug_build():
-		return
+func _on_developer_menu_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	get_tree().change_scene_to_file(ScenePaths.UI_SANDBOX)
-
-
-func _on_passives_sandbox_button_pressed() -> void:
-	if not OS.is_debug_build():
-		return
-	AudioManager.play_sfx(UISounds.CLICK)
-	get_tree().change_scene_to_file(ScenePaths.SEGMENT_PASSIVES_SANDBOX)
+	get_tree().change_scene_to_file(ScenePaths.DEVELOPER_MENU)

@@ -2,40 +2,52 @@
 
 [ext_resource type="Script" uid="uid://ca47lh6e1ysqu" path="res://scenes/ui/character_selection_screen/difficulty_level_container.gd" id="1_difficulty"]
 [ext_resource type="Texture2D" uid="uid://dlt2r1er50yoc" path="res://assets/gui/buttons/borderless_arrow.png" id="3_rjl0r"]
-[ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="5_vertical_divider"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_arrow"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.89, 0.80, 0.62, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.43, 0.33, 0.19, 0.4)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="DifficultyLevelContainer" type="HBoxContainer" unique_id=471677585]
 custom_minimum_size = Vector2(0, 110)
 size_flags_horizontal = 3
-theme_override_constants/separation = 18
+theme_override_constants/separation = 16
 script = ExtResource("1_difficulty")
 
-[node name="SectionTitle" type="VBoxContainer" parent="." unique_id=886443945]
-custom_minimum_size = Vector2(170, 0)
+[node name="SectionTitle" type="Label" parent="." unique_id=1135214372]
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_constants/separation = 2
-
-[node name="Title" type="Label" parent="SectionTitle" unique_id=1135214372]
-layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
 theme_override_font_sizes/font_size = 24
 text = "DIFFICULTY"
-horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="SectionDivider" parent="." unique_id=1782723235 instance=ExtResource("5_vertical_divider")]
-size_flags_vertical = 4
-span = 78.0
-color_alpha = 0.2
-
-[node name="PrevSelectionButton" type="TextureButton" parent="." unique_id=1866206214]
-custom_minimum_size = Vector2(64, 64)
+[node name="PrevArrowFrame" type="PanelContainer" parent="." unique_id=1866206210]
+custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_arrow")
+
+[node name="PrevSelectionButton" type="TextureButton" parent="PrevArrowFrame" unique_id=1866206214]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
 texture_normal = ExtResource("3_rjl0r")
 texture_pressed = ExtResource("3_rjl0r")
 texture_hover = ExtResource("3_rjl0r")
-stretch_mode = 3
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="DifficultyCopy" type="VBoxContainer" parent="." unique_id=10758362]
 layout_mode = 2
@@ -47,30 +59,36 @@ theme_override_constants/separation = 4
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
-theme_override_font_sizes/font_size = 29
+theme_override_font_sizes/font_size = 28
 text = "Level 1"
 horizontal_alignment = 1
 
 [node name="DifficultyInfo" type="Label" parent="DifficultyCopy" unique_id=38132031]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(420, 46)
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "Base difficulty"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="NextSelectionButton" type="TextureButton" parent="." unique_id=1004794080]
-custom_minimum_size = Vector2(64, 64)
+[node name="NextArrowFrame" type="PanelContainer" parent="." unique_id=1004794079]
+custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_arrow")
+
+[node name="NextSelectionButton" type="TextureButton" parent="NextArrowFrame" unique_id=1004794080]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
 texture_normal = ExtResource("3_rjl0r")
 texture_pressed = ExtResource("3_rjl0r")
 texture_hover = ExtResource("3_rjl0r")
-stretch_mode = 3
+ignore_texture_size = true
+stretch_mode = 5
 flip_h = true
 
-[connection signal="pressed" from="PrevSelectionButton" to="." method="_on_prev_selection_button_pressed"]
-[connection signal="pressed" from="NextSelectionButton" to="." method="_on_next_selection_button_pressed"]
+[connection signal="pressed" from="PrevArrowFrame/PrevSelectionButton" to="." method="_on_prev_selection_button_pressed"]
+[connection signal="pressed" from="NextArrowFrame/NextSelectionButton" to="." method="_on_next_selection_button_pressed"]

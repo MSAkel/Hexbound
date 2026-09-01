@@ -75,6 +75,12 @@ func _on_segment_reveals_finished(turn_total_score: int) -> void:
 	if not _is_viewing_live_turn():
 		EventBus.turn_total_count_finished.emit()
 		return
+	if GameManager.should_skip_turn_presentation():
+		_live_revealed_score = turn_total_score
+		_score_total_counter.snap_to(turn_total_score)
+		score_total_number.text = str(turn_total_score)
+		EventBus.turn_total_count_finished.emit()
+		return
 	_live_revealed_score = turn_total_score
 	var counter_tween := _score_total_counter.play(turn_total_score)
 	var intensity := ScoreReadoutStyle.intensity_for_score(turn_total_score)

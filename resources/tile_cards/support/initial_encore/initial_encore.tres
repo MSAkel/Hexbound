@@ -7,10 +7,10 @@
 script = ExtResource("1_lkuhm")
 rarity = 2
 type = 1
-sigil_kind = 5
 placement_restriction = 2
+sigil_kind = 5
 id = "initial_encore"
 name = "Initial Encore"
 icon = ExtResource("1_cffhq")
-description = "Triggers the first card of each Downstream segment. Must be placed on a first segment tile."
+description = "Triggers the first card of each Following segment. Must be placed on a segment's first tile."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

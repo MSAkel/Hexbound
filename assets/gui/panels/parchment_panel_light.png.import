@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jrew33k514xw"
-path="res://.godot/imported/h_bar.png-b562bec02adfddef8da2bae3af8cfb64.ctex"
+uid="uid://b2la2jvs3gd6o"
+path="res://.godot/imported/parchment_panel_light.png-911aaf9502d5f907a3f84f324d6a47c4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/panels/h_bar.png"
-dest_files=["res://.godot/imported/h_bar.png-b562bec02adfddef8da2bae3af8cfb64.ctex"]
+source_file="res://assets/gui/panels/parchment_panel_light.png"
+dest_files=["res://.godot/imported/parchment_panel_light.png-911aaf9502d5f907a3f84f324d6a47c4.ctex"]
 
 [params]
 

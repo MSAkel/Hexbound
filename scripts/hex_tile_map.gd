@@ -13,6 +13,7 @@ var turn_resolver: HexTurnResolver
 @onready var trigger_link_overlay: TriggerLinkOverlay = $TriggerLinkOverlay
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var hovered_tile_overlay_layer: TileMapLayer = $HoveredTileOverlayLayer
+@onready var placement_valid_overlay_layer: TileMapLayer = $PlacementValidOverlayLayer
 @onready var rune_highlight_overlay_layer: TileMapLayer = $RuneHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
@@ -26,7 +27,10 @@ const HOVERED_TILE_OVERLAY_SOURCE_ID := 0
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
 # Light white wash on the tile under the cursor so it stands out within a highlighted segment.
 const HOVERED_TILE_OVERLAY_MODULATE := Color(0.9, 0.9, 0.9, 0.45)
-# TileCard placement / trigger preview overlay on RuneHighlightOverlayLayer.
+# Valid placement targets for restricted cards such as edge, first, or last segment tiles.
+const PLACEMENT_VALID_OVERLAY_SOURCE_ID := HOVER_OVERLAY_NORMAL
+const PLACEMENT_VALID_OVERLAY_MODULATE := Color(0.45, 0.88, 1.15, 0.72)
+# TileCard trigger preview overlay on RuneHighlightOverlayLayer.
 const RUNE_HIGHLIGHT_SOURCE_ID := 0
 # Tile-shaped overlays sit under rune icons. Trigger-order numbers stay above at z 25.
 const TILE_OVERLAY_LAYER_Z_INDEX := 0
@@ -94,8 +98,10 @@ func _ready() -> void:
 	_layout.setup(self)
 	# Hex fills stay under card icons. Order numbers on TriggerOrderOverlay sit above both.
 	rune_highlight_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
+	placement_valid_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	hovered_tile_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	hovered_tile_overlay_layer.self_modulate = HOVERED_TILE_OVERLAY_MODULATE
+	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
 	_apply_tile_spacing()
 	trigger_order_overlay.setup(self)
 	segment_path_overlay.setup(self)
@@ -142,6 +148,7 @@ func _apply_tile_spacing() -> void:
 		base_layer,
 		selection_overlay_layer,
 		hovered_tile_overlay_layer,
+		placement_valid_overlay_layer,
 		rune_highlight_overlay_layer,
 		disabled_tile_overlay_layer,
 		fading_sector_overlay_layer,
@@ -167,8 +174,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event is InputEventMouseMotion:
 		if card_placement_handler.is_card_selected:
-			if hover_ui != null:
-				hover_ui.hide_tile_panel()
+			# CardPlacementHandler drives tile-panel inspect during placement drag.
+			pass
 		else:
 			_update_hover_highlight()
 			if hover_ui != null:
@@ -250,6 +257,19 @@ func set_placement_preview_cell(coords: Vector2i) -> void:
 
 func clear_placement_preview() -> void:
 	set_placement_preview_cell(Vector2i(-1, -1))
+
+
+## Cyan wash for legal placement tiles while a restricted card is selected.
+func stamp_placement_valid_highlight(coords: Vector2i) -> void:
+	placement_valid_overlay_layer.set_cell(
+		coords,
+		PLACEMENT_VALID_OVERLAY_SOURCE_ID,
+		OVERLAY_TILE_ATLAS_COORDS
+	)
+
+
+func clear_placement_valid_highlights() -> void:
+	placement_valid_overlay_layer.clear()
 
 
 func _get_map_focus_cell() -> Vector2i:
@@ -451,8 +471,8 @@ func get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Arra
 
 
 ## Adjacent hexes that activate after this tile in trigger order, including empty tiles.
-## Returned earliest-first so the first adjacent Downstream card is always result[0].
-func get_downstream_adjacent_hexes(tile: Hex) -> Array[Hex]:
+## Returned earliest-first so the first adjacent Following card is always result[0].
+func get_following_adjacent_hexes(tile: Hex) -> Array[Hex]:
 	var result: Array[Hex] = []
 	var self_index := _get_hex_trigger_order_index(tile)
 	if self_index < 0:
@@ -468,10 +488,10 @@ func get_downstream_adjacent_hexes(tile: Hex) -> Array[Hex]:
 	return result
 
 
-## Occupied adjacent Downstream hexes, optionally filtered by card type.
-func get_downstream_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+## Occupied adjacent Following hexes, optionally filtered by card type.
+func get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	var result: Array[TileCard] = []
-	for hex: Hex in get_downstream_adjacent_hexes(tile):
+	for hex: Hex in get_following_adjacent_hexes(tile):
 		if hex.active_tile_card == null:
 			continue
 		if not is_tile_card_triggerable(hex):
@@ -512,6 +532,7 @@ func generate_terrain() -> void:
 	base_layer.clear()
 	selection_overlay_layer.clear()
 	hovered_tile_overlay_layer.clear()
+	placement_valid_overlay_layer.clear()
 	_placement_preview_cell = Vector2i(-1, -1)
 	rune_highlight_overlay_layer.clear()
 	disabled_tile_overlay_layer.clear()

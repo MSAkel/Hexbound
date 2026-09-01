@@ -28,3 +28,15 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 alignment = 1
+
+[node name="DragGhost" type="TextureRect" parent="."]
+unique_name_in_owner = true
+visible = false
+top_level = true
+z_index = 50
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5

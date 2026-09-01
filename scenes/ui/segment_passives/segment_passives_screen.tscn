@@ -1,29 +1,19 @@
 [gd_scene format=3 uid="uid://cqeih406wilvs"]
 
 [ext_resource type="Script" uid="uid://v4vsd0c8yb2q" path="res://scenes/ui/segment_passives/segment_passives_screen.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b2la2jvs3gd6o" path="res://assets/gui/panels/parchment_panel_light.png" id="2_yyyhm"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="3_back"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="4_vertical_divider"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="5_tooltip"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_back"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_unified_panel"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jy1rv"]
 content_margin_left = 28.0
 content_margin_top = 24.0
 content_margin_right = 28.0
 content_margin_bottom = 24.0
-bg_color = Color(0.9590959, 0.9394827, 0.87106496, 0.98039216)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.56, 0.43, 0.24, 0.9)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-shadow_color = Color(0.015, 0.025, 0.023, 0.35)
-shadow_size = 8
+texture = ExtResource("2_yyyhm")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_back"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_list_background"]
 content_margin_left = 12.0
@@ -114,19 +104,30 @@ theme_override_constants/margin_bottom = 36
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Header" type="HBoxContainer" parent="SafeArea/Page" unique_id=1342163461]
+[node name="Body" type="PanelContainer" parent="SafeArea/Page" unique_id=2037926061]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxTexture_jy1rv")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SafeArea/Page/Body" unique_id=714645849]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="SafeArea/Page/Body/VBoxContainer" unique_id=1342163461]
 z_index = 1
 custom_minimum_size = Vector2(0, 82)
 layout_mode = 2
+size_flags_vertical = 0
 
-[node name="BackButton" type="Button" parent="SafeArea/Page/Header" unique_id=1313012212]
+[node name="BackButton" type="Button" parent="SafeArea/Page/Body/VBoxContainer/Header" unique_id=1313012212]
 unique_name_in_owner = true
 z_index = 1
 custom_minimum_size = Vector2(190, 58)
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_colors/font_color = Color(0.91, 0.77, 0.52, 1)
-theme_override_colors/font_hover_color = Color(1, 0.9, 0.68, 1)
+theme_override_colors/font_color = Color(0.18039216, 0.23921569, 0.16862746, 1)
+theme_override_colors/font_hover_color = Color(0.078431375, 0.21960784, 0.23921569, 1)
+theme_override_colors/icon_normal_color = Color(0.05490196, 0.21960784, 0.2509804, 1)
+theme_override_colors/icon_hover_color = Color(0.07450981, 0.3019608, 0.32941177, 1)
 theme_override_constants/h_separation = 12
 theme_override_constants/icon_max_width = 30
 theme_override_font_sizes/font_size = 26
@@ -137,92 +138,84 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_back")
 text = "BACK"
 icon = ExtResource("3_back")
 
-[node name="TitleColumn" type="VBoxContainer" parent="SafeArea/Page/Header" unique_id=1417667542]
+[node name="TitleColumn" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Header" unique_id=1417667542]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 mouse_filter = 2
 theme_override_constants/separation = 2
 
-[node name="PageTitle" type="Label" parent="SafeArea/Page/Header/TitleColumn" unique_id=1170686860]
+[node name="PageTitle" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Header/TitleColumn" unique_id=1170686860]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.86, 0.69, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.035, 0.032, 0.9)
-theme_override_constants/outline_size = 7
+theme_override_colors/font_color = Color(0.18039216, 0.23921569, 0.16862746, 1)
 theme_override_font_sizes/font_size = 44
 text = "SEGMENT PASSIVES"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="SafeArea/Page/Header/TitleColumn" unique_id=1598468268]
+[node name="SubtitleLabel" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Header/TitleColumn" unique_id=1598468268]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.71, 0.57, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.035, 0.032, 0.85)
-theme_override_constants/outline_size = 5
+theme_override_colors/font_color = Color(0.3882353, 0.30980393, 0.2, 1)
 theme_override_font_sizes/font_size = 20
 text = "THE SURVEYOR"
 horizontal_alignment = 1
 
-[node name="HeaderBalance" type="Control" parent="SafeArea/Page/Header" unique_id=1604469911]
+[node name="HeaderBalance" type="Control" parent="SafeArea/Page/Body/VBoxContainer/Header" unique_id=1604469911]
 custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Body" type="PanelContainer" parent="SafeArea/Page" unique_id=2037926061]
+[node name="Sections" type="HBoxContainer" parent="SafeArea/Page/Body/VBoxContainer" unique_id=1249689206]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_unified_panel")
-
-[node name="Sections" type="HBoxContainer" parent="SafeArea/Page/Body" unique_id=1249689206]
-layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="LeftColumn" type="VBoxContainer" parent="SafeArea/Page/Body/Sections" unique_id=1692538636]
+[node name="LeftColumn" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections" unique_id=1692538636]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="PassiveListTitle" type="Label" parent="SafeArea/Page/Body/Sections/LeftColumn" unique_id=394421692]
+[node name="PassiveListTitle" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Sections/LeftColumn" unique_id=394421692]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
 theme_override_font_sizes/font_size = 26
 text = "PASSIVES"
 horizontal_alignment = 1
 
-[node name="PassiveListBackground" type="PanelContainer" parent="SafeArea/Page/Body/Sections/LeftColumn" unique_id=1077879509]
+[node name="PassiveListBackground" type="PanelContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/LeftColumn" unique_id=1077879509]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_list_background")
 
-[node name="PassiveListScroll" type="ScrollContainer" parent="SafeArea/Page/Body/Sections/LeftColumn/PassiveListBackground" unique_id=1202115179]
+[node name="PassiveListScroll" type="ScrollContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/LeftColumn/PassiveListBackground" unique_id=1202115179]
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="PassiveList" type="VBoxContainer" parent="SafeArea/Page/Body/Sections/LeftColumn/PassiveListBackground/PassiveListScroll" unique_id=1213569915]
+[node name="PassiveList" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/LeftColumn/PassiveListBackground/PassiveListScroll" unique_id=1213569915]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="LeftDivider" parent="SafeArea/Page/Body/Sections" unique_id=1094294884 instance=ExtResource("4_vertical_divider")]
+[node name="LeftDivider" parent="SafeArea/Page/Body/VBoxContainer/Sections" unique_id=1094294884 instance=ExtResource("4_vertical_divider")]
 
-[node name="CenterColumn" type="VBoxContainer" parent="SafeArea/Page/Body/Sections" unique_id=563909832]
+[node name="CenterColumn" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections" unique_id=563909832]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="SlotsLabel2" type="Label" parent="SafeArea/Page/Body/Sections/CenterColumn" unique_id=1059238735]
+[node name="SlotsLabel2" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Sections/CenterColumn" unique_id=1059238735]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
 theme_override_font_sizes/font_size = 18
-text = "Drag a passive into any of the segmetns to 
+text = "Drag a passive into any of the segments to 
 apply its effect to the segment"
 horizontal_alignment = 1
 
-[node name="MapHost" type="Control" parent="SafeArea/Page/Body/Sections/CenterColumn" unique_id=1040784302]
+[node name="MapHost" type="Control" parent="SafeArea/Page/Body/VBoxContainer/Sections/CenterColumn" unique_id=1040784302]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 360)
 clip_contents = true
@@ -230,7 +223,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="SetTabs" type="HBoxContainer" parent="SafeArea/Page/Body/Sections/CenterColumn" unique_id=813597971]
+[node name="SetTabs" type="HBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/CenterColumn" unique_id=813597971]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
@@ -238,14 +231,14 @@ size_flags_vertical = 8
 theme_override_constants/separation = 14
 alignment = 1
 
-[node name="RightDivider" parent="SafeArea/Page/Body/Sections" unique_id=1012051980 instance=ExtResource("4_vertical_divider")]
+[node name="RightDivider" parent="SafeArea/Page/Body/VBoxContainer/Sections" unique_id=1012051980 instance=ExtResource("4_vertical_divider")]
 
-[node name="RightColumn" type="VBoxContainer" parent="SafeArea/Page/Body/Sections" unique_id=1006920560]
+[node name="RightColumn" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections" unique_id=1006920560]
 custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="SegmentTitle" type="Label" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=771108905]
+[node name="SegmentTitle" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=771108905]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
@@ -253,7 +246,7 @@ theme_override_font_sizes/font_size = 26
 text = "SELECT A SEGMENT"
 horizontal_alignment = 1
 
-[node name="SlotsLabel" type="Label" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1000226709]
+[node name="SlotsLabel" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1000226709]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
@@ -261,49 +254,49 @@ theme_override_font_sizes/font_size = 15
 text = "Click a tile on the map"
 horizontal_alignment = 1
 
-[node name="TopRule" type="ColorRect" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1049074525]
+[node name="TopRule" type="ColorRect" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1049074525]
 custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.32)
 
-[node name="PlacedTitle" type="Label" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=375968018]
+[node name="PlacedTitle" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=375968018]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
 theme_override_font_sizes/font_size = 17
 text = "PLACED PASSIVES"
 
-[node name="PlacedScroll" type="ScrollContainer" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1416143272]
+[node name="PlacedScroll" type="ScrollContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1416143272]
 custom_minimum_size = Vector2(0, 350)
 custom_maximum_size = Vector2(-1, 350)
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="PlacedList" type="VBoxContainer" parent="SafeArea/Page/Body/Sections/RightColumn/PlacedScroll" unique_id=2013623223]
+[node name="PlacedList" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn/PlacedScroll" unique_id=2013623223]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="EffectsRule" type="ColorRect" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1641218450]
+[node name="EffectsRule" type="ColorRect" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1641218450]
 custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.43, 0.33, 0.19, 0.32)
 
-[node name="EffectsTitle" type="Label" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1941243179]
+[node name="EffectsTitle" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1941243179]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
 theme_override_font_sizes/font_size = 17
 text = "SEGMENT EFFECTS"
 
-[node name="EffectsList" type="VBoxContainer" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1467438030]
+[node name="EffectsList" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1467438030]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 4
 
-[node name="ResetSegmentButton" type="Button" parent="SafeArea/Page/Body/Sections/RightColumn" unique_id=1806832400]
+[node name="ResetSegmentButton" type="Button" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1806832400]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
@@ -324,5 +317,5 @@ z_index = 100
 layout_mode = 0
 mouse_filter = 2
 
-[connection signal="pressed" from="SafeArea/Page/Header/BackButton" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="SafeArea/Page/Body/Sections/RightColumn/ResetSegmentButton" to="." method="_on_reset_segment_pressed"]
+[connection signal="pressed" from="SafeArea/Page/Body/VBoxContainer/Header/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn/ResetSegmentButton" to="." method="_on_reset_segment_pressed"]

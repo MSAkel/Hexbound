@@ -2,6 +2,7 @@ class_name PotionSlot
 extends Control
 
 ## Square belt cell. Shows only the potion icon, or stays empty.
+## Layout lives in potion_slot.tscn.
 
 signal drag_started(slot_index: int)
 signal remove_requested(slot_index: int)
@@ -10,13 +11,16 @@ const SLOT_SIZE := Vector2(80, 80)
 const HOLD_SELECT_SEC := 0.18
 
 @export var slot_index: int = 0
+@export var well_idle_style: StyleBoxFlat
+@export var well_selected_style: StyleBoxFlat
+
+@onready var _well: PanelContainer = %Well
+@onready var _icon: TextureRect = %Icon
+@onready var _menu: PopupMenu = %ContextMenu
 
 var potion: Potion = null
 var targeting := false
 
-var _well: PanelContainer
-var _icon: TextureRect
-var _menu: PopupMenu
 var _lifted := false
 var _hold_token := 0
 
@@ -27,11 +31,6 @@ func _ready() -> void:
 	# Scale hover from the center of the square, not the top-left corner.
 	pivot_offset = SLOT_SIZE * 0.5
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	_build()
-	_menu = PopupMenu.new()
-	_menu.add_item("Remove", 0)
-	_menu.id_pressed.connect(_on_menu_id_pressed)
-	add_child(_menu)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	gui_input.connect(_on_gui_input)
@@ -57,8 +56,6 @@ func set_lifted(lifted: bool) -> void:
 
 
 func play_consume_animation() -> void:
-	if _icon == null:
-		return
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_property(_icon, "scale", Vector2(0.2, 0.2), 0.22)
@@ -68,47 +65,8 @@ func play_consume_animation() -> void:
 	_icon.modulate.a = 1.0
 
 
-func _build() -> void:
-	_well = PanelContainer.new()
-	_well.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_well.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_well)
-
-	_icon = TextureRect.new()
-	_icon.custom_minimum_size = Vector2(64, 64)
-	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_icon.pivot_offset = Vector2(32.0, 32.0)
-	_well.add_child(_icon)
-
-
-func _well_style() -> StyleBoxFlat:
-	# Same well as merchant shelf bottles so belt and shop read as one set.
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("536044")
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color("F4D48A") if targeting else Color("F7E9C4")
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	style.shadow_size = 4
-	style.shadow_offset = Vector2(0, 3)
-	style.shadow_color = Color("00000040")
-	style.content_margin_left = 8
-	style.content_margin_top = 8
-	style.content_margin_right = 8
-	style.content_margin_bottom = 8
-	return style
-
-
 func _refresh() -> void:
-	_well.add_theme_stylebox_override("panel", _well_style())
+	_well.add_theme_stylebox_override("panel", well_selected_style if targeting else well_idle_style)
 	var filled := potion != null
 	_icon.visible = filled and not _lifted
 	if not filled:

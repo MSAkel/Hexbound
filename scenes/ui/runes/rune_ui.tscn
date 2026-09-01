@@ -187,6 +187,7 @@ theme_override_font_sizes/font_size = 28
 text = "0"
 
 [node name="PlacementSmoke" type="GPUParticles2D" parent="." unique_id=2116065945]
+visible = false
 self_modulate = Color(0.86793804, 0.78399736, 0.33285496, 1)
 z_index = 4
 material = SubResource("CanvasItemMaterial_placement_smoke")
@@ -203,8 +204,8 @@ local_coords = true
 process_material = SubResource("ParticleProcessMaterial_placement_smoke")
 
 [node name="EmpowerSparks" type="GPUParticles2D" parent="." unique_id=65415751]
+visible = false
 self_modulate = Color(1.22, 1.08, 0.55, 1)
-z_index = 0
 material = SubResource("CanvasItemMaterial_empower_sparks")
 position = Vector2(128, 128)
 emitting = false

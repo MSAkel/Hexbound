@@ -52,7 +52,7 @@ const EVENT_INFO := {
 	},
 	Type.DEALT_HAND: {
 		"name": "Dealt Hand",
-		"description": "You are dealt one random card. The draft screen does not open.",
+		"description": "At the end of each turn, instead of choosing a card, you are dealt a random one",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.FADING_SECTOR: {

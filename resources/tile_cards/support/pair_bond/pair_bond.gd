@@ -1,5 +1,5 @@
 extends TileCard
-## Retrigger one adjacent Downstream card in this segment. Twice if that card shares this rarity.
+## Retrigger one adjacent Following card in this segment. Twice if that card shares this rarity.
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	var target := _get_pair_bond_target(tile)
@@ -21,8 +21,8 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 func _get_pair_bond_target(tile: Hex) -> TileCard:
 	var segment_index := _get_segment_index(tile)
-	# Adjacent Downstream helpers are earliest-first. Take the first neighbor that shares this segment.
-	for card: TileCard in _get_downstream_adjacent_tile_cards(tile):
+	# Adjacent Following helpers are earliest-first. Take the first neighbor that shares this segment.
+	for card: TileCard in _get_following_adjacent_tile_cards(tile):
 		var hex := tile.map.get_hex_for_tile_card(card)
 		if hex == null:
 			continue

@@ -4,11 +4,19 @@ extends PanelContainer
 
 @onready var round_label: Label = $VBoxContainer/HBoxContainer/RoundLabel
 @onready var turn_counter_label: Label = $VBoxContainer/HBoxContainer/TurnsContainer/TurnCounterLabel
+@onready var turns_container: Control = $VBoxContainer/HBoxContainer/TurnsContainer
+@onready var gold_row: Control = $VBoxContainer/HBoxContainer/GoldRow
 @onready var gold_amount_label: Label = $VBoxContainer/HBoxContainer/GoldRow/GoldAmountLabel
+@onready var token_row: Control = $VBoxContainer/HBoxContainer/TokenRow
 @onready var token_amount_label: Label = $VBoxContainer/HBoxContainer/TokenRow/TokenAmountLabel
 
 const PUNCH_SCALE := 1.12
 const PUNCH_DURATION := 0.18
+
+const TOOLTIP_ROUND := "Current round. Nine rounds complete a run."
+const TOOLTIP_TURNS := "Turns left this round. Reach the target score before they run out."
+const TOOLTIP_GOLD := "Gold. Spend at the merchant on cards and potions."
+const TOOLTIP_TOKENS := "Merchant tokens. Pay for shop items instead of gold. Max %d." % GoldManager.MAX_MERCHANT_TOKENS
 
 var _gold_counter: CountingNumber
 var _round_counter: CountingNumber
@@ -33,6 +41,33 @@ func _ready() -> void:
 	EventBus.merchant_tokens_changed.connect(_on_merchant_tokens_changed)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.turn_changed.connect(_on_turn_changed)
+	_bind_status_tooltips()
+
+
+func _bind_status_tooltips() -> void:
+	for control: Control in [round_label, turns_container, gold_row, token_row]:
+		if control == null:
+			continue
+		control.mouse_filter = Control.MOUSE_FILTER_STOP
+	_bind_tooltip(round_label, TOOLTIP_ROUND)
+	_bind_tooltip(turns_container, TOOLTIP_TURNS)
+	_bind_tooltip(gold_row, TOOLTIP_GOLD)
+	_bind_tooltip(token_row, TOOLTIP_TOKENS)
+
+
+func _bind_tooltip(control: Control, text: String) -> void:
+	if control == null:
+		return
+	control.mouse_entered.connect(_show_status_tooltip.bind(control, text))
+	control.mouse_exited.connect(_hide_status_tooltip)
+
+
+func _show_status_tooltip(control: Control, text: String) -> void:
+	EventBus.toggle_tooltip.emit(true, text, control.get_global_rect())
+
+
+func _hide_status_tooltip() -> void:
+	EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 
 func _on_gold_changed(new_amount: int) -> void:

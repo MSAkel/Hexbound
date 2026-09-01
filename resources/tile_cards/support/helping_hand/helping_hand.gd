@@ -1,6 +1,6 @@
 extends TileCard
 
-## Lowest Downstream Energy producer gains +5 Energy permanently.
+## Lowest Following Energy producer gains +5 Energy permanently.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var target := _get_lowest_later_score_producer(tile)
 	if target == null:

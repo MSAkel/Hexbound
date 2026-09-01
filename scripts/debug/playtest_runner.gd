@@ -1399,8 +1399,10 @@ func _potion_player_value(potion: Potion) -> float:
 			return 4.0
 		Potion.EffectType.EMPOWER, Potion.EffectType.ECHO:
 			return 48.0 if _engine_producer_hex() != null else 8.0
-		Potion.EffectType.WARD, Potion.EffectType.BATON:
+		Potion.EffectType.WARD:
 			return 24.0 if _engine_producer_hex() != null else 6.0
+		Potion.EffectType.NEXT_TRIGGER_ENERGY, Potion.EffectType.NEXT_TRIGGER_MULT:
+			return 40.0 if _engine_producer_hex() != null else 8.0
 		Potion.EffectType.FORWARD_GIFT, Potion.EffectType.MINT_SIP:
 			return 30.0 if _engine_producer_hex() != null else 5.0
 		Potion.EffectType.FREE_REROLL:
@@ -1457,7 +1459,8 @@ func _player_use_belt_before_resolve() -> void:
 		if potion.effect_type in [
 			Potion.EffectType.EMPOWER,
 			Potion.EffectType.ECHO,
-			Potion.EffectType.BATON,
+			Potion.EffectType.NEXT_TRIGGER_ENERGY,
+			Potion.EffectType.NEXT_TRIGGER_MULT,
 			Potion.EffectType.FORWARD_GIFT,
 			Potion.EffectType.MINT_SIP,
 			Potion.EffectType.WARD,

@@ -614,32 +614,32 @@ func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Arr
 
 
 ## Adjacent hexes that activate after this tile in trigger order, including empty tiles.
-func _get_downstream_adjacent_hexes(tile: Hex) -> Array[Hex]:
+func _get_following_adjacent_hexes(tile: Hex) -> Array[Hex]:
 	if tile == null or tile.map == null:
 		return []
-	return tile.map.get_downstream_adjacent_hexes(tile)
+	return tile.map.get_following_adjacent_hexes(tile)
 
 
-## Occupied adjacent Downstream hexes, optionally filtered by card type.
-func _get_downstream_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	return tile.map.get_downstream_adjacent_tile_cards(tile, filter_type)
+## Occupied adjacent Following hexes, optionally filtered by card type.
+func _get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	return tile.map.get_following_adjacent_tile_cards(tile, filter_type)
 
 
-## Adjacent Downstream Energy producers.
-func _get_downstream_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
+## Adjacent Following Energy producers.
+func _get_following_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
 	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_downstream_adjacent_tile_cards(tile, TileCardType.PRODUCER):
+	for tile_card: TileCard in _get_following_adjacent_tile_cards(tile, TileCardType.PRODUCER):
 		if tile_card.product != filter_product:
 			continue
 		result.append(tile_card)
 	return result
 
 
-## Adjacent Downstream Energy producers on this segment.
-func _get_downstream_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
+## Adjacent Following Energy producers on this segment.
+func _get_following_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
 	var segment_index := _get_segment_index(tile)
 	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_downstream_adjacent_tile_cards_by_product(tile, filter_product):
+	for tile_card: TileCard in _get_following_adjacent_tile_cards_by_product(tile, filter_product):
 		var hex := tile.map.get_hex_for_tile_card(tile_card)
 		if hex == null:
 			continue
@@ -669,12 +669,12 @@ func _get_later_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = nul
 	return result
 
 
-func _coords_for_downstream_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(tile, _get_downstream_adjacent_tile_cards_by_product(tile, filter_product))
+func _coords_for_following_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(tile, _get_following_adjacent_tile_cards_by_product(tile, filter_product))
 
 
-func _coords_for_downstream_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(tile, _get_downstream_same_segment_producers_by_product(tile, filter_product))
+func _coords_for_following_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(tile, _get_following_same_segment_producers_by_product(tile, filter_product))
 
 
 func _is_first_producer_in_segment(tile: Hex) -> bool:

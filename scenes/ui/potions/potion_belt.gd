@@ -2,15 +2,16 @@ class_name PotionBelt
 extends Control
 
 ## Three square slots on the right. Drag a potion out to drink it.
+## Slot cells come from potion_slot.tscn. The drag ghost is authored in this scene.
 
 const SLOT_SCENE := preload("res://scenes/ui/potions/potion_slot.tscn")
 const GHOST_SIZE := Vector2(64, 64)
 
 @onready var _slots_column: VBoxContainer = $SlotsColumn
+@onready var _ghost: TextureRect = %DragGhost
 
 var _slots: Array[PotionSlot] = []
 var _drag_index := -1
-var _ghost: TextureRect
 var _awaiting_consume := false
 
 
@@ -22,16 +23,7 @@ func _ready() -> void:
 		slot.remove_requested.connect(_on_slot_remove_requested)
 		_slots_column.add_child(slot)
 		_slots.append(slot)
-	_ghost = TextureRect.new()
-	_ghost.visible = false
-	_ghost.top_level = true
-	_ghost.z_index = 50
-	_ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_ghost.custom_minimum_size = GHOST_SIZE
 	_ghost.size = GHOST_SIZE
-	_ghost.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_ghost.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	add_child(_ghost)
 	EventBus.potion_belt_changed.connect(_refresh)
 	EventBus.potion_targeting_changed.connect(_on_targeting_changed)
 	EventBus.potion_consume_started.connect(_on_consume_started)
@@ -186,6 +178,7 @@ func _finish_drop() -> void:
 		# Tile drinks only apply when the cursor is over a valid occupied hex.
 		if PotionManager.try_apply_to_hex_under_mouse():
 			return
+		PotionManager.show_tile_drop_failure_feedback()
 		_cancel_drag()
 		return
 	# Instant drinks apply wherever they are dropped off the rack.

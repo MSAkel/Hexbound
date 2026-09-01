@@ -1,6 +1,6 @@
 extends TileCard
 
-## Spend 1 Gold to empower a random Downstream Producer on this segment.
+## Spend 1 Gold to empower a random Following Producer on this segment.
 func _on_activate_tile_card(tile: Hex) -> void:
 	if not GoldManager.can_afford(1):
 		_create_floating_text(tile, "Insufficient gold")

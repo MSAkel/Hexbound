@@ -10,8 +10,6 @@ const BASE_REROLL_COST := 5
 @onready var potions_grid: HBoxContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf/PotionsGrid
 @onready var gold_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/GoldAmount
 @onready var token_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/TokenAmount
-@onready var buy_gold_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/PurchasePanel/BuyGoldButton
-@onready var buy_token_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/PurchasePanel/BuyTokenButton
 @onready var reroll_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/RerollButton
 @onready var leave_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/LeaveButton
 @onready var _content_panel: Panel = $ContainerPanel
@@ -34,8 +32,6 @@ var _session_open := false
 func _ready() -> void:
 	add_to_group("run_merchant")
 	hide()
-	buy_gold_button.pressed.connect(_on_buy_gold_button_pressed)
-	buy_token_button.pressed.connect(_on_buy_token_button_pressed)
 	reroll_button.pressed.connect(_on_reroll_button_pressed)
 	leave_button.pressed.connect(_on_leave_button_pressed)
 	_show_board_button.pressed.connect(_on_show_board_button_pressed)
@@ -153,11 +149,13 @@ func _display_merchant_cards(inventory: Array[Card]) -> void:
 
 	for item in inventory:
 		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
-		card_ui.custom_minimum_size = Vector2(230, 340 + CardUI.PRICE_BELOW_HEIGHT)
+		card_ui.custom_minimum_size = Vector2(230, CardUI.MERCHANT_STOCK_SLOT_HEIGHT)
 		card_ui.configure_interaction(CardUI.InteractionMode.MERCHANT_STOCK)
 		cards_grid.add_child(card_ui)
 		card_ui.set_card(item)
 		card_ui.action_requested.connect(_on_stock_card_selected)
+		card_ui.gold_purchase_requested.connect(_on_stock_card_gold_purchase_requested)
+		card_ui.token_purchase_requested.connect(_on_stock_card_token_purchase_requested)
 		_displayed_cards.append(card_ui)
 
 
@@ -171,6 +169,8 @@ func _display_merchant_potions(stock: Array[Potion]) -> void:
 		potions_grid.add_child(item)
 		item.configure(potion)
 		item.selected.connect(_on_stock_potion_selected)
+		item.gold_purchase_requested.connect(_on_stock_potion_gold_purchase_requested)
+		item.token_purchase_requested.connect(_on_stock_potion_token_purchase_requested)
 		_displayed_potions.append(item)
 
 
@@ -182,7 +182,7 @@ func _on_stock_card_selected(card_ui: CardUI) -> void:
 		_selected_card_ui.set_merchant_selected(false)
 	_selected_card_ui = card_ui
 	_selected_card_ui.set_merchant_selected(true)
-	_update_purchase_panel()
+	_refresh_selected_purchase_tray()
 
 
 func _on_stock_potion_selected(item: PotionShopItem) -> void:
@@ -193,14 +193,30 @@ func _on_stock_potion_selected(item: PotionShopItem) -> void:
 		_selected_potion_ui.set_merchant_selected(false)
 	_selected_potion_ui = item
 	_selected_potion_ui.set_merchant_selected(true)
-	_update_purchase_panel()
+	_refresh_selected_purchase_tray()
 
 
-func _on_buy_gold_button_pressed() -> void:
+func _on_stock_card_gold_purchase_requested(card_ui: CardUI) -> void:
+	if _selected_card_ui != card_ui:
+		return
 	_complete_purchase(false)
 
 
-func _on_buy_token_button_pressed() -> void:
+func _on_stock_card_token_purchase_requested(card_ui: CardUI) -> void:
+	if _selected_card_ui != card_ui:
+		return
+	_complete_purchase(true)
+
+
+func _on_stock_potion_gold_purchase_requested(item: PotionShopItem) -> void:
+	if _selected_potion_ui != item:
+		return
+	_complete_purchase(false)
+
+
+func _on_stock_potion_token_purchase_requested(item: PotionShopItem) -> void:
+	if _selected_potion_ui != item:
+		return
 	_complete_purchase(true)
 
 
@@ -292,13 +308,12 @@ func _on_currency_changed(_new_amount: int = 0) -> void:
 	for potion_ui in _displayed_potions:
 		potion_ui.refresh_affordability()
 	_update_reroll_button()
-	_update_purchase_panel()
+	_refresh_selected_purchase_tray()
 
 
 func _clear_selection() -> void:
 	_clear_card_selection()
 	_clear_potion_selection()
-	_update_purchase_panel()
 
 
 func _clear_card_selection() -> void:
@@ -313,25 +328,11 @@ func _clear_potion_selection() -> void:
 	_selected_potion_ui = null
 
 
-func _update_purchase_panel() -> void:
+func _refresh_selected_purchase_tray() -> void:
+	if _selected_card_ui != null and not _selected_card_ui.is_sold():
+		_selected_card_ui.refresh_purchase_tray()
 	if _selected_potion_ui != null and not _selected_potion_ui.is_sold():
-		var gold_price := _selected_potion_ui.price
-		var token_cost := _selected_potion_ui.get_token_cost()
-		var belt_full := not PotionManager.can_add()
-		buy_gold_button.disabled = belt_full or not GoldManager.can_afford(gold_price)
-		buy_token_button.disabled = belt_full or not GoldManager.can_afford_tokens(token_cost)
-		return
-
-	var has_selection := _selected_card_ui != null and not _selected_card_ui.is_sold()
-	if not has_selection:
-		buy_gold_button.disabled = true
-		buy_token_button.disabled = true
-		return
-
-	var card_gold := _selected_card_ui.price
-	var card_tokens := _selected_card_ui.get_token_cost()
-	buy_gold_button.disabled = not GoldManager.can_afford(card_gold)
-	buy_token_button.disabled = not GoldManager.can_afford_tokens(card_tokens)
+		_selected_potion_ui.refresh_purchase_tray()
 
 
 func _update_currency_display() -> void:

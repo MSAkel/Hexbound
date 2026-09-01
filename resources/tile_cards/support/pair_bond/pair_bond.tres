@@ -10,5 +10,5 @@ sigil_kind = 5
 id = "pair_bond"
 name = "Pair Bond"
 icon = ExtResource("1_icon")
-description = "Retrigger one adjacent Downstream card in this segment. Twice if that card is the same rarity"
+description = "Retrigger a Following adjacent card in this segment. Twice if that card is the same rarity"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

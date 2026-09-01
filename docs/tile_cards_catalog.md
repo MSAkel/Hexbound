@@ -2,6 +2,8 @@
 
 Living list of every tile card in `resources/tile_cards/`. Effect text is copied from each `.tres`. When a card changes, update this file and [archetype_map.md](archetype_map.md).
 
+**Master spreadsheet** (existing + suggested cards, grouped by type and rarity): [tile_cards_master_spreadsheet.xlsx](tile_cards_master_spreadsheet.xlsx) ([CSV](tile_cards_master_spreadsheet.csv)). Regenerate with `python scripts/debug/generate_card_spreadsheet.py` (requires `pip install -r scripts/debug/requirements.txt` for Excel output).
+
 Bot pick rates: [playtest_findings.md](playtest_findings.md).
 
 **Pool:** 63 cards (31 Producers, 25 Supports, 7 Utilities).

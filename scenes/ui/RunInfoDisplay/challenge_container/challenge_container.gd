@@ -61,7 +61,9 @@ func _get_tooltip_text() -> String:
 	if next_event == -1:
 		return ""
 
-	return "Round %d\n%s" % [next_round, EventManager.get_event_description(next_event)]
+	var next_name := EventManager.get_event_name(next_event)
+	var description := EventManager.get_event_description(next_event)
+	return "Round %d — %s\n%s" % [next_round, next_name, description]
 
 
 func _get_tooltip_rect() -> Rect2:

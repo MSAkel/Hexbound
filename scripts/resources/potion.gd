@@ -12,11 +12,12 @@ enum EffectType {
 	EMPOWER,
 	ECHO,
 	WARD,
-	BATON,
+	NEXT_TRIGGER_ENERGY,
 	FORWARD_GIFT,
 	MINT_SIP,
 	OPENING_ROUND,
 	CLOSING_ROUND,
+	NEXT_TRIGGER_MULT,
 }
 
 enum TargetKind {
@@ -59,8 +60,10 @@ func get_fuse_summary() -> String:
 			return "Echo · next activation"
 		EffectType.WARD:
 			return "Ward · next break"
-		EffectType.BATON:
-			return "Baton · next activation"
+		EffectType.NEXT_TRIGGER_ENERGY:
+			return "+%d Energy · next activation" % int(effect_value)
+		EffectType.NEXT_TRIGGER_MULT:
+			return "+%s Mult · next activation" % CountingNumber.format_mult(effect_value)
 		EffectType.FORWARD_GIFT:
 			return "Forward Gift"
 		EffectType.MINT_SIP:

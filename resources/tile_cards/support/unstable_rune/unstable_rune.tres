@@ -11,5 +11,5 @@ sigil_kind = 5
 id = "unstable_rune"
 name = "Unstable Rune"
 icon = ExtResource("1_210j2")
-description = "Trigger adjacent Downstream Producers. 10% chance this card breaks per adjacent Downstream Producer"
+description = "Trigger adjacent Following Producers. 10% chance this card breaks per adjacent Following Producer"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

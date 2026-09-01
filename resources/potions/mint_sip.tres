@@ -1,13 +1,13 @@
-[gd_resource type="Resource" script_class="Potion" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="Potion" format=3 uid="uid://ehdodq634lb5"]
 
-[ext_resource type="Script" path="res://scripts/resources/potion.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/icons/potions/potion_1.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/potion.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b1q2mgy4ys578" path="res://assets/icons/potions/potion_1.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
 id = "mint_sip"
 display_name = "Mint Sip"
-description = "For 2 turns, that card also produces +1 Gold each activation."
+description = "For 2 turns, that card also produces +1 Gold"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.9, 0.72, 0.16, 1)
 base_price = 6

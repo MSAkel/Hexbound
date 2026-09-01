@@ -1,16 +1,15 @@
-[gd_resource type="Resource" script_class="Potion" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="Potion" format=3 uid="uid://bydfwoffyky6n"]
 
-[ext_resource type="Script" path="res://scripts/resources/potion.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/icons/potions/potion_6.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/potion.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cvt85jh85xlv7" path="res://assets/icons/potions/potion_6.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
 id = "empower"
 display_name = "Empower"
-description = "Empowers a placed card."
+description = "Empowers a placed card"
 icon = ExtResource("2_icon")
 liquid_color = Color(1, 0.62, 0.18, 1)
 base_price = 5
 effect_type = 5
-effect_value = 0.0
 target_kind = 1

@@ -1,8 +1,8 @@
 extends TileCard
 
-## Up to 3 adjacent Downstream Energy cards permanently gain +3 Energy.
+## Up to 3 adjacent Following Energy cards permanently gain +3 Energy.
 func _on_activate_tile_card(tile: Hex) -> void:
-	var adjacent_cards: Array[TileCard] = _get_downstream_adjacent_tile_cards_by_product(tile, Product.SCORE)
+	var adjacent_cards: Array[TileCard] = _get_following_adjacent_tile_cards_by_product(tile, Product.SCORE)
 	var buffed := 0
 	for card: TileCard in adjacent_cards:
 		if buffed >= 3:
@@ -16,4 +16,4 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_downstream_adjacent_tile_cards_by_product(hover_tile, Product.SCORE)
+	return _coords_for_following_adjacent_tile_cards_by_product(hover_tile, Product.SCORE)

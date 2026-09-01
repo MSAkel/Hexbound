@@ -1,16 +1,13 @@
-[gd_resource type="Resource" script_class="Potion" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="Potion" format=3 uid="uid://rguycrppwtcm"]
 
-[ext_resource type="Script" path="res://scripts/resources/potion.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/icons/potions/potion_4.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/potion.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://db6ffog5mjqi7" path="res://assets/icons/potions/potion_4.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
 id = "free_reroll"
 display_name = "Free Reroll"
-description = "Gain 1 shared reroll for drafts and the merchant."
+description = "+1 free reroll"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.28, 0.72, 0.58, 1)
-base_price = 4
 effect_type = 3
-effect_value = 0.0
-target_kind = 0

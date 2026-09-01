@@ -1,6 +1,6 @@
 extends TileCard
 
-## On the final turn, empower every Downstream Producer on this segment.
+## On the final turn, empower every Following Producer on this segment.
 func _on_activate_tile_card(tile: Hex) -> void:
 	if GameManager.remaining_turns != 1:
 		failed_tile_card_text(tile)

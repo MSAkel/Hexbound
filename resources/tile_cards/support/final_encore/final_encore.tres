@@ -12,5 +12,5 @@ placement_restriction = 3
 id = "final_encore"
 name = "Final Encore"
 icon = ExtResource("1_wtb5l")
-description = "Triggers the last card of each Downstream segment. Must be placed on a last segment tile"
+description = "Triggers the last card of each Following segment. Must be placed on a last segment tile"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
