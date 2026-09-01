@@ -4,10 +4,10 @@ extends PanelContainer
 
 
 const STEP_TEXTS: PackedStringArray = [
-	"Select a card to place it into an empty tile.\nYou must reach the required score for the current round before your turns reach to 0.",
-	"You can hover over a tile to check its stats and hold down TAB to quickly toggle between regular and trigger order views.\nSupport cards abilities are not always limited to their own segments",
-	"The turn ends when there are only two remaining cards in your hand.\nYou win once you have completed nine rounds.",
-	"Every segment measures Energy and Mult separately. Energy × Mult becomes that segment's Score, then Scores add for the turn.\nMult only applies to Energy in its own segment. Gold is not multiplied.",
+	"Select a card to place it on an empty tile.\nReach the round’s required score before you run out of turns.",
+	"Hover over a tile to view its stats. Hold Tab to quickly switch between the regular and trigger-order views.\nSupport card abilities aren’t always limited to their own segment.",
+	"The turn ends when only two cards remain in your hand.\nComplete nine rounds to win.",
+	"Each segment calculates Energy and Mult separately. Energy × Mult becomes that segment’s Score, then all segment Scores are added for the turn.\n",
 ]
 
 const FADE_OUT_DURATION := 0.18
