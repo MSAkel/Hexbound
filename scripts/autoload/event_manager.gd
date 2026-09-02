@@ -127,10 +127,10 @@ func init_run() -> void:
 
 	var used: Array[Type] = []
 	var rng := RunRng.create_rng("events")
-	for round in EVENT_ROUNDS:
-		var available := _unused_legal_types(round, used)
+	for event_round in EVENT_ROUNDS:
+		var available := _unused_legal_types(event_round, used)
 		if available.is_empty():
-			push_error("EventManager: no legal event left for round %d." % round)
+			push_error("EventManager: no legal event left for round %d." % event_round)
 			break
 		RunRng.shuffle_with(rng, available)
 		var picked: Type = available[0]
@@ -174,8 +174,8 @@ func is_completing_final_event_round() -> bool:
 	)
 
 
-func get_event_for_round(round: int) -> int:
-	var round_index := EVENT_ROUNDS.find(round)
+func get_event_for_round(event_round: int) -> int:
+	var round_index := EVENT_ROUNDS.find(event_round)
 	if round_index == -1:
 		return -1
 	# Left panel can query before main.gd calls init_run() at run start.
@@ -185,9 +185,9 @@ func get_event_for_round(round: int) -> int:
 
 
 func get_next_event_round() -> int:
-	for round in EVENT_ROUNDS:
-		if round > GameManager.current_round:
-			return round
+	for event_round in EVENT_ROUNDS:
+		if event_round > GameManager.current_round:
+			return event_round
 	return -1
 
 
@@ -198,11 +198,11 @@ func get_next_event_type() -> int:
 	return get_event_for_round(next_round)
 
 
-func is_legal_for_round(event_type: int, round: int) -> bool:
+func is_legal_for_round(event_type: int, event_round: int) -> bool:
 	if not ALL_EVENTS.has(event_type):
 		return false
 	var allowed: Array = EVENT_INFO[event_type].get("rounds", EVENT_ROUNDS)
-	return allowed.has(round)
+	return allowed.has(event_round)
 
 
 func get_allowed_rounds(event_type: int) -> Array:
@@ -220,8 +220,8 @@ func get_allowed_rounds_label(event_type: int) -> String:
 	if allowed.size() == 2:
 		return "Rounds %d and %d" % [int(allowed[0]), int(allowed[1])]
 	var parts: PackedStringArray = []
-	for round in allowed:
-		parts.append(str(int(round)))
+	for allowed_round in allowed:
+		parts.append(str(int(allowed_round)))
 	return "Rounds %s" % ", ".join(parts)
 
 
@@ -517,12 +517,12 @@ func _apply_sealed_overlay() -> void:
 	tile_map.set_event_sealed_overlay(_sealed_coords)
 
 
-func _unused_legal_types(round: int, used: Array) -> Array:
+func _unused_legal_types(event_round: int, used: Array) -> Array:
 	var available: Array = []
 	for event_type in ALL_EVENTS:
 		if used.has(event_type):
 			continue
-		if not is_legal_for_round(event_type, round):
+		if not is_legal_for_round(event_type, event_round):
 			continue
 		available.append(event_type)
 	return available

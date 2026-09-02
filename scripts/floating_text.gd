@@ -3,7 +3,6 @@ extends Node2D
 
 @onready var label: RichTextLabel = $Label
 @onready var icon_rect: TextureRect = $Icon
-@onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
 
 ## Scale each glyph starts at before popping in. Near-zero so they appear from nothing.
 const POP_START_SCALE := 0.05
@@ -52,7 +51,6 @@ func set_text(text: String, _color: Color = Color.WHITE, icon: Texture2D = null)
 	# One color for every tile-card float. Icons still distinguish Energy, Gold, and Mult.
 	_apply_label_style(Color.WHITE, ScoreReadoutStyle.parse_amount(text), true)
 	_apply_icon(icon)
-	audio_stream_player_2d.play()
 
 
 func _apply_label_style(

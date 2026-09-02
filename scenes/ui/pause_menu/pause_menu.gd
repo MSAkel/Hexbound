@@ -6,6 +6,7 @@ extends Control
 @onready var menu_items_container: VBoxContainer = $Panel/MenuItemsContainer
 @onready var layout_passives_viewer: LayoutPassivesViewer = %LayoutPassivesViewer
 # Sibling overlays under MainUI
+@onready var main_ui: CanvasLayer = get_parent() as CanvasLayer
 @onready var settings_container: PanelContainer = $"../SettingsContainer"
 @onready var collection_screen: Panel = $"../Collection"
 @onready var rune_selection_ui: Control = $"../RuneSelectionUI"
@@ -15,10 +16,12 @@ extends Control
 
 
 func _ready() -> void:
-	# Keep pause UI interactive while the scene tree is frozen during turn resolution.
+	# Keep the whole UI layer interactive while get_tree().paused is true.
+	if main_ui != null:
+		main_ui.process_mode = Node.PROCESS_MODE_ALWAYS
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	settings_container.process_mode = Node.PROCESS_MODE_ALWAYS
-	collection_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	_prepare_overlay_panel(settings_container)
+	_prepare_overlay_panel(collection_screen)
 	# Restore pause buttons when settings Back is pressed
 	settings_container.closed.connect(_on_settings_closed)
 	if not collection_screen.closed.is_connected(_on_collection_closed):
@@ -51,24 +54,20 @@ func _hide_layout_passives_viewer() -> void:
 
 func _on_settings_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	panel.hide()
-	settings_container.show()
+	_show_pause_overlay(settings_container)
 
 
 func _on_settings_closed() -> void:
-	settings_container.hide()
-	panel.show()
+	_hide_pause_overlay(settings_container)
 
 
 func _on_collection_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	panel.hide()
-	collection_screen.show()
+	_show_pause_overlay(collection_screen)
 
 
 func _on_collection_closed() -> void:
-	collection_screen.hide()
-	panel.show()
+	_hide_pause_overlay(collection_screen)
 	EventBus.toggle_tooltip.emit(false, "")
 
 
@@ -92,9 +91,10 @@ func _on_new_run_pressed() -> void:
 func _open_pause_menu() -> void:
 	# Always reopen on the button list, not a leftover overlay.
 	_hide_layout_passives_viewer()
-	collection_screen.hide()
-	settings_container.hide()
+	_hide_pause_overlay(settings_container)
+	_hide_pause_overlay(collection_screen)
 	panel.show()
+	_set_pause_menu_blocks_gameplay(true)
 	pause_menu.show()
 	get_tree().paused = true
 
@@ -102,9 +102,10 @@ func _open_pause_menu() -> void:
 func _close_pause_menu() -> void:
 	# Dismiss nested overlays so they cannot linger over gameplay.
 	_hide_layout_passives_viewer()
-	settings_container.hide()
-	collection_screen.hide()
+	_hide_pause_overlay(settings_container)
+	_hide_pause_overlay(collection_screen)
 	panel.show()
+	_set_pause_menu_blocks_gameplay(true)
 	pause_menu.hide()
 	get_tree().paused = false
 	EventBus.tooltip_hover_refresh_requested.emit()
@@ -140,3 +141,32 @@ func _is_pause_blocked() -> bool:
 ## Safely checks visibility because a referenced panel may be absent or already being freed.
 func _is_control_visible(control: Control) -> bool:
 	return is_instance_valid(control) and control.is_visible_in_tree()
+
+
+func _prepare_overlay_panel(overlay_root: Control) -> void:
+	overlay_root.process_mode = Node.PROCESS_MODE_ALWAYS
+	_set_process_mode_recursive(overlay_root, Node.PROCESS_MODE_ALWAYS)
+
+
+func _show_pause_overlay(overlay: Control) -> void:
+	panel.hide()
+	# Full-screen pause root sits above Settings in z-order. Do not steal overlay clicks.
+	_set_pause_menu_blocks_gameplay(false)
+	overlay.show()
+	overlay.move_to_front()
+
+
+func _hide_pause_overlay(overlay: Control) -> void:
+	overlay.hide()
+	panel.show()
+	_set_pause_menu_blocks_gameplay(true)
+
+
+func _set_pause_menu_blocks_gameplay(blocks: bool) -> void:
+	mouse_filter = Control.MOUSE_FILTER_STOP if blocks else Control.MOUSE_FILTER_IGNORE
+
+
+func _set_process_mode_recursive(root: Node, mode: Node.ProcessMode) -> void:
+	root.process_mode = mode
+	for child in root.get_children():
+		_set_process_mode_recursive(child, mode)

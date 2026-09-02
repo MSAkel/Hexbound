@@ -50,8 +50,8 @@ func _update_event_preview(_new_round: int = -1) -> void:
 func _get_tooltip_text() -> String:
 	if EventManager.active_event != -1:
 		var active_name := EventManager.get_event_name(EventManager.active_event)
-		var description := EventManager.get_event_description(EventManager.active_event)
-		return "Active Event\nRound %d — %s\n%s" % [GameManager.current_round, active_name, description]
+		var active_description := EventManager.get_event_description(EventManager.active_event)
+		return "Active Event\nRound %d — %s\n%s" % [GameManager.current_round, active_name, active_description]
 
 	var next_round: int = EventManager.get_next_event_round()
 	if next_round == -1:

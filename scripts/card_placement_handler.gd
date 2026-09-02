@@ -108,7 +108,7 @@ func _input(event: InputEvent) -> void:
 
 	_awaiting_pointer_release = false
 	# A press-and-release on the card, or a tiny drag, is not a drop.
-	if selected_card != null and selected_card.is_mouse_over_visual():
+	if selected_card != null and _is_cursor_over_hand_card():
 		_deselect_card()
 		return
 	if not _has_dragged_from_select():
@@ -184,6 +184,7 @@ func _update_preview_texture() -> void:
 	_rune_preview.hide_output_chip()
 	_tile_landing_preview.prepare_placement_ghost()
 	_tile_landing_preview.setup(tile_card)
+	_tile_landing_preview.hide_output_chip()
 
 
 func _update_rune_preview() -> void:
@@ -192,10 +193,11 @@ func _update_rune_preview() -> void:
 
 	var map_coords := _get_mouse_map_coords()
 	var hex: Hex = tile_map.map_data.get(map_coords) if tile_map.is_in_map(map_coords) else null
-	var over_valid_tile := hex != null \
-		and tile_map.is_tile_interactable(map_coords) \
+	var over_interactable_map := hex != null and tile_map.is_tile_interactable(map_coords)
+	var over_valid_tile := over_interactable_map \
 		and _can_place_on_hex(hex)
-	var mouse_over_card := selected_card.is_mouse_over_visual()
+	# The lifted card overlaps bottom hexes. Use the hand slot, not the hover pose.
+	var mouse_over_card := selected_card.is_mouse_over_hand_slot() and not over_interactable_map
 
 	# Dip once the cursor leaves the selected card, not only when a tile is targeted.
 	selected_card.set_map_tile_hover_active(not mouse_over_card)
@@ -208,9 +210,12 @@ func _update_rune_preview() -> void:
 	_show_cursor_rune_preview(selected_card.get_placement_morph_progress())
 
 	if over_valid_tile:
-		# Keep the dragged icon on the cursor. A faded copy marks the drop tile.
+		# Chip rides on the cursor ghost so it is not hidden under the icon.
 		tile_map.set_placement_preview_cell(map_coords)
 		_show_tile_landing_preview(hex)
+		var tile_card := _get_selected_tile_card()
+		if tile_card != null:
+			_rune_preview.refresh_output_chip(tile_card)
 		_update_hover_highlights(hex)
 	else:
 		_hide_tile_landing_preview()
@@ -226,6 +231,15 @@ func _get_mouse_map_coords() -> Vector2i:
 	return tile_map.base_layer.local_to_map(
 		tile_map.to_local(tile_map.get_global_mouse_position())
 	)
+
+
+func _is_cursor_over_hand_card() -> bool:
+	if selected_card == null:
+		return false
+	var map_coords := _get_mouse_map_coords()
+	if tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords):
+		return false
+	return selected_card.is_mouse_over_hand_slot()
 
 
 # Occupied tiles under the cursor show the placed card inspect panel while dragging to place.
@@ -418,9 +432,7 @@ func _show_tile_landing_preview(hex: Hex) -> void:
 	_tile_landing_preview.set_ghost_float_scale(1.0)
 	_tile_landing_preview.modulate = TILE_LANDING_PREVIEW_COLOR
 	_tile_landing_preview.visible = true
-	var tile_card := _get_selected_tile_card()
-	if tile_card != null:
-		_tile_landing_preview.refresh_output_chip(tile_card)
+	_tile_landing_preview.hide_output_chip()
 
 
 func _hide_tile_landing_preview() -> void:
@@ -460,6 +472,9 @@ func _place_card_on_hex(hex: Hex) -> void:
 		return
 	_rune_preview.visible = false
 	selected_card.card.play_on(hex, false)
+	# Ghost hide would kill in-flight particles. Burst on the seated rune instead.
+	if hex.rune_ui != null and not GameManager.skip_presentation:
+		hex.rune_ui.play_placement_land_particles()
 	_finish_playing_selected_card()
 
 

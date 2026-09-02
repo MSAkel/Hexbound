@@ -77,7 +77,7 @@ const SIGIL_TEXTURES := {
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
-	TileCardRarity.COMMON: 2,
+	TileCardRarity.COMMON: 3,
 	TileCardRarity.UNCOMMON: 5,
 	TileCardRarity.RARE: 8,
 }
@@ -96,6 +96,8 @@ var is_empowered: bool = false
 var potion_fuses: Array[Dictionary] = []
 # Scales all tile card output during this activation (score, gold, generated multiplier resource).
 var _activation_output_scale: float = 1.0
+# Cards currently being replayed by Imprint or Mirror Copy. Prevents a nested copy from looping.
+static var _copied_activation_stack: Array[TileCard] = []
 # True when this activation consumed Empower. Checked by cards that pay extra on Empower.
 var _activation_was_empowered: bool = false
 
@@ -116,6 +118,19 @@ var _activation_was_empowered: bool = false
 @export var layout_requirement_size: int = 0
 # Utilities default to one occupied tile. Transposition uses two.
 @export var utility_target_count: int = 1
+## Plays once when this card resolves during turn order. Chance cards still fire on a miss.
+@export var trigger_sound: AudioStream = UISounds.CARD_TRIGGER
+
+
+## Extra per-instance state for a placed card. Saved with the map between loads.
+## Shared fields such as activation_count, bonus_production_amount, and run_trigger_count
+## are already written by hex_tile_map. Override this for card-specific progress.
+func capture_placed_save_state() -> Dictionary:
+	return {}
+
+
+func apply_placed_save_state(_data: Dictionary) -> void:
+	pass
 
 
 ## False when this layout has no segment that can host the card's requirement.
@@ -227,8 +242,8 @@ func _hidden_board_chip() -> Dictionary:
 
 
 ## Energy and Gold chips round to a whole number. Pass a float from production helpers.
-func _amount_board_chip(amount: Variant, icon: Texture2D = null) -> Dictionary:
-	var chip_icon: Texture2D = icon if icon != null else get_product_icon()
+func _amount_board_chip(amount: Variant, amount_icon: Texture2D = null) -> Dictionary:
+	var chip_icon: Texture2D = amount_icon if amount_icon != null else get_product_icon()
 	return _make_board_chip(
 		BoardChipMode.AMOUNT,
 		str(int(round(float(amount)))),
@@ -237,8 +252,8 @@ func _amount_board_chip(amount: Variant, icon: Texture2D = null) -> Dictionary:
 	)
 
 
-func _amount_board_chip_float(amount: float, icon: Texture2D = null) -> Dictionary:
-	var chip_icon: Texture2D = icon if icon != null else get_product_icon()
+func _amount_board_chip_float(amount: float, amount_icon: Texture2D = null) -> Dictionary:
+	var chip_icon: Texture2D = amount_icon if amount_icon != null else get_product_icon()
 	return _make_board_chip(
 		BoardChipMode.AMOUNT,
 		CountingNumber.format_mult(amount),
@@ -250,14 +265,14 @@ func _amount_board_chip_float(amount: float, icon: Texture2D = null) -> Dictiona
 func _make_board_chip(
 	mode: BoardChipMode,
 	text: String,
-	icon: Texture2D,
+	chip_icon: Texture2D,
 	panel_color: Color,
 	detail: String = ""
 ) -> Dictionary:
 	return {
 		"mode": mode,
 		"text": text,
-		"icon": icon,
+		"icon": chip_icon,
 		"panel_color": panel_color,
 		"detail": detail,
 	}
@@ -334,6 +349,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	# Count this activation before the card resolves so "triggers so far" includes the current one.
 	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
+	_play_trigger_sound()
 	if tile.map != null:
 		GameManager.passive_runtime.after_activation(tile, self)
 		var segment_index := tile.map.get_segment_index(tile.coordinates)
@@ -363,6 +379,28 @@ func _activation_host_card(tile: Hex) -> TileCard:
 func _is_copied_activation(tile: Hex) -> bool:
 	var host := _activation_host_card(tile)
 	return host != null and host != self
+
+
+## Drop leftover copy-chain entries if a script error aborted a nested replay.
+static func clear_copied_activation_stack() -> void:
+	_copied_activation_stack.clear()
+
+
+## Replay another card's effect from host_tile. The same instance cannot re-enter this chain.
+func _run_copied_activation(copied: TileCard, host_tile: Hex) -> void:
+	if copied == null:
+		return
+	# Copied Imprint looks at the host's previous hexes, which can include this same card.
+	if copied in _copied_activation_stack:
+		return
+	var stack_depth := _copied_activation_stack.size()
+	_copied_activation_stack.append(copied)
+	copied._activation_output_scale = _activation_output_scale
+	copied._on_activate_tile_card(host_tile)
+	copied._activation_output_scale = 1.0
+	# Trim this frame even if a nested copy aborted without popping.
+	while _copied_activation_stack.size() > stack_depth:
+		_copied_activation_stack.pop_back()
 
 
 ## Queues only triggerable runes. Shows Failed when nothing valid can fire.
@@ -499,7 +537,7 @@ func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> voi
 	PotionManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
 
 
-# Credits another segment's Energy. Float stays on this tile, destination segment flashes.
+# Credits another segment's Energy. Float stays on this tile.
 func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -> void:
 	if EventManager.are_relays_blocked():
 		failed_tile_card_text(tile)
@@ -508,10 +546,9 @@ func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -
 	tile.map.add_turn_score_for_segment(segment_index, points)
 	tile.map.mark_segment_received_relay(segment_index)
 	_create_floating_text(tile, "+%d →" % points, Color.AQUA, ICON_ENERGY)
-	tile.map.flash_segment_highlight(segment_index)
 
 
-# Credits another segment's turn multiplier. Float stays on this tile, destination segment flashes.
+# Credits another segment's turn multiplier. Float stays on this tile.
 func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: Variant) -> void:
 	if EventManager.are_relays_blocked():
 		failed_tile_card_text(tile)
@@ -520,7 +557,6 @@ func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: Varia
 	tile.map.add_turn_multiplier_for_segment(segment_index, amount)
 	tile.map.mark_segment_received_relay(segment_index)
 	_create_floating_text(tile, "+%s →" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
-	tile.map.flash_segment_highlight(segment_index)
 
 
 func failed_tile_card_text(tile: Hex) -> void:
@@ -563,9 +599,23 @@ func _add_generated_card_to_hand(card: Card) -> void:
 	EventBus.generated_hand_card.emit(card)
 
 
-func _create_floating_text(tile: Hex, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
+func _create_floating_text(
+	tile: Hex,
+	text: String,
+	color: Color = Color.WHITE,
+	text_icon: Texture2D = null
+) -> void:
 	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
-	tile.map.create_floating_text(tile_pos, text, color, icon)
+	tile.map.create_floating_text(tile_pos, text, color, text_icon)
+
+
+## Shared activation blip for every trigger, including misses with no float text.
+func _play_trigger_sound() -> void:
+	if GameManager.should_skip_turn_presentation():
+		return
+	if trigger_sound == null:
+		return
+	AudioManager.play_sfx(trigger_sound)
 
 #endregion --- Energy, gold, and multiplier, and floating text helpers ---
 
@@ -1066,7 +1116,7 @@ func _destroy_placed_tile_card_after_queued_triggers(
 ## Random pool card that can occupy a tile. Modifiers are excluded from the roll.
 ## Pass exclude_id to omit one template so transforms can pick a different card.
 func _pick_random_placeable_tile_card(
-	rarity: Variant = null,
+	filter_rarity: Variant = null,
 	exclude_id: String = "",
 	rng: RandomNumberGenerator = null
 ) -> TileCard:
@@ -1074,7 +1124,7 @@ func _pick_random_placeable_tile_card(
 	for template: TileCard in GameManager.tile_cards_pool:
 		if template.type == TileCardType.UTILITY:
 			continue
-		if rarity != null and template.rarity != rarity:
+		if filter_rarity != null and template.rarity != filter_rarity:
 			continue
 		if not exclude_id.is_empty() and template.id == exclude_id:
 			continue

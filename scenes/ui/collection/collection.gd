@@ -120,9 +120,9 @@ func _show_passive_tooltip(
 ) -> void:
 	var tile_count := maxi(1, passive.tile_cost)
 	var tile_text := "Tile size: %d tile%s" % [tile_count, "" if tile_count == 1 else "s"]
-	var tooltip_text: String
+	var passive_tip: String
 	if unlocked:
-		tooltip_text = "%s\n%s\n%s" % [
+		passive_tip = "%s\n%s\n%s" % [
 			passive.display_name,
 			passive.get_effect_summary(),
 			tile_text,
@@ -131,8 +131,8 @@ func _show_passive_tooltip(
 		var requirement := "Unlock requirement unavailable"
 		if passive.unlock_condition != null and not passive.unlock_condition.description.is_empty():
 			requirement = passive.unlock_condition.description
-		tooltip_text = "Locked\n%s\n%s" % [requirement, tile_text]
-	EventBus.toggle_tooltip.emit(true, tooltip_text, panel.get_global_rect())
+		passive_tip = "Locked\n%s\n%s" % [requirement, tile_text]
+	EventBus.toggle_tooltip.emit(true, passive_tip, panel.get_global_rect())
 
 
 func _hide_passive_tooltip() -> void:

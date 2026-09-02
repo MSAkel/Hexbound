@@ -2,12 +2,15 @@
 
 [ext_resource type="Texture2D" uid="uid://lxv77i8fwjdl" path="res://assets/icons/runes/hybrid/lucky_draw.png" id="1_pvsl8"]
 [ext_resource type="Script" uid="uid://biwr1vsc7iwe" path="res://resources/tile_cards/generations/lucky_draw/lucky_draw.gd" id="2_bq1of"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_trigger"]
 
 [resource]
 script = ExtResource("2_bq1of")
 rarity = 2
+product = 3
 id = "lucky_draw"
 name = "Lucky Draw"
 icon = ExtResource("1_pvsl8")
 description = "3% stacking chance to gain 400 Energy or 8 Gold. Resets on success"
+trigger_sound = ExtResource("3_trigger")
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

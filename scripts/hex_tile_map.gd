@@ -26,7 +26,7 @@ const HOVER_OVERLAY_LAST := 2
 const HOVER_OVERLAY_BOTH := 3
 const HOVERED_TILE_OVERLAY_SOURCE_ID := 0
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
-# Light white wash on the tile under the cursor so it stands out within a highlighted segment.
+# Light white wash reserved for a second emphasis pass on the focused tile.
 const HOVERED_TILE_OVERLAY_MODULATE := Color(0.9, 0.9, 0.9, 0.45)
 # Valid placement targets for restricted cards such as edge, first, or last segment tiles.
 const PLACEMENT_VALID_OVERLAY_SOURCE_ID := HOVER_OVERLAY_NORMAL
@@ -74,8 +74,10 @@ var _segment_seal_tweens: Array[Tween] = []
 # Tiles highlighted while hovering a segment-results row in the run-info panel.
 var _hovered_segment_coords: Array[Vector2i] = []
 var _hovered_segment_index: int = -1
-# Sticky trigger-order numbers from the layout button.
+# Sticky map overlay toggles from the run-info layout buttons.
+var _sticky_show_tile_cards: bool = true
 var _sticky_order_numbers: bool = false
+var _sticky_segment_links: bool = false
 # Temporary trigger-order numbers while Tab is held.
 var _peek_order_numbers: bool = false
 # Valid placement target while a hand card is selected.
@@ -85,6 +87,8 @@ var _flashed_segment_coords: Array[Vector2i] = []
 var _flash_segment_generation: int = 0
 ## Occupied tiles lit while aiming a tile-target potion.
 var _potion_target_coords: Array[Vector2i] = []
+## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
+var _round_turn_snapshots: Array = []
 
 # Owners of cells on fading_sector_overlay_layer, used so one overlay does not erase another.
 enum FadingOverlayOwner { EVENT, REVEAL }
@@ -116,7 +120,8 @@ func _ready() -> void:
 	trigger_link_overlay.setup(self)
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
-	EventBus.map_display_layout_changed.connect(_on_map_display_layout_changed)
+	EventBus.round_changed.connect(_on_round_changed)
+	EventBus.map_display_overlays_changed.connect(_on_map_display_overlays_changed)
 	EventBus.potion_fuses_changed.connect(_refresh_potion_fuse_badges)
 
 	card_placement_handler = CardPlacementHandler.new()
@@ -231,21 +236,35 @@ func _set_peek_order_numbers(active: bool) -> void:
 	_refresh_map_focus_overlays()
 
 
-func _is_order_view_active() -> bool:
+func _is_order_numbers_visible() -> bool:
 	return _sticky_order_numbers or _peek_order_numbers
 
 
-## Refreshes trigger-order numbers, segment role tints, tile emphasis, and dashed outlines.
+func _is_segment_links_visible() -> bool:
+	return _sticky_segment_links or _peek_order_numbers
+
+
+func is_board_cards_visible() -> bool:
+	return _sticky_show_tile_cards or _peek_order_numbers
+
+
+## Refreshes tile cards, trigger-order numbers, segment links, role tints, and dashed outlines.
 func _refresh_map_focus_overlays() -> void:
+	_refresh_tile_card_visibility()
 	_refresh_trigger_order_overlay()
 
 
+func _refresh_tile_card_visibility() -> void:
+	for hex: Hex in map_data.values():
+		hex._apply_display_mode()
+
+
 func _refresh_trigger_order_overlay() -> void:
-	var overlay_on := _is_order_view_active()
-	trigger_order_overlay.set_full_reveal(overlay_on)
-	# Paths share the order/segments and Tab peek gate. They stay off during idle hover.
-	segment_path_overlay.set_visible_for_order_view(overlay_on)
-	if overlay_on:
+	var numbers_on := _is_order_numbers_visible()
+	var links_on := _is_segment_links_visible()
+	trigger_order_overlay.set_full_reveal(numbers_on)
+	segment_path_overlay.set_visible_for_order_view(links_on)
+	if numbers_on:
 		trigger_order_overlay.clear_focus()
 	else:
 		var focus_cell := _get_map_focus_cell()
@@ -289,24 +308,23 @@ func _get_map_focus_cell() -> Vector2i:
 
 func _refresh_segment_role_highlights() -> void:
 	selection_overlay_layer.clear()
+	hovered_tile_overlay_layer.clear()
 
-	# Tab peek and the layout toggle show every segment at once.
-	if _is_order_view_active():
-		for coords: Vector2i in map_data:
-			_stamp_segment_role_selection(coords)
-	else:
-		var focus_cell := _get_map_focus_cell()
-		if focus_cell != Vector2i(-1, -1):
-			# Hover or placement preview lights one segment with first/last/both tints.
-			var segment_index := get_segment_index(focus_cell)
-			if segment_index >= 0:
-				for hex: Hex in get_hexes_in_segment(segment_index):
-					# The placement ghost occupies this cell. Do not wash it with the hex fill.
-					if hex.coordinates == _placement_preview_cell:
-						continue
-					_stamp_segment_role_selection(hex.coordinates)
+	# Tab peek shows order overlays only. It does not paint tile highlights.
+	if _peek_order_numbers:
+		return
 
-	_refresh_hovered_tile_emphasis()
+	var focus_cell := _get_map_focus_cell()
+	if focus_cell != Vector2i(-1, -1):
+		_stamp_hover_selection(focus_cell)
+
+
+func _stamp_hover_selection(coords: Vector2i) -> void:
+	selection_overlay_layer.set_cell(
+		coords,
+		HOVER_OVERLAY_NORMAL,
+		OVERLAY_TILE_ATLAS_COORDS
+	)
 
 
 ## Hides the dashed hex outline during the full order overlay, or when a card occupies the tile.
@@ -320,25 +338,10 @@ func refresh_dashed_outlines() -> void:
 
 
 func _should_hide_dashed_outline(coords: Vector2i) -> bool:
-	# Hover numbers keep the dashed outline. Tab and the layout toggle hide every tile.
-	if _is_order_view_active():
-		return true
+	if not is_board_cards_visible():
+		return false
 	var hex: Hex = map_data[coords]
 	return hex.active_tile_card != null
-
-
-func _refresh_hovered_tile_emphasis() -> void:
-	hovered_tile_overlay_layer.clear()
-	var emphasis_cell := _get_map_focus_cell()
-	if emphasis_cell == Vector2i(-1, -1):
-		return
-	if not is_in_map(emphasis_cell) or not is_tile_interactable(emphasis_cell):
-		return
-	hovered_tile_overlay_layer.set_cell(
-		emphasis_cell,
-		HOVERED_TILE_OVERLAY_SOURCE_ID,
-		OVERLAY_TILE_ATLAS_COORDS
-	)
 
 
 func _stamp_segment_role_selection(coords: Vector2i) -> void:
@@ -580,6 +583,9 @@ func _free_map_hexes() -> void:
 		if hex != null:
 			hex.dispose()
 	map_data.clear()
+	# map_data.clear() does not touch layout caches. Stale coords would crash turn resolution.
+	if _layout != null:
+		_layout.invalidate_caches()
 
 
 ## Apply difficulty-driven map randomization after run RNG setup rolls.
@@ -650,8 +656,14 @@ func has_event_sealed_overlay_at(coords: Vector2i) -> bool:
 	return coords in _event_sealed_coords
 
 
-func _on_map_display_layout_changed(layout: String) -> void:
-	_sticky_order_numbers = layout == "order_segments"
+func _on_map_display_overlays_changed(
+	show_tile_cards: bool,
+	show_order_numbers: bool,
+	show_segment_links: bool
+) -> void:
+	_sticky_show_tile_cards = show_tile_cards
+	_sticky_order_numbers = show_order_numbers
+	_sticky_segment_links = show_segment_links
 	_refresh_map_focus_overlays()
 
 
@@ -758,12 +770,27 @@ func get_empty_tile_count_in_segment(segment_index: int) -> int:
 	return empty
 
 
-func mark_segment_resolved(segment_index: int) -> void:
+func mark_segment_resolved(segment_index: int) -> bool:
 	if not _layout.mark_segment_resolved(segment_index):
-		return
+		return false
 	EventBus.segment_resolved.emit(segment_index)
-	# Fire-and-forget. Later tiles in the next segment keep resolving.
 	_play_segment_seal(segment_index)
+	return true
+
+
+## Waits until the last card on this segment finishes its seal slam.
+func wait_for_segment_seal(segment_index: int) -> void:
+	if GameManager.should_skip_turn_presentation():
+		return
+	var occupied := _get_occupied_hexes_in_segment(segment_index)
+	if occupied.is_empty():
+		return
+	var stagger_steps := maxi(occupied.size() - 1, 1)
+	var stagger := minf(SEGMENT_SEAL_MAX_STAGGER, SEGMENT_SEAL_BUDGET / float(stagger_steps))
+	stagger /= GameManager.game_speed
+	var seal_duration := RuneUI.get_segment_seal_duration() / GameManager.game_speed
+	var total_wait := stagger * float(occupied.size() - 1) + seal_duration
+	await GameManager.create_pauseable_timer(total_wait).timeout
 
 
 func is_segment_resolved(segment_index: int) -> bool:
@@ -1101,10 +1128,10 @@ func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 
 
 ## True when another fading-sector overlay still owns this cell.
-func _fading_overlay_still_needed(coords: Vector2i, owner: FadingOverlayOwner) -> bool:
-	if owner != FadingOverlayOwner.EVENT and coords in _event_highlighted_coords:
+func _fading_overlay_still_needed(coords: Vector2i, overlay_owner: FadingOverlayOwner) -> bool:
+	if overlay_owner != FadingOverlayOwner.EVENT and coords in _event_highlighted_coords:
 		return true
-	if owner != FadingOverlayOwner.REVEAL and coords in _segment_reveal_glow_coords:
+	if overlay_owner != FadingOverlayOwner.REVEAL and coords in _segment_reveal_glow_coords:
 		return true
 	return false
 
@@ -1294,10 +1321,7 @@ func _play_segment_seal(segment_index: int) -> void:
 	for hex: Hex in hexes:
 		_stamp_segment_sealed_overlay(hex.coordinates)
 
-	var occupied: Array[Hex] = []
-	for hex: Hex in hexes:
-		if hex.active_tile_card != null and hex.rune_ui != null:
-			occupied.append(hex)
+	var occupied := _get_occupied_hexes_in_segment(segment_index)
 	if occupied.is_empty():
 		return
 
@@ -1311,6 +1335,14 @@ func _play_segment_seal(segment_index: int) -> void:
 	for i in occupied.size():
 		var delay := stagger * float(i)
 		seal_tween.tween_callback(occupied[i].play_segment_seal_animation).set_delay(delay)
+
+
+func _get_occupied_hexes_in_segment(segment_index: int) -> Array[Hex]:
+	var occupied: Array[Hex] = []
+	for hex: Hex in get_hexes_in_segment(segment_index):
+		if hex.active_tile_card != null and hex.rune_ui != null:
+			occupied.append(hex)
+	return occupied
 
 
 func _stamp_segment_sealed_overlay(coords: Vector2i) -> void:
@@ -1383,6 +1415,7 @@ func capture_map_state() -> Dictionary:
 		"disabled_coords": disabled_coords,
 		"placed_runes": placed_runes,
 		"segment_turn_results": _layout.capture_turn_results(),
+		"turn_snapshots": _round_turn_snapshots.duplicate(true),
 	}
 
 
@@ -1403,6 +1436,11 @@ func restore_map_state(state: Dictionary) -> void:
 		map_data[coords].restore_placed_tile_card(rune)
 
 	_layout.apply_turn_results(state.get("segment_turn_results", {}))
+	_restore_turn_snapshots(state.get("turn_snapshots", []))
+
+
+func get_round_turn_snapshots() -> Array:
+	return _round_turn_snapshots.duplicate(true)
 
 
 func refresh_segment_turn_results_ui() -> void:
@@ -1440,10 +1478,20 @@ func capture_segment_turn_snapshot() -> Dictionary:
 
 
 func _emit_segment_turn_completed_snapshot() -> void:
-	EventBus.segment_turn_completed.emit(
-		GameManager.get_turn_number(),
-		capture_segment_turn_snapshot()
-	)
+	var snapshot := capture_segment_turn_snapshot()
+	_round_turn_snapshots.append(snapshot)
+	EventBus.segment_turn_completed.emit(GameManager.get_turn_number(), snapshot)
+
+
+func _on_round_changed(_new_round: int) -> void:
+	_round_turn_snapshots.clear()
+
+
+func _restore_turn_snapshots(raw_snapshots: Array) -> void:
+	_round_turn_snapshots.clear()
+	for entry: Variant in raw_snapshots:
+		if entry is Dictionary:
+			_round_turn_snapshots.append(entry)
 
 
 func _restore_disabled_tiles(coords_list: Array) -> void:
@@ -1483,6 +1531,9 @@ func _serialize_placed_tile_card(rune: TileCard) -> Dictionary:
 		"is_empowered": rune.is_empowered,
 		"potion_fuses": rune.potion_fuses.duplicate(true),
 	}
+	var card_state := rune.capture_placed_save_state()
+	if not card_state.is_empty():
+		data["card_state"] = card_state
 	return data
 
 
@@ -1502,6 +1553,9 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	for fuse in data.get("potion_fuses", []):
 		if fuse is Dictionary:
 			rune.potion_fuses.append(fuse.duplicate(true))
+	var card_state: Variant = data.get("card_state", {})
+	if card_state is Dictionary and not card_state.is_empty():
+		rune.apply_placed_save_state(card_state)
 	return rune
 
 #endregion

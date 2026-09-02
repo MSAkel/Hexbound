@@ -1,35 +1,30 @@
 class_name TurnResolveSkipOverlay
-extends Control
+extends Button
 
-## Full-screen click catcher while a turn resolves. Skips animations and score reveals.
+## Skip button shown while a turn resolves. Skips animations and score reveals.
 
-@onready var _hint: Label = $Hint
-
-const HINT_TEXT := "Click to skip"
+const HINT_TEXT := "Skip Animation"
 
 
 func _ready() -> void:
+	text = HINT_TEXT
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 45
 	hide()
+	pressed.connect(_on_pressed)
 	EventBus.turn_ended.connect(_on_turn_ended)
 	EventBus.turn_started.connect(_hide)
 	EventBus.segment_turn_completed.connect(_hide)
 	EventBus.game_ended.connect(_hide)
 
 
-func _gui_input(event: InputEvent) -> void:
-	if not visible:
-		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		GameManager.request_turn_presentation_skip()
-		accept_event()
+func _on_pressed() -> void:
+	GameManager.request_turn_presentation_skip()
 
 
 func _on_turn_ended() -> void:
 	if GameManager.skip_presentation:
 		return
-	_hint.text = HINT_TEXT
 	show()
 
 

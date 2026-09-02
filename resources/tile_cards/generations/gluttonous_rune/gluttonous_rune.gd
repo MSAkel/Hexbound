@@ -22,6 +22,14 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 	return _amount_board_chip(_get_production_amount() * score_bonus)
 
 
+func capture_placed_save_state() -> Dictionary:
+	return {"score_bonus": score_bonus}
+
+
+func apply_placed_save_state(data: Dictionary) -> void:
+	score_bonus = maxi(int(data.get("score_bonus", 1)), 1)
+
+
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	var next_rune := _get_next_tile_card_in_trigger_order(hover_tile)
 	if next_rune == null:

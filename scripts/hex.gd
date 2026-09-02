@@ -118,8 +118,9 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 
 func _apply_display_mode() -> void:
 	var has_rune := rune_ui != null and active_tile_card != null
+	var show_cards := map == null or map.is_board_cards_visible()
 	if rune_ui != null:
-		rune_ui.visible = has_rune
+		rune_ui.visible = has_rune and show_cards
 
 
 func refresh_tile_card_visual_state() -> void:

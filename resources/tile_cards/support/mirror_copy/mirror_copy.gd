@@ -1,14 +1,7 @@
 extends TileCard
 ## Copies the ability of whichever card currently occupies the opposite map tile.
 
-# Prevents two facing Mirror Copies from recursively copying each other.
-static var _is_resolving_copy: bool = false
-
-
 func _on_activate_tile_card(tile: Hex) -> void:
-	if _is_resolving_copy:
-		return
-
 	var opposite := _get_opposite_hex(tile)
 	if opposite == null or opposite == tile:
 		failed_tile_card_text(tile)
@@ -20,12 +13,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 
-	_is_resolving_copy = true
-	copied._activation_output_scale = _activation_output_scale
 	# Copied retriggers resolve from this hex. TileCard skips queuing this host so Break Glass cannot loop.
-	copied._on_activate_tile_card(tile)
-	copied._activation_output_scale = 1.0
-	_is_resolving_copy = false
+	# The copy stack also stops two facing Mirror Copies from copying each other forever.
+	_run_copied_activation(copied, tile)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

@@ -144,7 +144,10 @@ static func _apply_windowed_resolution() -> void:
 	var screen := DisplayServer.window_get_current_screen()
 	var screen_position := DisplayServer.screen_get_position(screen)
 	var screen_size := DisplayServer.screen_get_size(screen)
-	DisplayServer.window_set_position(screen_position + (screen_size - resolution) / 2)
+	var delta := screen_size - resolution
+	DisplayServer.window_set_position(
+		screen_position + Vector2i(delta.x >> 1, delta.y >> 1)
+	)
 
 
 ## A fullscreen-sized saved resolution would make Windowed appear unchanged.

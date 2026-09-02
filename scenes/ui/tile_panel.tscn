@@ -61,13 +61,30 @@ stretch_mode = 4
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="RuneName" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=2066887061]
+[node name="NameRow" type="HBoxContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1988771201]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RuneName" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow" unique_id=2066887061]
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
 theme_override_fonts/font = SubResource("FontVariation_c0n6m")
 theme_override_font_sizes/font_size = 18
 text = "No Rune"
+
+[node name="RarityBadge" type="PanelContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow" unique_id=1452203392]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RarityLabel" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge" unique_id=1452203393]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
+theme_override_font_sizes/font_size = 11
+text = "Common"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="RuneSubtitle" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1042300476]
 layout_mode = 2

@@ -6,6 +6,7 @@ extends Node
 ## godot --headless --path "E:/Godot/game++" res://scenes/debug/playtest_runner.tscn
 ## Restrict to one layout with `-- --layout=surveyor`.
 ## Player-only batch: `-- --bot=player --full-count=8` (skips starter/R1 suites).
+## Human-like run: `-- --layout=surveyor --bot=player --seed=TJU27YGN --no-passives --no-potions --repeat=5`
 ## Player bot uses Spark on the engine segment, potions, chip placement, and layout plans.
 ## Surveyor locks a 6–7 hex line through R5. Columnist locks a 7-hex column through R5.
 ## Surveyor then stays on that 7-hex line until full. Columnist rerolls hard through R4.
@@ -80,6 +81,9 @@ var _only_seed := ""
 var _full_run_seed_count := FULL_RUN_SEED_COUNT
 ## Surveyor and Columnist opening engine line. -1 means no lock.
 var _locked_engine_segment := -1
+var _use_passives := true
+var _use_potions := true
+var _focused_repeat_count := 1
 
 
 func _enter_tree() -> void:
@@ -90,11 +94,13 @@ func _ready() -> void:
 	_layouts = _parse_layout_filter()
 	if _layouts.size() == 1:
 		_report_path = "user://playtest_report_%s.json" % _layouts[0]
-	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d passives=player_spark" % [
+	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d passives=%s potions=%s" % [
 		",".join(_layouts),
 		_only_bot if not _only_bot.is_empty() else "all",
 		_only_seed if not _only_seed.is_empty() else "all",
 		_full_run_seed_count,
+		"spark" if _use_passives else "none",
+		"on" if _use_potions else "off",
 	])
 	_map = HEX_MAP_SCENE.instantiate() as HexTileMap
 	add_child(_map)
@@ -125,6 +131,12 @@ func _parse_layout_filter() -> Array[String]:
 			_only_seed = arg.substr("--seed=".length()).strip_edges()
 		elif arg.begins_with("--full-count="):
 			_full_run_seed_count = maxi(1, int(arg.substr("--full-count=".length()).strip_edges()))
+		elif arg.begins_with("--repeat="):
+			_focused_repeat_count = maxi(1, int(arg.substr("--repeat=".length()).strip_edges()))
+		elif arg == "--no-passives":
+			_use_passives = false
+		elif arg == "--no-potions":
+			_use_potions = false
 	var layouts: Array[String] = []
 	for character_id: String in CHARACTER_IDS:
 		if requested.is_empty() or character_id in requested:
@@ -138,14 +150,20 @@ func _parse_layout_filter() -> Array[String]:
 func _run_all() -> void:
 	if not _only_seed.is_empty():
 		var character_id := _layouts[0]
-		var bots: Array[String] = [_only_bot] if not _only_bot.is_empty() else BOT_IDS
-		print("[playtest] focused seed=%s layout=%s bots=%s passives=player_spark" % [
+		var bots: Array[String] = BOT_IDS.duplicate()
+		if not _only_bot.is_empty():
+			bots = [_only_bot]
+		print("[playtest] focused seed=%s layout=%s bots=%s passives=%s potions=%s repeat=%d" % [
 			_only_seed,
 			character_id,
 			",".join(bots),
+			"spark" if _use_passives else "none",
+			"on" if _use_potions else "off",
+			_focused_repeat_count,
 		])
-		for bot_id: String in bots:
-			await _run_one_full_nine(character_id, _only_seed, bot_id)
+		for repeat_index in _focused_repeat_count:
+			for bot_id: String in bots:
+				await _run_one_full_nine(character_id, _only_seed, bot_id, repeat_index)
 		_print_full_nine_summary()
 		return
 	if not _only_bot.is_empty():
@@ -457,13 +475,14 @@ func _full_nine_bots() -> Array[String]:
 	return [_only_bot]
 
 
-func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String) -> void:
+func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String, repeat_index: int = 0) -> void:
 	_active_bot = bot_id
-	print("[playtest] start full_nine/%s %s %s" % [bot_id, character_id, seed_text])
+	var repeat_tag := "" if repeat_index <= 0 else " #%d" % (repeat_index + 1)
+	print("[playtest] start full_nine/%s %s %s%s" % [bot_id, character_id, seed_text, repeat_tag])
 	_begin_run(character_id, seed_text)
 	var hand := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
 	_place_opening_hand(hand)
-	if bot_id == "player":
+	if bot_id == "player" and _use_passives:
 		_apply_spark_on_engine()
 
 	var round_log: Array[Dictionary] = []
@@ -477,7 +496,7 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String)
 		var goal := GameManager.required_score
 		var turns_used := 0
 		while GameManager.remaining_turns > 0 and GameManager.total_round_score < goal:
-			if bot_id == "player":
+			if bot_id == "player" and _use_potions:
 				_player_use_belt_before_resolve()
 			await _resolve_turn()
 			turns_used += 1
@@ -561,7 +580,9 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String)
 			"bot": bot_id,
 			"segment_sizes": GameManager.selected_character.segment_sizes,
 			"segments_count": GameManager.selected_character.segments_count,
-			"playtest_passives": ["spark"] if bot_id == "player" else [],
+			"playtest_passives": ["spark"] if bot_id == "player" and _use_passives else [],
+			"playtest_potions": _use_potions,
+			"repeat_index": repeat_index,
 		}
 	)
 
@@ -753,15 +774,16 @@ func _shop_player_round() -> Array[String]:
 	var gold_rerolls := 0
 	while true:
 		var stock := _draw_merchant_stock(stock_reroll_count)
-		var potion_stock := _draw_merchant_potions(stock_reroll_count)
 		var engine_stock := _player_engine_shop_cards(stock)
 		engine_stock.sort_custom(func(a: TileCard, b: TileCard) -> bool:
 			return _shop_card_score(a) > _shop_card_score(b)
 		)
-		var potion_pick := _pick_best_shop_potion(potion_stock)
 		var buys_this_visit := 0
-		if potion_pick != null and _buy_shop_potion(potion_pick, bought):
-			buys_this_visit += 1
+		if _use_potions:
+			var potion_stock := _draw_merchant_potions(stock_reroll_count)
+			var potion_pick := _pick_best_shop_potion(potion_stock)
+			if potion_pick != null and _buy_shop_potion(potion_pick, bought):
+				buys_this_visit += 1
 		for card: TileCard in engine_stock:
 			if buys_this_visit >= MAX_SHOP_BUYS_PER_VISIT:
 				break
@@ -1240,7 +1262,7 @@ func _maybe_relock_engine_from_board() -> void:
 
 
 func _apply_spark_on_engine() -> void:
-	if _active_bot != "player":
+	if _active_bot != "player" or not _use_passives:
 		return
 	var engine := _player_primary_segment()
 	if engine < 0:
@@ -1891,8 +1913,8 @@ func _begin_run(character_id: String, seed_text: String) -> void:
 	_map.generate_terrain()
 	_map.apply_run_start_randomization()
 	_locked_engine_segment = -1
-	# Player bot Spark is applied after the opening hand. Other bots stay passive-free.
-	if _active_bot != "player":
+	# Passives and Spark are optional. Other bots stay passive-free.
+	if _active_bot != "player" or not _use_passives:
 		GameManager.bind_segment_passives_for_debug({})
 	EventBus.turn_started.emit()
 

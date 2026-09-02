@@ -78,7 +78,7 @@ func get_ring_distance(coords: Vector2i) -> int:
 
 ## All map coordinates sorted by the active character trigger-order rule.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
-	if _trigger_order_cache_valid:
+	if _trigger_order_cache_valid and _trigger_order_cache_matches_map():
 		return _trigger_order_cache
 
 	_trigger_order_cache = _compute_trigger_order()
@@ -90,8 +90,16 @@ func get_coords_in_trigger_order() -> Array[Vector2i]:
 func get_hexes_in_trigger_order() -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	for coords: Vector2i in get_coords_in_trigger_order():
-		hexes.append(_map.map_data[coords])
+		var hex: Hex = _map.map_data.get(coords)
+		if hex != null:
+			hexes.append(hex)
 	return hexes
+
+
+## Drops cached trigger order and segment groups. Call when map_data keys change.
+func invalidate_caches() -> void:
+	_ring_distances.clear()
+	_invalidate_segments_cache()
 
 
 ## Segment index for coords under the active character's row/ring grouping (-1 when unknown).
@@ -378,6 +386,16 @@ func _invalidate_segments_cache() -> void:
 	_segment_index_by_coords.clear()
 	_trigger_order_cache_valid = false
 	_trigger_order_cache.clear()
+
+
+## True when the trigger-order cache still matches every live map_data key.
+func _trigger_order_cache_matches_map() -> bool:
+	if _trigger_order_cache.size() != _map.map_data.size():
+		return false
+	for coords: Vector2i in _trigger_order_cache:
+		if not _map.map_data.has(coords):
+			return false
+	return true
 
 
 ## Breadth-first fill of ring distance from the map center tile.

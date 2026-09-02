@@ -7,15 +7,15 @@ const ENDLESS_MODE_START_ROUND := 10
 const MAX_SCORE := 9223372036854775807
 ## Round 1 through 9, indexed as AUTHORED_ROUND_SCORES[round - 1].
 const AUTHORED_ROUND_SCORES: Array[int] = [
-	435,
-	2000,
-	4000,
-	6800,
-	11155,
-	17500,
-	27000,
-	41200,
-	60000,
+	450,
+	3750,
+	8000,
+	17000,
+	26500,
+	32000,
+	43000,
+	58000,
+	80000,
 ]
 ## Multiplier used by the endless curve. Values above 1 increase the target every round.
 const ENDLESS_GROWTH_FACTOR := 1.5

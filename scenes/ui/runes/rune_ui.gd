@@ -4,6 +4,8 @@ extends Control
 @onready var rune_button: TextureButton = $Container/RuneButton
 @onready var _anim_target: Control = $Container
 @onready var placement_smoke: GPUParticles2D = $PlacementSmoke
+@onready var placement_dust: GPUParticles2D = $PlacementDust
+@onready var placement_slash: GPUParticles2D = $PlacementSlash
 @onready var empower_sparks: GPUParticles2D = $EmpowerSparks
 @onready var hex_stroke: HexStroke = $HexStroke
 @onready var sigil: TextureRect = $Container/Identifiers/Sigil
@@ -67,6 +69,12 @@ const SEAL_SETTLE_DURATION := 0.12
 const SEAL_HIGHLIGHT := Color(1.55, 1.28, 0.55, 1.0)
 const SEALED_REST_TINT := Color(1.08, 0.96, 0.7, 1.0)
 
+
+## Full seal slam timing. Keep in sync with HexTileMap.wait_for_segment_seal().
+static func get_segment_seal_duration() -> float:
+	return SEAL_LIFT_DURATION + SEAL_SLAM_DURATION + SEAL_SETTLE_DURATION
+
+
 func setup(rune: TileCard) -> void:
 	if not is_node_ready():
 		call_deferred("setup", rune)
@@ -116,12 +124,17 @@ func reset_ghost_visuals() -> void:
 
 # Hide emitters without restart(). restart() starts a new burst in Godot.
 func _silence_particle_emitters() -> void:
-	if placement_smoke != null:
-		placement_smoke.emitting = false
-		placement_smoke.visible = false
-	if empower_sparks != null:
-		empower_sparks.emitting = false
-		empower_sparks.visible = false
+	_silence_emitter(placement_smoke)
+	_silence_emitter(placement_dust)
+	_silence_emitter(placement_slash)
+	_silence_emitter(empower_sparks)
+
+
+func _silence_emitter(emitter: GPUParticles2D) -> void:
+	if emitter == null:
+		return
+	emitter.emitting = false
+	emitter.visible = false
 
 
 func hide_output_chip() -> void:
@@ -272,25 +285,38 @@ func play_drag_seat_animation() -> void:
 
 func _on_drag_placement_impact() -> void:
 	_shake_screen(DRAG_PLACEMENT_SHAKE_STRENGTH, PLACEMENT_SHAKE_DURATION * 0.7)
-	_play_placement_smoke()
-	if hex_stroke != null:
-		hex_stroke.play_clockwise_draw()
 
 
 func _on_placement_impact() -> void:
 	_shake_screen(PLACEMENT_SHAKE_STRENGTH, PLACEMENT_SHAKE_DURATION)
-	_play_placement_smoke()
+	_play_placement_dust()
 	if hex_stroke != null:
 		hex_stroke.play_clockwise_draw()
 
 
+# White dust puff from under the hex. Smoke gives volume, slashes shoot straight out from the center.
+func play_placement_land_particles() -> void:
+	_play_placement_dust()
+	if hex_stroke != null:
+		hex_stroke.play_clockwise_draw()
+
+
+func _play_placement_dust() -> void:
+	_burst_emitter(placement_dust)
+	_burst_emitter(placement_slash)
+
+
 func _play_placement_smoke() -> void:
-	if placement_smoke == null:
+	_burst_emitter(placement_smoke)
+
+
+func _burst_emitter(emitter: GPUParticles2D) -> void:
+	if emitter == null:
 		return
 	# Stay hidden until impact so showing a drag ghost cannot flash a leftover burst.
-	placement_smoke.visible = true
-	placement_smoke.restart()
-	placement_smoke.emitting = true
+	emitter.visible = true
+	emitter.restart()
+	emitter.emitting = true
 
 
 func apply_resting_modulate(color: Color) -> void:
@@ -492,6 +518,7 @@ func play_segment_seal_animation() -> void:
 		_pending_sealed_rim = false
 		_start_seal_shine()
 
+	# Seal keeps the original short flame puff. Dirt burst is placement-only.
 	_play_placement_smoke()
 
 	if skip_motion:
@@ -645,9 +672,6 @@ func play_segment_result_animation() -> void:
 		"modulate",
 		ACTIVATION_HIGHLIGHT,
 		SEGMENT_REVEAL_HIGHLIGHT_DURATION
-	)
-	_activation_tween.tween_callback(func() -> void:
-		AudioManager.play_sfx(UISounds.SEGMENT_RESULT)
 	)
 	_activation_tween.tween_property(
 		_anim_target,
@@ -817,18 +841,18 @@ func _ensure_fuse_ui() -> void:
 	_potion_splash.position = size * 0.5
 	_potion_splash.z_index = 12
 	_potion_splash.emitting = false
-	var material := ParticleProcessMaterial.new()
-	material.particle_flag_disable_z = true
-	material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	material.emission_sphere_radius = 18.0
-	material.direction = Vector3(0, -1, 0)
-	material.spread = 80.0
-	material.initial_velocity_min = 40.0
-	material.initial_velocity_max = 90.0
-	material.gravity = Vector3(0, 80, 0)
-	material.scale_min = 0.08
-	material.scale_max = 0.18
-	_potion_splash.process_material = material
+	var splash_material := ParticleProcessMaterial.new()
+	splash_material.particle_flag_disable_z = true
+	splash_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	splash_material.emission_sphere_radius = 18.0
+	splash_material.direction = Vector3(0, -1, 0)
+	splash_material.spread = 80.0
+	splash_material.initial_velocity_min = 40.0
+	splash_material.initial_velocity_max = 90.0
+	splash_material.gravity = Vector3(0, 80, 0)
+	splash_material.scale_min = 0.08
+	splash_material.scale_max = 0.18
+	_potion_splash.process_material = splash_material
 	_potion_splash.texture = preload("res://assets/particles/spark/spark_03.png")
 	add_child(_potion_splash)
 #endregion Animations and colors

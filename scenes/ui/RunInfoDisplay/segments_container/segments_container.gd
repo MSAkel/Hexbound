@@ -10,6 +10,7 @@ const SEGMENT_RESULTS_SCENE := preload(
 @onready var segment_results_list: VBoxContainer = $VBoxContainer/SegmentResultsList
 @onready var turn_total_container: PanelContainer = $VBoxContainer/TurnTotalContainer
 @onready var score_total_number: Label = $VBoxContainer/TurnTotalContainer/TotalRow/ScoreTotalNumber
+@onready var round_score_footer: PanelContainer = $VBoxContainer/RoundScoreContainer
 
 ## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
 var _turn_history: Array = []
@@ -24,6 +25,8 @@ var _live_revealed_score: int = 0
 const CAMERA_SHAKE_MIN := 5.0
 const CAMERA_SHAKE_MAX := 20.0
 const SHAKE_DURATION := 0.42
+## Hold on the turn total before it drains into the round score below.
+const TURN_TOTAL_HOLD_DELAY := 0.75
 
 
 func _ready() -> void:
@@ -37,9 +40,10 @@ func _ready() -> void:
 	call_deferred("_build_segment_rows")
 
 	EventBus.turn_ended.connect(_on_turn_ended)
+	EventBus.turn_started.connect(_on_turn_started)
 	EventBus.segment_turn_completed.connect(_on_segment_turn_completed)
-	EventBus.segment_score_revealed.connect(_on_segment_score_revealed)
 	EventBus.segment_reveals_finished.connect(_on_segment_reveals_finished)
+	EventBus.round_score_commit_animation_requested.connect(_on_round_score_commit_animation_requested)
 	EventBus.round_changed.connect(_on_round_changed)
 
 	_refresh_view(false)
@@ -47,9 +51,22 @@ func _ready() -> void:
 	turn_total_container.clip_contents = false
 
 
+func _on_turn_started() -> void:
+	# New turn. Show its empty row before the player ends the turn and resolve begins.
+	_viewed_turn_index = _turn_history.size()
+	_resolving_turn = false
+	_live_revealed_score = 0
+	_score_total_counter.snap_to(0)
+	_style_total_score(0)
+	_set_rows_live_mode(true)
+	_refresh_view(false)
+
+
 func _on_turn_ended() -> void:
 	_resolving_turn = true
 	_live_revealed_score = 0
+	_score_total_counter.snap_to(0)
+	_style_total_score(0)
 	_viewed_turn_index = _turn_history.size()
 	_set_rows_live_mode(true)
 	_refresh_view(false)
@@ -58,32 +75,46 @@ func _on_turn_ended() -> void:
 func _on_segment_turn_completed(_turn_number: int, snapshot: Dictionary) -> void:
 	_turn_history.append(snapshot)
 	_resolving_turn = false
-	_viewed_turn_index = _turn_history.size() - 1
-	_set_rows_live_mode(false)
-	# Snap the saved turn. The live resolve already played the turn-total animation.
-	_refresh_view(false)
-
-
-func _on_segment_score_revealed(_segment_index: int, total_score: int) -> void:
-	if not _is_viewing_live_turn():
-		return
-	# Footer waits until every segment row has resolved.
-	_live_revealed_score += total_score
+	# Keep the live row through the transfer drain. turn_started owns the next view.
 
 
 func _on_segment_reveals_finished(turn_total_score: int) -> void:
 	if not _is_viewing_live_turn():
 		EventBus.turn_total_count_finished.emit()
 		return
+	_live_revealed_score = turn_total_score
 	if GameManager.should_skip_turn_presentation():
-		_live_revealed_score = turn_total_score
+		_snap_all_segment_scores_to_zero()
 		_score_total_counter.snap_to(turn_total_score)
-		score_total_number.text = str(turn_total_score)
+		score_total_number.text = _format_stat(turn_total_score)
+		_style_total_score(turn_total_score)
 		EventBus.turn_total_count_finished.emit()
 		return
-	_live_revealed_score = turn_total_score
-	var counter_tween := _score_total_counter.play(turn_total_score)
+	call_deferred("_play_turn_total_transfer_animation", turn_total_score)
+
+
+## Drains each segment Score to zero while the turn total counts up, then punches.
+func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
+	if turn_total_score <= 0:
+		_score_total_counter.snap_to(0)
+		_style_total_score(0)
+		EventBus.turn_total_count_finished.emit()
+		return
+
+	for child in segment_results_list.get_children():
+		if child.has_method("play_score_drain_to_zero"):
+			child.play_score_drain_to_zero()
+
+	_score_total_counter.snap_to(0)
+	var count_tween := _score_total_counter.play(float(turn_total_score))
+	if count_tween != null:
+		await _await_tween_finished(count_tween)
+	else:
+		_score_total_counter.snap_to(turn_total_score)
+		_style_total_score(turn_total_score)
+
 	var intensity := ScoreReadoutStyle.intensity_for_score(turn_total_score)
+	AudioManager.play_sfx(UISounds.SEGMENT_RESULT)
 	_land_number(score_total_number, intensity)
 	_pulse_panel(turn_total_container)
 	_shake_screen(turn_total_score)
@@ -92,18 +123,56 @@ func _on_segment_reveals_finished(turn_total_score: int) -> void:
 		ScoreReadoutStyle.intensity_for_score(turn_total_score),
 		true
 	)
-	_finish_turn_total_animation(counter_tween)
+	_finish_turn_total_land_animation()
 
 
-## Turn resolve waits for the footer readout before committing the round score below.
-func _finish_turn_total_animation(counter_tween: Tween) -> void:
-	call_deferred("_await_turn_total_animation", counter_tween)
+func _snap_all_segment_scores_to_zero() -> void:
+	for child in segment_results_list.get_children():
+		if child.has_method("snap_score_to_zero"):
+			child.snap_score_to_zero()
 
 
-func _await_turn_total_animation(counter_tween: Tween) -> void:
-	await _await_counter_tween(counter_tween)
+func _on_round_score_commit_animation_requested(transfer_amount: int, round_score_before: int) -> void:
+	if not GameManager.is_processing_turn:
+		return
+	call_deferred("_await_score_transfer", transfer_amount, round_score_before)
+
+
+## Drains the turn total while the round score rises by the same amount.
+func _await_score_transfer(transfer_amount: int, round_score_before: int) -> void:
+	if transfer_amount <= 0:
+		EventBus.round_score_count_finished.emit()
+		return
+
+	var turn_tween := _score_total_counter.play(0)
+	var round_tween: Tween = null
+	if round_score_footer.has_method("play_transfer_fill"):
+		round_tween = round_score_footer.play_transfer_fill(
+			round_score_before,
+			round_score_before + transfer_amount
+		)
+
+	if turn_tween != null:
+		await _await_tween_finished(turn_tween)
+	else:
+		_score_total_counter.snap_to(0)
+		_style_total_score(0)
+
+	if round_tween != null:
+		await _await_tween_finished(round_tween)
+
+	EventBus.round_score_count_finished.emit()
+
+
+## Turn resolve waits for the footer punch before committing the round score below.
+func _finish_turn_total_land_animation() -> void:
+	call_deferred("_await_turn_total_land_animation")
+
+
+func _await_turn_total_land_animation() -> void:
 	await _await_punch_tween(score_total_number)
 	await _await_punch_tween(turn_total_container)
+	await GameManager.create_pauseable_timer(TURN_TOTAL_HOLD_DELAY / GameManager.game_speed).timeout
 	EventBus.turn_total_count_finished.emit()
 
 
@@ -130,19 +199,29 @@ func _on_next_turn_pressed() -> void:
 
 
 func _get_latest_view_index() -> int:
-	if _resolving_turn:
-		return _turn_history.size()
-	return maxi(_turn_history.size() - 1, 0)
+	return _turn_history.size()
+
+
+func _is_viewing_current_turn() -> bool:
+	return _viewed_turn_index == _turn_history.size()
 
 
 func _is_viewing_live_turn() -> bool:
-	return _resolving_turn and _viewed_turn_index == _turn_history.size()
+	return _resolving_turn and _is_viewing_current_turn()
 
 
 func _set_rows_live_mode(enabled: bool) -> void:
 	for child in segment_results_list.get_children():
 		if child.has_method("set_accepts_live_updates"):
 			child.set_accepts_live_updates(enabled)
+
+
+func restore_turn_history(snapshots: Array) -> void:
+	_turn_history = snapshots.duplicate(true)
+	_viewed_turn_index = _turn_history.size()
+	_resolving_turn = false
+	_set_rows_live_mode(true)
+	_refresh_view(false)
 
 
 func _refresh_view(animate: bool) -> void:
@@ -152,6 +231,11 @@ func _refresh_view(animate: bool) -> void:
 	if _is_viewing_live_turn():
 		_set_rows_live_mode(true)
 		_sync_rows_from_tile_map(animate)
+		return
+
+	if _is_viewing_current_turn():
+		_set_rows_live_mode(true)
+		_apply_empty_snapshot(animate)
 		return
 
 	_set_rows_live_mode(false)
@@ -209,7 +293,9 @@ func _sync_rows_from_tile_map(animate: bool) -> void:
 		var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
 		child.apply_turn_snapshot(score, multiplier, int(round(float(score) * multiplier)), animate, false)
 
-	_score_total_counter.snap_to(_live_revealed_score)
+	# Turn total is driven by the reveal transfer beat, not live tile-map sync.
+	if not _is_viewing_live_turn():
+		_score_total_counter.snap_to(_live_revealed_score)
 
 
 func _update_turn_total(total_score: int, animate: bool) -> void:
@@ -292,10 +378,6 @@ func _store_land_tween(target: Control, tween: Tween) -> void:
 		_punch_tweens[target] = tween
 
 
-func _await_counter_tween(counter_tween: Tween) -> void:
-	await _await_tween_finished(counter_tween)
-
-
 func _await_punch_tween(punch_target: Control) -> void:
 	var punch_tween: Variant = _punch_tweens.get(punch_target)
 	if punch_tween is Tween:
@@ -337,7 +419,11 @@ func _build_segment_rows() -> void:
 		segment_results_list.add_child(row)
 
 	_set_rows_live_mode(_is_viewing_live_turn())
-	_refresh_view(false)
+	var snapshots := tile_map.get_round_turn_snapshots()
+	if not snapshots.is_empty():
+		restore_turn_history(snapshots)
+	else:
+		_refresh_view(false)
 
 
 func _exit_tree() -> void:
@@ -349,11 +435,17 @@ func _exit_tree() -> void:
 func _disconnect_event_bus() -> void:
 	if EventBus.turn_ended.is_connected(_on_turn_ended):
 		EventBus.turn_ended.disconnect(_on_turn_ended)
+	if EventBus.turn_started.is_connected(_on_turn_started):
+		EventBus.turn_started.disconnect(_on_turn_started)
 	if EventBus.segment_turn_completed.is_connected(_on_segment_turn_completed):
 		EventBus.segment_turn_completed.disconnect(_on_segment_turn_completed)
-	if EventBus.segment_score_revealed.is_connected(_on_segment_score_revealed):
-		EventBus.segment_score_revealed.disconnect(_on_segment_score_revealed)
 	if EventBus.segment_reveals_finished.is_connected(_on_segment_reveals_finished):
 		EventBus.segment_reveals_finished.disconnect(_on_segment_reveals_finished)
+	if EventBus.round_score_commit_animation_requested.is_connected(
+		_on_round_score_commit_animation_requested
+	):
+		EventBus.round_score_commit_animation_requested.disconnect(
+			_on_round_score_commit_animation_requested
+		)
 	if EventBus.round_changed.is_connected(_on_round_changed):
 		EventBus.round_changed.disconnect(_on_round_changed)

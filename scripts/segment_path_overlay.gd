@@ -2,7 +2,7 @@ class_name SegmentPathOverlay
 extends Node2D
 
 ## Soft trace-particle chains along each segment in trigger order.
-## Shown with the order/segments layout or Tab peek.
+## Shown with the segment-links layout toggle or Tab peek.
 
 const PATH_Z_INDEX := 22
 const TRACE_PATH := preload("res://assets/particles/trace/trace_04.png")

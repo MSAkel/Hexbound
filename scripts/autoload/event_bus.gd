@@ -46,8 +46,8 @@ signal segment_reveal_ended()
 signal segment_reveals_finished(turn_total_score: int)
 ## Turn-total footer counter and punch finished for the current resolve.
 signal turn_total_count_finished()
-## Play the top-panel round score after the segment turn total lands.
-signal round_score_commit_animation_requested()
+## Drain the turn total into the round score after the turn-total punch lands.
+signal round_score_commit_animation_requested(transfer_amount: int, round_score_before: int)
 ## Top-panel round score counter finished after a turn commits.
 signal round_score_count_finished()
 ## Fired once per resolved turn with a full per-segment snapshot for the run-info history UI.
@@ -76,7 +76,8 @@ signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect
 ## Re-evaluate the control beneath a stationary cursor after a covering UI closes.
 signal tooltip_hover_refresh_requested
 
-signal map_display_layout_changed(layout: String)
+## Independent map overlay toggles from the run-info layout buttons.
+signal map_display_overlays_changed(show_tile_cards: bool, show_order_numbers: bool, show_segment_links: bool)
 
 ## Potion belt contents changed.
 signal potion_belt_changed

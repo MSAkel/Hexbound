@@ -1,14 +1,20 @@
 class_name Tooltip
 extends PanelContainer
 
-@onready var label: Label = $Label
+@onready var rich_text_label: RichTextLabel = $RichTextLabel
 
 const offset: Vector2 = Vector2(10, 10)
+
+const BODY_COLOR := Color(0.21230483, 0.21230483, 0.21230483, 1)
+const HEADER_COLOR := Color(0.36923152, 0.31425732, 0.21094128, 1)
+const BODY_FONT_SIZE := 14
+const HEADER_FONT_SIZE := 17
 
 # Card keyword panels reuse this scene without listening to the global tooltip bus.
 @export var bind_event_bus: bool = true
 
 var target_rect: Rect2 = Rect2()
+
 
 func _ready() -> void:
 	if bind_event_bus:
@@ -40,9 +46,9 @@ func _on_hover_refresh_requested() -> void:
 # Used when this panel is stacked beside a hovered card description.
 func configure_as_embedded(text: String) -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if label != null:
-		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		label.text = text
+	if rich_text_label != null:
+		rich_text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_set_rich_text(text)
 	show()
 
 
@@ -60,14 +66,54 @@ func _on_toggle_tooltip(
 
 
 func _update_content(text: String) -> void:
-	label.text = text
+	_set_rich_text(text)
 	call_deferred("_update_size")
+
+
+func _set_rich_text(text: String) -> void:
+	rich_text_label.text = format_tooltip_bbcode(text)
+
+
+## First line is the tooltip header. Remaining lines are body copy.
+static func format_tooltip_bbcode(plain: String) -> String:
+	if plain.is_empty():
+		return ""
+
+	var newline_index := plain.find("\n")
+	if newline_index == -1:
+		return _body_bbcode(plain)
+
+	var title := plain.substr(0, newline_index)
+	var body := plain.substr(newline_index + 1)
+	if body.is_empty():
+		return _header_bbcode(title)
+	return "%s\n%s" % [_header_bbcode(title), _body_bbcode(body)]
+
+
+static func _header_bbcode(text: String) -> String:
+	return "[font_size=%d][color=#%s]%s[/color][/font_size]" % [
+		HEADER_FONT_SIZE,
+		HEADER_COLOR.to_html(false),
+		_escape_bbcode(text),
+	]
+
+
+static func _body_bbcode(text: String) -> String:
+	return "[font_size=%d][color=#%s]%s[/color][/font_size]" % [
+		BODY_FONT_SIZE,
+		BODY_COLOR.to_html(false),
+		_escape_bbcode(text),
+	]
+
+
+static func _escape_bbcode(text: String) -> String:
+	return text.replace("[", "[lb]")
 
 
 func _update_size() -> void:
 	# Let the label reflow with its min width before measuring.
 	await get_tree().process_frame
-	var label_size := label.get_minimum_size()
+	var label_size := rich_text_label.get_minimum_size()
 	var style := get_theme_stylebox("panel")
 	var padding := Vector2(24, 16)
 	if style != null:

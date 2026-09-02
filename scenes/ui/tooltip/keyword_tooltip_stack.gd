@@ -18,12 +18,12 @@ func _ready() -> void:
 
 
 func _on_toggle_keyword_tooltips(
-	is_visible: bool,
+	should_show: bool,
 	entries: Array,
 	element_rect: Rect2,
 	source: Object
 ) -> void:
-	var has_entries := is_visible and not entries.is_empty()
+	var has_entries := should_show and not entries.is_empty()
 	if has_entries:
 		_source = source
 		_rebuild_entries(entries)
@@ -32,7 +32,7 @@ func _on_toggle_keyword_tooltips(
 		return
 
 	# Empty hover (e.g. Gold only) still claims the slot so the previous card's tips close.
-	if is_visible:
+	if should_show:
 		_source = source
 		_clear_entries()
 		hide()
@@ -57,7 +57,6 @@ func _rebuild_entries(entries: Array) -> void:
 		var tooltip := TOOLTIP_SCENE.instantiate() as Tooltip
 		tooltip.bind_event_bus = false
 		add_child(tooltip)
-		tooltip.layout_mode = 2
 		tooltip.configure_as_embedded(text)
 
 

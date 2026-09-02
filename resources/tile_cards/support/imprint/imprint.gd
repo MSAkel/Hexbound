@@ -10,14 +10,11 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 	# Replay those effects from this hex. The source tiles are not retriggered.
 	# Copied retriggers skip this host, so a prior Break Glass cannot loop Imprint.
-	var output_scale := _activation_output_scale
 	for prior_rune: TileCard in prior_runes:
 		var prior_hex := tile.map.get_hex_for_tile_card(prior_rune)
 		if not prior_rune.can_be_triggered_by_other_card(prior_hex):
 			continue
-		prior_rune._activation_output_scale = output_scale
-		prior_rune._on_activate_tile_card(tile)
-		prior_rune._activation_output_scale = 1.0
+		_run_copied_activation(prior_rune, tile)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

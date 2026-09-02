@@ -7,10 +7,10 @@
 script = ExtResource("1_an07q")
 rarity = 1
 type = 1
-sigil_kind = 5
 single_activation_per_turn = true
+sigil_kind = 5
 id = "overdrive"
 name = "Overdrive"
 icon = ExtResource("1_42ohc")
-description = "Triggers the next card in trigger order twice. Can only be activated once per turn from trigger order."
+description = "Triggers the next card in trigger order twice. Can only be activated once per turn."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -18,6 +18,10 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		current_chance = BASE_CHANCE
 	else:
 		current_chance += BASE_CHANCE
+		_create_floating_text(
+			tile,
+			"+%d%%" % int(round(BASE_CHANCE * 100.0))
+		)
 
 
 func get_board_chip(_tile: Hex = null) -> Dictionary:
@@ -29,3 +33,11 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 		get_chip_panel_color(),
 		"Chance for 400 Energy or 8 Gold"
 	)
+
+
+func capture_placed_save_state() -> Dictionary:
+	return {"current_chance": current_chance}
+
+
+func apply_placed_save_state(data: Dictionary) -> void:
+	current_chance = float(data.get("current_chance", BASE_CHANCE))

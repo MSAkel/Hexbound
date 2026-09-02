@@ -8,3 +8,11 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	activation_count += 1
 	if activation_count % 2 == 0:
 		bonus_production_amount += 5
+
+
+func capture_placed_save_state() -> Dictionary:
+	return {"activation_count": activation_count}
+
+
+func apply_placed_save_state(data: Dictionary) -> void:
+	activation_count = int(data.get("activation_count", 0))

@@ -292,7 +292,7 @@ func _apply_singularity_before(tile: Hex, card: TileCard, segment_index: int) ->
 	_singularity_break_armed[card] = true
 
 
-func _apply_first_producer_empower(tile: Hex, card: TileCard, segment_index: int) -> void:
+func _apply_first_producer_empower(_tile: Hex, card: TileCard, segment_index: int) -> void:
 	if not _is_first_producer(segment_index, card):
 		return
 	if not has_effect(segment_index, SegmentPassive.EffectType.FIRST_PRODUCER_EMPOWER):
@@ -310,7 +310,7 @@ func _apply_last_producer_empower(tile: Hex, card: TileCard, segment_index: int)
 		card._empower()
 
 
-func _apply_relay_empower(tile: Hex, card: TileCard, segment_index: int) -> void:
+func _apply_relay_empower(_tile: Hex, card: TileCard, segment_index: int) -> void:
 	if card.type != TileCard.TileCardType.PRODUCER:
 		return
 	if not bool(_relay_empower_armed.get(segment_index, false)):
@@ -320,7 +320,7 @@ func _apply_relay_empower(tile: Hex, card: TileCard, segment_index: int) -> void
 		card._empower()
 
 
-func _apply_outward_pulse(tile: Hex, card: TileCard, segment_index: int) -> void:
+func _apply_outward_pulse(_tile: Hex, card: TileCard, segment_index: int) -> void:
 	if not has_effect(segment_index, SegmentPassive.EffectType.LAYOUT_OUTWARD_PULSE):
 		return
 	if not _is_first_producer(segment_index, card):
@@ -401,7 +401,7 @@ func _arm_relay_from_support(segment_index: int, card: TileCard) -> void:
 			_relay_empower_armed[segment_index] = true
 
 
-func _arm_turnaround(tile: Hex, card: TileCard, segment_index: int) -> void:
+func _arm_turnaround(tile: Hex, _card: TileCard, segment_index: int) -> void:
 	if not has_effect(segment_index, SegmentPassive.EffectType.LAYOUT_TURNAROUND):
 		return
 	if bool(_turnaround_used.get(segment_index, false)):
@@ -412,7 +412,7 @@ func _arm_turnaround(tile: Hex, card: TileCard, segment_index: int) -> void:
 	_pending_turnaround_empower[segment_index + 1] = true
 
 
-func _apply_closed_orbit(tile: Hex, card: TileCard, segment_index: int) -> void:
+func _apply_closed_orbit(tile: Hex, _card: TileCard, segment_index: int) -> void:
 	if not has_effect(segment_index, SegmentPassive.EffectType.LAYOUT_CLOSED_ORBIT):
 		return
 	if bool(_closed_orbit_used.get(segment_index, false)):
@@ -635,7 +635,7 @@ func _consecutive_occupied_before(tile: Hex, segment_index: int) -> int:
 	return count
 
 
-func _all_earlier_occupied_activated(tile: Hex, card: TileCard, segment_index: int) -> bool:
+func _all_earlier_occupied_activated(tile: Hex, _card: TileCard, segment_index: int) -> bool:
 	var segments := tile.map.build_segments()
 	if segment_index < 0 or segment_index >= segments.size():
 		return false
@@ -656,7 +656,7 @@ func _capped_bonus(raw: float, cap: float) -> float:
 	return minf(raw, cap)
 
 
-func _refresh_card_visual(tile: Hex, card: TileCard) -> void:
+func _refresh_card_visual(tile: Hex, _card: TileCard) -> void:
 	if tile == null:
 		return
 	tile.refresh_tile_card_visual_state()

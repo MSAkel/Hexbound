@@ -117,7 +117,7 @@ func _on_rerolls_changed(_remaining: int) -> void:
 func _update_reroll_button() -> void:
 	var remaining := RerollManager.remaining
 	if remaining <= 0:
-		reroll_button.text = "No Rerolls Left"
+		reroll_button.text = "0 rerolls"
 	else:
 		reroll_button.text = "Reroll (%d left)" % remaining
 	reroll_button.disabled = not RerollManager.can_reroll()

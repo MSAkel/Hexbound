@@ -377,13 +377,13 @@ func _restore_card_mouse_filters() -> void:
 		card.hover_enabled = true
 
 
-func _animate_hand_slide(hide: bool) -> void:
+func _animate_hand_slide(should_hide: bool) -> void:
 	if _hand_slide_tween and _hand_slide_tween.is_valid():
 		_hand_slide_tween.kill()
 		_hand_slide_tween = null
 
 	var slide_distance := _get_hand_slide_distance()
-	var target_y := slide_distance if hide else 0.0
+	var target_y := slide_distance if should_hide else 0.0
 
 	_hand_slide_tween = create_tween()
 	_hand_slide_tween.set_parallel(true)
@@ -398,10 +398,10 @@ func _animate_hand_slide(hide: bool) -> void:
 			continue
 		animated_cards += 1
 
-		if hide:
+		if should_hide:
 			# Drop hover lift so the slide starts from the layout slot, not an elevated pose.
 			card.set_hover_elevated(false, false)
-			# offset_transform is visual-only by default; block clicks while off-screen.
+			# offset_transform is visual-only by default. Block clicks while off-screen.
 			card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 		card.offset_transform_enabled = true
@@ -411,7 +411,7 @@ func _animate_hand_slide(hide: bool) -> void:
 			Vector2(card.get_hand_spread_x(), target_y),
 			HAND_SLIDE_DURATION
 		)
-		step.set_ease(Tween.EASE_IN if hide else Tween.EASE_OUT)
+		step.set_ease(Tween.EASE_IN if should_hide else Tween.EASE_OUT)
 		step.set_trans(Tween.TRANS_QUART)
 
 	if animated_cards == 0:
@@ -419,7 +419,7 @@ func _animate_hand_slide(hide: bool) -> void:
 		_hand_slide_tween = null
 		return
 
-	if not hide:
+	if not should_hide:
 		_hand_slide_tween.finished.connect(func() -> void:
 			_restore_card_mouse_filters()
 		)

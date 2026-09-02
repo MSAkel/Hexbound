@@ -1,53 +1,60 @@
 extends PanelContainer
 
-@onready var base_layout: TextureButton = $HBoxContainer/BaseLayout
-@onready var order_segments_layout: TextureButton = $HBoxContainer/OrderSegmentsLayout
+@onready var tile_cards_layout: TextureButton = $HBoxContainer/TileCardsLayout
+@onready var trigger_order_layout: TextureButton = $HBoxContainer/TriggerOrderLayout
+@onready var segment_links_layout: TextureButton = $HBoxContainer/SegmentLinksLayout
 
 
 func _ready() -> void:
 	# Click-to-toggle only. Do not keep keyboard focus or Tab stops working for map peek.
-	base_layout.focus_mode = Control.FOCUS_NONE
-	order_segments_layout.focus_mode = Control.FOCUS_NONE
-
-func _on_base_layout_toggled(toggled_on: bool) -> void:
-	if toggled_on:
-		order_segments_layout.button_pressed = false
-		EventBus.map_display_layout_changed.emit("base")
-	else:
-		# Clicking the already-active layout should leave it on.
-		_restore_if_none_selected(base_layout)
+	tile_cards_layout.focus_mode = Control.FOCUS_NONE
+	trigger_order_layout.focus_mode = Control.FOCUS_NONE
+	segment_links_layout.focus_mode = Control.FOCUS_NONE
+	_emit_overlay_state()
 
 
-func _on_order_segments_layout_toggled(toggled_on: bool) -> void:
-	if toggled_on:
-		base_layout.button_pressed = false
-		EventBus.map_display_layout_changed.emit("order_segments")
-	else:
-		# Clicking the already-active layout should leave it on.
-		_restore_if_none_selected(order_segments_layout)
+func _on_tile_cards_layout_toggled(_toggled_on: bool) -> void:
+	_emit_overlay_state()
 
 
-## Toggle buttons turn themselves off on a second click. Put this one back on when no other layout is selected.
-func _restore_if_none_selected(button: TextureButton) -> void:
-	if base_layout.button_pressed or order_segments_layout.button_pressed:
-		return
-	# Avoid re-emitting map_display_layout_changed for a layout that did not actually change.
-	button.set_pressed_no_signal(true)
+func _on_trigger_order_layout_toggled(_toggled_on: bool) -> void:
+	_emit_overlay_state()
 
 
-func _on_base_layout_mouse_entered() -> void:
-	var tooltip := "Show tile cards"
+func _on_segment_links_layout_toggled(_toggled_on: bool) -> void:
+	_emit_overlay_state()
+
+
+func _emit_overlay_state() -> void:
+	EventBus.map_display_overlays_changed.emit(
+		tile_cards_layout.button_pressed,
+		trigger_order_layout.button_pressed,
+		segment_links_layout.button_pressed
+	)
+
+
+func _on_tile_cards_layout_mouse_entered() -> void:
+	var tooltip := "Show cards"
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 
 
-func _on_base_layout_mouse_exited() -> void:
+func _on_tile_cards_layout_mouse_exited() -> void:
 	EventBus.toggle_tooltip.emit(false, "")
 
 
-func _on_order_segments_layout_mouse_entered() -> void:
-	var tooltip := "Show trigger order numbers (hold Tab to toggle)"
+func _on_trigger_order_layout_mouse_entered() -> void:
+	var tooltip := "Show trigger order"
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 
 
-func _on_order_segments_layout_mouse_exited() -> void:
+func _on_trigger_order_layout_mouse_exited() -> void:
+	EventBus.toggle_tooltip.emit(false, "")
+
+
+func _on_segment_links_layout_mouse_entered() -> void:
+	var tooltip := "Show segment links"
+	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+
+
+func _on_segment_links_layout_mouse_exited() -> void:
 	EventBus.toggle_tooltip.emit(false, "")

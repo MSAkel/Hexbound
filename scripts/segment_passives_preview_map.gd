@@ -16,11 +16,11 @@ func _ready() -> void:
 	_ensure_layout()
 
 
-func setup_character(char: CharacterDefinition) -> void:
+func setup_character(character_def: CharacterDefinition) -> void:
 	_ensure_layout()
-	character = char
+	character = character_def
 	_saved_character = GameManager.selected_character
-	GameManager.selected_character = char
+	GameManager.selected_character = character_def
 	_sync_map_data_from_tiles()
 
 

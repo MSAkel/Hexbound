@@ -164,10 +164,12 @@ func finish_turn_processing() -> void:
 	var should_consume_turn := remaining_turns > 0 and total_round_score + turn_score < required_score
 	PotionManager.on_turn_resolved()
 
+	var committed_turn_score := turn_score
+	var round_score_before := total_round_score
 	total_round_score += turn_score
 	turn_score = 0
 	if not should_skip_turn_presentation():
-		EventBus.round_score_commit_animation_requested.emit()
+		EventBus.round_score_commit_animation_requested.emit(committed_turn_score, round_score_before)
 		await _wait_for_round_score_count_finished()
 		await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
 

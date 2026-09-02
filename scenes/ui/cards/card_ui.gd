@@ -550,6 +550,11 @@ func is_mouse_over_visual() -> bool:
 	return get_placement_visual_rect().has_point(get_global_mouse_position())
 
 
+## Hand layout slot only. Ignores lift and scale so map tiles above the fan stay reachable.
+func is_mouse_over_hand_slot() -> bool:
+	return get_global_rect().has_point(get_global_mouse_position())
+
+
 ## Start the in-hand shrink into the rune icon while this card is selected for placement.
 func begin_placement_morph() -> void:
 	_kill_nudge_tween()
@@ -557,6 +562,8 @@ func begin_placement_morph() -> void:
 	_placement_morph_active = true
 	_placement_morph_progress = 0.0
 	modulate.a = 1.0
+	# Let map tiles under the lifted card receive hover while the ghost handles placement.
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_placement_morph(0.0, false)
 
 
@@ -568,6 +575,7 @@ func reset_placement_morph() -> void:
 	_placement_morph_active = false
 	_placement_morph_progress = 0.0
 	modulate.a = 1.0
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	_restore_placement_morph_visuals()
 	if _is_hover_elevated:
 		_apply_offset_transform(false)

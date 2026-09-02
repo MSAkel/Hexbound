@@ -2,12 +2,22 @@ class_name TilePanel
 extends Control
 
 @onready var rune_icon: TextureRect = $PanelContainer/VBoxContainer/RunePanelContainer/RuneIconPanel/RuneIcon
-@onready var rune_name: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneName
+@onready var rune_name: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RuneName
+@onready var rarity_badge: PanelContainer = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge
+@onready var rarity_label: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge/RarityLabel
 @onready var rune_subtitle: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
 @onready var rune_chip_line: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneChipLine
 @onready var rune_description: RichTextLabel = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
 @onready var rune_bonus_line: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneBonusLine
 @onready var potion_fuse_line: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/PotionFuseLine
+
+const RARITY_BG_COLORS := {
+	TileCard.TileCardRarity.COMMON: Color(0.7473333, 0.7472968, 0.77322227, 1),
+	TileCard.TileCardRarity.UNCOMMON: Color(0.72, 0.86, 0.96, 1),
+	TileCard.TileCardRarity.RARE: Color(0.82, 0.72, 0.94, 1),
+}
+
+var _rarity_badge_styles: Dictionary = {}
 
 # Gap between the hovered tile and the panel edge.
 const OFFSET := Vector2(12, 12)
@@ -20,6 +30,7 @@ var target_rect: Rect2 = Rect2()
 
 
 func _ready() -> void:
+	_build_rarity_badge_styles()
 	EventBus.turn_ended.connect(_on_turn_ended)
 	EventBus.potion_fuses_changed.connect(_on_potion_fuses_changed)
 	hide()
@@ -48,6 +59,7 @@ func _set_rune_information() -> void:
 		var card := hex.active_tile_card
 		rune_icon.texture = card.icon
 		rune_name.text = card.name
+		_set_rarity_badge(card)
 		rune_subtitle.text = card.get_inspect_subtitle()
 		rune_subtitle.visible = not rune_subtitle.text.is_empty()
 		_set_chip_line(card)
@@ -58,6 +70,7 @@ func _set_rune_information() -> void:
 	else:
 		rune_icon.texture = EMPTY_TILE_ICON
 		rune_name.text = "No Rune"
+		_hide_rarity_badge()
 		rune_subtitle.text = ""
 		rune_subtitle.hide()
 		rune_chip_line.hide()
@@ -83,6 +96,47 @@ func _set_chip_line(card: TileCard) -> void:
 	else:
 		rune_chip_line.text = "%s  ·  %s" % [chip_text, detail]
 	rune_chip_line.show()
+
+
+func _set_rarity_badge(card: TileCard) -> void:
+	var rarity := int(card.rarity)
+	rarity_label.text = _get_rarity_display_name(rarity)
+	var style: StyleBoxFlat = _rarity_badge_styles.get(
+		rarity,
+		_rarity_badge_styles[TileCard.TileCardRarity.COMMON]
+	)
+	rarity_badge.add_theme_stylebox_override("panel", style)
+	rarity_badge.show()
+
+
+func _build_rarity_badge_styles() -> void:
+	_rarity_badge_styles.clear()
+	for rarity: int in RARITY_BG_COLORS.keys():
+		var style := StyleBoxFlat.new()
+		style.content_margin_left = 8.0
+		style.content_margin_top = 3.0
+		style.content_margin_right = 8.0
+		style.content_margin_bottom = 3.0
+		style.corner_radius_top_left = 999
+		style.corner_radius_top_right = 999
+		style.corner_radius_bottom_right = 999
+		style.corner_radius_bottom_left = 999
+		style.bg_color = RARITY_BG_COLORS[rarity]
+		_rarity_badge_styles[rarity] = style
+
+
+func _hide_rarity_badge() -> void:
+	rarity_badge.hide()
+
+
+func _get_rarity_display_name(rarity: int) -> String:
+	match rarity:
+		TileCard.TileCardRarity.UNCOMMON:
+			return "Uncommon"
+		TileCard.TileCardRarity.RARE:
+			return "Rare"
+		_:
+			return "Common"
 
 
 # Extra production from other cards and passives. Hidden when there is none.

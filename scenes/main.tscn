@@ -3,13 +3,12 @@
 [ext_resource type="Script" uid="uid://cnndmv1aydlal" path="res://scenes/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="1_sugp2"]
 [ext_resource type="PackedScene" uid="uid://buygicnlcs3ji" path="res://scenes/hex_tile_map.tscn" id="2_jyhfs"]
-[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/map/background_image.png" id="2_tbgi4"]
+[ext_resource type="Texture2D" path="res://assets/background/background_image.png" id="2_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/scene_enter_transition/scene_enter_transition.tscn" id="4_transition"]
 
 [node name="Main" type="Node2D" unique_id=1217909312]
 script = ExtResource("1_jyhfs")
-debug_starting_round = null
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1506549712]
 layer = -1
@@ -33,5 +32,5 @@ position = Vector2(2, 0)
 
 [node name="Camera" parent="." unique_id=321380676 instance=ExtResource("3_tbgi4")]
 position = Vector2(911, 878)
-[node name="SceneEnterTransition" parent="." unique_id=742454740 instance=ExtResource("4_transition")]
 
+[node name="SceneEnterTransition" parent="." unique_id=742454740 instance=ExtResource("4_transition")]

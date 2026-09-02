@@ -1,20 +1,24 @@
 class_name PotionSlot
 extends Control
 
-## Square belt cell. Shows only the potion icon, or stays empty.
+## Square belt cell. Shows a grey placeholder when empty, or the potion icon.
 ## Layout lives in potion_slot.tscn.
 
 signal drag_started(slot_index: int)
 signal remove_requested(slot_index: int)
 
-const SLOT_SIZE := Vector2(80, 80)
+const SLOT_SIZE := Vector2(60, 60)
 const HOLD_SELECT_SEC := 0.18
+const DRAG_START_THRESHOLD_PX := 8.0
+const EMPTY_ICON := preload("res://assets/icons/potions/potion_1.png")
+const EMPTY_ICON_TINT := Color(0.52, 0.52, 0.52, 0.45)
 
 @export var slot_index: int = 0
 @export var well_idle_style: StyleBoxFlat
 @export var well_selected_style: StyleBoxFlat
 
 @onready var _well: PanelContainer = %Well
+@onready var _empty_icon: TextureRect = %EmptyIcon
 @onready var _icon: TextureRect = %Icon
 @onready var _menu: PopupMenu = %ContextMenu
 
@@ -23,6 +27,8 @@ var targeting := false
 
 var _lifted := false
 var _hold_token := 0
+var _press_held := false
+var _press_screen_pos := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -30,6 +36,8 @@ func _ready() -> void:
 	size = SLOT_SIZE
 	# Scale hover from the center of the square, not the top-left corner.
 	pivot_offset = SLOT_SIZE * 0.5
+	_empty_icon.texture = EMPTY_ICON
+	_empty_icon.modulate = EMPTY_ICON_TINT
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
@@ -68,6 +76,7 @@ func play_consume_animation() -> void:
 func _refresh() -> void:
 	_well.add_theme_stylebox_override("panel", well_selected_style if targeting else well_idle_style)
 	var filled := potion != null
+	_empty_icon.visible = not filled
 	_icon.visible = filled and not _lifted
 	if not filled:
 		return
@@ -82,14 +91,30 @@ func _on_gui_input(event: InputEvent) -> void:
 	if event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			if potion != null:
+				_press_held = true
+				_press_screen_pos = get_global_mouse_position()
 				_begin_hold_drag()
 			get_viewport().set_input_as_handled()
 		else:
+			_press_held = false
 			_cancel_hold_drag()
 	elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and potion != null and not _lifted:
+		_press_held = false
 		_cancel_hold_drag()
 		_menu.position = Vector2i(get_global_mouse_position())
 		_menu.popup()
+		get_viewport().set_input_as_handled()
+
+
+func _input(event: InputEvent) -> void:
+	if not _press_held or _lifted or potion == null:
+		return
+	if event is InputEventMouseMotion:
+		if get_global_mouse_position().distance_to(_press_screen_pos) < DRAG_START_THRESHOLD_PX:
+			return
+		_press_held = false
+		_cancel_hold_drag()
+		drag_started.emit(slot_index)
 		get_viewport().set_input_as_handled()
 
 
@@ -127,6 +152,4 @@ func _on_mouse_entered() -> void:
 
 
 func _on_mouse_exited() -> void:
-	if not _lifted:
-		_cancel_hold_drag()
 	EventBus.toggle_tooltip.emit(false, "", Rect2())

@@ -540,10 +540,13 @@ func _get_drop_occupancy_coords(data: Dictionary, segment_index: int, coords: Ve
 	if segment_coords.is_empty():
 		return empty
 	if kind == DRAG_KIND:
-		var dest_ids := MetaProgressionManager.get_placed_passive_ids(
-			_character.id, _set_id, segment_index
+		return _coords_after_append(
+			segment_coords,
+			MetaProgressionManager.get_placed_passive_ids(
+				_character.id, _set_id, segment_index
+			),
+			String(data.get("passive_id", ""))
 		)
-		return _coords_after_append(segment_coords, dest_ids, String(data.get("passive_id", "")))
 	if kind != DRAG_KIND_BOARD:
 		return empty
 	var from_segment: int = int(data.get("from_segment", -1))

@@ -1,49 +1,50 @@
 [gd_scene format=3 uid="uid://bpotionslotui0001"]
 
 [ext_resource type="Script" uid="uid://b5mhgikoaxvbu" path="res://scenes/ui/potions/potion_slot.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b1q2mgy4ys578" path="res://assets/icons/potions/potion_1.png" id="2_empty_icon"]
 
 [sub_resource type="StyleBoxFlat" id="WellIdle"]
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
 bg_color = Color(0.3254902, 0.3764706, 0.2666667, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.9686275, 0.9137255, 0.7686275, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 shadow_color = Color(0, 0, 0, 0.2509804)
-shadow_size = 4
-shadow_offset = Vector2(0, 3)
+shadow_size = 3
+shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxFlat" id="WellSelected"]
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
 bg_color = Color(0.3254902, 0.3764706, 0.2666667, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.9568627, 0.8313726, 0.5411765, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 shadow_color = Color(0, 0, 0, 0.2509804)
-shadow_size = 4
-shadow_offset = Vector2(0, 3)
+shadow_size = 3
+shadow_offset = Vector2(0, 2)
 
 [node name="PotionSlot" type="Control"]
-custom_minimum_size = Vector2(80, 80)
+custom_minimum_size = Vector2(60, 60)
 layout_mode = 3
-pivot_offset = Vector2(40, 40)
+pivot_offset = Vector2(30, 30)
 mouse_filter = 0
 script = ExtResource("1_script")
 well_idle_style = SubResource("WellIdle")
@@ -60,15 +61,27 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("WellIdle")
 
+[node name="EmptyIcon" type="TextureRect" parent="Well"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+modulate = Color(0.52, 0.52, 0.52, 0.45)
+texture_filter = 1
+texture = ExtResource("2_empty_icon")
+expand_mode = 1
+stretch_mode = 5
+pivot_offset = Vector2(24, 24)
+
 [node name="Icon" type="TextureRect" parent="Well"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 mouse_filter = 2
 texture_filter = 1
 expand_mode = 1
 stretch_mode = 5
-pivot_offset = Vector2(32, 32)
+pivot_offset = Vector2(24, 24)
 
 [node name="ContextMenu" type="PopupMenu" parent="."]
 unique_name_in_owner = true

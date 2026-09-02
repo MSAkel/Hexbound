@@ -13,6 +13,24 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		AudioManager.play_sfx(UISounds.RUNE_BREAK)
 
 
+func get_board_chip(_tile: Hex = null) -> Dictionary:
+	return _make_board_chip(
+		BoardChipMode.PROGRESS,
+		"%d/%d" % [activation_count, MAX_TRIGGERS],
+		null,
+		get_chip_panel_color(),
+		"Triggers until this card breaks"
+	)
+
+
+func capture_placed_save_state() -> Dictionary:
+	return {"activation_count": activation_count}
+
+
+func apply_placed_save_state(data: Dictionary) -> void:
+	activation_count = int(data.get("activation_count", 0))
+
+
 func _add_random_common_tile_card_to_hand(tile: Hex) -> void:
 	var drafted := RuneLoot.draw_filtered(
 		1,

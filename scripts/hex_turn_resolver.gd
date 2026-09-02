@@ -7,8 +7,6 @@ const FLOATING_TEXT_SCENE: PackedScene = preload("res://scenes/animations/floati
 # Pause between tile card activations during turn resolution.
 const TILE_ACTIVATION_PACE_DELAY := 0.5
 const SEGMENT_REVEAL_PAUSE := 0.35
-# Keep in sync with RuneUI segment reveal highlight and fade durations.
-const SEGMENT_REVEAL_ANIMATION_DURATION := 0.36
 ## Fallback if the score-breakdown row never emits count-finished (killed or already-done tween).
 const SEGMENT_SCORE_COUNT_TIMEOUT := 2.0
 ## Fallback if the turn-total footer never emits count-finished.
@@ -47,27 +45,29 @@ func resolve_turn() -> void:
 	map.dismiss_hover_feedback()
 	map.reset_segment_turn_results()
 
+	TileCard.clear_copied_activation_stack()
 	pending_trigger_queue.clear()
 	_clear_trigger_link_sessions()
 	_skip_presentation_steps = 0
 
 	for tile: Hex in map.get_hexes_in_trigger_order():
 		if _should_bypass_primary_trigger_order_activation(tile):
-			_mark_segment_resolved_if_natural_pass_done(tile)
+			await _mark_segment_resolved_if_natural_pass_done(tile)
 			continue
 
 		await _resolve_rune_activation(tile)
 		await _wait_between_tile_activations()
-		_mark_segment_resolved_if_natural_pass_done(tile)
+		await _mark_segment_resolved_if_natural_pass_done(tile)
 
 	if GameManager.should_skip_turn_presentation():
 		map._clear_segment_sealed_look()
 		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 	else:
-		await _play_segment_turn_result_reveals()
+		_play_segment_turn_result_reveals()
 		await _wait_for_turn_total_count_finished()
 	map._apply_segment_turn_totals_to_game_manager()
 	map._check_full_map_cards_achievement()
+	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
 	map._emit_segment_turn_completed_snapshot()
 	await GameManager.finish_turn_processing()
 
@@ -239,7 +239,10 @@ func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> void:
 			break
 		if map.is_tile_card_active(hex):
 			return
-	map.mark_segment_resolved(segment_index)
+	if not map.mark_segment_resolved(segment_index):
+		return
+	await map.wait_for_segment_seal(segment_index)
+	await _reveal_segment_score_after_seal(segment_index)
 
 
 func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
@@ -288,47 +291,32 @@ func _sum_segment_contributions() -> int:
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
 func _play_segment_turn_result_reveals() -> void:
-	var turn_total := 0
-	for segment_index in map.get_segment_count():
-		if GameManager.should_skip_turn_presentation():
-			break
-		var score := map.get_segment_turn_score(segment_index)
-		var multiplier := map.get_segment_turn_multiplier(segment_index)
-		var gold := map.get_segment_turn_gold(segment_index)
-		if score == 0 and gold == 0:
-			continue
-		var contribution := GameManager.compute_segment_turn_contribution(
-			segment_index,
-			score,
-			multiplier
-		)
-		turn_total += contribution
-		await _play_single_segment_reveal(segment_index, contribution)
-
+	map._clear_segment_sealed_look()
 	if GameManager.should_skip_turn_presentation():
-		map._clear_segment_sealed_look()
 		map._clear_segment_reveal_glow()
-		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
-		return
-
-	EventBus.segment_reveals_finished.emit(turn_total)
+	EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 
 
-## Highlights one segment on the map and in the output panel, then reveals that segment's Score.
-func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
+## Updates the breakdown row once this segment's seal animation finishes.
+func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	if GameManager.should_skip_turn_presentation():
 		return
-	map._apply_segment_reveal_glow(segment_index)
+	var score := map.get_segment_turn_score(segment_index)
+	var multiplier := map.get_segment_turn_multiplier(segment_index)
+	var gold := map.get_segment_turn_gold(segment_index)
+	if score == 0 and gold == 0:
+		return
+
+	var contribution := GameManager.compute_segment_turn_contribution(
+		segment_index,
+		score,
+		multiplier
+	)
+
 	EventBus.segment_reveal_started.emit(segment_index)
 
-	for hex: Hex in map.get_hexes_in_segment(segment_index):
-		if hex.active_tile_card != null:
-			hex.play_segment_result_animation()
-
-	await _wait_pace(SEGMENT_REVEAL_ANIMATION_DURATION)
-
 	if contribution > 0:
-		# Show passive-adjusted power before the equals beat lands.
+		AudioManager.play_sfx(UISounds.SEGMENT_RESULT)
 		map._emit_segment_turn_results_changed(segment_index, true)
 		EventBus.segment_score_revealed.emit(segment_index, contribution)
 		await _wait_for_segment_score_count_finished(segment_index)
@@ -336,9 +324,7 @@ func _play_single_segment_reveal(segment_index: int, contribution: int) -> void:
 			await _wait_pace(TUTORIAL_SCORE_LINGER)
 
 	await _wait_pace(SEGMENT_REVEAL_PAUSE)
-	map._clear_segment_reveal_glow()
 	EventBus.segment_reveal_ended.emit()
-	await _wait_pace(SEGMENT_REVEAL_PAUSE)
 
 
 ## Waits for this segment's Score count. Times out so a missed UI signal cannot stall the turn.

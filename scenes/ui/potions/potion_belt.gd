@@ -5,7 +5,7 @@ extends Control
 ## Slot cells come from potion_slot.tscn. The drag ghost is authored in this scene.
 
 const SLOT_SCENE := preload("res://scenes/ui/potions/potion_slot.tscn")
-const GHOST_SIZE := Vector2(64, 64)
+const GHOST_SIZE := Vector2(48, 48)
 
 @onready var _slots_column: VBoxContainer = $SlotsColumn
 @onready var _ghost: TextureRect = %DragGhost
@@ -74,6 +74,7 @@ func _on_slot_drag_started(index: int) -> void:
 		EventBus.potion_use_failed.emit(potion)
 		return
 	_drag_index = index
+	AudioManager.play_sfx(UISounds.POTION_GRAB)
 	_show_ghost(potion)
 	_refresh()
 	if potion.needs_tile_target():

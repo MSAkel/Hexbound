@@ -8,7 +8,6 @@ extends PanelContainer
 var _round_score_counter: CountingNumber
 var _target_counter: CountingNumber
 var _panel_style: StyleBoxFlat
-var _land_tweens: Dictionary = {}
 
 
 func _ready() -> void:
@@ -31,40 +30,25 @@ func _ready() -> void:
 	_target_counter.snap_to(GameManager.required_score)
 
 	EventBus.total_round_score_changed.connect(_on_total_round_score_changed)
-	EventBus.round_score_commit_animation_requested.connect(_on_round_score_commit_animation_requested)
 	EventBus.required_score_changed.connect(_on_required_score_changed)
 
 	clip_contents = false
 
 
 func _on_total_round_score_changed() -> void:
-	# Turn resolve plays the round score only after the segment turn total finishes.
+	# Turn resolve plays the transfer after the turn-total punch lands.
 	if GameManager.is_processing_turn:
 		return
-	_play_round_score_counter()
+	_round_score_counter.snap_to(GameManager.total_round_score)
+	_style_round_score(GameManager.total_round_score)
 
 
-func _on_round_score_commit_animation_requested() -> void:
-	_play_round_score_counter()
-
-
-## Round score lands after the turn total, then round flow can continue.
-func _play_round_score_counter() -> void:
-	call_deferred("_await_round_score_counter")
-
-
-func _await_round_score_counter() -> void:
-	var counter_tween := _round_score_counter.play(GameManager.total_round_score)
-	var intensity := ScoreReadoutStyle.intensity_for_score(GameManager.total_round_score)
-	_land_number(score_this_round, intensity)
-	_pulse_panel(self)
-	ScoreBurstFx.play_background_wash(self, intensity, true)
-	await _await_counter_tween(counter_tween)
-	await _await_land_tween(score_this_round)
-	await _await_land_tween(self)
-	# Only gate turn resolve. Other score updates still animate normally.
-	if GameManager.is_processing_turn:
-		EventBus.round_score_count_finished.emit()
+## Counts the round score up during the post-turn transfer from the turn total.
+func play_transfer_fill(from_score: int, to_score: int) -> Tween:
+	_round_score_counter.snap_to(from_score)
+	_style_round_score(from_score)
+	score_this_round.text = CountingNumber.format_int(from_score)
+	return _round_score_counter.play(to_score)
 
 
 func _on_required_score_changed() -> void:
@@ -105,48 +89,6 @@ func _themed_score_color(intensity: float) -> Color:
 	var scaled := intensity * float(colors.size() - 1)
 	var index := mini(int(scaled), colors.size() - 2)
 	return colors[index].lerp(colors[index + 1], scaled - float(index))
-
-
-func _land_number(label: Label, intensity: float) -> void:
-	_store_land_tween(label, ScoreLandFx.play_number_land(self, label, intensity))
-
-
-func _pulse_panel(panel: Control) -> void:
-	_store_land_tween(panel, ScoreLandFx.play_panel_pulse(self, panel))
-
-
-func _store_land_tween(target: Control, tween: Tween) -> void:
-	if target == null:
-		return
-
-	var existing: Variant = _land_tweens.get(target)
-	if existing is Tween and (existing as Tween).is_valid():
-		(existing as Tween).kill()
-
-	if tween != null:
-		_land_tweens[target] = tween
-
-
-func _await_counter_tween(counter_tween: Tween) -> void:
-	await _await_tween_finished(counter_tween)
-
-
-func _await_land_tween(land_target: Control) -> void:
-	var land_tween: Variant = _land_tweens.get(land_target)
-	if land_tween is Tween:
-		await _await_tween_finished(land_tween as Tween)
-
-
-## Awaits a tween without hanging if it already finished or was killed.
-## Tween.finished does not fire again after completion, and kill() never emits it.
-func _await_tween_finished(tween: Tween) -> void:
-	if tween == null:
-		return
-	while tween.is_valid():
-		if tween.is_running() or get_tree().paused:
-			await get_tree().process_frame
-			continue
-		return
 
 
 func _exit_tree() -> void:

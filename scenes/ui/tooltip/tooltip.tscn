@@ -16,9 +16,12 @@ offset_bottom = 38.333336
 theme_override_styles/panel = SubResource("StyleBoxTexture_327l5")
 script = ExtResource("2_327l5")
 
-[node name="Label" type="Label" parent="." unique_id=2122435884]
+[node name="RichTextLabel" type="RichTextLabel" parent="." unique_id=2122435884]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.21230483, 0.21230483, 0.21230483, 1)
+theme_override_colors/default_color = Color(0.21230483, 0.21230483, 0.21230483, 1)
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
 text = "Tooltip text"
-autowrap_mode = 3
+fit_content = true
+scroll_active = false

@@ -17,7 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://casabnpm08k0k" path="res://scenes/ui/tutorial/tutorial_text_container.tscn" id="17_tutorial"]
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
 [ext_resource type="PackedScene" path="res://scenes/ui/potions/potion_belt.tscn" id="19_potion_belt"]
-[ext_resource type="PackedScene" path="res://scenes/ui/turn_resolve_skip_overlay.tscn" id="20_skip_overlay"]
+[ext_resource type="PackedScene" uid="uid://cm7k781kw6ho" path="res://scenes/ui/turn_resolve_skip_overlay.tscn" id="20_skip_overlay"]
 [ext_resource type="PackedScene" path="res://scenes/ui/potions/potion_edge_glow.tscn" id="21_potion_glow"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
@@ -27,6 +27,7 @@ script = ExtResource("1_l8t6x")
 scale = Vector2(0.9969174, 1)
 
 [node name="TutorialTextContainer" parent="." unique_id=1844229200 instance=ExtResource("17_tutorial")]
+visible = false
 offset_bottom = 110.0
 
 [node name="CardsHand" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
@@ -36,17 +37,13 @@ offset_top = 0.0
 offset_right = 0.0
 rotation = 0.0016232448
 
-[node name="PotionBelt" parent="." instance=ExtResource("19_potion_belt")]
+[node name="PotionBelt" parent="." unique_id=955320291 instance=ExtResource("19_potion_belt")]
 
 [node name="RuneSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
 
 [node name="TerrainTileUI" parent="." unique_id=289089864 instance=ExtResource("2_l8t6x")]
 visible = false
-
-[node name="PauseMenu" parent="." unique_id=1402050020 instance=ExtResource("7_oxwcw")]
-visible = false
-z_index = 90
 
 [node name="Tooltip" parent="." unique_id=430342025 instance=ExtResource("13_tooltip")]
 visible = false
@@ -72,17 +69,22 @@ visible = false
 visible = false
 z_index = 90
 
-[node name="SettingsContainer" parent="." unique_id=897472805 instance=ExtResource("14_8s2gp")]
+[node name="RoundCompleteScreen" parent="." unique_id=142012728 instance=ExtResource("13_m82f4")]
 visible = false
 
-[node name="Collection" parent="." instance=ExtResource("18_collection")]
+[node name="PotionEdgeGlow" parent="." unique_id=449245889 instance=ExtResource("21_potion_glow")]
+
+[node name="TurnResolveSkipOverlay" parent="." unique_id=180410833 instance=ExtResource("20_skip_overlay")]
+
+[node name="Collection" parent="." unique_id=552452183 instance=ExtResource("18_collection")]
 unique_name_in_owner = true
 visible = false
 z_index = 120
 
-[node name="RoundCompleteScreen" parent="." unique_id=142012728 instance=ExtResource("13_m82f4")]
+[node name="SettingsContainer" parent="." unique_id=897472805 instance=ExtResource("14_8s2gp")]
 visible = false
+z_index = 120
 
-[node name="PotionEdgeGlow" parent="." instance=ExtResource("21_potion_glow")]
-
-[node name="TurnResolveSkipOverlay" parent="." instance=ExtResource("20_skip_overlay")]
+[node name="PauseMenu" parent="." unique_id=1402050020 instance=ExtResource("7_oxwcw")]
+visible = false
+z_index = 90
