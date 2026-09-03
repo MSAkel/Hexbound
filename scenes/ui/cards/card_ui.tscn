@@ -3,14 +3,14 @@
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/ui/cards/card_ui.gd" id="2_usd0r"]
 [ext_resource type="Texture2D" uid="uid://cybeqkl7icvqn" path="res://assets/cards/modifier_card_frame.png" id="3_modifier"]
-[ext_resource type="Texture2D" uid="uid://d4a3cfbq7svgl" path="res://assets/cards/production_card_frame.png" id="3_nmvtt"]
+[ext_resource type="Texture2D" uid="uid://gugkkkyhh4le" path="res://assets/cards/ingredient_card_frame.png" id="3_production"]
 [ext_resource type="Texture2D" uid="uid://dnlyet37a8gu7" path="res://assets/cards/support_card_frame.png" id="3_support"]
 [ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="4_7xb4v"]
 [ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
 [ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
 [ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
+[ext_resource type="PackedScene" uid="uid://dgghwt6uw18en" path="res://scenes/ui/cards/card_icon.tscn" id="6_cardicon"]
 [ext_resource type="Texture2D" uid="uid://o0ecdi1va3oj" path="res://assets/gui/card/card_divider.png" id="6_onxhv"]
-[ext_resource type="Texture2D" uid="uid://iqy5y7j4hpck" path="res://assets/icons/runes/hybrid/power_reserve.png" id="6_y3v36"]
 [ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
 [ext_resource type="Script" uid="uid://lhyqf0q0f5ko" path="res://scenes/cards/card states/card_released_state.gd" id="8_o6pyt"]
 [ext_resource type="PackedScene" uid="uid://dwveidib2jxhc" path="res://scenes/ui/merchant/merchant_purchase_tray.tscn" id="9_tray"]
@@ -53,7 +53,7 @@ resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
 content_margin_right = 4.0
-texture = ExtResource("3_nmvtt")
+texture = ExtResource("3_production")
 
 [sub_resource type="SystemFont" id="SystemFont_5jwxg"]
 subpixel_positioning = 0
@@ -106,8 +106,9 @@ offset_bottom = 317.0
 offset_transform_pivot_ratio = Vector2(0.5, 1)
 theme = ExtResource("1_o6pyt")
 script = ExtResource("2_usd0r")
-frame_producer = ExtResource("3_nmvtt")
-frame_support = ExtResource("3_support")
+frame_ingredients = ExtResource("3_production")
+frame_economy = ExtResource("3_production")
+frame_kitchenware = ExtResource("3_support")
 frame_utility = ExtResource("3_modifier")
 rarity_style_common = SubResource("StyleBoxFlat_rarity_common")
 rarity_style_uncommon = SubResource("StyleBoxFlat_rarity_uncommon")
@@ -159,13 +160,9 @@ size_flags_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_vxwtt")
 
-[node name="Icon" type="TextureRect" parent="Content/IconContainer" unique_id=742371266]
+[node name="Icon" parent="Content/IconContainer" unique_id=742371266 instance=ExtResource("6_cardicon")]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("6_y3v36")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="CardTypeLabel" type="Label" parent="Content" unique_id=1751951717]
 layout_mode = 2
@@ -306,7 +303,6 @@ anchor_right = 1.0
 offset_top = 336.0
 offset_bottom = 380.0
 grow_horizontal = 2
-mouse_filter = 2
 
 [node name="DropPointArea" type="Area2D" parent="." unique_id=1910631185]
 visible = false

@@ -2,12 +2,12 @@ class_name Merchant
 extends Control
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
-const POTION_ITEM_SCENE := preload("res://scenes/ui/potions/potion_shop_item.tscn")
+const CONDIMENT_ITEM_SCENE := preload("res://scenes/ui/condiments/condiment_shop_item.tscn")
 const MERCHANT_TILE_CARD_COUNT := 3
 const BASE_REROLL_COST := 5
 
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/CardsGridContainer
-@onready var potions_grid: HBoxContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf/PotionsGrid
+@onready var condiments_grid: HBoxContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/CondimentShelf/CondimentsGrid
 @onready var gold_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/GoldAmount
 @onready var token_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/TokenAmount
 @onready var reroll_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/RerollButton
@@ -17,9 +17,9 @@ const BASE_REROLL_COST := 5
 @onready var _show_merchant_button: Button = $ShowMerchantButton
 
 var _displayed_cards: Array[CardUI] = []
-var _displayed_potions: Array[PotionShopItem] = []
+var _displayed_condiments: Array[CondimentShopItem] = []
 var _selected_card_ui: CardUI = null
-var _selected_potion_ui: PotionShopItem = null
+var _selected_condiment_ui: CondimentShopItem = null
 var _stock_reroll_count := 0
 ## Gold cost for the next merchant reroll. Resets when the shop opens.
 var _reroll_cost := BASE_REROLL_COST
@@ -39,8 +39,8 @@ func _ready() -> void:
 	EventBus.gold_changed.connect(_on_currency_changed)
 	EventBus.merchant_tokens_changed.connect(_on_currency_changed)
 	EventBus.rerolls_changed.connect(_on_currency_changed)
-	EventBus.potion_belt_changed.connect(_on_currency_changed)
-	EventBus.potion_targeting_changed.connect(_on_potion_targeting_changed)
+	EventBus.condiment_belt_changed.connect(_on_currency_changed)
+	EventBus.condiment_targeting_changed.connect(_on_condiment_targeting_changed)
 	UiManager.show_merchant_panel.connect(open)
 	_update_currency_display()
 	_update_reroll_button()
@@ -50,14 +50,14 @@ func _ready() -> void:
 func open() -> void:
 	var restoring := not _restore_state.is_empty()
 	var sold_card_indices: Array = []
-	var sold_potion_indices: Array = []
+	var sold_condiment_indices: Array = []
 	_session_open = true
 	_set_board_view(false)
 	if restoring:
 		_stock_reroll_count = int(_restore_state.get("stock_reroll_count", 0))
 		_reroll_cost = int(_restore_state.get("reroll_cost", BASE_REROLL_COST))
 		sold_card_indices = _restore_state.get("sold_indices", [])
-		sold_potion_indices = _restore_state.get("sold_potion_indices", [])
+		sold_condiment_indices = _restore_state.get("sold_condiment_indices", [])
 		_restore_state.clear()
 	else:
 		_stock_reroll_count = 0
@@ -66,7 +66,7 @@ func open() -> void:
 	UiManager.show_panel(self)
 	await _refresh_merchant_stock()
 	_apply_sold_indices(sold_card_indices)
-	_apply_sold_potion_indices(sold_potion_indices)
+	_apply_sold_condiment_indices(sold_condiment_indices)
 	if restoring:
 		return
 	AudioManager.play_sfx(UISounds.MERCHANT_BELL)
@@ -101,7 +101,7 @@ func _set_board_view(active: bool) -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if active else Control.MOUSE_FILTER_STOP
 
 
-func _on_potion_targeting_changed(slot_index: int) -> void:
+func _on_condiment_targeting_changed(slot_index: int) -> void:
 	if not visible:
 		return
 	if slot_index >= 0:
@@ -111,7 +111,7 @@ func _on_potion_targeting_changed(slot_index: int) -> void:
 func _refresh_merchant_stock() -> void:
 	_clear_selection()
 	await _refresh_merchant_cards()
-	await _refresh_merchant_potions()
+	await _refresh_merchant_condiments()
 
 
 func _refresh_merchant_cards() -> void:
@@ -120,7 +120,7 @@ func _refresh_merchant_cards() -> void:
 		_stock_reroll_count
 	)
 	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	var drafted_runes := RuneLoot.draw_runes(
+	var drafted_runes := CardLoot.draw_runes(
 		MERCHANT_TILE_CARD_COUNT,
 		GameManager.tile_cards_pool,
 		true,
@@ -132,11 +132,11 @@ func _refresh_merchant_cards() -> void:
 	await _display_merchant_cards(inventory)
 
 
-func _refresh_merchant_potions() -> void:
-	var stream_name := "merchant_potions:r%d:e%d" % [GameManager.current_round, _stock_reroll_count]
+func _refresh_merchant_condiments() -> void:
+	var stream_name := "merchant_condiments:r%d:e%d" % [GameManager.current_round, _stock_reroll_count]
 	var loot_rng := RunRng.create_rng(stream_name)
-	var drawn := PotionCatalog.draw_unique(PotionManager.SHOP_STOCK, loot_rng)
-	await _display_merchant_potions(drawn)
+	var drawn := CondimentCatalog.draw_unique(CondimentManager.SHOP_STOCK, loot_rng)
+	await _display_merchant_condiments(drawn)
 
 
 func _display_merchant_cards(inventory: Array[Card]) -> void:
@@ -159,25 +159,25 @@ func _display_merchant_cards(inventory: Array[Card]) -> void:
 		_displayed_cards.append(card_ui)
 
 
-func _display_merchant_potions(stock: Array[Potion]) -> void:
-	_displayed_potions.clear()
-	for child in potions_grid.get_children():
+func _display_merchant_condiments(stock: Array[Condiment]) -> void:
+	_displayed_condiments.clear()
+	for child in condiments_grid.get_children():
 		child.queue_free()
 	await get_tree().process_frame
-	for potion in stock:
-		var item: PotionShopItem = POTION_ITEM_SCENE.instantiate()
-		potions_grid.add_child(item)
-		item.configure(potion)
-		item.selected.connect(_on_stock_potion_selected)
-		item.gold_purchase_requested.connect(_on_stock_potion_gold_purchase_requested)
-		item.token_purchase_requested.connect(_on_stock_potion_token_purchase_requested)
-		_displayed_potions.append(item)
+	for condiment in stock:
+		var item: CondimentShopItem = CONDIMENT_ITEM_SCENE.instantiate()
+		condiments_grid.add_child(item)
+		item.configure(condiment)
+		item.selected.connect(_on_stock_condiment_selected)
+		item.gold_purchase_requested.connect(_on_stock_condiment_gold_purchase_requested)
+		item.token_purchase_requested.connect(_on_stock_condiment_token_purchase_requested)
+		_displayed_condiments.append(item)
 
 
 func _on_stock_card_selected(card_ui: CardUI) -> void:
 	if card_ui.is_sold():
 		return
-	_clear_potion_selection()
+	_clear_condiment_selection()
 	if _selected_card_ui != null and _selected_card_ui != card_ui:
 		_selected_card_ui.set_merchant_selected(false)
 	_selected_card_ui = card_ui
@@ -185,14 +185,14 @@ func _on_stock_card_selected(card_ui: CardUI) -> void:
 	_refresh_selected_purchase_tray()
 
 
-func _on_stock_potion_selected(item: PotionShopItem) -> void:
+func _on_stock_condiment_selected(item: CondimentShopItem) -> void:
 	if item.is_sold():
 		return
 	_clear_card_selection()
-	if _selected_potion_ui != null and _selected_potion_ui != item:
-		_selected_potion_ui.set_merchant_selected(false)
-	_selected_potion_ui = item
-	_selected_potion_ui.set_merchant_selected(true)
+	if _selected_condiment_ui != null and _selected_condiment_ui != item:
+		_selected_condiment_ui.set_merchant_selected(false)
+	_selected_condiment_ui = item
+	_selected_condiment_ui.set_merchant_selected(true)
 	_refresh_selected_purchase_tray()
 
 
@@ -208,21 +208,21 @@ func _on_stock_card_token_purchase_requested(card_ui: CardUI) -> void:
 	_complete_purchase(true)
 
 
-func _on_stock_potion_gold_purchase_requested(item: PotionShopItem) -> void:
-	if _selected_potion_ui != item:
+func _on_stock_condiment_gold_purchase_requested(item: CondimentShopItem) -> void:
+	if _selected_condiment_ui != item:
 		return
 	_complete_purchase(false)
 
 
-func _on_stock_potion_token_purchase_requested(item: PotionShopItem) -> void:
-	if _selected_potion_ui != item:
+func _on_stock_condiment_token_purchase_requested(item: CondimentShopItem) -> void:
+	if _selected_condiment_ui != item:
 		return
 	_complete_purchase(true)
 
 
 func _complete_purchase(pay_with_tokens: bool) -> void:
-	if _selected_potion_ui != null:
-		_complete_potion_purchase(pay_with_tokens)
+	if _selected_condiment_ui != null:
+		_complete_condiment_purchase(pay_with_tokens)
 		return
 	if _selected_card_ui == null or _selected_card_ui.is_sold():
 		return
@@ -254,13 +254,13 @@ func _complete_purchase(pay_with_tokens: bool) -> void:
 	_update_reroll_button()
 
 
-func _complete_potion_purchase(pay_with_tokens: bool) -> void:
-	if _selected_potion_ui == null or _selected_potion_ui.is_sold():
+func _complete_condiment_purchase(pay_with_tokens: bool) -> void:
+	if _selected_condiment_ui == null or _selected_condiment_ui.is_sold():
 		return
-	if not PotionManager.can_add():
+	if not CondimentManager.can_add():
 		return
-	var gold_price := _selected_potion_ui.price
-	var token_cost := _selected_potion_ui.get_token_cost()
+	var gold_price := _selected_condiment_ui.price
+	var token_cost := _selected_condiment_ui.get_token_cost()
 	if pay_with_tokens:
 		if not GoldManager.spend_tokens(token_cost):
 			return
@@ -268,9 +268,9 @@ func _complete_potion_purchase(pay_with_tokens: bool) -> void:
 		if not GoldManager.can_afford(gold_price):
 			return
 		GoldManager.remove(gold_price)
-	if not PotionManager.add_potion(_selected_potion_ui.potion):
+	if not CondimentManager.add_condiment(_selected_condiment_ui.condiment):
 		return
-	_selected_potion_ui.mark_sold()
+	_selected_condiment_ui.mark_sold()
 	AudioManager.play_sfx(
 		UISounds.CLICK if pay_with_tokens else UISounds.MERCHANT_CARD_PURCHASED
 	)
@@ -305,15 +305,15 @@ func _on_currency_changed(_new_amount: int = 0) -> void:
 	_update_currency_display()
 	for card_ui in _displayed_cards:
 		card_ui.refresh_affordability()
-	for potion_ui in _displayed_potions:
-		potion_ui.refresh_affordability()
+	for condiment_ui in _displayed_condiments:
+		condiment_ui.refresh_affordability()
 	_update_reroll_button()
 	_refresh_selected_purchase_tray()
 
 
 func _clear_selection() -> void:
 	_clear_card_selection()
-	_clear_potion_selection()
+	_clear_condiment_selection()
 
 
 func _clear_card_selection() -> void:
@@ -322,17 +322,17 @@ func _clear_card_selection() -> void:
 	_selected_card_ui = null
 
 
-func _clear_potion_selection() -> void:
-	if _selected_potion_ui != null:
-		_selected_potion_ui.set_merchant_selected(false)
-	_selected_potion_ui = null
+func _clear_condiment_selection() -> void:
+	if _selected_condiment_ui != null:
+		_selected_condiment_ui.set_merchant_selected(false)
+	_selected_condiment_ui = null
 
 
 func _refresh_selected_purchase_tray() -> void:
 	if _selected_card_ui != null and not _selected_card_ui.is_sold():
 		_selected_card_ui.refresh_purchase_tray()
-	if _selected_potion_ui != null and not _selected_potion_ui.is_sold():
-		_selected_potion_ui.refresh_purchase_tray()
+	if _selected_condiment_ui != null and not _selected_condiment_ui.is_sold():
+		_selected_condiment_ui.refresh_purchase_tray()
 
 
 func _update_currency_display() -> void:
@@ -354,16 +354,16 @@ func capture_shop_state() -> Dictionary:
 	for index in _displayed_cards.size():
 		if _displayed_cards[index].is_sold():
 			sold_indices.append(index)
-	var sold_potion_indices: Array = []
-	for index in _displayed_potions.size():
-		if _displayed_potions[index].is_sold():
-			sold_potion_indices.append(index)
+	var sold_condiment_indices: Array = []
+	for index in _displayed_condiments.size():
+		if _displayed_condiments[index].is_sold():
+			sold_condiment_indices.append(index)
 	return {
 		"open": _session_open,
 		"stock_reroll_count": _stock_reroll_count,
 		"reroll_cost": _reroll_cost,
 		"sold_indices": sold_indices,
-		"sold_potion_indices": sold_potion_indices,
+		"sold_condiment_indices": sold_condiment_indices,
 	}
 
 
@@ -396,12 +396,12 @@ func _apply_sold_indices(sold_indices: Array) -> void:
 		_hide_purchased_stock(_displayed_cards[index])
 
 
-func _apply_sold_potion_indices(sold_indices: Array) -> void:
+func _apply_sold_condiment_indices(sold_indices: Array) -> void:
 	for entry in sold_indices:
 		var index := int(entry)
-		if index < 0 or index >= _displayed_potions.size():
+		if index < 0 or index >= _displayed_condiments.size():
 			continue
-		_displayed_potions[index].mark_sold()
+		_displayed_condiments[index].mark_sold()
 
 
 func _hide_purchased_stock(card_ui: CardUI) -> void:

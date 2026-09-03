@@ -1,0 +1,17 @@
+[gd_resource type="Resource" format=3 uid="uid://om6a1l4snwcg"]
+
+[ext_resource type="Texture2D" uid="uid://dpnt8ubws736" path="res://assets/icons/kitchenware/sous-vide_machine.png" id="1_d64nx"]
+[ext_resource type="Script" uid="uid://bsawstnxgd2m5" path="res://resources/spot_cards/kitchenware/sous-vide_machine/sous-vide_machine.gd" id="2_tkahj"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_rg34c"]
+
+[resource]
+script = ExtResource("2_tkahj")
+base_production_amount = null
+rarity = 1
+type = 1
+sigil_kind = 4
+id = "sous-vide_machine"
+name = "Sous-vide Machine"
+icon = ExtResource("1_d64nx")
+description = "Spend 1 Gold to double a random Following Ingredient in this course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

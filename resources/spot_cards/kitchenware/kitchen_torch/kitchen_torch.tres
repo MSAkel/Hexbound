@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://hhv7idvwhuq0"]
+
+[ext_resource type="Texture2D" uid="uid://1b3wsb4qotum" path="res://assets/icons/kitchenware/kitchen_torch.png" id="1_ib68p"]
+[ext_resource type="Script" uid="uid://c55pwmlsynuf8" path="res://resources/spot_cards/kitchenware/kitchen_torch/kitchen_torch.gd" id="2_gnin7"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_lp2tl"]
+
+[resource]
+script = ExtResource("2_gnin7")
+rarity = 1
+type = 1
+sigil_kind = 4
+id = "kitchen_torch"
+name = "Kitchen Torch"
+icon = ExtResource("1_ib68p")
+description = "Doubles an Ingredient for every active doublement"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

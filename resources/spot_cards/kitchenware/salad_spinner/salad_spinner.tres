@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://ccpwrc5puerq0"]
+
+[ext_resource type="Texture2D" uid="uid://dxvkoxhinqe47" path="res://assets/icons/kitchenware/salad_spinner.png" id="1_3841r"]
+[ext_resource type="Script" uid="uid://wnec5k631fuo" path="res://resources/spot_cards/kitchenware/salad_spinner/salad_spinner.gd" id="2_8uagv"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_6d4l6"]
+
+[resource]
+script = ExtResource("2_8uagv")
+type = 1
+sigil_kind = 5
+id = "salad_spinner"
+name = "Salad Spinner"
+icon = ExtResource("1_3841r")
+description = "Fires a random adjacent Following card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

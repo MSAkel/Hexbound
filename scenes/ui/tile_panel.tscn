@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://bif4cx5edh2ng"]
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/tile_panel.gd" id="1_0dxj0"]
-[ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="2_8qrfl"]
 [ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_f84w1"]
+[ext_resource type="PackedScene" uid="uid://dgghwt6uw18en" path="res://scenes/ui/cards/card_icon.tscn" id="3_cardicon"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8qrfl"]
 content_margin_left = 16.0
@@ -51,11 +51,9 @@ theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 
-[node name="RuneIcon" type="TextureRect" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneIconPanel" unique_id=108305046]
+[node name="RuneIcon" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneIconPanel" unique_id=108305046 instance=ExtResource("3_cardicon")]
+custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-texture = ExtResource("2_8qrfl")
-expand_mode = 1
-stretch_mode = 4
 
 [node name="RuneVBox" type="VBoxContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer" unique_id=2029008049]
 layout_mode = 2
@@ -71,7 +69,7 @@ size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
 theme_override_fonts/font = SubResource("FontVariation_c0n6m")
 theme_override_font_sizes/font_size = 18
-text = "No Rune"
+text = "Empty Spot"
 
 [node name="RarityBadge" type="PanelContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow" unique_id=1452203392]
 visible = false
@@ -90,7 +88,7 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.38, 0.28, 1)
 theme_override_font_sizes/font_size = 14
-text = "Producer"
+text = "Ingredient"
 
 [node name="RuneChipLine" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1745057158]
 visible = false
@@ -113,12 +111,12 @@ scroll_active = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.52, 0.36, 1)
 theme_override_font_sizes/font_size = 15
-text = "+10 bonus"
+text = "+10 Flavour"
 
-[node name="PotionFuseLine" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox"]
+[node name="CondimentFuseLine" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=425417592]
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.32, 0.72, 1)
 theme_override_font_sizes/font_size = 14
+text = ""
 autowrap_mode = 3
-text = "Potion"

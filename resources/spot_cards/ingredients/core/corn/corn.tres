@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://y4red7h47dee"]
+
+[ext_resource type="Texture2D" uid="uid://7ep0yxmlb8ph" path="res://assets/icons/food/ingredients/corn.png" id="1_tpb3g"]
+[ext_resource type="Script" uid="uid://cipa81s1njo6j" path="res://resources/spot_cards/ingredients/core/corn/corn.gd" id="2_dqgyx"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_78g7e"]
+
+[resource]
+script = ExtResource("2_dqgyx")
+base_production_amount = 14
+rarity = 1
+product = 1
+id = "corn"
+name = "Corn"
+icon = ExtResource("1_tpb3g")
+description = "+14 Flavour per adjacent Following Ingredient. +20 if 2 or more"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

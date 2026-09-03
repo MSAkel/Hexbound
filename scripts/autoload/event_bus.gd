@@ -79,15 +79,15 @@ signal tooltip_hover_refresh_requested
 ## Independent map overlay toggles from the run-info layout buttons.
 signal map_display_overlays_changed(show_tile_cards: bool, show_order_numbers: bool, show_segment_links: bool)
 
-## Potion belt contents changed.
-signal potion_belt_changed
+## Condiment belt contents changed.
+signal condiment_belt_changed
 ## Tile-target drink was selected or cancelled. Slot is -1 when idle.
-signal potion_targeting_changed(slot_index: int)
+signal condiment_targeting_changed(slot_index: int)
 ## Fuses on placed cards or turn-scope badges changed.
-signal potion_fuses_changed
+signal condiment_fuses_changed
 ## A belt slot started its drink animation.
-signal potion_consume_started(slot_index: int, potion: Potion)
-## Belt drink animation finished. PotionManager waits on this before applying.
-signal potion_consume_animation_finished
+signal condiment_consume_started(slot_index: int, condiment: Condiment)
+## Belt drink animation finished. CondimentManager waits on this before applying.
+signal condiment_consume_animation_finished
 ## Drink was requested but cannot be used (for example no upcoming event).
-signal potion_use_failed(potion: Potion)
+signal condiment_use_failed(condiment: Condiment)

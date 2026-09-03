@@ -1,16 +1,16 @@
 [gd_scene format=3 uid="uid://crffik30sf5rg"]
 
+[ext_resource type="Texture2D" uid="uid://badassbgep53i" path="res://assets/gui/panels/notebook.png" id="1_amxqk"]
 [ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bsyc5shwtko4o" path="res://assets/icons/others/navigation_arrow.png" id="2_arrow"]
 [ext_resource type="Script" uid="uid://bj3fm6loe7jfv" path="res://scenes/ui/RunInfoDisplay/segments_container/round_score_footer.gd" id="2_round_score"]
-[ext_resource type="Texture2D" uid="uid://b85eh86cnkj4i" path="res://assets/gui/panels/v_bar_light.png" id="7_panel"]
 
 [sub_resource type="StyleBoxTexture" id="PanelMain"]
-content_margin_left = 16.0
-content_margin_top = 16.0
-content_margin_right = 16.0
-content_margin_bottom = 16.0
-texture = ExtResource("7_panel")
+content_margin_left = 70.0
+content_margin_top = 61.0
+content_margin_right = 54.0
+content_margin_bottom = 63.0
+texture = ExtResource("1_amxqk")
 
 [sub_resource type="StyleBoxFlat" id="HeaderStrip"]
 content_margin_left = 10.0
@@ -34,14 +34,12 @@ bg_color = Color(0.965, 0.92, 0.79, 0.94)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
-border_width_bottom = 2
+border_width_bottom = 1
 border_color = Color(0.545, 0.431, 0.243, 0.78)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-shadow_color = Color(0.24, 0.18, 0.09, 0.18)
-shadow_size = 3
 
 [node name="SegmentsContainer" type="PanelContainer" unique_id=1933303425]
 texture_filter = 1
@@ -60,7 +58,7 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
 theme_override_font_sizes/font_size = 20
-text = "Score Breakdown"
+text = "Rating Breakdown"
 horizontal_alignment = 1
 
 [node name="TurnsContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=201524887]
@@ -84,7 +82,7 @@ theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
 theme_override_colors/font_outline_color = Color(0.96, 0.9, 0.72, 0.75)
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 18
-text = "TURN 1"
+text = "HOUR 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -122,7 +120,7 @@ size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.8
 theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.88)
 theme_override_font_sizes/font_size = 11
-text = "ENERGY"
+text = "FLAVOUR"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -162,7 +160,7 @@ size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.7
 theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
 theme_override_font_sizes/font_size = 11
-text = "SCORE"
+text = "RATING"
 horizontal_alignment = 2
 vertical_alignment = 1
 
@@ -186,13 +184,13 @@ theme_override_constants/separation = -2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.178, 0.417, 0.426, 1)
 theme_override_font_sizes/font_size = 18
-text = "TURN TOTAL"
+text = "HOUR TOTAL"
 
 [node name="PayoffLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/TotalRow/TotalCopy" unique_id=698713244]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 0.9)
 theme_override_font_sizes/font_size = 16
-text = "COMBINED SCORE"
+text = "COMBINED RATING"
 
 [node name="ScoreTotalNumber" type="Label" parent="VBoxContainer/TurnTotalContainer/TotalRow" unique_id=934089326 groups=["main_ui"]]
 layout_mode = 2
@@ -224,7 +222,7 @@ theme_override_constants/separation = -2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.178, 0.417, 0.426, 1)
 theme_override_font_sizes/font_size = 18
-text = "ROUND SCORE"
+text = "DAY RATING"
 
 [node name="TargetLabel" type="Label" parent="VBoxContainer/RoundScoreContainer/TotalRow/TotalCopy" unique_id=-1742741537 groups=["main_ui"]]
 layout_mode = 2

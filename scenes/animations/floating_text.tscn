@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c167cxrhp8xhs"]
 
 [ext_resource type="Script" uid="uid://ciy7fj80my7ax" path="res://scripts/floating_text.gd" id="1_45khh"]
-[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="3_icon"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="3_icon"]
 
 [sub_resource type="FontVariation" id="FontVariation_ksxla"]
 spacing_glyph = 1

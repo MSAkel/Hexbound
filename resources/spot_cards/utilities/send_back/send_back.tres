@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://6vhr523vpnd"]
+
+[ext_resource type="Texture2D" uid="uid://crnok4e3kg30" path="res://assets/icons/utility/send_back.png" id="1_xs8ba"]
+[ext_resource type="Script" uid="uid://bgbplenqaqqeq" path="res://resources/spot_cards/utilities/send_back/send_back.gd" id="2_ab82v"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_nm8e5"]
+
+[resource]
+script = ExtResource("2_ab82v")
+type = 2
+id = "send_back"
+name = "Send Back"
+icon = ExtResource("1_xs8ba")
+description = "Return targeted card to hand"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

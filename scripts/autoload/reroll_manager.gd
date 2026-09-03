@@ -32,7 +32,7 @@ func use_reroll() -> bool:
 	return true
 
 
-## Potion and other bonuses can push the pool above the starting amount.
+## Condiment and other bonuses can push the pool above the starting amount.
 func add_rerolls(amount: int) -> void:
 	if amount <= 0:
 		return

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://bpdqv3hg50vdf"]
+
+[ext_resource type="Texture2D" uid="uid://duupu8v6upnfl" path="res://assets/icons/kitchenware/oven_mitt.png" id="1_hch7j"]
+[ext_resource type="Script" uid="uid://cha8ltd2le8nv" path="res://resources/spot_cards/kitchenware/oven_mitt/oven_mitt.gd" id="2_7u15k"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_ma7lp"]
+
+[resource]
+script = ExtResource("2_7u15k")
+base_production_amount = 5
+type = 1
+sigil_kind = 7
+id = "oven_mitt"
+name = "Oven Mitt"
+icon = ExtResource("1_hch7j")
+description = "Gives the lowest Following Flavour ingredient +5 permanently"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -43,7 +43,7 @@ func _on_tile_cards_layout_mouse_exited() -> void:
 
 
 func _on_trigger_order_layout_mouse_entered() -> void:
-	var tooltip := "Show trigger order"
+	var tooltip := "Show %s" % FeastDisplay.FIRE_ORDER.to_lower()
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 
 
@@ -52,7 +52,7 @@ func _on_trigger_order_layout_mouse_exited() -> void:
 
 
 func _on_segment_links_layout_mouse_entered() -> void:
-	var tooltip := "Show segment links"
+	var tooltip := "Show %s links" % FeastDisplay.COURSE.to_lower()
 	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
 
 

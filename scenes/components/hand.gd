@@ -438,7 +438,6 @@ func capture_hand_state() -> Dictionary:
 		var card_ui := child as CardUI
 		if card_ui.card == null:
 			continue
-		# Writes "tile_card". Older saves used "rune".
 		cards.append({"kind": card_ui.card.get_save_kind(), "id": card_ui.card.id})
 
 	return {
@@ -459,12 +458,22 @@ func restore_hand_state(state: Dictionary) -> void:
 			child.free()
 
 	cards_played = int(state.get("cards_played", 0))
+	var saved_count := 0
+	var restored_count := 0
 	for entry: Dictionary in state.get("cards", []):
+		saved_count += 1
 		var kind: String = entry.get("kind", "")
 		var card_id: String = entry.get("id", "")
-		if kind == "tile_card" or kind == "rune":
+		if kind == "tile_card":
 			var tile_card := GameManager.get_tile_card_by_id(card_id)
 			if tile_card != null:
 				_add_tile_card(tile_card)
+				restored_count += 1
+
+	if restored_count < saved_count:
+		push_warning(
+			"Hand restore dropped %d/%d cards. Missing ids are not in the pool."
+			% [saved_count - restored_count, saved_count]
+		)
 
 	_generated_reveal.restore_pending(state.get("pending_generated_cards", []))

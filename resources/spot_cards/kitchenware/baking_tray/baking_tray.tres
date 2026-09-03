@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://dbojpvqbqfct6"]
+
+[ext_resource type="Texture2D" uid="uid://c13l42fct4i6w" path="res://assets/icons/kitchenware/baking_tray.png" id="1_lykiw"]
+[ext_resource type="Script" uid="uid://durd57ydluooe" path="res://resources/spot_cards/kitchenware/baking_tray/baking_tray.gd" id="2_4r8cp"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_70no7"]
+
+[resource]
+script = ExtResource("2_4r8cp")
+rarity = 1
+type = 1
+sigil_kind = 6
+id = "baking_tray"
+name = "Baking Tray"
+icon = ExtResource("1_lykiw")
+description = "Pass 45% of this course's Flavour and 20% bonus Mult to the next course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -652,6 +652,6 @@ func _get_rune_on_coords(coords: Vector2i, filter_type: Variant = null) -> TileC
 		return null
 	if not _map.is_tile_card_triggerable(hex):
 		return null
-	if filter_type != null and hex.active_tile_card.type != filter_type:
+	if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
 		return null
 	return hex.active_tile_card

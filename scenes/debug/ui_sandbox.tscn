@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://cylk7h6n211gc" path="res://scenes/ui/game_over_screen/game_over_screen.tscn" id="3_game_over"]
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="4_merchant"]
 [ext_resource type="PackedScene" uid="uid://di0jbf4swcn62" path="res://scenes/ui/round_complete_screen/round_complete_screen.tscn" id="5_round_complete"]
-[ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_rune_selection"]
+[ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/card_selection_ui.tscn" id="6_rune_selection"]
 [ext_resource type="PackedScene" uid="uid://b77xc5y6w8mq2" path="res://scenes/ui/segment_passives/segment_passive_unlock_reveal.tscn" id="7_passive_unlock"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trigger_panel"]

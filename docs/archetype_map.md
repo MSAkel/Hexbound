@@ -89,7 +89,7 @@ This segment is a battery. The next segment is the amplifier.
 |------|--------|
 | Core | Forward Energy, Forward Mult, Load Splitter, Share Load |
 | Payoff | Relay Sink |
-| Enabler | Lead-In, Forward Gift potion |
+| Enabler | Lead-In, Forward Gift condiment |
 | Trap | Relaying into an empty next segment. Surveyor last row and Encircler center have nowhere to send |
 
 **Passives.** Relay Capacitor, Conductor Core.
@@ -129,7 +129,7 @@ Hex neighbors in trigger order. Same-product clumps. Growth stamps that hop to a
 
 First Producer and last Producer in a segment are special seats.
 
-**Plan.** Put Opening Volt or a stamped Energy card in seat one. Put Last Surge or a Mult card in seat last. Initial Encore / Final Encore / Final Call / Lead-In exist to fire or Empower those seats across segments. Potions Opening Round and Closing Round are the map-wide version.
+**Plan.** Put Opening Volt or a stamped Energy card in seat one. Put Last Surge or a Mult card in seat last. Initial Encore / Final Encore / Final Call / Lead-In exist to fire or Empower those seats across segments. Condiments Opening Round and Closing Round are the map-wide version.
 
 | Role | Cards |
 |------|--------|
@@ -151,13 +151,13 @@ First Producer and last Producer in a segment are special seats.
 
 Breaking is a resource. Grow, retrigger, or cash out when something dies.
 
-**Plan.** Overcharge and Unstable Rune threaten to break. Break Glass and Gluttonous Rune break on purpose. Salvage Core permanently grows when a neighbor dies. Breaker Coil retriggers the next Producer after a break. Ward potion and Safety Fuse keep the cards you still need.
+**Plan.** Overcharge and Unstable Rune threaten to break. Break Glass and Gluttonous Rune break on purpose. Salvage Core permanently grows when a neighbor dies. Breaker Coil retriggers the next Producer after a break. Ward condiment and Safety Fuse keep the cards you still need.
 
 | Role | Cards |
 |------|--------|
 | Core | Overcharge, Break Glass, Gluttonous Rune, Salvage Core, Breaker Coil |
 | Payoff | Salvage Core, Gluttonous Rune (consumed cards double its Energy), Gold Extraction |
-| Enabler | Replication (breaks itself after 3), Unstable Rune, Card Extraction, Ward potion |
+| Enabler | Replication (breaks itself after 3), Unstable Rune, Card Extraction, Ward condiment |
 | Trap | Breaking Salvage Core itself. Gluttonous eating the payoff you needed. Break Glass on a segment you still need next turn |
 
 **Passives.** Safety Fuse, Aegis Matrix, Anchor Ward (one-tile).

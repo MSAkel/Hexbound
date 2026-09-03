@@ -12,9 +12,9 @@ var is_card_selected: bool = false
 var _is_placing := false
 
 var selected_card: CardUI = null
-var _rune_preview: RuneUI
+var _rune_preview: CardIconUI
 # Faded copy snapped to the hex the dragged rune would land on.
-var _tile_landing_preview: RuneUI
+var _tile_landing_preview: CardIconUI
 # Prevents deselect cleanup when swapping from one selected card to another.
 var _switching_selection: bool = false
 # Tiles temporarily marked invalid while placing a restricted rune card.
@@ -36,7 +36,7 @@ var _ghost_float_time := 0.0
 
 const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
-const RUNE_UI_SCENE: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
+const CARD_ICON_UI: PackedScene = preload("res://scenes/ui/runes/card_icon_ui.tscn")
 # Pointer travel from the selecting press before a release is treated as a drop.
 const DRAG_PLACE_THRESHOLD_PX := 8.0
 # Bob height in pixels. Raise for more float, lower toward 0 to calm it.
@@ -71,8 +71,8 @@ func _setup_rune_preview() -> void:
 	_tile_landing_preview = _make_ghost_rune(TILE_LANDING_PREVIEW_Z_INDEX)
 
 
-func _make_ghost_rune(z: int) -> RuneUI:
-	var ghost := RUNE_UI_SCENE.instantiate() as RuneUI
+func _make_ghost_rune(z: int) -> CardIconUI:
+	var ghost := CARD_ICON_UI.instantiate() as CardIconUI
 	ghost.visible = false
 	ghost.z_index = z
 	ghost.custom_minimum_size = HexTileMap.HEX_RUNE_SIZE
@@ -261,17 +261,17 @@ func _update_placed_card_tile_panel(map_coords: Vector2i, mouse_over_card: bool)
 
 func _placement_failure_message(hex: Hex) -> String:
 	if hex.is_placement_blocked():
-		return "Tile locked"
+		return "%s locked" % FeastDisplay.SPOT
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:
 		return "Can't place here"
 	if tile_card.type == TileCard.TileCardType.UTILITY:
 		if hex.active_tile_card == null:
-			return "Needs an occupied tile"
-		return "Can't target this tile"
+			return "Needs an occupied %s" % FeastDisplay.SPOT.to_lower()
+		return "Can't target this %s" % FeastDisplay.SPOT.to_lower()
 	if hex.active_tile_card != null:
 		if tile_card.type == TileCard.TileCardType.UTILITY:
-			return "Can't target this tile"
+			return "Can't target this %s" % FeastDisplay.SPOT.to_lower()
 		return ""
 	if not tile_card.can_place_on_tile(hex):
 		return _placement_restriction_message(tile_card)
@@ -281,13 +281,13 @@ func _placement_failure_message(hex: Hex) -> String:
 func _placement_restriction_message(tile_card: TileCard) -> String:
 	match tile_card.placement_restriction:
 		TileCard.PlacementRestriction.EDGE_TILE:
-			return "Must be an edge tile"
+			return "Must be an edge %s" % FeastDisplay.SPOT.to_lower()
 		TileCard.PlacementRestriction.SEGMENT_FIRST_TILE:
-			return "Must be a first segment tile"
+			return "Must be the first %s in the %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
 		TileCard.PlacementRestriction.SEGMENT_LAST_TILE:
-			return "Must be a last segment tile"
+			return "Must be the last %s in the %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
 		TileCard.PlacementRestriction.ONE_TILE_SEGMENT:
-			return "Must be a 1-tile segment"
+			return "Must be a one-%s %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
 		_:
 			return "Can't place here"
 
@@ -473,8 +473,8 @@ func _place_card_on_hex(hex: Hex) -> void:
 	_rune_preview.visible = false
 	selected_card.card.play_on(hex, false)
 	# Ghost hide would kill in-flight particles. Burst on the seated rune instead.
-	if hex.rune_ui != null and not GameManager.skip_presentation:
-		hex.rune_ui.play_placement_land_particles()
+	if hex.card_icon_ui != null and not GameManager.skip_presentation:
+		hex.card_icon_ui.play_placement_land_particles()
 	_finish_playing_selected_card()
 
 

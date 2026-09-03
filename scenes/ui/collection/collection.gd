@@ -1,6 +1,6 @@
 extends Panel
 
-## Collection screen for browsing every rune, character, event, and passive in the game.
+## Collection screen for browsing cards by shelf, characters, events, and passives.
 
 signal closed
 
@@ -19,7 +19,11 @@ const ITEM_BACKGROUND := Color("182b30e8")
 const ITEM_BORDER := Color("617575")
 
 enum CollectionTab {
-	CARDS,
+	INGREDIENT,
+	ECONOMY,
+	KITCHENWARE,
+	CONDIMENTS,
+	UTILITY,
 	CHARACTERS,
 	EVENTS,
 	PASSIVES,
@@ -27,14 +31,39 @@ enum CollectionTab {
 
 
 func _ready() -> void:
+	_configure_tabs()
 	_show_tab(tab_bar.current_tab)
+
+
+func _configure_tabs() -> void:
+	var titles := PackedStringArray([
+		FeastDisplay.INGREDIENT,
+		"Economy",
+		"Kitchenware",
+		FeastDisplay.CONDIMENTS,
+		"Utility",
+		"Characters",
+		"Events",
+		"Passives",
+	])
+	tab_bar.tab_count = titles.size()
+	for i: int in titles.size():
+		tab_bar.set_tab_title(i, titles[i])
 
 
 func _show_tab(tab: int) -> void:
 	_clear_collection()
 	match tab:
-		CollectionTab.CARDS:
-			_show_cards()
+		CollectionTab.INGREDIENT:
+			_show_ingredients_cards()
+		CollectionTab.ECONOMY:
+			_show_economy_cards()
+		CollectionTab.KITCHENWARE:
+			_show_kitchenware_cards()
+		CollectionTab.CONDIMENTS:
+			_show_condiments()
+		CollectionTab.UTILITY:
+			_show_utility_cards()
 		CollectionTab.CHARACTERS:
 			_show_characters()
 		CollectionTab.EVENTS:
@@ -50,13 +79,92 @@ func _clear_collection() -> void:
 		child.queue_free()
 
 
-func _show_cards() -> void:
+func _show_tile_cards(cards: Array) -> void:
 	collection_grid_container.columns = 5
-	for rune in GameManager.tile_cards_pool:
+	for card in cards:
+		if card is not TileCard:
+			continue
 		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
 		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW)
 		collection_grid_container.add_child(card_ui)
-		card_ui.set_card(rune)
+		card_ui.set_card(card)
+
+
+func _show_ingredients_cards() -> void:
+	var cards: Array = []
+	for card in GameManager.tile_cards_pool:
+		if card is TileCard and _is_ingredients_card(card as TileCard):
+			cards.append(card)
+	_show_tile_cards(cards)
+
+
+func _show_economy_cards() -> void:
+	var cards: Array = []
+	for card in GameManager.tile_cards_pool:
+		if card is TileCard and _is_economy_card(card as TileCard):
+			cards.append(card)
+	_show_tile_cards(cards)
+
+
+func _show_kitchenware_cards() -> void:
+	var cards: Array = []
+	for card in GameManager.tile_cards_pool:
+		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.KITCHENWARE:
+			cards.append(card)
+	_show_tile_cards(cards)
+
+
+func _show_utility_cards() -> void:
+	var cards: Array = []
+	for card in GameManager.tile_cards_pool:
+		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.UTILITY:
+			cards.append(card)
+	_show_tile_cards(cards)
+
+
+func _is_ingredients_card(card: TileCard) -> bool:
+	return card.type == TileCard.TileCardType.INGREDIENT
+
+
+func _is_economy_card(card: TileCard) -> bool:
+	return card.type == TileCard.TileCardType.ECONOMY
+
+
+func _show_condiments() -> void:
+	collection_grid_container.columns = 5
+	for condiment: Condiment in CondimentCatalog.get_all():
+		collection_grid_container.add_child(_create_condiment_entry(condiment))
+
+
+func _create_condiment_entry(condiment: Condiment) -> PanelContainer:
+	var panel := _create_item_panel(Vector2(180, 200))
+	panel.mouse_default_cursor_shape = Control.CURSOR_HELP
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 10)
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(column)
+
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(96, 96)
+	icon.texture = condiment.icon
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(icon)
+
+	var name_label := _create_label(condiment.display_name, 18, TEXT_PRIMARY)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(name_label)
+
+	panel.mouse_entered.connect(_show_condiment_tooltip.bind(panel, condiment))
+	panel.mouse_exited.connect(_hide_passive_tooltip)
+	return panel
+
+
+func _show_condiment_tooltip(panel: Control, condiment: Condiment) -> void:
+	var tip := "%s\n%s" % [condiment.display_name, condiment.description]
+	EventBus.toggle_tooltip.emit(true, tip, panel.get_global_rect())
 
 
 func _show_characters() -> void:
@@ -119,7 +227,7 @@ func _show_passive_tooltip(
 	unlocked: bool
 ) -> void:
 	var tile_count := maxi(1, passive.tile_cost)
-	var tile_text := "Tile size: %d tile%s" % [tile_count, "" if tile_count == 1 else "s"]
+	var tile_text := "Spot size: %d spot%s" % [tile_count, "" if tile_count == 1 else "s"]
 	var passive_tip: String
 	if unlocked:
 		passive_tip = "%s\n%s\n%s" % [
@@ -159,7 +267,7 @@ func _create_character_entry(character: CharacterDefinition) -> PanelContainer:
 
 	details.add_child(_create_label(character.display_name.to_upper(), 27, TEXT_PRIMARY))
 	details.add_child(_create_separator())
-	details.add_child(_create_label("ACTIVATION ORDER", 14, ACCENT))
+	details.add_child(_create_label("FIRE ORDER", 14, ACCENT))
 	var order_label := _create_label(character.trigger_order_display_name, 20, TEXT_PRIMARY)
 	order_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_child(order_label)
@@ -169,7 +277,7 @@ func _create_character_entry(character: CharacterDefinition) -> PanelContainer:
 	description.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	details.add_child(description)
 
-	var segment_text := "Variable segments" if character.segments_count < 0 else "%d segments" % character.segments_count
+	var segment_text := "Variable courses" if character.segments_count < 0 else "%d courses" % character.segments_count
 	details.add_child(_create_label(segment_text.to_upper(), 14, ACCENT))
 	return panel
 

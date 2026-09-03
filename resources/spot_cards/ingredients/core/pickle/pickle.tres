@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://ofsoxumvkdbk"]
+
+[ext_resource type="Texture2D" uid="uid://bjv1mwuogff5k" path="res://assets/icons/food/ingredients/pickle.png" id="1_roj08"]
+[ext_resource type="Script" uid="uid://cyp0078ca4dxy" path="res://resources/spot_cards/ingredients/core/pickle/pickle.gd" id="2_xodq8"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_8ujn0"]
+
+[resource]
+script = ExtResource("2_xodq8")
+base_production_amount = 15
+rarity = 1
+product = 1
+id = "pickle"
+name = "Pickle"
+icon = ExtResource("1_roj08")
+description = "+15 Flavour. When another card in this course spoils, permanently gain +10 Flavour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

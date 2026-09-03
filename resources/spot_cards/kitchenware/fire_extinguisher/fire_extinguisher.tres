@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://y3m3p4rtvqcl"]
+
+[ext_resource type="Texture2D" uid="uid://bjw4jkr4vq8h3" path="res://assets/icons/kitchenware/fire_extinguisher.png" id="1_86g7x"]
+[ext_resource type="Script" uid="uid://vqq17aw8ueom" path="res://resources/spot_cards/kitchenware/fire_extinguisher/fire_extinguisher.gd" id="2_7k1bx"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_rmnft"]
+
+[resource]
+script = ExtResource("2_7k1bx")
+rarity = 1
+type = 1
+sigil_kind = 5
+id = "fire_extinguisher"
+name = "Fire Extinguisher"
+icon = ExtResource("1_86g7x")
+description = "Fires every card on this course. Spoils immediately"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

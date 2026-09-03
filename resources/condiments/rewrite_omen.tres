@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://b2bwnave5uj4j"]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/condiments/soy_sauce.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "rewrite_event"
+display_name = "Rewrite Event"
+description = "Change the upcoming event"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.62, 0.38, 0.86, 1)
+base_price = 6
+effect_type = 2

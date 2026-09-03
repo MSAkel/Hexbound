@@ -1,0 +1,17 @@
+[gd_resource type="Resource" format=3 uid="uid://mrygcev1ywy4"]
+
+[ext_resource type="Texture2D" uid="uid://cuagg138ecsnc" path="res://assets/icons/kitchenware/cast_iron.png" id="1_xj1bu"]
+[ext_resource type="Script" uid="uid://c0o7t3pif5ffi" path="res://resources/spot_cards/kitchenware/cast_iron/cast_iron.gd" id="2_snmt5"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_k3osy"]
+
+[resource]
+script = ExtResource("2_snmt5")
+rarity = 1
+type = 1
+single_activation_per_turn = true
+sigil_kind = 5
+id = "cast_iron"
+name = "Cast Iron"
+icon = ExtResource("1_xj1bu")
+description = "Fire the Following card twice. Once per hour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

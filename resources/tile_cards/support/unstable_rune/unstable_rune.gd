@@ -4,7 +4,7 @@ const DESTROY_CHANCE_PER_FOLLOWING := 0.10
 
 ## Trigger adjacent Following Producers. 10% break chance per Following adjacent Producer.
 func _on_activate_tile_card(tile: Hex) -> void:
-	var following_producers := _get_following_adjacent_tile_cards(tile, TileCard.TileCardType.PRODUCER)
+	var following_producers := _get_following_adjacent_tile_cards(tile, TileCard.PRODUCER_TYPE_FILTER)
 	if following_producers.is_empty():
 		failed_tile_card_text(tile)
 		return
@@ -23,5 +23,5 @@ func _on_activate_tile_card(tile: Hex) -> void:
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	return _coords_for_placed_tile_cards(
 		hover_tile,
-		_get_following_adjacent_tile_cards(hover_tile, TileCardType.PRODUCER)
+		_get_following_adjacent_tile_cards(hover_tile, TileCard.PRODUCER_TYPE_FILTER)
 	)

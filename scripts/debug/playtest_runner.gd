@@ -6,8 +6,8 @@ extends Node
 ## godot --headless --path "E:/Godot/game++" res://scenes/debug/playtest_runner.tscn
 ## Restrict to one layout with `-- --layout=surveyor`.
 ## Player-only batch: `-- --bot=player --full-count=8` (skips starter/R1 suites).
-## Human-like run: `-- --layout=surveyor --bot=player --seed=TJU27YGN --no-passives --no-potions --repeat=5`
-## Player bot uses Spark on the engine segment, potions, chip placement, and layout plans.
+## Human-like run: `-- --layout=surveyor --bot=player --seed=TJU27YGN --no-passives --no-condiments --repeat=5`
+## Player bot uses Spark on the engine segment, condiments, chip placement, and layout plans.
 ## Surveyor locks a 6–7 hex line through R5. Columnist locks a 7-hex column through R5.
 ## Surveyor then stays on that 7-hex line until full. Columnist rerolls hard through R4.
 
@@ -31,7 +31,7 @@ const CHARACTER_IDS: Array[String] = [
 ]
 const ALLOWED_FILLER_IDS: Array[String] = ["incremental", "rising_tempo", "spark_plug"]
 const BANNED_FILLER_IDS: Array[String] = ["compact_power", "edge_card", "treasury"]
-const LOCKED_STARTER_IDS: Array[String] = ["power_cell", "basic_mult"]
+const LOCKED_STARTER_IDS: Array[String] = ["tomato", "salt"]
 const SEGMENT_SNAPSHOT_ROUNDS: Array[int] = [3, 6, 9]
 const MERCHANT_BASE_REROLL_COST := 5
 const MAX_MERCHANT_GOLD_REROLLS := 2
@@ -46,7 +46,7 @@ const PLAYER_TOKEN_GOLD_PRICE := 8
 const SPARK_PASSIVE_ID := "spark"
 const SHOP_GOLD_RESERVE := 8
 const MAX_SHOP_BUYS_PER_VISIT := 2
-const POTION_SHOP_STOCK := 3
+const CONDIMENT_SHOP_STOCK := 3
 ## Cards that often belong off the main engine line.
 const OFF_ENGINE_CARD_IDS: Array[String] = [
 	"wide_ratio",
@@ -82,7 +82,7 @@ var _full_run_seed_count := FULL_RUN_SEED_COUNT
 ## Surveyor and Columnist opening engine line. -1 means no lock.
 var _locked_engine_segment := -1
 var _use_passives := true
-var _use_potions := true
+var _use_condiments := true
 var _focused_repeat_count := 1
 
 
@@ -94,13 +94,13 @@ func _ready() -> void:
 	_layouts = _parse_layout_filter()
 	if _layouts.size() == 1:
 		_report_path = "user://playtest_report_%s.json" % _layouts[0]
-	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d passives=%s potions=%s" % [
+	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d passives=%s condiments=%s" % [
 		",".join(_layouts),
 		_only_bot if not _only_bot.is_empty() else "all",
 		_only_seed if not _only_seed.is_empty() else "all",
 		_full_run_seed_count,
 		"spark" if _use_passives else "none",
-		"on" if _use_potions else "off",
+		"on" if _use_condiments else "off",
 	])
 	_map = HEX_MAP_SCENE.instantiate() as HexTileMap
 	add_child(_map)
@@ -135,8 +135,8 @@ func _parse_layout_filter() -> Array[String]:
 			_focused_repeat_count = maxi(1, int(arg.substr("--repeat=".length()).strip_edges()))
 		elif arg == "--no-passives":
 			_use_passives = false
-		elif arg == "--no-potions":
-			_use_potions = false
+		elif arg == "--no-condiments":
+			_use_condiments = false
 	var layouts: Array[String] = []
 	for character_id: String in CHARACTER_IDS:
 		if requested.is_empty() or character_id in requested:
@@ -153,12 +153,12 @@ func _run_all() -> void:
 		var bots: Array[String] = BOT_IDS.duplicate()
 		if not _only_bot.is_empty():
 			bots = [_only_bot]
-		print("[playtest] focused seed=%s layout=%s bots=%s passives=%s potions=%s repeat=%d" % [
+		print("[playtest] focused seed=%s layout=%s bots=%s passives=%s condiments=%s repeat=%d" % [
 			_only_seed,
 			character_id,
 			",".join(bots),
 			"spark" if _use_passives else "none",
-			"on" if _use_potions else "off",
+			"on" if _use_condiments else "off",
 			_focused_repeat_count,
 		])
 		for repeat_index in _focused_repeat_count:
@@ -199,7 +199,7 @@ func _run_starter_fairness() -> void:
 				if card_id in LOCKED_STARTER_IDS:
 					continue
 				var template := GameManager.get_tile_card_by_id(card_id)
-				if template != null and template.type == TileCard.TileCardType.PRODUCER:
+				if template != null and TileCard.is_producer_type(template.type):
 					filler_ids.append(card_id)
 
 			if filler_ids.size() != 1:
@@ -242,7 +242,7 @@ func _run_lone_cell_legality() -> void:
 		RunRng.begin_new_run("LONECELL")
 		var drew_lone := false
 		for _i in 80:
-			var pack := RuneLoot.draw_runes(3, GameManager.tile_cards_pool, true, RunRng.create_rng("lone_draw:%d" % _i))
+			var pack := CardLoot.draw_runes(3, GameManager.tile_cards_pool, true, RunRng.create_rng("lone_draw:%d" % _i))
 			for card: TileCard in pack:
 				if card.id == "lone_cell":
 					drew_lone = true
@@ -496,7 +496,7 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 		var goal := GameManager.required_score
 		var turns_used := 0
 		while GameManager.remaining_turns > 0 and GameManager.total_round_score < goal:
-			if bot_id == "player" and _use_potions:
+			if bot_id == "player" and _use_condiments:
 				_player_use_belt_before_resolve()
 			await _resolve_turn()
 			turns_used += 1
@@ -581,7 +581,7 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 			"segment_sizes": GameManager.selected_character.segment_sizes,
 			"segments_count": GameManager.selected_character.segments_count,
 			"playtest_passives": ["spark"] if bot_id == "player" and _use_passives else [],
-			"playtest_potions": _use_potions,
+			"playtest_condiments": _use_condiments,
 			"repeat_index": repeat_index,
 		}
 	)
@@ -598,7 +598,7 @@ func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_tur
 		is_reward,
 		0
 	)
-	var pack := RuneLoot.draw_runes(
+	var pack := CardLoot.draw_runes(
 		EventManager.get_runes_pack_size(is_reward),
 		GameManager.tile_cards_pool,
 		true,
@@ -628,7 +628,7 @@ func _draft_and_pick_pack_player(
 			is_reward,
 			reroll_index
 		)
-		var pack := RuneLoot.draw_runes(
+		var pack := CardLoot.draw_runes(
 			EventManager.get_runes_pack_size(is_reward),
 			GameManager.tile_cards_pool,
 			true,
@@ -657,12 +657,12 @@ func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: i
 		# R1–R3. Hold out for the first Energy or Mult producer on the locked column.
 		if not _columnist_locked_has_producer():
 			if (
-				best.type == TileCard.TileCardType.PRODUCER
+				TileCard.is_producer_type(best.type)
 				and best.product in [TileCard.Product.SCORE, TileCard.Product.MULTIPLIER]
 			):
 				return false
 			return true
-		if best.type != TileCard.TileCardType.PRODUCER:
+		if not TileCard.is_producer_type(best.type):
 			return true
 		if _card_player_value(best) < keep_threshold * 0.65:
 			return true
@@ -731,7 +731,7 @@ func _pick_best_player_card(pack: Array[TileCard]) -> TileCard:
 			value += 30.0 + _columnist_engine_balance_bonus(card)
 			if GameManager.current_round <= 3 and not _columnist_locked_has_producer():
 				if (
-					card.type == TileCard.TileCardType.PRODUCER
+					TileCard.is_producer_type(card.type)
 					and card.product in [TileCard.Product.SCORE, TileCard.Product.MULTIPLIER]
 				):
 					value += 80.0
@@ -746,7 +746,7 @@ func _shop_current_round() -> Array[String]:
 		return _shop_player_round()
 	var bought: Array[String] = []
 	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, 0)
-	var stock := RuneLoot.draw_runes(
+	var stock := CardLoot.draw_runes(
 		MERCHANT_STOCK_COUNT,
 		GameManager.tile_cards_pool,
 		true,
@@ -779,10 +779,10 @@ func _shop_player_round() -> Array[String]:
 			return _shop_card_score(a) > _shop_card_score(b)
 		)
 		var buys_this_visit := 0
-		if _use_potions:
-			var potion_stock := _draw_merchant_potions(stock_reroll_count)
-			var potion_pick := _pick_best_shop_potion(potion_stock)
-			if potion_pick != null and _buy_shop_potion(potion_pick, bought):
+		if _use_condiments:
+			var condiment_stock := _draw_merchant_condiments(stock_reroll_count)
+			var condiment_pick := _pick_best_shop_condiment(condiment_stock)
+			if condiment_pick != null and _buy_shop_condiment(condiment_pick, bought):
 				buys_this_visit += 1
 		for card: TileCard in engine_stock:
 			if buys_this_visit >= MAX_SHOP_BUYS_PER_VISIT:
@@ -826,52 +826,52 @@ func _can_afford_shop_purchase(card: TileCard) -> bool:
 	return false
 
 
-func _draw_merchant_potions(stock_reroll_count: int) -> Array[Potion]:
-	var stream_name := "merchant_potions:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
-	return PotionCatalog.draw_unique(
-		POTION_SHOP_STOCK,
+func _draw_merchant_condiments(stock_reroll_count: int) -> Array[Condiment]:
+	var stream_name := "merchant_condiments:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
+	return CondimentCatalog.draw_unique(
+		CONDIMENT_SHOP_STOCK,
 		RunRng.create_rng(stream_name)
 	)
 
 
-func _pick_best_shop_potion(stock: Array[Potion]) -> Potion:
-	var best: Potion = null
+func _pick_best_shop_condiment(stock: Array[Condiment]) -> Condiment:
+	var best: Condiment = null
 	var best_value := -1.0
-	for potion: Potion in stock:
-		if potion == null:
+	for condiment: Condiment in stock:
+		if condiment == null:
 			continue
-		var value := _potion_player_value(potion)
-		var price := maxf(1.0, float(potion.get_shop_price()))
+		var value := _condiment_player_value(condiment)
+		var price := maxf(1.0, float(condiment.get_shop_price()))
 		value /= price
 		if best == null or value > best_value:
-			best = potion
+			best = condiment
 			best_value = value
 	if best == null or best_value < 0.35:
 		return null
 	return best
 
 
-func _buy_shop_potion(potion: Potion, bought: Array[String]) -> bool:
-	if potion == null or not PotionManager.can_add():
+func _buy_shop_condiment(condiment: Condiment, bought: Array[String]) -> bool:
+	if condiment == null or not CondimentManager.can_add():
 		return false
-	var price := potion.get_shop_price()
+	var price := condiment.get_shop_price()
 	var token_cost := GoldManager.MERCHANT_TOKEN_COST
 	if price >= PLAYER_TOKEN_GOLD_PRICE and GoldManager.can_afford_tokens(token_cost):
 		if not GoldManager.spend_tokens(token_cost):
 			return false
-		bought.append("%s:potion:%s@token" % [GameManager.current_round, potion.id])
+		bought.append("%s:condiment:%s@token" % [GameManager.current_round, condiment.id])
 	elif GoldManager.can_afford(price):
 		if GoldManager.amount - price < SHOP_GOLD_RESERVE:
 			return false
 		GoldManager.remove(price)
-		bought.append("%s:potion:%s@%d" % [GameManager.current_round, potion.id, price])
+		bought.append("%s:condiment:%s@%d" % [GameManager.current_round, condiment.id, price])
 	elif GoldManager.can_afford_tokens(token_cost):
 		if not GoldManager.spend_tokens(token_cost):
 			return false
-		bought.append("%s:potion:%s@token" % [GameManager.current_round, potion.id])
+		bought.append("%s:condiment:%s@token" % [GameManager.current_round, condiment.id])
 	else:
 		return false
-	return PotionManager.add_potion(potion)
+	return CondimentManager.add_condiment(condiment)
 
 
 func _player_engine_shop_cards(stock: Array[TileCard]) -> Array[TileCard]:
@@ -889,7 +889,7 @@ func _player_engine_shop_cards(stock: Array[TileCard]) -> Array[TileCard]:
 
 func _draw_merchant_stock(stock_reroll_count: int) -> Array[TileCard]:
 	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, stock_reroll_count)
-	var stock := RuneLoot.draw_runes(
+	var stock := CardLoot.draw_runes(
 		MERCHANT_STOCK_COUNT,
 		GameManager.tile_cards_pool,
 		true,
@@ -974,7 +974,7 @@ func _card_player_value(card: TileCard) -> float:
 			else:
 				value = 14.0 + float(card.base_production_amount) * 6.0
 		_:
-			if card.type == TileCard.TileCardType.SUPPORT:
+			if card.type == TileCard.TileCardType.KITCHENWARE:
 				value = 28.0 + float(card.base_production_amount)
 				if energy + mult >= 2:
 					value += 10.0
@@ -1121,7 +1121,7 @@ func _columnist_locked_has_producer() -> bool:
 		return false
 	for hex: Hex in _map.get_hexes_in_segment(_locked_engine_segment):
 		var card := hex.active_tile_card
-		if card == null or card.type != TileCard.TileCardType.PRODUCER:
+		if card == null or not TileCard.is_producer_type(card.type):
 			continue
 		if card.product in [TileCard.Product.SCORE, TileCard.Product.MULTIPLIER]:
 			return true
@@ -1368,7 +1368,7 @@ func _placement_trigger_bonus(card: TileCard, hex: Hex, segment_index: int) -> f
 		TileCard.Product.SCORE:
 			return float(order_index) / float(segment_len) * 12.0
 		_:
-			if card.type == TileCard.TileCardType.SUPPORT:
+			if card.type == TileCard.TileCardType.KITCHENWARE:
 				return early_bias * 10.0
 	return 0.0
 
@@ -1408,37 +1408,37 @@ func _place_best_on_segments(card: TileCard, ranked_segments: Array[int]) -> boo
 	return true
 
 
-func _potion_player_value(potion: Potion) -> float:
-	if potion == null:
+func _condiment_player_value(condiment: Condiment) -> float:
+	if condiment == null:
 		return 0.0
 	var gap := maxi(0, GameManager.required_score - GameManager.total_round_score)
-	match potion.effect_type:
-		Potion.EffectType.BORROWED_TIME:
+	match condiment.effect_type:
+		Condiment.EffectType.BORROWED_TIME:
 			if gap > 0 and GameManager.remaining_turns <= 1:
 				return 90.0 + float(gap) / 500.0
 			if _columnist_early_round():
 				return 22.0
 			return 4.0
-		Potion.EffectType.EMPOWER, Potion.EffectType.ECHO:
+		Condiment.EffectType.EMPOWER, Condiment.EffectType.ECHO:
 			return 48.0 if _engine_producer_hex() != null else 8.0
-		Potion.EffectType.WARD:
+		Condiment.EffectType.WARD:
 			return 24.0 if _engine_producer_hex() != null else 6.0
-		Potion.EffectType.NEXT_TRIGGER_ENERGY, Potion.EffectType.NEXT_TRIGGER_MULT:
+		Condiment.EffectType.NEXT_TRIGGER_ENERGY, Condiment.EffectType.NEXT_TRIGGER_MULT:
 			return 40.0 if _engine_producer_hex() != null else 8.0
-		Potion.EffectType.FORWARD_GIFT, Potion.EffectType.MINT_SIP:
+		Condiment.EffectType.FORWARD_GIFT, Condiment.EffectType.MINT_SIP:
 			return 30.0 if _engine_producer_hex() != null else 5.0
-		Potion.EffectType.FREE_REROLL:
+		Condiment.EffectType.FREE_REROLL:
 			return 28.0 if RerollManager.remaining <= 1 else 14.0
-		Potion.EffectType.REWRITE_OMEN:
+		Condiment.EffectType.REWRITE_OMEN:
 			if EventManager.get_next_event_round() == -1:
 				return 0.0
 			return 26.0
-		Potion.EffectType.OPENING_ROUND, Potion.EffectType.CLOSING_ROUND:
+		Condiment.EffectType.OPENING_ROUND, Condiment.EffectType.CLOSING_ROUND:
 			return 36.0 if _engine_producer_hex() != null else 10.0
-		Potion.EffectType.GOLD_DROP:
+		Condiment.EffectType.GOLD_DROP:
 			return 14.0 if GameManager.current_round <= 3 else 6.0
-		Potion.EffectType.POTION_PACK:
-			return 18.0 if PotionManager.empty_slot_count() >= 2 else 8.0
+		Condiment.EffectType.CONDIMENT_PACK:
+			return 18.0 if CondimentManager.empty_slot_count() >= 2 else 8.0
 		_:
 			return 6.0
 
@@ -1449,59 +1449,59 @@ func _engine_producer_hex() -> Hex:
 		return null
 	for hex: Hex in _map.get_hexes_in_segment(engine):
 		var card := hex.active_tile_card
-		if card != null and card.type == TileCard.TileCardType.PRODUCER:
+		if card != null and TileCard.is_producer_type(card.type):
 			return hex
 	return null
 
 
 func _player_use_belt_before_resolve() -> void:
-	if not PotionManager.can_drink_now():
+	if not CondimentManager.can_drink_now():
 		return
 	var gap := maxi(0, GameManager.required_score - GameManager.total_round_score)
-	for i in PotionManager.BELT_SIZE:
-		var potion := PotionManager.belt[i]
-		if potion == null:
+	for i in CondimentManager.BELT_SIZE:
+		var condiment := CondimentManager.belt[i]
+		if condiment == null:
 			continue
-		if potion.effect_type == Potion.EffectType.BORROWED_TIME:
+		if condiment.effect_type == Condiment.EffectType.BORROWED_TIME:
 			if _should_drink_borrowed_time(gap):
-				PotionManager.headless_use_slot(i)
+				CondimentManager.headless_use_slot(i)
 				return
-	for i in PotionManager.BELT_SIZE:
-		var potion := PotionManager.belt[i]
-		if potion == null:
+	for i in CondimentManager.BELT_SIZE:
+		var condiment := CondimentManager.belt[i]
+		if condiment == null:
 			continue
-		if potion.effect_type in [Potion.EffectType.OPENING_ROUND, Potion.EffectType.CLOSING_ROUND]:
+		if condiment.effect_type in [Condiment.EffectType.OPENING_ROUND, Condiment.EffectType.CLOSING_ROUND]:
 			if _engine_producer_hex() != null and gap > int(float(GameManager.required_score) * 0.15):
-				PotionManager.headless_use_slot(i)
+				CondimentManager.headless_use_slot(i)
 				return
-	for i in PotionManager.BELT_SIZE:
-		var potion := PotionManager.belt[i]
-		if potion == null:
+	for i in CondimentManager.BELT_SIZE:
+		var condiment := CondimentManager.belt[i]
+		if condiment == null:
 			continue
-		if potion.effect_type in [
-			Potion.EffectType.EMPOWER,
-			Potion.EffectType.ECHO,
-			Potion.EffectType.NEXT_TRIGGER_ENERGY,
-			Potion.EffectType.NEXT_TRIGGER_MULT,
-			Potion.EffectType.FORWARD_GIFT,
-			Potion.EffectType.MINT_SIP,
-			Potion.EffectType.WARD,
+		if condiment.effect_type in [
+			Condiment.EffectType.EMPOWER,
+			Condiment.EffectType.ECHO,
+			Condiment.EffectType.NEXT_TRIGGER_ENERGY,
+			Condiment.EffectType.NEXT_TRIGGER_MULT,
+			Condiment.EffectType.FORWARD_GIFT,
+			Condiment.EffectType.MINT_SIP,
+			Condiment.EffectType.WARD,
 		]:
-			var target := _best_potion_target_hex(potion)
+			var target := _best_condiment_target_hex(condiment)
 			if target != null and gap > 0:
-				PotionManager.headless_use_slot(i, target)
+				CondimentManager.headless_use_slot(i, target)
 				return
-	for i in PotionManager.BELT_SIZE:
-		var potion := PotionManager.belt[i]
-		if potion == null:
+	for i in CondimentManager.BELT_SIZE:
+		var condiment := CondimentManager.belt[i]
+		if condiment == null:
 			continue
-		if potion.effect_type == Potion.EffectType.REWRITE_OMEN:
+		if condiment.effect_type == Condiment.EffectType.REWRITE_OMEN:
 			if EventManager.get_next_event_round() != -1 and GameManager.current_round >= 4:
-				PotionManager.headless_use_slot(i)
+				CondimentManager.headless_use_slot(i)
 				return
 
 
-func _best_potion_target_hex(potion: Potion) -> Hex:
+func _best_condiment_target_hex(condiment: Condiment) -> Hex:
 	var engine_hex := _engine_producer_hex()
 	if engine_hex != null:
 		return engine_hex
@@ -1869,9 +1869,9 @@ func _trigger_order_swap_gain(a: Hex, b: Hex) -> float:
 		gain += 12.0
 	if card_b.product == TileCard.Product.MULTIPLIER and order_b > order_a:
 		gain += 12.0
-	if card_a.type == TileCard.TileCardType.SUPPORT and order_a > order_b:
+	if card_a.type == TileCard.TileCardType.KITCHENWARE and order_a > order_b:
 		gain += 8.0
-	if card_b.type == TileCard.TileCardType.SUPPORT and order_b > order_a:
+	if card_b.type == TileCard.TileCardType.KITCHENWARE and order_b > order_a:
 		gain += 8.0
 	return gain
 
@@ -1887,7 +1887,7 @@ func _player_swap_weight(card: TileCard) -> int:
 		TileCard.Product.GOLD:
 			return 0
 		_:
-			if card.type == TileCard.TileCardType.SUPPORT:
+			if card.type == TileCard.TileCardType.KITCHENWARE:
 				return 2
 			return 1
 

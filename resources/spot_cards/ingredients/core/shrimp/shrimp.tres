@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://cf2c0mp3yhgg7"]
+
+[ext_resource type="Texture2D" uid="uid://dqebk6odvlao0" path="res://assets/icons/food/ingredients/shrimp.png" id="1_qhfat"]
+[ext_resource type="Script" uid="uid://dj1hcirkpc43u" path="res://resources/spot_cards/ingredients/core/shrimp/shrimp.gd" id="2_r71dh"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_npopt"]
+
+[resource]
+script = ExtResource("2_r71dh")
+base_production_amount = 20
+rarity = 1
+product = 1
+id = "shrimp"
+name = "Shrimp"
+icon = ExtResource("1_qhfat")
+description = "+20 Flavour. If the previous card in fire order is a Kitchenware, fire this card again"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

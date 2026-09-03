@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://to6scs7y3j8f"]
+
+[ext_resource type="Texture2D" uid="uid://cosrd83g742uk" path="res://assets/icons/food/ingredients/lemonade.png" id="1_u8pll"]
+[ext_resource type="Script" uid="uid://kr3p1tjwjphx" path="res://resources/spot_cards/ingredients/core/lemonade/lemonade.gd" id="2_mv5vr"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_7le0o"]
+
+[resource]
+script = ExtResource("2_mv5vr")
+base_production_amount = 8
+rarity = 1
+product = 1
+id = "lemonade"
+name = "Lemonade"
+icon = ExtResource("1_u8pll")
+description = "+8 Flavour. If Doubled, also +4 Mult"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

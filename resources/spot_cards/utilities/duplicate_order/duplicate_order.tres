@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://dnv2j7w43hgq3"]
+
+[ext_resource type="Texture2D" uid="uid://b5m7jn2ukjr23" path="res://assets/icons/utility/duplicate_order.png" id="1_i23wj"]
+[ext_resource type="Script" uid="uid://cuxinu630dsg1" path="res://resources/spot_cards/utilities/duplicate_order/duplicate_order.gd" id="2_5w7e8"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_u7cuv"]
+
+[resource]
+script = ExtResource("2_5w7e8")
+rarity = 2
+type = 2
+id = "duplicate_order"
+name = "Duplicate Order"
+icon = ExtResource("1_i23wj")
+description = "Clone the targeted seated card into hand"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

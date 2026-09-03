@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Texture2D" uid="uid://kirm5i6ncnra" path="res://assets/icons/others/no_icon.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://bbvokg0spxrfy" path="res://resources/spot_cards/ingredients/core/run_on/run_on.gd" id="2_script"]
+
+
+[resource]
+script = ExtResource("2_script")
+base_production_amount = 10
+rarity = 1
+product = 1
+id = "run_on"
+name = "Run-On"
+icon = ExtResource("1_icon")
+description = "+10 Flavour, plus +5 Flavour per consecutive Flavour Ingredient immediately before this card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dwveidib2jxhc"]
 
 [ext_resource type="Script" uid="uid://5h4y0ta207qh" path="res://scenes/ui/merchant/merchant_purchase_tray.gd" id="1_tray"]
-[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="2_gold"]
-[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="3_token"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="2_gold"]
+[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/stats/merchant_token.png" id="3_token"]
 
 [sub_resource type="StyleBoxFlat" id="TrayButtonNormal"]
 content_margin_left = 8.0

@@ -22,7 +22,7 @@ func _ready() -> void:
 	)
 	_target_counter = CountingNumber.new(
 		self,
-		func(text: String) -> void: target_label.text = "TARGET %s" % text,
+		func(text: String) -> void: target_label.text = "%s TARGET %s" % [FeastDisplay.DAY.to_upper(), text],
 		true
 	)
 

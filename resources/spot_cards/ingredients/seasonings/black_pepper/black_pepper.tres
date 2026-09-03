@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://lujnlq33gvj4"]
+
+[ext_resource type="Texture2D" uid="uid://ctmlqfppkdxgx" path="res://assets/icons/food/seasonings/black_pepper.png" id="1_07jkk"]
+[ext_resource type="Script" uid="uid://t464sweri7r2" path="res://resources/spot_cards/ingredients/seasonings/black_pepper/black_pepper.gd" id="2_k1sei"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_sm408"]
+
+[resource]
+script = ExtResource("2_k1sei")
+base_production_amount = 4
+rarity = 1
+product = 2
+id = "black_pepper"
+name = "Black Pepper"
+icon = ExtResource("1_07jkk")
+description = "+4 Mult, +1 per other Seasoning in this course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

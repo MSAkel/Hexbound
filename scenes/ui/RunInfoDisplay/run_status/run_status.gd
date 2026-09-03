@@ -2,20 +2,20 @@ extends PanelContainer
 
 ## Top run HUD for round, remaining turns, gold, and merchant tokens.
 
-@onready var round_label: Label = $VBoxContainer/HBoxContainer/RoundLabel
-@onready var turn_counter_label: Label = $VBoxContainer/HBoxContainer/TurnsContainer/TurnCounterLabel
-@onready var turns_container: Control = $VBoxContainer/HBoxContainer/TurnsContainer
-@onready var gold_row: Control = $VBoxContainer/HBoxContainer/GoldRow
-@onready var gold_amount_label: Label = $VBoxContainer/HBoxContainer/GoldRow/GoldAmountLabel
-@onready var token_row: Control = $VBoxContainer/HBoxContainer/TokenRow
-@onready var token_amount_label: Label = $VBoxContainer/HBoxContainer/TokenRow/TokenAmountLabel
+@onready var round_label: Label = $HBoxContainer/RoundLabel
+@onready var turn_counter_label: Label = $HBoxContainer/TurnsContainer/TurnCounterLabel
+@onready var turns_container: Control = $HBoxContainer/TurnsContainer
+@onready var gold_row: Control = $HBoxContainer/GoldRow
+@onready var gold_amount_label: Label = $HBoxContainer/GoldRow/GoldAmountLabel
+@onready var token_row: Control = $HBoxContainer/TokenRow
+@onready var token_amount_label: Label = $HBoxContainer/TokenRow/TokenAmountLabel
 
 const PUNCH_SCALE := 1.12
 const PUNCH_DURATION := 0.18
 
-const TOOLTIP_ROUND := "Current round. Nine rounds complete a run."
-const TOOLTIP_TURNS := "Turns left this round. Reach the target score before they run out."
-const TOOLTIP_GOLD := "Gold. Spend at the merchant on cards and potions."
+const TOOLTIP_DAY := "Current day. Nine days complete a run."
+const TOOLTIP_HOURS := "Hours left before kitchen close. Reach the day target with hours to spare."
+const TOOLTIP_GOLD := "Gold. Spend at the merchant on cards and condiments."
 const TOOLTIP_TOKENS := "Merchant tokens. Pay for shop items instead of gold. Max %d." % GoldManager.MAX_MERCHANT_TOKENS
 
 var _gold_counter: CountingNumber
@@ -28,7 +28,7 @@ func _ready() -> void:
 	_gold_counter = CountingNumber.for_label(self, gold_amount_label)
 	_round_counter = CountingNumber.new(
 		self,
-		func(text: String) -> void: round_label.text = "Round %s" % text
+		func(text: String) -> void: round_label.text = FeastDisplay.day_label(int(text))
 	)
 	_turn_counter = CountingNumber.for_label(self, turn_counter_label)
 
@@ -49,8 +49,8 @@ func _bind_status_tooltips() -> void:
 		if control == null:
 			continue
 		control.mouse_filter = Control.MOUSE_FILTER_STOP
-	_bind_tooltip(round_label, TOOLTIP_ROUND)
-	_bind_tooltip(turns_container, TOOLTIP_TURNS)
+	_bind_tooltip(round_label, TOOLTIP_DAY)
+	_bind_tooltip(turns_container, TOOLTIP_HOURS)
 	_bind_tooltip(gold_row, TOOLTIP_GOLD)
 	_bind_tooltip(token_row, TOOLTIP_TOKENS)
 

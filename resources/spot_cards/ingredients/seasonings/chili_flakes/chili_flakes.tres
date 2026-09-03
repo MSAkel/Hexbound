@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://lfcsls8o48lq"]
+
+[ext_resource type="Texture2D" uid="uid://bncjsy1xg67u3" path="res://assets/icons/food/seasonings/chili_flakes.png" id="1_vg4bh"]
+[ext_resource type="Script" uid="uid://y2wmhpw1imld" path="res://resources/spot_cards/ingredients/seasonings/chili_flakes/chili_flakes.gd" id="2_eelmb"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_xx5cq"]
+
+[resource]
+script = ExtResource("2_eelmb")
+base_production_amount = 2
+product = 2
+id = "chili_flakes"
+name = "Chili Flakes"
+icon = ExtResource("1_vg4bh")
+description = "+2 Mult per remaining hour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

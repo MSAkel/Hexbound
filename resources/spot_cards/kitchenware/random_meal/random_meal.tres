@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://dfs3j40u078c6"]
+
+[ext_resource type="Texture2D" uid="uid://cebf3yiqy3msr" path="res://assets/icons/kitchenware/random_meal.png" id="1_p3xet"]
+[ext_resource type="Script" uid="uid://bsv88h748mk6i" path="res://resources/spot_cards/kitchenware/random_meal/random_meal.gd" id="2_8jd7b"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_fkf17"]
+
+[resource]
+script = ExtResource("2_8jd7b")
+rarity = 1
+type = 1
+sigil_kind = 5
+id = "random_meal"
+name = "Random Meal"
+icon = ExtResource("1_p3xet")
+description = "Fires two random cards on following courses"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

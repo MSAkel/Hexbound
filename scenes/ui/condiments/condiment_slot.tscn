@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://bpotionslotui0001"]
+
+[ext_resource type="Script" uid="uid://b5mhgikoaxvbu" path="res://scenes/ui/condiments/condiment_slot.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/condiments/mayonnaise.png" id="2_empty_icon"]
+
+[sub_resource type="StyleBoxFlat" id="WellIdle"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.3254902, 0.3764706, 0.2666667, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9686275, 0.9137255, 0.7686275, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.2509804)
+shadow_size = 3
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="WellSelected"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.3254902, 0.3764706, 0.2666667, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9568627, 0.8313726, 0.5411765, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.2509804)
+shadow_size = 3
+shadow_offset = Vector2(0, 2)
+
+[node name="CondimentSlot" type="Control"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 3
+pivot_offset = Vector2(30, 30)
+mouse_filter = 0
+script = ExtResource("1_script")
+well_idle_style = SubResource("WellIdle")
+well_selected_style = SubResource("WellSelected")
+
+[node name="Well" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("WellIdle")
+
+[node name="EmptyIcon" type="TextureRect" parent="Well"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+modulate = Color(0.52, 0.52, 0.52, 0.45)
+texture_filter = 1
+texture = ExtResource("2_empty_icon")
+expand_mode = 1
+stretch_mode = 5
+pivot_offset = Vector2(24, 24)
+
+[node name="Icon" type="TextureRect" parent="Well"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+pivot_offset = Vector2(24, 24)
+
+[node name="ContextMenu" type="PopupMenu" parent="."]
+unique_name_in_owner = true
+item_count = 1
+item_0/text = "Remove"
+item_0/id = 0
+
+[connection signal="id_pressed" from="ContextMenu" to="." method="_on_menu_id_pressed"]

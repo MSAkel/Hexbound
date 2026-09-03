@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cmhitn3d5i88l"]
 
 [ext_resource type="Script" uid="uid://puk4cteawq6c" path="res://scenes/ui/victory_screen/victory_screen.gd" id="1_victory"]
-[ext_resource type="PackedScene" uid="uid://b8layoutxpbar01" path="res://scenes/ui/layout_xp_bar/layout_xp_bar.tscn" id="2_xpbar"]
+[ext_resource type="PackedScene" uid="uid://8hhnfskxknfc" path="res://scenes/ui/layout_xp_bar/layout_xp_bar.tscn" id="2_xpbar"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_background"]
 bg_color = Color(0.13, 0.53, 0.44, 0.22)
@@ -60,7 +60,6 @@ offset_right = 190.0
 offset_bottom = 328.0
 grow_horizontal = 2
 grow_vertical = 2
-clip_contents = false
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="RunStatsPanel" unique_id=1721345815]
@@ -84,68 +83,68 @@ theme_override_font_sizes/font_size = 24
 text = "<CharacterName>"
 horizontal_alignment = 1
 
-[node name="LayoutXpBar" parent="RunStatsPanel/VBoxContainer" instance=ExtResource("2_xpbar")]
+[node name="LayoutXpBar" parent="RunStatsPanel/VBoxContainer" unique_id=863797301 instance=ExtResource("2_xpbar")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="HighestScoreLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="HighestScoreLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=638694898]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Highest Score"
+text = "Highest Rating"
 
-[node name="HighestScoreValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="HighestScoreValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1350211143]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.71, 1, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_value")
 text = "0"
 
-[node name="RoundLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="RoundLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1083484691]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Round"
+text = "Day"
 
-[node name="RoundValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="RoundValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1240809830]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.89, 0.95, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_value")
 text = "1"
 
-[node name="GoldEarnedLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="GoldEarnedLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1595259095]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Gold Earned"
 
-[node name="GoldEarnedValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="GoldEarnedValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1280049857]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_value")
 text = "0"
 
-[node name="CardTriggersLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="CardTriggersLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1878914334]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Card Triggers"
 
-[node name="CardTriggersValue" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="CardTriggersValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1806951243]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.67, 0.94, 0.74, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_value")
 text = "0"
 
-[node name="SeedLabel" type="Label" parent="RunStatsPanel/VBoxContainer"]
+[node name="SeedLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1848284100]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Seed"
 
-[node name="SeedContainer" type="HBoxContainer" parent="RunStatsPanel/VBoxContainer"]
+[node name="SeedContainer" type="HBoxContainer" parent="RunStatsPanel/VBoxContainer" unique_id=196192933]
 layout_mode = 2
 
-[node name="SeedValue" type="Label" parent="RunStatsPanel/VBoxContainer/SeedContainer"]
+[node name="SeedValue" type="Label" parent="RunStatsPanel/VBoxContainer/SeedContainer" unique_id=819351968]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.86, 0.96, 0.91, 1)
@@ -153,11 +152,11 @@ theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_value")
 text = "WIP"
 
-[node name="CopySeedButton" type="Button" parent="RunStatsPanel/VBoxContainer/SeedContainer"]
+[node name="CopySeedButton" type="Button" parent="RunStatsPanel/VBoxContainer/SeedContainer" unique_id=415270604]
 layout_mode = 2
 text = "Copy"
 
-[node name="Spacer" type="Control" parent="RunStatsPanel/VBoxContainer"]
+[node name="Spacer" type="Control" parent="RunStatsPanel/VBoxContainer" unique_id=103414616]
 custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 

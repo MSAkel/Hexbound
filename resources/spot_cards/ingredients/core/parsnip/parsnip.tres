@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://bp1tk0ukiucl1"]
+
+[ext_resource type="Texture2D" uid="uid://chuvjym0ojs1e" path="res://assets/icons/food/ingredients/parsnip.png" id="1_6wt7n"]
+[ext_resource type="Script" uid="uid://dxmj6xelyy45s" path="res://resources/spot_cards/ingredients/core/parsnip/parsnip.gd" id="2_be4u4"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_ib0q7"]
+
+[resource]
+script = ExtResource("2_be4u4")
+base_production_amount = 28
+product = 1
+placement_restriction = 1
+id = "parsnip"
+name = "Parsnip"
+icon = ExtResource("1_6wt7n")
+description = "+28 Flavour. Must be on an edge spot"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

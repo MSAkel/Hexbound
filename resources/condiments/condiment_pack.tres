@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://dihajimh4xkwo"]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/condiments/secret_sauce_12.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "condiment_pack"
+display_name = "Condiment Flight"
+description = "Gain 3 random condiments"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.86, 0.32, 0.62, 1)
+base_price = 7
+effect_type = 4

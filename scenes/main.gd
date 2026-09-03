@@ -76,7 +76,14 @@ func _begin_fresh_run() -> void:
 	hand.build_starting_hand()
 	if debug_starting_round > 1:
 		GameManager.set_starting_round_for_debug(debug_starting_round)
-	RunSaveManager.request_autosave()
+	var expected_hand_size := PlayerCharacter.get_expected_opening_hand_size(GameManager.selected_difficulty)
+	if hand.get_hand_card_count() < expected_hand_size:
+		push_error(
+			"Starting hand only dealt %d/%d cards. Delete the run save and start a new run."
+			% [hand.get_hand_card_count(), expected_hand_size]
+		)
+	else:
+		RunSaveManager.request_autosave()
 
 
 func _input(event: InputEvent) -> void:

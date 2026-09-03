@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://doeihu8xbcfg8"]
+
+[ext_resource type="Texture2D" uid="uid://d1dwsxosll2e3" path="res://assets/icons/food/ingredients/bacon.png" id="1_itvb5"]
+[ext_resource type="Script" uid="uid://bnq4ira0fw4qx" path="res://resources/spot_cards/ingredients/core/bacon/bacon.gd" id="2_5ltv8"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_fi81l"]
+
+[resource]
+script = ExtResource("2_5ltv8")
+base_production_amount = 40
+product = 1
+sigil_kind = 6
+id = "bacon"
+name = "Bacon"
+icon = ExtResource("1_itvb5")
+description = "Pass +40 Flavour to the next course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

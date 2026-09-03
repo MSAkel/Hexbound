@@ -4,12 +4,12 @@ extends RefCounted
 ## One map cell. RefCounted so it does not leak when dropped from map_data.
 ## dispose() must run before the dict is cleared, because this object holds the map Node.
 
-const RUNE_UI: PackedScene = preload("res://scenes/ui/runes/rune_ui.tscn")
+const CARD_ICON_UI = preload("uid://b2u0uxxntwomn")
 
 var _coordinates: Vector2i = Vector2i(0, 0)
 ## The TileCard currently occupying this hex.
 var active_tile_card: TileCard = null
-var rune_ui: RuneUI = null
+var card_icon_ui: CardIconUI = null
 # Permanently disabled by difficulty level 5. The tile cannot be used for the run.
 var is_disabled_by_difficulty: bool = false
 
@@ -49,7 +49,7 @@ func dispose() -> void:
 	if items_grid != null and is_instance_valid(items_grid):
 		items_grid.queue_free()
 	items_grid = null
-	rune_ui = null
+	card_icon_ui = null
 	active_tile_card = null
 	map = null
 
@@ -59,7 +59,7 @@ func is_on_map() -> bool:
 	return map != null and items_grid != null and is_instance_valid(items_grid)
 
 
-func _fit_rune_ui(rune_ui_node: RuneUI) -> void:
+func _fit_rune_ui(rune_ui_node: CardIconUI) -> void:
 	rune_ui_node.custom_minimum_size = HEX_RUNE_SIZE
 	rune_ui_node.size = HEX_RUNE_SIZE
 	rune_ui_node.position = (HEX_TILE_SIZE - HEX_RUNE_SIZE) * 0.5
@@ -79,8 +79,8 @@ func place_tile_card(rune: TileCard, animate: bool = true) -> void:
 	
 	# Each tile needs its own rune instance. hand/pool cards often share one .tres reference.
 	active_tile_card = rune.duplicate(true)
-	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
-	rune_ui = new_rune_instance
+	var new_rune_instance: CardIconUI = CARD_ICON_UI.instantiate()
+	card_icon_ui = new_rune_instance
 	new_rune_instance.map = map
 	new_rune_instance.tile = self
 	new_rune_instance.center_coordinates = coordinates
@@ -102,8 +102,8 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 		return
 
 	active_tile_card = rune
-	var new_rune_instance: RuneUI = RUNE_UI.instantiate()
-	rune_ui = new_rune_instance
+	var new_rune_instance: CardIconUI = CARD_ICON_UI.instantiate()
+	card_icon_ui = new_rune_instance
 	new_rune_instance.map = map
 	new_rune_instance.tile = self
 	new_rune_instance.center_coordinates = coordinates
@@ -117,14 +117,14 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 
 
 func _apply_display_mode() -> void:
-	var has_rune := rune_ui != null and active_tile_card != null
+	var has_rune := card_icon_ui != null and active_tile_card != null
 	var show_cards := map == null or map.is_board_cards_visible()
-	if rune_ui != null:
-		rune_ui.visible = has_rune and show_cards
+	if card_icon_ui != null:
+		card_icon_ui.visible = has_rune and show_cards
 
 
 func refresh_tile_card_visual_state() -> void:
-	if rune_ui == null or active_tile_card == null:
+	if card_icon_ui == null or active_tile_card == null:
 		return
 
 	var target_modulate := Color.WHITE
@@ -133,14 +133,14 @@ func refresh_tile_card_visual_state() -> void:
 	elif _event_rune_modulate != Color.WHITE:
 		target_modulate = _event_rune_modulate
 
-	rune_ui.apply_resting_modulate(target_modulate)
-	rune_ui.refresh_output_chip(active_tile_card)
-	rune_ui.refresh_potion_badges(active_tile_card, coordinates)
+	card_icon_ui.apply_resting_modulate(target_modulate)
+	card_icon_ui.refresh_output_chip(active_tile_card)
+	card_icon_ui.refresh_condiment_badges(active_tile_card, coordinates)
 	# Restore overcharge sparks after load or chip refresh. The strike itself is not replayed.
 	if active_tile_card.is_empowered:
-		rune_ui.start_empower_sparks()
+		card_icon_ui.start_empower_sparks()
 	else:
-		rune_ui.stop_empower_sparks()
+		card_icon_ui.stop_empower_sparks()
 
 
 func set_tile_card_event_modulate(modulate: Color) -> void:
@@ -160,9 +160,9 @@ func remove_tile_card() -> void:
 	
 	active_tile_card = null
 	_event_rune_modulate = Color.WHITE
-	if rune_ui != null:
-		rune_ui.queue_free()
-		rune_ui = null
+	if card_icon_ui != null:
+		card_icon_ui.queue_free()
+		card_icon_ui = null
 	_apply_display_mode()
 	if map != null:
 		map.refresh_dashed_outlines()
@@ -170,41 +170,41 @@ func remove_tile_card() -> void:
 
 # Play the rune trigger animation without applying the effect.
 func play_tile_card_activation_animation() -> void:
-	if active_tile_card == null or rune_ui == null:
+	if active_tile_card == null or card_icon_ui == null:
 		return
 	
 	# Only animate active runes so inactive runes do not look triggered.
 	if active_tile_card.is_active:
-		rune_ui.play_activation_animation()
+		card_icon_ui.play_activation_animation()
 
 
 # Chained activation from another rune's trigger ability.
 func play_chained_tile_card_activation_animation() -> void:
-	if active_tile_card == null or rune_ui == null:
+	if active_tile_card == null or card_icon_ui == null:
 		return
 
 	if active_tile_card.is_active:
-		rune_ui.play_chained_activation_animation()
+		card_icon_ui.play_chained_activation_animation()
 
 
 # Gold highlight flash used during the post-turn segment result reveal.
 func play_segment_result_animation() -> void:
-	if rune_ui == null:
+	if card_icon_ui == null:
 		return
-	rune_ui.play_segment_result_animation()
+	card_icon_ui.play_segment_result_animation()
 
 
 ## Tiny forward-order slam used when this tile's segment closes mid-turn.
 func play_segment_seal_animation() -> void:
-	if rune_ui == null:
+	if card_icon_ui == null:
 		return
-	rune_ui.play_segment_seal_animation()
+	card_icon_ui.play_segment_seal_animation()
 
 
 func clear_segment_sealed() -> void:
-	if rune_ui == null:
+	if card_icon_ui == null:
 		return
-	rune_ui.clear_segment_sealed()
+	card_icon_ui.clear_segment_sealed()
 
 
 func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
@@ -216,24 +216,24 @@ func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
 
 
 func start_empower_sparks() -> void:
-	if rune_ui == null:
+	if card_icon_ui == null:
 		return
-	rune_ui.start_empower_sparks()
+	card_icon_ui.start_empower_sparks()
 
 
 func stop_empower_sparks() -> void:
-	if rune_ui == null:
+	if card_icon_ui == null:
 		return
-	rune_ui.stop_empower_sparks()
+	card_icon_ui.stop_empower_sparks()
 
 
 func start_trigger_link_flash() -> void:
-	if rune_ui == null:
+	if card_icon_ui == null:
 		return
-	rune_ui.start_trigger_link_flash()
+	card_icon_ui.start_trigger_link_flash()
 
 
 func stop_trigger_link_flash() -> void:
-	if rune_ui == null:
+	if card_icon_ui == null:
 		return
-	rune_ui.stop_trigger_link_flash()
+	card_icon_ui.stop_trigger_link_flash()

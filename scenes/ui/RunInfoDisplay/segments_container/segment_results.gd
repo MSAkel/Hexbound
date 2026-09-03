@@ -1,83 +1,83 @@
 extends PanelContainer
 
-## One row in the run-info panel, presented as Energy x Multiplier = Score.
+## One row in the run-info panel, presented as Flavour x Mult = Rating.
 
-var segment_index: int = -1
+var course_index: int = -1
 
-@onready var segment_no: Label = $HBoxContainer/SegmentBadge/BadgeRow/SegmentNo
-@onready var segment_power: Label = $HBoxContainer/EnergyContainer/SegmentPower
-@onready var segment_multiplier: Label = $HBoxContainer/MultiplierContainer/SegmentMultiplier
-@onready var score_container: PanelContainer = $HBoxContainer/ScoreContainer
-@onready var segment_total_score: Label = $HBoxContainer/ScoreContainer/SegmentTotalScore
+@onready var course_no: Label = $HBoxContainer/CourseBadge/BadgeRow/CourseNo
+@onready var flavour_label: Label = $HBoxContainer/FlavourContainer/CourseFlavour
+@onready var mult_label: Label = $HBoxContainer/MultContainer/CourseMult
+@onready var rating_container: PanelContainer = $HBoxContainer/RatingContainer
+@onready var rating_label: Label = $HBoxContainer/RatingContainer/CourseRating
 
-var _score: int = 0
-var _multiplier: float = 1.0
-var _total_score: int = 0
-## Live resolve hides Score until this segment's reveal beat.
-var _score_revealed: bool = true
+var _flavour: int = 0
+var _mult: float = 1.0
+var _rating: int = 0
+## Live resolve hides Rating until this course row's reveal beat.
+var _rating_revealed: bool = true
 var _accepts_live_updates: bool = true
-var _power_counter: CountingNumber
-var _multiplier_counter: CountingNumber
-var _total_score_counter: CountingNumber
+var _flavour_counter: CountingNumber
+var _mult_counter: CountingNumber
+var _rating_counter: CountingNumber
 var _punch_tweens: Dictionary = {}
 var _row_style: StyleBoxFlat
-var _score_style: StyleBoxFlat
+var _rating_style: StyleBoxFlat
 var _is_hovered: bool = false
 var _is_revealing: bool = false
 var _pulse_tween: Tween
 
 const PUNCH_DURATION := 0.24
 const ROW_PUNCH_SCALE := 1.06
-const SCORE_PUNCH_MIN := 1.14
-const SCORE_PUNCH_MAX := 1.34
+const RATING_PUNCH_MIN := 1.14
+const RATING_PUNCH_MAX := 1.34
 
 
 func _ready() -> void:
 	_row_style = get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	add_theme_stylebox_override("panel", _row_style)
-	_score_style = score_container.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-	score_container.add_theme_stylebox_override("panel", _score_style)
-	_power_counter = _make_stat_counter(segment_power)
-	_multiplier_counter = CountingNumber.new(
+	_rating_style = rating_container.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+	rating_container.add_theme_stylebox_override("panel", _rating_style)
+	_flavour_counter = _make_stat_counter(flavour_label)
+	_mult_counter = CountingNumber.new(
 		self,
-		func(text: String) -> void: segment_multiplier.text = text
+		func(text: String) -> void: mult_label.text = text
 	)
-	_multiplier_counter.set_format_as_mult(true)
-	_total_score_counter = CountingNumber.new(
+	_mult_counter.set_format_as_mult(true)
+	_rating_counter = CountingNumber.new(
 		self,
 		func(_text: String) -> void: pass,
 		false,
 		func(as_int: int) -> void:
-			segment_total_score.text = _format_stat(as_int)
-			_apply_score_style(as_int)
+			rating_label.text = _format_stat(as_int)
+			_apply_rating_style(as_int)
 	)
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
 	EventBus.segment_turn_results_reset.connect(_on_segment_turn_results_reset)
-	EventBus.segment_score_revealed.connect(_on_segment_score_revealed)
+	EventBus.segment_score_revealed.connect(_on_segment_rating_revealed)
 	EventBus.segment_reveal_started.connect(_on_segment_reveal_started)
 	EventBus.segment_reveal_ended.connect(_on_segment_reveal_ended)
-	_set_segment_no(segment_index + 1)
+	_set_course_no(course_index + 1)
 	_sync_from_tile_map()
 	clip_contents = false
-	score_container.clip_contents = false
+	rating_container.clip_contents = false
 
 
 func set_accepts_live_updates(enabled: bool) -> void:
 	_accepts_live_updates = enabled
 	if enabled:
-		_score_revealed = false
+		_rating_revealed = false
 
 
 func apply_turn_snapshot(
-	score: int,
-	multiplier: float,
-	total_score: int,
+	flavour: int,
+	mult: float,
+	rating: int,
 	animate: bool = true,
-	reveal_score: bool = true
+	reveal_rating: bool = true
 ) -> void:
-	if reveal_score:
-		_score_revealed = true
-	_apply_results(score, multiplier, total_score, animate)
+	if reveal_rating:
+		_rating_revealed = true
+	_apply_results(flavour, mult, rating, animate)
 
 
 func _get_tile_map() -> HexTileMap:
@@ -89,152 +89,152 @@ func _sync_from_tile_map() -> void:
 		return
 
 	var tile_map := _get_tile_map()
-	if tile_map == null or segment_index < 0:
+	if tile_map == null or course_index < 0:
 		_apply_results(0, 1, 0, false)
 		return
 
-	var score := tile_map.get_segment_turn_score(segment_index)
-	var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
-	_apply_results(score, multiplier, 0, false)
+	var flavour := tile_map.get_segment_turn_score(course_index)
+	var mult := tile_map.get_segment_turn_multiplier(course_index)
+	_apply_results(flavour, mult, 0, false)
 
 
 func _on_segment_turn_results_changed(
 	changed_index: int,
-	score: int,
-	multiplier: float,
-	reported_total_score: int,
+	flavour: int,
+	mult: float,
+	reported_rating: int,
 	_ignored_reward: int
 ) -> void:
-	if not _accepts_live_updates or changed_index != segment_index:
+	if not _accepts_live_updates or changed_index != course_index:
 		return
-	# After Score starts counting, do not restart that tween. Turn resolve awaits it.
-	if _is_revealing and _score_revealed:
-		_score = score
-		_multiplier = multiplier
-		_play_counter(_power_counter, score, segment_power)
-		var idle_mult := multiplier <= 1.0 + 0.0001 and score == 0 and reported_total_score == 0
+	# After Rating starts counting, do not restart that tween. Hour resolve awaits it.
+	if _is_revealing and _rating_revealed:
+		_flavour = flavour
+		_mult = mult
+		_play_counter(_flavour_counter, flavour, flavour_label)
+		var idle_mult := mult <= 1.0 + 0.0001 and flavour == 0 and reported_rating == 0
 		if idle_mult:
-			_multiplier_counter.snap_to(multiplier)
+			_mult_counter.snap_to(mult)
 		else:
-			_play_counter(_multiplier_counter, multiplier, segment_multiplier)
-		_apply_multiplier_display(multiplier)
+			_play_counter(_mult_counter, mult, mult_label)
+		_apply_mult_display(mult)
 		return
-	# Keep Score hidden until the equals beat. Factors continue updating live.
-	_apply_results(score, multiplier, 0)
+	# Keep Rating hidden until the equals beat. Flavour and Mult continue updating live.
+	_apply_results(flavour, mult, 0)
 
 
 func _on_segment_turn_results_reset() -> void:
 	if not _accepts_live_updates:
 		return
-	_score_revealed = false
+	_rating_revealed = false
 	_apply_results(0, 1, 0, false)
 
 
-func _on_segment_score_revealed(changed_index: int, total_score: int) -> void:
-	if changed_index != segment_index:
+func _on_segment_rating_revealed(changed_index: int, rating: int) -> void:
+	if changed_index != course_index:
 		return
-	_score_revealed = true
-	_total_score = total_score
-	_total_score_counter.snap_to(total_score)
-	var intensity := ScoreReadoutStyle.intensity_for_score(total_score)
-	_land_number(segment_total_score, intensity)
-	_pulse_panel(score_container)
+	_rating_revealed = true
+	_rating = rating
+	_rating_counter.snap_to(rating)
+	var intensity := ScoreReadoutStyle.intensity_for_score(rating)
+	_land_number(rating_label, intensity)
+	_pulse_panel(rating_container)
 	_punch(self, ROW_PUNCH_SCALE)
-	ScoreBurstFx.play_background_wash(score_container, intensity)
-	_finish_segment_score_land_animation(changed_index)
+	ScoreBurstFx.play_background_wash(rating_container, intensity)
+	_finish_rating_land_animation(changed_index)
 
 
-## Lets turn resolve wait for the punch beat instead of a fixed timer.
-func _finish_segment_score_land_animation(changed_index: int) -> void:
-	call_deferred("_await_segment_score_land_animation", changed_index)
+## Lets hour resolve wait for the punch beat instead of a fixed timer.
+func _finish_rating_land_animation(changed_index: int) -> void:
+	call_deferred("_await_rating_land_animation", changed_index)
 
 
-func _await_segment_score_land_animation(changed_index: int) -> void:
-	await _await_punch_tween(segment_total_score)
-	await _await_punch_tween(score_container)
+func _await_rating_land_animation(changed_index: int) -> void:
+	await _await_punch_tween(rating_label)
+	await _await_punch_tween(rating_container)
 	await _await_punch_tween(self)
 	EventBus.segment_score_count_finished.emit(changed_index)
 
 
-## Counts Energy, Mult, and Score down to zero during the turn-total transfer beat.
-func play_score_drain_to_zero() -> Tween:
-	if not _score_revealed:
+## Counts Flavour, Mult, and Rating down to zero during the hour-total transfer beat.
+func play_rating_drain_to_zero() -> Tween:
+	if not _rating_revealed:
 		return null
 
-	var punch_intensity := ScoreReadoutStyle.intensity_for_score(_total_score)
+	var punch_intensity := ScoreReadoutStyle.intensity_for_score(_rating)
 
-	_play_drain_counter(_power_counter, segment_power, punch_intensity)
-	_play_drain_counter(_multiplier_counter, segment_multiplier, punch_intensity)
-	var score_tween := _play_drain_counter(
-		_total_score_counter,
-		segment_total_score,
+	_play_drain_counter(_flavour_counter, flavour_label, punch_intensity)
+	_play_drain_counter(_mult_counter, mult_label, punch_intensity)
+	var rating_tween := _play_drain_counter(
+		_rating_counter,
+		rating_label,
 		punch_intensity
 	)
 
 	var finalize := func() -> void:
-		_score = 0
-		_multiplier = 0.0
-		_total_score = 0
-		_apply_multiplier_display(0.0)
+		_flavour = 0
+		_mult = 0.0
+		_rating = 0
+		_apply_mult_display(0.0)
 
-	if score_tween != null:
-		score_tween.finished.connect(finalize, CONNECT_ONE_SHOT)
-		return score_tween
+	if rating_tween != null:
+		rating_tween.finished.connect(finalize, CONNECT_ONE_SHOT)
+		return rating_tween
 
 	finalize.call()
 	return null
 
 
-func snap_score_to_zero() -> void:
-	if not _score_revealed:
+func snap_rating_to_zero() -> void:
+	if not _rating_revealed:
 		return
-	_score = 0
-	_multiplier = 0.0
-	_total_score = 0
-	_power_counter.snap_to(0)
-	_multiplier_counter.snap_to(0)
-	_total_score_counter.snap_to(0)
-	_apply_multiplier_display(0.0)
+	_flavour = 0
+	_mult = 0.0
+	_rating = 0
+	_flavour_counter.snap_to(0)
+	_mult_counter.snap_to(0)
+	_rating_counter.snap_to(0)
+	_apply_mult_display(0.0)
 
 
 func _on_segment_reveal_started(changed_index: int) -> void:
-	if changed_index != segment_index:
+	if changed_index != course_index:
 		_set_reveal_active(false)
 		return
-	_set_reveal_active(_segment_has_power())
+	_set_reveal_active(_course_has_flavour())
 
 
 func _on_segment_reveal_ended() -> void:
 	_set_reveal_active(false)
 
 
-## Stores the latest factors and payoff, then refreshes the row labels.
+## Stores the latest Flavour, Mult, and Rating, then refreshes the row labels.
 func _apply_results(
-	score: int,
-	multiplier: float,
-	total_score: int,
+	flavour: int,
+	mult: float,
+	rating: int,
 	animate: bool = true
 ) -> void:
-	_score = score
-	_multiplier = multiplier
-	_total_score = total_score
+	_flavour = flavour
+	_mult = mult
+	_rating = rating
 
 	if animate:
-		_play_counter(_power_counter, score, segment_power)
-		var idle_mult := multiplier <= 1.0 + 0.0001 and score == 0 and total_score == 0
+		_play_counter(_flavour_counter, flavour, flavour_label)
+		var idle_mult := mult <= 1.0 + 0.0001 and flavour == 0 and rating == 0
 		if idle_mult:
-			_multiplier_counter.snap_to(multiplier)
+			_mult_counter.snap_to(mult)
 		else:
-			_play_counter(_multiplier_counter, multiplier, segment_multiplier)
-		if _score_revealed:
-			_play_counter(_total_score_counter, total_score, segment_total_score)
+			_play_counter(_mult_counter, mult, mult_label)
+		if _rating_revealed:
+			_play_counter(_rating_counter, rating, rating_label)
 		else:
-			_total_score_counter.snap_to(0)
+			_rating_counter.snap_to(0)
 	else:
-		_power_counter.snap_to(score)
-		_multiplier_counter.snap_to(multiplier)
-		_total_score_counter.snap_to(total_score if _score_revealed else 0)
-	_apply_multiplier_display(multiplier)
+		_flavour_counter.snap_to(flavour)
+		_mult_counter.snap_to(mult)
+		_rating_counter.snap_to(rating if _rating_revealed else 0)
+	_apply_mult_display(mult)
 
 
 func _make_stat_counter(label: Label) -> CountingNumber:
@@ -250,39 +250,39 @@ func _format_stat(value: int) -> String:
 	return "-" if value == 0 else CountingNumber.format_int(value)
 
 
-func _apply_multiplier_display(multiplier: float) -> void:
-	var has_activity := _score > 0 or _total_score > 0
-	if multiplier <= 1.0 + 0.0001 and not has_activity:
-		segment_multiplier.text = "-"
+func _apply_mult_display(mult: float) -> void:
+	var has_activity := _flavour > 0 or _rating > 0
+	if mult <= 1.0 + 0.0001 and not has_activity:
+		mult_label.text = "-"
 	else:
-		segment_multiplier.text = CountingNumber.format_mult(multiplier)
+		mult_label.text = CountingNumber.format_mult(mult)
 
 
-func _apply_score_style(value: int) -> void:
+func _apply_rating_style(value: int) -> void:
 	var intensity := ScoreReadoutStyle.intensity_for_score(value)
-	var score_color := _themed_score_color(intensity)
-	segment_total_score.add_theme_color_override("font_color", score_color)
-	segment_total_score.add_theme_color_override(
+	var rating_color := _themed_rating_color(intensity)
+	rating_label.add_theme_color_override("font_color", rating_color)
+	rating_label.add_theme_color_override(
 		"font_shadow_color",
 		Color(0.24, 0.16, 0.06, 0.14 + intensity * 0.16)
 	)
 	var digit_penalty := maxi(CountingNumber.format_int(value).length() - 7, 0)
-	segment_total_score.add_theme_font_size_override(
+	rating_label.add_theme_font_size_override(
 		"font_size",
 		maxi(18, int(22.0 + intensity * 5.0) - digit_penalty * 2)
 	)
-	if _score_style != null:
-		var score_tint := score_color.lightened(0.72)
-		_score_style.bg_color = Color(0.98, 0.945, 0.84, 0.96).lerp(
-			Color(score_tint.r, score_tint.g, score_tint.b, 0.96),
+	if _rating_style != null:
+		var rating_tint := rating_color.lightened(0.72)
+		_rating_style.bg_color = Color(0.98, 0.945, 0.84, 0.96).lerp(
+			Color(rating_tint.r, rating_tint.g, rating_tint.b, 0.96),
 			intensity * 0.28
 		)
-		_score_style.border_color = Color(score_color.r, score_color.g, score_color.b, 0.46 + intensity * 0.42)
-		_score_style.shadow_color = Color(0.24, 0.16, 0.06, 0.12 + intensity * 0.12)
-	_apply_row_style(intensity, score_color)
+		_rating_style.border_color = Color(rating_color.r, rating_color.g, rating_color.b, 0.46 + intensity * 0.42)
+		_rating_style.shadow_color = Color(0.24, 0.16, 0.06, 0.12 + intensity * 0.12)
+	_apply_row_style(intensity, rating_color)
 
 
-func _themed_score_color(intensity: float) -> Color:
+func _themed_rating_color(intensity: float) -> Color:
 	var colors: Array[Color] = [
 		Color(0.2745, 0.2275, 0.1137),
 		Color(0.0549, 0.3569, 0.3686),
@@ -294,7 +294,7 @@ func _themed_score_color(intensity: float) -> Color:
 	return colors[index].lerp(colors[index + 1], scaled - float(index))
 
 
-func _apply_row_style(intensity: float, score_color: Color) -> void:
+func _apply_row_style(intensity: float, rating_color: Color) -> void:
 	if _row_style == null:
 		return
 	var hover_amount := 1.0 if _is_hovered else 0.0
@@ -306,9 +306,9 @@ func _apply_row_style(intensity: float, score_color: Color) -> void:
 		0.86 + reveal_amount * 0.08
 	)
 	_row_style.border_color = Color(
-		lerpf(lerpf(0.545, score_color.r, intensity), 1.0, reveal_amount * 0.72),
-		lerpf(lerpf(0.431, score_color.g, intensity), 0.78, reveal_amount * 0.72),
-		lerpf(lerpf(0.243, score_color.b, intensity), 0.22, reveal_amount * 0.72),
+		lerpf(lerpf(0.545, rating_color.r, intensity), 1.0, reveal_amount * 0.72),
+		lerpf(lerpf(0.431, rating_color.g, intensity), 0.78, reveal_amount * 0.72),
+		lerpf(lerpf(0.243, rating_color.b, intensity), 0.22, reveal_amount * 0.72),
 		0.48 + intensity * 0.35 + hover_amount * 0.12 + reveal_amount * 0.4
 	)
 	_row_style.border_width_left = 4 if _is_revealing else 2
@@ -340,8 +340,8 @@ func _play_counter(counter: CountingNumber, target: float, punch_target: Control
 	var tween := counter.play(target)
 	if tween != null:
 		var intensity := ScoreReadoutStyle.intensity_for_score(int(round(target)))
-		var punch_scale := lerpf(SCORE_PUNCH_MIN, SCORE_PUNCH_MAX, intensity)
-		if punch_target != segment_total_score:
+		var punch_scale := lerpf(RATING_PUNCH_MIN, RATING_PUNCH_MAX, intensity)
+		if punch_target != rating_label:
 			punch_scale = lerpf(1.08, 1.16, intensity)
 		_punch(punch_target, punch_scale)
 
@@ -354,8 +354,8 @@ func _play_drain_counter(
 	var tween := counter.play(0.0)
 	if tween == null:
 		counter.snap_to(0.0)
-	var punch_scale := lerpf(SCORE_PUNCH_MIN, SCORE_PUNCH_MAX, punch_intensity)
-	if punch_target != segment_total_score:
+	var punch_scale := lerpf(RATING_PUNCH_MIN, RATING_PUNCH_MAX, punch_intensity)
+	if punch_target != rating_label:
 		punch_scale = lerpf(1.08, 1.16, punch_intensity)
 	_punch(punch_target, punch_scale)
 	return tween
@@ -397,20 +397,20 @@ func _punch(control: Control, punch_scale: float) -> void:
 	_punch_tweens[control] = tween
 
 
-func _segment_has_power() -> bool:
-	if _score > 0:
+func _course_has_flavour() -> bool:
+	if _flavour > 0:
 		return true
 	var tile_map := _get_tile_map()
-	if tile_map == null or segment_index < 0:
+	if tile_map == null or course_index < 0:
 		return false
-	return tile_map.get_segment_turn_score(segment_index) > 0
+	return tile_map.get_segment_turn_score(course_index) > 0
 
 
 func _set_reveal_active(active: bool) -> void:
 	if _is_revealing == active:
 		return
 	_is_revealing = active
-	_apply_score_style(_total_score if _score_revealed else 0)
+	_apply_rating_style(_rating if _rating_revealed else 0)
 	if _pulse_tween != null and _pulse_tween.is_valid():
 		_pulse_tween.kill()
 		_pulse_tween = null
@@ -418,7 +418,7 @@ func _set_reveal_active(active: bool) -> void:
 		modulate = Color.WHITE
 		return
 
-	# Pulse while this row matches the glowing map segment.
+	# Pulse while this row matches the glowing map course.
 	var pulse := 0.2 / GameManager.game_speed
 	_pulse_tween = create_tween()
 	_pulse_tween.set_loops()
@@ -430,42 +430,42 @@ func _set_reveal_active(active: bool) -> void:
 	)
 
 
-func _set_segment_no(no: int) -> void:
+func _set_course_no(no: int) -> void:
 	if no <= 0:
-		segment_no.text = "-"
+		course_no.text = "-"
 		return
-	segment_no.text = "%02d" % no
+	course_no.text = "%02d" % no
 
 
 func _on_mouse_entered() -> void:
 	_is_hovered = true
-	_apply_score_style(_total_score if _score_revealed else 0)
+	_apply_rating_style(_rating if _rating_revealed else 0)
 	var tile_map := _get_tile_map()
 	if tile_map != null:
-		tile_map.highlight_hovered_segment(segment_index)
+		tile_map.highlight_hovered_segment(course_index)
 
 
 func _on_mouse_exited() -> void:
 	_is_hovered = false
-	_apply_score_style(_total_score if _score_revealed else 0)
+	_apply_rating_style(_rating if _rating_revealed else 0)
 	var tile_map := _get_tile_map()
 	if tile_map != null:
-		tile_map.clear_hovered_segment_highlight(segment_index)
+		tile_map.clear_hovered_segment_highlight(course_index)
 
 
 func _exit_tree() -> void:
 	_disconnect_event_bus()
-	if _power_counter != null:
-		_power_counter.kill()
-	if _multiplier_counter != null:
-		_multiplier_counter.kill()
-	if _total_score_counter != null:
-		_total_score_counter.kill()
+	if _flavour_counter != null:
+		_flavour_counter.kill()
+	if _mult_counter != null:
+		_mult_counter.kill()
+	if _rating_counter != null:
+		_rating_counter.kill()
 	if _pulse_tween != null and _pulse_tween.is_valid():
 		_pulse_tween.kill()
 	var tile_map := _get_tile_map()
 	if tile_map != null:
-		tile_map.clear_hovered_segment_highlight(segment_index)
+		tile_map.clear_hovered_segment_highlight(course_index)
 
 
 func _disconnect_event_bus() -> void:
@@ -473,8 +473,8 @@ func _disconnect_event_bus() -> void:
 		EventBus.segment_turn_results_changed.disconnect(_on_segment_turn_results_changed)
 	if EventBus.segment_turn_results_reset.is_connected(_on_segment_turn_results_reset):
 		EventBus.segment_turn_results_reset.disconnect(_on_segment_turn_results_reset)
-	if EventBus.segment_score_revealed.is_connected(_on_segment_score_revealed):
-		EventBus.segment_score_revealed.disconnect(_on_segment_score_revealed)
+	if EventBus.segment_score_revealed.is_connected(_on_segment_rating_revealed):
+		EventBus.segment_score_revealed.disconnect(_on_segment_rating_revealed)
 	if EventBus.segment_reveal_started.is_connected(_on_segment_reveal_started):
 		EventBus.segment_reveal_started.disconnect(_on_segment_reveal_started)
 	if EventBus.segment_reveal_ended.is_connected(_on_segment_reveal_ended):

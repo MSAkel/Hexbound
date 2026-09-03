@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://brqdab64npg1y"]
+
+[ext_resource type="Texture2D" uid="uid://bkcow7w4587sb" path="res://assets/icons/food/ingredients/potato.png" id="1_3okqf"]
+[ext_resource type="Script" uid="uid://bk3vdj2f2jrpd" path="res://resources/spot_cards/ingredients/core/potato/potato.gd" id="2_tslg8"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_u650f"]
+
+[resource]
+script = ExtResource("2_tslg8")
+rarity = 1
+product = 1
+id = "potato"
+name = "Potato"
+icon = ExtResource("1_3okqf")
+description = "+3 Flavour per empty spot in this course, up to 30"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

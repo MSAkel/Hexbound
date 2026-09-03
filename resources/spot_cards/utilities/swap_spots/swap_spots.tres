@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://dh2s4gl3ajal4"]
+
+[ext_resource type="Texture2D" uid="uid://7a81wpsgu4bk" path="res://assets/icons/utility/swap_spots.png" id="1_ulv8o"]
+[ext_resource type="Script" uid="uid://3d2skhf0hl6d" path="res://resources/spot_cards/utilities/swap_spots/swap_spots.gd" id="2_lwvom"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_1di2k"]
+
+[resource]
+script = ExtResource("2_lwvom")
+rarity = 1
+type = 2
+utility_target_count = 2
+id = "swap_spots"
+name = "Swap Spots"
+icon = ExtResource("1_ulv8o")
+description = "Swap two seated cards"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

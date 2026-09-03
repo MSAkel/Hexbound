@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://c7c2eo74m8q0l"]
+
+[ext_resource type="Texture2D" uid="uid://bywskhtgu66l3" path="res://assets/icons/food/ingredients/tomato.png" id="1_u5wii"]
+[ext_resource type="Script" uid="uid://cc6ehbquhicml" path="res://resources/spot_cards/ingredients/core/tomato/tomato.gd" id="2_bn4sl"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_tr8hg"]
+
+[resource]
+script = ExtResource("2_bn4sl")
+base_production_amount = 20
+product = 1
+starting_hand_eligible = true
+id = "tomato"
+name = "Tomato"
+icon = ExtResource("1_u5wii")
+description = "+20 Flavour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

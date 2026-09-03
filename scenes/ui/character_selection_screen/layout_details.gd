@@ -42,7 +42,7 @@ func display_selection(character: CharacterDefinition) -> void:
 		segment_count = character.segment_starts.size()
 	elif character.segments_count > 0:
 		segment_count = character.segments_count
-	segment_count_label.text = "%d SEGMENTS" % segment_count
+	segment_count_label.text = FeastDisplay.courses_count_label(segment_count)
 	_refresh_layout_progress(character)
 	_refresh_passive_set_label(character)
 

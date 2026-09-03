@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_euaf0"]
 [ext_resource type="Script" path="res://scenes/ui/merchant/merchant_card.gd" id="2_4madk"]
 [ext_resource type="Texture2D" uid="uid://c7jxu3jowc7c5" path="res://assets/gui/card/card_background.png" id="3_ot648"]
-[ext_resource type="Texture2D" uid="uid://cmywu02prhkhj" path="res://assets/icons/runes/production/power_cell.png" id="6_13lfh"]
+[ext_resource type="Texture2D" path="res://assets/icons/placeholder.png" id="6_13lfh"]
 [ext_resource type="Texture2D" uid="uid://jrew33k514xw" path="res://assets/gui/panels/h_bar.png" id="8_pqh8v"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5jwxg"]

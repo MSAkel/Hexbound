@@ -85,8 +85,8 @@ var _placement_preview_cell: Vector2i = Vector2i(-1, -1)
 # Tiles lit when a card credits another segment's turn total.
 var _flashed_segment_coords: Array[Vector2i] = []
 var _flash_segment_generation: int = 0
-## Occupied tiles lit while aiming a tile-target potion.
-var _potion_target_coords: Array[Vector2i] = []
+## Occupied tiles lit while aiming a tile-target condiment.
+var _condiment_target_coords: Array[Vector2i] = []
 ## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
 var _round_turn_snapshots: Array = []
 
@@ -122,7 +122,7 @@ func _ready() -> void:
 	EventBus.turn_ended.connect(on_turn_ended)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.map_display_overlays_changed.connect(_on_map_display_overlays_changed)
-	EventBus.potion_fuses_changed.connect(_refresh_potion_fuse_badges)
+	EventBus.condiment_fuses_changed.connect(_refresh_condiment_fuse_badges)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
@@ -141,10 +141,10 @@ func _ready() -> void:
 	turn_resolver.setup(self)
 
 
-func _refresh_potion_fuse_badges() -> void:
+func _refresh_condiment_fuse_badges() -> void:
 	for hex: Hex in map_data.values():
-		if hex.rune_ui != null and hex.active_tile_card != null:
-			hex.rune_ui.refresh_potion_badges(hex.active_tile_card, hex.coordinates)
+		if hex.card_icon_ui != null and hex.active_tile_card != null:
+			hex.card_icon_ui.refresh_condiment_badges(hex.active_tile_card, hex.coordinates)
 
 
 func _exit_tree() -> void:
@@ -407,7 +407,7 @@ func is_edge_tile(coords: Vector2i) -> bool:
 	return false
 
 
-## Every rune currently placed on the map. Pass rune_type to filter by PRODUCER or SUPPORT.
+## Every rune currently placed on the map. Pass rune_type to filter by Ingredients, Economy, or Kitchenware.
 func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
 	var runes: Array[TileCard] = []
 	for hex: Hex in map_data.values():
@@ -476,7 +476,7 @@ func get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Arra
 			continue
 		if not is_tile_card_triggerable(hex):
 			continue
-		if filter_type != null and hex.active_tile_card.type != filter_type:
+		if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
 			continue
 		result.append(hex.active_tile_card)
 	return result
@@ -508,7 +508,7 @@ func get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -
 			continue
 		if not is_tile_card_triggerable(hex):
 			continue
-		if filter_type != null and hex.active_tile_card.type != filter_type:
+		if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
 			continue
 		result.append(hex.active_tile_card)
 	return result
@@ -525,7 +525,7 @@ func get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Varian
 			continue
 		if not is_tile_card_triggerable(hex):
 			continue
-		if filter_type != null and hex.active_tile_card.type != filter_type:
+		if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
 			continue
 		result.append(hex.active_tile_card)
 	return result
@@ -788,7 +788,7 @@ func wait_for_segment_seal(segment_index: int) -> void:
 	var stagger_steps := maxi(occupied.size() - 1, 1)
 	var stagger := minf(SEGMENT_SEAL_MAX_STAGGER, SEGMENT_SEAL_BUDGET / float(stagger_steps))
 	stagger /= GameManager.game_speed
-	var seal_duration := RuneUI.get_segment_seal_duration() / GameManager.game_speed
+	var seal_duration := CardIconUI.get_segment_seal_duration() / GameManager.game_speed
 	var total_wait := stagger * float(occupied.size() - 1) + seal_duration
 	await GameManager.create_pauseable_timer(total_wait).timeout
 
@@ -1074,12 +1074,12 @@ func _clear_flashed_segment_highlight() -> void:
 	_flashed_segment_coords.clear()
 
 
-## Lights occupied tiles while a tile-target potion is being aimed.
-func set_potion_target_highlights(coords: Array[Vector2i]) -> void:
-	clear_potion_target_highlights()
-	_potion_target_coords = coords.duplicate()
+## Lights occupied tiles while a tile-target condiment is being aimed.
+func set_condiment_target_highlights(coords: Array[Vector2i]) -> void:
+	clear_condiment_target_highlights()
+	_condiment_target_coords = coords.duplicate()
 	rune_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
-	for cell in _potion_target_coords:
+	for cell in _condiment_target_coords:
 		rune_highlight_overlay_layer.set_cell(
 			cell,
 			OVERLAY_TILE_SOURCE_ID,
@@ -1087,9 +1087,9 @@ func set_potion_target_highlights(coords: Array[Vector2i]) -> void:
 		)
 
 
-func clear_potion_target_highlights() -> void:
-	var previous := _potion_target_coords.duplicate()
-	_potion_target_coords.clear()
+func clear_condiment_target_highlights() -> void:
+	var previous := _condiment_target_coords.duplicate()
+	_condiment_target_coords.clear()
 	for cell in previous:
 		if _rune_highlight_still_needed(cell, false, false):
 			continue
@@ -1112,7 +1112,7 @@ func _rune_highlight_still_needed(
 		return true
 	if not from_inspect and coords in _inspect_highlight_coords:
 		return true
-	if coords in _potion_target_coords:
+	if coords in _condiment_target_coords:
 		return true
 	return false
 
@@ -1123,7 +1123,7 @@ func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 		coords in _hovered_segment_coords
 		or coords in _flashed_segment_coords
 		or coords in _inspect_highlight_coords
-		or coords in _potion_target_coords
+		or coords in _condiment_target_coords
 	)
 
 
@@ -1235,7 +1235,7 @@ func _get_tile_cards_relative_to_trigger_order(
 		var rune := hex.active_tile_card
 		if rune == null or _is_bypassed_in_trigger_order(hex):
 			continue
-		if filter_type != null and rune.type != filter_type:
+		if filter_type != null and not TileCard.matches_type_filter(rune.type, filter_type):
 			continue
 		result.append(rune)
 		if result.size() >= count:
@@ -1340,7 +1340,7 @@ func _play_segment_seal(segment_index: int) -> void:
 func _get_occupied_hexes_in_segment(segment_index: int) -> Array[Hex]:
 	var occupied: Array[Hex] = []
 	for hex: Hex in get_hexes_in_segment(segment_index):
-		if hex.active_tile_card != null and hex.rune_ui != null:
+		if hex.active_tile_card != null and hex.card_icon_ui != null:
 			occupied.append(hex)
 	return occupied
 
@@ -1402,18 +1402,18 @@ func capture_map_state() -> Dictionary:
 	for coords: Vector2i in _disabled_tile_coords:
 		disabled_coords.append([coords.x, coords.y])
 
-	var placed_runes: Array = []
+	var placed_spot_cards: Array = []
 	for coords: Vector2i in map_data:
 		var hex: Hex = map_data[coords]
 		if hex.active_tile_card == null:
 			continue
 		var entry := _serialize_placed_tile_card(hex.active_tile_card)
 		entry["coords"] = [coords.x, coords.y]
-		placed_runes.append(entry)
+		placed_spot_cards.append(entry)
 
 	return {
 		"disabled_coords": disabled_coords,
-		"placed_runes": placed_runes,
+		"placed_spot_cards": placed_spot_cards,
 		"segment_turn_results": _layout.capture_turn_results(),
 		"turn_snapshots": _round_turn_snapshots.duplicate(true),
 	}
@@ -1422,7 +1422,7 @@ func capture_map_state() -> Dictionary:
 func restore_map_state(state: Dictionary) -> void:
 	_restore_disabled_tiles(state.get("disabled_coords", []))
 
-	for entry: Dictionary in state.get("placed_runes", []):
+	for entry: Dictionary in state.get("placed_spot_cards", []):
 		var coords_data: Array = entry.get("coords", [])
 		if coords_data.size() < 2:
 			continue
@@ -1430,10 +1430,10 @@ func restore_map_state(state: Dictionary) -> void:
 		if not map_data.has(coords):
 			continue
 
-		var rune := _deserialize_placed_tile_card(entry)
-		if rune == null:
+		var tile_card := _deserialize_placed_tile_card(entry)
+		if tile_card == null:
 			continue
-		map_data[coords].restore_placed_tile_card(rune)
+		map_data[coords].restore_placed_tile_card(tile_card)
 
 	_layout.apply_turn_results(state.get("segment_turn_results", {}))
 	_restore_turn_snapshots(state.get("turn_snapshots", []))
@@ -1448,31 +1448,31 @@ func refresh_segment_turn_results_ui() -> void:
 		_emit_segment_turn_results_changed(segment_index)
 
 
-## Packages per-segment turn totals for the segment-output history panel.
+## Packages per-course hour totals for the rating breakdown panel.
 func capture_segment_turn_snapshot() -> Dictionary:
 	var segments: Array = []
-	var total_score := 0
+	var total_rating := 0
 	var total_gold := 0
 	for segment_index in get_segment_count():
-		var score := get_segment_turn_score(segment_index)
-		var multiplier := get_segment_turn_multiplier(segment_index)
+		var flavour := get_segment_turn_score(segment_index)
+		var mult := get_segment_turn_multiplier(segment_index)
 		var gold := get_segment_turn_gold(segment_index)
 		var breakdown := GameManager.get_segment_turn_contribution_breakdown(
 			segment_index,
-			score,
-			multiplier
+			flavour,
+			mult
 		)
 		segments.append({
-			"score": breakdown.display_energy,
-			"multiplier": breakdown.display_multiplier,
-			"total_score": breakdown.contribution,
+			"flavour": breakdown.display_energy,
+			"mult": breakdown.display_multiplier,
+			"rating": breakdown.contribution,
 			"gold": gold,
 		})
-		total_score += breakdown.contribution
+		total_rating += breakdown.contribution
 		total_gold += gold
 	return {
 		"segments": segments,
-		"total_score": total_score,
+		"total_rating": total_rating,
 		"total_gold": total_gold,
 	}
 
@@ -1520,42 +1520,42 @@ func _restore_disabled_tiles(coords_list: Array) -> void:
 		_disabled_tile_coords.append(coords)
 
 
-func _serialize_placed_tile_card(rune: TileCard) -> Dictionary:
+func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 	var data := {
-		"rune_id": rune.id,
-		"activation_count": rune.activation_count,
-		"is_active": rune.is_active,
-		"bonus_production_amount": rune.bonus_production_amount,
-		"personal_output_bonus": rune.personal_output_bonus,
-		"run_trigger_count": rune.run_trigger_count,
-		"is_empowered": rune.is_empowered,
-		"potion_fuses": rune.potion_fuses.duplicate(true),
+		"card_id": tile_card.id,
+		"activation_count": tile_card.activation_count,
+		"is_active": tile_card.is_active,
+		"bonus_production_amount": tile_card.bonus_production_amount,
+		"personal_output_bonus": tile_card.personal_output_bonus,
+		"run_trigger_count": tile_card.run_trigger_count,
+		"is_empowered": tile_card.is_empowered,
+		"condiment_fuses": tile_card.condiment_fuses.duplicate(true),
 	}
-	var card_state := rune.capture_placed_save_state()
+	var card_state := tile_card.capture_placed_save_state()
 	if not card_state.is_empty():
 		data["card_state"] = card_state
 	return data
 
 
 func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
-	var template := GameManager.get_tile_card_by_id(data.get("rune_id", ""))
+	var template := GameManager.get_tile_card_by_id(data.get("card_id", ""))
 	if template == null:
 		return null
 
-	var rune := template.duplicate(true)
-	rune.activation_count = int(data.get("activation_count", 0))
-	rune.is_active = bool(data.get("is_active", true))
-	rune.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
-	rune.personal_output_bonus = float(data.get("personal_output_bonus", 0.0))
-	rune.run_trigger_count = int(data.get("run_trigger_count", 0))
-	rune.is_empowered = bool(data.get("is_empowered", false))
-	rune.potion_fuses.clear()
-	for fuse in data.get("potion_fuses", []):
+	var tile_card := template.duplicate(true)
+	tile_card.activation_count = int(data.get("activation_count", 0))
+	tile_card.is_active = bool(data.get("is_active", true))
+	tile_card.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
+	tile_card.personal_output_bonus = float(data.get("personal_output_bonus", 0.0))
+	tile_card.run_trigger_count = int(data.get("run_trigger_count", 0))
+	tile_card.is_empowered = bool(data.get("is_empowered", false))
+	tile_card.condiment_fuses.clear()
+	for fuse in data.get("condiment_fuses", []):
 		if fuse is Dictionary:
-			rune.potion_fuses.append(fuse.duplicate(true))
+			tile_card.condiment_fuses.append(fuse.duplicate(true))
 	var card_state: Variant = data.get("card_state", {})
 	if card_state is Dictionary and not card_state.is_empty():
-		rune.apply_placed_save_state(card_state)
-	return rune
+		tile_card.apply_placed_save_state(card_state)
+	return tile_card
 
 #endregion

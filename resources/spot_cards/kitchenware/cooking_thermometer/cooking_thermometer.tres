@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://h7sqfh0382uk"]
+
+[ext_resource type="Texture2D" uid="uid://m57l1u775syo" path="res://assets/icons/kitchenware/cooking_thermometer.png" id="1_jxe77"]
+[ext_resource type="Script" uid="uid://356p2qnxvbrt" path="res://resources/spot_cards/kitchenware/cooking_thermometer/cooking_thermometer.gd" id="2_2acyp"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_vvptw"]
+
+[resource]
+script = ExtResource("2_2acyp")
+base_production_amount = 3
+type = 1
+sigil_kind = 7
+id = "cooking_thermometer"
+name = "Cooking Thermometer"
+icon = ExtResource("1_jxe77")
+description = "+10 Flavour to up to 3 adjacent Following Ingredients permanently"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

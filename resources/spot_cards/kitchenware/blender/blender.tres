@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://bx044y6n4wg4w"]
+
+[ext_resource type="Texture2D" uid="uid://cpekmt5vyao7l" path="res://assets/icons/kitchenware/blender.png" id="1_iysqn"]
+[ext_resource type="Script" uid="uid://odssc2tfohxs" path="res://resources/spot_cards/kitchenware/blender/blender.gd" id="2_tw7yv"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_v07fw"]
+
+[resource]
+script = ExtResource("2_tw7yv")
+type = 1
+sigil_kind = 5
+id = "blender"
+name = "Blender"
+icon = ExtResource("1_iysqn")
+description = "Fire the first Ingredient on the next course again"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

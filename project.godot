@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="6 Aklatros"
-config/version="0.0.20"
+config/version="0.0.30"
 run/main_scene="uid://gd4rito42dyr"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="uid://reock0uri2jm"
@@ -38,7 +38,7 @@ RunRng="*res://scripts/autoload/run_rng.gd"
 MetaProgressionManager="*res://scripts/autoload/meta_progression_manager.gd"
 RerollManager="*res://scripts/autoload/reroll_manager.gd"
 MenuBackground="*res://scripts/autoload/menu_background.gd"
-PotionManager="*res://scripts/autoload/potion_manager.gd"
+CondimentManager="*res://scripts/autoload/condiment_manager.gd"
 EventManager="*res://scripts/autoload/event_manager.gd"
 
 [debug]
@@ -57,9 +57,10 @@ window/main_scene="uid://bpaabu6bfu0hv"
 
 folder_colors={
 "res://assets/": "orange",
-"res://resources/tile_cards/generations/": "blue",
-"res://resources/tile_cards/support/": "green",
-"res://resources/tile_cards/utilities/": "purple",
+"res://resources/spot_cards/economy/": "yellow",
+"res://resources/spot_cards/ingredients/": "blue",
+"res://resources/spot_cards/kitchenware/": "green",
+"res://resources/spot_cards/utilities/": "purple",
 "res://scenes/": "green",
 "res://scripts/": "yellow"
 }

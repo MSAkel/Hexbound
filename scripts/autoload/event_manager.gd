@@ -42,57 +42,57 @@ const ALL_EVENTS: Array[Type] = [
 const EVENT_INFO := {
 	Type.BLACKOUT: {
 		"name": "Blackout",
-		"description": "Every turn, 5 random cards on the map are disabled.",
+		"description": "Every hour, 5 random seated cards on the pass are disabled.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.RUSH_HOUR: {
 		"name": "Rush Hour",
-		"description": "You have 1 less turn to complete the round.",
+		"description": "You have 1 less hour to complete the day.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.DEALT_HAND: {
 		"name": "Dealt Hand",
-		"description": "At the end of each turn, instead of choosing a card, you are dealt a random one",
+		"description": "At the end of each hour, you are dealt a random card instead of choosing one.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.FADING_SECTOR: {
-		"name": "Fading Sector",
-		"description": "Every turn, a random segment has its producer output halved.",
+		"name": "Fading Course",
+		"description": "Every hour, a random course has its Ingredient output halved.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.DRY_WIRE: {
 		"name": "Dry Wire",
-		"description": "Extra activations and queued retriggers do not fire.",
+		"description": "Extra activations and queued Again effects do not fire.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.NULL_CHARGE: {
 		"name": "Null Charge",
-		"description": "Empower still consumes, but it does not double output.",
+		"description": "Double still consumes, but it does not double output.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.LOCAL_CURRENT: {
 		"name": "Local Current",
-		"description": "Products cannot be relayed to another segment.",
+		"description": "Products cannot be Passed to another course.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.AUSTERITY: {
 		"name": "Austerity",
-		"description": "You cannot gain gold this round.",
+		"description": "You cannot gain gold this day.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.SEALED_HEXES: {
-		"name": "Sealed Hexes",
-		"description": "Three empty tiles cannot be played on this round.",
+		"name": "Sealed Spots",
+		"description": "Three empty spots cannot be played on this day.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.JAMMED_BELT: {
 		"name": "Jammed Belt",
-		"description": "Potions cannot be drunk this round.",
+		"description": "Condiments cannot be used this day.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.RAISED_STAKES: {
 		"name": "Raised Stakes",
-		"description": "The score target is 25% higher.",
+		"description": "The day Rating target is 25% higher.",
 		"rounds": FINAL_EVENT_ROUND,
 	},
 }
@@ -246,7 +246,7 @@ func rewrite_upcoming_event(use_index: int) -> bool:
 	if unused.is_empty():
 		return false
 
-	var rng := RunRng.create_rng("potion:rewrite_omen:r%d:n%d" % [
+	var rng := RunRng.create_rng("condiment:rewrite_omen:r%d:n%d" % [
 		GameManager.current_round,
 		use_index,
 	])
@@ -310,7 +310,7 @@ func grant_auto_rune(is_round_reward: bool, fail_remaining_turns: int = -1) -> b
 		0
 	)
 	var loot_rng := RunRng.create_rng(stream_name)
-	var pack := RuneLoot.draw_runes(1, GameManager.tile_cards_pool, true, loot_rng)
+	var pack := CardLoot.draw_runes(1, GameManager.tile_cards_pool, true, loot_rng)
 	if pack.is_empty():
 		return false
 
@@ -328,7 +328,7 @@ func _get_governing_event(is_round_reward: bool) -> int:
 func get_producer_output_multiplier(tile: Hex) -> float:
 	if active_event != Type.FADING_SECTOR or _halved_segment_index < 0:
 		return 1.0
-	if tile.active_tile_card == null or tile.active_tile_card.type != TileCard.TileCardType.PRODUCER:
+	if tile.active_tile_card == null or not TileCard.is_producer_type(tile.active_tile_card.type):
 		return 1.0
 
 	var tile_map := _get_tile_map()
@@ -366,7 +366,7 @@ func can_gain_gold() -> bool:
 
 
 ## Jammed Belt. Fuses already on tiles keep running.
-func are_potions_blocked() -> bool:
+func are_condiments_blocked() -> bool:
 	return active_event == Type.JAMMED_BELT
 
 
@@ -458,7 +458,7 @@ func _apply_fading_sector_visuals() -> void:
 	for hex: Hex in tile_map.get_hexes_in_segment(_halved_segment_index):
 		if hex.active_tile_card == null:
 			continue
-		if hex.active_tile_card.type != TileCard.TileCardType.PRODUCER:
+		if not TileCard.is_producer_type(hex.active_tile_card.type):
 			continue
 		hex.set_tile_card_event_modulate(Hex.RUNE_FADED_SECTOR_MODULATE)
 

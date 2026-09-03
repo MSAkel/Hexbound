@@ -1,0 +1,17 @@
+[gd_resource type="Resource" format=3 uid="uid://bxt6uqis2wnh0"]
+
+[ext_resource type="Texture2D" uid="uid://cco0xajk8y3r6" path="res://assets/icons/kitchenware/cloche.png" id="1_tpute"]
+[ext_resource type="Script" uid="uid://dq2evct4g8j2t" path="res://resources/spot_cards/kitchenware/cloche/cloche.gd" id="2_yrmd6"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_d47ac"]
+
+[resource]
+script = ExtResource("2_yrmd6")
+rarity = 2
+type = 1
+placement_restriction = 3
+sigil_kind = 5
+id = "cloche"
+name = "Cloche"
+icon = ExtResource("1_tpute")
+description = "Fires the last card of each following course. Must be placed on a last course spot"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

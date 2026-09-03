@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://bwdxe1r2whlf3"]
+
+[ext_resource type="Texture2D" uid="uid://cpfwml48gl3bq" path="res://assets/icons/food/ingredients/olive.png" id="1_y3d8o"]
+[ext_resource type="Script" uid="uid://cybi4hdr06lkl" path="res://resources/spot_cards/ingredients/core/olive/olive.gd" id="2_jxmjy"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_6vxyk"]
+
+[resource]
+script = ExtResource("2_jxmjy")
+base_production_amount = 10
+rarity = 1
+product = 1
+id = "olive"
+name = "Olive"
+icon = ExtResource("1_y3d8o")
+description = "+10 Flavour each time this card fires this hour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

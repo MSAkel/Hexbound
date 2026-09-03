@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://baod1ww70w8gw"]
+
+[ext_resource type="Texture2D" uid="uid://xdvmo1ol25pr" path="res://assets/icons/food/ingredients/grape.png" id="1_s0prh"]
+[ext_resource type="Script" uid="uid://bke723f5gj6w1" path="res://resources/spot_cards/ingredients/core/grapes/grapes.gd" id="2_d4tnr"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_pvu6m"]
+
+[resource]
+script = ExtResource("2_d4tnr")
+base_production_amount = 12
+rarity = 1
+product = 1
+id = "grapes"
+name = "Grapes"
+icon = ExtResource("1_s0prh")
+description = "+12 Flavour per course that has already received a Pass this hour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

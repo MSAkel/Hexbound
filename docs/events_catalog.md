@@ -30,7 +30,7 @@ Round 3 always has five legal types, so the scheduler can always fill the first 
 | Dealt Hand | One random card is dealt straight to your hand. The draft screen does not open |
 | Fading Sector | Each turn, a random segment's Producer output ×0.5 |
 | Austerity | `GoldManager.add` is blocked, including round-clear gold paid while this event is still active. Tokens still award |
-| Jammed Belt | Potions cannot be drunk |
+| Jammed Belt | Condiments cannot be drunk |
 
 ### Late (rounds 6 and 9)
 

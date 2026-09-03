@@ -34,7 +34,7 @@ script = ExtResource("1_3maye")
 layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 24
-text = "Select a card to place it into an empty tile.
-You must reach the required score before your turns reach to 0"
+text = "Select a card to place it into an empty spot.
+You must reach the required Rating before your Hours reach 0"
 horizontal_alignment = 1
 autowrap_mode = 3

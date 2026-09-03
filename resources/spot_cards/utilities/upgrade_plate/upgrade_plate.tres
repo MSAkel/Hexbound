@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://tbdpj1lh5eoa"]
+
+[ext_resource type="Texture2D" uid="uid://bfawwoks1ir8e" path="res://assets/icons/utility/upgrade_plate.png" id="1_dr7x0"]
+[ext_resource type="Script" uid="uid://b8p41ebvkk5vq" path="res://resources/spot_cards/utilities/upgrade_plate/upgrade_plate.gd" id="2_qwwig"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_migt5"]
+
+[resource]
+script = ExtResource("2_qwwig")
+rarity = 2
+type = 2
+id = "upgrade_plate"
+name = "Upgrade Plate"
+icon = ExtResource("1_dr7x0")
+description = "Transform seated card into random higher-rarity card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

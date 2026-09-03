@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://bh8rf7xn7n0g7"]
+
+[ext_resource type="Texture2D" uid="uid://bd2stemj2vnwv" path="res://assets/icons/kitchenware/tongs.png" id="1_oxu3q"]
+[ext_resource type="Script" uid="uid://drnjavjwyal3i" path="res://resources/spot_cards/kitchenware/tongs/tongs.gd" id="2_cqhas"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_a0kg0"]
+
+[resource]
+script = ExtResource("2_cqhas")
+rarity = 1
+type = 1
+sigil_kind = 5
+id = "tongs"
+name = "Tongs"
+icon = ExtResource("1_oxu3q")
+description = "If a card has spoiled on this course this hour, fire the Following Ingredient"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

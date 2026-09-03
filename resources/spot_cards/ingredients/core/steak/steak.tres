@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3 uid="uid://dklwprbruhqgo"]
+
+[ext_resource type="Texture2D" uid="uid://bcq5x3x5nr1ro" path="res://assets/icons/food/ingredients/steak.png" id="1_bxdtk"]
+[ext_resource type="Script" uid="uid://bgog0qghmjhgd" path="res://resources/spot_cards/ingredients/core/steak/steak.gd" id="2_pyice"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_r5iei"]
+
+[resource]
+script = ExtResource("2_pyice")
+base_production_amount = 80
+rarity = 2
+product = 1
+placement_restriction = 4
+layout_requirement = 1
+layout_requirement_size = 1
+id = "steak"
+name = "Steak"
+icon = ExtResource("1_bxdtk")
+description = "+80 Flavour. Must be on a 1-spot course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

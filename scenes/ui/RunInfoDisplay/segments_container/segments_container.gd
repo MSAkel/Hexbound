@@ -102,8 +102,8 @@ func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
 		return
 
 	for child in segment_results_list.get_children():
-		if child.has_method("play_score_drain_to_zero"):
-			child.play_score_drain_to_zero()
+		if child.has_method("play_rating_drain_to_zero"):
+			child.play_rating_drain_to_zero()
 
 	_score_total_counter.snap_to(0)
 	var count_tween := _score_total_counter.play(float(turn_total_score))
@@ -114,7 +114,7 @@ func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
 		_style_total_score(turn_total_score)
 
 	var intensity := ScoreReadoutStyle.intensity_for_score(turn_total_score)
-	AudioManager.play_sfx(UISounds.SEGMENT_RESULT)
+	AudioManager.play_sfx(UISounds.COURSE_RESULT)
 	_land_number(score_total_number, intensity)
 	_pulse_panel(turn_total_container)
 	_shake_screen(turn_total_score)
@@ -128,8 +128,8 @@ func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
 
 func _snap_all_segment_scores_to_zero() -> void:
 	for child in segment_results_list.get_children():
-		if child.has_method("snap_score_to_zero"):
-			child.snap_score_to_zero()
+		if child.has_method("snap_rating_to_zero"):
+			child.snap_rating_to_zero()
 
 
 func _on_round_score_commit_animation_requested(transfer_amount: int, round_score_before: int) -> void:
@@ -248,7 +248,7 @@ func _refresh_view(animate: bool) -> void:
 
 
 func _update_turn_label() -> void:
-	turn_label.text = "TURN %d" % (_viewed_turn_index + 1)
+	turn_label.text = FeastDisplay.hour_label(_viewed_turn_index + 1)
 
 
 func _update_navigation_buttons() -> void:
@@ -259,20 +259,20 @@ func _update_navigation_buttons() -> void:
 func _apply_snapshot(snapshot: Dictionary, animate: bool) -> void:
 	var segments: Array = snapshot.get("segments", [])
 	for child in segment_results_list.get_children():
-		var segment_index: int = child.segment_index
-		if segment_index < 0 or segment_index >= segments.size():
+		var course_index: int = child.course_index
+		if course_index < 0 or course_index >= segments.size():
 			child.apply_turn_snapshot(0, 1, 0, animate)
 			continue
 
-		var segment_data: Dictionary = segments[segment_index]
+		var segment_data: Dictionary = segments[course_index]
 		child.apply_turn_snapshot(
-			int(segment_data.get("score", 0)),
-			float(segment_data.get("multiplier", 1.0)),
-			int(segment_data.get("total_score", 0)),
+			int(segment_data.get("flavour", 0)),
+			float(segment_data.get("mult", 1.0)),
+			int(segment_data.get("rating", 0)),
 			animate
 		)
 
-	_update_turn_total(int(snapshot.get("total_score", 0)), animate)
+	_update_turn_total(int(snapshot.get("total_rating", 0)), animate)
 
 
 func _apply_empty_snapshot(animate: bool) -> void:
@@ -288,10 +288,10 @@ func _sync_rows_from_tile_map(animate: bool) -> void:
 		return
 
 	for child in segment_results_list.get_children():
-		var segment_index: int = child.segment_index
-		var score := tile_map.get_segment_turn_score(segment_index)
-		var multiplier := tile_map.get_segment_turn_multiplier(segment_index)
-		child.apply_turn_snapshot(score, multiplier, int(round(float(score) * multiplier)), animate, false)
+		var course_index: int = child.course_index
+		var flavour := tile_map.get_segment_turn_score(course_index)
+		var mult := tile_map.get_segment_turn_multiplier(course_index)
+		child.apply_turn_snapshot(flavour, mult, int(round(float(flavour) * mult)), animate, false)
 
 	# Turn total is driven by the reveal transfer beat, not live tile-map sync.
 	if not _is_viewing_live_turn():
@@ -413,9 +413,9 @@ func _build_segment_rows() -> void:
 	for child in segment_results_list.get_children():
 		child.queue_free()
 
-	for segment_index in tile_map.get_segment_count():
+	for course_index in tile_map.get_segment_count():
 		var row: PanelContainer = SEGMENT_RESULTS_SCENE.instantiate()
-		row.segment_index = segment_index
+		row.course_index = course_index
 		segment_results_list.add_child(row)
 
 	_set_rows_live_mode(_is_viewing_live_turn())

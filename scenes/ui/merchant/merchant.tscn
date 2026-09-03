@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://dhgcsvr4lsi58" path="res://scenes/ui/merchant/merchant.gd" id="1_wha7e"]
 [ext_resource type="Texture2D" uid="uid://fvko4m74t6xh" path="res://assets/characters/NPC_Gramps.png" id="2_b5a5w"]
 [ext_resource type="Texture2D" uid="uid://s2somxs47c70" path="res://assets/icons/others/die.png" id="3_die"]
-[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="3_gold"]
-[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="4_token"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="3_gold"]
+[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/stats/merchant_token.png" id="4_token"]
 [ext_resource type="Texture2D" uid="uid://b3xttnqg1hd8a" path="res://assets/gui/shelf.png" id="5_shelf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aum3v"]
@@ -206,12 +206,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 alignment = 2
 
-[node name="PotionShelf" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow" unique_id=711787578]
+[node name="CondimentShelf" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow" unique_id=711787578]
 custom_minimum_size = Vector2(480, 210)
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="ShelfGlow" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf" unique_id=1357287190]
+[node name="ShelfGlow" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/CondimentShelf" unique_id=1357287190]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -222,7 +222,7 @@ mouse_filter = 2
 texture = SubResource("ShelfGlowTex")
 expand_mode = 1
 
-[node name="ShelfImage" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf" unique_id=1777218441]
+[node name="ShelfImage" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/CondimentShelf" unique_id=1777218441]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -236,7 +236,7 @@ texture = ExtResource("5_shelf")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PotionsGrid" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PotionShelf" unique_id=682950715]
+[node name="CondimentsGrid" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/CondimentShelf" unique_id=682950715]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -330,7 +330,7 @@ theme_override_font_sizes/font_size = 23
 theme_override_styles/normal = SubResource("TopButton")
 theme_override_styles/pressed = SubResource("TopButton")
 theme_override_styles/hover = SubResource("TopButton")
-text = "Show Board"
+text = "Show Pass"
 
 [node name="ShowMerchantButton" type="Button" parent="." unique_id=1440697407]
 visible = false

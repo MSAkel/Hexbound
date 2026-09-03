@@ -47,7 +47,7 @@ func _build_trigger_buttons() -> void:
 	_add_trigger_button(button_box, "Game over screen", _show_game_over)
 	_add_trigger_button(button_box, "Merchant", _show_merchant)
 	_add_trigger_button(button_box, "Round complete", _show_round_complete)
-	_add_trigger_button(button_box, "Rune selection", _show_rune_selection)
+	_add_trigger_button(button_box, "Card selection", _show_rune_selection)
 	_add_trigger_button(button_box, "Passive unlock", _show_passive_unlock)
 	_add_trigger_button(button_box, "Hide active panel", _hide_active_panel)
 	_add_trigger_button(button_box, "Close", _on_close_pressed)

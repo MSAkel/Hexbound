@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://cl7o5t5jscgg4"]
+
+[ext_resource type="Texture2D" uid="uid://berds0aj0ward" path="res://assets/icons/food/ingredients/coffee.png" id="1_s7hn1"]
+[ext_resource type="Script" uid="uid://b72ami54ald0n" path="res://resources/spot_cards/ingredients/core/coffee/coffee.gd" id="2_meqty"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_csa6f"]
+
+[resource]
+script = ExtResource("2_meqty")
+base_production_amount = 5
+product = 1
+starting_hand_eligible = true
+id = "coffee"
+name = "Coffee"
+icon = ExtResource("1_s7hn1")
+description = "+5 Flavour for every fire on this course so far this hour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -12,7 +12,7 @@ const CHARACTER_PATHS: Array[String] = [
 ]
 
 ## Always included in the opening hand. Never removed by difficulty trimming.
-const GUARANTEED_STARTER_IDS: Array[String] = ["power_cell", "basic_mult"]
+const GUARANTEED_STARTER_IDS: Array[String] = ["tomato", "salt"]
 
 static var _definitions: Array[CharacterDefinition] = []
 static var _definitions_by_id: Dictionary = {}
@@ -46,7 +46,7 @@ static func get_character_by_id(character_id: String) -> CharacterDefinition:
 	return _definitions_by_id.get(character_id)
 
 
-# Build the starting hand runes for the given character.
+# Build the starting hand cards for the given character.
 # 2 locked producers, 1 random producer, and 2 support. Difficulty may trim support first.
 static func get_starting_hand_runes(character: CharacterDefinition) -> Array[TileCard]:
 	var hand: Array[TileCard] = []
@@ -55,7 +55,7 @@ static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Til
 
 	hand.append_array(_get_guaranteed_starter_runes())
 	hand.append_array(_draw_flat_score_starter(1))
-	hand.append_array(_get_random_common_runes(2, TileCard.TileCardType.SUPPORT))
+	hand.append_array(_get_random_common_runes(2, TileCard.TileCardType.KITCHENWARE))
 
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
 	_apply_starting_hand_reduction(hand, reduction)
@@ -63,7 +63,13 @@ static func get_starting_hand_runes(character: CharacterDefinition) -> Array[Til
 	return hand
 
 
-# Locked opening producers that always enable a turn-1 Energy x Mult line.
+# Opening deal size before mid-run draws and plays shrink the hand.
+static func get_expected_opening_hand_size(difficulty: Difficulty.Level) -> int:
+	# Tomato, Salt, one flat producer, and two support cards.
+	return 5 - Difficulty.get_starting_hand_reduction(difficulty)
+
+
+# Locked opening producers that always enable a turn-1 Flavour x Mult line.
 static func _get_guaranteed_starter_runes() -> Array[TileCard]:
 	var runes: Array[TileCard] = []
 	for starter_id: String in GUARANTEED_STARTER_IDS:
@@ -78,20 +84,20 @@ static func _get_guaranteed_starter_runes() -> Array[TileCard]:
 # Common score producers tagged for reliable turn-1 output.
 static func _get_flat_score_starter_pool() -> Array[TileCard]:
 	var pool: Array[TileCard] = []
-	for rune in GameManager.tile_cards_pool:
-		if rune.rarity != TileCard.TileCardRarity.COMMON:
+	for card in GameManager.tile_cards_pool:
+		if card.rarity != TileCard.TileCardRarity.COMMON:
 			continue
-		if rune.type != TileCard.TileCardType.PRODUCER:
+		if card.type != TileCard.TileCardType.INGREDIENT:
 			continue
-		if rune.product != TileCard.Product.SCORE:
+		if card.product != TileCard.Product.SCORE:
 			continue
-		if not rune.starting_hand_eligible:
+		if not card.starting_hand_eligible:
 			continue
-		if rune.id in GUARANTEED_STARTER_IDS:
+		if card.id in GUARANTEED_STARTER_IDS:
 			continue
-		if not rune.is_legal_for_layout(GameManager.selected_character):
+		if not card.is_legal_for_layout(GameManager.selected_character):
 			continue
-		pool.append(rune)
+		pool.append(card)
 	return pool
 
 
@@ -99,17 +105,17 @@ static func _get_flat_score_starter_pool() -> Array[TileCard]:
 static func _draw_flat_score_starter(count: int) -> Array[TileCard]:
 	var flat_pool := _get_flat_score_starter_pool()
 	if not flat_pool.is_empty():
-		return RuneLoot.draw_filtered(
+		return CardLoot.draw_filtered(
 			count,
 			flat_pool,
 			TileCard.TileCardRarity.COMMON,
-			TileCard.TileCardType.PRODUCER,
+			TileCard.TileCardType.INGREDIENT,
 			true,
 			TileCard.Product.SCORE
 		)
 
 	push_warning("No flat-score starter cards tagged. Falling back to any common score producer.")
-	return _get_random_common_runes(count, TileCard.TileCardType.PRODUCER, TileCard.Product.SCORE)
+	return _get_random_common_runes(count, TileCard.TileCardType.INGREDIENT, TileCard.Product.SCORE)
 
 
 # Remove support cards before optional producers. Never discard locked starters.
@@ -120,7 +126,7 @@ static func _apply_starting_hand_reduction(hand: Array[TileCard], reduction: int
 
 		var removed := false
 		for index in hand.size():
-			if hand[index].type == TileCard.TileCardType.SUPPORT:
+			if hand[index].type == TileCard.TileCardType.KITCHENWARE:
 				hand.remove_at(index)
 				removed = true
 				break
@@ -143,7 +149,7 @@ static func _get_random_common_runes(
 	rune_type: TileCard.TileCardType,
 	product: Variant = null
 ) -> Array[TileCard]:
-	return RuneLoot.draw_filtered(
+	return CardLoot.draw_filtered(
 		count,
 		GameManager.tile_cards_pool,
 		TileCard.TileCardRarity.COMMON,

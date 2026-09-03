@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://lhhdm6asgia8"]
+
+[ext_resource type="Texture2D" uid="uid://bm2kdf3inhmhm" path="res://assets/icons/placeholder.png" id="1_rc6dl"]
+[ext_resource type="Script" uid="uid://ydebkyu5dpqr" path="res://resources/spot_cards/kitchenware/mirror_copy/mirror_copy.gd" id="2_rjenw"]
+
+
+
+[resource]
+script = ExtResource("2_rjenw")
+type = 1
+product = 3
+id = "mirror_copy"
+name = "Pass Mirror"
+icon = ExtResource("1_rc6dl")
+description = "Copy the card on the opposite side of the pass"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

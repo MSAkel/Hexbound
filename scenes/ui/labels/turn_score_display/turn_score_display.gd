@@ -102,7 +102,7 @@ func present_segment(
 	linger_extra: bool = false
 ) -> void:
 	_reset_visual_state()
-	segment_title.text = "Segment %d" % (segment_index + 1)
+	segment_title.text = "%s %d" % [FeastDisplay.COURSE, segment_index + 1]
 	segment_title.modulate = Color.WHITE
 	_set_score_line(
 		"%s x %s" % [CountingNumber.format_int(energy), CountingNumber.format_mult(multiplier)],

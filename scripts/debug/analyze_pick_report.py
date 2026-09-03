@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize player-bot picks and buys from playtest_report.json."""
+"""Summarize player-bot picks and buys from playtest_report.json (spot_cards pool)."""
 
 import json
 import re
@@ -10,7 +10,7 @@ from collections import Counter, defaultdict
 REPORT = os.path.expandvars(
     r"C:\Users\16138\AppData\Roaming\Godot\app_userdata\6 Aklatros\playtest_report.json"
 )
-POOL_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "tile_cards")
+POOL_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "spot_cards")
 
 
 def load_pool() -> set[str]:

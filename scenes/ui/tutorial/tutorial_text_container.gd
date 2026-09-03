@@ -4,10 +4,10 @@ extends PanelContainer
 
 
 const STEP_TEXTS: PackedStringArray = [
-	"Select a card to place it on an empty tile.\nReach the round’s required score before you run out of turns.",
-	"Hover over a tile to view its stats. Hold Tab to quickly switch between the regular and trigger-order views.\nSupport card abilities aren’t always limited to their own segment.",
-	"The turn ends when only two cards remain in your hand.\nComplete nine rounds to win.",
-	"Each segment calculates Energy and Mult separately. Energy × Mult becomes that segment’s Score, then all segment Scores are added for the turn.\n",
+	"Select a card to place it on an empty spot.\nReach the day's Rating target before you run out of hours.",
+	"Hover over a spot to view its stats. Hold Tab to quickly switch between the regular and fire-order views.\nTool cards aren't always limited to their own course.",
+	"The hour ends when only two cards remain in your hand.\nComplete nine days to win.",
+	"Each course builds Flavour and Mult separately. Flavour × Mult becomes that course's Rating, then all course Ratings are added for the hour.\n",
 ]
 
 const FADE_OUT_DURATION := 0.18
@@ -81,7 +81,7 @@ func _on_turn_ended() -> void:
 	if GameManager.current_round != 1:
 		return
 	var turn_number := GameManager.get_turn_number()
-	# Third text leaves when turn 1 ends. Fourth text leaves when turn 2 ends.
+	# Third text leaves when hour 1 ends. Fourth text leaves when hour 2 ends.
 	if turn_number == 1 and _step >= 2:
 		_hide_banner(false)
 	elif turn_number >= 2:
@@ -91,7 +91,7 @@ func _on_turn_ended() -> void:
 func _on_turn_changed() -> void:
 	if not _active:
 		return
-	# Later rounds reuse turn_changed. Keep this copy on the opening round only.
+	# Later days reuse turn_changed. Keep this copy on the opening day only.
 	if GameManager.current_round != 1:
 		return
 	if GameManager.get_turn_number() >= 2:

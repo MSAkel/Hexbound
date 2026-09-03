@@ -23,4 +23,4 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 
 func _get_lead_in_target(tile: Hex) -> TileCard:
-	return _get_first_or_last_tile_card_in_relative_segment(tile, 1, true, TileCardType.PRODUCER)
+	return _get_first_or_last_tile_card_in_relative_segment(tile, 1, true, TileCard.PRODUCER_TYPE_FILTER)

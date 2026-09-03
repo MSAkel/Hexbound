@@ -7,9 +7,10 @@ signal action_requested(card_ui: CardUI)
 signal gold_purchase_requested(card_ui: CardUI)
 signal token_purchase_requested(card_ui: CardUI)
 
-# TileCardType.PRODUCER uses the production frame. Other cards keep the scene default.
-@export var frame_producer: Texture2D
-@export var frame_support: Texture2D
+# Ingredients, Economy, Kitchenware, and Utility each use their own card frame.
+@export var frame_ingredients: Texture2D
+@export var frame_economy: Texture2D
+@export var frame_kitchenware: Texture2D
 @export var frame_utility: Texture2D
 # Name-bar fills are authored on the scene so rarity color is not rebuilt in code.
 @export var rarity_style_common: StyleBoxFlat
@@ -18,7 +19,7 @@ signal token_purchase_requested(card_ui: CardUI)
 
 @onready var name_container: PanelContainer = $Content/NameContainer
 @onready var card_name: Label = $Content/NameContainer/CardName
-@onready var icon: TextureRect = $Content/IconContainer/Icon
+@onready var icon: CardIcon = $Content/IconContainer/Icon
 @onready var card_description: RichTextLabel = $Content/DescriptionContainer/CardDescription
 @onready var card_type_label: Label = $Content/CardTypeLabel
 
@@ -527,10 +528,13 @@ func set_card(data: Card) -> void:
 	card = data
 	card_name.text = data.name
 	_apply_rarity_name_background(data)
-	icon.texture = data.icon
-	# Keywords such as Energy, Mult, and Score are colored in CardKeywordGlossary.
+	icon.setup(data)
+	# Keywords such as Flavour, Mult, and Rating are colored in CardKeywordGlossary.
 	card_description.text = CardKeywordGlossary.to_bbcode(data.description)
-	card_type_label.text = data.get_card_kind_label()
+	if data is TileCard:
+		card_type_label.text = FeastDisplay.get_tile_card_shelf_label(data as TileCard)
+	else:
+		card_type_label.text = data.get_card_kind_label()
 	_apply_card_frame()
 
 	if interaction_mode == InteractionMode.MERCHANT:
@@ -927,13 +931,15 @@ func _apply_card_frame() -> void:
 func _frame_texture_for_card(data: Card) -> Texture2D:
 	if data is TileCard:
 		match (data as TileCard).type:
-			TileCard.TileCardType.PRODUCER:
-				return frame_producer
-			TileCard.TileCardType.SUPPORT:
-				return frame_support
+			TileCard.TileCardType.INGREDIENT:
+				return frame_ingredients
+			TileCard.TileCardType.ECONOMY:
+				return frame_economy
+			TileCard.TileCardType.KITCHENWARE:
+				return frame_kitchenware
 			TileCard.TileCardType.UTILITY:
 				return frame_utility
-	return frame_producer
+	return frame_ingredients
 
 
 func _on_drop_point_area_entered(area: Area2D) -> void:

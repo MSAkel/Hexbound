@@ -29,12 +29,12 @@ const NUMBER_OUTLINE_SIZE := 14
 # Pointy hex art sits a little high. Nudge numbers toward the visual center.
 const NUMBER_Y_OFFSET := -8.0
 
-const CAPTION_IDLE := "Hover a tile to inspect a segment"
-const CAPTION_PLAYING := "Cards activate in this order"
-const CAPTION_TRIGGER_ORDER := "Numbers show the order cards activate in"
-const CAPTION_SEGMENTS := "Each segment consists of one or more tiles"
-const CAPTION_STARTS := "First tile in each segment"
-const CAPTION_ENDS := "Last tile in each segment"
+const CAPTION_IDLE := "Hover a spot to inspect a course"
+const CAPTION_PLAYING := "Cards fire in this order"
+const CAPTION_TRIGGER_ORDER := "Numbers show the order cards fire in"
+const CAPTION_SEGMENTS := "Each course consists of one or more spots"
+const CAPTION_STARTS := "First spot in each course"
+const CAPTION_ENDS := "Last spot in each course"
 
 const TEXT_CAPTION := Color(0.39, 0.31, 0.2, 1)
 const NUMBER_COLOR := Color(0.96, 0.94, 0.88, 1)
@@ -404,7 +404,11 @@ func _refresh_caption() -> void:
 			_caption_label.text = _tile_caption(_hover_coords)
 			return
 	if _pinned_segment_index >= 0:
-		_caption_label.text = "Segment %d of %d pinned" % [_pinned_segment_index + 1, _segment_count]
+		_caption_label.text = "%s %d of %d pinned" % [
+			FeastDisplay.COURSE,
+			_pinned_segment_index + 1,
+			_segment_count,
+		]
 		return
 	match _legend_filter:
 		LegendFilter.TRIGGER_ORDER:
@@ -425,11 +429,17 @@ func _refresh_caption() -> void:
 func _tile_caption(coords: Vector2i) -> String:
 	var order: int = int(_tile_order.get(coords, 0))
 	var segment_index: int = int(_tile_segments.get(coords, 0))
-	var text := "Tile %d · Segment %d of %d" % [order, segment_index + 1, _segment_count]
+	var text := "%s %d · %s %d of %d" % [
+		FeastDisplay.SPOT,
+		order,
+		FeastDisplay.COURSE,
+		segment_index + 1,
+		_segment_count,
+	]
 	if _preview_map != null and _preview_map.is_first_tile_in_segment(coords):
-		text += " · Segment start"
+		text += " · %s start" % FeastDisplay.COURSE
 	if _preview_map != null and _preview_map.is_last_tile_in_segment(coords):
-		text += " · Segment end"
+		text += " · %s end" % FeastDisplay.COURSE
 	return text
 
 

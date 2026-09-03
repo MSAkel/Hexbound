@@ -116,7 +116,7 @@ func get_output_scale_bonus(tile: Hex, card: TileCard) -> float:
 			SegmentPassive.EffectType.ALTERNATING_OUTPUT_MULT:
 				bonus += _alternating_bonus(segment_index, card, passive.effect_value)
 			SegmentPassive.EffectType.RELAY_OUTPUT_MULT:
-				if not relay_applied and card.type == TileCard.TileCardType.PRODUCER:
+				if not relay_applied and TileCard.is_producer_type(card.type):
 					var charges := int(_relay_charges.get(segment_index, 0))
 					if charges > 0:
 						bonus += passive.effect_value
@@ -124,13 +124,13 @@ func get_output_scale_bonus(tile: Hex, card: TileCard) -> float:
 			SegmentPassive.EffectType.ADJACENCY_OUTPUT_MULT:
 				bonus += _adjacency_bonus(tile, card, passive)
 			SegmentPassive.EffectType.FULL_OCCUPANCY_OUTPUT_MULT:
-				if card.type == TileCard.TileCardType.PRODUCER and _is_segment_fully_occupied(tile, segment_index):
+				if TileCard.is_producer_type(card.type) and _is_segment_fully_occupied(tile, segment_index):
 					bonus += passive.effect_value
 			SegmentPassive.EffectType.ONE_TILE_OUTPUT_MULT:
 				if is_one_tile and _is_numeric_producer(card):
 					bonus += passive.effect_value
 			SegmentPassive.EffectType.LAYOUT_SIGHTLINE:
-				if card.type == TileCard.TileCardType.PRODUCER:
+				if TileCard.is_producer_type(card.type):
 					bonus += _capped_bonus(
 						passive.effect_value * float(_earlier_occupied_count(tile, segment_index)),
 						passive.extra_float
@@ -142,17 +142,17 @@ func get_output_scale_bonus(tile: Hex, card: TileCard) -> float:
 						passive.extra_float
 					)
 			SegmentPassive.EffectType.LAYOUT_COIL_CHARGE:
-				if card.type == TileCard.TileCardType.PRODUCER:
+				if TileCard.is_producer_type(card.type):
 					var earlier := maxi(0, GameManager.get_current_turn_trigger_count() - 1)
 					bonus += _capped_bonus(passive.effect_value * float(earlier), passive.extra_float)
 			SegmentPassive.EffectType.LAYOUT_DOWNSTROKE:
-				if card.type == TileCard.TileCardType.PRODUCER:
+				if TileCard.is_producer_type(card.type):
 					bonus += _capped_bonus(
 						passive.effect_value * float(_consecutive_occupied_before(tile, segment_index)),
 						passive.extra_float
 					)
 			SegmentPassive.EffectType.LAYOUT_COMPRESSION:
-				if card.type == TileCard.TileCardType.PRODUCER:
+				if TileCard.is_producer_type(card.type):
 					bonus += _capped_bonus(
 						passive.effect_value * float(segment_index),
 						passive.extra_float
@@ -169,9 +169,9 @@ func after_activation(tile: Hex, card: TileCard) -> void:
 	if segment_index < 0:
 		return
 
-	if card.type == TileCard.TileCardType.PRODUCER:
+	if TileCard.is_producer_type(card.type):
 		var previous_type: Variant = _last_card_type.get(segment_index, -1)
-		if previous_type == TileCard.TileCardType.SUPPORT:
+		if previous_type == TileCard.TileCardType.KITCHENWARE:
 			MetaProgressionManager.add_support_then_producer()
 	_last_card_type[segment_index] = card.type
 	_note_numeric_product(segment_index, card)
@@ -188,7 +188,7 @@ func after_activation(tile: Hex, card: TileCard) -> void:
 		MetaProgressionManager.add_adjacent_same_product_trigger()
 	if _is_first_producer(segment_index, card):
 		_first_producer_fired[segment_index] = true
-	if card.type == TileCard.TileCardType.SUPPORT:
+	if card.type == TileCard.TileCardType.KITCHENWARE:
 		_first_support_fired[segment_index] = true
 	if _is_last_producer(tile, card, segment_index):
 		MetaProgressionManager.add_last_producer_trigger()
@@ -228,10 +228,10 @@ func should_retrigger(tile: Hex, card: TileCard) -> bool:
 	for passive in get_passives(segment_index):
 		match passive.effect_type:
 			SegmentPassive.EffectType.SUPPORT_RETRIGGER:
-				if card.type == TileCard.TileCardType.SUPPORT and rng.randf() < passive.effect_value:
+				if card.type == TileCard.TileCardType.KITCHENWARE and rng.randf() < passive.effect_value:
 					return true
 			SegmentPassive.EffectType.PRODUCER_RETRIGGER:
-				if card.type == TileCard.TileCardType.PRODUCER and rng.randf() < passive.effect_value:
+				if TileCard.is_producer_type(card.type) and rng.randf() < passive.effect_value:
 					return true
 			SegmentPassive.EffectType.ONE_TILE_RETRIGGER:
 				if is_one_tile and rng.randf() < passive.effect_value:
@@ -311,7 +311,7 @@ func _apply_last_producer_empower(tile: Hex, card: TileCard, segment_index: int)
 
 
 func _apply_relay_empower(_tile: Hex, card: TileCard, segment_index: int) -> void:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return
 	if not bool(_relay_empower_armed.get(segment_index, false)):
 		return
@@ -335,7 +335,7 @@ func _apply_outward_pulse(_tile: Hex, card: TileCard, segment_index: int) -> voi
 
 
 func _apply_pending_turnaround(card: TileCard, segment_index: int) -> void:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return
 	if not bool(_pending_turnaround_empower.get(segment_index, false)):
 		return
@@ -383,7 +383,7 @@ func _apply_one_tile_personal_growth(tile: Hex, card: TileCard, segment_index: i
 
 
 func _consume_relay_charge(segment_index: int, card: TileCard) -> void:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return
 	var charges := int(_relay_charges.get(segment_index, 0))
 	if charges > 0:
@@ -391,7 +391,7 @@ func _consume_relay_charge(segment_index: int, card: TileCard) -> void:
 
 
 func _arm_relay_from_support(segment_index: int, card: TileCard) -> void:
-	if card.type != TileCard.TileCardType.SUPPORT:
+	if card.type != TileCard.TileCardType.KITCHENWARE:
 		return
 	var relay_copies := count_effect(segment_index, SegmentPassive.EffectType.RELAY_OUTPUT_MULT)
 	if relay_copies > 0:
@@ -429,7 +429,7 @@ func _apply_closed_orbit(tile: Hex, _card: TileCard, segment_index: int) -> void
 			gain += passive.effect_value
 	if gain <= 0.0:
 		return
-	for energy_card in tile.map.get_all_tile_cards_on_segment(segment_index, TileCard.TileCardType.PRODUCER):
+	for energy_card in tile.map.get_all_tile_cards_on_segment(segment_index, TileCard.PRODUCER_TYPE_FILTER):
 		if energy_card.product != TileCard.Product.SCORE:
 			continue
 		energy_card.bonus_production_amount += gain
@@ -446,13 +446,13 @@ func _should_end_retrigger(tile: Hex, card: TileCard, segment_index: int) -> boo
 
 
 func _is_first_producer(segment_index: int, card: TileCard) -> bool:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return false
 	return not bool(_first_producer_fired.get(segment_index, false))
 
 
 func _is_last_producer(tile: Hex, card: TileCard, segment_index: int) -> bool:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return false
 	var last := _last_producer_in_segment(tile, segment_index)
 	return last == card
@@ -467,7 +467,7 @@ func _last_producer_in_segment(tile: Hex, segment_index: int) -> TileCard:
 		var hex: Hex = tile.map.map_data.get(coords)
 		if hex == null or hex.active_tile_card == null:
 			continue
-		if hex.active_tile_card.type != TileCard.TileCardType.PRODUCER:
+		if not TileCard.is_producer_type(hex.active_tile_card.type):
 			continue
 		if not tile.map.is_tile_card_triggerable(hex):
 			continue
@@ -491,7 +491,7 @@ func _is_last_occupied(tile: Hex, segment_index: int) -> bool:
 
 
 func _is_numeric_producer(card: TileCard) -> bool:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return false
 	return card.product == TileCard.Product.SCORE or card.product == TileCard.Product.MULTIPLIER or card.product == TileCard.Product.GOLD
 
@@ -519,13 +519,13 @@ func _alternating_bonus(segment_index: int, card: TileCard, value: float) -> flo
 
 
 func _adjacency_bonus(tile: Hex, card: TileCard, passive: SegmentPassive) -> float:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return 0.0
 	if card.product == TileCard.Product.NONE or card.product == TileCard.Product.HYBRID:
 		return 0.0
 	var needed := maxi(1, passive.extra_int)
 	var neighbors := 0
-	for other in tile.map.get_all_adjacent_tile_cards(tile, TileCard.TileCardType.PRODUCER):
+	for other in tile.map.get_all_adjacent_tile_cards(tile, TileCard.PRODUCER_TYPE_FILTER):
 		if other.product == card.product:
 			neighbors += 1
 	if neighbors < needed:
@@ -535,7 +535,7 @@ func _adjacency_bonus(tile: Hex, card: TileCard, passive: SegmentPassive) -> flo
 
 ## True when this Producer would receive any adjacency output bonus.
 func _qualifies_adjacency_trigger(tile: Hex, card: TileCard) -> bool:
-	if card.type != TileCard.TileCardType.PRODUCER:
+	if not TileCard.is_producer_type(card.type):
 		return false
 	for passive in get_passives(tile.map.get_segment_index(tile.coordinates)):
 		if passive.effect_type != SegmentPassive.EffectType.ADJACENCY_OUTPUT_MULT:
@@ -564,7 +564,7 @@ func _qualifies_resonant_array(tile: Hex, segment_index: int) -> bool:
 	if not _is_segment_fully_occupied(tile, segment_index):
 		return false
 	var product := TileCard.Product.NONE
-	for energy_or_other in tile.map.get_all_tile_cards_on_segment(segment_index, TileCard.TileCardType.PRODUCER):
+	for energy_or_other in tile.map.get_all_tile_cards_on_segment(segment_index, TileCard.PRODUCER_TYPE_FILTER):
 		if product == TileCard.Product.NONE:
 			product = energy_or_other.product
 		elif energy_or_other.product != product:

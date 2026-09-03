@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://cdr6jp1cayaal"]
+
+[ext_resource type="Texture2D" uid="uid://iaca3uhdlky2" path="res://assets/icons/placeholder.png" id="1_jjxmo"]
+[ext_resource type="Script" uid="uid://fqp1bledi1hh" path="res://resources/spot_cards/ingredients/core/unstable_concoction/unstable_concoction.gd" id="1_stady"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_upldr"]
+
+[resource]
+script = ExtResource("1_stady")
+rarity = 2
+id = "unstable_concoction"
+name = "Corkage"
+icon = ExtResource("1_jjxmo")
+description = "+8 Flavour or 12 Mult or 6 Gold (rework)"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

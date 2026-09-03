@@ -11,10 +11,27 @@ enum TileCardRarity {
 }
 
 enum TileCardType {
-	PRODUCER,
-	SUPPORT,
+	## Seated producers. Core (Product.SCORE) and Seasonings (Product.MULTIPLIER) share this type.
+	INGREDIENT,
+	KITCHENWARE,
 	UTILITY,
+	ECONOMY,
 }
+
+## Matches seated Ingredients and Economy cards when filtering the map by producer.
+const PRODUCER_TYPE_FILTER: Array[TileCardType] = [TileCardType.INGREDIENT, TileCardType.ECONOMY]
+
+
+static func is_producer_type(card_type: TileCardType) -> bool:
+	return card_type == TileCardType.INGREDIENT or card_type == TileCardType.ECONOMY
+
+
+static func matches_type_filter(card_type: TileCardType, filter_type: Variant) -> bool:
+	if filter_type == null:
+		return true
+	if filter_type is Array:
+		return card_type in filter_type
+	return card_type == filter_type
 
 enum Product {
 	GOLD,
@@ -60,20 +77,11 @@ enum BoardChipMode {
 }
 
 const EMPOWER_OUTPUT_SCALE := 2.0
-const ICON_SCORE := preload("res://assets/icons/resources/score.png")
-## Additive Energy pile. Distinct from ICON_SCORE, which is the Energy × Mult product.
-const ICON_ENERGY := preload("res://assets/icons/resources/energy.png")
-const ICON_GOLD := preload("res://assets/icons/resources/gold.png")
-const ICON_MULT := preload("res://assets/icons/resources/multiplier.png")
-const SIGIL_TEXTURES := {
-	SigilKind.ENERGY: preload("res://assets/icons/sigils/energy_sigil.png"),
-	SigilKind.MULT: preload("res://assets/icons/sigils/mult_sigil.png"),
-	SigilKind.GOLD: preload("res://assets/icons/sigils/gold_sigil.png"),
-	SigilKind.EMPOWER: preload("res://assets/icons/sigils/empower_sigil.png"),
-	SigilKind.RETRIGGER: preload("res://assets/icons/sigils/retrigger_sigil.png"),
-	SigilKind.SEGMENT_RELAY: preload("res://assets/icons/sigils/segment_relay_sigil.png"),
-	SigilKind.GROWTH: preload("res://assets/icons/sigils/growth_sigil.png"),
-}
+## Pile icons for floating text and producer output chips.
+const ICON_FLAVOUR := FeastStatIcons.FLAVOUR
+const ICON_ENERGY := FeastStatIcons.FLAVOUR
+const ICON_GOLD := FeastStatIcons.GOLD
+const ICON_MULT := FeastStatIcons.MULT
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -92,8 +100,8 @@ var personal_output_bonus: float = 0.0
 var run_trigger_count: int = 0
 # Empowered tile cards double their output once on trigger.
 var is_empowered: bool = false
-## Short-lived potion fuses sitting on this placed instance.
-var potion_fuses: Array[Dictionary] = []
+## Short-lived condiment fuses sitting on this placed instance.
+var condiment_fuses: Array[Dictionary] = []
 # Scales all tile card output during this activation (score, gold, generated multiplier resource).
 var _activation_output_scale: float = 1.0
 # Cards currently being replayed by Imprint or Mirror Copy. Prevents a nested copy from looping.
@@ -109,7 +117,7 @@ var _activation_was_empowered: bool = false
 @export var single_activation_per_turn: bool = false
 # When set, only matching tiles accept this tile card during placement.
 @export var placement_restriction: PlacementRestriction = PlacementRestriction.NONE
-# Support cards set this explicitly. Producers derive their sigil from product when NONE.
+# Kitchenware cards set this explicitly. Core and Seasoning cards derive sigil from product when NONE.
 @export var sigil_kind: SigilKind = SigilKind.NONE
 ## When true, this common score producer may appear in flat-score starter draws.
 @export var starting_hand_eligible: bool = false
@@ -147,7 +155,7 @@ func is_legal_for_layout(character: CharacterDefinition) -> bool:
 func get_sigil_kind() -> SigilKind:
 	if sigil_kind != SigilKind.NONE:
 		return sigil_kind
-	if type != TileCardType.PRODUCER:
+	if not is_producer_type(type):
 		return SigilKind.NONE
 	match product:
 		Product.SCORE:
@@ -161,10 +169,7 @@ func get_sigil_kind() -> SigilKind:
 
 
 func get_sigil_texture() -> Texture2D:
-	var kind := get_sigil_kind()
-	if kind == SigilKind.NONE:
-		return null
-	return SIGIL_TEXTURES.get(kind)
+	return FeastStatIcons.get_sigil_icon(get_sigil_kind())
 
 ## Switched to identical panel color as its easier to read.
 func get_chip_panel_color() -> Color:
@@ -173,15 +178,7 @@ func get_chip_panel_color() -> Color:
 
 
 func get_product_icon() -> Texture2D:
-	match product:
-		Product.SCORE:
-			return ICON_ENERGY
-		Product.GOLD:
-			return ICON_GOLD
-		Product.MULTIPLIER:
-			return ICON_MULT
-		_:
-			return null
+	return FeastStatIcons.get_pile_icon(product)
 
 
 func get_inspect_subtitle() -> String:
@@ -195,30 +192,12 @@ func get_inspect_subtitle() -> String:
 
 
 func _get_role_label() -> String:
-	match get_sigil_kind():
-		SigilKind.ENERGY:
-			return "Energy"
-		SigilKind.MULT:
-			return "Mult"
-		SigilKind.GOLD:
-			return "Gold"
-		SigilKind.EMPOWER:
-			return "Empower"
-		SigilKind.RETRIGGER:
-			return "Retrigger"
-		SigilKind.SEGMENT_RELAY:
-			return "Segment Relay"
-		SigilKind.GROWTH:
-			return "Growth"
-		_:
-			if product == Product.HYBRID:
-				return "Hybrid"
-			return ""
+	return FeastDisplay.get_sigil_role_label(get_sigil_kind(), product)
 
 
 # Default chip: producers show amount. Supports show their sigil in the same slot.
 func get_board_chip(_tile: Hex = null) -> Dictionary:
-	if type != TileCardType.PRODUCER:
+	if not is_producer_type(type):
 		return _sigil_board_chip()
 	if product == Product.HYBRID or product == Product.NONE:
 		return _hidden_board_chip()
@@ -357,7 +336,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 			MetaProgressionManager.add_one_tile_activation()
 			MetaProgressionManager.note_one_tile_same_card_triggers(run_trigger_count)
 	_try_segment_passive_retrigger(tile)
-	PotionManager.after_card_activated(tile, _activation_host_card(tile))
+	CondimentManager.after_card_activated(tile, _activation_host_card(tile))
 	_activation_output_scale = 1.0
 	_activation_was_empowered = false
 
@@ -432,9 +411,9 @@ func _try_queue_tile_card_triggers(
 		failed_tile_card_text(source_tile)
 		return false
 
-	if type == TileCardType.SUPPORT:
+	if type == TileCardType.KITCHENWARE:
 		for card in triggerable:
-			if card.type == TileCardType.PRODUCER:
+			if is_producer_type(card.type):
 				MetaProgressionManager.add_support_affected_producer()
 
 	queue_tile_card_triggers(source_tile, triggerable, aligned_scales)
@@ -517,7 +496,7 @@ func add_score(tile: Hex, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
 	tile.map.add_turn_score_for_tile(tile, points)
 	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_ENERGY)
-	PotionManager.relay_product_if_needed(tile, Product.SCORE, points)
+	CondimentManager.relay_product_if_needed(tile, Product.SCORE, points)
 
 func add_gold(tile: Hex, base_amount: Variant) -> void:
 	if not EventManager.can_gain_gold():
@@ -526,7 +505,7 @@ func add_gold(tile: Hex, base_amount: Variant) -> void:
 	amount += GameManager.passive_runtime.extra_gold_for_card(tile, self)
 	tile.map.add_turn_gold_for_tile(tile, amount)
 	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD)
-	PotionManager.relay_product_if_needed(tile, Product.GOLD, amount)
+	CondimentManager.relay_product_if_needed(tile, Product.GOLD, amount)
 
 func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
 	var amount := float(base_amount)
@@ -534,7 +513,7 @@ func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> voi
 		amount *= _activation_output_scale
 	tile.map.add_turn_multiplier_for_tile(tile, amount)
 	_create_floating_text(tile, "+%s" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
-	PotionManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
+	CondimentManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
 
 
 # Credits another segment's Energy. Float stays on this tile.
@@ -589,7 +568,7 @@ func _try_empower_tile_card(source_tile: Hex, target: TileCard) -> bool:
 	if not _is_triggerable_tile_card(source_tile, target) or target.is_empowered:
 		return false
 	target._empower()
-	if type == TileCardType.SUPPORT:
+	if type == TileCardType.KITCHENWARE:
 		MetaProgressionManager.add_support_affected_producer()
 	return true
 
@@ -644,7 +623,7 @@ func _get_all_placed_tile_cards(tile: Hex, filter_type: Variant = null) -> Array
 func _get_producer_count_by_product_type(tile: Hex, filter_product: Product) -> int:
 	var count := 0
 	for tile_card: TileCard in _get_all_placed_tile_cards(tile):
-		if tile_card.type != TileCardType.PRODUCER:
+		if not is_producer_type(tile_card.type):
 			continue
 		if tile_card.product != filter_product:
 			continue
@@ -653,12 +632,12 @@ func _get_producer_count_by_product_type(tile: Hex, filter_product: Product) -> 
 
 #region --- Adjacent tile card helpers ---
 ## Counts all adjacent tiles occupied by a tile card. Pass filter_type to filter by type.
-## filter_type: TileCardType (PRODUCER, SUPPORT, UTILITY)
+## filter_type: TileCardType, or TileCard.PRODUCER_TYPE_FILTER for any seated producer.
 func _count_all_occupied_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> int:
 	return tile.map.count_all_occupied_adjacent_tile_cards(tile.coordinates, filter_type)
 
 ## All tile cards on map-adjacent hexes around tile (unordered).
-## filter_type: TileCardType (PRODUCER, SUPPORT, UTILITY)
+## filter_type: TileCardType, or TileCard.PRODUCER_TYPE_FILTER for any seated producer.
 func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards(tile, filter_type)
 
@@ -678,7 +657,7 @@ func _get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) 
 ## Adjacent Following Energy producers.
 func _get_following_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
 	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_following_adjacent_tile_cards(tile, TileCardType.PRODUCER):
+	for tile_card: TileCard in _get_following_adjacent_tile_cards(tile, PRODUCER_TYPE_FILTER):
 		if tile_card.product != filter_product:
 			continue
 		result.append(tile_card)
@@ -749,10 +728,10 @@ func _is_last_producer_in_segment(tile: Hex) -> bool:
 ## Treats a hover-preview tile as if this producer were already sitting there.
 func _effective_producer_on_hex(hex: Hex, preview_tile: Hex) -> TileCard:
 	if hex.active_tile_card != null:
-		if hex.active_tile_card.type != TileCardType.PRODUCER:
+		if not is_producer_type(hex.active_tile_card.type):
 			return null
 		return hex.active_tile_card
-	if hex == preview_tile and type == TileCardType.PRODUCER:
+	if hex == preview_tile and is_producer_type(type):
 		return self
 	return null
 
@@ -760,7 +739,7 @@ func _effective_producer_on_hex(hex: Hex, preview_tile: Hex) -> TileCard:
 
 #region --- Trigger order helpers ---
 ## All adjacent tile cards sorted in the map's global trigger order.
-## filter_type: TileCardType (PRODUCER, SUPPORT, UTILITY)
+## filter_type: TileCardType, or TileCard.PRODUCER_TYPE_FILTER for any seated producer.
 func _get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards_in_trigger_order(tile, filter_type)
 
@@ -916,7 +895,7 @@ func _get_all_tile_cards_on_same_segment_by_product(tile: Hex, filter_product: P
 func _get_all_placed_producers_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
 	var result: Array[TileCard] = []
 	for tile_card: TileCard in _get_all_placed_tile_cards(tile):
-		if tile_card.type != TileCardType.PRODUCER:
+		if not is_producer_type(tile_card.type):
 			continue
 		if tile_card.product != filter_product:
 			continue
@@ -927,7 +906,7 @@ func _get_all_placed_producers_by_product(tile: Hex, filter_product: Product) ->
 ## Adjacent producer tile cards whose product matches filter_product.
 func _get_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
 	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_all_adjacent_tile_cards(tile, TileCardType.PRODUCER):
+	for tile_card: TileCard in _get_all_adjacent_tile_cards(tile, PRODUCER_TYPE_FILTER):
 		if tile_card.product != filter_product:
 			continue
 		result.append(tile_card)
@@ -964,7 +943,7 @@ func _count_other_segments_by_producer(tile: Hex, want_producer: bool) -> int:
 		if segment_index == self_index:
 			continue
 		var has_producer := not tile.map.get_all_tile_cards_on_segment(
-			segment_index, TileCardType.PRODUCER
+			segment_index, PRODUCER_TYPE_FILTER
 		).is_empty()
 		if has_producer == want_producer:
 			count += 1
@@ -979,7 +958,7 @@ func _coords_for_other_segments_matching_producer(tile: Hex, want_producer: bool
 		if segment_index == self_index:
 			continue
 		var has_producer := not tile.map.get_all_tile_cards_on_segment(
-			segment_index, TileCardType.PRODUCER
+			segment_index, PRODUCER_TYPE_FILTER
 		).is_empty()
 		if has_producer != want_producer:
 			continue
@@ -1090,7 +1069,7 @@ func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard, counts_as_
 	if broken_hex == null:
 		broken_hex = source_tile
 	if counts_as_break:
-		if PotionManager.try_prevent_break(tile_card):
+		if CondimentManager.try_prevent_break(tile_card):
 			_create_floating_text(source_tile, "Warded", Color(0.45, 0.88, 0.58, 1.0))
 			return
 		if GameManager.passive_runtime.try_prevent_break(source_tile, tile_card):

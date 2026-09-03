@@ -134,7 +134,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_passives_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_passives_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_passives_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_passives_hover")
-text = "SEGMENT PASSIVES"
+text = "COURSE PASSIVES"
 
 [node name="PassiveSetLabel" type="Label" parent="ProfileColumn" unique_id=1709617180]
 unique_name_in_owner = true
@@ -169,7 +169,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
 theme_override_font_sizes/font_size = 18
-text = "Cards activate from top-left to bottom-right across the map."
+text = "Cards fire from top-left to bottom-right across the map."
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -235,14 +235,14 @@ mouse_filter = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
-text = "Trigger Order"
+text = "Fire Order"
 
 [node name="Description" type="Label" parent="LegendColumn/LegendTriggerOrder/Row/Copy" unique_id=1924780569]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
-text = "The order in which the cards activate in"
+text = "The order in which cards fire each hour"
 autowrap_mode = 3
 
 [node name="LegendSegments" type="PanelContainer" parent="LegendColumn" unique_id=1830704522]
@@ -275,14 +275,14 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
-text = "7 Segments"
+text = "7 Courses"
 
 [node name="Description" type="Label" parent="LegendColumn/LegendSegments/Row/Copy" unique_id=337615501]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
-text = "Each segment consists of one or more tiles"
+text = "Each course consists of one or more spots"
 autowrap_mode = 3
 
 [node name="LegendSegmentStart" type="PanelContainer" parent="LegendColumn" unique_id=180812953]
@@ -314,14 +314,14 @@ mouse_filter = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
-text = "Segment Start"
+text = "Course Start"
 
 [node name="Description" type="Label" parent="LegendColumn/LegendSegmentStart/Row/Copy" unique_id=1246581272]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
-text = "First tile in a segment"
+text = "First spot in a course"
 autowrap_mode = 3
 
 [node name="LegendSegmentEnd" type="PanelContainer" parent="LegendColumn" unique_id=991141475]
@@ -353,14 +353,14 @@ mouse_filter = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.25, 0.18, 1)
 theme_override_font_sizes/font_size = 19
-text = "Segment End"
+text = "Course End"
 
 [node name="Description" type="Label" parent="LegendColumn/LegendSegmentEnd/Row/Copy" unique_id=558677291]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.21, 1)
 theme_override_font_sizes/font_size = 15
-text = "Last tile in a segment"
+text = "Last spot in a course"
 autowrap_mode = 3
 
 [connection signal="pressed" from="ProfileColumn/SegmentPassivesButton" to="." method="_on_segment_passives_button_pressed"]

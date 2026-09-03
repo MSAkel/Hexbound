@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://vcdiatuy4rk0"]
+
+[ext_resource type="Texture2D" uid="uid://c2kht4x8tq4ch" path="res://assets/icons/food/ingredients/carrot.png" id="1_c3voh"]
+[ext_resource type="Script" uid="uid://bgswu8hoi4irt" path="res://resources/spot_cards/ingredients/core/carrot/carrot.gd" id="2_vdmxa"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_ken06"]
+
+[resource]
+script = ExtResource("2_vdmxa")
+base_production_amount = 5
+product = 1
+starting_hand_eligible = true
+id = "carrot"
+name = "Carrot"
+icon = ExtResource("1_c3voh")
+description = "+5 Flavour. Every 2nd fire: permanently +5 Flavour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

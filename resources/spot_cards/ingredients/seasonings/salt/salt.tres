@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://1yngk6bgvs8i"]
+
+[ext_resource type="Texture2D" uid="uid://b6mir3nxl7wph" path="res://assets/icons/food/seasonings/salt.png" id="1_boeif"]
+[ext_resource type="Script" uid="uid://xas6lx7nsi1d" path="res://resources/spot_cards/ingredients/seasonings/salt/salt.gd" id="2_xbp6g"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_wy22f"]
+
+[resource]
+script = ExtResource("2_xbp6g")
+base_production_amount = 2
+product = 2
+id = "salt"
+name = "Salt"
+icon = ExtResource("1_boeif")
+description = "+2 Mult"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

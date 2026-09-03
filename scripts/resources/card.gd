@@ -26,12 +26,12 @@ func play_on(_hex: Hex, _animate: bool = true) -> void:
 	pass
 
 
-# Short type strip for CardUI, such as PRODUCER or SUPPORT.
+# Short type strip for CardUI, such as Food or Kitchenware.
 func get_card_kind_label() -> String:
 	return ""
 
 
-# Save key written into hand snapshots. Older saves may still use "rune".
+# Save key written into hand snapshots.
 func get_save_kind() -> String:
 	return ""
 

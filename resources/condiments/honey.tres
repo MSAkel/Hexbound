@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://wsjjj4opd0xw"]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dk2w84ndx745d" path="res://assets/icons/condiments/honey.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "borrowed_time"
+display_name = "Extra Covers"
+description = "+1 hour this day"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.35, 0.78, 0.92, 1)
+base_price = 8
+effect_type = 1

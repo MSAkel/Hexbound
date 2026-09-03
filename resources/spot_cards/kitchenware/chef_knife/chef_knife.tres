@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://bms421c4eq14w"]
+
+[ext_resource type="Texture2D" uid="uid://6h44uxn1am81" path="res://assets/icons/kitchenware/chef_knife.png" id="1_y32ft"]
+[ext_resource type="Script" uid="uid://6h1bxcx3tjm8" path="res://resources/spot_cards/kitchenware/chef_knife/chef_knife.gd" id="2_nd2af"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_jdp8c"]
+
+[resource]
+script = ExtResource("2_nd2af")
+type = 1
+sigil_kind = 5
+id = "chef_knife"
+name = "Chef Knife"
+icon = ExtResource("1_y32ft")
+description = "Fires the Following 3 Ingredients, generated value  reduced by 20% per jump"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

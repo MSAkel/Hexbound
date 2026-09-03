@@ -33,7 +33,7 @@ func _get_lowest_later_score_producer(tile: Hex) -> TileCard:
 		var card := hex.active_tile_card
 		if card == null:
 			continue
-		if card.type != TileCardType.PRODUCER:
+		if not TileCard.is_producer_type(card.type):
 			continue
 		if card.product != Product.SCORE:
 			continue

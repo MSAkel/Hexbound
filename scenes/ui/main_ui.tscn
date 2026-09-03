@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/RunInfoDisplay/RunInfoDisplay.tscn" id="2_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/tile_panel.tscn" id="2_l8t6x"]
-[ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/rune_selection_ui.tscn" id="6_aa6wj"]
+[ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/ui/runes/card_selection_ui.tscn" id="6_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://br3dhulnhrxyl" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="7_oxwcw"]
 [ext_resource type="PackedScene" uid="uid://cylk7h6n211gc" path="res://scenes/ui/game_over_screen/game_over_screen.tscn" id="9_b65ll"]
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="10_b65ll"]
@@ -16,9 +16,9 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
 [ext_resource type="PackedScene" uid="uid://casabnpm08k0k" path="res://scenes/ui/tutorial/tutorial_text_container.tscn" id="17_tutorial"]
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
-[ext_resource type="PackedScene" path="res://scenes/ui/potions/potion_belt.tscn" id="19_potion_belt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_belt.tscn" id="19_condiment_belt"]
 [ext_resource type="PackedScene" uid="uid://cm7k781kw6ho" path="res://scenes/ui/turn_resolve_skip_overlay.tscn" id="20_skip_overlay"]
-[ext_resource type="PackedScene" path="res://scenes/ui/potions/potion_edge_glow.tscn" id="21_potion_glow"]
+[ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_edge_glow.tscn" id="21_condiment_glow"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -37,7 +37,7 @@ offset_top = 0.0
 offset_right = 0.0
 rotation = 0.0016232448
 
-[node name="PotionBelt" parent="." unique_id=955320291 instance=ExtResource("19_potion_belt")]
+[node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
 
 [node name="RuneSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
@@ -72,7 +72,7 @@ z_index = 90
 [node name="RoundCompleteScreen" parent="." unique_id=142012728 instance=ExtResource("13_m82f4")]
 visible = false
 
-[node name="PotionEdgeGlow" parent="." unique_id=449245889 instance=ExtResource("21_potion_glow")]
+[node name="CondimentEdgeGlow" parent="." unique_id=449245889 instance=ExtResource("21_condiment_glow")]
 
 [node name="TurnResolveSkipOverlay" parent="." unique_id=180410833 instance=ExtResource("20_skip_overlay")]
 

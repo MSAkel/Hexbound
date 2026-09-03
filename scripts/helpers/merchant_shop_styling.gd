@@ -1,7 +1,7 @@
 class_name MerchantShopStyling
 extends RefCounted
 
-## Shared merchant shelf price chip look for cards and potions.
+## Shared merchant shelf price chip look for cards and condiments.
 
 const PRICE_CHIP_BG := Color("E8D9B0")
 const PRICE_CHIP_BORDER := Color("C9AB6B")

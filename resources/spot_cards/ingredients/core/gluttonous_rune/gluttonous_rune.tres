@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://dia2wi5j18o8g"]
+
+[ext_resource type="Texture2D" uid="uid://bpg7ltsn778y8" path="res://assets/icons/placeholder.png" id="1_mi1r8"]
+[ext_resource type="Script" uid="uid://bn2e4r844r0fo" path="res://resources/spot_cards/ingredients/core/gluttonous_rune/gluttonous_rune.gd" id="2_41old"]
+
+
+[resource]
+script = ExtResource("2_41old")
+base_production_amount = 30
+rarity = 2
+product = 1
+id = "gluttonous_rune"
+name = "Whole Hog"
+icon = ExtResource("1_mi1r8")
+description = "+30 Flavour. Consume the Following card to permanently double this card's Flavour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

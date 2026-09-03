@@ -5,9 +5,8 @@ extends Node
 
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://run_save.json"
-## New fields are optional. Older v3 files still load and get repaired on restore.
-const SAVE_VERSION := 3
-const MIN_SUPPORTED_SAVE_VERSION := 3
+const SAVE_VERSION := 4
+const MIN_SUPPORTED_SAVE_VERSION := 4
 const HAND_GROUP := "run_hand"
 const MERCHANT_GROUP := "run_merchant"
 const RUNE_SELECTION_GROUP := "run_rune_selection"
@@ -15,7 +14,7 @@ const GAME_OVER_GROUP := "run_game_over"
 
 # Set before loading main.tscn from the main menu Continue button.
 var continue_run_pending := false
-## One-shot request set before entering a scene that supports the rune reveal transition.
+## One-shot request set before entering a scene that supports the Feast loading splash.
 var scene_enter_transition_pending := false
 var _pending_run_seed: String = ""
 var _has_pending_run_seed := false
@@ -156,7 +155,7 @@ func save_current_run() -> void:
 		"game_manager": GameManager.capture_run_state(),
 		"gold": GoldManager.capture_run_state(),
 		"rerolls": RerollManager.capture_run_state(),
-		"potions": PotionManager.capture_run_state(),
+		"condiments": CondimentManager.capture_run_state(),
 		"events": EventManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
 		"run_rng": RunRng.capture_run_state(),
@@ -208,8 +207,9 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	RoundFlow.apply_run_state(payload.get("round_flow", {}))
 	RunRng.apply_run_state(payload.get("run_rng", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
-	PotionManager.apply_run_state(payload.get("potions", {}))
+	CondimentManager.apply_run_state(payload.get("condiments", {}))
 	hand.restore_hand_state(payload.get("hand", {}))
+	_warn_if_save_hand_is_incomplete(hand, payload)
 	_apply_offer_ui_state(payload)
 	EventManager.refresh_event_visuals()
 	EventManager.restore_banner_after_load()
@@ -260,7 +260,7 @@ func _is_checkpoint_stable(hand: Hand, tile_map: HexTileMap) -> bool:
 		return false
 	if tile_map.is_card_placement_in_progress():
 		return false
-	if PotionManager.is_mid_use():
+	if CondimentManager.is_mid_use():
 		return false
 	return true
 
@@ -362,3 +362,24 @@ func _notify_ui_restored() -> void:
 	EventBus.required_score_changed.emit()
 	EventBus.event_schedule_changed.emit()
 	EventBus.event_changed.emit()
+
+
+func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:
+	var hand_state: Dictionary = payload.get("hand", {})
+	var saved_count: int = hand_state.get("cards", []).size()
+	var difficulty := int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
+	var expected := PlayerCharacter.get_expected_opening_hand_size(difficulty)
+	var map_state: Dictionary = payload.get("map", {})
+	var placed_count: int = map_state.get("placed_spot_cards", []).size()
+	var round_num := int(payload.get("game_manager", {}).get("current_round", 1))
+	if round_num > 1 or placed_count > 0:
+		return
+	if hand.get_hand_card_count() >= expected:
+		return
+	push_warning(
+		"Loaded run has %d/%d hand cards and an empty board. "
+		% [hand.get_hand_card_count(), expected]
+		+ "This save was written while the opening deal was broken. Start a new run or delete user://run_save.json."
+	)
+	if saved_count < expected:
+		push_warning("Save file recorded %d hand cards before restore." % saved_count)

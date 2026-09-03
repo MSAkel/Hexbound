@@ -265,10 +265,10 @@ func _refresh_segment_panel() -> void:
 		child.queue_free()
 
 	if _character == null or _selected_segment_index < 0:
-		segment_title.text = "SELECT A SEGMENT"
-		slots_label.text = "Click a tile on the map"
+		segment_title.text = "SELECT A COURSE"
+		slots_label.text = "Click a spot on the pass"
 		reset_segment_button.disabled = true
-		placed_list.add_child(_make_label("No segment selected.", 15, COLOR_MUTED, true))
+		placed_list.add_child(_make_label("No course selected.", 15, COLOR_MUTED, true))
 		if _map_view != null:
 			_map_view.refresh_placements()
 		return
@@ -285,8 +285,8 @@ func _refresh_segment_panel() -> void:
 			placed_passives.append(passive)
 
 	var capacity := _get_segment_capacity(_selected_segment_index)
-	segment_title.text = "SEGMENT %d" % (_selected_segment_index + 1)
-	slots_label.text = "%d tiles" % capacity
+	segment_title.text = "COURSE %d" % (_selected_segment_index + 1)
+	slots_label.text = "%d spots" % capacity
 	reset_segment_button.disabled = placed_passives.is_empty()
 
 	if placed_passives.is_empty():
@@ -297,7 +297,7 @@ func _refresh_segment_panel() -> void:
 
 	var effect_lines := _build_effect_lines(placed_passives)
 	if effect_lines.is_empty():
-		effects_list.add_child(_make_label("No effects on this segment.", 15, COLOR_MUTED, true))
+		effects_list.add_child(_make_label("No effects on this course.", 15, COLOR_MUTED, true))
 	else:
 		for line: String in effect_lines:
 			effects_list.add_child(_make_label(line, 15, COLOR_BODY, true))
@@ -324,7 +324,7 @@ func _build_placed_row(passive: SegmentPassive, list_index: int) -> HBoxContaine
 	row.add_child(name_label)
 
 	var tile_count := maxi(1, passive.tile_cost)
-	var cost_label := _make_label("%d tile%s" % [tile_count, "" if tile_count == 1 else "s"], 13, COLOR_MUTED)
+	var cost_label := _make_label("%d spot%s" % [tile_count, "" if tile_count == 1 else "s"], 13, COLOR_MUTED)
 	cost_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(cost_label)
 

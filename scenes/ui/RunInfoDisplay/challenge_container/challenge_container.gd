@@ -21,8 +21,8 @@ func _ready() -> void:
 	_update_event_preview()
 
 
-func _update_event_preview(_new_round: int = -1) -> void:
-	# Keep showing the active event name until its round completes.
+func _update_event_preview(_new_day: int = -1) -> void:
+	# Keep showing the active event name until its day completes.
 	if EventManager.active_event != -1:
 		event_name.text = EventManager.get_event_name(EventManager.active_event)
 		event_icon.modulate = ACTIVE_ICON_MODULATE
@@ -30,15 +30,15 @@ func _update_event_preview(_new_round: int = -1) -> void:
 
 	event_icon.modulate = IDLE_ICON_MODULATE
 
-	var next_round: int = EventManager.get_next_event_round()
-	if next_round == -1:
+	var next_day: int = EventManager.get_next_event_round()
+	if next_day == -1:
 		next_event_round.text = "None"
 		event_name.text = ""
 		event_description.text = ""
 		return
 
 	var next_event := EventManager.get_next_event_type()
-	next_event_round.text = "Round %s" % next_round
+	next_event_round.text = "Day %s" % next_day
 	if next_event == -1:
 		event_name.text = ""
 		event_description.text = ""
@@ -51,10 +51,10 @@ func _get_tooltip_text() -> String:
 	if EventManager.active_event != -1:
 		var active_name := EventManager.get_event_name(EventManager.active_event)
 		var active_description := EventManager.get_event_description(EventManager.active_event)
-		return "Active Event\nRound %d — %s\n%s" % [GameManager.current_round, active_name, active_description]
+		return "Active Event\nDay %d — %s\n%s" % [GameManager.current_round, active_name, active_description]
 
-	var next_round: int = EventManager.get_next_event_round()
-	if next_round == -1:
+	var next_day: int = EventManager.get_next_event_round()
+	if next_day == -1:
 		return ""
 
 	var next_event := EventManager.get_next_event_type()
@@ -63,7 +63,7 @@ func _get_tooltip_text() -> String:
 
 	var next_name := EventManager.get_event_name(next_event)
 	var description := EventManager.get_event_description(next_event)
-	return "Round %d — %s\n%s" % [next_round, next_name, description]
+	return "Day %d — %s\n%s" % [next_day, next_name, description]
 
 
 func _get_tooltip_rect() -> Rect2:

@@ -141,10 +141,10 @@ func _ready() -> void:
 	if selected_character == null:
 		selected_character = PlayerCharacter.get_default_character()
 
-	_load_tile_cards_from_directory("res://resources/tile_cards/")
+	_load_tile_cards_from_directory("res://resources/spot_cards/")
 
 	if tile_cards_pool.is_empty():
-		push_error("No tile cards loaded into pool")
+		push_error("No tile cards loaded into pool from res://resources/spot_cards/")
 
 	_sort_tile_cards_pool()
 
@@ -162,7 +162,7 @@ func end_turn() -> void:
 func finish_turn_processing() -> void:
 	# A turn is only consumed when it failed to reach the round goal.
 	var should_consume_turn := remaining_turns > 0 and total_round_score + turn_score < required_score
-	PotionManager.on_turn_resolved()
+	CondimentManager.on_turn_resolved()
 
 	var committed_turn_score := turn_score
 	var round_score_before := total_round_score
@@ -295,18 +295,18 @@ func register_tile_card_activation(rune: TileCard) -> void:
 	_run_peak_triggers_single_turn = maxi(_run_peak_triggers_single_turn, _current_turn_trigger_count)
 	if not RunRng.is_unlock_progress_disabled():
 		MetaProgressionManager.add_lifetime_triggers(1)
-		if rune.type == TileCard.TileCardType.PRODUCER:
+		if TileCard.is_producer_type(rune.type):
 			MetaProgressionManager.add_producer_trigger()
 			if rune.product == TileCard.Product.SCORE:
 				MetaProgressionManager.note_energy_card_triggers(rune.run_trigger_count)
 			elif rune.product == TileCard.Product.MULTIPLIER:
 				MetaProgressionManager.note_mult_card_triggers(rune.run_trigger_count)
-		elif rune.type == TileCard.TileCardType.SUPPORT:
+		elif rune.type == TileCard.TileCardType.KITCHENWARE:
 			MetaProgressionManager.add_support_trigger()
 		if _activated_tile_cards_this_turn.count(rune) >= 2:
-			if rune.type == TileCard.TileCardType.PRODUCER:
+			if TileCard.is_producer_type(rune.type):
 				MetaProgressionManager.add_producer_retrigger()
-			elif rune.type == TileCard.TileCardType.SUPPORT:
+			elif rune.type == TileCard.TileCardType.KITCHENWARE:
 				MetaProgressionManager.add_support_retrigger()
 
 ## Read rune activation to check if it has already fired this turn.
@@ -439,8 +439,8 @@ func create_pauseable_timer(duration: float) -> SceneTreeTimer:
 
 #region tile card pool loading
 
-## Recursively load every .tres rune under the runes folder, skipping duplicate ids.
-## ResourceLoader.list_directory works in exported builds, DirAccess only sees .gd files in PCK.
+## Recursively load every .tres TileCard under resources/spot_cards, skipping duplicate ids.
+## ResourceLoader.list_directory works in exported builds. DirAccess only sees .gd files in PCK.
 func _load_tile_cards_from_directory(dir_path: String) -> void:
 	var normalized_path := dir_path
 	if not normalized_path.ends_with("/"):
@@ -504,7 +504,7 @@ func reset_for_new_run() -> void:
 	# Peak tracking clears the loadout. Re-apply the selected character's passives for this run.
 	if selected_character != null:
 		apply_active_segment_passives(selected_character.id)
-	PotionManager.reset_for_new_run()
+	CondimentManager.reset_for_new_run()
 
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.
@@ -576,10 +576,10 @@ func apply_run_state(state: Dictionary) -> void:
 		apply_active_segment_passives(selected_character.id)
 
 
-func get_tile_card_by_id(rune_id: String) -> TileCard:
-	for rune in tile_cards_pool:
-		if rune.id == rune_id:
-			return rune
+func get_tile_card_by_id(card_id: String) -> TileCard:
+	for tile_card in tile_cards_pool:
+		if tile_card.id == card_id:
+			return tile_card
 	return null
 
 

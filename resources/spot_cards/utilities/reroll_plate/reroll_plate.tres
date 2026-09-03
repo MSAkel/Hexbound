@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://h43clqga0w3q"]
+
+[ext_resource type="Texture2D" uid="uid://b46xceb6tq2ti" path="res://assets/icons/utility/reroll_plate.png" id="1_knf8l"]
+[ext_resource type="Script" uid="uid://hqe4urjxmwvh" path="res://resources/spot_cards/utilities/reroll_plate/reroll_plate.gd" id="2_c1ud5"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_6skao"]
+
+[resource]
+script = ExtResource("2_c1ud5")
+type = 2
+id = "reroll_plate"
+name = "Reroll Plate"
+icon = ExtResource("1_knf8l")
+description = "Transform seated card into random same-rarity card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -38,7 +38,7 @@ func _rebuild_map_view() -> void:
 	_teardown_map()
 	var character := GameManager.selected_character
 	if character == null:
-		subtitle_label.text = "NO CHARACTER SELECTED"
+		subtitle_label.text = "No Layout Selected"
 		return
 
 	var set_id := MetaProgressionManager.get_selected_set_id(character.id)

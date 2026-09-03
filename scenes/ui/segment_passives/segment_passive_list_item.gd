@@ -162,7 +162,7 @@ func _fill_locked_progress(passive: SegmentPassive) -> void:
 ## Tile pips mirror how many segment slots this passive will occupy.
 func _fill_cost_column(passive: SegmentPassive) -> void:
 	var tile_count := maxi(1, passive.tile_cost)
-	_tile_count_label.text = "%d TILE%s" % [tile_count, "" if tile_count == 1 else "S"]
+	_tile_count_label.text = "%d SPOT%s" % [tile_count, "" if tile_count == 1 else "S"]
 	for index in _pips.get_child_count():
 		_pips.get_child(index).visible = index < tile_count
 

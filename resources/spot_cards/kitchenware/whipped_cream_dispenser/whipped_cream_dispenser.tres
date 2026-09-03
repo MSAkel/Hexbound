@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://dpu8gj3ofb5dy"]
+
+[ext_resource type="Texture2D" uid="uid://b3dp8pu02kqy3" path="res://assets/icons/kitchenware/whipped_cream_dispenser.png" id="1_t45ve"]
+[ext_resource type="Script" uid="uid://fv5rajp1y0mq" path="res://resources/spot_cards/kitchenware/whipped_cream_dispenser/whipped_cream_dispenser.gd" id="2_k0o0a"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_njxw0"]
+
+[resource]
+script = ExtResource("2_k0o0a")
+rarity = 2
+type = 1
+sigil_kind = 5
+id = "whipped_cream_dispenser"
+name = "Whipped Cream Dispenser"
+icon = ExtResource("1_t45ve")
+description = "Fire adjacent Following Ingredients. 10% chance this card spoils per adjacent Following Ingredient"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

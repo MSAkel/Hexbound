@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://diyhv66o78jip"]
 
-[ext_resource type="Script" path="res://scenes/ui/pause_menu/layout_passives_viewer.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://vmcwa06d6cuh" path="res://scenes/ui/pause_menu/layout_passives_viewer.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="2_back"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
 
@@ -24,7 +24,7 @@ corner_radius_bottom_left = 12
 shadow_color = Color(0.015, 0.025, 0.023, 0.35)
 shadow_size = 8
 
-[node name="LayoutPassivesViewer" type="Control"]
+[node name="LayoutPassivesViewer" type="Control" unique_id=1232711788]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -34,7 +34,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="SafeArea" type="MarginContainer" parent="."]
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=1351113855]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,16 +46,16 @@ theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 40
 theme_override_constants/margin_bottom = 28
 
-[node name="Page" type="VBoxContainer" parent="SafeArea"]
+[node name="Page" type="VBoxContainer" parent="SafeArea" unique_id=863062158]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Header" type="HBoxContainer" parent="SafeArea/Page"]
+[node name="Header" type="HBoxContainer" parent="SafeArea/Page" unique_id=520665950]
 z_index = 1
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 
-[node name="BackButton" type="Button" parent="SafeArea/Page/Header"]
+[node name="BackButton" type="Button" parent="SafeArea/Page/Header" unique_id=1059350113]
 unique_name_in_owner = true
 z_index = 1
 custom_minimum_size = Vector2(160, 52)
@@ -73,14 +73,14 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_back")
 text = "BACK"
 icon = ExtResource("2_back")
 
-[node name="TitleColumn" type="VBoxContainer" parent="SafeArea/Page/Header"]
+[node name="TitleColumn" type="VBoxContainer" parent="SafeArea/Page/Header" unique_id=1126069487]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 mouse_filter = 2
 theme_override_constants/separation = 2
 
-[node name="PageTitle" type="Label" parent="SafeArea/Page/Header/TitleColumn"]
+[node name="PageTitle" type="Label" parent="SafeArea/Page/Header/TitleColumn" unique_id=1539999551]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.86, 0.69, 1)
 theme_override_colors/font_outline_color = Color(0.025, 0.035, 0.032, 0.9)
@@ -89,7 +89,7 @@ theme_override_font_sizes/font_size = 40
 text = "LAYOUT PASSIVES"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="SafeArea/Page/Header/TitleColumn"]
+[node name="SubtitleLabel" type="Label" parent="SafeArea/Page/Header/TitleColumn" unique_id=467511298]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.71, 0.57, 1)
@@ -99,30 +99,30 @@ theme_override_font_sizes/font_size = 18
 text = "HOVER A TILE TO INSPECT"
 horizontal_alignment = 1
 
-[node name="HeaderBalance" type="Control" parent="SafeArea/Page/Header"]
+[node name="HeaderBalance" type="Control" parent="SafeArea/Page/Header" unique_id=549598505]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MapCluster" type="CenterContainer" parent="SafeArea/Page"]
+[node name="MapCluster" type="CenterContainer" parent="SafeArea/Page" unique_id=905716298]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Body" type="PanelContainer" parent="SafeArea/Page/MapCluster"]
+[node name="Body" type="PanelContainer" parent="SafeArea/Page/MapCluster" unique_id=325683092]
 custom_minimum_size = Vector2(520, 560)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_unified_panel")
 
-[node name="MapHost" type="Control" parent="SafeArea/Page/MapCluster/Body"]
+[node name="MapHost" type="Control" parent="SafeArea/Page/MapCluster/Body" unique_id=2084068669]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(488, 528)
 clip_contents = true
 layout_mode = 2
 
-[node name="Tooltip" parent="." instance=ExtResource("3_tooltip")]
+[node name="Tooltip" parent="." unique_id=1545156453 instance=ExtResource("3_tooltip")]
 visible = false
 z_index = 100
 layout_mode = 0

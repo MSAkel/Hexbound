@@ -177,10 +177,12 @@ func _dump_retrigger_storm() -> void:
 
 func _card_type_label(card: TileCard) -> String:
 	match card.type:
-		TileCard.TileCardType.PRODUCER:
-			return "producer"
-		TileCard.TileCardType.SUPPORT:
-			return "support"
+		TileCard.TileCardType.INGREDIENT:
+			return "ingredients"
+		TileCard.TileCardType.ECONOMY:
+			return "economy"
+		TileCard.TileCardType.KITCHENWARE:
+			return "kitchenware"
 		TileCard.TileCardType.UTILITY:
 			return "utility"
 		_:
@@ -258,7 +260,7 @@ func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
 
 
 func _wait_for_activation_animation() -> void:
-	await _wait_pace(RuneUI.activation_animation_duration())
+	await _wait_pace(CardIconUI.activation_animation_duration())
 
 
 func _wait_between_tile_activations() -> void:
@@ -316,7 +318,7 @@ func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	EventBus.segment_reveal_started.emit(segment_index)
 
 	if contribution > 0:
-		AudioManager.play_sfx(UISounds.SEGMENT_RESULT)
+		AudioManager.play_sfx(UISounds.COURSE_RESULT)
 		map._emit_segment_turn_results_changed(segment_index, true)
 		EventBus.segment_score_revealed.emit(segment_index, contribution)
 		await _wait_for_segment_score_count_finished(segment_index)

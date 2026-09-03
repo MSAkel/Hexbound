@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://di0jbf4swcn62"]
 
 [ext_resource type="Script" uid="uid://s0i54rdptfrm" path="res://scenes/ui/round_complete_screen/round_complete_screen.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="2_gold"]
-[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/resources/merchant_token.png" id="3_token"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="2_gold"]
+[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/stats/merchant_token.png" id="3_token"]
 
 [sub_resource type="StyleBoxFlat" id="Overlay"]
 bg_color = Color(0.025840001, 0.050708726, 0.03876, 0.17500001)
@@ -118,7 +118,7 @@ theme_override_styles/panel = SubResource("Card")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="RoundCompleteLabel" type="Label" parent="PanelContainer/Control" unique_id=937633895]
+[node name="DayCompleteLabel" type="Label" parent="PanelContainer/Control" unique_id=937633895]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -132,7 +132,7 @@ theme_override_colors/font_shadow_color = Color(1, 0.96, 0.82, 0.42)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 38
-text = "Round Complete"
+text = "Day Complete"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -161,7 +161,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
 theme_override_font_sizes/font_size = 32
-text = "Total Score"
+text = "Total Rating"
 vertical_alignment = 1
 
 [node name="RoundScore" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/ScoreContainer" unique_id=759433246]
@@ -237,7 +237,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
 theme_override_font_sizes/font_size = 22
-text = "Round completion"
+text = "Day completion"
 vertical_alignment = 1
 
 [node name="BaseGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow" unique_id=1998184864]

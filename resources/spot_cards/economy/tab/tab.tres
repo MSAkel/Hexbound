@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://deg6qje1rx37t"]
+
+[ext_resource type="Texture2D" uid="uid://ofyssvbjhkfw" path="res://assets/icons/placeholder.png" id="1_gxhe2"]
+[ext_resource type="Script" uid="uid://dq3w854rkj4v6" path="res://resources/spot_cards/economy/tab/tab.gd" id="2_myd23"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_jk4lg"]
+
+[resource]
+script = ExtResource("2_myd23")
+base_production_amount = 8
+type = 3
+product = 1
+id = "tab"
+name = "Tab"
+icon = ExtResource("1_gxhe2")
+description = "+8 Flavour, +4 Flavour per Gold produced earlier in this course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

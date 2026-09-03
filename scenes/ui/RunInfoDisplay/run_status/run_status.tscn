@@ -2,34 +2,31 @@
 
 [ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="1_i0xcj"]
 [ext_resource type="Script" uid="uid://5y8yi6vfkggb" path="res://scenes/ui/RunInfoDisplay/run_status/run_status.gd" id="2_i0xcj"]
-[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/resources/gold.png" id="3_i0xcj"]
+[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="3_i0xcj"]
 [ext_resource type="Texture2D" uid="uid://dxs2x8gfd2y0a" path="res://assets/gui/dividers/v_divider.png" id="3_y7j43"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r6dd1"]
 content_margin_left = 16.0
 content_margin_top = 8.0
 content_margin_right = 16.0
-content_margin_bottom = 16.0
+content_margin_bottom = 8.0
 texture = ExtResource("1_i0xcj")
 
 [sub_resource type="FontVariation" id="FontVariation_i0xcj"]
 
 [node name="RunStatus" type="PanelContainer" unique_id=2029786034]
-custom_minimum_size = Vector2(430, 0)
-offset_right = 86.0
-offset_bottom = 49.0
-size_flags_horizontal = 0
+offset_right = 326.0
+offset_bottom = 61.0
+size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxTexture_r6dd1")
 script = ExtResource("2_i0xcj")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2086649025]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1551532218]
 layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1551532218]
-layout_mode = 2
+size_flags_vertical = 0
 theme_override_constants/separation = 12
 
-[node name="RoundLabel" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=235269414]
+[node name="RoundLabel" type="Label" parent="HBoxContainer" unique_id=235269414]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
@@ -38,21 +35,21 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = SubResource("FontVariation_i0xcj")
 theme_override_font_sizes/font_size = 21
-text = "Round 1"
+text = "Day 1"
 
-[node name="VDivider" type="TextureRect" parent="VBoxContainer/HBoxContainer" unique_id=1767232975]
-custom_minimum_size = Vector2(2, 50)
-custom_maximum_size = Vector2(35, 50)
+[node name="VDivider" type="TextureRect" parent="HBoxContainer" unique_id=1767232975]
+custom_minimum_size = Vector2(2, 45)
+custom_maximum_size = Vector2(35, 45)
 layout_mode = 2
 size_flags_horizontal = 0
 texture = ExtResource("3_y7j43")
 expand_mode = 1
 
-[node name="TurnsContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=1813027528]
+[node name="TurnsContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1813027528]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TurnCounterLabel" type="Label" parent="VBoxContainer/HBoxContainer/TurnsContainer" unique_id=879926520 groups=["main_ui"]]
+[node name="TurnCounterLabel" type="Label" parent="HBoxContainer/TurnsContainer" unique_id=879926520 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
@@ -61,27 +58,27 @@ theme_override_font_sizes/font_size = 21
 text = "5"
 horizontal_alignment = 1
 
-[node name="TurnsLeft" type="Label" parent="VBoxContainer/HBoxContainer/TurnsContainer" unique_id=1040083914 groups=["main_ui"]]
+[node name="TurnsLeft" type="Label" parent="HBoxContainer/TurnsContainer" unique_id=1040083914 groups=["main_ui"]]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
-text = "Turns Left"
+text = "Hours Left"
 horizontal_alignment = 1
 
-[node name="VDivider2" type="TextureRect" parent="VBoxContainer/HBoxContainer" unique_id=2112698102]
-custom_minimum_size = Vector2(2, 50)
-custom_maximum_size = Vector2(35, 50)
+[node name="VDivider2" type="TextureRect" parent="HBoxContainer" unique_id=2112698102]
+custom_minimum_size = Vector2(2, 45)
+custom_maximum_size = Vector2(35, 45)
 layout_mode = 2
 texture = ExtResource("3_y7j43")
 expand_mode = 1
 
-[node name="GoldRow" type="HBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=1167455899]
+[node name="GoldRow" type="HBoxContainer" parent="HBoxContainer" unique_id=1167455899]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="GoldIcon" type="TextureRect" parent="VBoxContainer/HBoxContainer/GoldRow" unique_id=1517760293]
+[node name="GoldIcon" type="TextureRect" parent="HBoxContainer/GoldRow" unique_id=1517760293]
 texture_filter = 1
 custom_minimum_size = Vector2(45, 45)
 custom_maximum_size = Vector2(45, 45)
@@ -89,7 +86,7 @@ layout_mode = 2
 texture = ExtResource("3_i0xcj")
 expand_mode = 1
 
-[node name="GoldAmountLabel" type="Label" parent="VBoxContainer/HBoxContainer/GoldRow" unique_id=1712442370]
+[node name="GoldAmountLabel" type="Label" parent="HBoxContainer/GoldRow" unique_id=1712442370]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
 theme_override_constants/shadow_offset_x = 1
@@ -98,26 +95,26 @@ theme_override_fonts/font = SubResource("FontVariation_i0xcj")
 theme_override_font_sizes/font_size = 24
 text = "10"
 
-[node name="VDivider3" type="TextureRect" parent="VBoxContainer/HBoxContainer" unique_id=612236307]
+[node name="VDivider3" type="TextureRect" parent="HBoxContainer" unique_id=612236307]
 visible = false
-custom_minimum_size = Vector2(2, 50)
-custom_maximum_size = Vector2(35, 50)
+custom_minimum_size = Vector2(2, 45)
+custom_maximum_size = Vector2(35, 45)
 layout_mode = 2
 texture = ExtResource("3_y7j43")
 expand_mode = 1
 
-[node name="TokenRow" type="HBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=741691803]
+[node name="TokenRow" type="HBoxContainer" parent="HBoxContainer" unique_id=741691803]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TokenTitle" type="Label" parent="VBoxContainer/HBoxContainer/TokenRow" unique_id=1388690095]
+[node name="TokenTitle" type="Label" parent="HBoxContainer/TokenRow" unique_id=1388690095]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
 theme_override_font_sizes/font_size = 18
 text = "Tokens"
 
-[node name="TokenAmountLabel" type="Label" parent="VBoxContainer/HBoxContainer/TokenRow" unique_id=150557310]
+[node name="TokenAmountLabel" type="Label" parent="HBoxContainer/TokenRow" unique_id=150557310]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)

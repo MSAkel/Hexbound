@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://cfrc7a8fh5yor"]
+
+[ext_resource type="Texture2D" uid="uid://bt8vbmxevwq3o" path="res://assets/icons/food/ingredients/chicken.png" id="1_omyth"]
+[ext_resource type="Script" uid="uid://cxk4wilpio178" path="res://resources/spot_cards/ingredients/core/chicken/chicken.gd" id="2_fr205"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_eox7y"]
+
+[resource]
+script = ExtResource("2_fr205")
+rarity = 1
+product = 1
+id = "chicken"
+name = "Chicken"
+icon = ExtResource("1_omyth")
+description = "+24 Flavour if first Ingredient in its course. Otherwise +8"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

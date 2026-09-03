@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://c2e5r2eumrngv"]
+
+[ext_resource type="Texture2D" uid="uid://dovk5a6cpfxb2" path="res://assets/icons/kitchenware/piping_bag.png" id="1_wu0i0"]
+[ext_resource type="Script" uid="uid://cwxxttilm7qtl" path="res://resources/spot_cards/kitchenware/piping_bag/piping_bag.gd" id="2_4g7c5"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_uvo5e"]
+
+[resource]
+script = ExtResource("2_4g7c5")
+base_production_amount = 15
+type = 1
+sigil_kind = 6
+id = "piping_bag"
+name = "Piping Bag"
+icon = ExtResource("1_wu0i0")
+description = "This course +15 Flavour. Next course +2 Mult"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

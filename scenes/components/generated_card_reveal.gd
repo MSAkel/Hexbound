@@ -224,7 +224,7 @@ func _offset_to_reach_global(card_ui: CardUI, target_global: Vector2) -> Vector2
 func _card_from_save_entry(entry: Dictionary) -> Card:
 	var kind: String = entry.get("kind", "")
 	var card_id: String = entry.get("id", "")
-	if kind == "tile_card" or kind == "rune":
+	if kind == "tile_card":
 		var template := GameManager.get_tile_card_by_id(card_id)
 		if template != null:
 			return template.duplicate(true)

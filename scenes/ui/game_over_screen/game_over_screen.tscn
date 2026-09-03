@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cylk7h6n211gc"]
 
 [ext_resource type="Script" uid="uid://cr8oh8plo07y7" path="res://scenes/ui/game_over_screen/game_over_screen.gd" id="1_bfo61"]
-[ext_resource type="PackedScene" uid="uid://b8layoutxpbar01" path="res://scenes/ui/layout_xp_bar/layout_xp_bar.tscn" id="2_xpbar"]
+[ext_resource type="PackedScene" uid="uid://8hhnfskxknfc" path="res://scenes/ui/layout_xp_bar/layout_xp_bar.tscn" id="2_xpbar"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7pmlo"]
 bg_color = Color(0.99607843, 0.38039216, 0.3372549, 0.19215687)
@@ -58,7 +58,6 @@ offset_right = 130.0
 offset_bottom = 268.0
 grow_horizontal = 2
 grow_vertical = 2
-clip_contents = false
 theme_override_styles/panel = SubResource("StyleBoxFlat_8s2gp")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="RunStatsPanel" unique_id=1721345815]
@@ -81,7 +80,7 @@ theme_override_font_sizes/font_size = 24
 text = "<CharacterName>"
 horizontal_alignment = 1
 
-[node name="LayoutXpBar" parent="RunStatsPanel/VBoxContainer" instance=ExtResource("2_xpbar")]
+[node name="LayoutXpBar" parent="RunStatsPanel/VBoxContainer" unique_id=1053574620 instance=ExtResource("2_xpbar")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
@@ -89,7 +88,7 @@ size_flags_vertical = 0
 [node name="HighestScoreLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=1255500133]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Highest Score"
+text = "Highest Rating"
 
 [node name="HighestScoreValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=83110184]
 layout_mode = 2
@@ -101,7 +100,7 @@ text = "0"
 [node name="RoundLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=169979574]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Round"
+text = "Day"
 
 [node name="RoundValue" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=804770823]
 layout_mode = 2

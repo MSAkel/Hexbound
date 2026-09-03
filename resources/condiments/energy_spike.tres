@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://clv08h3dn4p2v"]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/condiments/bbg_sauce.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "energy_spike"
+display_name = "Gravy"
+description = "+50 Flavour on next fire"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.35, 0.88, 0.95, 1)
+base_price = 5
+effect_type = 8
+effect_value = 50.0
+target_kind = 1

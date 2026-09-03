@@ -149,7 +149,7 @@ theme_override_constants/separation = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18039216, 0.23921569, 0.16862746, 1)
 theme_override_font_sizes/font_size = 44
-text = "SEGMENT PASSIVES"
+text = "COURSE PASSIVES"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Header/TitleColumn" unique_id=1598468268]
@@ -211,8 +211,8 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
 theme_override_font_sizes/font_size = 18
-text = "Drag a passive into any of the segments to 
-apply its effect to the segment"
+text = "Drag a passive into a course
+apply its effect to it"
 horizontal_alignment = 1
 
 [node name="MapHost" type="Control" parent="SafeArea/Page/Body/VBoxContainer/Sections/CenterColumn" unique_id=1040784302]
@@ -243,7 +243,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
 theme_override_font_sizes/font_size = 26
-text = "SELECT A SEGMENT"
+text = "SELECT A COURSE"
 horizontal_alignment = 1
 
 [node name="SlotsLabel" type="Label" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1000226709]
@@ -251,7 +251,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.4, 0.32, 1)
 theme_override_font_sizes/font_size = 15
-text = "Click a tile on the map"
+text = "Click a spot on the map"
 horizontal_alignment = 1
 
 [node name="TopRule" type="ColorRect" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1049074525]
@@ -288,7 +288,7 @@ color = Color(0.43, 0.33, 0.19, 0.32)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
 theme_override_font_sizes/font_size = 17
-text = "SEGMENT EFFECTS"
+text = "COURSE EFFECTS"
 
 [node name="EffectsList" type="VBoxContainer" parent="SafeArea/Page/Body/VBoxContainer/Sections/RightColumn" unique_id=1467438030]
 unique_name_in_owner = true
@@ -309,7 +309,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_reset_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_reset_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_reset_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_reset_normal")
-text = "RESET SEGMENT"
+text = "RESET COURSE"
 
 [node name="Tooltip" parent="." unique_id=1157743689 instance=ExtResource("5_tooltip")]
 visible = false

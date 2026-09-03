@@ -187,7 +187,7 @@ text = "Open merchant"
 
 [node name="OpenRuneSelectionButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=2072866730]
 layout_mode = 2
-text = "Open rune selection"
+text = "Open card selection"
 
 [node name="CardPicker" type="Control" parent="." unique_id=533934623]
 visible = false
