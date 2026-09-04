@@ -8,7 +8,7 @@
 script = ExtResource("2_8jd7b")
 rarity = 1
 type = 1
-sigil_kind = 5
+stat_kind = 5
 id = "random_meal"
 name = "Random Meal"
 icon = ExtResource("1_p3xet")

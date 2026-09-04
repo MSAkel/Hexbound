@@ -1,7 +1,7 @@
 class_name FeastStatIcons
 extends RefCounted
 
-## HUD pile icons and Kitchenware role chips. Single folder under assets/icons/stats/.
+## HUD pile icons and Kitchenware stat chips. Single folder under assets/icons/stats/.
 
 const FLAVOUR := preload("res://assets/icons/stats/flavour.png")
 const MULT := preload("res://assets/icons/stats/mult.png")
@@ -44,21 +44,21 @@ static func get_pile_icon(product: TileCard.Product) -> Texture2D:
 			return null
 
 
-static func get_sigil_icon(sigil_kind: TileCard.SigilKind) -> Texture2D:
-	match sigil_kind:
-		TileCard.SigilKind.ENERGY:
+static func get_stat_icon(stat_kind: TileCard.StatKind) -> Texture2D:
+	match stat_kind:
+		TileCard.StatKind.FLAVOUR:
 			return FLAVOUR
-		TileCard.SigilKind.MULT:
+		TileCard.StatKind.MULT:
 			return MULT
-		TileCard.SigilKind.GOLD:
+		TileCard.StatKind.GOLD:
 			return GOLD
-		TileCard.SigilKind.EMPOWER:
+		TileCard.StatKind.DOUBLE:
 			return DOUBLE
-		TileCard.SigilKind.RETRIGGER:
+		TileCard.StatKind.FIRE:
 			return FIRE
-		TileCard.SigilKind.SEGMENT_RELAY:
+		TileCard.StatKind.PASS:
 			return PASS
-		TileCard.SigilKind.GROWTH:
+		TileCard.StatKind.PROOF:
 			return PROOF
 		_:
 			return null

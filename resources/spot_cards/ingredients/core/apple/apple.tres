@@ -2,15 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://boieo3tlb502b" path="res://assets/icons/food/ingredients/apple.png" id="1_amro8"]
 [ext_resource type="Script" uid="uid://dw6yhek0amqm" path="res://resources/spot_cards/ingredients/core/apple/apple.gd" id="2_80ooo"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_ajh1f"]
 
 [resource]
 script = ExtResource("2_80ooo")
-base_production_amount = 18
+base_production_amount = 16
 product = 1
 starting_hand_eligible = true
 id = "apple"
 name = "Apple"
 icon = ExtResource("1_amro8")
-description = "+26 Flavour if an adjacent Following spot is empty. Otherwise +18"
+description = "+26 Flavour if an adjacent Following spot is empty. Otherwise +16"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

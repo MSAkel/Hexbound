@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_belt.tscn" id="19_condiment_belt"]
 [ext_resource type="PackedScene" uid="uid://cm7k781kw6ho" path="res://scenes/ui/turn_resolve_skip_overlay.tscn" id="20_skip_overlay"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_edge_glow.tscn" id="21_condiment_glow"]
+[ext_resource type="PackedScene" uid="uid://c8sellpanel01" path="res://scenes/ui/sell_panel/card_sell_panel.tscn" id="22_sell_panel"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -36,6 +37,8 @@ offset_left = 0.0
 offset_top = 0.0
 offset_right = 0.0
 rotation = 0.0016232448
+
+[node name="CardSellPanel" parent="." instance=ExtResource("22_sell_panel")]
 
 [node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
 

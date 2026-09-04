@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("2_nd2af")
 type = 1
-sigil_kind = 5
+stat_kind = 5
 id = "chef_knife"
 name = "Chef Knife"
 icon = ExtResource("1_y32ft")

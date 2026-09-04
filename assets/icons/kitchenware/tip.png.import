@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bxx1i0oxwpxhi"
-path="res://.godot/imported/cover_charge.png-c5856cfa3b6691cfeb2fca2d476ed904.ctex"
+uid="uid://bmftdcjh8efub"
+path="res://.godot/imported/tip.png-01172190aefb6bc513f9cad60bab7126.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/till/cover_charge.png"
-dest_files=["res://.godot/imported/cover_charge.png-c5856cfa3b6691cfeb2fca2d476ed904.ctex"]
+source_file="res://assets/icons/kitchenware/tip.png"
+dest_files=["res://.godot/imported/tip.png-01172190aefb6bc513f9cad60bab7126.ctex"]
 
 [params]
 

@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("2_8uagv")
 type = 1
-sigil_kind = 5
+stat_kind = 5
 id = "salad_spinner"
 name = "Salad Spinner"
 icon = ExtResource("1_3841r")

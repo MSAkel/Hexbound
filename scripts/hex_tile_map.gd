@@ -407,7 +407,7 @@ func is_edge_tile(coords: Vector2i) -> bool:
 	return false
 
 
-## Every rune currently placed on the map. Pass rune_type to filter by Ingredients, Economy, or Kitchenware.
+## Every rune currently placed on the map. Pass rune_type to filter by Ingredients or Kitchenware.
 func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
 	var runes: Array[TileCard] = []
 	for hex: Hex in map_data.values():
@@ -1533,6 +1533,8 @@ func _emit_segment_turn_completed_snapshot() -> void:
 
 
 func _on_round_changed(_new_round: int) -> void:
+	if RunSaveManager.is_restoring():
+		return
 	_round_turn_snapshots.clear()
 
 

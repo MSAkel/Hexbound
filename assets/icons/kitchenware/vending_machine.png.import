@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bmftdcjh8efub"
-path="res://.godot/imported/tip.png-6454739975fce46d52e474face9257de.ctex"
+uid="uid://cs6mx2pr455e"
+path="res://.godot/imported/vending_machine.png-c36f5a5fe05b8c92f4276fda44e9aefc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/till/tip.png"
-dest_files=["res://.godot/imported/tip.png-6454739975fce46d52e474face9257de.ctex"]
+source_file="res://assets/icons/kitchenware/vending_machine.png"
+dest_files=["res://.godot/imported/vending_machine.png-c36f5a5fe05b8c92f4276fda44e9aefc.ctex"]
 
 [params]
 

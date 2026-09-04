@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://gd4rito42dyr"]
 
 [ext_resource type="Script" uid="uid://b6oc5xxbytb4f" path="res://scenes/ui/main_menu/main_menu.gd" id="1_fe2o3"]
-[ext_resource type="Texture2D" uid="uid://expxysnruktj" path="res://assets/title/flavour_pass.png" id="3_cmwxi"]
+[ext_resource type="Texture2D" uid="uid://cx13jj22cixy5" path="res://assets/title/flavour_pass_2.png" id="3_cmwxi"]
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="4_cmwxi"]
 [ext_resource type="Script" uid="uid://de4fenne8e4it" path="res://scenes/ui/main_menu/menu_icon_particles.gd" id="5_icon_particles"]
 

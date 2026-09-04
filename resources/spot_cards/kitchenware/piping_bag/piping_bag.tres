@@ -8,7 +8,7 @@
 script = ExtResource("2_4g7c5")
 base_production_amount = 15
 type = 1
-sigil_kind = 6
+stat_kind = 6
 id = "piping_bag"
 name = "Piping Bag"
 icon = ExtResource("1_wu0i0")

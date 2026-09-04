@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://ddxi8oeodt0dx"]
+
+[ext_resource type="Texture2D" uid="uid://bmftdcjh8efub" path="res://assets/icons/kitchenware/tip.png" id="1_3fqxb"]
+[ext_resource type="Script" uid="uid://dyiqu2ie2cyw0" path="res://resources/spot_cards/kitchenware/tipping_box/tipping_box.gd" id="2_s66kk"]
+
+[resource]
+script = ExtResource("2_s66kk")
+rarity = 1
+type = 1
+product = 1
+utility_target_count = 2
+id = "tipping_box"
+name = "Tipping Box"
+icon = ExtResource("1_3fqxb")
+description = "+2 Flavour per Gold you hold"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

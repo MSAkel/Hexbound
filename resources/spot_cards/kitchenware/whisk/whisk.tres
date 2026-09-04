@@ -2,14 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://b4x64kr1bx2dl" path="res://assets/icons/kitchenware/whisk.png" id="1_4lioc"]
 [ext_resource type="Script" uid="uid://dbqwu661a2dw7" path="res://resources/spot_cards/kitchenware/whisk/whisk.gd" id="2_qg46y"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_2h40c"]
 
 [resource]
 script = ExtResource("2_qg46y")
 type = 1
-sigil_kind = 4
+stat_kind = 4
 id = "whisk"
 name = "Whisk"
 icon = ExtResource("1_4lioc")
-description = "Double the Following card"
+description = "Double the Following ingredient"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

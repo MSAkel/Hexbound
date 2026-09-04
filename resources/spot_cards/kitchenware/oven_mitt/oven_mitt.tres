@@ -8,7 +8,7 @@
 script = ExtResource("2_7u15k")
 base_production_amount = 5
 type = 1
-sigil_kind = 7
+stat_kind = 7
 id = "oven_mitt"
 name = "Oven Mitt"
 icon = ExtResource("1_hch7j")

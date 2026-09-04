@@ -2,13 +2,12 @@
 
 [ext_resource type="Texture2D" uid="uid://cw5birgpj1ymb" path="res://assets/icons/kitchenware/skillet.png" id="1_htrpw"]
 [ext_resource type="Script" uid="uid://d0c11g62hx5yb" path="res://resources/spot_cards/kitchenware/skillet/skillet.gd" id="2_fojqp"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_0apt6"]
 
 [resource]
 script = ExtResource("2_fojqp")
 base_production_amount = 10
 type = 1
-sigil_kind = 7
+stat_kind = 7
 id = "skillet"
 name = "Skillet"
 icon = ExtResource("1_htrpw")

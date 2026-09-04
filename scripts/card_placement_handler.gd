@@ -115,6 +115,9 @@ func _input(event: InputEvent) -> void:
 		_deselect_card()
 		return
 
+	if _try_sell_at_cursor():
+		return
+
 	_try_place_card()
 	# Leave this mouse-up unhandled. The card Control that took the press must
 	# still see the release, or Viewport keeps GUI mouse focus on the hand card
@@ -135,7 +138,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			_try_place_card()
+			if not _try_sell_at_cursor():
+				_try_place_card()
 			get_viewport().set_input_as_handled()
 	
 	if event.is_action_pressed("ui_cancel"):
@@ -413,6 +417,25 @@ func _reset_state() -> void:
 
 func _has_dragged_from_select() -> bool:
 	return tile_map.get_global_mouse_position().distance_to(_select_press_position) >= DRAG_PLACE_THRESHOLD_PX
+
+
+func _try_sell_at_cursor() -> bool:
+	var sell_panel: Node = get_tree().get_first_node_in_group("card_sell_panel")
+	if sell_panel == null or selected_card == null or not sell_panel.has_method("try_sell"):
+		return false
+	if not sell_panel.call("try_sell", selected_card):
+		return false
+	get_viewport().set_input_as_handled()
+	return true
+
+
+## Clears placement previews when a selected hand card is sold instead of played.
+func cancel_selection_for_sell(card_ui: CardUI) -> void:
+	if selected_card == card_ui:
+		_clear_preview()
+		_reset_state()
+	if card_ui.card_state_machine != null:
+		card_ui.card_state_machine.transition_to_state(CardState.State.BASE)
 
 
 func _show_cursor_rune_preview(morph_progress: float) -> void:

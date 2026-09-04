@@ -7,9 +7,8 @@ signal action_requested(card_ui: CardUI)
 signal gold_purchase_requested(card_ui: CardUI)
 signal token_purchase_requested(card_ui: CardUI)
 
-# Ingredients, Economy, Kitchenware, and Utility each use their own card frame.
+# Ingredients, Kitchenware, and Utility each use their own card frame.
 @export var frame_ingredients: Texture2D
-@export var frame_economy: Texture2D
 @export var frame_kitchenware: Texture2D
 @export var frame_utility: Texture2D
 # Name-bar fills are authored on the scene so rarity color is not rebuilt in code.
@@ -933,8 +932,6 @@ func _frame_texture_for_card(data: Card) -> Texture2D:
 		match (data as TileCard).type:
 			TileCard.TileCardType.INGREDIENT:
 				return frame_ingredients
-			TileCard.TileCardType.ECONOMY:
-				return frame_economy
 			TileCard.TileCardType.KITCHENWARE:
 				return frame_kitchenware
 			TileCard.TileCardType.UTILITY:

@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("2_tw7yv")
 type = 1
-sigil_kind = 5
+stat_kind = 5
 id = "blender"
 name = "Blender"
 icon = ExtResource("1_iysqn")

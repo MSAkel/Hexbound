@@ -65,7 +65,9 @@ signal required_score_changed()
 signal merchant_closed
 
 ## Emitted when a card is played
-signal card_played(card_ui: CardUI)  
+signal card_played(card_ui: CardUI)
+## Emitted when a hand card is sold from the sell panel.
+signal card_sold(card_ui: CardUI)
 
 signal tile_card_selected(tile_card: TileCard)
 ## Emitted when a tile card successfully triggers its effect

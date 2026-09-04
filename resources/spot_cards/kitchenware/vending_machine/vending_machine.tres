@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://dh6iq7pfm421c"]
+
+[ext_resource type="Texture2D" uid="uid://cs6mx2pr455e" path="res://assets/icons/kitchenware/vending_machine.png" id="1_awvwu"]
+[ext_resource type="Script" uid="uid://dsngm1kqddanj" path="res://resources/spot_cards/kitchenware/vending_machine/vending_machine.gd" id="2_hlbjb"]
+
+[resource]
+script = ExtResource("2_hlbjb")
+base_production_amount = 1
+type = 1
+product = 0
+id = "vending_machine"
+name = "Vending Machine"
+icon = ExtResource("1_awvwu")
+description = "+1 Gold"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -2,14 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://bnntsopi5a726" path="res://assets/icons/kitchenware/tortilla_press.png" id="1_l4djl"]
 [ext_resource type="Script" uid="uid://gqw06676n2um" path="res://resources/spot_cards/kitchenware/tortilla_press/tortilla_press.gd" id="2_3w5an"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_0xue7"]
 
 [resource]
 script = ExtResource("2_3w5an")
 rarity = 2
 type = 1
 placement_restriction = 2
-sigil_kind = 5
+stat_kind = 5
 id = "tortilla_press"
 name = "Tortilla Press"
 icon = ExtResource("1_l4djl")

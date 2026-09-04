@@ -10,7 +10,6 @@ const INGREDIENT := "Ingredient"
 const CORE := "Core"
 const SEASONING := "Seasoning"
 const GOLD := "Gold"
-const ECONOMY := "Economy"
 const COURSE := "Course"
 const SPOT := "Spot"
 const FIRE_ORDER := "Fire Order"
@@ -52,27 +51,14 @@ static func get_tile_card_shelf_label(card: TileCard) -> String:
 			return "Kitchenware"
 		TileCard.TileCardType.INGREDIENT:
 			return INGREDIENT
-		TileCard.TileCardType.ECONOMY:
-			return ECONOMY
 	return card.get_card_kind_label().capitalize()
 
 
-static func get_sigil_role_label(sigil_kind: TileCard.SigilKind, product: TileCard.Product) -> String:
-	match sigil_kind:
-		TileCard.SigilKind.ENERGY:
-			return FLAVOUR
-		TileCard.SigilKind.MULT:
-			return MULT
-		TileCard.SigilKind.GOLD:
-			return GOLD
-		TileCard.SigilKind.EMPOWER:
-			return "Double"
-		TileCard.SigilKind.RETRIGGER:
-			return "Again"
-		TileCard.SigilKind.SEGMENT_RELAY:
-			return PASS
-		TileCard.SigilKind.GROWTH:
-			return "Proof"
+static func get_stat_label(stat_kind: TileCard.StatKind, product: TileCard.Product) -> String:
+	if stat_kind != TileCard.StatKind.NONE:
+		var key: Variant = TileCard.StatKind.find_key(stat_kind)
+		if key != null:
+			return String(key).capitalize()
 	if product == TileCard.Product.HYBRID:
 		return "Hybrid"
 	return ""

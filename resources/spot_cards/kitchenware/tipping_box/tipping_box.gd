@@ -1,6 +1,6 @@
 extends TileCard
 
-## +6 Flavour plus +1 Flavour for every Gold you have.
+## +2 Flavour for every Gold you have.
 func _on_activate_tile_card(tile: Hex) -> void:
 	add_score(tile, _get_treasury_amount())
 

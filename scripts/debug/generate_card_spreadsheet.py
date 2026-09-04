@@ -19,7 +19,7 @@ HEADERS = [
     "Rarity",
     "Name",
     "Id",
-    "Product_Or_Sigil",
+    "Product_Or_Stat",
     "Restriction",
     "Effect",
     "Primary_Identity",
@@ -34,10 +34,9 @@ RARITY_NAMES = {0: "Common", 1: "Uncommon", 2: "Rare"}
 SHELF_BY_FOLDER = {
     "ingredients": "Ingredients",
     "kitchenware": "Kitchenware",
-    "economy": "Economy",
     "utilities": "Utility",
 }
-SHELF_ORDER = {"Ingredients": 0, "Kitchenware": 1, "Economy": 2, "Utility": 3}
+SHELF_ORDER = {"Ingredients": 0, "Kitchenware": 1, "Utility": 2}
 RARITY_ORDER = {"Common": 0, "Uncommon": 1, "Rare": 2}
 STATUS_ORDER = {"Existing": 0, "Suggested": 1, "Removed": 2}
 
@@ -111,7 +110,7 @@ SUGGESTED = [
     ),
     (
         "Suggested",
-        "Economy",
+        "Kitchenware",
         "Common",
         "Mint Cell",
         "mint_cell",
@@ -123,7 +122,7 @@ SUGGESTED = [
         "No",
         "",
         "Yes",
-        "Tip is +1. Common Economy producer gap.",
+        "Vending Machine is +1. Common gold producer gap.",
     ),
     (
         "Suggested",
@@ -474,7 +473,7 @@ def write_xlsx(rows: list[tuple], path: Path) -> None:
                     ws.cell(row=row_idx, column=col_idx).fill = fill
 
     write_sheet("All Cards", rows)
-    for shelf in ("Ingredients", "Kitchenware", "Economy", "Utility"):
+    for shelf in ("Ingredients", "Kitchenware", "Utility"):
         write_sheet(shelf, [r for r in rows if r[1] == shelf])
 
     summary_sheet = wb.create_sheet("Summary")

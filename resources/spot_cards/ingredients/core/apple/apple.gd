@@ -1,5 +1,5 @@
 extends TileCard
-## +18 Flavour. +4 if a Following adjacent spot is empty.
+## +18 Flavour. +8 if a Following adjacent spot is empty.
 
 const EMPTY_FOLLOWING_BONUS := 8
 

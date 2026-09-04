@@ -58,7 +58,6 @@ window/main_scene="uid://bpaabu6bfu0hv"
 
 folder_colors={
 "res://assets/": "orange",
-"res://resources/spot_cards/economy/": "yellow",
 "res://resources/spot_cards/ingredients/": "blue",
 "res://resources/spot_cards/kitchenware/": "green",
 "res://resources/spot_cards/utilities/": "purple",

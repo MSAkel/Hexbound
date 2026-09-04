@@ -48,6 +48,7 @@ var _spread_clear_pending := false
 func _ready() -> void:
 	_base_separation = get_theme_constant("separation")
 	EventBus.card_played.connect(_on_card_played)
+	EventBus.card_sold.connect(_on_card_sold)
 	EventBus.tile_card_selected.connect(_add_tile_card)
 	EventBus.turn_ended.connect(_hide_hand)
 	EventBus.turn_started.connect(_show_hand)
@@ -257,7 +258,16 @@ func _compute_card_spread_rotation(card_index: int, featured_index: int) -> floa
 
 func _on_card_played(_card_ui: CardUI) -> void:
 	cards_played += 1
-	## Wait for the played card's queue_free() before checking remaining hand size.
+	await _check_auto_end_turn_after_card_removed()
+
+
+func _on_card_sold(_card_ui: CardUI) -> void:
+	await _check_auto_end_turn_after_card_removed()
+
+
+## Ends the turn when fewer than three cards remain after a play or a sell.
+func _check_auto_end_turn_after_card_removed() -> void:
+	# Wait for the removed card's queue_free() before counting the hand.
 	await get_tree().create_timer(0.1).timeout
 	if _get_hand_card_count() < 3:
 		EventBus.turn_ended.emit()

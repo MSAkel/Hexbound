@@ -20,7 +20,6 @@ const ITEM_BORDER := Color("617575")
 
 enum CollectionTab {
 	INGREDIENT,
-	ECONOMY,
 	KITCHENWARE,
 	CONDIMENTS,
 	UTILITY,
@@ -38,7 +37,6 @@ func _ready() -> void:
 func _configure_tabs() -> void:
 	var titles := PackedStringArray([
 		FeastDisplay.INGREDIENT,
-		"Economy",
 		"Kitchenware",
 		FeastDisplay.CONDIMENTS,
 		"Utility",
@@ -56,8 +54,6 @@ func _show_tab(tab: int) -> void:
 	match tab:
 		CollectionTab.INGREDIENT:
 			_show_ingredients_cards()
-		CollectionTab.ECONOMY:
-			_show_economy_cards()
 		CollectionTab.KITCHENWARE:
 			_show_kitchenware_cards()
 		CollectionTab.CONDIMENTS:
@@ -98,14 +94,6 @@ func _show_ingredients_cards() -> void:
 	_show_tile_cards(cards)
 
 
-func _show_economy_cards() -> void:
-	var cards: Array = []
-	for card in GameManager.tile_cards_pool:
-		if card is TileCard and _is_economy_card(card as TileCard):
-			cards.append(card)
-	_show_tile_cards(cards)
-
-
 func _show_kitchenware_cards() -> void:
 	var cards: Array = []
 	for card in GameManager.tile_cards_pool:
@@ -124,10 +112,6 @@ func _show_utility_cards() -> void:
 
 func _is_ingredients_card(card: TileCard) -> bool:
 	return card.type == TileCard.TileCardType.INGREDIENT
-
-
-func _is_economy_card(card: TileCard) -> bool:
-	return card.type == TileCard.TileCardType.ECONOMY
 
 
 func _show_condiments() -> void:

@@ -32,9 +32,15 @@ func apply_placed_save_state(data: Dictionary) -> void:
 
 
 func _add_random_common_tile_card_to_hand(tile: Hex) -> void:
+	# Omit this template so the board cannot replicate itself.
+	var pool: Array[TileCard] = []
+	for template: TileCard in GameManager.tile_cards_pool:
+		if template.id != id:
+			pool.append(template)
+
 	var drafted := CardLoot.draw_filtered(
 		1,
-		[],
+		pool,
 		TileCard.TileCardRarity.COMMON,
 		null,
 		true,

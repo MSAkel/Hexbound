@@ -30,6 +30,7 @@ const TURN_TOTAL_HOLD_DELAY := 0.75
 
 
 func _ready() -> void:
+	add_to_group("rating_breakdown_panel")
 	_score_total_counter = _make_stat_counter(score_total_number)
 	_total_style = turn_total_container.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	turn_total_container.add_theme_stylebox_override("panel", _total_style)
@@ -177,6 +178,8 @@ func _await_turn_total_land_animation() -> void:
 
 
 func _on_round_changed(_new_round: int) -> void:
+	if RunSaveManager.is_restoring():
+		return
 	_turn_history.clear()
 	_viewed_turn_index = 0
 	_resolving_turn = false

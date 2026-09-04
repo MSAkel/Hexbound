@@ -2,12 +2,11 @@
 
 [ext_resource type="Texture2D" uid="uid://d4b4ocevqgq26" path="res://assets/icons/kitchenware/peeler.png" id="1_xf1wp"]
 [ext_resource type="Script" uid="uid://c75gpxxvahck" path="res://resources/spot_cards/kitchenware/peeler/peeler.gd" id="2_script"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_1bjx0"]
 
 [resource]
 script = ExtResource("2_script")
 type = 1
-sigil_kind = 5
+stat_kind = 5
 id = "peeler"
 name = "Peeler"
 icon = ExtResource("1_xf1wp")

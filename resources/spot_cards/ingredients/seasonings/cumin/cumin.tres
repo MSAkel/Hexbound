@@ -8,7 +8,7 @@
 script = ExtResource("2_lcem1")
 base_production_amount = 5
 product = 2
-sigil_kind = 6
+stat_kind = 6
 id = "cumin"
 name = "Cumin"
 icon = ExtResource("1_mioiv")
