@@ -31,7 +31,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 			return
 
 		unempowered_runes.erase(target)
-		_create_floating_text(tile, "Doubled %s" % target.name)
+		_create_doubled_floating_text(tile, target)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

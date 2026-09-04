@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cawjeaar55yqc" path="res://scenes/ui/RunInfoDisplay/challenge_container/challenge_container.gd" id="1_fwrky"]
 [ext_resource type="Texture2D" uid="uid://e3s8v7swelk7" path="res://assets/gui/dividers/divider_dark.png" id="2_kls1t"]
 [ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_uh4uk"]
-[ext_resource type="Texture2D" uid="uid://yjsyynwlyscq" path="res://assets/gui/map_layouts/challenge_icon.png" id="4_fwrky"]
+[ext_resource type="Texture2D" uid="uid://bgr8s8m52y8wo" path="res://assets/gui/map_layouts/event_normal.png" id="4_fwrky"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_b1ppx"]
 content_margin_left = 8.0

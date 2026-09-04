@@ -173,7 +173,7 @@ func _on_jump_round_pressed() -> void:
 
 func _on_pass_turn_pressed() -> void:
 	_dismiss_blocking_panels()
-	AudioManager.play_sfx(UISounds.END_TURN)
+	AudioManager.play_end_turn_bell()
 	EventBus.turn_ended.emit()
 
 

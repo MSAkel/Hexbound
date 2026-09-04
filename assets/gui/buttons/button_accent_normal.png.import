@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1dtwsew8gxg5"
-path="res://.godot/imported/button_play.png-500bfdb37c8cf94a7db086aecfa09a4c.ctex"
+uid="uid://c6b8lry1fehy1"
+path="res://.godot/imported/button_accent_normal.png-feef594583eb0d123aae68d0d12291e7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/buttons/button_play.png"
-dest_files=["res://.godot/imported/button_play.png-500bfdb37c8cf94a7db086aecfa09a4c.ctex"]
+source_file="res://assets/gui/buttons/button_accent_normal.png"
+dest_files=["res://.godot/imported/button_accent_normal.png-feef594583eb0d123aae68d0d12291e7.ctex"]
 
 [params]
 

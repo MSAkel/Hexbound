@@ -261,7 +261,7 @@ func _on_card_played(_card_ui: CardUI) -> void:
 	await get_tree().create_timer(0.1).timeout
 	if _get_hand_card_count() < 3:
 		EventBus.turn_ended.emit()
-		AudioManager.play_sfx(UISounds.END_TURN)
+		AudioManager.play_end_turn_bell()
 
 
 func _hide_hand() -> void:

@@ -1,6 +1,6 @@
 extends Control
 
-## Center-screen event reveal. Stays until click, then flies into EventContainer.
+## Center-screen event reveal. Stays until continue is pressed, then flies into EventContainer.
 
 enum Phase { HIDDEN, INTRO, DOCKING, DOCKED }
 
@@ -34,7 +34,7 @@ const CENTER_OFFSETS := {
 @onready var kicker_label: Label = $Banner/KickerRow/KickerLabel
 @onready var event_label: RichTextLabel = $Banner/EventName
 @onready var description_label: Label = $Banner/Description
-@onready var skip_hint: Label = $Banner/SkipHint
+@onready var continue_button: Button = $Banner/ContinueButton
 
 var _phase: Phase = Phase.HIDDEN
 var _reveal_id := 0
@@ -51,13 +51,11 @@ func _ready() -> void:
 	EventBus.event_banner_hidden.connect(_on_event_banner_hidden)
 
 
-func _gui_input(event: InputEvent) -> void:
-	# Click anywhere after the pop-in to dock. The hold is the read beat.
+func _on_continue_button_pressed() -> void:
 	if _phase != Phase.INTRO:
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		accept_event()
-		_begin_dock()
+	AudioManager.play_sfx(UISounds.CLICK)
+	_begin_dock()
 
 
 func _on_event_banner_shown(event_name: String, dock_immediately: bool = false) -> void:
@@ -120,7 +118,7 @@ func _begin_dock() -> void:
 
 	# Intro-only copy leaves the overlay. The chip shows name and description after landing.
 	description_label.hide()
-	skip_hint.hide()
+	continue_button.hide()
 
 	# Leave the layout anchors so the fly-in is a free transform into the chip.
 	var start_global := banner.global_position
@@ -188,8 +186,8 @@ func _prepare_intro_visuals() -> void:
 	event_icon.custom_minimum_size = CENTER_ICON_SIZE
 	description_label.show()
 	description_label.modulate.a = 1.0
-	skip_hint.show()
-	skip_hint.modulate.a = 1.0
+	continue_button.show()
+	continue_button.modulate.a = 1.0
 	dim_overlay.color.a = 0.0
 	banner.top_level = false
 	banner.modulate.a = 0.0

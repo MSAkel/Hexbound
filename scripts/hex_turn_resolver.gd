@@ -44,6 +44,7 @@ func setup(tile_map: HexTileMap) -> void:
 func resolve_turn() -> void:
 	map.dismiss_hover_feedback()
 	map.reset_segment_turn_results()
+	AudioManager.reset_card_trigger_chops()
 
 	TileCard.clear_copied_activation_stack()
 	pending_trigger_queue.clear()
@@ -499,18 +500,30 @@ func _clear_trigger_link_sessions() -> void:
 
 
 ## Show floating text at a world position on the current scene.
-func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
+func create_floating_text(
+	pos: Vector2,
+	text: String,
+	color: Color = Color.WHITE,
+	icon: Texture2D = null,
+	target_icon: Texture2D = null
+) -> void:
 	if GameManager.should_skip_turn_presentation():
 		return
-	var floating_text := _spawn_floating_text(pos, text, color, icon)
+	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon)
 	floating_text.play_float_and_free()
 
 
-func _spawn_floating_text(pos: Vector2, text: String, color: Color, icon: Texture2D = null) -> FloatingText:
+func _spawn_floating_text(
+	pos: Vector2,
+	text: String,
+	color: Color,
+	icon: Texture2D = null,
+	target_icon: Texture2D = null
+) -> FloatingText:
 	var floating_text := FLOATING_TEXT_SCENE.instantiate() as FloatingText
 	floating_text.position = pos
 	get_tree().current_scene.add_child(floating_text)
-	floating_text.set_text(text, color, icon)
+	floating_text.set_text(text, color, icon, target_icon)
 	return floating_text
 
 

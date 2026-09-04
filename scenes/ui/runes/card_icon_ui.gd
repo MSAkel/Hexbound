@@ -25,6 +25,8 @@ var center_coordinates: Vector2i
 var _activation_tween: Tween
 var _trigger_link_flash_tween: Tween
 var _seal_tween: Tween
+var _inspect_hover_tween: Tween
+var _inspect_hover_active := false
 # Resting color when no activation or trigger-link tween is running.
 var _base_resting_modulate := Color.WHITE
 var _resting_modulate := Color.WHITE
@@ -72,6 +74,10 @@ const SEAL_SLAM_DURATION := 0.09
 const SEAL_SETTLE_DURATION := 0.12
 const SEAL_HIGHLIGHT := Color(1.55, 1.28, 0.55, 1.0)
 const SEALED_REST_TINT := Color(1.08, 0.96, 0.7, 1.0)
+# Map inspect hover. Subtler than placement ghost and activation pop.
+const INSPECT_HOVER_SCALE := Vector2(1.08, 1.08)
+const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
+const INSPECT_HOVER_DURATION := 0.12
 
 
 ## Full seal slam timing. Keep in sync with HexTileMap.wait_for_segment_seal().
@@ -340,6 +346,8 @@ func _can_apply_resting_modulate() -> bool:
 		return false
 	if _seal_tween != null and _seal_tween.is_valid():
 		return false
+	if _inspect_hover_active:
+		return false
 	return true
 
 
@@ -348,9 +356,69 @@ func _apply_resting_modulate() -> void:
 		_anim_target.modulate = _resting_modulate
 
 
+## Lift and brighten while the player inspects this placed card on the map.
+func play_inspect_hover_in() -> void:
+	if not _can_start_inspect_hover():
+		return
+	_stop_inspect_hover_tween()
+	_inspect_hover_active = true
+	_anim_target.pivot_offset = _anim_target.size / 2
+	if _anim_target.pivot_offset == Vector2.ZERO:
+		_anim_target.pivot_offset = size / 2
+	var duration := INSPECT_HOVER_DURATION / GameManager.game_speed
+	_inspect_hover_tween = create_tween()
+	_inspect_hover_tween.set_ease(Tween.EASE_OUT)
+	_inspect_hover_tween.set_trans(Tween.TRANS_QUAD)
+	_inspect_hover_tween.set_parallel(true)
+	_inspect_hover_tween.tween_property(_anim_target, "scale", INSPECT_HOVER_SCALE, duration)
+	_inspect_hover_tween.tween_property(_anim_target, "modulate", INSPECT_HOVER_MODULATE, duration)
+
+
+## Return to the resting pose when map inspect hover ends.
+func play_inspect_hover_out() -> void:
+	if not _inspect_hover_active and (_inspect_hover_tween == null or not _inspect_hover_tween.is_valid()):
+		return
+	_stop_inspect_hover_tween()
+	_inspect_hover_active = false
+	if _anim_target == null:
+		return
+	_anim_target.pivot_offset = _anim_target.size / 2
+	if _anim_target.pivot_offset == Vector2.ZERO:
+		_anim_target.pivot_offset = size / 2
+	var duration := INSPECT_HOVER_DURATION / GameManager.game_speed
+	_inspect_hover_tween = create_tween()
+	_inspect_hover_tween.set_ease(Tween.EASE_OUT)
+	_inspect_hover_tween.set_trans(Tween.TRANS_QUAD)
+	_inspect_hover_tween.set_parallel(true)
+	_inspect_hover_tween.tween_property(_anim_target, "scale", Vector2.ONE, duration)
+	_inspect_hover_tween.tween_property(_anim_target, "modulate", _resting_modulate, duration)
+
+
+func _can_start_inspect_hover() -> bool:
+	if _activation_tween != null and _activation_tween.is_valid():
+		return false
+	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
+		return false
+	if _seal_tween != null and _seal_tween.is_valid():
+		return false
+	return true
+
+
+func _stop_inspect_hover_tween() -> void:
+	if _inspect_hover_tween != null and _inspect_hover_tween.is_valid():
+		_inspect_hover_tween.kill()
+	_inspect_hover_tween = null
+
+
+func _clear_inspect_hover_state() -> void:
+	_stop_inspect_hover_tween()
+	_inspect_hover_active = false
+
+
 # Brief scale pulse + warm flash so the active rune reads clearly during turn resolution.
 func play_activation_animation() -> void:
 	stop_empower_sparks()
+	_clear_inspect_hover_state()
 	
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
@@ -509,6 +577,7 @@ func _is_trigger_link_flashing() -> bool:
 
 ## Lift, gold flash, slam, smoke, then a thick gold rim. Skips scale if still firing.
 func play_segment_seal_animation() -> void:
+	_clear_inspect_hover_state()
 	_is_segment_sealed = true
 	_resting_modulate = _compute_resting_modulate()
 
@@ -708,6 +777,7 @@ func stop_empower_sparks() -> void:
 
 # Looping orange pulse on the source rune while its queued triggers resolve.
 func start_trigger_link_flash() -> void:
+	_clear_inspect_hover_state()
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
 		_trigger_link_flash_tween.kill()
 

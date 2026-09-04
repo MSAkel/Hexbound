@@ -104,6 +104,7 @@ layout_mode = 2
 [node name="ContinueButton" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1924656440]
 visible = false
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
@@ -116,6 +117,7 @@ alignment = 0
 
 [node name="Play" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1907206783]
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
@@ -127,6 +129,7 @@ alignment = 0
 
 [node name="Options" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1112534161]
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
@@ -138,6 +141,7 @@ alignment = 0
 
 [node name="CollectionButton" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=170776200]
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
@@ -149,6 +153,7 @@ alignment = 0
 
 [node name="Exit" type="Button" parent="MenuContainer/MenuItemsContainer" unique_id=1113969747]
 layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")

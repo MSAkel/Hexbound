@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b70xl3asjqxeo"
-path="res://.godot/imported/base_layout_hover.png-cceb3ea8917f7d9b7b83af43db65094f.ctex"
+uid="uid://dxrdutmkf1gmx"
+path="res://.godot/imported/course_hover.png-2ca9e1af57ad4ca2c808fa08161992e8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/map_layouts/base_layout_hover.png"
-dest_files=["res://.godot/imported/base_layout_hover.png-cceb3ea8917f7d9b7b83af43db65094f.ctex"]
+source_file="res://assets/gui/map_layouts/course_hover.png"
+dest_files=["res://.godot/imported/course_hover.png-2ca9e1af57ad4ca2c808fa08161992e8.ctex"]
 
 [params]
 

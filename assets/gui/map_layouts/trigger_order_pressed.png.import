@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2uhlo0l2sxk3"
-path="res://.godot/imported/trigger_order_segments_layout_hover.png-3a6b3fdfae935800c5c88d1424d1fe27.ctex"
+uid="uid://btn8ggu6odut1"
+path="res://.godot/imported/trigger_order_pressed.png-a49be64aed2a5cc63acd04afed1a1884.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/map_layouts/trigger_order_segments_layout_hover.png"
-dest_files=["res://.godot/imported/trigger_order_segments_layout_hover.png-3a6b3fdfae935800c5c88d1424d1fe27.ctex"]
+source_file="res://assets/gui/map_layouts/trigger_order_pressed.png"
+dest_files=["res://.godot/imported/trigger_order_pressed.png-a49be64aed2a5cc63acd04afed1a1884.ctex"]
 
 [params]
 

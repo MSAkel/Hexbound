@@ -25,4 +25,10 @@ const CONDIMENT_HOVER_A = preload("res://assets/audio/sfx/condiments/condiment_h
 const CONDIMENT_HOVER_B = preload("res://assets/audio/sfx/condiments/condiment_hover_b.mp3")
 const CONDIMENT_GRAB = preload("res://assets/audio/sfx/condiments/condiment_grab.mp3")
 const CONSUME_CONDIMENT = preload("res://assets/audio/sfx/condiments/consume_condiment.mp3")
-const CARD_TRIGGER = preload("res://assets/audio/coin-pickup.wav")
+const CHOPPING: Array[AudioStream] = [
+	preload("res://assets/audio/sfx/chopping/chop-01.mp3"),
+	preload("res://assets/audio/sfx/chopping/chop-02.mp3"),
+	preload("res://assets/audio/sfx/chopping/chop-03.mp3"),
+	preload("res://assets/audio/sfx/chopping/chop-04.mp3"),
+	preload("res://assets/audio/sfx/chopping/chop-05.mp3"),
+]

@@ -1329,8 +1329,14 @@ func schedule_destroy_after_trigger_link(
 
 
 ## Show floating text at a world position on the current scene.
-func create_floating_text(pos: Vector2, text: String, color: Color = Color.WHITE, icon: Texture2D = null) -> void:
-	turn_resolver.create_floating_text(pos, text, color, icon)
+func create_floating_text(
+	pos: Vector2,
+	text: String,
+	color: Color = Color.WHITE,
+	icon: Texture2D = null,
+	target_icon: Texture2D = null
+) -> void:
+	turn_resolver.create_floating_text(pos, text, color, icon, target_icon)
 
 
 ## Converts map coordinates to local pixel position on the base tile layer.

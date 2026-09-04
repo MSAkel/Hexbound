@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/character_selection_screen/layout_details.gd" id="1_details"]
 [ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="3_character"]
-[ext_resource type="Texture2D" uid="uid://tjkpc6hbs8rc" path="res://assets/gui/buttons/button_primary.png" id="3_n8ega"]
 [ext_resource type="PackedScene" uid="uid://bq8n4m2k7p1xw" path="res://scenes/ui/character_selection_screen/layout_preview_map.tscn" id="4_preview_map"]
 [ext_resource type="Texture2D" uid="uid://bver7j3ar4spg" path="res://assets/map/segment_icons/segment.png" id="9_segment"]
 [ext_resource type="Texture2D" uid="uid://bgo1gw2tf12cq" path="res://assets/map/segment_icons/trigger_order.png" id="9_x6eud"]
@@ -11,25 +10,6 @@
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
 
 [sub_resource type="FontVariation" id="FontVariation_x6eud"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bes3q"]
-texture = ExtResource("3_n8ega")
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_passives_pressed"]
-content_margin_left = 22.0
-content_margin_top = 12.0
-content_margin_right = 22.0
-content_margin_bottom = 12.0
-bg_color = Color(0.035, 0.14, 0.17, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.53, 0.39, 0.2, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_passives_hover"]
 content_margin_left = 22.0
@@ -118,9 +98,6 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxTexture_bes3q")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_passives_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_passives_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_passives_hover")
 text = "COURSE PASSIVES"
 

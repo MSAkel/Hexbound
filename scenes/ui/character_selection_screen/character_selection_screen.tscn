@@ -8,8 +8,10 @@
 [ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="6_arrow_normal"]
 [ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="7_arrow_pressed"]
 [ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="8_arrow_hover"]
-[ext_resource type="Texture2D" uid="uid://1dtwsew8gxg5" path="res://assets/gui/buttons/button_play.png" id="11_m2gea"]
+[ext_resource type="Texture2D" uid="uid://c6b8lry1fehy1" path="res://assets/gui/buttons/button_accent_normal.png" id="11_qllxi"]
+[ext_resource type="Texture2D" uid="uid://di3ktqmd2smbl" path="res://assets/gui/buttons/button_accent_pressed.png" id="12_ispof"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
+[ext_resource type="Texture2D" uid="uid://ckj7ydre0t2d2" path="res://assets/gui/buttons/button_accent_hover.png" id="13_s21rt"]
 [ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/character_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="14_back"]
 
@@ -23,23 +25,13 @@ texture = ExtResource("5_6jx6k")
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_back"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m2gea"]
-texture = ExtResource("11_m2gea")
+texture = ExtResource("11_qllxi")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_pressed"]
-content_margin_left = 44.0
-content_margin_top = 18.0
-content_margin_right = 44.0
-content_margin_bottom = 18.0
-bg_color = Color(0.035, 0.14, 0.17, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.53, 0.39, 0.2, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yyyhm"]
+texture = ExtResource("12_ispof")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fvapy"]
+texture = ExtResource("13_s21rt")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_hover"]
 content_margin_left = 44.0
@@ -201,8 +193,8 @@ theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 34
 theme_override_styles/normal = SubResource("StyleBoxTexture_m2gea")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_play_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_play_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_yyyhm")
+theme_override_styles/hover = SubResource("StyleBoxTexture_fvapy")
 theme_override_styles/focus = SubResource("StyleBoxFlat_play_hover")
 text = "PLAY"
 

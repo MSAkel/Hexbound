@@ -82,6 +82,8 @@ const ICON_FLAVOUR := FeastStatIcons.FLAVOUR
 const ICON_ENERGY := FeastStatIcons.FLAVOUR
 const ICON_GOLD := FeastStatIcons.GOLD
 const ICON_MULT := FeastStatIcons.MULT
+const ICON_DOUBLE := FeastStatIcons.DOUBLE
+const ICON_FIRE := FeastStatIcons.FIRE
 
 # Fallback prices when a tile card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -127,7 +129,7 @@ var _activation_was_empowered: bool = false
 # Utilities default to one occupied tile. Transposition uses two.
 @export var utility_target_count: int = 1
 ## Plays once when this card resolves during turn order. Chance cards still fire on a miss.
-@export var trigger_sound: AudioStream = UISounds.CARD_TRIGGER
+@export var trigger_sound: AudioStream
 
 
 ## Extra per-instance state for a placed card. Saved with the map between loads.
@@ -611,19 +613,39 @@ func _create_floating_text(
 	tile: Hex,
 	text: String,
 	color: Color = Color.WHITE,
-	text_icon: Texture2D = null
+	text_icon: Texture2D = null,
+	target_icon: Texture2D = null
 ) -> void:
 	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
-	tile.map.create_floating_text(tile_pos, text, color, text_icon)
+	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon)
+
+
+## Kitchenware target feedback as ability icon → target card icon.
+func _create_targeted_ability_floating_text(
+	tile: Hex,
+	ability_icon: Texture2D,
+	target: TileCard
+) -> void:
+	if target.icon == null:
+		return
+	_create_floating_text(tile, "", Color.WHITE, ability_icon, target.icon)
+
+
+## Kitchenware double feedback.
+func _create_doubled_floating_text(tile: Hex, target: TileCard) -> void:
+	_create_targeted_ability_floating_text(tile, ICON_DOUBLE, target)
+
+
+## Kitchenware fire feedback.
+func _create_fired_floating_text(tile: Hex, target: TileCard) -> void:
+	_create_targeted_ability_floating_text(tile, ICON_FIRE, target)
 
 
 ## Shared activation blip for every trigger, including misses with no float text.
 func _play_trigger_sound() -> void:
 	if GameManager.should_skip_turn_presentation():
 		return
-	if trigger_sound == null:
-		return
-	AudioManager.play_sfx(trigger_sound)
+	AudioManager.play_card_trigger_chop()
 
 #endregion --- Energy, gold, additive mult, multiplicative mult, and floating text helpers ---
 

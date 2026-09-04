@@ -7,6 +7,7 @@ const TILE_PANEL_HOVER_DELAY := 0.4
 
 var map: HexTileMap
 var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
+var _occupied_icon_hover_coords: Vector2i = Vector2i(-1, -1)
 var _tile_panel_timer: Timer
 
 
@@ -51,6 +52,7 @@ func update_tile_panel_hover(map_coords: Vector2i, immediate: bool = false) -> v
 		return
 
 	_tile_panel_hover_coords = map_coords
+	_set_occupied_icon_hover(map_coords)
 	_update_occupied_inspect_overlay(hex)
 	map.tile_panel.hide()
 	_set_panel_process(false)
@@ -63,6 +65,7 @@ func update_tile_panel_hover(map_coords: Vector2i, immediate: bool = false) -> v
 
 func hide_tile_panel() -> void:
 	_tile_panel_hover_coords = Vector2i(-1, -1)
+	_clear_occupied_icon_hover()
 	_tile_panel_timer.stop()
 	map.tile_panel.hide()
 	_set_panel_process(false)
@@ -121,3 +124,35 @@ func _clear_occupied_inspect_overlay() -> void:
 			continue
 		map.rune_highlight_overlay_layer.set_cell(coords, -1)
 	map._inspect_highlight_coords.clear()
+
+
+func _set_occupied_icon_hover(map_coords: Vector2i) -> void:
+	if map_coords == _occupied_icon_hover_coords:
+		return
+	_play_inspect_hover_out_at(_occupied_icon_hover_coords)
+	_occupied_icon_hover_coords = map_coords
+	if map_coords == Vector2i(-1, -1):
+		return
+	if not map.map_data.has(map_coords):
+		return
+	var hex: Hex = map.map_data[map_coords]
+	if hex.card_icon_ui == null:
+		return
+	hex.card_icon_ui.play_inspect_hover_in()
+	AudioManager.play_ui_hover()
+
+
+func _clear_occupied_icon_hover() -> void:
+	_play_inspect_hover_out_at(_occupied_icon_hover_coords)
+	_occupied_icon_hover_coords = Vector2i(-1, -1)
+
+
+func _play_inspect_hover_out_at(coords: Vector2i) -> void:
+	if coords == Vector2i(-1, -1):
+		return
+	if not map.map_data.has(coords):
+		return
+	var hex: Hex = map.map_data[coords]
+	if hex.card_icon_ui == null:
+		return
+	hex.card_icon_ui.play_inspect_hover_out()

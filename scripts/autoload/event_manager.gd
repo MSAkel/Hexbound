@@ -22,7 +22,7 @@ const ANY_EVENT_ROUND := [3, 6, 9]
 const LATE_EVENT_ROUNDS := [6, 9]
 const FINAL_EVENT_ROUND := [9]
 const BLACKOUT_COUNT := 5
-const SEALED_HEX_COUNT := 3
+const SEALED_HEX_COUNT := 5
 const RAISED_STAKES_SCORE_SCALE := 1.25
 
 const ALL_EVENTS: Array[Type] = [
@@ -83,7 +83,7 @@ const EVENT_INFO := {
 	Type.SEALED_HEXES: {
 		"name": "Sealed Spots",
 		"description": "Three empty spots cannot be played on this day.",
-		"rounds": LATE_EVENT_ROUNDS,
+		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.JAMMED_BELT: {
 		"name": "Jammed Belt",

@@ -5,7 +5,6 @@
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="3_back"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="4_vertical_divider"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="5_tooltip"]
-[ext_resource type="Texture2D" uid="uid://tjkpc6hbs8rc" path="res://assets/gui/buttons/button_primary.png" id="5_u8fou"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jy1rv"]
 content_margin_left = 28.0
@@ -29,41 +28,6 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.43, 0.33, 0.19, 0.4)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m2gea"]
-texture = ExtResource("5_u8fou")
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_reset_pressed"]
-content_margin_left = 18.0
-content_margin_top = 12.0
-content_margin_right = 18.0
-content_margin_bottom = 12.0
-bg_color = Color(0.035, 0.14, 0.17, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.53, 0.39, 0.2, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_reset_hover"]
-content_margin_left = 18.0
-content_margin_top = 12.0
-content_margin_right = 18.0
-content_margin_bottom = 12.0
-bg_color = Color(0.075, 0.3, 0.33, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.78, 0.61, 0.31, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -311,9 +275,6 @@ theme_override_colors/font_color = Color(0.9967051, 0.9857301, 0.96631664, 1)
 theme_override_colors/font_pressed_color = Color(0.84, 0.72, 0.51, 1)
 theme_override_colors/font_hover_color = Color(1, 0.93, 0.76, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxTexture_m2gea")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_reset_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_reset_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_reset_normal")
 text = "RESET COURSE"
 

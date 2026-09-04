@@ -23,6 +23,8 @@ const CARD_MIN_FONT_SIZE := 40
 const STACK_GROUP_DISTANCE := 8.0
 ## Extra pixels between stacked card floats, on top of the previous line's font height.
 const STACK_GAP := 6.0
+## Extra pixels between icons in kitchenware ability → target floats.
+const ICON_TEXT_SEPARATION := 6
 ## Centers card activation text over its rune, slightly above the rune's midpoint.
 const CARD_FLOAT_ANCHOR_OFFSET := Vector2(0.0, -24.0)
 const GLOW_SHADER := preload("res://scenes/animations/floating_text_glow.gdshader")
@@ -33,6 +35,7 @@ static var _active_card_floats: Array[FloatingText] = []
 ## Position before stack offset. Later floats compare against this.
 var _stack_anchor: Vector2 = Vector2.ZERO
 var _text_root: Node2D
+var _target_icon: Texture2D
 
 
 func _ready() -> void:
@@ -40,7 +43,12 @@ func _ready() -> void:
 	icon_rect.visible = false
 
 
-func set_text(text: String, _color: Color = Color.WHITE, icon: Texture2D = null) -> void:
+func set_text(
+	text: String,
+	_color: Color = Color.WHITE,
+	icon: Texture2D = null,
+	target_icon: Texture2D = null
+) -> void:
 	if not is_node_ready():
 		await ready
 
@@ -50,6 +58,7 @@ func set_text(text: String, _color: Color = Color.WHITE, icon: Texture2D = null)
 	label.scale = Vector2.ONE
 	# One color for every tile-card float. Icons still distinguish Energy, Gold, and Mult.
 	_apply_label_style(Color.WHITE, ScoreReadoutStyle.parse_amount(text), true)
+	_target_icon = target_icon
 	_apply_icon(icon)
 
 
@@ -123,7 +132,9 @@ func _exit_tree() -> void:
 
 ## Builds a per-character row and pops each glyph in. Returns false if there is nothing to show.
 func _play_character_pop() -> bool:
-	if label.text.is_empty():
+	var has_icon := icon_rect.visible and icon_rect.texture != null
+	var has_target_icon := _target_icon != null
+	if label.text.is_empty() and not has_icon and not has_target_icon:
 		return false
 
 	label.visible = false
@@ -134,21 +145,33 @@ func _play_character_pop() -> bool:
 	add_child(_text_root)
 
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 1)
+	var uses_icon_pair := has_icon and has_target_icon
+	row.add_theme_constant_override(
+		"separation",
+		ICON_TEXT_SEPARATION if uses_icon_pair or has_icon else 1
+	)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_text_root.add_child(row)
 
 	var pop_items: Array[Control] = []
-	var color := label.get_theme_color("default_color")
-	for character in label.text:
-		var char_label := _make_character_label(character, color)
-		row.add_child(char_label)
-		pop_items.append(char_label)
-
-	# Scene Icon is previewed next to the label in the editor. Reparent it into the pop row at runtime.
-	if icon_rect.visible and icon_rect.texture != null:
+	if has_icon:
+		# Scene Icon is previewed next to the label in the editor. Reparent it left of the text at runtime.
 		icon_rect.reparent(row)
 		pop_items.append(icon_rect)
+
+	var color := label.get_theme_color("default_color")
+	if uses_icon_pair:
+		var arrow := _make_character_label("→", color)
+		row.add_child(arrow)
+		pop_items.append(arrow)
+		var target_rect := _make_icon_rect(_target_icon)
+		row.add_child(target_rect)
+		pop_items.append(target_rect)
+	elif not label.text.is_empty():
+		for character in label.text:
+			var char_label := _make_character_label(character, color)
+			row.add_child(char_label)
+			pop_items.append(char_label)
 
 	await get_tree().process_frame
 	if not is_instance_valid(self):
@@ -221,9 +244,25 @@ func _apply_icon(texture: Texture2D) -> void:
 	if texture == null:
 		return
 
-	var icon_size := float(label.get_theme_font_size("normal_font_size"))
+	var icon_size := _icon_pixel_size()
 	icon_rect.custom_minimum_size = Vector2(icon_size, icon_size)
 	icon_rect.size = Vector2(icon_size, icon_size)
+
+
+func _make_icon_rect(texture: Texture2D) -> TextureRect:
+	var rect := TextureRect.new()
+	rect.texture = texture
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icon_size := _icon_pixel_size()
+	rect.custom_minimum_size = Vector2(icon_size, icon_size)
+	rect.size = Vector2(icon_size, icon_size)
+	return rect
+
+
+func _icon_pixel_size() -> float:
+	return float(label.get_theme_font_size("normal_font_size"))
 
 
 func _set_font_size(value: float) -> void:

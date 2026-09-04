@@ -16,7 +16,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		if not _try_empower_tile_card(tile, rune):
 			continue
 		empowered_any = true
-		_create_floating_text(tile, "Doubled %s" % rune.name)
+		_create_doubled_floating_text(tile, rune)
 
 	if not empowered_any:
 		failed_tile_card_text(tile)

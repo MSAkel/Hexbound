@@ -15,6 +15,8 @@ var sfx_volume: float = 0.35
 
 # Crossfade settings
 const CROSSFADE_DURATION = 1.0
+const END_TURN_BELL_VOLUME_SCALE := 0.75
+const CARD_TRIGGER_CHOP_VOLUME_SCALE := 1.5
 var crossfade_tween: Tween
 var _crossfade_generation: int = 0
 # Per-player fade tweens so a reused SFX slot can cancel an in-flight fade.
@@ -24,6 +26,8 @@ var _condiment_hover_player: AudioStreamPlayer
 var _condiment_hover_use_b := false
 ## Dedicated UI hover player so button hover respects the SFX bus and never stacks.
 var _ui_hover_player: AudioStreamPlayer
+## Cycles through chopping clips once per end-turn card trigger.
+var _card_trigger_chop_index := 0
 
 func _ready() -> void:
 	# Initialize audio players
@@ -87,17 +91,27 @@ func play_music(music: AudioStream, fade: bool = true) -> void:
 		music_player.play()
 
 # Play a sound effect. Optional fade_out_after starts a volume fade after that many seconds.
-func play_sfx(sfx: AudioStream, fade_out_after: float = -1.0, fade_out_duration: float = 0.0) -> void:
+func play_sfx(
+	sfx: AudioStream,
+	fade_out_after: float = -1.0,
+	fade_out_duration: float = 0.0,
+	volume_scale: float = 1.0
+) -> void:
 	var player := get_available_sfx_player()
 	if player == null:
 		return
 	_kill_sfx_fade(player)
 	player.bus = "SFX"
 	player.stream = sfx
-	player.volume_db = linear_to_db(sfx_volume)
+	player.volume_db = linear_to_db(sfx_volume * maxf(volume_scale, 0.0))
 	player.play()
 	if fade_out_after >= 0.0 and fade_out_duration > 0.0:
 		_fade_out_sfx(player, fade_out_after, fade_out_duration)
+
+
+## End-turn service bell. Slightly quieter than other SFX.
+func play_end_turn_bell() -> void:
+	play_sfx(UISounds.END_TURN, -1.0, 0.0, END_TURN_BELL_VOLUME_SCALE)
 
 
 ## Stops any in-flight hover clip, then plays the other condiment hover file.
@@ -130,6 +144,24 @@ func play_ui_hover() -> void:
 func stop_ui_hover() -> void:
 	if _ui_hover_player != null:
 		_ui_hover_player.stop()
+
+
+## Resets the end-turn chop cycle at the start of each resolve pass.
+func reset_card_trigger_chops() -> void:
+	_card_trigger_chop_index = 0
+
+
+## Plays the next chopping clip for a card trigger during end-turn resolve.
+func play_card_trigger_chop() -> void:
+	if UISounds.CHOPPING.is_empty():
+		return
+	play_sfx(
+		UISounds.CHOPPING[_card_trigger_chop_index],
+		-1.0,
+		0.0,
+		CARD_TRIGGER_CHOP_VOLUME_SCALE
+	)
+	_card_trigger_chop_index = (_card_trigger_chop_index + 1) % UISounds.CHOPPING.size()
 
 
 ## Fades an SFX player to silence, then stops it so the pool slot is free.
