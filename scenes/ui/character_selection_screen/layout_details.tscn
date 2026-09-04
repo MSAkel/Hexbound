@@ -11,22 +11,6 @@
 
 [sub_resource type="FontVariation" id="FontVariation_x6eud"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_passives_hover"]
-content_margin_left = 22.0
-content_margin_top = 12.0
-content_margin_right = 22.0
-content_margin_bottom = 12.0
-bg_color = Color(0.075, 0.3, 0.33, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.78, 0.61, 0.31, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_legend_item"]
 content_margin_left = 14.0
 content_margin_top = 12.0
@@ -98,7 +82,6 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-theme_override_styles/focus = SubResource("StyleBoxFlat_passives_hover")
 text = "COURSE PASSIVES"
 
 [node name="PassiveSetLabel" type="Label" parent="ProfileColumn" unique_id=1709617180]

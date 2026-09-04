@@ -532,6 +532,11 @@ func _get_order_by_rings(from_outer: bool, use_ne_start: bool) -> Array[Vector2i
 
 
 ## Groups map tiles into visual rows (top-to-bottom, left-to-right within each row).
+func get_spatial_rows() -> Array:
+	return _get_spatial_rows()
+
+
+## Groups map tiles into visual rows (top-to-bottom, left-to-right within each row).
 func _get_spatial_rows() -> Array:
 	var coords: Array[Vector2i] = []
 	coords.assign(_map.map_data.keys())

@@ -11,6 +11,7 @@ signal closed
 @onready var resolution_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/ResolutionContainer/ResolutionOptionButton
 @onready var v_sync_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox
 @onready var tutorial_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/TutorialCheckBox
+@onready var back_button: Button = $VBoxContainer/BackButton
 
 const RESOLUTIONS := [
 	Vector2i(1024, 576),
@@ -42,6 +43,26 @@ func _ready() -> void:
 func _on_visibility_changed() -> void:
 	if visible:
 		_sync_settings_controls()
+		call_deferred("_focus_settings")
+
+
+func _focus_settings() -> void:
+	if not visible:
+		return
+	if back_button != null and not back_button.disabled:
+		back_button.grab_focus()
+		return
+	MenuFocus.grab_first($VBoxContainer/ScrollContainer/SettingsContainer)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		var viewport := get_viewport()
+		if viewport != null:
+			viewport.set_input_as_handled()
+		_on_back_button_pressed()
 
 
 func _populate_resolution_options() -> void:

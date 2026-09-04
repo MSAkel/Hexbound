@@ -32,6 +32,8 @@ var _awaiting_pointer_release: bool = false
 var _select_press_position := Vector2.ZERO
 # Ghost stays on the cursor until a successful drop snaps it into the hex.
 var _ghost_follow_mouse := false
+# Preview follows the gamepad hex cursor instead of the mouse.
+var _use_gamepad_preview := false
 var _ghost_float_time := 0.0
 
 const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
@@ -84,7 +86,14 @@ func _make_ghost_rune(z: int) -> CardIconUI:
 
 
 func _process(delta: float) -> void:
-	if not _ghost_follow_mouse or not is_card_selected:
+	if not is_card_selected:
+		return
+	if _use_gamepad_preview:
+		_ghost_float_time += delta
+		if _rune_preview.visible:
+			_place_rune_preview_at_active_target()
+		return
+	if not _ghost_follow_mouse:
 		return
 	_ghost_float_time += delta
 	_place_rune_preview_at_mouse()
@@ -157,13 +166,102 @@ func _on_card_selected(card: CardUI) -> void:
 	
 	is_card_selected = true
 	selected_card = card
-	# The card is selected on mouse-down. A later mouse-up over a hex should place it.
-	_awaiting_pointer_release = true
-	_select_press_position = tile_map.get_global_mouse_position()
-	_ghost_float_time = 0.0
-	_ghost_follow_mouse = true
 	_update_preview_texture()
 	_update_placement_overlays()
+	if _use_gamepad_preview:
+		_configure_gamepad_placement()
+	else:
+		# The card is selected on mouse-down. A later mouse-up over a hex should place it.
+		_awaiting_pointer_release = true
+		_select_press_position = tile_map.get_global_mouse_position()
+		_ghost_float_time = 0.0
+		_ghost_follow_mouse = true
+		_update_rune_preview()
+
+
+## Select a hand card for placement with the controller. Skips mouse drag.
+func begin_gamepad_placement(card: CardUI) -> void:
+	if card == null:
+		return
+	_use_gamepad_preview = true
+	if selected_card != null and selected_card != card:
+		_switching_selection = true
+		selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
+		_switching_selection = false
+		_utility_target_hexes.clear()
+		_utility_target_coords.clear()
+	if selected_card == card and is_card_selected:
+		_configure_gamepad_placement()
+		return
+	card.card_state_machine.transition_to_state(CardState.State.CLICKED)
+
+
+func _configure_gamepad_placement() -> void:
+	_awaiting_pointer_release = false
+	_ghost_follow_mouse = false
+	_use_gamepad_preview = true
+	tile_map.ensure_gamepad_focus()
+	_focus_gamepad_on_placeable_tile()
+	_ghost_float_time = 0.0
+	_update_rune_preview()
+
+
+## Moves controller focus onto the nearest legal placement tile when the current cell cannot be used.
+func _focus_gamepad_on_placeable_tile() -> void:
+	var focus := tile_map.get_gamepad_focus_cell()
+	if _is_placeable_map_coords(focus):
+		return
+	var origin := focus if focus != Vector2i(-1, -1) else tile_map.get_default_gamepad_focus_cell()
+	var best := Vector2i(-1, -1)
+	var best_dist_sq := INF
+	for coords: Vector2i in tile_map.map_data:
+		if not _is_placeable_map_coords(coords):
+			continue
+		var dist_sq := _placement_focus_distance_sq(origin, coords)
+		if dist_sq < best_dist_sq:
+			best_dist_sq = dist_sq
+			best = coords
+	if best != Vector2i(-1, -1):
+		tile_map.set_gamepad_focus_cell(best)
+
+
+func _is_placeable_map_coords(coords: Vector2i) -> bool:
+	if coords == Vector2i(-1, -1):
+		return false
+	if not tile_map.is_in_map(coords) or not tile_map.is_tile_interactable(coords):
+		return false
+	var hex: Hex = tile_map.map_data.get(coords)
+	return hex != null and _can_place_on_hex(hex)
+
+
+func _placement_focus_distance_sq(from: Vector2i, to: Vector2i) -> float:
+	var from_pos := tile_map.base_layer.map_to_local(from)
+	var to_pos := tile_map.base_layer.map_to_local(to)
+	return from_pos.distance_squared_to(to_pos)
+
+
+func refresh_gamepad_preview() -> void:
+	if _use_gamepad_preview and is_card_selected:
+		_update_rune_preview()
+
+
+func try_place_from_gamepad() -> void:
+	if not is_card_selected or _is_placing:
+		return
+	_try_place_card()
+
+
+func cancel_gamepad_placement() -> void:
+	_deselect_card()
+
+
+## Keeps an active placement when the player switches from controller to mouse.
+func switch_to_mouse_preview() -> void:
+	if not is_card_selected:
+		return
+	_use_gamepad_preview = false
+	_ghost_follow_mouse = true
+	_awaiting_pointer_release = false
 	_update_rune_preview()
 
 
@@ -195,13 +293,15 @@ func _update_rune_preview() -> void:
 	if selected_card == null or _is_placing:
 		return
 
-	var map_coords := _get_mouse_map_coords()
+	var map_coords := _get_active_map_coords()
 	var hex: Hex = tile_map.map_data.get(map_coords) if tile_map.is_in_map(map_coords) else null
 	var over_interactable_map := hex != null and tile_map.is_tile_interactable(map_coords)
 	var over_valid_tile := over_interactable_map \
 		and _can_place_on_hex(hex)
 	# The lifted card overlaps bottom hexes. Use the hand slot, not the hover pose.
-	var mouse_over_card := selected_card.is_mouse_over_hand_slot() and not over_interactable_map
+	var mouse_over_card := false
+	if not _use_gamepad_preview:
+		mouse_over_card = selected_card.is_mouse_over_hand_slot() and not over_interactable_map
 
 	# Dip once the cursor leaves the selected card, not only when a tile is targeted.
 	selected_card.set_map_tile_hover_active(not mouse_over_card)
@@ -237,10 +337,18 @@ func _get_mouse_map_coords() -> Vector2i:
 	)
 
 
+func _get_active_map_coords() -> Vector2i:
+	if _use_gamepad_preview:
+		var coords := tile_map.get_gamepad_focus_cell()
+		if coords != Vector2i(-1, -1):
+			return coords
+	return _get_mouse_map_coords()
+
+
 func _is_cursor_over_hand_card() -> bool:
 	if selected_card == null:
 		return false
-	var map_coords := _get_mouse_map_coords()
+	var map_coords := _get_active_map_coords()
 	if tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords):
 		return false
 	return selected_card.is_mouse_over_hand_slot()
@@ -311,7 +419,7 @@ func _try_place_card() -> void:
 	if selected_card == null or _is_placing:
 		return
 	
-	var map_coords := _get_mouse_map_coords()
+	var map_coords := _get_active_map_coords()
 	
 	if not tile_map.is_in_map(map_coords):
 		_deselect_card()
@@ -409,6 +517,7 @@ func _reset_state() -> void:
 	_awaiting_pointer_release = false
 	_select_press_position = Vector2.ZERO
 	_ghost_follow_mouse = false
+	_use_gamepad_preview = false
 	_ghost_float_time = 0.0
 	_is_placing = false
 	_utility_target_hexes.clear()
@@ -442,8 +551,9 @@ func _show_cursor_rune_preview(morph_progress: float) -> void:
 	if morph_progress <= 0.05:
 		_rune_preview.visible = false
 		return
-	_ghost_follow_mouse = true
-	_place_rune_preview_at_mouse()
+	if not _use_gamepad_preview:
+		_ghost_follow_mouse = true
+	_place_rune_preview_at_active_target()
 	_rune_preview.modulate = Color.WHITE
 	_rune_preview.visible = true
 
@@ -473,6 +583,22 @@ func _place_rune_preview_at_mouse() -> void:
 		+ Vector2(0.0, GHOST_LIFT_OFFSET + bob)
 	)
 	_rune_preview.set_ghost_float_scale(pulse)
+
+
+func _place_rune_preview_at_active_target() -> void:
+	if _use_gamepad_preview:
+		var coords := _get_active_map_coords()
+		if tile_map.is_in_map(coords):
+			var hex: Hex = tile_map.map_data[coords]
+			var bob := sin(_ghost_float_time * TAU * GHOST_FLOAT_HZ) * GHOST_FLOAT_AMPLITUDE
+			var pulse := 1.0 + sin(_ghost_float_time * TAU * GHOST_FLOAT_HZ) * GHOST_FLOAT_SCALE_PULSE
+			_rune_preview.global_position = (
+				_hex_ghost_target_position(hex)
+				+ Vector2(0.0, GHOST_LIFT_OFFSET + bob)
+			)
+			_rune_preview.set_ghost_float_scale(pulse)
+			return
+	_place_rune_preview_at_mouse()
 
 
 func _hex_ghost_target_position(hex: Hex) -> Vector2:

@@ -9,15 +9,8 @@
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nvml6"]
 texture = ExtResource("1_ydht1")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vu6l5"]
-content_margin_top = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0.12290869, 0.19797018, 0.21427926, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pvc40"]
+texture = ExtResource("2_8gw6x")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_l6k4t"]
 texture = ExtResource("2_8gw6x")
@@ -50,7 +43,7 @@ default_font_size = 18
 Button/font_sizes/font_size = 18
 Button/fonts/font = SubResource("FontVariation_r66gk")
 Button/styles/disabled = SubResource("StyleBoxTexture_nvml6")
-Button/styles/focus = SubResource("StyleBoxFlat_vu6l5")
+Button/styles/focus = SubResource("StyleBoxTexture_pvc40")
 Button/styles/hover = SubResource("StyleBoxTexture_l6k4t")
 Button/styles/normal = SubResource("StyleBoxTexture_2hflq")
 Button/styles/pressed = SubResource("StyleBoxTexture_r5ka0")

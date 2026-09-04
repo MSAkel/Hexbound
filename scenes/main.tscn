@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/scene_enter_transition/scene_enter_transition.tscn" id="4_transition"]
 
+[ext_resource type="Script" uid="uid://b7gamepadctrl01" path="res://scripts/gamepad_gameplay_controller.gd" id="5_gamepad"]
+
 [node name="Main" type="Node2D" unique_id=1217909312]
 script = ExtResource("1_jyhfs")
 
@@ -34,3 +36,6 @@ position = Vector2(2, 0)
 position = Vector2(911, 878)
 
 [node name="SceneEnterTransition" parent="." unique_id=742454740 instance=ExtResource("4_transition")]
+
+[node name="GamepadGameplayController" type="Node" parent="."]
+script = ExtResource("5_gamepad")

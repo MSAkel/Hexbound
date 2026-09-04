@@ -54,6 +54,8 @@ const HEX_RUNE_SIZE := Vector2(256, 256)
 const BASE_TILE_ATLAS_COORDS := Vector2i(0, 0)
 
 var hovered_cell: Vector2i = Vector2i(-1, -1)
+# Controller navigation focus, separate from mouse hover.
+var _gamepad_focus_cell: Vector2i = Vector2i(-1, -1)
 # Dictionary<Vector2i, Hex>
 var map_data: Dictionary = {}
 # Ring distances, trigger order, and segment grouping.
@@ -303,7 +305,164 @@ func clear_placement_valid_highlights() -> void:
 func _get_map_focus_cell() -> Vector2i:
 	if _placement_preview_cell != Vector2i(-1, -1):
 		return _placement_preview_cell
+	if InputManager.is_using_gamepad() and _gamepad_focus_cell != Vector2i(-1, -1):
+		return _gamepad_focus_cell
 	return hovered_cell
+
+
+func get_gamepad_focus_cell() -> Vector2i:
+	return _gamepad_focus_cell
+
+
+func get_default_gamepad_focus_cell() -> Vector2i:
+	return Vector2i(hex_size, hex_size)
+
+
+func ensure_gamepad_focus() -> void:
+	if _gamepad_focus_cell != Vector2i(-1, -1) and is_tile_interactable(_gamepad_focus_cell):
+		_refresh_map_focus_overlays()
+		return
+	set_gamepad_focus_cell(get_default_gamepad_focus_cell())
+
+
+func set_gamepad_focus_cell(coords: Vector2i) -> void:
+	if not is_in_map(coords) or not is_tile_interactable(coords):
+		return
+	if _gamepad_focus_cell == coords:
+		return
+	_gamepad_focus_cell = coords
+	_refresh_map_focus_overlays()
+	if hover_ui != null and InputManager.is_using_gamepad():
+		_update_gamepad_tile_inspect()
+
+
+func clear_gamepad_focus() -> void:
+	if _gamepad_focus_cell == Vector2i(-1, -1):
+		return
+	_gamepad_focus_cell = Vector2i(-1, -1)
+	_refresh_map_focus_overlays()
+	if hover_ui != null:
+		hover_ui.hide_tile_panel()
+
+
+## Moves controller focus. Horizontal input wraps across row ends onto the next row.
+## Vertical input keeps the same board column lane across rows.
+func move_gamepad_focus(direction: Vector2) -> void:
+	if direction == Vector2.ZERO:
+		return
+	ensure_gamepad_focus()
+	if absf(direction.x) > absf(direction.y):
+		_move_gamepad_focus_horizontal(int(signf(direction.x)))
+		return
+	_move_gamepad_focus_vertical(int(signf(direction.y)))
+
+
+func _find_gamepad_row_col(rows: Array) -> Vector2i:
+	for r in rows.size():
+		var row: Array = rows[r]
+		var col := row.find(_gamepad_focus_cell)
+		if col >= 0:
+			return Vector2i(r, col)
+	return Vector2i(-1, -1)
+
+
+## Encodes which vertical column lane the focused tile occupies.
+## x: 0 = offset from left, 1 = offset from right, 2 = fixed index from left (center lanes).
+## y: lane offset or index value.
+func _get_gamepad_vertical_lane(col_index: int, row_size: int) -> Vector2i:
+	if col_index <= 0:
+		return Vector2i(0, 0)
+	if row_size > 2 and col_index == 1:
+		return Vector2i(0, 1)
+	if col_index >= row_size - 1:
+		return Vector2i(1, 0)
+	if row_size > 2 and col_index == row_size - 2:
+		return Vector2i(1, 1)
+	return Vector2i(2, col_index)
+
+
+func _gamepad_lane_to_col_index(lane: Vector2i, target_row_size: int) -> int:
+	if target_row_size <= 0:
+		return -1
+	match lane.x:
+		0:
+			return clampi(lane.y, 0, target_row_size - 1)
+		1:
+			return clampi(target_row_size - 1 - lane.y, 0, target_row_size - 1)
+		_:
+			return clampi(lane.y, 0, target_row_size - 1)
+
+
+func _gamepad_coords_for_lane(row: Array, lane: Vector2i) -> Vector2i:
+	var col_index := _gamepad_lane_to_col_index(lane, row.size())
+	if col_index < 0 or col_index >= row.size():
+		return Vector2i(-1, -1)
+	var coords: Vector2i = row[col_index]
+	if is_tile_interactable(coords):
+		return coords
+	return Vector2i(-1, -1)
+
+
+func _move_gamepad_focus_horizontal(step: int) -> void:
+	var rows: Array = _layout.get_spatial_rows()
+	if rows.is_empty():
+		return
+	var row_col := _find_gamepad_row_col(rows)
+	if row_col.x < 0:
+		return
+	var row_index := row_col.x
+	var col_index := row_col.y
+	var row: Array = rows[row_index]
+	var new_row := row_index
+	var new_col := col_index + step
+	if new_col >= row.size():
+		new_row = row_index + 1
+		new_col = 0
+	elif new_col < 0:
+		new_row = row_index - 1
+		if new_row < 0:
+			return
+		var previous_row: Array = rows[new_row]
+		new_col = previous_row.size() - 1
+	if new_row < 0 or new_row >= rows.size():
+		return
+	var target_row: Array = rows[new_row]
+	new_col = clampi(new_col, 0, target_row.size() - 1)
+	var target_coords: Vector2i = target_row[new_col]
+	if is_tile_interactable(target_coords):
+		set_gamepad_focus_cell(target_coords)
+
+
+func _move_gamepad_focus_vertical(step: int) -> void:
+	var rows: Array = _layout.get_spatial_rows()
+	if rows.is_empty():
+		return
+	var row_col := _find_gamepad_row_col(rows)
+	if row_col.x < 0:
+		return
+	var current_row: Array = rows[row_col.x]
+	var lane := _get_gamepad_vertical_lane(row_col.y, current_row.size())
+	var new_row := row_col.x + step
+	if new_row < 0 or new_row >= rows.size():
+		return
+	var target_row: Array = rows[new_row]
+	var target_coords := _gamepad_coords_for_lane(target_row, lane)
+	if target_coords != Vector2i(-1, -1):
+		set_gamepad_focus_cell(target_coords)
+
+
+func _update_gamepad_tile_inspect() -> void:
+	if hover_ui == null:
+		return
+	var coords := _gamepad_focus_cell
+	if not is_in_map(coords) or not is_tile_interactable(coords):
+		hover_ui.hide_tile_panel()
+		return
+	var hex: Hex = map_data.get(coords)
+	if hex == null or hex.active_tile_card == null:
+		hover_ui.hide_tile_panel()
+		return
+	hover_ui.update_tile_panel_hover(coords, true)
 
 
 func _refresh_segment_role_highlights() -> void:
@@ -546,6 +705,7 @@ func generate_terrain() -> void:
 	hovered_tile_overlay_layer.clear()
 	placement_valid_overlay_layer.clear()
 	_placement_preview_cell = Vector2i(-1, -1)
+	_gamepad_focus_cell = Vector2i(-1, -1)
 	rune_highlight_overlay_layer.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()

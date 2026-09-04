@@ -6,6 +6,7 @@ signal closed
 
 @onready var tab_bar: TabBar = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar
 @onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
+@onready var back_button: Button = $PanelContainer/VBoxContainer/BackButton
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const EVENT_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
@@ -32,6 +33,22 @@ enum CollectionTab {
 func _ready() -> void:
 	_configure_tabs()
 	_show_tab(tab_bar.current_tab)
+	call_deferred("_focus_collection")
+
+
+func _focus_collection() -> void:
+	if tab_bar != null:
+		tab_bar.grab_focus()
+		return
+	MenuFocus.grab_first(self)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		var viewport := get_viewport()
+		if viewport != null:
+			viewport.set_input_as_handled()
+		_on_back_button_pressed()
 
 
 func _configure_tabs() -> void:

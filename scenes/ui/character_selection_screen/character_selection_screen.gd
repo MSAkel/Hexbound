@@ -6,10 +6,17 @@ const SOUNDTRACK := preload("res://scripts/soundtracks.gd")
 @onready var difficulty_container: DifficultyLevelContainer = %DifficultyLevelContainer
 @onready var seeded_run_panel: SeededRunPanel = %SeededRunPanel
 @onready var scene_enter_transition: SceneEnterTransition = $SceneEnterTransition
+@onready var play_button: Button = %PlayButton
+@onready var back_button: Button = $SafeArea/Page/UnifiedPanel/Content/Header/HeaderLeft/BackButton
+@onready var prev_selection_button: TextureButton = $SafeArea/Page/PrevSelectionButton
+@onready var next_selection_button: TextureButton = $SafeArea/Page/NextSelectionButton
 
 # One selection per character definition. Only one is shown at a time.
 var selections: Array[CharacterDefinition] = []
 var current_index: int = 0
+var _layout_nav_cooldown := 0.0
+
+const LAYOUT_NAV_COOLDOWN := 0.2
 
 
 func _ready() -> void:
@@ -30,6 +37,47 @@ func _ready() -> void:
 	if music:
 		AudioManager.play_music(music)
 	SegmentPassiveUnlockPresenter.present_if_needed(self)
+	_bind_screen_hover_sounds()
+	call_deferred("_focus_character_selection")
+
+
+func _process(delta: float) -> void:
+	_layout_nav_cooldown = maxf(_layout_nav_cooldown - delta, 0.0)
+
+
+func _focus_character_selection() -> void:
+	if play_button != null and not play_button.disabled:
+		play_button.grab_focus()
+		return
+	MenuFocus.grab_first(self)
+
+
+func _bind_screen_hover_sounds() -> void:
+	for button: BaseButton in [
+		prev_selection_button,
+		next_selection_button,
+		back_button,
+		play_button,
+	]:
+		_bind_menu_hover_sound(button)
+	_collect_menu_hover_sounds(difficulty_container)
+	_collect_menu_hover_sounds(seeded_run_panel)
+
+
+func _collect_menu_hover_sounds(root: Node) -> void:
+	if root is BaseButton:
+		_bind_menu_hover_sound(root as BaseButton)
+	for child in root.get_children():
+		_collect_menu_hover_sounds(child)
+
+
+func _bind_menu_hover_sound(button: BaseButton) -> void:
+	button.mouse_entered.connect(_play_menu_hover_sound)
+	button.focus_entered.connect(_play_menu_hover_sound)
+
+
+func _play_menu_hover_sound() -> void:
+	AudioManager.play_ui_hover()
 
 
 func get_selected_character() -> CharacterDefinition:
@@ -52,13 +100,18 @@ func _restore_last_character() -> void:
 
 
 func _on_prev_selection_pressed() -> void:
-	current_index = (current_index - 1 + selections.size()) % selections.size()
-	_update_display()
-	AudioManager.play_sfx(UISounds.SELECT)
+	_step_layout(-1)
 
 
 func _on_next_selection_pressed() -> void:
-	current_index = (current_index + 1) % selections.size()
+	_step_layout(1)
+
+
+func _step_layout(direction: int) -> void:
+	if _layout_nav_cooldown > 0.0:
+		return
+	_layout_nav_cooldown = LAYOUT_NAV_COOLDOWN
+	current_index = (current_index + direction + selections.size()) % selections.size()
 	_update_display()
 	AudioManager.play_sfx(UISounds.SELECT)
 
@@ -71,6 +124,14 @@ func _update_display() -> void:
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		var viewport := get_viewport()
+		if viewport != null:
+			viewport.set_input_as_handled()
+		_on_back_button_pressed()
 
 
 func _on_play_button_pressed() -> void:

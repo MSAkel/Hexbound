@@ -43,6 +43,8 @@ var _base_separation := 0
 var _featured_card: CardUI = null
 ## Lets the next hovered card claim featured before neighbors collapse to rest.
 var _spread_clear_pending := false
+## Index of the hand card highlighted by controller navigation.
+var _controller_focus_index := -1
 
 ## Reparent cards to hand when they are dragged or released
 func _ready() -> void:
@@ -180,8 +182,74 @@ func _refresh_hand_layout() -> void:
 		return
 	if _featured_card != null and _featured_card.get_parent() != self:
 		_featured_card = null
+	var cards := _get_hand_cards()
+	if _controller_focus_index >= cards.size():
+		_controller_focus_index = cards.size() - 1 if not cards.is_empty() else -1
 	_update_card_overlap()
+	if InputManager.is_using_gamepad():
+		_apply_controller_focus_visual()
+	else:
+		_apply_hover_spread(true)
+
+
+func move_controller_focus(direction: int) -> void:
+	var cards := _get_hand_cards()
+	if cards.is_empty():
+		_controller_focus_index = -1
+		_apply_controller_focus_visual()
+		return
+	if _controller_focus_index < 0:
+		_controller_focus_index = 0 if direction >= 0 else cards.size() - 1
+	else:
+		_controller_focus_index = clampi(_controller_focus_index + direction, 0, cards.size() - 1)
+	_apply_controller_focus_visual()
+
+
+func ensure_controller_focus() -> void:
+	var cards := _get_hand_cards()
+	if cards.is_empty():
+		_controller_focus_index = -1
+		_apply_controller_focus_visual()
+		return
+	if _controller_focus_index < 0 or _controller_focus_index >= cards.size():
+		_controller_focus_index = 0
+	_apply_controller_focus_visual()
+
+
+func clear_controller_focus() -> void:
+	_controller_focus_index = -1
+	for card in _get_hand_cards():
+		if _should_keep_card_elevated(card) or card.is_mouse_over():
+			continue
+		card.set_hover_elevated(false, true)
+	# Collapse neighbor spread. Placement keeps the picked card lifted without fanning the hand.
 	_apply_hover_spread(true)
+
+
+func get_controller_focused_card() -> CardUI:
+	var cards := _get_hand_cards()
+	if _controller_focus_index < 0 or _controller_focus_index >= cards.size():
+		return null
+	return cards[_controller_focus_index]
+
+
+func _apply_controller_focus_visual() -> void:
+	if not InputManager.is_using_gamepad():
+		return
+	var focused := get_controller_focused_card()
+	for card in _get_hand_cards():
+		if card == focused:
+			card.set_hover_elevated(true, true)
+		elif not _should_keep_card_elevated(card):
+			card.set_hover_elevated(false, true)
+
+
+## Placement selection keeps its lift even when controller focus moves to the map.
+func _should_keep_card_elevated(card: CardUI) -> bool:
+	var state_machine := card.card_state_machine
+	if state_machine == null or state_machine.current_state == null:
+		return false
+	return state_machine.current_state.state == CardState.State.CLICKED
 
 
 func _update_card_overlap() -> void:
@@ -229,6 +297,9 @@ func _apply_hover_spread(animate: bool) -> void:
 	# Typed Array.find() rejects null. Skip the lookup when nothing is featured.
 	var featured_index := cards.find(_featured_card) if _featured_card != null else -1
 	var push := _get_hover_push_amount() if featured_index >= 0 else 0.0
+	# Selected placement cards stay lifted without pushing neighbors aside.
+	if featured_index >= 0 and _should_keep_card_elevated(cards[featured_index]):
+		push = 0.0
 	for i in cards.size():
 		var card := cards[i]
 		if is_preserving_offset_for(card):
@@ -362,6 +433,8 @@ func play_intro_entrance() -> void:
 	_restore_card_mouse_filters()
 	_hand_hidden = false
 	_generated_reveal.try_play_next()
+	if InputManager.is_using_gamepad():
+		ensure_controller_focus()
 
 
 func _snap_hand_offscreen() -> void:

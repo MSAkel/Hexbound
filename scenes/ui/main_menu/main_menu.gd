@@ -10,6 +10,7 @@ const HOVER_DURATION := 0.12
 @onready var game_version: Label = $TopRightContainer/GameVersion
 @onready var developer_menu_button: Button = $TopRightContainer/DeveloperMenuButton
 @onready var menu_container: MarginContainer = $MenuContainer
+@onready var menu_items_container: VBoxContainer = $MenuContainer/MenuItemsContainer
 @onready var settings_container: PanelContainer = $SettingsContainer
 @onready var continue_button: Button = $MenuContainer/MenuItemsContainer/ContinueButton
 
@@ -22,6 +23,7 @@ func _ready() -> void:
 	game_version.text = ProjectSettings.get_setting("application/config/version")
 	_refresh_continue_button()
 	SegmentPassiveUnlockPresenter.present_if_needed(self)
+	call_deferred("_focus_main_menu")
 
 	# Play main menu music
 	var music = SOUNDTRACK.get_music_for_scene(scene_file_path)
@@ -30,21 +32,38 @@ func _ready() -> void:
 	
 	# Connect button hover/focus signals and scale from beyond the left edge so
 	# the left-aligned label shifts noticeably to the right as it grows.
-	for button in $MenuContainer/MenuItemsContainer.get_children():
+	for button in menu_items_container.get_children():
 		if button is Button:
 			_set_button_pivot(button)
 			button.resized.connect(_on_button_resized.bind(button))
 			button.mouse_entered.connect(_on_button_hover.bind(button))
 			button.mouse_exited.connect(_on_button_unhover.bind(button))
-			button.focus_entered.connect(_on_focus_entered)
+			button.focus_entered.connect(_on_button_focus.bind(button, true))
+			button.focus_exited.connect(_on_button_focus.bind(button, false))
 
 	_set_button_pivot(developer_menu_button)
 	developer_menu_button.resized.connect(_on_button_resized.bind(developer_menu_button))
 	developer_menu_button.mouse_entered.connect(_on_button_hover.bind(developer_menu_button))
 	developer_menu_button.mouse_exited.connect(_on_button_unhover.bind(developer_menu_button))
-	developer_menu_button.focus_entered.connect(_on_focus_entered)
+	developer_menu_button.focus_entered.connect(_on_button_focus.bind(developer_menu_button, true))
+	developer_menu_button.focus_exited.connect(_on_button_focus.bind(developer_menu_button, false))
 	
 	settings_container.closed.connect(_on_settings_closed)
+
+
+func _focus_main_menu() -> void:
+	if not menu_container.visible:
+		return
+	if continue_button.visible and not continue_button.disabled:
+		continue_button.grab_focus()
+		return
+	MenuFocus.grab_named(menu_items_container, "Play")
+
+
+func _on_button_focus(button: Button, focused: bool) -> void:
+	if focused:
+		AudioManager.play_ui_hover()
+	_animate_button_hover(button, focused)
 
 
 func _on_button_resized(button: Button) -> void:
@@ -82,10 +101,6 @@ func _animate_button_hover(button: Button, hovered: bool) -> void:
 	_hover_tweens[button] = tween
 
 
-func _on_focus_entered() -> void:
-	AudioManager.play_ui_hover()
-
-
 func _refresh_continue_button() -> void:
 	var has_save := RunSaveManager.has_save()
 	continue_button.visible = has_save
@@ -112,9 +127,11 @@ func _on_options_pressed() -> void:
 	menu_container.hide()
 	settings_container.show()
 
+
 func _on_settings_closed() -> void:
 	settings_container.hide()
 	menu_container.show()
+	call_deferred("_focus_main_menu")
 
 
 func _on_exit_pressed() -> void:

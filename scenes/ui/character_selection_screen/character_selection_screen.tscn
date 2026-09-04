@@ -15,6 +15,12 @@
 [ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/character_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="14_back"]
 
+[sub_resource type="InputEventAction" id="InputEventAction_layout_prev"]
+action = &"character_layout_prev"
+
+[sub_resource type="Shortcut" id="Shortcut_layout_prev"]
+events = [SubResource("InputEventAction_layout_prev")]
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parchment"]
 content_margin_left = 42.0
 content_margin_top = 22.0
@@ -33,21 +39,11 @@ texture = ExtResource("12_ispof")
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fvapy"]
 texture = ExtResource("13_s21rt")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_hover"]
-content_margin_left = 44.0
-content_margin_top = 18.0
-content_margin_right = 44.0
-content_margin_bottom = 18.0
-bg_color = Color(0.075, 0.3, 0.33, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.78, 0.61, 0.31, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+[sub_resource type="InputEventAction" id="InputEventAction_layout_next"]
+action = &"character_layout_next"
+
+[sub_resource type="Shortcut" id="Shortcut_layout_next"]
+events = [SubResource("InputEventAction_layout_next")]
 
 [node name="CharacterSelectionScreen" type="Control" unique_id=925662086]
 layout_mode = 3
@@ -79,6 +75,7 @@ custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
+shortcut = SubResource("Shortcut_layout_prev")
 texture_normal = ExtResource("6_arrow_normal")
 texture_pressed = ExtResource("7_arrow_pressed")
 texture_hover = ExtResource("8_arrow_hover")
@@ -195,7 +192,6 @@ theme_override_font_sizes/font_size = 34
 theme_override_styles/normal = SubResource("StyleBoxTexture_m2gea")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_yyyhm")
 theme_override_styles/hover = SubResource("StyleBoxTexture_fvapy")
-theme_override_styles/focus = SubResource("StyleBoxFlat_play_hover")
 text = "PLAY"
 
 [node name="NextSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1794269466]
@@ -203,6 +199,7 @@ custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
+shortcut = SubResource("Shortcut_layout_next")
 texture_normal = ExtResource("6_arrow_normal")
 texture_pressed = ExtResource("7_arrow_pressed")
 texture_hover = ExtResource("8_arrow_hover")

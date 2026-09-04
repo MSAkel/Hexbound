@@ -40,6 +40,7 @@ func _on_layout_passives_pressed() -> void:
 	# Keep the dimmed pause backdrop. Swap the button list for the read-only map.
 	menu_items_container.hide()
 	layout_passives_viewer.show()
+	call_deferred("_focus_pause_menu")
 
 
 func _on_layout_passives_closed() -> void:
@@ -50,6 +51,7 @@ func _hide_layout_passives_viewer() -> void:
 	layout_passives_viewer.hide()
 	menu_items_container.show()
 	EventBus.toggle_tooltip.emit(false, "")
+	call_deferred("_focus_pause_menu")
 
 
 func _on_settings_pressed() -> void:
@@ -59,6 +61,7 @@ func _on_settings_pressed() -> void:
 
 func _on_settings_closed() -> void:
 	_hide_pause_overlay(settings_container)
+	call_deferred("_focus_pause_menu")
 
 
 func _on_collection_pressed() -> void:
@@ -69,6 +72,7 @@ func _on_collection_pressed() -> void:
 func _on_collection_closed() -> void:
 	_hide_pause_overlay(collection_screen)
 	EventBus.toggle_tooltip.emit(false, "")
+	call_deferred("_focus_pause_menu")
 
 
 func _on_main_menu_pressed() -> void:
@@ -97,6 +101,24 @@ func _open_pause_menu() -> void:
 	_set_pause_menu_blocks_gameplay(true)
 	pause_menu.show()
 	get_tree().paused = true
+	call_deferred("_focus_pause_menu")
+
+
+func _focus_pause_menu() -> void:
+	if not pause_menu.visible:
+		return
+	if not panel.visible:
+		return
+	if settings_container.visible:
+		MenuFocus.grab_first(settings_container)
+		return
+	if collection_screen.visible:
+		MenuFocus.grab_first(collection_screen)
+		return
+	if layout_passives_viewer.visible:
+		MenuFocus.grab_first(layout_passives_viewer)
+		return
+	MenuFocus.grab_first(menu_items_container)
 
 
 func _close_pause_menu() -> void:
@@ -113,20 +135,32 @@ func _close_pause_menu() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause_game"):
-		if pause_menu.visible:
-			# Back out of nested overlays first, then close pause on the next press.
-			if layout_passives_viewer.visible:
-				_hide_layout_passives_viewer()
-				return
-			if collection_screen.visible:
-				_on_collection_closed()
-				return
-			_close_pause_menu()
-			return
-		if _is_pause_blocked():
-			return
-		tile_map.dismiss_hover_feedback()
-		_open_pause_menu()
+		_handle_pause_toggle()
+	elif event.is_action_pressed("ui_cancel") and pause_menu.visible:
+		_handle_pause_back()
+
+
+func _handle_pause_toggle() -> void:
+	if pause_menu.visible:
+		_handle_pause_back()
+		return
+	if _is_pause_blocked():
+		return
+	tile_map.dismiss_hover_feedback()
+	_open_pause_menu()
+
+
+func _handle_pause_back() -> void:
+	if layout_passives_viewer.visible:
+		_hide_layout_passives_viewer()
+		return
+	if collection_screen.visible:
+		_on_collection_closed()
+		return
+	# Settings handles its own ui_cancel while visible.
+	if settings_container.visible:
+		return
+	_close_pause_menu()
 
 
 ## Prevent the pause menu from opening on top of gameplay panels that require the player's attention.
@@ -154,6 +188,7 @@ func _show_pause_overlay(overlay: Control) -> void:
 	_set_pause_menu_blocks_gameplay(false)
 	overlay.show()
 	overlay.move_to_front()
+	call_deferred("_focus_pause_menu")
 
 
 func _hide_pause_overlay(overlay: Control) -> void:

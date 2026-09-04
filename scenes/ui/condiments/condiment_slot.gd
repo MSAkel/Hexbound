@@ -12,6 +12,7 @@ const HOLD_SELECT_SEC := 0.18
 const DRAG_START_THRESHOLD_PX := 8.0
 const EMPTY_ICON := preload("res://assets/icons/condiments/mayonnaise.png")
 const EMPTY_ICON_TINT := Color(0.52, 0.52, 0.52, 0.45)
+const CONTROLLER_FOCUS_SCALE := Vector2(1.04, 1.04)
 
 @export var slot_index: int = 0
 @export var well_idle_style: StyleBoxFlat
@@ -24,6 +25,7 @@ const EMPTY_ICON_TINT := Color(0.52, 0.52, 0.52, 0.45)
 
 var condiment: Condiment = null
 var targeting := false
+var controller_focused := false
 
 var _lifted := false
 var _hold_token := 0
@@ -63,6 +65,13 @@ func set_lifted(lifted: bool) -> void:
 		EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 
+func set_controller_focused(focused: bool) -> void:
+	if controller_focused == focused:
+		return
+	controller_focused = focused
+	_refresh()
+
+
 func play_consume_animation() -> void:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
@@ -74,10 +83,12 @@ func play_consume_animation() -> void:
 
 
 func _refresh() -> void:
-	_well.add_theme_stylebox_override("panel", well_selected_style if targeting else well_idle_style)
+	var highlighted := targeting or controller_focused
+	_well.add_theme_stylebox_override("panel", well_selected_style if highlighted else well_idle_style)
 	var filled := condiment != null
 	_empty_icon.visible = not filled
 	_icon.visible = filled and not _lifted
+	scale = CONTROLLER_FOCUS_SCALE if controller_focused else Vector2.ONE
 	if not filled:
 		return
 	_icon.texture = condiment.icon

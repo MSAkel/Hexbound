@@ -13,6 +13,7 @@ const GHOST_SIZE := Vector2(48, 48)
 var _slots: Array[CondimentSlot] = []
 var _drag_index := -1
 var _awaiting_consume := false
+var _controller_focus_index := -1
 
 
 func _ready() -> void:
@@ -62,6 +63,7 @@ func _refresh() -> void:
 		_slots[i].set_condiment(CondimentManager.belt[i])
 		_slots[i].set_targeting(CondimentManager.targeting_slot == i)
 		_slots[i].set_lifted(_drag_index == i)
+	_apply_controller_focus_visual()
 
 
 func _on_slot_drag_started(index: int) -> void:
@@ -184,3 +186,61 @@ func _finish_drop() -> void:
 		return
 	# Instant drinks apply wherever they are dropped off the rack.
 	CondimentManager.request_use_slot(index)
+
+
+func ensure_controller_focus() -> void:
+	if _controller_focus_index < 0:
+		_controller_focus_index = 0
+	_apply_controller_focus_visual()
+
+
+func clear_controller_focus() -> void:
+	_controller_focus_index = -1
+	_apply_controller_focus_visual()
+
+
+func move_controller_focus(direction: int) -> void:
+	if _slots.is_empty():
+		return
+	if _controller_focus_index < 0:
+		_controller_focus_index = 0
+	else:
+		_controller_focus_index = clampi(_controller_focus_index + direction, 0, _slots.size() - 1)
+	_apply_controller_focus_visual()
+
+
+func get_controller_focus_index() -> int:
+	return _controller_focus_index
+
+
+func activate_controller_focused_slot() -> void:
+	if _controller_focus_index < 0 or _controller_focus_index >= _slots.size():
+		return
+	CondimentManager.request_use_slot(_controller_focus_index)
+
+
+func _apply_controller_focus_visual() -> void:
+	var previous_focus := -1
+	for i in _slots.size():
+		if _slots[i].controller_focused:
+			previous_focus = i
+			break
+	for i in _slots.size():
+		var focused := i == _controller_focus_index
+		_slots[i].set_controller_focused(focused)
+		if focused and i != previous_focus:
+			if _slots[i].condiment != null:
+				AudioManager.play_condiment_hover()
+				EventBus.toggle_tooltip.emit(
+					true,
+					"%s\n%s" % [
+						_slots[i].condiment.display_name,
+						_slots[i].condiment.description,
+					],
+					_slots[i].get_global_rect()
+				)
+			else:
+				AudioManager.play_ui_hover()
+				EventBus.toggle_tooltip.emit(true, "Empty slot", _slots[i].get_global_rect())
+	if _controller_focus_index < 0:
+		EventBus.toggle_tooltip.emit(false, "", Rect2())
