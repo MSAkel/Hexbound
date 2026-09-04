@@ -89,7 +89,7 @@ func _setup_reset_confirm_dialog() -> void:
 	_reset_confirm_dialog = ConfirmationDialog.new()
 	_reset_confirm_dialog.title = "Reset progression?"
 	_reset_confirm_dialog.dialog_text = (
-		"This resets all unlocks, layout XP, passive loadouts, and lifetime stats. "
+		"This resets all unlocks, layout XP, passive loadouts, lifetime stats, and run history. "
 		+ "Your in-progress run save is also deleted. This cannot be undone."
 	)
 	_reset_confirm_dialog.ok_button_text = "Reset"
@@ -112,6 +112,7 @@ func _on_reset_progression_pressed() -> void:
 func _on_reset_progression_confirmed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	MetaProgressionManager.reset_progression()
+	RunHistoryManager.clear()
 	RunSaveManager.delete_save()
 	GameSettings.reset_progression_preferences()
 

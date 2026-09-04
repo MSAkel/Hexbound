@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://brvmaqai71qhj"]
 
 [ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
 [ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
@@ -16,9 +16,8 @@ id = "head_start"
 display_name = "Head Start"
 description = "The first Producer activated on this segment each turn gains +15% output."
 icon = ExtResource("3_icon")
-tile_cost = 1
 max_copies = 2
-copy_thresholds = Array[int]([2, 10])
+copy_thresholds = Array[int]([5, 10])
 effect_type = 5
-effect_value = 0.15
+effect_value = 0.5
 unlock_condition = SubResource("UnlockCondition_main")

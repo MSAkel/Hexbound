@@ -102,25 +102,10 @@ func _register_controller_actions() -> void:
 	_add_key(ACTION_GAMEPAD_BACK, KEY_ESCAPE)
 	_add_joy_button(ACTION_GAMEPAD_BACK, JOY_BUTTON_B)
 
-	_ensure_action(ACTION_NAV_LEFT)
-	_add_key(ACTION_NAV_LEFT, KEY_LEFT)
-	_add_joy_button(ACTION_NAV_LEFT, JOY_BUTTON_DPAD_LEFT)
-	_add_joy_axis(ACTION_NAV_LEFT, JOY_AXIS_LEFT_X, -1.0)
-
-	_ensure_action(ACTION_NAV_RIGHT)
-	_add_key(ACTION_NAV_RIGHT, KEY_RIGHT)
-	_add_joy_button(ACTION_NAV_RIGHT, JOY_BUTTON_DPAD_RIGHT)
-	_add_joy_axis(ACTION_NAV_RIGHT, JOY_AXIS_LEFT_X, 1.0)
-
-	_ensure_action(ACTION_NAV_UP)
-	_add_key(ACTION_NAV_UP, KEY_UP)
-	_add_joy_button(ACTION_NAV_UP, JOY_BUTTON_DPAD_UP)
-	_add_joy_axis(ACTION_NAV_UP, JOY_AXIS_LEFT_Y, -1.0)
-
-	_ensure_action(ACTION_NAV_DOWN)
-	_add_key(ACTION_NAV_DOWN, KEY_DOWN)
-	_add_joy_button(ACTION_NAV_DOWN, JOY_BUTTON_DPAD_DOWN)
-	_add_joy_axis(ACTION_NAV_DOWN, JOY_AXIS_LEFT_Y, 1.0)
+	_register_direction_action(ACTION_NAV_LEFT, KEY_LEFT, JOY_BUTTON_DPAD_LEFT, JOY_AXIS_LEFT_X, -1.0)
+	_register_direction_action(ACTION_NAV_RIGHT, KEY_RIGHT, JOY_BUTTON_DPAD_RIGHT, JOY_AXIS_LEFT_X, 1.0)
+	_register_direction_action(ACTION_NAV_UP, KEY_UP, JOY_BUTTON_DPAD_UP, JOY_AXIS_LEFT_Y, -1.0)
+	_register_direction_action(ACTION_NAV_DOWN, KEY_DOWN, JOY_BUTTON_DPAD_DOWN, JOY_AXIS_LEFT_Y, 1.0)
 
 	# Pause from the Start button on common controllers.
 	_add_joy_button("pause_game", JOY_BUTTON_START)
@@ -136,30 +121,11 @@ func _register_controller_actions() -> void:
 	_add_key(ACTION_UI_CYCLE, KEY_TAB)
 	_add_joy_button(ACTION_UI_CYCLE, JOY_BUTTON_Y)
 
-	_register_godot_ui_actions()
-
-
-func _register_godot_ui_actions() -> void:
-	# Godot's built-in menu navigation reads ui_* actions, not our gameplay nav actions.
-	_ensure_action("ui_up")
-	_add_key("ui_up", KEY_UP)
-	_add_joy_button("ui_up", JOY_BUTTON_DPAD_UP)
-	_add_joy_axis("ui_up", JOY_AXIS_LEFT_Y, -1.0)
-
-	_ensure_action("ui_down")
-	_add_key("ui_down", KEY_DOWN)
-	_add_joy_button("ui_down", JOY_BUTTON_DPAD_DOWN)
-	_add_joy_axis("ui_down", JOY_AXIS_LEFT_Y, 1.0)
-
-	_ensure_action("ui_left")
-	_add_key("ui_left", KEY_LEFT)
-	_add_joy_button("ui_left", JOY_BUTTON_DPAD_LEFT)
-	_add_joy_axis("ui_left", JOY_AXIS_LEFT_X, -1.0)
-
-	_ensure_action("ui_right")
-	_add_key("ui_right", KEY_RIGHT)
-	_add_joy_button("ui_right", JOY_BUTTON_DPAD_RIGHT)
-	_add_joy_axis("ui_right", JOY_AXIS_LEFT_X, 1.0)
+	# Godot's built-in menu navigation reads ui_* actions, not gameplay nav actions.
+	_register_direction_action("ui_left", KEY_LEFT, JOY_BUTTON_DPAD_LEFT, JOY_AXIS_LEFT_X, -1.0)
+	_register_direction_action("ui_right", KEY_RIGHT, JOY_BUTTON_DPAD_RIGHT, JOY_AXIS_LEFT_X, 1.0)
+	_register_direction_action("ui_up", KEY_UP, JOY_BUTTON_DPAD_UP, JOY_AXIS_LEFT_Y, -1.0)
+	_register_direction_action("ui_down", KEY_DOWN, JOY_BUTTON_DPAD_DOWN, JOY_AXIS_LEFT_Y, 1.0)
 
 	_ensure_action("ui_accept")
 	_add_key("ui_accept", KEY_ENTER)
@@ -169,6 +135,19 @@ func _register_godot_ui_actions() -> void:
 	_ensure_action("ui_cancel")
 	_add_key("ui_cancel", KEY_ESCAPE)
 	_add_joy_button("ui_cancel", JOY_BUTTON_B)
+
+
+func _register_direction_action(
+	action: String,
+	keycode: Key,
+	button: JoyButton,
+	axis: JoyAxis,
+	axis_value: float
+) -> void:
+	_ensure_action(action)
+	_add_key(action, keycode)
+	_add_joy_button(action, button)
+	_add_joy_axis(action, axis, axis_value)
 
 
 func _ensure_action(action: String, deadzone: float = NAV_DEADZONE) -> void:

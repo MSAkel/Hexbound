@@ -6,7 +6,7 @@ signal game_speed_changed(new_speed: float)
 
 ## Number of runes in a rune pack, picked at the end of each turn
 const RUNES_PACK_SIZE := 3
-const MAX_TURNS_PER_ROUND := 5
+const MAX_TURNS_PER_ROUND := 4
 
 var current_round: int = 1
 ## Highest completed/current round score reached during this run.

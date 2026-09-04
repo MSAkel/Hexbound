@@ -156,32 +156,35 @@ func begin_targeting(index: int) -> void:
 
 ## True when a dragged tile condiment is released over a valid occupied hex.
 func try_apply_to_hex_under_mouse() -> bool:
-	if targeting_slot < 0 or _consuming:
-		return false
-	var hex := _hex_under_mouse()
-	if hex == null or not _is_valid_tile_target(hex):
-		return false
-	apply_to_hex(hex)
-	return true
+	return _try_apply_to_hex(_hex_under_mouse(), true)
 
 
 ## Applies a tile condiment to the controller-focused hex instead of the mouse cursor.
 func try_apply_to_gamepad_focus_hex() -> bool:
-	if targeting_slot < 0 or _consuming:
-		return false
 	var tile_map := _tile_map()
 	if tile_map == null:
 		return false
 	var coords := tile_map.get_gamepad_focus_cell()
-	if not tile_map.is_in_map(coords):
-		_show_tile_drop_failure_at_coords(tile_map, coords)
+	var hex: Hex = tile_map.map_data.get(coords) if tile_map.is_in_map(coords) else null
+	return _try_apply_to_hex(hex, false, tile_map, coords)
+
+
+func _try_apply_to_hex(
+	hex: Hex,
+	silent_on_miss: bool,
+	tile_map: HexTileMap = null,
+	coords: Vector2i = Vector2i(-1, -1)
+) -> bool:
+	if targeting_slot < 0 or _consuming:
 		return false
-	var hex: Hex = tile_map.map_data.get(coords)
-	if hex == null or not _is_valid_tile_target(hex):
-		_show_tile_drop_failure_at_coords(tile_map, coords)
+	if hex != null and _is_valid_tile_target(hex):
+		apply_to_hex(hex)
+		return true
+	if silent_on_miss:
 		return false
-	apply_to_hex(hex)
-	return true
+	if tile_map != null:
+		_show_tile_drop_failure_at_coords(tile_map, coords)
+	return false
 
 
 ## Short map feedback when a tile condiment is dropped on an invalid hex.
@@ -199,20 +202,10 @@ func _show_tile_drop_failure_at_coords(tile_map: HexTileMap, coords: Vector2i) -
 	var message := _tile_drop_failure_message_at_coords(tile_map, coords)
 	if message.is_empty():
 		return
-	var world_pos := tile_map.get_global_mouse_position()
-	if tile_map.is_in_map(coords):
-		world_pos = tile_map.to_global(tile_map.base_layer.map_to_local(coords))
+	var world_pos := tile_map.to_global(tile_map.base_layer.map_to_local(coords)) \
+		if tile_map.is_in_map(coords) \
+		else tile_map.get_global_mouse_position()
 	tile_map.create_floating_text(world_pos, message, Color(1.0, 0.45, 0.45, 1.0))
-
-
-func _tile_drop_failure_message() -> String:
-	var tile_map := _tile_map()
-	if tile_map == null:
-		return "Can't use here"
-	var coords := tile_map.base_layer.local_to_map(
-		tile_map.to_local(tile_map.get_global_mouse_position())
-	)
-	return _tile_drop_failure_message_at_coords(tile_map, coords)
 
 
 func _tile_drop_failure_message_at_coords(tile_map: HexTileMap, coords: Vector2i) -> String:

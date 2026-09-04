@@ -1,5 +1,7 @@
 extends Node
 
+## Routes in-run controller input across hand, map, condiments, and layout toggles.
+
 enum Context {
 	HAND,
 	MAP,
@@ -10,7 +12,7 @@ enum Context {
 @onready var hand: Hand = $"../MainUI/CardsHand/Hand"
 @onready var tile_map: HexTileMap = $"../HexTileMap"
 @onready var condiment_belt: CondimentBelt = $"../MainUI/CondimentBelt"
-@onready var layouts_container: PanelContainer = (
+@onready var layouts_container: LayoutsContainer = (
 	$"../MainUI/RunInfoUI/RightContainer/VBoxContainer/layoutsContainer"
 )
 @onready var pause_menu: Control = $"../MainUI/PauseMenu"
@@ -23,9 +25,19 @@ enum Context {
 
 var _context := Context.HAND
 var _placement_handler: CardPlacementHandler
+var _blocking_overlays: Array[Control] = []
 
 
 func _ready() -> void:
+	_blocking_overlays = [
+		pause_menu,
+		settings_container,
+		game_over_screen,
+		victory_screen,
+		merchant,
+		rune_selection_ui,
+		round_complete_screen,
+	]
 	call_deferred("_bind_placement_handler")
 	EventBus.turn_started.connect(_on_turn_started)
 	InputManager.input_mode_changed.connect(_on_input_mode_changed)
@@ -33,13 +45,11 @@ func _ready() -> void:
 
 
 func _bind_placement_handler() -> void:
-	if tile_map != null and tile_map.card_placement_handler != null:
+	if tile_map != null:
 		_placement_handler = tile_map.card_placement_handler
 
 
 func _process(_delta: float) -> void:
-	if not InputManager.is_using_gamepad():
-		return
 	if not _can_handle_gameplay_input():
 		return
 	var nav := InputManager.consume_navigation_vector()
@@ -50,32 +60,17 @@ func _process(_delta: float) -> void:
 		return
 	match _context:
 		Context.HAND:
-			if nav.x < 0.0:
-				hand.move_controller_focus(-1)
-			elif nav.x > 0.0:
-				hand.move_controller_focus(1)
+			_step_controller_focus(hand, int(signf(nav.x)))
 		Context.MAP:
 			tile_map.move_gamepad_focus(nav)
 		Context.CONDIMENTS:
-			var direction := 0
-			if nav.y < 0.0 or nav.x < 0.0:
-				direction = -1
-			elif nav.y > 0.0 or nav.x > 0.0:
-				direction = 1
-			if direction != 0:
-				condiment_belt.move_controller_focus(direction)
+			# Belt is vertical, but left/right still steps between slots.
+			_step_controller_focus(condiment_belt, _any_axis_step(nav))
 		Context.LAYOUT_TOGGLES:
-			if layouts_container == null:
-				return
-			if nav.x < 0.0:
-				layouts_container.move_controller_focus(-1)
-			elif nav.x > 0.0:
-				layouts_container.move_controller_focus(1)
+			_step_controller_focus(layouts_container, int(signf(nav.x)))
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not InputManager.is_using_gamepad():
-		return
 	if not _can_handle_gameplay_input():
 		return
 
@@ -110,11 +105,10 @@ func _handle_confirm() -> void:
 			if card == null:
 				hand.ensure_controller_focus()
 				card = hand.get_controller_focused_card()
-			if card == null:
-				return
-			_begin_placement(card)
+			if card != null:
+				_begin_placement(card)
 		Context.MAP:
-			_inspect_focused_tile()
+			tile_map.inspect_gamepad_focus_tile()
 		Context.CONDIMENTS:
 			condiment_belt.activate_controller_focused_slot()
 		Context.LAYOUT_TOGGLES:
@@ -125,15 +119,13 @@ func _handle_confirm() -> void:
 func _handle_back() -> void:
 	if CondimentManager.is_targeting():
 		CondimentManager.cancel_targeting()
-		_context = Context.CONDIMENTS
-		_apply_active_context()
+		_set_context(Context.CONDIMENTS)
 		return
 	if _is_card_selected():
 		if _placement_handler != null:
 			_placement_handler.cancel_gamepad_placement()
 		return
-	_context = Context.HAND
-	_apply_active_context()
+	_set_context(Context.HAND)
 
 
 func _begin_placement(card: CardUI) -> void:
@@ -144,7 +136,7 @@ func _begin_placement(card: CardUI) -> void:
 	tile_map.ensure_gamepad_focus()
 	_placement_handler.begin_gamepad_placement(card)
 	_context = Context.MAP
-	_clear_non_map_context_highlights()
+	_clear_context_highlights(true)
 
 
 func _move_map_focus(direction: Vector2) -> void:
@@ -153,32 +145,27 @@ func _move_map_focus(direction: Vector2) -> void:
 		_placement_handler.refresh_gamepad_preview()
 
 
-func _inspect_focused_tile() -> void:
-	var coords := tile_map.get_gamepad_focus_cell()
-	if coords == Vector2i(-1, -1):
-		return
-	if tile_map.hover_ui == null:
-		return
-	if not tile_map.is_in_map(coords) or not tile_map.is_tile_interactable(coords):
-		tile_map.hover_ui.hide_tile_panel()
-		return
-	var hex: Hex = tile_map.map_data.get(coords)
-	if hex == null or hex.active_tile_card == null:
-		tile_map.hover_ui.hide_tile_panel()
-		return
-	tile_map.hover_ui.update_tile_panel_hover(coords, true)
-
-
 func _cycle_ui_context() -> void:
 	if _is_card_selected() or CondimentManager.is_targeting():
 		return
-	_context = (_context + 1) % Context.size()
-	_apply_active_context()
+	var next := (_context + 1) % Context.size()
+	# Skip layout toggles when the run-info node is missing from this scene.
+	if next == Context.LAYOUT_TOGGLES and layouts_container == null:
+		next = Context.HAND
+	_set_context(next)
 	AudioManager.play_ui_hover()
 
 
+func _set_context(context: Context) -> void:
+	_context = context
+	if InputManager.is_using_gamepad():
+		_apply_active_context()
+
+
 func _apply_active_context() -> void:
-	_clear_all_context_highlights()
+	if not InputManager.is_using_gamepad():
+		return
+	_clear_context_highlights(false)
 	match _context:
 		Context.HAND:
 			hand.ensure_controller_focus()
@@ -191,16 +178,10 @@ func _apply_active_context() -> void:
 				layouts_container.ensure_controller_focus()
 
 
-func _clear_all_context_highlights() -> void:
+func _clear_context_highlights(keep_map: bool) -> void:
 	hand.clear_controller_focus()
-	tile_map.clear_gamepad_focus()
-	condiment_belt.clear_controller_focus()
-	if layouts_container != null:
-		layouts_container.clear_controller_focus()
-
-
-func _clear_non_map_context_highlights() -> void:
-	hand.clear_controller_focus()
+	if not keep_map:
+		tile_map.clear_gamepad_focus()
 	condiment_belt.clear_controller_focus()
 	if layouts_container != null:
 		layouts_container.clear_controller_focus()
@@ -211,11 +192,10 @@ func _on_condiment_targeting_changed(_slot_index: int) -> void:
 		return
 	if CondimentManager.is_targeting():
 		_context = Context.MAP
-		_clear_non_map_context_highlights()
+		_clear_context_highlights(true)
 		tile_map.ensure_gamepad_focus()
 	elif _context == Context.MAP and not _is_card_selected():
-		_context = Context.CONDIMENTS
-		_apply_active_context()
+		_set_context(Context.CONDIMENTS)
 
 
 func _is_card_selected() -> bool:
@@ -223,53 +203,45 @@ func _is_card_selected() -> bool:
 
 
 func _can_handle_gameplay_input() -> bool:
-	if get_tree().paused:
+	if not InputManager.is_using_gamepad():
 		return false
-	if GameManager.is_processing_turn:
+	if get_tree().paused or GameManager.is_processing_turn:
 		return false
 	if hand == null or tile_map == null:
 		return false
 	if hand.is_awaiting_intro() or hand.is_hand_hidden():
 		return false
-	if _is_control_visible(pause_menu):
-		return false
-	if _is_control_visible(settings_container):
-		return false
-	if _is_control_visible(game_over_screen):
-		return false
-	if _is_control_visible(victory_screen):
-		return false
-	if _is_control_visible(merchant):
-		return false
-	if _is_control_visible(rune_selection_ui):
-		return false
-	if _is_control_visible(round_complete_screen):
-		return false
+	for overlay in _blocking_overlays:
+		if is_instance_valid(overlay) and overlay.is_visible_in_tree():
+			return false
 	return true
-
-
-func _is_control_visible(control: Control) -> bool:
-	return is_instance_valid(control) and control.is_visible_in_tree()
 
 
 func _on_turn_started() -> void:
 	_context = Context.HAND
 	if InputManager.is_using_gamepad():
-		call_deferred("_focus_hand_after_turn")
+		call_deferred("_apply_active_context")
 
 
 func _on_input_mode_changed(using_gamepad: bool) -> void:
 	if using_gamepad:
-		_context = Context.HAND if not _is_card_selected() else Context.MAP
+		_context = Context.MAP if _is_card_selected() else Context.HAND
 		_apply_active_context()
-	else:
-		_clear_all_context_highlights()
-		if _placement_handler != null:
-			_placement_handler.switch_to_mouse_preview()
-
-
-func _focus_hand_after_turn() -> void:
-	if not InputManager.is_using_gamepad():
 		return
-	_context = Context.HAND
-	_apply_active_context()
+	_clear_context_highlights(false)
+	if _placement_handler != null:
+		_placement_handler.switch_to_mouse_preview()
+
+
+func _step_controller_focus(target: Object, step: int) -> void:
+	if target == null or step == 0:
+		return
+	target.move_controller_focus(step)
+
+
+func _any_axis_step(nav: Vector2) -> int:
+	if nav.x < 0.0 or nav.y < 0.0:
+		return -1
+	if nav.x > 0.0 or nav.y > 0.0:
+		return 1
+	return 0

@@ -49,6 +49,12 @@ func ensure_loaded() -> void:
 	_apply_save_data(data)
 
 
+## Read-only copy of lifetime counters for the Stats screen.
+func get_lifetime_stats_snapshot() -> Dictionary:
+	ensure_loaded()
+	return _lifetime_stats.duplicate(true)
+
+
 ## Wipes unlocks, layout XP, loadouts, lifetime stats, and pending reveals back to a fresh profile.
 func reset_progression() -> void:
 	if _sandbox_mode:

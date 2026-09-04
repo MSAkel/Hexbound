@@ -18,6 +18,7 @@ const CHARACTER_SELECTION := (
 )
 const SEGMENT_PASSIVES := "res://scenes/ui/segment_passives/segment_passives_screen.tscn"
 const COLLECTION := "res://scenes/ui/collection/collection.tscn"
+const STATS := "res://scenes/ui/stats/stats.tscn"
 const DEVELOPER_MENU := "res://scenes/ui/developer_menu/developer_menu.tscn"
 const UI_SANDBOX := "res://scenes/debug/ui_sandbox.tscn"
 const SEGMENT_PASSIVES_SANDBOX := "res://scenes/debug/segment_passives_sandbox.tscn"

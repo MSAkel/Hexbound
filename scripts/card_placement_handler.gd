@@ -157,26 +157,20 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_card_selected(card: CardUI) -> void:
-	if selected_card != null and selected_card != card:
-		_switching_selection = true
-		selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
-		_switching_selection = false
-		_utility_target_hexes.clear()
-		_utility_target_coords.clear()
-	
+	_replace_selected_card(card)
 	is_card_selected = true
 	selected_card = card
 	_update_preview_texture()
 	_update_placement_overlays()
 	if _use_gamepad_preview:
 		_configure_gamepad_placement()
-	else:
-		# The card is selected on mouse-down. A later mouse-up over a hex should place it.
-		_awaiting_pointer_release = true
-		_select_press_position = tile_map.get_global_mouse_position()
-		_ghost_float_time = 0.0
-		_ghost_follow_mouse = true
-		_update_rune_preview()
+		return
+	# The card is selected on mouse-down. A later mouse-up over a hex should place it.
+	_awaiting_pointer_release = true
+	_select_press_position = tile_map.get_global_mouse_position()
+	_ghost_float_time = 0.0
+	_ghost_follow_mouse = true
+	_update_rune_preview()
 
 
 ## Select a hand card for placement with the controller. Skips mouse drag.
@@ -184,16 +178,21 @@ func begin_gamepad_placement(card: CardUI) -> void:
 	if card == null:
 		return
 	_use_gamepad_preview = true
-	if selected_card != null and selected_card != card:
-		_switching_selection = true
-		selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
-		_switching_selection = false
-		_utility_target_hexes.clear()
-		_utility_target_coords.clear()
+	_replace_selected_card(card)
 	if selected_card == card and is_card_selected:
 		_configure_gamepad_placement()
 		return
 	card.card_state_machine.transition_to_state(CardState.State.CLICKED)
+
+
+func _replace_selected_card(card: CardUI) -> void:
+	if selected_card == null or selected_card == card:
+		return
+	_switching_selection = true
+	selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
+	_switching_selection = false
+	_utility_target_hexes.clear()
+	_utility_target_coords.clear()
 
 
 func _configure_gamepad_placement() -> void:
@@ -212,12 +211,13 @@ func _focus_gamepad_on_placeable_tile() -> void:
 	if _is_placeable_map_coords(focus):
 		return
 	var origin := focus if focus != Vector2i(-1, -1) else tile_map.get_default_gamepad_focus_cell()
+	var origin_pos := tile_map.base_layer.map_to_local(origin)
 	var best := Vector2i(-1, -1)
 	var best_dist_sq := INF
 	for coords: Vector2i in tile_map.map_data:
 		if not _is_placeable_map_coords(coords):
 			continue
-		var dist_sq := _placement_focus_distance_sq(origin, coords)
+		var dist_sq := origin_pos.distance_squared_to(tile_map.base_layer.map_to_local(coords))
 		if dist_sq < best_dist_sq:
 			best_dist_sq = dist_sq
 			best = coords
@@ -226,18 +226,9 @@ func _focus_gamepad_on_placeable_tile() -> void:
 
 
 func _is_placeable_map_coords(coords: Vector2i) -> bool:
-	if coords == Vector2i(-1, -1):
+	if not tile_map.is_tile_interactable(coords):
 		return false
-	if not tile_map.is_in_map(coords) or not tile_map.is_tile_interactable(coords):
-		return false
-	var hex: Hex = tile_map.map_data.get(coords)
-	return hex != null and _can_place_on_hex(hex)
-
-
-func _placement_focus_distance_sq(from: Vector2i, to: Vector2i) -> float:
-	var from_pos := tile_map.base_layer.map_to_local(from)
-	var to_pos := tile_map.base_layer.map_to_local(to)
-	return from_pos.distance_squared_to(to_pos)
+	return _can_place_on_hex(tile_map.map_data[coords])
 
 
 func refresh_gamepad_preview() -> void:

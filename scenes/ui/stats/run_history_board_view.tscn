@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bqrunhistboard01"]
+
+[ext_resource type="Script" path="res://scenes/ui/stats/run_history_board_view.gd" id="1_script"]
+
+[node name="RunHistoryBoardView" type="VBoxContainer"]
+custom_minimum_size = Vector2(320, 360)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+script = ExtResource("1_script")
+
+[node name="MapHost" type="Control" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="CaptionLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.87, 0.79, 1)
+theme_override_font_sizes/font_size = 16
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3

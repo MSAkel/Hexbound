@@ -28,6 +28,8 @@ func _on_all_events_completed() -> void:
 	seed_value.text = RunRng.get_display_seed()
 	UiManager.show_panel(self)
 	_play_entrance_animation()
+	# Archive while the live board still exists. Idempotent if Main Menu also archives.
+	RunHistoryManager.archive_finished_run(true)
 	# Victory XP is committed when leaving to the menu. Preview the grant here.
 	var from_xp := 0
 	if GameManager.selected_character != null:
@@ -74,5 +76,6 @@ func _on_continue_pressed() -> void:
 func _on_main_menu_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(true), true)
+	RunHistoryManager.archive_finished_run(true)
 	RunSaveManager.save_current_run()
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

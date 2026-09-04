@@ -1,3 +1,4 @@
+class_name LayoutsContainer
 extends PanelContainer
 
 @onready var tile_cards_layout: TextureButton = $HBoxContainer/TileCardsLayout
@@ -40,8 +41,7 @@ func _emit_overlay_state() -> void:
 
 
 func _on_tile_cards_layout_mouse_entered() -> void:
-	var tooltip := "Show cards"
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+	_show_layout_tooltip(tile_cards_layout)
 
 
 func _on_tile_cards_layout_mouse_exited() -> void:
@@ -49,8 +49,7 @@ func _on_tile_cards_layout_mouse_exited() -> void:
 
 
 func _on_trigger_order_layout_mouse_entered() -> void:
-	var tooltip := "Show %s" % FeastDisplay.FIRE_ORDER.to_lower()
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+	_show_layout_tooltip(trigger_order_layout)
 
 
 func _on_trigger_order_layout_mouse_exited() -> void:
@@ -58,8 +57,7 @@ func _on_trigger_order_layout_mouse_exited() -> void:
 
 
 func _on_segment_links_layout_mouse_entered() -> void:
-	var tooltip := "Show %s links" % FeastDisplay.COURSE.to_lower()
-	EventBus.toggle_tooltip.emit(true, tooltip, get_global_rect())
+	_show_layout_tooltip(segment_links_layout)
 
 
 func _on_segment_links_layout_mouse_exited() -> void:
@@ -67,11 +65,7 @@ func _on_segment_links_layout_mouse_exited() -> void:
 
 
 func ensure_controller_focus() -> void:
-	if _layout_buttons.is_empty():
-		return
-	if _controller_focus_index < 0:
-		_controller_focus_index = 0
-	_apply_controller_focus_visual()
+	_move_controller_focus_to(maxi(_controller_focus_index, 0))
 
 
 func clear_controller_focus() -> void:
@@ -83,15 +77,8 @@ func clear_controller_focus() -> void:
 func move_controller_focus(direction: int) -> void:
 	if _layout_buttons.is_empty():
 		return
-	if _controller_focus_index < 0:
-		_controller_focus_index = 0
-	else:
-		_controller_focus_index = clampi(
-			_controller_focus_index + direction,
-			0,
-			_layout_buttons.size() - 1
-		)
-	_apply_controller_focus_visual()
+	var next := 0 if _controller_focus_index < 0 else _controller_focus_index + direction
+	_move_controller_focus_to(next)
 
 
 func toggle_controller_focused_layout() -> void:
@@ -102,26 +89,34 @@ func toggle_controller_focused_layout() -> void:
 	_emit_overlay_state()
 
 
+func _move_controller_focus_to(index: int) -> void:
+	if _layout_buttons.is_empty():
+		return
+	_controller_focus_index = clampi(index, 0, _layout_buttons.size() - 1)
+	_apply_controller_focus_visual()
+
+
 func _apply_controller_focus_visual() -> void:
 	for i in _layout_buttons.size():
-		var button := _layout_buttons[i]
-		button.modulate = CONTROLLER_FOCUS_MODULATE if i == _controller_focus_index else Color.WHITE
+		_layout_buttons[i].modulate = (
+			CONTROLLER_FOCUS_MODULATE if i == _controller_focus_index else Color.WHITE
+		)
 	if _controller_focus_index >= 0 and _controller_focus_index < _layout_buttons.size():
 		_show_layout_tooltip(_layout_buttons[_controller_focus_index])
 
 
 func _show_layout_tooltip(button: TextureButton) -> void:
+	var tooltip := _layout_tooltip_text(button)
+	if tooltip.is_empty():
+		return
+	EventBus.toggle_tooltip.emit(true, tooltip, button.get_global_rect())
+
+
+func _layout_tooltip_text(button: TextureButton) -> String:
 	if button == tile_cards_layout:
-		EventBus.toggle_tooltip.emit(true, "Show cards", button.get_global_rect())
-	elif button == trigger_order_layout:
-		EventBus.toggle_tooltip.emit(
-			true,
-			"Show %s" % FeastDisplay.FIRE_ORDER.to_lower(),
-			button.get_global_rect()
-		)
-	elif button == segment_links_layout:
-		EventBus.toggle_tooltip.emit(
-			true,
-			"Show %s links" % FeastDisplay.COURSE.to_lower(),
-			button.get_global_rect()
-		)
+		return "Show cards"
+	if button == trigger_order_layout:
+		return "Show %s" % FeastDisplay.FIRE_ORDER.to_lower()
+	if button == segment_links_layout:
+		return "Show %s links" % FeastDisplay.COURSE.to_lower()
+	return ""

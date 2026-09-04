@@ -3,6 +3,7 @@ extends TileCard
 const DESTROY_CHANCE_PER_FOLLOWING := 0.10
 
 ## Fire adjacent Following Ingredients. 10% spoil chance per Following adjacent Ingredient.
+## fires → spoils → adjacent Ingredients fire.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var following_producers := _get_following_adjacent_tile_cards(tile, TileCard.PRODUCER_TYPE_FILTER)
 	if following_producers.is_empty():

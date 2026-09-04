@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://dsgqfd2y5aycf"]
 
 [ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
 [ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
@@ -7,7 +7,6 @@
 [sub_resource type="Resource" id="UnlockCondition_main"]
 script = ExtResource("1_unlock_script")
 condition_type = 7
-threshold = 0
 description = "1,000 / 3,500 lifetime Producer triggers for extra copies"
 
 [resource]
@@ -16,10 +15,9 @@ id = "spark"
 display_name = "Spark"
 description = "Each Producer activation has an independent 2% retrigger chance."
 icon = ExtResource("3_icon")
-tile_cost = 1
 max_copies = 3
-copy_thresholds = Array[int]([0, 1000, 3500])
+copy_thresholds = Array[int]([2500, 10000, 25000])
 effect_type = 2
-effect_value = 0.02
+effect_value = 0.01
 unlock_condition = SubResource("UnlockCondition_main")
 starts_unlocked = true

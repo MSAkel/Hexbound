@@ -68,6 +68,7 @@ func _begin_fresh_run() -> void:
 		# In-run restart and editor reloads keep the seed but must start streams over.
 		RunRng.restart_same_seed()
 	GameManager.reset_for_new_run()
+	RunHistoryManager.notify_run_started()
 	# Set starting gold after character selection has chosen the run difficulty.
 	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
 	RerollManager.reset_for_new_run()

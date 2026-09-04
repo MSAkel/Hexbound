@@ -1,0 +1,166 @@
+[gd_scene format=3 uid="uid://b2eiuv5rpwsc3"]
+
+[ext_resource type="Script" path="res://scenes/ui/stats/stats.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_bg"]
+[ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
+
+[sub_resource type="Gradient" id="Gradient_dim"]
+colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_dim"]
+gradient = SubResource("Gradient_dim")
+width = 50
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_outer"]
+content_margin_left = 50.0
+content_margin_top = 40.0
+content_margin_right = 50.0
+content_margin_bottom = 40.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+bg_color = Color(0.15294118, 0.15294118, 0.15294118, 0.28627452)
+
+[node name="Stats" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+
+[node name="Foreground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture1D_dim")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_outer")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 42)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 24
+text = "BACK"
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.87, 0.79, 1)
+theme_override_font_sizes/font_size = 36
+text = "Stats"
+
+[node name="ContentPanel" type="PanelContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="ContentVBox" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TabBar" type="TabBar" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/tab_separation = 8
+current_tab = 0
+tab_count = 2
+tab_0/title = "Lifetime"
+tab_1/title = "Past Runs"
+
+[node name="LifetimeScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="LifetimeList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/LifetimeScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="HistorySplit" type="HBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="ListColumn" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.9
+theme_override_constants/separation = 8
+
+[node name="EmptyHistoryLabel" type="Label" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.72, 0.7, 1)
+theme_override_font_sizes/font_size = 20
+text = "No past runs yet.
+Finish a run to see it here."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RunListScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="RunList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn/RunListScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DetailScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.1
+horizontal_scroll_mode = 0
+
+[node name="DetailPanel" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/DetailScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Tooltip" parent="." instance=ExtResource("3_tooltip")]
+layout_mode = 0
+
+[connection signal="pressed" from="PanelContainer/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="tab_changed" from="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/TabBar" to="." method="_on_tab_bar_tab_changed"]

@@ -140,7 +140,13 @@ func _on_exit_pressed() -> void:
 
 
 func _on_collection_button_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.COLLECTION)
+
+
+func _on_stats_button_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	get_tree().change_scene_to_file(ScenePaths.STATS)
 
 
 func _on_developer_menu_pressed() -> void:

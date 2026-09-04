@@ -28,7 +28,6 @@ buses/default_bus_layout="uid://dvt12q5rvq0mh"
 [autoload]
 
 UiManager="*res://scripts/autoload/ui_manager.gd"
-InputManager="*res://scripts/autoload/input_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 EventBus="*uid://cw24fl4eehmwb"
@@ -41,6 +40,8 @@ RerollManager="*res://scripts/autoload/reroll_manager.gd"
 MenuBackground="*res://scripts/autoload/menu_background.gd"
 CondimentManager="*res://scripts/autoload/condiment_manager.gd"
 EventManager="*res://scripts/autoload/event_manager.gd"
+InputManager="*res://scripts/autoload/input_manager.gd"
+RunHistoryManager="*res://scripts/autoload/run_history_manager.gd"
 
 [debug]
 

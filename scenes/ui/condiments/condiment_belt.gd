@@ -189,9 +189,7 @@ func _finish_drop() -> void:
 
 
 func ensure_controller_focus() -> void:
-	if _controller_focus_index < 0:
-		_controller_focus_index = 0
-	_apply_controller_focus_visual()
+	_move_controller_focus_to(maxi(_controller_focus_index, 0))
 
 
 func clear_controller_focus() -> void:
@@ -202,21 +200,21 @@ func clear_controller_focus() -> void:
 func move_controller_focus(direction: int) -> void:
 	if _slots.is_empty():
 		return
-	if _controller_focus_index < 0:
-		_controller_focus_index = 0
-	else:
-		_controller_focus_index = clampi(_controller_focus_index + direction, 0, _slots.size() - 1)
-	_apply_controller_focus_visual()
-
-
-func get_controller_focus_index() -> int:
-	return _controller_focus_index
+	var next := 0 if _controller_focus_index < 0 else _controller_focus_index + direction
+	_move_controller_focus_to(next)
 
 
 func activate_controller_focused_slot() -> void:
 	if _controller_focus_index < 0 or _controller_focus_index >= _slots.size():
 		return
 	CondimentManager.request_use_slot(_controller_focus_index)
+
+
+func _move_controller_focus_to(index: int) -> void:
+	if _slots.is_empty():
+		return
+	_controller_focus_index = clampi(index, 0, _slots.size() - 1)
+	_apply_controller_focus_visual()
 
 
 func _apply_controller_focus_visual() -> void:
@@ -226,21 +224,23 @@ func _apply_controller_focus_visual() -> void:
 			previous_focus = i
 			break
 	for i in _slots.size():
-		var focused := i == _controller_focus_index
-		_slots[i].set_controller_focused(focused)
-		if focused and i != previous_focus:
-			if _slots[i].condiment != null:
-				AudioManager.play_condiment_hover()
-				EventBus.toggle_tooltip.emit(
-					true,
-					"%s\n%s" % [
-						_slots[i].condiment.display_name,
-						_slots[i].condiment.description,
-					],
-					_slots[i].get_global_rect()
-				)
-			else:
-				AudioManager.play_ui_hover()
-				EventBus.toggle_tooltip.emit(true, "Empty slot", _slots[i].get_global_rect())
+		_slots[i].set_controller_focused(i == _controller_focus_index)
 	if _controller_focus_index < 0:
 		EventBus.toggle_tooltip.emit(false, "", Rect2())
+		return
+	if _controller_focus_index == previous_focus:
+		return
+	_announce_controller_slot(_slots[_controller_focus_index])
+
+
+func _announce_controller_slot(slot: CondimentSlot) -> void:
+	if slot.condiment != null:
+		AudioManager.play_condiment_hover()
+		EventBus.toggle_tooltip.emit(
+			true,
+			"%s\n%s" % [slot.condiment.display_name, slot.condiment.description],
+			slot.get_global_rect()
+		)
+		return
+	AudioManager.play_ui_hover()
+	EventBus.toggle_tooltip.emit(true, "Empty slot", slot.get_global_rect())

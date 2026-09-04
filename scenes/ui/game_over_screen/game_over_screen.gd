@@ -22,6 +22,7 @@ func _on_game_ended() -> void:
 	var snapshot := GameManager.build_run_snapshot(false)
 	var xp_gain := MetaProgressionManager.get_layout_xp_gain_from_snapshot(snapshot)
 	MetaProgressionManager.record_run_snapshot(snapshot, true)
+	RunHistoryManager.archive_finished_run(false)
 	played_as_label.text = GameManager.selected_character.display_name if GameManager.selected_character else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
 	round_value.text = str(GameManager.current_round)

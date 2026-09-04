@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://c7tkdmh5vy1x7"]
+
+[ext_resource type="Texture2D" uid="uid://dxqkqu47g1ep5" path="res://assets/passives/icons/second_wind.png" id="1_ux6f1"]
+[ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_j8qoq"]
+[ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="3_w7h7w"]
+
+[sub_resource type="Resource" id="UnlockCondition_main"]
+script = ExtResource("3_w7h7w")
+condition_type = 32
+threshold = 40
+extra_threshold = 50
+description = "40 Producer retriggers, or 50 card triggers in one turn"
+
+[resource]
+script = ExtResource("2_j8qoq")
+id = "spark_surge"
+display_name = "Spark Surge"
+description = "Each Producer activation has an independent 2% retrigger chance."
+icon = ExtResource("1_ux6f1")
+tile_cost = 2
+effect_type = 2
+effect_value = 0.02
+unlock_condition = SubResource("UnlockCondition_main")

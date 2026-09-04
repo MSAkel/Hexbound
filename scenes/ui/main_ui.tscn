@@ -38,7 +38,7 @@ offset_top = 0.0
 offset_right = 0.0
 rotation = 0.0016232448
 
-[node name="CardSellPanel" parent="." instance=ExtResource("22_sell_panel")]
+[node name="CardSellPanel" parent="." unique_id=1404687552 instance=ExtResource("22_sell_panel")]
 
 [node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
 

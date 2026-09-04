@@ -38,6 +38,11 @@ func uses_custom_seed() -> bool:
 	return not get_effective_seed_text().is_empty()
 
 
+## Turns seeded mode on and fills the seed field. Paste uses this without extra click SFX.
+func prefill_seed(seed_text: String) -> void:
+	_apply_seed_text(seed_text, false)
+
+
 func _on_seed_input_focus_exited() -> void:
 	var normalized := RunRng.normalize_seed_text(seed_input.text)
 	if seed_input.text == normalized:
@@ -63,7 +68,7 @@ func _on_paste_seed_button_pressed() -> void:
 	_apply_seed_text(RunRng.read_seed_from_clipboard())
 
 
-func _apply_seed_text(seed_text: String) -> void:
+func _apply_seed_text(seed_text: String, play_sfx: bool = true) -> void:
 	if seed_text.is_empty():
 		return
 
@@ -73,4 +78,5 @@ func _apply_seed_text(seed_text: String) -> void:
 		_update_seed_body_visibility()
 
 	seed_input.text = seed_text
-	AudioManager.play_sfx(UISounds.CLICK)
+	if play_sfx:
+		AudioManager.play_sfx(UISounds.CLICK)

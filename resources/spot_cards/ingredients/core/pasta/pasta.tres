@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://wska54bqn7t4"]
+
+[ext_resource type="Texture2D" uid="uid://by31pftsnk7ch" path="res://assets/icons/food/ingredients/pasta.png" id="1_ei4xy"]
+[ext_resource type="Script" uid="uid://bbvokg0spxrfy" path="res://resources/spot_cards/ingredients/core/pasta/pasta.gd" id="2_daorn"]
+
+[resource]
+script = ExtResource("2_daorn")
+base_production_amount = 10
+rarity = 1
+product = 1
+id = "pasta"
+name = "Pasta"
+icon = ExtResource("1_ei4xy")
+description = "+10 Flavour, plus +5 Flavour per consecutive Flavour Ingredient immediately before this card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"
