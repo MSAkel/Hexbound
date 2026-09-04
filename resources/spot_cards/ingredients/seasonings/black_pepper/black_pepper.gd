@@ -3,7 +3,7 @@ extends TileCard
 # +4 Mult increased by 1 for each Mult rune on the same segment
 func _on_activate_tile_card(_tile: Hex) -> void:
 	var mult_count := _get_all_tile_cards_on_same_segment_by_product(_tile, Product.MULTIPLIER).size()
-	add_multiplier(_tile, mult_count + _get_production_amount())
+	add_additive_mult(_tile, mult_count + _get_production_amount())
 
 
 func get_board_chip(tile: Hex = null) -> Dictionary:

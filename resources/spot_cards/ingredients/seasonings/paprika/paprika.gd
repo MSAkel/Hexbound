@@ -7,7 +7,7 @@ const MAX_SEGMENT_SIZE := 7
 func _on_activate_tile_card(tile: Hex) -> void:
 	# Compact Power is an Uncommon short-line spike. Longer rings get nothing.
 	if _get_segment_size(tile) <= MAX_SEGMENT_SIZE:
-		add_multiplier(tile, _get_production_amount())
+		add_additive_mult(tile, _get_production_amount())
 	else:
 		failed_tile_card_text(tile)
 

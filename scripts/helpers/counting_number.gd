@@ -12,8 +12,10 @@ var _on_value: Callable
 var _displayed: float = 0.0
 var _tween: Tween
 var _use_thousands_separator: bool = false
-## When true, the readout keeps one decimal instead of rounding to an integer.
-var _format_as_mult: bool = false
+## When true, the readout uses additive mult formatting with a leading plus.
+var _format_as_additive_mult: bool = false
+## When true, the readout uses multiplicative mult formatting with a leading x.
+var _format_as_multiplicative_mult: bool = false
 
 
 func _init(
@@ -58,9 +60,18 @@ static func for_rich_text_label(
 	)
 
 
-## Mult readouts tween the true float and print one decimal.
-func set_format_as_mult(enabled: bool) -> void:
-	_format_as_mult = enabled
+## Additive mult readouts tween the true float and print one decimal with a plus prefix.
+func set_format_as_additive_mult(enabled: bool) -> void:
+	_format_as_additive_mult = enabled
+	if enabled:
+		_format_as_multiplicative_mult = false
+
+
+## Multiplicative mult readouts tween the true float and print with an x prefix.
+func set_format_as_multiplicative_mult(enabled: bool) -> void:
+	_format_as_multiplicative_mult = enabled
+	if enabled:
+		_format_as_additive_mult = false
 
 
 ## Sets the displayed value immediately and stops any running count.
@@ -104,9 +115,13 @@ func kill() -> void:
 
 func _write(value: float) -> void:
 	_displayed = value
-	if _format_as_mult:
+	if _format_as_additive_mult:
 		if _apply_text.is_valid():
-			_apply_text.call(format_mult(value))
+			_apply_text.call(format_additive_mult(value))
+		return
+	if _format_as_multiplicative_mult:
+		if _apply_text.is_valid():
+			_apply_text.call(format_multiplicative_mult(value))
 		return
 	var as_int := int(round(value))
 	if _apply_text.is_valid():
@@ -132,6 +147,26 @@ static func format_int(value: int) -> String:
 	return sign_prefix + grouped
 
 
-## One decimal, matching the Mult UI rule from the passives catalog.
+## One decimal for internal mult math.
 static func format_mult(value: float) -> String:
 	return "%.1f" % snappedf(value, 0.1)
+
+
+## Additive mult gain on cards and floating text. Rounded flat value with a plus prefix.
+static func format_additive_mult(value: float) -> String:
+	return "+%s" % format_int(int(round(value)))
+
+
+## Player-facing mult in breakdowns. Multiplicative mult is folded into additive before display.
+static func combined_display_mult(additive_mult: float, multiplicative_mult: float) -> int:
+	return int(round(additive_mult * multiplicative_mult))
+
+
+static func format_display_mult(additive_mult: float, multiplicative_mult: float) -> String:
+	return format_int(combined_display_mult(additive_mult, multiplicative_mult))
+
+
+## Multiplicative mult display for floating text when a card grants xMult directly.
+static func format_multiplicative_mult(value: float) -> String:
+	var rounded := int(round(value))
+	return "x%d" % rounded

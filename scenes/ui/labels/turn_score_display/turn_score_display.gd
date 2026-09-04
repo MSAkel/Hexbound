@@ -15,7 +15,7 @@ const MAX_SCREEN_SHAKE := 28.0
 const BASE_TEXT_SHAKE := 4.0
 const MAX_TEXT_SHAKE := 20.0
 const SHAKE_DURATION := 0.28
-## Hold Energy x Mult long enough to read the factors and the Segment N title.
+## Hold the factor line long enough to read the segment title.
 const FACTOR_HOLD_DURATION := 1.05
 const TUTORIAL_EQUALS_HOLD := 0.55
 ## Hold the product before it flies so the player can match Score to its segment.
@@ -93,11 +93,12 @@ func _draw() -> void:
 	_draw_hex(center, radius, Color(_hex_color, _hex_alpha))
 
 
-## Shows Segment N plus Energy x Mult, morphs into the product, then holds for the merge beat.
+## Shows Segment N plus Flavour x combined mult, then morphs into Rating.
 func present_segment(
 	segment_index: int,
 	energy: int,
-	multiplier: float,
+	additive_mult: float,
+	multiplicative_mult: float,
 	product: int,
 	linger_extra: bool = false
 ) -> void:
@@ -105,7 +106,11 @@ func present_segment(
 	segment_title.text = "%s %d" % [FeastDisplay.COURSE, segment_index + 1]
 	segment_title.modulate = Color.WHITE
 	_set_score_line(
-		"%s x %s" % [CountingNumber.format_int(energy), CountingNumber.format_mult(multiplier)],
+		"%s x %s"
+		% [
+			CountingNumber.format_int(energy),
+			CountingNumber.format_display_mult(additive_mult, multiplicative_mult),
+		],
 		float(ScoreReadoutStyle.font_size_for_score(product)) * FACTOR_FONT_SCALE
 	)
 	show()

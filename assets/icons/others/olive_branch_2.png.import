@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2maiw6422ie5"
-path="res://.godot/imported/run_stats.png-3c8bec9ecc9d25f382df2275705a836e.ctex"
+uid="uid://douc2454j8kf1"
+path="res://.godot/imported/olive_branch_2.png-ccea3ccfb7103f70d3d609c397220012.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/panels/run_stats.png"
-dest_files=["res://.godot/imported/run_stats.png-3c8bec9ecc9d25f382df2275705a836e.ctex"]
+source_file="res://assets/icons/others/olive_branch_2.png"
+dest_files=["res://.godot/imported/olive_branch_2.png-ccea3ccfb7103f70d3d609c397220012.ctex"]
 
 [params]
 

@@ -867,17 +867,31 @@ func add_turn_score_for_segment(segment_index: int, amount: int) -> void:
 	_emit_segment_turn_results_changed(segment_index)
 
 
-## Records multiplier produced by a rune on its tile's segment.
-func add_turn_multiplier_for_tile(tile: Hex, amount: float) -> void:
-	add_turn_multiplier_for_segment(get_segment_index(tile.coordinates), amount)
+## Records additive mult produced by a rune on its tile's segment.
+func add_turn_additive_mult_for_tile(tile: Hex, amount: float) -> void:
+	add_turn_additive_mult_for_segment(get_segment_index(tile.coordinates), amount)
 
 
-## Records multiplier on a segment by index. Used when a card credits another segment.
-func add_turn_multiplier_for_segment(segment_index: int, amount: float) -> void:
+## Records additive mult on a segment by index. Used when a card credits another segment.
+func add_turn_additive_mult_for_segment(segment_index: int, amount: float) -> void:
 	if is_zero_approx(amount):
 		return
 
-	_layout.add_segment_turn_multiplier(segment_index, amount)
+	_layout.add_segment_additive_mult(segment_index, amount)
+	_emit_segment_turn_results_changed(segment_index)
+
+
+## Records multiplicative mult produced by a rune on its tile's segment.
+func multiply_turn_multiplicative_mult_for_tile(tile: Hex, factor: float) -> void:
+	multiply_turn_multiplicative_mult_for_segment(get_segment_index(tile.coordinates), factor)
+
+
+## Records multiplicative mult on a segment by index. Used when a card credits another segment.
+func multiply_turn_multiplicative_mult_for_segment(segment_index: int, factor: float) -> void:
+	if is_zero_approx(factor):
+		return
+
+	_layout.multiply_segment_multiplicative_mult(segment_index, factor)
 	_emit_segment_turn_results_changed(segment_index)
 
 
@@ -906,37 +920,59 @@ func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 	_emit_segment_turn_results_changed(segment_index)
 
 
-## Notifies UI of the latest per-segment Energy, multiplier, and scored contribution.
+## Notifies UI of the latest per-segment Flavour, mult factors, and scored contribution.
 func _emit_segment_turn_results_changed(segment_index: int, use_passive_adjustments: bool = false) -> void:
 	var score := _layout.get_segment_turn_score(segment_index)
-	var multiplier := _layout.get_segment_turn_multiplier(segment_index)
+	var additive_mult := _layout.get_segment_additive_mult(segment_index)
+	var multiplicative_mult := _layout.get_segment_multiplicative_mult(segment_index)
 	var gold := _layout.get_segment_turn_gold(segment_index)
 	if use_passive_adjustments:
 		var breakdown := GameManager.get_segment_turn_contribution_breakdown(
 			segment_index,
 			score,
-			multiplier
+			additive_mult,
+			multiplicative_mult
 		)
 		EventBus.segment_turn_results_changed.emit(
 			segment_index,
 			breakdown.display_energy,
-			breakdown.display_multiplier,
+			breakdown.display_additive_mult,
+			breakdown.display_multiplicative_mult,
 			breakdown.contribution,
 			gold
 		)
 		return
-	EventBus.segment_turn_results_changed.emit(segment_index, score, multiplier, int(round(float(score) * multiplier)), gold)
+	var contribution := GameManager.compute_segment_turn_contribution(
+		segment_index,
+		score,
+		additive_mult,
+		multiplicative_mult
+	)
+	EventBus.segment_turn_results_changed.emit(
+		segment_index,
+		score,
+		additive_mult,
+		multiplicative_mult,
+		contribution,
+		gold
+	)
 
 
-## Each segment scores independently (Energy x Mult), then products are summed for the turn.
+## Each segment scores independently, then ratings are summed for the turn.
 func _apply_segment_turn_totals_to_game_manager() -> void:
 	GameManager.passive_runtime.on_turn_resolved(self)
 	var total := 0
 	var contributions: Array[int] = []
 	for segment_index in get_segment_count():
 		var score := get_segment_turn_score(segment_index)
-		var multiplier := get_segment_turn_multiplier(segment_index)
-		var contribution := GameManager.compute_segment_turn_contribution(segment_index, score, multiplier)
+		var additive_mult := get_segment_additive_mult(segment_index)
+		var multiplicative_mult := get_segment_multiplicative_mult(segment_index)
+		var contribution := GameManager.compute_segment_turn_contribution(
+			segment_index,
+			score,
+			additive_mult,
+			multiplicative_mult
+		)
 		contributions.append(contribution)
 		total += contribution
 	GameManager.record_turn_segment_peaks(contributions)
@@ -957,8 +993,12 @@ func get_segment_turn_score(segment_index: int) -> int:
 	return _layout.get_segment_turn_score(segment_index)
 
 
-func get_segment_turn_multiplier(segment_index: int) -> float:
-	return _layout.get_segment_turn_multiplier(segment_index)
+func get_segment_additive_mult(segment_index: int) -> float:
+	return _layout.get_segment_additive_mult(segment_index)
+
+
+func get_segment_multiplicative_mult(segment_index: int) -> float:
+	return _layout.get_segment_multiplicative_mult(segment_index)
 
 func get_segment_turn_gold(segment_index: int) -> int:
 	return _layout.get_segment_turn_gold(segment_index)
@@ -1455,16 +1495,19 @@ func capture_segment_turn_snapshot() -> Dictionary:
 	var total_gold := 0
 	for segment_index in get_segment_count():
 		var flavour := get_segment_turn_score(segment_index)
-		var mult := get_segment_turn_multiplier(segment_index)
+		var additive_mult := get_segment_additive_mult(segment_index)
+		var multiplicative_mult := get_segment_multiplicative_mult(segment_index)
 		var gold := get_segment_turn_gold(segment_index)
 		var breakdown := GameManager.get_segment_turn_contribution_breakdown(
 			segment_index,
 			flavour,
-			mult
+			additive_mult,
+			multiplicative_mult
 		)
 		segments.append({
 			"flavour": breakdown.display_energy,
-			"mult": breakdown.display_multiplier,
+			"additive_mult": breakdown.display_additive_mult,
+			"multiplicative_mult": breakdown.display_multiplicative_mult,
 			"rating": breakdown.contribution,
 			"gold": gold,
 		})

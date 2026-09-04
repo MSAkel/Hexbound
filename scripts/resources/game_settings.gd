@@ -8,7 +8,6 @@ const SAVE_PATH := "user://game_settings.save"
 const DISPLAY_MODE_FULLSCREEN := 0
 const DISPLAY_MODE_WINDOWED := 1
 const DISPLAY_MODE_BORDERLESS := 2
-const DEFAULT_WINDOWED_RESOLUTION := Vector2i(1280, 720)
 
 ## When true, the in-run tutorial banner appears the next time a run starts.
 static var tutorial_enabled: bool = true
@@ -17,11 +16,16 @@ static var game_speed: float = 1.0
 static var vsync_enabled: bool = false
 static var music_volume: float = 0.20
 static var sfx_volume: float = 0.35
-static var display_mode: int = DISPLAY_MODE_FULLSCREEN
+static var display_mode: int = DISPLAY_MODE_WINDOWED
 static var resolution: Vector2i = Vector2i(1920, 1080)
 ## Last character shown on the character selection screen, even if no run was started.
 static var last_character_selection_id: String = ""
 static var _loaded: bool = false
+
+
+static func detect_device_resolution() -> Vector2i:
+	var screen := DisplayServer.window_get_current_screen()
+	return DisplayServer.screen_get_size(screen)
 
 
 static func ensure_loaded() -> void:
@@ -29,6 +33,12 @@ static func ensure_loaded() -> void:
 		return
 	_loaded = true
 	if not FileAccess.file_exists(SAVE_PATH):
+		# First launch. Match the monitor and start windowed.
+		resolution = detect_device_resolution()
+		display_mode = DISPLAY_MODE_WINDOWED
+		_apply_display_settings()
+		_apply_vsync()
+		_save()
 		return
 	var save_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	if save_file == null:
@@ -42,11 +52,11 @@ static func ensure_loaded() -> void:
 		music_volume = clampf(float(settings.get("music_volume", 0.20)), 0.0, 1.0)
 		sfx_volume = clampf(float(settings.get("sfx_volume", 0.35)), 0.0, 1.0)
 		display_mode = clampi(
-			int(settings.get("display_mode", DISPLAY_MODE_FULLSCREEN)),
+			int(settings.get("display_mode", DISPLAY_MODE_WINDOWED)),
 			DISPLAY_MODE_FULLSCREEN,
 			DISPLAY_MODE_BORDERLESS
 		)
-		var saved_resolution = settings.get("resolution", Vector2i(1920, 1080))
+		var saved_resolution = settings.get("resolution", detect_device_resolution())
 		if saved_resolution is Vector2i:
 			resolution = saved_resolution
 		elif saved_resolution is Vector2:
@@ -150,12 +160,15 @@ static func _apply_windowed_resolution() -> void:
 	)
 
 
-## A fullscreen-sized saved resolution would make Windowed appear unchanged.
+## Keeps windowed mode inside the usable desktop area without resetting to a preset size.
 static func _shrink_fullscreen_sized_resolution() -> void:
 	var screen := DisplayServer.window_get_current_screen()
 	var usable_size := DisplayServer.screen_get_usable_rect(screen).size
-	if resolution.x >= usable_size.x or resolution.y >= usable_size.y:
-		resolution = DEFAULT_WINDOWED_RESOLUTION
+	if resolution.x > usable_size.x or resolution.y > usable_size.y:
+		resolution = Vector2i(
+			mini(resolution.x, usable_size.x),
+			mini(resolution.y, usable_size.y)
+		)
 
 
 ## Clears progression-related preferences while keeping audio, display, and control options.

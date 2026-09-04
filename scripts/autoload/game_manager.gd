@@ -365,23 +365,36 @@ func get_passives_for_segment(segment_index: int) -> Array[SegmentPassive]:
 	return passive_runtime.get_passives(segment_index)
 
 
-## Score is Energy x Mult, rounded at the segment. Passives must already be on the cards.
+## Rating is Flavour x (additive mult x multiplicative mult), rounded at the segment.
 func get_segment_turn_contribution_breakdown(
 	_segment_index: int,
 	energy: int,
-	multiplier: float
+	additive_mult: float,
+	multiplicative_mult: float = 1.0
 ) -> Dictionary:
-	var contribution := int(round(float(energy) * multiplier))
+	var combined_mult := additive_mult * multiplicative_mult
+	var contribution := int(round(float(energy) * combined_mult))
 	return {
 		"display_energy": energy,
-		"display_multiplier": multiplier,
+		"display_additive_mult": additive_mult,
+		"display_multiplicative_mult": multiplicative_mult,
 		"contribution": contribution,
 	}
 
 
-func compute_segment_turn_contribution(segment_index: int, energy: int, multiplier: float) -> int:
+func compute_segment_turn_contribution(
+	segment_index: int,
+	energy: int,
+	additive_mult: float,
+	multiplicative_mult: float = 1.0
+) -> int:
 	return int(
-		get_segment_turn_contribution_breakdown(segment_index, energy, multiplier)["contribution"]
+		get_segment_turn_contribution_breakdown(
+			segment_index,
+			energy,
+			additive_mult,
+			multiplicative_mult
+		)["contribution"]
 	)
 
 

@@ -3,15 +3,15 @@ extends RefCounted
 
 ## HUD pile icons and Kitchenware role chips. Single folder under assets/icons/stats/.
 
-const FLAVOUR := preload("res://assets/icons/stats/energy.png")
-const MULT := preload("res://assets/icons/stats/multiplier.png")
+const FLAVOUR := preload("res://assets/icons/stats/flavour.png")
+const MULT := preload("res://assets/icons/stats/mult.png")
 const GOLD := preload("res://assets/icons/stats/gold.png")
 const MERCHANT_TOKEN := preload("res://assets/icons/stats/merchant_token.png")
 
-const DOUBLE := preload("res://assets/icons/stats/empower_sigil.png")
-const AGAIN := preload("res://assets/icons/stats/retrigger_sigil.png")
-const PASS := preload("res://assets/icons/stats/segment_relay_sigil.png")
-const PROOF := preload("res://assets/icons/stats/growth_sigil.png")
+const DOUBLE := preload("res://assets/icons/stats/double.png")
+const FIRE := preload("res://assets/icons/stats/fire.png")
+const PASS := preload("res://assets/icons/stats/pass.png")
+const PROOF := preload("res://assets/icons/stats/proof.png")
 
 ## Random pool for the scene-enter loading splash. Stats, ingredients, and kitchenware.
 const LOADING_SPLASH: Array[Texture2D] = [
@@ -19,7 +19,7 @@ const LOADING_SPLASH: Array[Texture2D] = [
 	MULT,
 	GOLD,
 	DOUBLE,
-	AGAIN,
+	FIRE,
 	PASS,
 	PROOF,
 	preload("res://assets/icons/food/ingredients/apple.png"),
@@ -55,7 +55,7 @@ static func get_sigil_icon(sigil_kind: TileCard.SigilKind) -> Texture2D:
 		TileCard.SigilKind.EMPOWER:
 			return DOUBLE
 		TileCard.SigilKind.RETRIGGER:
-			return AGAIN
+			return FIRE
 		TileCard.SigilKind.SEGMENT_RELAY:
 			return PASS
 		TileCard.SigilKind.GROWTH:

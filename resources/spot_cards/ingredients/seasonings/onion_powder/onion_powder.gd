@@ -6,7 +6,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if amount <= 0.0:
 		failed_tile_card_text(tile)
 		return
-	add_multiplier(tile, amount)
+	add_additive_mult(tile, amount)
 
 
 func get_board_chip(tile: Hex = null) -> Dictionary:

@@ -240,7 +240,7 @@ func relay_product_if_needed(tile: Hex, product: TileCard.Product, amount: Varia
 			tile.map.mark_segment_received_relay(next_index)
 			tile.map.flash_segment_highlight(next_index)
 		TileCard.Product.MULTIPLIER:
-			tile.map.add_turn_multiplier_for_segment(next_index, float(amount))
+			tile.map.add_turn_additive_mult_for_segment(next_index, float(amount))
 			tile.map.mark_segment_received_relay(next_index)
 			tile.map.flash_segment_highlight(next_index)
 		TileCard.Product.GOLD:
@@ -505,11 +505,11 @@ func _grant_next_trigger_energy(tile: Hex, amount: int) -> void:
 func _grant_next_trigger_mult(tile: Hex, amount: float) -> void:
 	if tile == null or tile.map == null:
 		return
-	tile.map.add_turn_multiplier_for_tile(tile, amount)
+	tile.map.add_turn_additive_mult_for_tile(tile, amount)
 	var pos := tile.map.base_layer.map_to_local(tile.coordinates)
 	tile.map.create_floating_text(
 		pos,
-		"+%s" % CountingNumber.format_mult(amount),
+		CountingNumber.format_additive_mult(amount),
 		Color.PLUM,
 		TileCard.ICON_MULT
 	)

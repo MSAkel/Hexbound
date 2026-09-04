@@ -235,7 +235,7 @@ func _amount_board_chip_float(amount: float, amount_icon: Texture2D = null) -> D
 	var chip_icon: Texture2D = amount_icon if amount_icon != null else get_product_icon()
 	return _make_board_chip(
 		BoardChipMode.AMOUNT,
-		CountingNumber.format_mult(amount),
+		CountingNumber.format_additive_mult(amount),
 		chip_icon,
 		get_chip_panel_color()
 	)
@@ -491,7 +491,7 @@ func get_trigger_preview_coords(_hover_tile: Hex) -> Array[Vector2i]:
 	return []
 
 
-#region --- Energy, gold, and multiplier, and floating text helpers ---
+#region --- Energy, gold, additive mult, multiplicative mult, and floating text helpers ---
 func add_score(tile: Hex, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
 	tile.map.add_turn_score_for_tile(tile, points)
@@ -507,13 +507,53 @@ func add_gold(tile: Hex, base_amount: Variant) -> void:
 	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD)
 	CondimentManager.relay_product_if_needed(tile, Product.GOLD, amount)
 
-func add_multiplier(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
+func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
 	var amount := float(base_amount)
 	if scaled:
 		amount *= _activation_output_scale
-	tile.map.add_turn_multiplier_for_tile(tile, amount)
-	_create_floating_text(tile, "+%s" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
+	tile.map.add_turn_additive_mult_for_tile(tile, amount)
+	_create_floating_text(tile, CountingNumber.format_additive_mult(amount), Color.PLUM, ICON_MULT)
 	CondimentManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
+
+
+func multiply_multiplicative_mult(tile: Hex, factor: Variant, scaled: bool = true) -> void:
+	var amount := float(factor)
+	if scaled:
+		amount *= _activation_output_scale
+	tile.map.multiply_turn_multiplicative_mult_for_tile(tile, amount)
+	_create_floating_text(tile, CountingNumber.format_multiplicative_mult(amount), Color.PLUM, ICON_MULT)
+
+
+# Credits another segment's additive mult. Float stays on this tile.
+func add_additive_mult_to_segment(tile: Hex, segment_index: int, base_amount: Variant) -> void:
+	if EventManager.are_relays_blocked():
+		failed_tile_card_text(tile)
+		return
+	var amount := float(base_amount) * _activation_output_scale
+	tile.map.add_turn_additive_mult_for_segment(segment_index, amount)
+	tile.map.mark_segment_received_relay(segment_index)
+	_create_floating_text(
+		tile,
+		"%s →" % CountingNumber.format_additive_mult(amount),
+		Color.PLUM,
+		ICON_MULT
+	)
+
+
+# Credits another segment's multiplicative mult. Float stays on this tile.
+func multiply_multiplicative_mult_to_segment(tile: Hex, segment_index: int, factor: Variant) -> void:
+	if EventManager.are_relays_blocked():
+		failed_tile_card_text(tile)
+		return
+	var amount := float(factor) * _activation_output_scale
+	tile.map.multiply_turn_multiplicative_mult_for_segment(segment_index, amount)
+	tile.map.mark_segment_received_relay(segment_index)
+	_create_floating_text(
+		tile,
+		"%s →" % CountingNumber.format_multiplicative_mult(amount),
+		Color.PLUM,
+		ICON_MULT
+	)
 
 
 # Credits another segment's Energy. Float stays on this tile.
@@ -525,17 +565,6 @@ func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -
 	tile.map.add_turn_score_for_segment(segment_index, points)
 	tile.map.mark_segment_received_relay(segment_index)
 	_create_floating_text(tile, "+%d →" % points, Color.AQUA, ICON_ENERGY)
-
-
-# Credits another segment's turn multiplier. Float stays on this tile.
-func add_multiplier_to_segment(tile: Hex, segment_index: int, base_amount: Variant) -> void:
-	if EventManager.are_relays_blocked():
-		failed_tile_card_text(tile)
-		return
-	var amount := float(base_amount) * _activation_output_scale
-	tile.map.add_turn_multiplier_for_segment(segment_index, amount)
-	tile.map.mark_segment_received_relay(segment_index)
-	_create_floating_text(tile, "+%s →" % CountingNumber.format_mult(amount), Color.PLUM, ICON_MULT)
 
 
 func failed_tile_card_text(tile: Hex) -> void:
@@ -596,7 +625,7 @@ func _play_trigger_sound() -> void:
 		return
 	AudioManager.play_sfx(trigger_sound)
 
-#endregion --- Energy, gold, and multiplier, and floating text helpers ---
+#endregion --- Energy, gold, additive mult, multiplicative mult, and floating text helpers ---
 
 func _get_production_amount() -> float:
 	return float(base_production_amount) + bonus_production_amount
@@ -876,9 +905,14 @@ func _get_segment_turn_score(tile: Hex) -> int:
 	return tile.map.get_segment_turn_score(_get_segment_index(tile))
 
 
-## Turn Mult piled on this segment so far, including the 1.0 base.
-func _get_segment_turn_multiplier(tile: Hex) -> float:
-	return tile.map.get_segment_turn_multiplier(_get_segment_index(tile))
+## Additive mult piled on this segment so far this turn, including the 1.0 base.
+func _get_segment_additive_mult(tile: Hex) -> float:
+	return tile.map.get_segment_additive_mult(_get_segment_index(tile))
+
+
+## Multiplicative mult piled on this segment so far this turn, including the 1.0 base.
+func _get_segment_multiplicative_mult(tile: Hex) -> float:
+	return tile.map.get_segment_multiplicative_mult(_get_segment_index(tile))
 
 
 ## All placed tile cards on the same segment whose product matches filter_product.

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jtmgf0kaqiyp"
-path="res://.godot/imported/multiplier.png-b78f5679761d098f74ff623a37a3b5f1.ctex"
+uid="uid://tjkpc6hbs8rc"
+path="res://.godot/imported/button_primary.png-beae29b30b10ad45ffa4ab4a084d6acd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/stats/multiplier.png"
-dest_files=["res://.godot/imported/multiplier.png-b78f5679761d098f74ff623a37a3b5f1.ctex"]
+source_file="res://assets/gui/buttons/button_primary.png"
+dest_files=["res://.godot/imported/button_primary.png-beae29b30b10ad45ffa4ab4a084d6acd.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnujadhya634n"
-path="res://.godot/imported/energy.png-e9681702057d232926a12b9b2b0996aa.ctex"
+uid="uid://cmgwrmdbatyee"
+path="res://.godot/imported/button_light.png-1e03111c6aafaa8b354eac4b635344b9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/stats/energy.png"
-dest_files=["res://.godot/imported/energy.png-e9681702057d232926a12b9b2b0996aa.ctex"]
+source_file="res://assets/gui/buttons/button_light.png"
+dest_files=["res://.godot/imported/button_light.png-1e03111c6aafaa8b354eac4b635344b9.ctex"]
 
 [params]
 

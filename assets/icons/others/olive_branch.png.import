@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://p4noharesr3u"
-path="res://.godot/imported/empower_sigil.png-00428bb94c909b489ce39d0766fab56f.ctex"
+uid="uid://bnoommskcr3bk"
+path="res://.godot/imported/olive_branch.png-2644bbda3677240bacf3c2d19cc3792c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/stats/empower_sigil.png"
-dest_files=["res://.godot/imported/empower_sigil.png-00428bb94c909b489ce39d0766fab56f.ctex"]
+source_file="res://assets/icons/others/olive_branch.png"
+dest_files=["res://.godot/imported/olive_branch.png-2644bbda3677240bacf3c2d19cc3792c.ctex"]
 
 [params]
 

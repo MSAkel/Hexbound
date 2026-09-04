@@ -1,8 +1,48 @@
 [gd_scene format=3 uid="uid://gd4rito42dyr"]
 
 [ext_resource type="Script" uid="uid://b6oc5xxbytb4f" path="res://scenes/ui/main_menu/main_menu.gd" id="1_fe2o3"]
-[ext_resource type="Texture2D" uid="uid://8fw2v0boq1q8" path="res://assets/title/6_aklatros.png" id="3_cmwxi"]
+[ext_resource type="Texture2D" uid="uid://expxysnruktj" path="res://assets/title/flavour_pass.png" id="3_cmwxi"]
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="4_cmwxi"]
+[ext_resource type="Script" uid="uid://de4fenne8e4it" path="res://scenes/ui/main_menu/menu_icon_particles.gd" id="5_icon_particles"]
+
+[sub_resource type="Gradient" id="Gradient_wind_particles"]
+offsets = PackedFloat32Array(0, 0.08, 0.82, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.9, 1, 1, 1, 0.85, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_wind_particles"]
+gradient = SubResource("Gradient_wind_particles")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x2yvf"]
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(5, 5, 0)
+emission_shape_scale = Vector3(7, 5, 1)
+emission_shape = 3
+emission_box_extents = Vector3(600, 8, 1)
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0, 1, 0)
+spread = 12.0
+initial_velocity_min = 28.0
+initial_velocity_max = 78.0
+angular_velocity_min = -90.0
+angular_velocity_max = 90.0
+gravity = Vector3(0, 42, 0)
+linear_accel_min = -8.0
+linear_accel_max = 42.0
+tangential_accel_min = -10.0
+tangential_accel_max = 10.0
+damping_min = 1.0
+damping_max = 10.0
+scale_min = 0.55
+scale_max = 1.15
+color_ramp = SubResource("GradientTexture1D_wind_particles")
+anim_offset_max = 1.0
+turbulence_enabled = true
+turbulence_noise_strength = 2.8
+turbulence_noise_scale = 4.5
+turbulence_noise_speed = Vector3(0.55, 0.18, 0)
+turbulence_influence_min = 0.08
+turbulence_influence_max = 0.38
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7pmlo"]
 
@@ -14,42 +54,6 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xld13"]
 
-[sub_resource type="Gradient" id="Gradient_wind_particles"]
-offsets = PackedFloat32Array(0, 0.12, 0.72, 1)
-colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.65, 1, 1, 1, 0.45, 1, 1, 1, 0)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_wind_particles"]
-gradient = SubResource("Gradient_wind_particles")
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x2yvf"]
-particle_flag_disable_z = true
-emission_shape_offset = Vector3(5, 5, 0)
-emission_shape_scale = Vector3(7, 5, 1)
-emission_shape = 1
-emission_sphere_radius = 128.0
-angle_min = -118.5
-angle_max = 62.6
-direction = Vector3(1, 0.06, 0)
-spread = 18.0
-initial_velocity_min = 70.0
-initial_velocity_max = 210.0
-gravity = Vector3(0, 98, 0)
-linear_accel_min = -8.0
-linear_accel_max = 42.0
-tangential_accel_min = -22.0
-tangential_accel_max = 22.0
-damping_min = 1.0
-damping_max = 10.0
-scale_min = 0.5
-scale_max = 3.0
-color_ramp = SubResource("GradientTexture1D_wind_particles")
-turbulence_enabled = true
-turbulence_noise_strength = 2.8
-turbulence_noise_scale = 4.5
-turbulence_noise_speed = Vector3(0.55, 0.18, 0)
-turbulence_influence_min = 0.08
-turbulence_influence_max = 0.38
-
 [node name="MainMenu" type="Control" unique_id=1635287758]
 layout_mode = 3
 anchors_preset = 15
@@ -58,6 +62,19 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fe2o3")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1095667538]
+visible = false
+z_index = -1
+position = Vector2(1217, -70)
+amount = 36
+lifetime = 10.0
+preprocess = 10.0
+speed_scale = 0.85
+randomness = 0.6
+visibility_rect = Rect2(-1920, -128, 3840, 1408)
+process_material = SubResource("ParticleProcessMaterial_x2yvf")
+script = ExtResource("5_icon_particles")
 
 [node name="MenuContainer" type="MarginContainer" parent="." unique_id=1400102353]
 layout_mode = 1
@@ -168,16 +185,6 @@ theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
 text = "DEVELOPER MENU"
 alignment = 2
-
-[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1095667538]
-position = Vector2(1071.0001, 407)
-rotation = -3.1229453
-amount = 20
-sub_emitter = NodePath(".")
-lifetime = 4.0
-speed_scale = 0.3
-randomness = 0.5
-process_material = SubResource("ParticleProcessMaterial_x2yvf")
 
 [node name="SettingsContainer" parent="." unique_id=368611362 instance=ExtResource("4_cmwxi")]
 visible = false

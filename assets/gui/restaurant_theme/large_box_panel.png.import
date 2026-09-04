@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://celbg14qghuq5"
-path="res://.godot/imported/segment_relay_sigil.png-a1d1ed221df65f68dbcd06c78e7a039e.ctex"
+uid="uid://cq5hq3s8fedo8"
+path="res://.godot/imported/large_box_panel.png-25f972471523818b7ff9450cb8b65430.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/stats/segment_relay_sigil.png"
-dest_files=["res://.godot/imported/segment_relay_sigil.png-a1d1ed221df65f68dbcd06c78e7a039e.ctex"]
+source_file="res://assets/gui/restaurant_theme/large_box_panel.png"
+dest_files=["res://.godot/imported/large_box_panel.png-25f972471523818b7ff9450cb8b65430.ctex"]
 
 [params]
 

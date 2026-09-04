@@ -1,9 +1,17 @@
 [gd_scene format=3 uid="uid://dute0qsphespe"]
 
 [ext_resource type="PackedScene" uid="uid://bj0bkesq2wj5x" path="res://scenes/ui/RunInfoDisplay/run_status/run_status.tscn" id="2_hwuyg"]
+[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_i8t20"]
 [ext_resource type="PackedScene" uid="uid://baphc61loe4mb" path="res://scenes/ui/RunInfoDisplay/layouts_container/layouts_container.tscn" id="4_hwuyg"]
 [ext_resource type="PackedScene" uid="uid://crffik30sf5rg" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.tscn" id="7_6tdp6"]
 [ext_resource type="PackedScene" uid="uid://dh8s60bf3jvak" path="res://scenes/ui/RunInfoDisplay/challenge_container/challenge_container.tscn" id="8_lsngd"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3loux"]
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+texture = ExtResource("2_i8t20")
 
 [node name="RunInfoDisplay" type="Control" unique_id=237509013]
 layout_mode = 3
@@ -32,6 +40,7 @@ theme_override_constants/separation = 8
 
 [node name="RunStatus" parent="LeftContainer/VBoxContainer" unique_id=2029786034 instance=ExtResource("2_hwuyg")]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_3loux")
 
 [node name="SegmentsContainer" parent="LeftContainer/VBoxContainer" unique_id=1933303425 instance=ExtResource("7_6tdp6")]
 layout_mode = 2

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://br3dhulnhrxyl"]
 
 [ext_resource type="Script" uid="uid://16ej6vcxnuhw" path="res://scenes/ui/pause_menu/pause_menu.gd" id="1_kgchh"]
-[ext_resource type="Texture2D" uid="uid://8fw2v0boq1q8" path="res://assets/title/6_aklatros.png" id="2_xgg5q"]
-[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu/layout_passives_viewer.tscn" id="3_layout"]
+[ext_resource type="Texture2D" uid="uid://expxysnruktj" path="res://assets/title/flavour_pass.png" id="2_xgg5q"]
+[ext_resource type="PackedScene" uid="uid://diyhv66o78jip" path="res://scenes/ui/pause_menu/layout_passives_viewer.tscn" id="3_layout"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
 bg_color = Color(0.21176471, 0.21176471, 0.21176471, 0.77254903)
@@ -89,6 +89,10 @@ theme_override_constants/separation = 16
 [node name="TextureRect" type="TextureRect" parent="Panel/MenuItemsContainer" unique_id=799428981]
 layout_mode = 2
 texture = ExtResource("2_xgg5q")
+
+[node name="Control" type="Control" parent="Panel/MenuItemsContainer" unique_id=38949528]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
 
 [node name="Continue" type="Button" parent="Panel/MenuItemsContainer" unique_id=2074081055]
 layout_mode = 2

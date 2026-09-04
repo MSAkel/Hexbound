@@ -6,6 +6,6 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		0:
 			add_score(tile, 80)
 		1:
-			add_multiplier(tile, 12)
+			add_additive_mult(tile, 12)
 		2:
 			add_gold(tile, 6)

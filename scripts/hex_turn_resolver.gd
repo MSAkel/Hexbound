@@ -279,14 +279,15 @@ func _wait_pace(duration: float) -> void:
 		await get_tree().process_frame
 
 
-## Energy x Mult summed across segments. Used when reveal UI is skipped.
+## Flavour x (additive mult x multiplicative mult) summed across segments.
 func _sum_segment_contributions() -> int:
 	var total := 0
 	for segment_index in map.get_segment_count():
 		total += GameManager.compute_segment_turn_contribution(
 			segment_index,
 			map.get_segment_turn_score(segment_index),
-			map.get_segment_turn_multiplier(segment_index)
+			map.get_segment_additive_mult(segment_index),
+			map.get_segment_multiplicative_mult(segment_index)
 		)
 	return total
 
@@ -304,7 +305,8 @@ func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	if GameManager.should_skip_turn_presentation():
 		return
 	var score := map.get_segment_turn_score(segment_index)
-	var multiplier := map.get_segment_turn_multiplier(segment_index)
+	var additive_mult := map.get_segment_additive_mult(segment_index)
+	var multiplicative_mult := map.get_segment_multiplicative_mult(segment_index)
 	var gold := map.get_segment_turn_gold(segment_index)
 	if score == 0 and gold == 0:
 		return
@@ -312,7 +314,8 @@ func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	var contribution := GameManager.compute_segment_turn_contribution(
 		segment_index,
 		score,
-		multiplier
+		additive_mult,
+		multiplicative_mult
 	)
 
 	EventBus.segment_reveal_started.emit(segment_index)

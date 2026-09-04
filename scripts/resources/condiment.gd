@@ -63,7 +63,7 @@ func get_fuse_summary() -> String:
 		EffectType.NEXT_TRIGGER_ENERGY:
 			return "+%d Flavour · next fire" % int(effect_value)
 		EffectType.NEXT_TRIGGER_MULT:
-			return "+%s Mult · next fire" % CountingNumber.format_mult(effect_value)
+			return "+%d Mult · next fire" % int(round(effect_value))
 		EffectType.FORWARD_GIFT:
 			return "Forward Gift"
 		EffectType.MINT_SIP:

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfh4rcbjp4f4h"
-path="res://.godot/imported/retrigger_sigil.png-1d52a27f5dfa18614a80da5fb23c4cd2.ctex"
+uid="uid://blmxv3c4wu2jo"
+path="res://.godot/imported/proof.png-dad71844c2d6da5d8dd47fce61de39b3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/stats/retrigger_sigil.png"
-dest_files=["res://.godot/imported/retrigger_sigil.png-1d52a27f5dfa18614a80da5fb23c4cd2.ctex"]
+source_file="res://assets/icons/stats/proof.png"
+dest_files=["res://.godot/imported/proof.png-dad71844c2d6da5d8dd47fce61de39b3.ctex"]
 
 [params]
 

@@ -9,4 +9,4 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if not _activation_was_empowered:
 		return
 	# Flat Mult identity. Do not scale it with Empower's Energy double.
-	add_multiplier(tile, EMPOWERED_MULT, false)
+	add_additive_mult(tile, EMPOWERED_MULT, false)

@@ -9,7 +9,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	var next_segment_index := _get_next_segment_index(tile)
 	if next_segment_index < 0:
 		return
-	add_multiplier_to_segment(tile, next_segment_index, NEXT_SEGMENT_MULT)
+	add_additive_mult_to_segment(tile, next_segment_index, NEXT_SEGMENT_MULT)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

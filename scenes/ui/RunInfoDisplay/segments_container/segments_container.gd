@@ -261,13 +261,14 @@ func _apply_snapshot(snapshot: Dictionary, animate: bool) -> void:
 	for child in segment_results_list.get_children():
 		var course_index: int = child.course_index
 		if course_index < 0 or course_index >= segments.size():
-			child.apply_turn_snapshot(0, 1, 0, animate)
+			child.apply_turn_snapshot(0, 1, 1, 0, animate)
 			continue
 
 		var segment_data: Dictionary = segments[course_index]
 		child.apply_turn_snapshot(
 			int(segment_data.get("flavour", 0)),
-			float(segment_data.get("mult", 1.0)),
+			float(segment_data.get("additive_mult", segment_data.get("mult", 1.0))),
+			float(segment_data.get("multiplicative_mult", 1.0)),
 			int(segment_data.get("rating", 0)),
 			animate
 		)
@@ -277,7 +278,7 @@ func _apply_snapshot(snapshot: Dictionary, animate: bool) -> void:
 
 func _apply_empty_snapshot(animate: bool) -> void:
 	for child in segment_results_list.get_children():
-		child.apply_turn_snapshot(0, 1, 0, animate)
+		child.apply_turn_snapshot(0, 1, 1, 0, animate)
 	_update_turn_total(0, animate)
 
 
@@ -290,8 +291,15 @@ func _sync_rows_from_tile_map(animate: bool) -> void:
 	for child in segment_results_list.get_children():
 		var course_index: int = child.course_index
 		var flavour := tile_map.get_segment_turn_score(course_index)
-		var mult := tile_map.get_segment_turn_multiplier(course_index)
-		child.apply_turn_snapshot(flavour, mult, int(round(float(flavour) * mult)), animate, false)
+		var additive_mult := tile_map.get_segment_additive_mult(course_index)
+		var multiplicative_mult := tile_map.get_segment_multiplicative_mult(course_index)
+		var rating := GameManager.compute_segment_turn_contribution(
+			course_index,
+			flavour,
+			additive_mult,
+			multiplicative_mult
+		)
+		child.apply_turn_snapshot(flavour, additive_mult, multiplicative_mult, rating, animate, false)
 
 	# Turn total is driven by the reveal transfer beat, not live tile-map sync.
 	if not _is_viewing_live_turn():

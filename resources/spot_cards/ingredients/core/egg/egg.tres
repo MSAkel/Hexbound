@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://b1rm5egt47rj"]
+
+[ext_resource type="Texture2D" uid="uid://c8kv1hgnjor24" path="res://assets/icons/food/ingredients/egg.png" id="1_2pye5"]
+[ext_resource type="Script" uid="uid://cfd1auillxte2" path="res://resources/spot_cards/ingredients/core/egg/egg.gd" id="2_qhpj7"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_q3d4o"]
+
+[resource]
+script = ExtResource("2_qhpj7")
+base_production_amount = 12
+rarity = 1
+product = 1
+id = "egg"
+name = "Egg"
+icon = ExtResource("1_2pye5")
+description = "+12 Flavour per Course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

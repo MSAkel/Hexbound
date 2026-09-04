@@ -4,7 +4,7 @@ extends Resource
 # UI sound effects
 const CLICK = preload("res://assets/audio/ui/click.mp3")
 const SELECT = preload("res://assets/audio/ui/select.mp3")
-const END_TURN = preload("res://assets/audio/sfx/end_turn.wav")
+const END_TURN = preload("res://assets/audio/sfx/call_bell.mp3")
 const SPOIL_BREAK = preload("res://assets/audio/sfx/rune_break.mp3")
 ## Legacy alias. Prefer SPOIL_BREAK for new code.
 const RUNE_BREAK = SPOIL_BREAK

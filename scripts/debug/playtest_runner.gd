@@ -1050,9 +1050,15 @@ func _layout_segment_priority(segment_index: int) -> float:
 
 func _segment_engine_rating(segment_index: int) -> float:
 	var energy := _map.get_segment_turn_score(segment_index)
-	var multiplier := _map.get_segment_turn_multiplier(segment_index)
+	var additive_mult := _map.get_segment_additive_mult(segment_index)
+	var multiplicative_mult := _map.get_segment_multiplicative_mult(segment_index)
 	var contribution := float(
-		GameManager.compute_segment_turn_contribution(segment_index, energy, multiplier)
+		GameManager.compute_segment_turn_contribution(
+			segment_index,
+			energy,
+			additive_mult,
+			multiplicative_mult
+		)
 	)
 	var cards := float(_segment_card_count(segment_index))
 	var producers := float(
@@ -1695,13 +1701,20 @@ func _segment_contribution_snapshot() -> Array[Dictionary]:
 		return rows
 	for index in _map.get_segment_count():
 		var energy := _map.get_segment_turn_score(index)
-		var multiplier := _map.get_segment_turn_multiplier(index)
+		var additive_mult := _map.get_segment_additive_mult(index)
+		var multiplicative_mult := _map.get_segment_multiplicative_mult(index)
 		rows.append({
 			"index": index,
 			"size": _map.get_segment_size(index),
 			"energy": energy,
-			"mult": multiplier,
-			"contribution": GameManager.compute_segment_turn_contribution(index, energy, multiplier),
+			"additive_mult": additive_mult,
+			"multiplicative_mult": multiplicative_mult,
+			"contribution": GameManager.compute_segment_turn_contribution(
+				index,
+				energy,
+				additive_mult,
+				multiplicative_mult
+			),
 		})
 	return rows
 
@@ -1710,12 +1723,13 @@ func _print_segment_snapshot(round_number: int, snapshot: Array[Dictionary]) -> 
 	var parts: PackedStringArray = []
 	for row: Dictionary in snapshot:
 		parts.append(
-			"s%d(n=%d E=%d M=%s C=%d)"
+			"s%d(n=%d E=%d A=%s X=%s C=%d)"
 			% [
 				int(row.get("index", 0)),
 				int(row.get("size", 0)),
 				int(row.get("energy", 0)),
-				CountingNumber.format_mult(float(row.get("mult", 1.0))),
+				CountingNumber.format_additive_mult(float(row.get("additive_mult", 1.0))),
+				CountingNumber.format_multiplicative_mult(float(row.get("multiplicative_mult", 1.0))),
 				int(row.get("contribution", 0)),
 			]
 		)

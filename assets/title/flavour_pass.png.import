@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dn7sy81cjovdg"
-path="res://.godot/imported/growth_sigil.png-a390f8d6d57aa59f0c60bf32e530e16f.ctex"
+uid="uid://expxysnruktj"
+path="res://.godot/imported/flavour_pass.png-34305b252edb236d8f46f98e23973990.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/stats/growth_sigil.png"
-dest_files=["res://.godot/imported/growth_sigil.png-a390f8d6d57aa59f0c60bf32e530e16f.ctex"]
+source_file="res://assets/title/flavour_pass.png"
+dest_files=["res://.godot/imported/flavour_pass.png-34305b252edb236d8f46f98e23973990.ctex"]
 
 [params]
 

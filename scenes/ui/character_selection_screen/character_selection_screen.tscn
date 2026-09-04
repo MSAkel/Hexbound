@@ -3,11 +3,12 @@
 [ext_resource type="Script" uid="uid://6n3v47jlsp0s" path="res://scenes/ui/character_selection_screen/character_selection_screen.gd" id="1_screen"]
 [ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/character_selection_screen/difficulty_level_container.tscn" id="2_difficulty"]
 [ext_resource type="PackedScene" uid="uid://cdi5v4a8f6h2x" path="res://scenes/ui/character_selection_screen/layout_details.tscn" id="3_details"]
-[ext_resource type="Texture2D" uid="uid://b2la2jvs3gd6o" path="res://assets/gui/panels/parchment_panel_light.png" id="5_6jx6k"]
+[ext_resource type="Texture2D" uid="uid://cq5hq3s8fedo8" path="res://assets/gui/restaurant_theme/large_box_panel.png" id="5_6jx6k"]
 [ext_resource type="PackedScene" path="res://scenes/ui/scene_enter_transition/scene_enter_transition.tscn" id="5_transition"]
 [ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="6_arrow_normal"]
 [ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="7_arrow_pressed"]
 [ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="8_arrow_hover"]
+[ext_resource type="Texture2D" uid="uid://1dtwsew8gxg5" path="res://assets/gui/buttons/button_play.png" id="11_m2gea"]
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
 [ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/character_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="14_back"]
@@ -21,21 +22,8 @@ texture = ExtResource("5_6jx6k")
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_back"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_normal"]
-content_margin_left = 44.0
-content_margin_top = 18.0
-content_margin_right = 44.0
-content_margin_bottom = 18.0
-bg_color = Color(0.055, 0.22, 0.25, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.61, 0.45, 0.22, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m2gea"]
+texture = ExtResource("11_m2gea")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_pressed"]
 content_margin_left = 44.0
@@ -152,7 +140,7 @@ mouse_filter = 2
 [node name="PageTitle" type="Label" parent="SafeArea/Page/UnifiedPanel/Content/Header" unique_id=1964102203]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_colors/font_color = Color(0.42745098, 0.23529412, 0.06666667, 1)
 theme_override_font_sizes/font_size = 42
 text = "Layout Selection"
 horizontal_alignment = 1
@@ -212,7 +200,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 34
-theme_override_styles/normal = SubResource("StyleBoxFlat_play_normal")
+theme_override_styles/normal = SubResource("StyleBoxTexture_m2gea")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_play_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_play_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_play_hover")

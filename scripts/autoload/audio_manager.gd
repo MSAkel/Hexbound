@@ -22,6 +22,8 @@ var _sfx_fade_tweens: Dictionary = {}
 ## Dedicated hover player so condiment hover never stacks and can be stopped.
 var _condiment_hover_player: AudioStreamPlayer
 var _condiment_hover_use_b := false
+## Dedicated UI hover player so button hover respects the SFX bus and never stacks.
+var _ui_hover_player: AudioStreamPlayer
 
 func _ready() -> void:
 	# Initialize audio players
@@ -41,6 +43,10 @@ func _ready() -> void:
 	_condiment_hover_player = AudioStreamPlayer.new()
 	_condiment_hover_player.bus = "SFX"
 	add_child(_condiment_hover_player)
+
+	_ui_hover_player = AudioStreamPlayer.new()
+	_ui_hover_player.bus = "SFX"
+	add_child(_ui_hover_player)
 
 	# Load saved volume settings
 	load_volume_settings()
@@ -86,6 +92,7 @@ func play_sfx(sfx: AudioStream, fade_out_after: float = -1.0, fade_out_duration:
 	if player == null:
 		return
 	_kill_sfx_fade(player)
+	player.bus = "SFX"
 	player.stream = sfx
 	player.volume_db = linear_to_db(sfx_volume)
 	player.play()
@@ -107,6 +114,22 @@ func play_condiment_hover() -> void:
 func stop_condiment_hover() -> void:
 	if _condiment_hover_player != null:
 		_condiment_hover_player.stop()
+
+
+## Plays the shared button hover clip on the SFX bus without stacking.
+func play_ui_hover() -> void:
+	if _ui_hover_player == null:
+		return
+	_ui_hover_player.stop()
+	_ui_hover_player.bus = "SFX"
+	_ui_hover_player.stream = UISounds.SELECT
+	_ui_hover_player.volume_db = linear_to_db(sfx_volume)
+	_ui_hover_player.play()
+
+
+func stop_ui_hover() -> void:
+	if _ui_hover_player != null:
+		_ui_hover_player.stop()
 
 
 ## Fades an SFX player to silence, then stops it so the pool slot is free.
@@ -155,6 +178,8 @@ func set_sfx_volume(volume: float) -> void:
 		player.volume_db = linear_to_db(sfx_volume)
 	if _condiment_hover_player != null:
 		_condiment_hover_player.volume_db = linear_to_db(sfx_volume)
+	if _ui_hover_player != null:
+		_ui_hover_player.volume_db = linear_to_db(sfx_volume)
 	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
 	GameSettings.set_sfx_volume(sfx_volume)
 
@@ -172,6 +197,10 @@ func load_volume_settings() -> void:
 	AudioServer.set_bus_volume_db(MUSIC_BUS, linear_to_db(music_volume))
 	for player in sfx_players:
 		player.volume_db = linear_to_db(sfx_volume)
+	if _condiment_hover_player != null:
+		_condiment_hover_player.volume_db = linear_to_db(sfx_volume)
+	if _ui_hover_player != null:
+		_ui_hover_player.volume_db = linear_to_db(sfx_volume)
 	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
 
 # Stop all audio
@@ -180,15 +209,24 @@ func stop_all() -> void:
 	for player in sfx_players:
 		player.stop()
 	stop_condiment_hover()
+	stop_ui_hover()
 
 # Pause all audio
 func pause_all() -> void:
 	music_player.stream_paused = true
 	for player in sfx_players:
 		player.stream_paused = true
+	if _condiment_hover_player != null:
+		_condiment_hover_player.stream_paused = true
+	if _ui_hover_player != null:
+		_ui_hover_player.stream_paused = true
 
 # Resume all audio
 func resume_all() -> void:
 	music_player.stream_paused = false
 	for player in sfx_players:
 		player.stream_paused = false
+	if _condiment_hover_player != null:
+		_condiment_hover_player.stream_paused = false
+	if _ui_hover_player != null:
+		_ui_hover_player.stream_paused = false

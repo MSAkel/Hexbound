@@ -6,7 +6,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if next_segment_index < 0:
 		failed_tile_card_text(tile)
 		return
-	add_multiplier_to_segment(tile, next_segment_index, _get_production_amount())
+	add_additive_mult_to_segment(tile, next_segment_index, _get_production_amount())
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

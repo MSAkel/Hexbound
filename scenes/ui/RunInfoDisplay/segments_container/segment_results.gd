@@ -11,7 +11,8 @@ var course_index: int = -1
 @onready var rating_label: Label = $HBoxContainer/RatingContainer/CourseRating
 
 var _flavour: int = 0
-var _mult: float = 1.0
+var _additive_mult: float = 1.0
+var _multiplicative_mult: float = 1.0
 var _rating: int = 0
 ## Live resolve hides Rating until this course row's reveal beat.
 var _rating_revealed: bool = true
@@ -38,11 +39,7 @@ func _ready() -> void:
 	_rating_style = rating_container.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	rating_container.add_theme_stylebox_override("panel", _rating_style)
 	_flavour_counter = _make_stat_counter(flavour_label)
-	_mult_counter = CountingNumber.new(
-		self,
-		func(text: String) -> void: mult_label.text = text
-	)
-	_mult_counter.set_format_as_mult(true)
+	_mult_counter = _make_stat_counter(mult_label)
 	_rating_counter = CountingNumber.new(
 		self,
 		func(_text: String) -> void: pass,
@@ -70,14 +67,15 @@ func set_accepts_live_updates(enabled: bool) -> void:
 
 func apply_turn_snapshot(
 	flavour: int,
-	mult: float,
+	additive_mult: float,
+	multiplicative_mult: float,
 	rating: int,
 	animate: bool = true,
 	reveal_rating: bool = true
 ) -> void:
 	if reveal_rating:
 		_rating_revealed = true
-	_apply_results(flavour, mult, rating, animate)
+	_apply_results(flavour, additive_mult, multiplicative_mult, rating, animate)
 
 
 func _get_tile_map() -> HexTileMap:
@@ -90,18 +88,20 @@ func _sync_from_tile_map() -> void:
 
 	var tile_map := _get_tile_map()
 	if tile_map == null or course_index < 0:
-		_apply_results(0, 1, 0, false)
+		_apply_results(0, 1, 1, 0, false)
 		return
 
 	var flavour := tile_map.get_segment_turn_score(course_index)
-	var mult := tile_map.get_segment_turn_multiplier(course_index)
-	_apply_results(flavour, mult, 0, false)
+	var additive_mult := tile_map.get_segment_additive_mult(course_index)
+	var multiplicative_mult := tile_map.get_segment_multiplicative_mult(course_index)
+	_apply_results(flavour, additive_mult, multiplicative_mult, 0, false)
 
 
 func _on_segment_turn_results_changed(
 	changed_index: int,
 	flavour: int,
-	mult: float,
+	additive_mult: float,
+	multiplicative_mult: float,
 	reported_rating: int,
 	_ignored_reward: int
 ) -> void:
@@ -110,24 +110,21 @@ func _on_segment_turn_results_changed(
 	# After Rating starts counting, do not restart that tween. Hour resolve awaits it.
 	if _is_revealing and _rating_revealed:
 		_flavour = flavour
-		_mult = mult
+		_additive_mult = additive_mult
+		_multiplicative_mult = multiplicative_mult
 		_play_counter(_flavour_counter, flavour, flavour_label)
-		var idle_mult := mult <= 1.0 + 0.0001 and flavour == 0 and reported_rating == 0
-		if idle_mult:
-			_mult_counter.snap_to(mult)
-		else:
-			_play_counter(_mult_counter, mult, mult_label)
-		_apply_mult_display(mult)
+		_play_or_snap_display_mult(additive_mult, multiplicative_mult, flavour, reported_rating)
+		_apply_mult_display(additive_mult, multiplicative_mult)
 		return
-	# Keep Rating hidden until the equals beat. Flavour and Mult continue updating live.
-	_apply_results(flavour, mult, 0)
+	# Keep Rating hidden until the equals beat. Flavour and mult factors continue updating live.
+	_apply_results(flavour, additive_mult, multiplicative_mult, 0)
 
 
 func _on_segment_turn_results_reset() -> void:
 	if not _accepts_live_updates:
 		return
 	_rating_revealed = false
-	_apply_results(0, 1, 0, false)
+	_apply_results(0, 1, 1, 0, false)
 
 
 func _on_segment_rating_revealed(changed_index: int, rating: int) -> void:
@@ -164,7 +161,12 @@ func play_rating_drain_to_zero() -> Tween:
 	var punch_intensity := ScoreReadoutStyle.intensity_for_score(_rating)
 
 	_play_drain_counter(_flavour_counter, flavour_label, punch_intensity)
-	_play_drain_counter(_mult_counter, mult_label, punch_intensity)
+	var mult_tween := _play_drain_mult_counter(
+		_mult_counter,
+		mult_label,
+		punch_intensity,
+		1.0
+	)
 	var rating_tween := _play_drain_counter(
 		_rating_counter,
 		rating_label,
@@ -173,13 +175,17 @@ func play_rating_drain_to_zero() -> Tween:
 
 	var finalize := func() -> void:
 		_flavour = 0
-		_mult = 0.0
+		_additive_mult = 1.0
+		_multiplicative_mult = 1.0
 		_rating = 0
-		_apply_mult_display(0.0)
+		_apply_mult_display(1.0, 1.0)
 
 	if rating_tween != null:
 		rating_tween.finished.connect(finalize, CONNECT_ONE_SHOT)
 		return rating_tween
+	if mult_tween != null:
+		mult_tween.finished.connect(finalize, CONNECT_ONE_SHOT)
+		return mult_tween
 
 	finalize.call()
 	return null
@@ -189,12 +195,13 @@ func snap_rating_to_zero() -> void:
 	if not _rating_revealed:
 		return
 	_flavour = 0
-	_mult = 0.0
+	_additive_mult = 1.0
+	_multiplicative_mult = 1.0
 	_rating = 0
 	_flavour_counter.snap_to(0)
-	_mult_counter.snap_to(0)
+	_mult_counter.snap_to(1.0)
 	_rating_counter.snap_to(0)
-	_apply_mult_display(0.0)
+	_apply_mult_display(1.0, 1.0)
 
 
 func _on_segment_reveal_started(changed_index: int) -> void:
@@ -208,33 +215,48 @@ func _on_segment_reveal_ended() -> void:
 	_set_reveal_active(false)
 
 
-## Stores the latest Flavour, Mult, and Rating, then refreshes the row labels.
+## Stores the latest Flavour, combined mult, and Rating, then refreshes the row labels.
 func _apply_results(
 	flavour: int,
-	mult: float,
+	additive_mult: float,
+	multiplicative_mult: float,
 	rating: int,
 	animate: bool = true
 ) -> void:
 	_flavour = flavour
-	_mult = mult
+	_additive_mult = additive_mult
+	_multiplicative_mult = multiplicative_mult
 	_rating = rating
 
 	if animate:
 		_play_counter(_flavour_counter, flavour, flavour_label)
-		var idle_mult := mult <= 1.0 + 0.0001 and flavour == 0 and rating == 0
-		if idle_mult:
-			_mult_counter.snap_to(mult)
-		else:
-			_play_counter(_mult_counter, mult, mult_label)
+		_play_or_snap_display_mult(additive_mult, multiplicative_mult, flavour, rating)
 		if _rating_revealed:
 			_play_counter(_rating_counter, rating, rating_label)
 		else:
 			_rating_counter.snap_to(0)
 	else:
 		_flavour_counter.snap_to(flavour)
-		_mult_counter.snap_to(mult)
+		_mult_counter.snap_to(float(_combined_display_mult(additive_mult, multiplicative_mult)))
 		_rating_counter.snap_to(rating if _rating_revealed else 0)
-	_apply_mult_display(mult)
+	_apply_mult_display(additive_mult, multiplicative_mult)
+
+
+func _combined_display_mult(additive_mult: float, multiplicative_mult: float) -> int:
+	return CountingNumber.combined_display_mult(additive_mult, multiplicative_mult)
+
+
+func _play_or_snap_display_mult(
+	additive_mult: float,
+	multiplicative_mult: float,
+	flavour: int,
+	rating: int
+) -> void:
+	var display_mult := float(_combined_display_mult(additive_mult, multiplicative_mult))
+	if _is_idle_display_mult(additive_mult, multiplicative_mult, flavour, rating):
+		_mult_counter.snap_to(display_mult)
+	else:
+		_play_counter(_mult_counter, display_mult, mult_label)
 
 
 func _make_stat_counter(label: Label) -> CountingNumber:
@@ -250,12 +272,31 @@ func _format_stat(value: int) -> String:
 	return "-" if value == 0 else CountingNumber.format_int(value)
 
 
-func _apply_mult_display(mult: float) -> void:
+func _is_idle_display_mult(
+	additive_mult: float,
+	multiplicative_mult: float,
+	flavour: int,
+	rating: int
+) -> bool:
+	return (
+		_combined_display_mult(additive_mult, multiplicative_mult) <= 1
+		and flavour == 0
+		and rating == 0
+	)
+
+
+func _apply_mult_display(additive_mult: float, multiplicative_mult: float) -> void:
 	var has_activity := _flavour > 0 or _rating > 0
-	if mult <= 1.0 + 0.0001 and not has_activity:
+	var display_mult := _combined_display_mult(additive_mult, multiplicative_mult)
+	if _is_idle_display_mult(
+		additive_mult,
+		multiplicative_mult,
+		_flavour if has_activity else 0,
+		_rating if has_activity else 0
+	):
 		mult_label.text = "-"
 	else:
-		mult_label.text = CountingNumber.format_mult(mult)
+		mult_label.text = CountingNumber.format_int(display_mult)
 
 
 func _apply_rating_style(value: int) -> void:
@@ -344,6 +385,22 @@ func _play_counter(counter: CountingNumber, target: float, punch_target: Control
 		if punch_target != rating_label:
 			punch_scale = lerpf(1.08, 1.16, intensity)
 		_punch(punch_target, punch_scale)
+
+
+func _play_drain_mult_counter(
+	counter: CountingNumber,
+	punch_target: Control,
+	punch_intensity: float,
+	target: float
+) -> Tween:
+	var tween := counter.play(target)
+	if tween == null:
+		counter.snap_to(target)
+	var punch_scale := lerpf(RATING_PUNCH_MIN, RATING_PUNCH_MAX, punch_intensity)
+	if punch_target != rating_label:
+		punch_scale = lerpf(1.08, 1.16, punch_intensity)
+	_punch(punch_target, punch_scale)
+	return tween
 
 
 func _play_drain_counter(

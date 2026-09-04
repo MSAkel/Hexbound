@@ -1,15 +1,15 @@
 class_name TilePanel
 extends Control
 
-@onready var card_icon: CardIcon = $PanelContainer/VBoxContainer/RunePanelContainer/RuneIconPanel/RuneIcon
-@onready var card_name_label: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RuneName
-@onready var rarity_badge: PanelContainer = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge
-@onready var rarity_label: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge/RarityLabel
-@onready var card_subtitle: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
-@onready var card_chip_line: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneChipLine
-@onready var card_description: RichTextLabel = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
-@onready var card_bonus_line: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/RuneBonusLine
-@onready var condiment_fuse_line: Label = $PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/CondimentFuseLine
+@onready var card_icon: CardIcon = $VBoxContainer/RunePanelContainer/RuneIconPanel/RuneIcon
+@onready var card_name_label: Label = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RuneName
+@onready var rarity_badge: PanelContainer = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge
+@onready var rarity_label: Label = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge/RarityLabel
+@onready var card_subtitle: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
+@onready var card_chip_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneChipLine
+@onready var card_description: RichTextLabel = $VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
+@onready var card_bonus_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneBonusLine
+@onready var condiment_fuse_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/CondimentFuseLine
 
 const RARITY_BG_COLORS := {
 	TileCard.TileCardRarity.COMMON: Color(0.7473333, 0.7472968, 0.77322227, 1),
@@ -147,7 +147,7 @@ func _set_bonus_line(card: TileCard) -> void:
 	var stat_label := FeastDisplay.MULT if card.product == TileCard.Product.MULTIPLIER else FeastDisplay.FLAVOUR
 	var amount_text: String
 	if card.product == TileCard.Product.MULTIPLIER:
-		amount_text = CountingNumber.format_mult(bonus)
+		amount_text = CountingNumber.format_additive_mult(bonus)
 	else:
 		amount_text = str(int(round(bonus)))
 	if bonus > 0.0:

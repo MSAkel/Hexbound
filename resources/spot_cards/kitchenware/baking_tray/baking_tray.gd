@@ -12,7 +12,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		return
 	var energy_relayed := int(round(float(_get_segment_turn_score(tile)) * ENERGY_RELAY_FRACTION))
 	# Empty-segment Mult stays 1.0. Relay a slice of bonus Mult, not the implicit 1.0 base.
-	var mult_bonus := maxf(0.0, _get_segment_turn_multiplier(tile) - 1.0)
+	var mult_bonus := maxf(0.0, _get_segment_additive_mult(tile) - 1.0)
 	var mult_relayed := mult_bonus * MULT_RELAY_FRACTION
 	if energy_relayed <= 0 and mult_relayed <= 0.0:
 		failed_tile_card_text(tile)
@@ -20,7 +20,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if energy_relayed > 0:
 		add_score_to_segment(tile, next_segment_index, energy_relayed)
 	if mult_relayed > 0.0:
-		add_multiplier_to_segment(tile, next_segment_index, mult_relayed)
+		add_additive_mult_to_segment(tile, next_segment_index, mult_relayed)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bif4cx5edh2ng"]
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/tile_panel.gd" id="1_0dxj0"]
-[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_f84w1"]
+[ext_resource type="Texture2D" uid="uid://8qge5btjbib0" path="res://assets/gui/panels/tooltip.png" id="2_8qrfl"]
 [ext_resource type="PackedScene" uid="uid://dgghwt6uw18en" path="res://scenes/ui/cards/card_icon.tscn" id="3_cardicon"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8qrfl"]
@@ -9,40 +9,26 @@ content_margin_left = 16.0
 content_margin_top = 16.0
 content_margin_right = 16.0
 content_margin_bottom = 16.0
-texture = ExtResource("2_f84w1")
+texture = ExtResource("2_8qrfl")
 
 [sub_resource type="FontVariation" id="FontVariation_c0n6m"]
 
-[node name="TilePanel" type="Control" unique_id=882335406]
+[node name="TilePanel" type="PanelContainer" unique_id=882335406]
 z_index = 100
-layout_mode = 3
-anchors_preset = 0
-offset_right = 450.0
-offset_bottom = 200.0
-mouse_filter = 2
-script = ExtResource("1_0dxj0")
-
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1219395167]
-layout_mode = 1
-anchors_preset = -1
-anchor_right = 0.92
-anchor_bottom = 0.83000004
-offset_bottom = -1.5258789e-05
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_8qrfl")
+script = ExtResource("1_0dxj0")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=556707738]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=556707738]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="RunePanelContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=337661510]
+[node name="RunePanelContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=337661510]
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 0
 theme_override_constants/separation = 16
 
-[node name="RuneIconPanel" type="MarginContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer" unique_id=750760654]
+[node name="RuneIconPanel" type="MarginContainer" parent="VBoxContainer/RunePanelContainer" unique_id=750760654]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 size_flags_vertical = 0
@@ -51,32 +37,33 @@ theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 
-[node name="RuneIcon" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneIconPanel" unique_id=108305046 instance=ExtResource("3_cardicon")]
+[node name="RuneIcon" parent="VBoxContainer/RunePanelContainer/RuneIconPanel" unique_id=108305046 instance=ExtResource("3_cardicon")]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 
-[node name="RuneVBox" type="VBoxContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer" unique_id=2029008049]
+[node name="RuneVBox" type="VBoxContainer" parent="VBoxContainer/RunePanelContainer" unique_id=2029008049]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 0
 
-[node name="NameRow" type="HBoxContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1988771201]
+[node name="NameRow" type="HBoxContainer" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1988771201]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RuneName" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow" unique_id=2066887061]
+[node name="RuneName" type="Label" parent="VBoxContainer/RunePanelContainer/RuneVBox/NameRow" unique_id=2066887061]
 layout_mode = 2
-size_flags_vertical = 1
+size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
 theme_override_fonts/font = SubResource("FontVariation_c0n6m")
 theme_override_font_sizes/font_size = 18
-text = "Empty Spot"
+text = "Name"
 
-[node name="RarityBadge" type="PanelContainer" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow" unique_id=1452203392]
+[node name="RarityBadge" type="PanelContainer" parent="VBoxContainer/RunePanelContainer/RuneVBox/NameRow" unique_id=1452203392]
 visible = false
 layout_mode = 2
 size_flags_vertical = 4
 
-[node name="RarityLabel" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge" unique_id=1452203393]
+[node name="RarityLabel" type="Label" parent="VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge" unique_id=1452203393]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18039216, 0.25490198, 0.17254902, 1)
 theme_override_font_sizes/font_size = 11
@@ -84,39 +71,50 @@ text = "Common"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RuneSubtitle" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1042300476]
+[node name="RuneSubtitle" type="Label" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1042300476]
 layout_mode = 2
+size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.45, 0.38, 0.28, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ingredient"
 
-[node name="RuneChipLine" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1745057158]
+[node name="FooterRule" type="ColorRect" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1466097033]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+color = Color(0.43, 0.33, 0.19, 0.28)
+
+[node name="RuneChipLine" type="Label" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1745057158]
 visible = false
 layout_mode = 2
+size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.32, 0.28, 0.2, 1)
 theme_override_font_sizes/font_size = 15
 text = "15"
 
-[node name="RuneDescription" type="RichTextLabel" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1551846723]
+[node name="RuneDescription" type="RichTextLabel" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1551846723]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
+size_flags_vertical = 0
 theme_override_colors/default_color = Color(0.23753911, 0.23753914, 0.23753911, 1)
-theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/normal_font_size = 14
 bbcode_enabled = true
 text = "Description"
 fit_content = true
 scroll_active = false
 
-[node name="RuneBonusLine" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1687614203]
+[node name="RuneBonusLine" type="Label" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1687614203]
 layout_mode = 2
+size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.18, 0.52, 0.36, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "+10 Flavour"
 
-[node name="CondimentFuseLine" type="Label" parent="PanelContainer/VBoxContainer/RunePanelContainer/RuneVBox" unique_id=425417592]
+[node name="CondimentFuseLine" type="Label" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=425417592]
 visible = false
 layout_mode = 2
+size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.55, 0.32, 0.72, 1)
 theme_override_font_sizes/font_size = 14
-text = ""
 autowrap_mode = 3

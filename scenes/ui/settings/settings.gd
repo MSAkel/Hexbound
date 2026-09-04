@@ -22,11 +22,14 @@ const RESOLUTIONS := [
 	Vector2i(3840, 2160),
 ]
 
+var _resolution_options: Array[Vector2i] = []
+
 func _ready() -> void:
 	# Initialize sliders with current values
 	#master_volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
 	music_volume_slider.value = AudioManager.music_volume
 	sfx_volume_slider.value = AudioManager.sfx_volume
+	_populate_resolution_options()
 	_sync_settings_controls()
 	visibility_changed.connect(_on_visibility_changed)
 	
@@ -41,14 +44,31 @@ func _on_visibility_changed() -> void:
 		_sync_settings_controls()
 
 
+func _populate_resolution_options() -> void:
+	GameSettings.ensure_loaded()
+	_resolution_options.assign(RESOLUTIONS)
+	if _resolution_options.find(GameSettings.resolution) < 0:
+		_resolution_options.append(GameSettings.resolution)
+		_resolution_options.sort_custom(_sort_resolution_options)
+	resolution_option_button.clear()
+	for resolution in _resolution_options:
+		resolution_option_button.add_item("%dx%d" % [resolution.x, resolution.y])
+
+
+func _sort_resolution_options(a: Vector2i, b: Vector2i) -> bool:
+	if a.x == b.x:
+		return a.y < b.y
+	return a.x < b.x
+
+
 func _sync_settings_controls() -> void:
 	GameSettings.ensure_loaded()
 	game_speed_option_button.select(clampi(roundi(GameSettings.game_speed) - 1, 0, 2))
 	screen_shake_check_box.set_pressed_no_signal(GameSettings.screen_shake_enabled)
 	v_sync_check_box.set_pressed_no_signal(GameSettings.vsync_enabled)
 	display_mode_option_button.select(GameSettings.display_mode)
-	var resolution_index := RESOLUTIONS.find(GameSettings.resolution)
-	resolution_option_button.select(resolution_index if resolution_index >= 0 else 4)
+	var resolution_index := _resolution_options.find(GameSettings.resolution)
+	resolution_option_button.select(resolution_index if resolution_index >= 0 else 0)
 	tutorial_check_box.set_pressed_no_signal(GameSettings.tutorial_enabled)
 
 func _on_master_volume_changed(value: float) -> void:
@@ -75,7 +95,7 @@ func _on_back_button_pressed() -> void:
 	closed.emit()
 
 func _on_back_button_mouse_entered() -> void:
-	AudioManager.play_sfx(UISounds.SELECT)
+	AudioManager.play_ui_hover()
 
 
 func _on_v_sync_check_box_toggled(toggled_on: bool) -> void:
@@ -92,8 +112,8 @@ func _on_display_mode_option_button_item_selected(index: int) -> void:
 
 
 func _on_resolution_option_button_item_selected(index: int) -> void:
-	if index >= 0 and index < RESOLUTIONS.size():
-		GameSettings.set_resolution(RESOLUTIONS[index])
+	if index >= 0 and index < _resolution_options.size():
+		GameSettings.set_resolution(_resolution_options[index])
 
 
 func _on_tutorial_check_box_toggled(toggled_on: bool) -> void:

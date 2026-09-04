@@ -1,22 +1,10 @@
 [gd_scene format=3 uid="uid://bq8n4m2k7p1xw"]
 
 [ext_resource type="Script" uid="uid://ck7n4m2k7p1xy" path="res://scenes/ui/character_selection_screen/layout_preview_map.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://tjkpc6hbs8rc" path="res://assets/gui/buttons/button_primary.png" id="2_q8yl5"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_replay_normal"]
-content_margin_left = 18.0
-content_margin_top = 8.0
-content_margin_right = 18.0
-content_margin_bottom = 8.0
-bg_color = Color(0.055, 0.22, 0.25, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.61, 0.45, 0.22, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ifpyg"]
+texture = ExtResource("2_q8yl5")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_replay_pressed"]
 content_margin_left = 18.0
@@ -50,14 +38,14 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="LayoutPreviewMap" type="VBoxContainer"]
+[node name="LayoutPreviewMap" type="VBoxContainer" unique_id=1541533698]
 custom_minimum_size = Vector2(600, 500)
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 6
 script = ExtResource("1_script")
 
-[node name="MapHost" type="Control" parent="."]
+[node name="MapHost" type="Control" parent="." unique_id=1390802450]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 400)
 layout_mode = 2
@@ -65,17 +53,17 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="CaptionLabel" type="Label" parent="."]
+[node name="CaptionLabel" type="Label" parent="." unique_id=169401123]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 22)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.39, 0.31, 0.2, 1)
+theme_override_colors/font_color = Color(0.4, 0.30980393, 0.16862746, 1)
 theme_override_font_sizes/font_size = 16
 text = "Hover a spot to inspect a course"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="ReplayButton" type="Button" parent="."]
+[node name="ReplayButton" type="Button" parent="." unique_id=1294537423]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
@@ -84,7 +72,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_replay_normal")
+theme_override_styles/normal = SubResource("StyleBoxTexture_ifpyg")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_replay_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_replay_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_replay_hover")

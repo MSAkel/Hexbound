@@ -57,7 +57,7 @@ func _set_button_pivot(button: Button) -> void:
 
 
 func _on_button_hover(button: Button) -> void:
-	AudioManager.play_sfx(UISounds.SELECT)
+	AudioManager.play_ui_hover()
 	_animate_button_hover(button, true)
 
 
@@ -83,7 +83,7 @@ func _animate_button_hover(button: Button, hovered: bool) -> void:
 
 
 func _on_focus_entered() -> void:
-	AudioManager.play_sfx(UISounds.SELECT)
+	AudioManager.play_ui_hover()
 
 
 func _refresh_continue_button() -> void:
