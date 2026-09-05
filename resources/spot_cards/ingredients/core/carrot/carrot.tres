@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("2_vdmxa")
+ingredient_kind = 1
 base_production_amount = 5
 product = 1
 starting_hand_eligible = true

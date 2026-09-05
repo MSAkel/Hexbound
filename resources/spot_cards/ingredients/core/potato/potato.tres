@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("2_tslg8")
+ingredient_kind = 1
 rarity = 1
 product = 1
 id = "potato"

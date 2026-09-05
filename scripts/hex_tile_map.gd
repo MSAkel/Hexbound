@@ -18,6 +18,8 @@ var turn_resolver: HexTurnResolver
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
 @onready var gold_overlay_layer: TileMapLayer = $GoldOverlayLayer
+# Counted dish-recipe seats. Own layer so gold modulate cannot leak onto other overlays.
+var dish_recipe_gold_layer: TileMapLayer
 
 # Selection overlay tileset sources in hex_tile_map.tscn.
 const HOVER_OVERLAY_NORMAL := 0
@@ -96,6 +98,8 @@ var _round_turn_snapshots: Array = []
 enum FadingOverlayOwner { EVENT, REVEAL }
 
 const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
+## Gold wash on a dedicated layer so dish recipe seats do not recolor other rune highlights.
+const DISH_RECIPE_GOLD_MODULATE := SEGMENT_REVEAL_GLOW_COLOR
 # Occupied-card zip budget. Stagger shrinks on long rings so this never grows.
 const SEGMENT_SEAL_BUDGET := 0.28
 const SEGMENT_SEAL_MAX_STAGGER := 0.045
@@ -104,6 +108,13 @@ const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
+# Inspect overlay seats currently stamped on dish_recipe_gold_layer.
+var _inspect_gold_highlight_coords: Array[Vector2i] = []
+# Placement and inspect seats currently stamped on dish_recipe_gold_layer.
+var _dish_recipe_gold_coords: Array[Vector2i] = []
+# Prefix seats darkened because they hold a card whose tag is not in the recipe.
+var _dish_recipe_invalid_coords: Array[Vector2i] = []
+var _inspect_invalid_highlight_coords: Array[Vector2i] = []
 
 
 func _ready() -> void:
@@ -116,6 +127,7 @@ func _ready() -> void:
 	hovered_tile_overlay_layer.self_modulate = HOVERED_TILE_OVERLAY_MODULATE
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
 	gold_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
+	_setup_dish_recipe_gold_layer()
 	_apply_tile_spacing()
 	trigger_order_overlay.setup(self)
 	segment_path_overlay.setup(self)
@@ -168,7 +180,10 @@ func _apply_tile_spacing() -> void:
 		disabled_tile_overlay_layer,
 		fading_sector_overlay_layer,
 		gold_overlay_layer,
+		dish_recipe_gold_layer,
 	]:
+		if layer == null:
+			continue
 		layer.tile_set.tile_size = spaced_tile_size
 
 
@@ -300,6 +315,78 @@ func stamp_placement_valid_highlight(coords: Vector2i) -> void:
 
 func clear_placement_valid_highlights() -> void:
 	placement_valid_overlay_layer.clear()
+
+
+func _setup_dish_recipe_gold_layer() -> void:
+	dish_recipe_gold_layer = TileMapLayer.new()
+	dish_recipe_gold_layer.name = "DishRecipeGoldOverlayLayer"
+	dish_recipe_gold_layer.tile_set = rune_highlight_overlay_layer.tile_set
+	dish_recipe_gold_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
+	dish_recipe_gold_layer.modulate = DISH_RECIPE_GOLD_MODULATE
+	add_child(dish_recipe_gold_layer)
+
+
+## Gold wash on a prefix seat whose card will count toward the dish's plated output.
+func stamp_dish_recipe_gold_highlight(coords: Vector2i) -> void:
+	if coords in _dish_recipe_gold_coords:
+		return
+	_dish_recipe_gold_coords.append(coords)
+	dish_recipe_gold_layer.set_cell(
+		coords,
+		RUNE_HIGHLIGHT_SOURCE_ID,
+		OVERLAY_TILE_ATLAS_COORDS
+	)
+
+
+func clear_dish_recipe_gold_highlights_at(coords_list: Array[Vector2i]) -> void:
+	for coords: Vector2i in coords_list:
+		_dish_recipe_gold_coords.erase(coords)
+		dish_recipe_gold_layer.set_cell(coords, -1)
+
+
+## Dark wash on a prefix seat whose card cannot fill the dish recipe.
+func stamp_dish_recipe_invalid_highlight(coords: Vector2i) -> void:
+	if coords in _dish_recipe_invalid_coords:
+		return
+	_dish_recipe_invalid_coords.append(coords)
+	disabled_tile_overlay_layer.set_cell(
+		coords,
+		OVERLAY_TILE_SOURCE_ID,
+		OVERLAY_TILE_ATLAS_COORDS
+	)
+	_set_dish_recipe_card_dimmed(coords, true)
+
+
+func clear_dish_recipe_invalid_highlights_at(coords_list: Array[Vector2i]) -> void:
+	for coords: Vector2i in coords_list:
+		_dish_recipe_invalid_coords.erase(coords)
+		_set_dish_recipe_card_dimmed(coords, false)
+		if coords in _disabled_tile_coords or coords in _event_sealed_coords:
+			continue
+		if map_data.has(coords) and map_data[coords].is_placement_blocked():
+			continue
+		disabled_tile_overlay_layer.set_cell(coords, -1)
+
+
+func _set_dish_recipe_card_dimmed(coords: Vector2i, dimmed: bool) -> void:
+	if not map_data.has(coords):
+		return
+	var hex: Hex = map_data[coords]
+	if hex.card_icon_ui == null:
+		return
+	hex.card_icon_ui.set_recipe_preview_dimmed(dimmed)
+
+
+func clear_dish_recipe_highlights() -> void:
+	clear_dish_recipe_gold_highlights_at(_dish_recipe_gold_coords.duplicate())
+	clear_dish_recipe_invalid_highlights_at(_dish_recipe_invalid_coords.duplicate())
+
+
+func _refresh_rune_highlight_modulate() -> void:
+	if not _condiment_target_coords.is_empty():
+		rune_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
+		return
+	rune_highlight_overlay_layer.modulate = Color.WHITE
 
 
 func _get_map_focus_cell() -> Vector2i:
@@ -471,6 +558,13 @@ func refresh_dashed_outlines() -> void:
 		else:
 			base_layer.set_cell(coords, 0, BASE_TILE_ATLAS_COORDS)
 	trigger_order_overlay.refresh_display_state()
+
+
+## Recompute dish chips after prefix cards are placed, buffed, or fire.
+func refresh_dish_output_chips() -> void:
+	for hex: Hex in map_data.values():
+		if hex.active_tile_card is DishCard:
+			hex.refresh_tile_card_visual_state()
 
 
 func _should_hide_dashed_outline(coords: Vector2i) -> bool:
@@ -684,6 +778,12 @@ func generate_terrain() -> void:
 	_placement_preview_cell = Vector2i(-1, -1)
 	_gamepad_focus_cell = Vector2i(-1, -1)
 	rune_highlight_overlay_layer.clear()
+	if dish_recipe_gold_layer != null:
+		dish_recipe_gold_layer.clear()
+	_dish_recipe_gold_coords.clear()
+	_inspect_gold_highlight_coords.clear()
+	_dish_recipe_invalid_coords.clear()
+	_inspect_invalid_highlight_coords.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
 	gold_overlay_layer.clear()
@@ -1271,7 +1371,7 @@ func clear_condiment_target_highlights() -> void:
 		if _rune_highlight_still_needed(cell, false, false):
 			continue
 		rune_highlight_overlay_layer.set_cell(cell, -1)
-	rune_highlight_overlay_layer.modulate = Color.WHITE
+	_refresh_rune_highlight_modulate()
 
 
 ## True while hover, placement preview, a credit flash, or inspect still owns this overlay cell.

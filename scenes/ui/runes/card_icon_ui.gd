@@ -16,6 +16,8 @@ extends Control
 @onready var output_chip: PanelContainer = $Container/OutputChip
 @onready var output_chip_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipIcon
 @onready var output_chip_label: Label = $Container/OutputChip/OutputChipRow/OutputChipLabel
+@onready var output_chip_extra_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipExtraIcon
+@onready var output_chip_extra_label: Label = $Container/OutputChip/OutputChipRow/OutputChipExtraLabel
 
 var map: HexTileMap
 var tile: Hex
@@ -35,6 +37,7 @@ var _condiment_splash: GPUParticles2D
 var _is_segment_sealed := false
 var _pending_sealed_rim := false
 var _seal_shine: SealHexShine
+var _recipe_preview_dimmed := false
 
 # Pop, squash, then settle. Durations must stay in sync with HexTileMap._wait_for_activation_animation.
 const ACTIVATION_PEAK_SCALE := Vector2(1.12, 1.12)
@@ -78,6 +81,10 @@ const SEALED_REST_TINT := Color(1.08, 0.96, 0.7, 1.0)
 const INSPECT_HOVER_SCALE := Vector2(1.08, 1.08)
 const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
 const INSPECT_HOVER_DURATION := 0.12
+# Keep the chip seated above the hex bottom while its width follows the numbers.
+const OUTPUT_CHIP_BOTTOM_INSET := 28.0
+# Dim placed cards whose tags cannot fill the hovered dish recipe.
+const RECIPE_INVALID_DIM := Color(0.42, 0.42, 0.48, 1.0)
 
 
 ## Full seal slam timing. Keep in sync with HexTileMap.wait_for_segment_seal().
@@ -147,6 +154,7 @@ func _silence_emitter(emitter: GPUParticles2D) -> void:
 func hide_output_chip() -> void:
 	if output_chip != null:
 		output_chip.hide()
+	_hide_extra_chip_row()
 
 
 # Refresh the output chip after bonuses, chance, or progress change.
@@ -180,6 +188,48 @@ func _show_output_chip(rune: TileCard) -> void:
 	else:
 		output_chip_icon.texture = icon
 		output_chip_icon.show()
+	_show_extra_chip_row(chip)
+	_fit_output_chip()
+
+
+func _show_extra_chip_row(chip: Dictionary) -> void:
+	if output_chip_extra_icon == null or output_chip_extra_label == null:
+		return
+	var extra_text := str(chip.get("extra_text", ""))
+	var extra_icon := chip.get("extra_icon") as Texture2D
+	if extra_text.is_empty() and extra_icon == null:
+		_hide_extra_chip_row()
+		return
+	if extra_icon == null:
+		output_chip_extra_icon.hide()
+	else:
+		output_chip_extra_icon.texture = extra_icon
+		output_chip_extra_icon.show()
+	if extra_text.is_empty():
+		output_chip_extra_label.hide()
+	else:
+		output_chip_extra_label.text = extra_text
+		output_chip_extra_label.show()
+
+
+func _hide_extra_chip_row() -> void:
+	if output_chip_extra_icon != null:
+		output_chip_extra_icon.hide()
+	if output_chip_extra_label != null:
+		output_chip_extra_label.hide()
+
+
+# Shrink the chip to the visible icons and numbers, then keep it centered.
+func _fit_output_chip() -> void:
+	if output_chip == null:
+		return
+	output_chip.reset_size()
+	var chip_size := output_chip.get_combined_minimum_size()
+	output_chip.size = chip_size
+	output_chip.offset_left = -chip_size.x * 0.5
+	output_chip.offset_right = chip_size.x * 0.5
+	output_chip.offset_bottom = -OUTPUT_CHIP_BOTTOM_INSET
+	output_chip.offset_top = -OUTPUT_CHIP_BOTTOM_INSET - chip_size.y
 
 
 #region Animations and colors
@@ -330,7 +380,22 @@ func apply_resting_modulate(color: Color) -> void:
 	_base_resting_modulate = color
 	_resting_modulate = _compute_resting_modulate()
 	if _can_apply_resting_modulate():
-		_anim_target.modulate = _resting_modulate
+		_anim_target.modulate = _visible_resting_modulate()
+
+
+func set_recipe_preview_dimmed(dimmed: bool) -> void:
+	_recipe_preview_dimmed = dimmed
+	if _anim_target == null:
+		return
+	if not _can_apply_resting_modulate():
+		return
+	_anim_target.modulate = _visible_resting_modulate()
+
+
+func _visible_resting_modulate() -> Color:
+	if _recipe_preview_dimmed:
+		return _resting_modulate * RECIPE_INVALID_DIM
+	return _resting_modulate
 
 
 func _compute_resting_modulate() -> Color:
@@ -353,11 +418,14 @@ func _can_apply_resting_modulate() -> bool:
 
 func _apply_resting_modulate() -> void:
 	if _can_apply_resting_modulate():
-		_anim_target.modulate = _resting_modulate
+		_anim_target.modulate = _visible_resting_modulate()
 
 
 ## Lift and brighten while the player inspects this placed card on the map.
 func play_inspect_hover_in() -> void:
+	# Recipe-invalid dim is the preview. Do not brighten over it.
+	if _recipe_preview_dimmed:
+		return
 	if not _can_start_inspect_hover():
 		return
 	_stop_inspect_hover_tween()
@@ -391,7 +459,8 @@ func play_inspect_hover_out() -> void:
 	_inspect_hover_tween.set_trans(Tween.TRANS_QUAD)
 	_inspect_hover_tween.set_parallel(true)
 	_inspect_hover_tween.tween_property(_anim_target, "scale", Vector2.ONE, duration)
-	_inspect_hover_tween.tween_property(_anim_target, "modulate", _resting_modulate, duration)
+	# Restore recipe-invalid dim if that preview is still active.
+	_inspect_hover_tween.tween_property(_anim_target, "modulate", _visible_resting_modulate(), duration)
 
 
 func _can_start_inspect_hover() -> bool:

@@ -8,6 +8,7 @@ script = ExtResource("2_daorn")
 base_production_amount = 10
 rarity = 1
 product = 1
+ingredient_kind = 3
 id = "pasta"
 name = "Pasta"
 icon = ExtResource("1_ei4xy")

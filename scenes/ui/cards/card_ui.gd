@@ -7,7 +7,7 @@ signal action_requested(card_ui: CardUI)
 signal gold_purchase_requested(card_ui: CardUI)
 signal token_purchase_requested(card_ui: CardUI)
 
-# Ingredients, Kitchenware, and Utility each use their own card frame.
+# Ingredients, Kitchenware, Utility, and Dish frames. Dishes reuse the Kitchenware frame.
 @export var frame_ingredients: Texture2D
 @export var frame_kitchenware: Texture2D
 @export var frame_utility: Texture2D
@@ -531,7 +531,7 @@ func set_card(data: Card) -> void:
 	# Keywords such as Flavour, Mult, and Rating are colored in CardKeywordGlossary.
 	card_description.text = CardKeywordGlossary.to_bbcode(data.description)
 	if data is TileCard:
-		card_type_label.text = FeastDisplay.get_tile_card_shelf_label(data as TileCard)
+		card_type_label.text = (data as TileCard).get_card_type_display()
 	else:
 		card_type_label.text = data.get_card_kind_label()
 	_apply_card_frame()
@@ -936,6 +936,8 @@ func _frame_texture_for_card(data: Card) -> Texture2D:
 				return frame_kitchenware
 			TileCard.TileCardType.UTILITY:
 				return frame_utility
+			TileCard.TileCardType.DISH:
+				return frame_kitchenware
 	return frame_ingredients
 
 

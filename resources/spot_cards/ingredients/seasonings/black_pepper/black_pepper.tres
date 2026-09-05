@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("2_k1sei")
+ingredient_kind = 4
 base_production_amount = 4
 rarity = 1
 product = 2

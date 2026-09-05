@@ -52,7 +52,9 @@ func update_tile_panel_hover(map_coords: Vector2i, immediate: bool = false) -> v
 		return
 
 	_tile_panel_hover_coords = map_coords
-	_set_occupied_icon_hover(map_coords)
+	# Placement drag still shows the inspect panel. Skip the icon pop so recipe dim stays on.
+	if map.card_placement_handler == null or not map.card_placement_handler.is_card_selected:
+		_set_occupied_icon_hover(map_coords)
 	_update_occupied_inspect_overlay(hex)
 	map.tile_panel.hide()
 	_set_panel_process(false)
@@ -105,10 +107,21 @@ func _update_occupied_inspect_overlay(hex: Hex) -> void:
 		return
 
 	var origin := hex.coordinates
-	for coords: Vector2i in hex.active_tile_card.get_trigger_preview_coords(hex):
+	var tile_card := hex.active_tile_card
+	var counted_coords := tile_card.get_trigger_preview_gold_coords(hex)
+	var invalid_coords := tile_card.get_trigger_preview_invalid_coords(hex)
+	for coords: Vector2i in tile_card.get_trigger_preview_coords(hex):
 		if not map.is_in_map(coords):
 			continue
 		if coords == origin:
+			continue
+		if coords in counted_coords:
+			map.stamp_dish_recipe_gold_highlight(coords)
+			map._inspect_gold_highlight_coords.append(coords)
+			continue
+		if coords in invalid_coords:
+			map.stamp_dish_recipe_invalid_highlight(coords)
+			map._inspect_invalid_highlight_coords.append(coords)
 			continue
 		map.rune_highlight_overlay_layer.set_cell(
 			coords,
@@ -124,6 +137,10 @@ func _clear_occupied_inspect_overlay() -> void:
 			continue
 		map.rune_highlight_overlay_layer.set_cell(coords, -1)
 	map._inspect_highlight_coords.clear()
+	map.clear_dish_recipe_gold_highlights_at(map._inspect_gold_highlight_coords)
+	map._inspect_gold_highlight_coords.clear()
+	map.clear_dish_recipe_invalid_highlights_at(map._inspect_invalid_highlight_coords)
+	map._inspect_invalid_highlight_coords.clear()
 
 
 func _set_occupied_icon_hover(map_coords: Vector2i) -> void:

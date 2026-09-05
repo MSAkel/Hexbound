@@ -8,6 +8,7 @@ extends Control
 @export var hex_ingredients: Texture2D
 @export var hex_kitchenware: Texture2D
 @export var hex_utility: Texture2D
+@export var hex_dish: Texture2D
 
 @onready var _hex: TextureRect = $Hex
 @onready var _subject: TextureRect = $Subject
@@ -52,6 +53,8 @@ func _hex_for_tile_card(card: TileCard) -> Texture2D:
 			return hex_kitchenware
 		TileCard.TileCardType.INGREDIENT:
 			return hex_ingredients
+		TileCard.TileCardType.DISH:
+			return hex_dish if hex_dish != null else hex_kitchenware
 	return hex_ingredients
 
 

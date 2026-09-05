@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("2_5ltv8")
+ingredient_kind = 3
 base_production_amount = 40
 product = 1
 stat_kind = 6

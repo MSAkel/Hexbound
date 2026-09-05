@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_script")
 product = 2
+ingredient_kind = 4
 id = "cinnamon"
 name = "Cinnamon"
 icon = ExtResource("1_icon")

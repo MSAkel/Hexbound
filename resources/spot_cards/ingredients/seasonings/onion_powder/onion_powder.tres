@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("2_ttun6")
+ingredient_kind = 4
 base_production_amount = 2
 rarity = 1
 product = 2

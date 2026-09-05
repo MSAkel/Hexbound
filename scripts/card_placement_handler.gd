@@ -21,6 +21,10 @@ var _switching_selection: bool = false
 var _restricted_invalid_coords: Array[Vector2i] = []
 # Tiles currently showing trigger-effect preview highlights.
 var _effect_preview_coords: Array[Vector2i] = []
+# Prefix seats whose cards will count toward a dish's plated output.
+var _effect_preview_gold_coords: Array[Vector2i] = []
+# Occupied prefix seats dimmed because their tags are not in the hovered dish recipe.
+var _effect_preview_invalid_coords: Array[Vector2i] = []
 # Valid placement tiles highlighted for first, last, or edge restrictions.
 var _valid_restriction_coords: Array[Vector2i] = []
 # Occupied hexes already chosen for a multi-target utility such as Transposition.
@@ -310,10 +314,12 @@ func _update_rune_preview() -> void:
 		_show_tile_landing_preview(hex)
 		var tile_card := _get_selected_tile_card()
 		if tile_card != null:
+			_rune_preview.tile = hex
 			_rune_preview.refresh_output_chip(tile_card)
 		_update_hover_highlights(hex)
 	else:
 		_hide_tile_landing_preview()
+		_rune_preview.tile = null
 		_rune_preview.hide_output_chip()
 		tile_map.clear_placement_preview()
 		_clear_hover_highlights()
@@ -441,6 +447,7 @@ func _clear_preview() -> void:
 		selected_card.set_map_tile_hover_active(false, false)
 		selected_card.reset_placement_morph()
 	_rune_preview.visible = false
+	_rune_preview.tile = null
 	_rune_preview.reset_ghost_visuals()
 	_hide_tile_landing_preview()
 	_clear_placement_overlays()
@@ -469,8 +476,14 @@ func _clear_valid_restriction_highlights() -> void:
 
 
 func _clear_hover_highlights() -> void:
+	var gold := _effect_preview_gold_coords.duplicate()
+	var invalid := _effect_preview_invalid_coords.duplicate()
 	_clear_rune_highlights_at(_effect_preview_coords)
 	_effect_preview_coords.clear()
+	_effect_preview_gold_coords.clear()
+	_effect_preview_invalid_coords.clear()
+	tile_map.clear_dish_recipe_gold_highlights_at(gold)
+	tile_map.clear_dish_recipe_invalid_highlights_at(invalid)
 
 
 func _clear_rune_highlights_at(coords_list: Array[Vector2i]) -> void:
@@ -487,7 +500,10 @@ func _clear_rune_highlight_at(coords: Vector2i) -> void:
 
 ## True while this handler currently stamps an effect-preview highlight on coords.
 func is_highlighting_coord(coords: Vector2i) -> bool:
-	return coords in _effect_preview_coords or coords in _utility_target_coords
+	return (
+		coords in _effect_preview_coords
+		or coords in _utility_target_coords
+	)
 
 
 func _stamp_valid_placement_highlight(coords: Vector2i) -> void:
@@ -665,10 +681,20 @@ func _update_hover_highlights(hover_hex: Hex) -> void:
 		return
 	
 	var placement_coords := hover_hex.coordinates
+	var counted_coords := tile_card.get_trigger_preview_gold_coords(hover_hex)
+	var invalid_coords := tile_card.get_trigger_preview_invalid_coords(hover_hex)
 	for coords: Vector2i in tile_card.get_trigger_preview_coords(hover_hex):
 		if not tile_map.is_in_map(coords):
 			continue
 		if coords == placement_coords:
+			continue
+		if coords in counted_coords:
+			tile_map.stamp_dish_recipe_gold_highlight(coords)
+			_effect_preview_gold_coords.append(coords)
+			continue
+		if coords in invalid_coords:
+			tile_map.stamp_dish_recipe_invalid_highlight(coords)
+			_effect_preview_invalid_coords.append(coords)
 			continue
 		_stamp_effect_preview_highlight(coords)
 		_effect_preview_coords.append(coords)

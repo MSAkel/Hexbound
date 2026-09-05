@@ -1,0 +1,18 @@
+[gd_resource type="Resource" format=3 uid="uid://b7vinaigret01"]
+
+[ext_resource type="Texture2D" uid="uid://b1pg5hnvk6hu3" path="res://assets/icons/food/dishes/vinaigrette.png" id="1_8emet"]
+[ext_resource type="Script" uid="uid://dan2vinaigr01" path="res://resources/spot_cards/dishes/vinaigrette/vinaigrette.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+rarity = 1
+type = 3
+product = 1
+recipe_vegetable_count = 1
+recipe_seasoning_count = 1
+stat_kind = 1
+id = "vinaigrette"
+name = "Vinaigrette"
+icon = ExtResource("1_8emet")
+description = "If the previous 2 spots contain a Vegetable and Seasoning, gain their Flavour and Mult ×1.5"
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

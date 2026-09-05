@@ -22,6 +22,7 @@ const ITEM_BORDER := Color("617575")
 enum CollectionTab {
 	INGREDIENT,
 	KITCHENWARE,
+	DISH,
 	CONDIMENTS,
 	UTILITY,
 	CHARACTERS,
@@ -55,6 +56,7 @@ func _configure_tabs() -> void:
 	var titles := PackedStringArray([
 		FeastDisplay.INGREDIENT,
 		"Kitchenware",
+		"Dishes",
 		FeastDisplay.CONDIMENTS,
 		"Utility",
 		"Characters",
@@ -73,6 +75,8 @@ func _show_tab(tab: int) -> void:
 			_show_ingredients_cards()
 		CollectionTab.KITCHENWARE:
 			_show_kitchenware_cards()
+		CollectionTab.DISH:
+			_show_dish_cards()
 		CollectionTab.CONDIMENTS:
 			_show_condiments()
 		CollectionTab.UTILITY:
@@ -115,6 +119,14 @@ func _show_kitchenware_cards() -> void:
 	var cards: Array = []
 	for card in GameManager.tile_cards_pool:
 		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.KITCHENWARE:
+			cards.append(card)
+	_show_tile_cards(cards)
+
+
+func _show_dish_cards() -> void:
+	var cards: Array = []
+	for card in GameManager.tile_cards_pool:
+		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.DISH:
 			cards.append(card)
 	_show_tile_cards(cards)
 

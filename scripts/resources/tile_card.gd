@@ -2,7 +2,7 @@ class_name TileCard
 extends Card
 
 ## Base resource for spot cards played on the Feast map.
-## Shelves are Ingredient, Kitchenware, and Utility.
+## Shelves are Ingredient, Kitchenware, Utility, and Dish.
 
 enum TileCardRarity {
 	COMMON,
@@ -15,6 +15,8 @@ enum TileCardType {
 	INGREDIENT,
 	KITCHENWARE,
 	UTILITY,
+	## Seated plates. Activate from a fire-order prefix recipe, then add a local meal pile.
+	DISH,
 }
 
 ## Matches seated Ingredient cards when filtering the map by Flavour or Mult producers.
@@ -38,6 +40,16 @@ enum Product {
 	MULTIPLIER, ## Mult
 	HYBRID,
 	NONE,
+}
+
+## Primary Ingredient aisle for dish recipes. Kitchenware matches by shelf, not this enum.
+enum IngredientKind {
+	NONE,
+	VEGETABLE,
+	FRUIT,
+	GRAIN,
+	PROTEIN,
+	SEASONING,
 }
 
 # Limits which spots can receive this card during placement.
@@ -108,11 +120,17 @@ var _activation_output_scale: float = 1.0
 static var _copied_activation_stack: Array[TileCard] = []
 # True when this activation consumed Double. Checked by cards that pay extra on Double.
 var _activation_was_empowered: bool = false
+# Flavour this instance paid with add_score this Hour. Dishes read the prefix snapshot.
+var hour_flavour_produced: int = 0
+# Additive Mult this instance paid this Hour, including relays.
+var hour_additive_mult_produced: float = 0.0
 
 @export var base_production_amount: int = 0
 @export var rarity: TileCardRarity
 @export var type: TileCardType
 @export var product: Product = Product.NONE
+## Vegetable, Fruit, Grain, Protein, or Seasoning. Leave NONE when the card is not a recipe ingredient.
+@export var ingredient_kind: IngredientKind = IngredientKind.NONE
 # only activates once per turn even if retriggered.
 @export var single_activation_per_turn: bool = false
 # When set, only matching spots accept this card during placement.
@@ -155,6 +173,8 @@ func is_legal_for_layout(character: CharacterDefinition) -> bool:
 func get_stat_kind() -> StatKind:
 	if stat_kind != StatKind.NONE:
 		return stat_kind
+	if type == TileCardType.DISH:
+		return StatKind.FLAVOUR
 	if not is_producer_type(type):
 		return StatKind.NONE
 	match product:
@@ -184,11 +204,40 @@ func get_product_icon() -> Texture2D:
 func get_inspect_subtitle() -> String:
 	var type_label := get_card_kind_label().capitalize()
 	var role_label := _get_role_label()
+	var base := ""
 	if type_label.is_empty():
-		return role_label
-	if role_label.is_empty() or role_label.to_lower() == type_label.to_lower():
-		return type_label
-	return "%s  ·  %s" % [type_label, role_label]
+		base = role_label
+	elif role_label.is_empty() or role_label.to_lower() == type_label.to_lower():
+		base = type_label
+	else:
+		base = "%s  ·  %s" % [type_label, role_label]
+	var tag := get_distinct_recipe_tag_label()
+	if tag.is_empty() or tag.to_lower() == type_label.to_lower():
+		return base
+	if base.is_empty():
+		return tag
+	return "%s  ·  %s" % [base, tag]
+
+
+# Ingredient subcategory such as Vegetable. Empty when it matches the shelf name.
+func get_distinct_recipe_tag_label() -> String:
+	if type != TileCardType.INGREDIENT:
+		return ""
+	var tag := FeastDisplay.get_ingredient_kind_label(ingredient_kind)
+	if tag.is_empty():
+		return ""
+	var shelf := FeastDisplay.get_tile_card_shelf_label(self)
+	if tag.to_lower() == shelf.to_lower():
+		return ""
+	return tag
+
+
+func get_card_type_display() -> String:
+	var shelf := FeastDisplay.get_tile_card_shelf_label(self)
+	var tag := get_distinct_recipe_tag_label()
+	if tag.is_empty():
+		return shelf
+	return "%s · %s" % [shelf, tag]
 
 
 func _get_role_label() -> String:
@@ -222,12 +271,15 @@ func _hidden_board_chip() -> Dictionary:
 
 ## Flavour and Gold chips round to a whole number. Pass a float from production helpers.
 func _amount_board_chip(amount: Variant, amount_icon: Texture2D = null) -> Dictionary:
+	var value := float(amount)
 	var chip_icon: Texture2D = amount_icon if amount_icon != null else get_product_icon()
 	return _make_board_chip(
 		BoardChipMode.AMOUNT,
-		str(int(round(float(amount)))),
+		str(int(round(value))),
 		chip_icon,
-		get_chip_panel_color()
+		get_chip_panel_color(),
+		"",
+		value
 	)
 
 
@@ -237,8 +289,19 @@ func _amount_board_chip_float(amount: float, amount_icon: Texture2D = null) -> D
 		BoardChipMode.AMOUNT,
 		CountingNumber.format_additive_mult(amount),
 		chip_icon,
-		get_chip_panel_color()
+		get_chip_panel_color(),
+		"",
+		amount
 	)
+
+
+## Flavour number plus additive Mult on the same chip. Used by hybrid dishes.
+func _dual_amount_board_chip(flavour_amount: int, mult_amount: float) -> Dictionary:
+	var chip := _amount_board_chip(flavour_amount, ICON_FLAVOUR)
+	chip["extra_text"] = CountingNumber.format_additive_mult(mult_amount)
+	chip["extra_icon"] = ICON_MULT
+	chip["extra_amount"] = mult_amount
+	return chip
 
 
 func _make_board_chip(
@@ -246,7 +309,8 @@ func _make_board_chip(
 	text: String,
 	chip_icon: Texture2D,
 	panel_color: Color,
-	detail: String = ""
+	detail: String = "",
+	amount: float = 0.0
 ) -> Dictionary:
 	return {
 		"mode": mode,
@@ -254,6 +318,7 @@ func _make_board_chip(
 		"icon": chip_icon,
 		"panel_color": panel_color,
 		"detail": detail,
+		"amount": amount,
 	}
 
 
@@ -491,9 +556,20 @@ func get_trigger_preview_coords(_hover_tile: Hex) -> Array[Vector2i]:
 	return []
 
 
+## Seats that count toward this card's output. Dishes override with matching prefix tags.
+func get_trigger_preview_gold_coords(_hover_tile: Hex) -> Array[Vector2i]:
+	return []
+
+
+## Occupied prefix seats whose tags cannot fill this card's recipe. Empty for non-dishes.
+func get_trigger_preview_invalid_coords(_hover_tile: Hex) -> Array[Vector2i]:
+	return []
+
+
 #region --- Flavour, Gold, Mult, and floating text helpers ---
 func add_score(tile: Hex, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
+	hour_flavour_produced += points
 	tile.map.add_turn_score_for_tile(tile, points)
 	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR)
 	CondimentManager.relay_product_if_needed(tile, Product.SCORE, points)
@@ -511,6 +587,7 @@ func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> 
 	var amount := float(base_amount)
 	if scaled:
 		amount *= _activation_output_scale
+	hour_additive_mult_produced += amount
 	tile.map.add_turn_additive_mult_for_tile(tile, amount)
 	_create_floating_text(tile, CountingNumber.format_additive_mult(amount), Color.PLUM, ICON_MULT)
 	CondimentManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
@@ -530,6 +607,7 @@ func add_additive_mult_to_segment(tile: Hex, segment_index: int, base_amount: Va
 		failed_tile_card_text(tile)
 		return
 	var amount := float(base_amount) * _activation_output_scale
+	hour_additive_mult_produced += amount
 	tile.map.add_turn_additive_mult_for_segment(segment_index, amount)
 	tile.map.mark_segment_received_relay(segment_index)
 	_create_floating_text(
@@ -562,6 +640,7 @@ func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -
 		failed_tile_card_text(tile)
 		return
 	var points := int(round(float(base_points) * _activation_output_scale))
+	hour_flavour_produced += points
 	tile.map.add_turn_score_for_segment(segment_index, points)
 	tile.map.mark_segment_received_relay(segment_index)
 	_create_floating_text(tile, "+%d →" % points, Color.AQUA, ICON_FLAVOUR)
@@ -810,6 +889,7 @@ func _get_previous_tile_cards_in_trigger_order(
 
 
 ## The count spots immediately before this spot in fire order, including empties.
+## These are contiguous previous seats. Gaps and wrong cards are not skipped.
 func _get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
 	var result: Array[Hex] = []
 	var hexes := tile.map.get_hexes_in_trigger_order()
@@ -839,6 +919,13 @@ func _coords_for_immediately_previous_hexes(tile: Hex, count: int) -> Array[Vect
 	for hex: Hex in _get_immediately_previous_hexes(tile, count):
 		coords.append(hex.coordinates)
 	return coords
+
+
+## Clears Hour Flavour and Mult snapshots before this Hour's fire order starts.
+func reset_hour_product_snapshot() -> void:
+	hour_flavour_produced = 0
+	hour_additive_mult_produced = 0.0
+
 
 # Spot card on the next occupied spot in global fire order (null when empty).
 func _get_next_tile_card_in_trigger_order(tile: Hex) -> TileCard:

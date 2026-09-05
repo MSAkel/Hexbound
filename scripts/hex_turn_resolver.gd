@@ -52,6 +52,11 @@ func resolve_turn() -> void:
 	_skip_presentation_steps = 0
 
 	for tile: Hex in map.get_hexes_in_trigger_order():
+		if tile.active_tile_card != null:
+			tile.active_tile_card.reset_hour_product_snapshot()
+	map.refresh_dish_output_chips()
+
+	for tile: Hex in map.get_hexes_in_trigger_order():
 		if _should_bypass_primary_trigger_order_activation(tile):
 			await _mark_segment_resolved_if_natural_pass_done(tile)
 			continue
@@ -184,6 +189,8 @@ func _card_type_label(card: TileCard) -> String:
 			return "kitchenware"
 		TileCard.TileCardType.UTILITY:
 			return "utility"
+		TileCard.TileCardType.DISH:
+			return "dish"
 		_:
 			return "other"
 

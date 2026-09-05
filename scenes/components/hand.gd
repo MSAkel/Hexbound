@@ -4,8 +4,6 @@ extends HBoxContainer
 # In a single turn
 var cards_played := 0
 
-#TODO Max hand size
-
 const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
 ## Slide the hand off-screen between turns using 4.7 offset transforms (layout-safe).
 const HAND_SLIDE_DURATION := 0.35

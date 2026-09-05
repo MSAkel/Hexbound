@@ -348,7 +348,7 @@ func _run_lucky_draw_gold_branch() -> void:
 		_begin_run("surveyor", used_seed)
 		GoldManager.set_amount(0)
 		var hex := _first_empty_hex()
-		_place_by_id(hex, "lucky_draw")
+		_place_by_id(hex, "fortune_cookie")
 		var lucky := hex.active_tile_card
 		lucky.current_chance = 1.0
 		if not _lucky_draw_peeks_gold(hex, lucky):
@@ -362,9 +362,9 @@ func _run_lucky_draw_gold_branch() -> void:
 
 	var reasons: Array[String] = []
 	if not found:
-		reasons.append("never hit Lucky Draw 8-gold branch (last gold=%d energy=%d)" % [last_gold, last_energy])
+		reasons.append("never hit Fortune Cookie 8-gold branch (last gold=%d energy=%d)" % [last_gold, last_energy])
 	_record(
-		"gold_engine_lucky_draw_8_gold",
+		"gold_engine_fortune_cookie_8_gold",
 		"surveyor",
 		used_seed,
 		reasons.is_empty(),

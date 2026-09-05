@@ -7,6 +7,7 @@
 script = ExtResource("2_0j3x7")
 base_production_amount = 8
 product = 1
+ingredient_kind = 3
 id = "rice"
 name = "Rice"
 icon = ExtResource("1_s8aqm")

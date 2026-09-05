@@ -6,8 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/scene_enter_transition/scene_enter_transition.tscn" id="4_transition"]
-
-[ext_resource type="Script" uid="uid://b7gamepadctrl01" path="res://scripts/gamepad_gameplay_controller.gd" id="5_gamepad"]
+[ext_resource type="Script" uid="uid://u6vefep427yy" path="res://scripts/gamepad_gameplay_controller.gd" id="5_gamepad"]
 
 [node name="Main" type="Node2D" unique_id=1217909312]
 script = ExtResource("1_jyhfs")
@@ -30,12 +29,12 @@ texture = ExtResource("2_tbgi4")
 [node name="MainUI" parent="." unique_id=629612813 instance=ExtResource("1_sugp2")]
 
 [node name="HexTileMap" parent="." unique_id=44134177 groups=["hex_map_group"] instance=ExtResource("2_jyhfs")]
-position = Vector2(2, 0)
+position = Vector2(2, -126)
 
 [node name="Camera" parent="." unique_id=321380676 instance=ExtResource("3_tbgi4")]
 position = Vector2(911, 878)
 
 [node name="SceneEnterTransition" parent="." unique_id=742454740 instance=ExtResource("4_transition")]
 
-[node name="GamepadGameplayController" type="Node" parent="."]
+[node name="GamepadGameplayController" type="Node" parent="." unique_id=639749510]
 script = ExtResource("5_gamepad")

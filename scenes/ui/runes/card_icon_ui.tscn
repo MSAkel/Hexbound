@@ -223,9 +223,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -49.0
+offset_left = 0.0
 offset_top = -88.0
-offset_right = 51.0
+offset_right = 0.0
 offset_bottom = -28.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -234,6 +234,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_output_chip")
 
 [node name="OutputChipRow" type="HBoxContainer" parent="Container/OutputChip" unique_id=1299805366]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/separation = 8
 alignment = 1
 
@@ -250,6 +251,22 @@ theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
 theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 28
 text = "0"
+
+[node name="OutputChipExtraIcon" type="TextureRect" parent="Container/OutputChip/OutputChipRow"]
+visible = false
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OutputChipExtraLabel" type="Label" parent="Container/OutputChip/OutputChipRow"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+text = "+0"
 
 [node name="PlacementSmoke" type="GPUParticles2D" parent="." unique_id=2116065945]
 visible = false

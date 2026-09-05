@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("2_eelmb")
+ingredient_kind = 4
 base_production_amount = 2
 product = 2
 id = "chili_flakes"

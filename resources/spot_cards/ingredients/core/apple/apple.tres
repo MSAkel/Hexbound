@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("2_80ooo")
+ingredient_kind = 2
 base_production_amount = 16
 product = 1
 starting_hand_eligible = true
