@@ -22,13 +22,13 @@ const LOADING_SPLASH: Array[Texture2D] = [
 	FIRE,
 	PASS,
 	PROOF,
-	preload("res://assets/icons/food/ingredients/apple.png"),
-	preload("res://assets/icons/food/seasonings/salt.png"),
-	preload("res://assets/icons/food/ingredients/bacon.png"),
-	preload("res://assets/icons/food/ingredients/coffee.png"),
-	preload("res://assets/icons/kitchenware/skillet.png"),
-	preload("res://assets/icons/kitchenware/chef_knife.png"),
-	preload("res://assets/icons/kitchenware/cloche.png"),
+	preload("uid://c803xrilhj251"),
+	preload("uid://b6mir3nxl7wph"),
+	preload("uid://bt8vbmxevwq3o"),
+	preload("uid://berds0aj0ward"),
+	preload("uid://cw5birgpj1ymb"),
+	preload("uid://6h44uxn1am81"),
+	preload("uid://xh37v80eccbf"),
 ]
 
 

@@ -2,7 +2,6 @@
 
 [ext_resource type="Texture2D" uid="uid://lq841w3i0chu" path="res://assets/icons/kitchenware/mortar_and_pestle.png" id="1_tgc7i"]
 [ext_resource type="Script" uid="uid://b0sa63u3re8ah" path="res://resources/spot_cards/kitchenware/mortar_and_pestle/mortar_and_pestle.gd" id="2_4glin"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_2tuek"]
 
 [resource]
 script = ExtResource("2_4glin")
@@ -11,5 +10,5 @@ type = 1
 id = "mortar_and_pestle"
 name = "Mortar & Pestle"
 icon = ExtResource("1_tgc7i")
-description = "Copy the two cards directly before this one on the pass"
+description = "Copy the two cards directly before it"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

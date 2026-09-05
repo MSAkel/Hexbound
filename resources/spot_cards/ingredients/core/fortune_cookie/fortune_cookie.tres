@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://cc4574s3hxwm8"]
+
+[ext_resource type="Texture2D" uid="uid://bu56ubjel84h2" path="res://assets/icons/food/others/fortune_cookie.png" id="1_3m2jv"]
+[ext_resource type="Script" uid="uid://biwr1vsc7iwe" path="res://resources/spot_cards/ingredients/core/fortune_cookie/fortune_cookie.gd" id="2_23or8"]
+[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_vqet7"]
+
+[resource]
+script = ExtResource("2_23or8")
+rarity = 2
+product = 3
+trigger_sound = ExtResource("3_vqet7")
+id = "fortune_cookie"
+name = "Fortune Cookie"
+icon = ExtResource("1_3m2jv")
+description = "3% stacking chance for +300 Flavour or 8 Gold. Resets on success"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

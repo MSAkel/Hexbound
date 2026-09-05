@@ -133,6 +133,38 @@ func delete_save() -> void:
 	SAVE_FILE.delete_all(SAVE_PATH)
 
 
+## Records an abandoned resume save as a loss, then deletes it.
+func abandon_saved_run_as_loss() -> void:
+	if not has_save():
+		clear_continue_run_pending()
+		return
+	var payload := _load_save_payload()
+	_record_abandoned_run_from_save(payload)
+	delete_save()
+
+
+func _record_abandoned_run_from_save(payload: Dictionary) -> void:
+	if payload.is_empty():
+		return
+
+	var game_state: Dictionary = payload.get("game_manager", {})
+	var gold_state: Dictionary = payload.get("gold", {})
+	var current_round := int(game_state.get("current_round", 1))
+	var snapshot := {
+		"is_win": false,
+		"character_id": String(payload.get("character_id", "")),
+		"difficulty": int(payload.get("difficulty", 0)),
+		"rounds_completed": maxi(0, current_round - 1),
+		"peak_gold_held": int(game_state.get("peak_gold_held", 0)),
+		"gold_earned": int(gold_state.get("total_earned_this_run", 0)),
+		"peak_segment_score_single_turn": int(game_state.get("peak_segment_score_single_turn", 0)),
+		"peak_triggers_single_turn": int(game_state.get("peak_triggers_single_turn", 0)),
+		"full_map_cards": bool(game_state.get("full_map_cards", false)),
+	}
+	MetaProgressionManager.record_run_snapshot(snapshot, true)
+	RunHistoryManager.archive_from_save_payload(payload, false)
+
+
 ## Queue a checkpoint after Hand and other listeners have finished this frame.
 func request_autosave() -> void:
 	if not _can_save_now():

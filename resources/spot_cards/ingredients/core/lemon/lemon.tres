@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://to6scs7y3j8f"]
+
+[ext_resource type="Texture2D" uid="uid://b4h1bqp5yda5b" path="res://assets/icons/food/ingredients/lemon.png" id="1_b8pyn"]
+[ext_resource type="Script" uid="uid://kr3p1tjwjphx" path="res://resources/spot_cards/ingredients/core/lemon/lemon.gd" id="2_ekutk"]
+
+[resource]
+script = ExtResource("2_ekutk")
+base_production_amount = 8
+rarity = 1
+product = 1
+id = "lemon"
+name = "Lemon"
+icon = ExtResource("1_b8pyn")
+description = "+8 Flavour. If Doubled, also +4 Mult"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

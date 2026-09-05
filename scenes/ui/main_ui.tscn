@@ -78,6 +78,7 @@ visible = false
 [node name="CondimentEdgeGlow" parent="." unique_id=449245889 instance=ExtResource("21_condiment_glow")]
 
 [node name="TurnResolveSkipOverlay" parent="." unique_id=180410833 instance=ExtResource("20_skip_overlay")]
+visible = false
 
 [node name="Collection" parent="." unique_id=552452183 instance=ExtResource("18_collection")]
 unique_name_in_owner = true

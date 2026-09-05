@@ -89,6 +89,37 @@ func archive_finished_run(is_win: bool) -> void:
 	_save()
 
 
+## Archive a finished run using a resume-save payload. Used when abandoning from layout select.
+func archive_from_save_payload(save_payload: Dictionary, is_win: bool) -> void:
+	if _archived_this_run:
+		return
+	_archived_this_run = true
+	ensure_loaded()
+
+	var game_state: Dictionary = save_payload.get("game_manager", {})
+	var gold_state: Dictionary = save_payload.get("gold", {})
+	var run_rng_state: Dictionary = save_payload.get("run_rng", {})
+	var map_state: Dictionary = save_payload.get("map", {})
+	var entry := {
+		"ended_at": int(Time.get_unix_time_from_system()),
+		"is_win": is_win,
+		"character_id": String(save_payload.get("character_id", "")),
+		"difficulty": int(save_payload.get("difficulty", 0)),
+		"rounds_completed": int(game_state.get("current_round", 1)),
+		"seed": String(run_rng_state.get("display_seed", "")),
+		"is_seeded_run": bool(run_rng_state.get("is_seeded_run", false)),
+		"highest_round_score": int(game_state.get("highest_round_score", 0)),
+		"gold_earned": int(gold_state.get("total_earned_this_run", 0)),
+		"card_triggers": int(game_state.get("total_rune_activations", 0)),
+		"peak_gold_held": int(game_state.get("peak_gold_held", 0)),
+		"board": _board_snapshot_from_map_state(map_state),
+	}
+	_entries.push_front(entry)
+	while _entries.size() > MAX_ENTRIES:
+		_entries.pop_back()
+	_save()
+
+
 ## Slim board for the Past Runs preview. card_id plus hex coords, not live card state.
 func _capture_board_snapshot() -> Dictionary:
 	var tile_map := _find_tile_map()
@@ -96,6 +127,10 @@ func _capture_board_snapshot() -> Dictionary:
 		return {"placed": [], "disabled_coords": []}
 
 	var map_state: Dictionary = tile_map.capture_map_state()
+	return _board_snapshot_from_map_state(map_state)
+
+
+func _board_snapshot_from_map_state(map_state: Dictionary) -> Dictionary:
 	var placed: Array = []
 	for entry: Variant in map_state.get("placed_spot_cards", []):
 		if entry is not Dictionary:

@@ -1,6 +1,6 @@
 extends TileCard
 
-## Adjacent Following Flavour cards on the same course permanently gain +10 Flavour.
+## The Following Flavour permanently gains +10
 func _on_activate_tile_card(tile: Hex) -> void:
 	var targets := _get_following_same_segment_producers_by_product(tile, Product.SCORE)
 	for rune: TileCard in targets:

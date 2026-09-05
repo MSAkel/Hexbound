@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://bqsc4iq05hmoq"]
+
+[ext_resource type="Texture2D" uid="uid://55c4cqqnamim" path="res://assets/icons/food/seasonings/cinnamon.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://bwc0am7m0mckk" path="res://resources/spot_cards/ingredients/seasonings/cinnamon/cinnamon.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+product = 2
+id = "cinnamon"
+name = "Cinnamon"
+icon = ExtResource("1_icon")
+description = "+1-20 Mult, picked at random"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

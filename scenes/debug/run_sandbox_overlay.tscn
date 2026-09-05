@@ -150,6 +150,19 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Activate"
 
+[node name="CondimentRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1982736462]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CondimentOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow" unique_id=1982736463]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Add the selected condiment to the belt."
+
+[node name="AddCondimentButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow" unique_id=1982736464]
+layout_mode = 2
+text = "Add"
+
 [node name="GoldRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=469025335]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -273,6 +286,7 @@ columns = 6
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/DrawRandomCardButton" to="." method="_on_draw_random_card_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PickCardButton" to="." method="_on_pick_card_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/ActivateEventButton" to="." method="_on_activate_event_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow/AddCondimentButton" to="." method="_on_add_condiment_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow/SetTokensButton" to="." method="_on_set_tokens_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton" to="." method="_on_open_merchant_pressed"]

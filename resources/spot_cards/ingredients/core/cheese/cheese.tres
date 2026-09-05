@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3 uid="uid://cdr6jp1cayaal"]
+
+[ext_resource type="Texture2D" uid="uid://u6s5mjab2017" path="res://assets/icons/food/ingredients/cheese_wedge.png" id="1_p6jgb"]
+[ext_resource type="Script" uid="uid://fqp1bledi1hh" path="res://resources/spot_cards/ingredients/core/cheese/cheese.gd" id="2_kgn5k"]
+
+[resource]
+script = ExtResource("2_kgn5k")
+rarity = 2
+id = "cheese"
+name = "Cheese"
+icon = ExtResource("1_p6jgb")
+description = "+40 Flavour or 12 Mult"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

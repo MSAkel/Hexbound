@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://cm73u2iwaifvh"]
 
 [ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
 [ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
@@ -14,11 +14,9 @@ description = "150 / 1,500 / 5,000 lifetime card triggers"
 script = ExtResource("2_passive_script")
 id = "energy_boost"
 display_name = "Energy Boost"
-description = "Energy cards on this segment produce +5% Energy."
+description = "Flavour cards on this course produce +2% Flavour."
 icon = ExtResource("3_icon")
-tile_cost = 1
 max_copies = 3
-copy_thresholds = Array[int]([150, 1500, 5000])
-effect_type = 0
-effect_value = 0.05
+copy_thresholds = Array[int]([1500, 5000, 10000])
+effect_value = 0.02
 unlock_condition = SubResource("UnlockCondition_main")

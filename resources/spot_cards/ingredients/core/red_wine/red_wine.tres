@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://18mjb03n6h2f"]
 
-[ext_resource type="Texture2D" uid="uid://cgjt0sceg6g1b" path="res://assets/icons/food/ingredients/red_wine.png" id="1_6q2nt"]
+[ext_resource type="Texture2D" uid="uid://cgjt0sceg6g1b" path="res://assets/icons/food/beverage/red_wine.png" id="1_6q2nt"]
 [ext_resource type="Script" uid="uid://bnhfuolde4bp2" path="res://resources/spot_cards/ingredients/core/red_wine/red_wine.gd" id="2_1baws"]
 [ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_wsred"]
 

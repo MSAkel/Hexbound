@@ -7,6 +7,7 @@ const SOUNDTRACK := preload("res://scripts/soundtracks.gd")
 @onready var seeded_run_panel: SeededRunPanel = %SeededRunPanel
 @onready var scene_enter_transition: SceneEnterTransition = $SceneEnterTransition
 @onready var play_button: Button = %PlayButton
+@onready var abandon_run_confirm_panel: AbandonRunConfirmPanel = %AbandonRunConfirmPanel
 @onready var back_button: Button = $SafeArea/Page/UnifiedPanel/Content/Header/HeaderLeft/BackButton
 @onready var prev_selection_button: TextureButton = $SafeArea/Page/PrevSelectionButton
 @onready var next_selection_button: TextureButton = $SafeArea/Page/NextSelectionButton
@@ -37,6 +38,8 @@ func _ready() -> void:
 	if music:
 		AudioManager.play_music(music)
 	SegmentPassiveUnlockPresenter.present_if_needed(self)
+	abandon_run_confirm_panel.confirmed.connect(_on_abandon_run_confirmed)
+	abandon_run_confirm_panel.cancelled.connect(_on_abandon_run_cancelled)
 	_bind_screen_hover_sounds()
 	call_deferred("_focus_character_selection")
 
@@ -58,6 +61,8 @@ func _bind_screen_hover_sounds() -> void:
 		next_selection_button,
 		back_button,
 		play_button,
+		abandon_run_confirm_panel.cancel_button,
+		abandon_run_confirm_panel.confirm_button,
 	]:
 		_bind_menu_hover_sound(button)
 	_collect_menu_hover_sounds(difficulty_container)
@@ -131,16 +136,30 @@ func _unhandled_input(event: InputEvent) -> void:
 		var viewport := get_viewport()
 		if viewport != null:
 			viewport.set_input_as_handled()
+		if abandon_run_confirm_panel.visible:
+			abandon_run_confirm_panel.cancel()
+			return
 		_on_back_button_pressed()
 
 
 func _on_play_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
+	if RunSaveManager.has_save():
+		abandon_run_confirm_panel.show_panel()
+		return
+	_start_new_run()
 
-	# A fresh run replaces any saved session from a previous quit.
-	# delete_save also clears Continue-pending so main.tscn cannot restore that file.
-	RunSaveManager.delete_save()
 
+func _on_abandon_run_confirmed() -> void:
+	RunSaveManager.abandon_saved_run_as_loss()
+	_start_new_run()
+
+
+func _on_abandon_run_cancelled() -> void:
+	call_deferred("_focus_character_selection")
+
+
+func _start_new_run() -> void:
 	var selected_character := layout_details.get_selected_character()
 	# Character choice locks in layout rules for the entire run.
 	GameManager.selected_character = selected_character
@@ -148,5 +167,4 @@ func _on_play_button_pressed() -> void:
 	GameManager.apply_active_segment_passives(selected_character.id)
 	RunSaveManager.set_pending_run_seed(seeded_run_panel.get_effective_seed_text())
 	RunSaveManager.request_scene_enter_transition()
-
 	get_tree().change_scene_to_file(ScenePaths.MAIN)

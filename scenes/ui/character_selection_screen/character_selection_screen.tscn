@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
 [ext_resource type="Texture2D" uid="uid://ckj7ydre0t2d2" path="res://assets/gui/buttons/button_accent_hover.png" id="13_s21rt"]
 [ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/character_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
+[ext_resource type="PackedScene" uid="uid://c8abandonrun01" path="res://scenes/ui/character_selection_screen/abandon_run_confirm_panel.tscn" id="14_abandon_panel"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="14_back"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_layout_prev"]
@@ -206,6 +207,9 @@ texture_hover = ExtResource("8_arrow_hover")
 stretch_mode = 3
 
 [node name="SceneEnterTransition" parent="." unique_id=1282953299 instance=ExtResource("5_transition")]
+
+[node name="AbandonRunConfirmPanel" parent="." unique_id=1982736451 instance=ExtResource("14_abandon_panel")]
+unique_name_in_owner = true
 
 [connection signal="pressed" from="SafeArea/Page/PrevSelectionButton" to="." method="_on_prev_selection_pressed"]
 [connection signal="pressed" from="SafeArea/Page/UnifiedPanel/Content/Header/HeaderLeft/BackButton" to="." method="_on_back_button_pressed"]

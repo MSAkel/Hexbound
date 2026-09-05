@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://dmgsxsfmxqsx1"]
+
+[ext_resource type="Texture2D" uid="uid://bwgnhij5vn6w5" path="res://assets/icons/food/beverage/beer.png" id="1_jtv2p"]
+[ext_resource type="Script" uid="uid://dxfcaqfkmao7x" path="res://resources/spot_cards/ingredients/core/beer/beer.gd" id="2_2prqf"]
+
+[resource]
+script = ExtResource("2_2prqf")
+base_production_amount = 60
+rarity = 1
+product = 1
+id = "beer"
+name = "Beer"
+icon = ExtResource("1_jtv2p")
+description = "+60 Flavour. +10% spoil chance after each fire this hour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

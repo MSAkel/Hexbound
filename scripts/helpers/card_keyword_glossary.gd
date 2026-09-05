@@ -134,7 +134,7 @@ static func _static_init() -> void:
 		["fire", "fires", "fired"],
 		"Fire",
 		COLOR_FOLLOWING,
-		"Activate in layout order."
+		"Activate the card."
 	)
 	register(
 		"course",

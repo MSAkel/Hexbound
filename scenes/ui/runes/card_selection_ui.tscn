@@ -5,7 +5,7 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8btky"]
 content_margin_top = 150.0
-bg_color = Color(0.12614134, 0.32311276, 0.39601648, 0.70980394)
+bg_color = Color(0.098945774, 0.09565992, 0.09237393, 0.69411767)
 
 [sub_resource type="StyleBoxFlat" id="RerollButtonNormal"]
 content_margin_left = 20.0
@@ -69,7 +69,7 @@ content_margin_left = 20.0
 content_margin_top = 10.0
 content_margin_right = 20.0
 content_margin_bottom = 10.0
-bg_color = Color(0.18, 0.24, 0.27, 0.72)
+bg_color = Color(0.261909, 0.3386635, 0.3796556, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2

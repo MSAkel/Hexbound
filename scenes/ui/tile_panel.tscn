@@ -15,12 +15,15 @@ texture = ExtResource("2_8qrfl")
 
 [node name="TilePanel" type="PanelContainer" unique_id=882335406]
 z_index = 100
+size_flags_horizontal = 0
+size_flags_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_8qrfl")
 script = ExtResource("1_0dxj0")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=556707738]
 layout_mode = 2
+size_flags_vertical = 0
 theme_override_constants/separation = 24
 
 [node name="RunePanelContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=337661510]
@@ -40,6 +43,8 @@ theme_override_constants/margin_bottom = 0
 [node name="RuneIcon" parent="VBoxContainer/RunePanelContainer/RuneIconPanel" unique_id=108305046 instance=ExtResource("3_cardicon")]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 
 [node name="RuneVBox" type="VBoxContainer" parent="VBoxContainer/RunePanelContainer" unique_id=2029008049]
 layout_mode = 2

@@ -15,7 +15,7 @@ var sfx_volume: float = 0.35
 
 # Crossfade settings
 const CROSSFADE_DURATION = 1.0
-const END_TURN_BELL_VOLUME_SCALE := 0.75
+const END_TURN_BELL_VOLUME_SCALE := 0.65
 const CARD_TRIGGER_CHOP_VOLUME_SCALE := 1.5
 var crossfade_tween: Tween
 var _crossfade_generation: int = 0

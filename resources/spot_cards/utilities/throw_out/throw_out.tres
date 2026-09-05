@@ -1,8 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://dlrpfp2dc162e"]
 
-[ext_resource type="Texture2D" uid="uid://xy0m3mkprdhy" path="res://assets/icons/placeholder.png" id="1_kf868"]
+[ext_resource type="Texture2D" uid="uid://dh88qr3wki4oj" path="res://assets/icons/utility/throw_out.png" id="1_733uq"]
 [ext_resource type="Script" uid="uid://pr0ompjthbva" path="res://resources/spot_cards/utilities/throw_out/throw_out.gd" id="2_yco3k"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_2yrqv"]
 
 [resource]
 script = ExtResource("2_yco3k")
@@ -10,6 +9,6 @@ rarity = 1
 type = 2
 id = "throw_out"
 name = "Throw Out"
-icon = ExtResource("1_kf868")
-description = "Spoil, gain random card"
+icon = ExtResource("1_733uq")
+description = "Spoils target card, gain random card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

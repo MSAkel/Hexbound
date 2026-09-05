@@ -10,5 +10,5 @@ stat_kind = 5
 id = "peeler"
 name = "Peeler"
 icon = ExtResource("1_xf1wp")
-description = "Fire an adjacent Following card"
+description = "Fire a Following adjacent card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

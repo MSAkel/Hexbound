@@ -11,5 +11,5 @@ stat_kind = 7
 id = "skillet"
 name = "Skillet"
 icon = ExtResource("1_htrpw")
-description = "Adjacent Following Poultry Ingredients permanently +10 Flavour"
+description = "The Following Flavour permanently gains +10"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

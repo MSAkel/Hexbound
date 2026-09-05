@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://pxnhu0phq4m7"]
 
 [ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
 [ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
@@ -15,10 +15,8 @@ description = "Win a run on Difficulty 3"
 script = ExtResource("2_passive_script")
 id = "energy_amplifier"
 display_name = "Energy Amplifier"
-description = "Energy cards on this segment produce +10% Energy."
+description = "Flavour cards on this course produce +5% Flavour."
 icon = ExtResource("3_icon")
 tile_cost = 2
-max_copies = 1
-effect_type = 0
-effect_value = 0.1
+effect_value = 0.05
 unlock_condition = SubResource("UnlockCondition_main")

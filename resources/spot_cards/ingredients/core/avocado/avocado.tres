@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://cl7o5t5jscgg4"]
+
+[ext_resource type="Texture2D" uid="uid://c803xrilhj251" path="res://assets/icons/food/ingredients/avocado.png" id="1_bf5x4"]
+[ext_resource type="Script" uid="uid://b72ami54ald0n" path="res://resources/spot_cards/ingredients/core/avocado/avocado.gd" id="2_kotxh"]
+
+[resource]
+script = ExtResource("2_kotxh")
+base_production_amount = 5
+product = 1
+starting_hand_eligible = true
+id = "avocado"
+name = "Avocado"
+icon = ExtResource("1_bf5x4")
+description = "+5 Flavour for every fire on this course so far this hour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

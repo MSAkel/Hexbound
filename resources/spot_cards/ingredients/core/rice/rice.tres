@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://dia2wi5j18o8g"]
+
+[ext_resource type="Texture2D" uid="uid://dau4sknokynl2" path="res://assets/icons/food/ingredients/rice.png" id="1_s8aqm"]
+[ext_resource type="Script" uid="uid://bn2e4r844r0fo" path="res://resources/spot_cards/ingredients/core/rice/rice.gd" id="2_0j3x7"]
+
+[resource]
+script = ExtResource("2_0j3x7")
+base_production_amount = 8
+product = 1
+id = "rice"
+name = "Rice"
+icon = ExtResource("1_s8aqm")
+description = "+8 Flavour per adjacent Seasoning"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

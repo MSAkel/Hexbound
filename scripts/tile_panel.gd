@@ -36,6 +36,9 @@ func _ready() -> void:
 	# Keep above map UI chrome while ignoring mouse so hover can leave the spot.
 	z_index = 100
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pin_content_sized_layout()
+	_pin_rune_icon_size()
+	reset_size()
 
 
 func set_hex(h: Hex, spot_rect: Rect2 = Rect2()) -> void:
@@ -43,8 +46,8 @@ func set_hex(h: Hex, spot_rect: Rect2 = Rect2()) -> void:
 	target_rect = spot_rect
 	_refresh_spot_card()
 	show()
-	# Size may change with content. Position after the layout pass.
-	call_deferred("_update_position")
+	# Size may change with content. Fit, then position after the layout pass.
+	call_deferred("_fit_and_position")
 
 
 # Re-anchor while still hovering (e.g. camera zoom / pan mid-hover).
@@ -169,6 +172,35 @@ func _set_condiment_fuse_line(card: TileCard) -> void:
 	condiment_fuse_line.show()
 
 
+## Keep this inspect card content-sized. PanelContainer will not shrink on its own
+## after a bad layout pass, and CanvasLayer children can pick up a fullscreen size.
+func _pin_content_sized_layout() -> void:
+	set_anchors_preset(Control.PRESET_TOP_LEFT)
+	anchor_right = 0.0
+	anchor_bottom = 0.0
+	grow_horizontal = Control.GROW_DIRECTION_END
+	grow_vertical = Control.GROW_DIRECTION_END
+	size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+
+
+## CardIcon.tscn is authored full-rect with expand flags so it can fill hand and board hosts.
+## In this panel it must stay a 100px thumbnail, or the paper stretches with it.
+func _pin_rune_icon_size() -> void:
+	card_icon.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	card_icon.anchor_right = 0.0
+	card_icon.anchor_bottom = 0.0
+	card_icon.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	card_icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	card_icon.custom_minimum_size = Vector2(100, 100)
+	card_icon.size = Vector2(100, 100)
+
+
+func _fit_and_position() -> void:
+	reset_size()
+	_update_position()
+
+
 # Position next to the spot, flipping sides when near viewport edges (same idea as Tooltip).
 func _update_position() -> void:
 	if target_rect == Rect2():
@@ -214,3 +246,4 @@ func _on_turn_ended() -> void:
 func _on_condiment_fuses_changed() -> void:
 	if visible and hex != null:
 		_refresh_spot_card()
+		call_deferred("_fit_and_position")

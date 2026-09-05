@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SegmentPassive" format=3]
+[gd_resource type="Resource" script_class="SegmentPassive" format=3 uid="uid://phq0u03k5cgq"]
 
 [ext_resource type="Script" uid="uid://xuarrr2ab6oe" path="res://scripts/resources/unlock_condition.gd" id="1_unlock_script"]
 [ext_resource type="Script" uid="uid://didtcdc8axcrm" path="res://scripts/resources/segment_passive.gd" id="2_passive_script"]
@@ -7,17 +7,16 @@
 [sub_resource type="Resource" id="UnlockCondition_main"]
 script = ExtResource("1_unlock_script")
 condition_type = 23
-threshold = 200
-description = "Have Support effects trigger or Empower 200 Producers"
+threshold = 10000
+description = "Have Kitchenware effects Fire or Double 10000 Ingredients"
 
 [resource]
 script = ExtResource("2_passive_script")
 id = "conductor_core"
 display_name = "Conductor Core"
-description = "The first Support activated on this segment each turn Empowers the next Producer."
+description = "The first Kitchenware activated on this course each hour Doubles the next Ingredient."
 icon = ExtResource("3_icon")
 tile_cost = 3
-max_copies = 1
 effect_type = 14
 effect_value = 1.0
 unlock_condition = SubResource("UnlockCondition_main")

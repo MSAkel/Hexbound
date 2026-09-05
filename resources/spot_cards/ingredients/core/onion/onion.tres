@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://dskdu8u1s1nwp"]
+
+[ext_resource type="Texture2D" uid="uid://bsoo5xc63kl3k" path="res://assets/icons/food/ingredients/onion.png" id="1_inhd7"]
+[ext_resource type="Script" uid="uid://yo6oprbyr4t" path="res://resources/spot_cards/ingredients/core/onion/onion.gd" id="2_r6li0"]
+
+[resource]
+script = ExtResource("2_r6li0")
+base_production_amount = 10
+rarity = 2
+product = 1
+id = "onion"
+name = "Onions"
+icon = ExtResource("1_inhd7")
+description = "+10 Flavour per other course with no card"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"
