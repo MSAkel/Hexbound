@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cucfthxqvx8es" path="res://scripts/tile_panel.gd" id="1_0dxj0"]
 [ext_resource type="Texture2D" uid="uid://8qge5btjbib0" path="res://assets/gui/panels/tooltip.png" id="2_8qrfl"]
-[ext_resource type="PackedScene" uid="uid://dgghwt6uw18en" path="res://scenes/ui/cards/card_icon.tscn" id="3_cardicon"]
+[ext_resource type="PackedScene" uid="uid://dgghwt6uw18en" path="res://scenes/cards/card_icon/card_icon.tscn" id="3_cardicon"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8qrfl"]
 content_margin_left = 16.0

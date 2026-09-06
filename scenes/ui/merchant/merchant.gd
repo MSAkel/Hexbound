@@ -120,7 +120,7 @@ func _refresh_merchant_cards() -> void:
 		_stock_reroll_count
 	)
 	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	var drafted_runes := CardLoot.draw_runes(
+	var drafted_runes := CardLoot.card_draw(
 		MERCHANT_TILE_CARD_COUNT,
 		GameManager.tile_cards_pool,
 		true,

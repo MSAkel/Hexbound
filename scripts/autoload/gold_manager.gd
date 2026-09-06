@@ -4,10 +4,11 @@ extends Node
 ## Gold is used for rune activation and merchant purchases.
 
 
-const MAX_MERCHANT_TOKENS := 5
+## Starting gold amount is set in diffculty.gd
+const MAX_MERCHANT_TOKENS := 4
 const MERCHANT_TOKEN_COST := 1
 ## Flat gold paid every time a round goal is met.
-const ROUND_COMPLETION_GOLD := 5
+const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
 const GOLD_PER_UNUSED_TURN := 1
 

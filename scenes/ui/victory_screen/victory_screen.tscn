@@ -150,7 +150,6 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.86, 0.96, 0.91, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_value")
-text = "WIP"
 
 [node name="CopySeedButton" type="Button" parent="RunStatsPanel/VBoxContainer/SeedContainer" unique_id=415270604]
 layout_mode = 2
@@ -165,11 +164,11 @@ layout_mode = 2
 size_flags_vertical = 8
 text = "CONTINUE RUN"
 
-[node name="EndlessModeButton" type="Button" parent="RunStatsPanel/VBoxContainer" unique_id=1647789445]
+[node name="BackToMenuButton" type="Button" parent="RunStatsPanel/VBoxContainer" unique_id=1647789445]
 layout_mode = 2
 size_flags_vertical = 8
 text = "BACK TO MENU"
 
 [connection signal="pressed" from="RunStatsPanel/VBoxContainer/SeedContainer/CopySeedButton" to="." method="_on_copy_seed_button_pressed"]
 [connection signal="pressed" from="RunStatsPanel/VBoxContainer/ContinueButton" to="." method="_on_continue_pressed"]
-[connection signal="pressed" from="RunStatsPanel/VBoxContainer/EndlessModeButton" to="." method="_on_main_menu_pressed"]
+[connection signal="pressed" from="RunStatsPanel/VBoxContainer/BackToMenuButton" to="." method="_on_back_to_menu_button_pressed"]

@@ -42,7 +42,7 @@ var _ghost_float_time := 0.0
 
 const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
 const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
-const CARD_ICON_UI: PackedScene = preload("res://scenes/ui/runes/card_icon_ui.tscn")
+const CARD_ICON_UI: PackedScene = preload("res://scenes/cards/card_icon_ui/card_icon_ui.tscn")
 # Pointer travel from the selecting press before a release is treated as a drop.
 const DRAG_PLACE_THRESHOLD_PX := 8.0
 # Bob height in pixels. Raise for more float, lower toward 0 to calm it.

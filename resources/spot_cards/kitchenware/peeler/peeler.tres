@@ -10,5 +10,5 @@ stat_kind = 5
 id = "peeler"
 name = "Peeler"
 icon = ExtResource("1_xf1wp")
-description = "Fire a Following adjacent card"
+description = "Fire a Following adjacent card. Twice if that card shares this rarity"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

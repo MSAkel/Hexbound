@@ -9,7 +9,7 @@ extends Control
 @onready var main_ui: CanvasLayer = get_parent() as CanvasLayer
 @onready var settings_container: PanelContainer = $"../SettingsContainer"
 @onready var collection_screen: Panel = $"../Collection"
-@onready var rune_selection_ui: Control = $"../RuneSelectionUI"
+@onready var card_selection_ui: Control = $"../CardSelectionUI"
 @onready var merchant: Control = $"../Merchant"
 @onready var round_complete_screen: Control = $"../RoundCompleteScreen"
 @onready var tile_map: HexTileMap = $"../../HexTileMap"
@@ -166,7 +166,7 @@ func _handle_pause_back() -> void:
 ## Prevent the pause menu from opening on top of gameplay panels that require the player's attention.
 func _is_pause_blocked() -> bool:
 	return (
-		_is_control_visible(rune_selection_ui)
+		_is_control_visible(card_selection_ui)
 		or _is_control_visible(merchant)
 		or _is_control_visible(round_complete_screen)
 	)

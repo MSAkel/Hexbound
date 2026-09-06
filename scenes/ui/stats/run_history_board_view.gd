@@ -6,7 +6,7 @@ extends Control
 ## Visible tiles are Control hosts so CardIcon can sit on each hex.
 
 const PREVIEW_MAP_SCENE := preload("res://scenes/ui/segment_passives/segment_passives_preview_map.tscn")
-const CARD_ICON_SCENE := preload("res://scenes/ui/cards/card_icon.tscn")
+const CARD_ICON_SCENE := preload("res://scenes/cards/card_icon/card_icon.tscn")
 const TILE_NORMAL := preload("res://assets/map/segment_icons/tile_normal.png")
 const TILE_SEGMENT_START := preload("res://assets/map/segment_icons/tile_segment_start.png")
 const TILE_SEGMENT_END := preload("res://assets/map/segment_icons/tile_segment_end.png")

@@ -2,7 +2,7 @@ extends Control
 
 signal closed
 
-#@onready var master_volume_slider: HSlider = $Container/SettingsContainer/MasterVolume/HSlider
+# @onready var master_volume_slider: HSlider = $Container/SettingsContainer/MasterVolume/HSlider
 @onready var music_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/MusicVolume/MusicVolumeSlider
 @onready var sfx_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/SFXVolume/SFXVolumeSlider
 @onready var game_speed_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton
@@ -27,7 +27,7 @@ var _resolution_options: Array[Vector2i] = []
 
 func _ready() -> void:
 	# Initialize sliders with current values
-	#master_volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
+	# master_volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
 	music_volume_slider.value = AudioManager.music_volume
 	sfx_volume_slider.value = AudioManager.sfx_volume
 	_populate_resolution_options()
@@ -35,7 +35,7 @@ func _ready() -> void:
 	visibility_changed.connect(_on_visibility_changed)
 	
 	# Connect slider signals
-	#master_volume_slider.value_changed.connect(_on_master_volume_changed)
+	# master_volume_slider.value_changed.connect(_on_master_volume_changed)
 	music_volume_slider.value_changed.connect(_on_music_volume_changed)
 	sfx_volume_slider.value_changed.connect(_on_sfx_volume_changed)
 

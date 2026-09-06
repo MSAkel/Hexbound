@@ -62,7 +62,7 @@ const EVENT_INFO := {
 	},
 	Type.DRY_WIRE: {
 		"name": "Dry Wire",
-		"description": "Extra activations and queued Again effects do not fire.",
+		"description": "Extra activations effects do not fire.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.NULL_CHARGE: {
@@ -82,7 +82,7 @@ const EVENT_INFO := {
 	},
 	Type.SEALED_HEXES: {
 		"name": "Sealed Spots",
-		"description": "Three empty spots cannot be played on this day.",
+		"description": "Five empty spots cannot be played on this day.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.JAMMED_BELT: {
@@ -310,7 +310,7 @@ func grant_auto_rune(is_round_reward: bool, fail_remaining_turns: int = -1) -> b
 		0
 	)
 	var loot_rng := RunRng.create_rng(stream_name)
-	var pack := CardLoot.draw_runes(1, GameManager.tile_cards_pool, true, loot_rng)
+	var pack := CardLoot.card_draw(1, GameManager.tile_cards_pool, true, loot_rng)
 	if pack.is_empty():
 		return false
 

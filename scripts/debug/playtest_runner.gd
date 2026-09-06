@@ -242,7 +242,7 @@ func _run_lone_cell_legality() -> void:
 		RunRng.begin_new_run("LONECELL")
 		var drew_lone := false
 		for _i in 80:
-			var pack := CardLoot.draw_runes(3, GameManager.tile_cards_pool, true, RunRng.create_rng("lone_draw:%d" % _i))
+			var pack := CardLoot.card_draw(3, GameManager.tile_cards_pool, true, RunRng.create_rng("lone_draw:%d" % _i))
 			for card: TileCard in pack:
 				if card.id == "lone_cell":
 					drew_lone = true
@@ -598,7 +598,7 @@ func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_tur
 		is_reward,
 		0
 	)
-	var pack := CardLoot.draw_runes(
+	var pack := CardLoot.card_draw(
 		EventManager.get_runes_pack_size(is_reward),
 		GameManager.tile_cards_pool,
 		true,
@@ -628,7 +628,7 @@ func _draft_and_pick_pack_player(
 			is_reward,
 			reroll_index
 		)
-		var pack := CardLoot.draw_runes(
+		var pack := CardLoot.card_draw(
 			EventManager.get_runes_pack_size(is_reward),
 			GameManager.tile_cards_pool,
 			true,
@@ -746,7 +746,7 @@ func _shop_current_round() -> Array[String]:
 		return _shop_player_round()
 	var bought: Array[String] = []
 	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, 0)
-	var stock := CardLoot.draw_runes(
+	var stock := CardLoot.card_draw(
 		MERCHANT_STOCK_COUNT,
 		GameManager.tile_cards_pool,
 		true,
@@ -889,7 +889,7 @@ func _player_engine_shop_cards(stock: Array[TileCard]) -> Array[TileCard]:
 
 func _draw_merchant_stock(stock_reroll_count: int) -> Array[TileCard]:
 	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, stock_reroll_count)
-	var stock := CardLoot.draw_runes(
+	var stock := CardLoot.card_draw(
 		MERCHANT_STOCK_COUNT,
 		GameManager.tile_cards_pool,
 		true,

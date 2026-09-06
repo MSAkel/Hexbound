@@ -73,7 +73,7 @@ func _on_continue_pressed() -> void:
 	RoundFlow.notify_victory_continue()
 
 
-func _on_main_menu_pressed() -> void:
+func _on_back_to_menu_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(true), true)
 	RunHistoryManager.archive_finished_run(true)

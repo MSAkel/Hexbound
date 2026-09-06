@@ -64,7 +64,7 @@ static func get_starting_hand_reduction(level: Level) -> int:
 	return 0
 
 static func get_starting_gold(level: Level) -> int:
-	return 0 if level >= Level.LEVEL_2 else 10
+	return 0 if level >= Level.LEVEL_2 else 5
 
 static func get_merchant_price_multiplier(level: Level) -> float:
 	return 1.2 if level >= Level.LEVEL_3 else 1.0

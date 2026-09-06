@@ -107,7 +107,7 @@ static func _pick_from(pool: Array[TileCard], rng: RandomNumberGenerator) -> Til
 # Draw `count` runes with rarity weights. Each slot rolls rarity, then picks from that bucket.
 # Falls back to any remaining rune when the rolled rarity has no candidates left.
 # Pass rng to isolate this draft from gameplay rolls. Same rng seed always yields the same ids.
-static func draw_runes(
+static func card_draw(
 	count: int,
 	pool: Array[TileCard] = [],
 	unique: bool = true,
