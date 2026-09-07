@@ -105,7 +105,7 @@ func get_output_scale_bonus(tile: Hex, card: TileCard) -> float:
 	for passive in get_passives(segment_index):
 		match passive.effect_type:
 			SegmentPassive.EffectType.ENERGY_OUTPUT_MULT:
-				if card.product == TileCard.Product.SCORE:
+				if card.product == TileCard.Product.FLAVOUR:
 					bonus += passive.effect_value
 			SegmentPassive.EffectType.FIRST_PRODUCER_OUTPUT_MULT:
 				if is_first_producer:
@@ -278,7 +278,7 @@ func on_turn_resolved(tile_map: HexTileMap) -> void:
 		return
 	for segment_index in tile_map.get_segment_count():
 		var products: Variant = _products_this_turn.get(segment_index, [])
-		if products is Array and products.has(TileCard.Product.SCORE) and products.has(TileCard.Product.MULTIPLIER) and products.has(TileCard.Product.GOLD):
+		if products is Array and products.has(TileCard.Product.FLAVOUR) and products.has(TileCard.Product.MULTIPLIER) and products.has(TileCard.Product.GOLD):
 			MetaProgressionManager.add_spectrum_turn()
 
 
@@ -357,7 +357,7 @@ func _apply_growth(tile: Hex, card: TileCard, segment_index: int) -> void:
 			cadence_mult = maxi(cadence_mult, maxi(1, passive.extra_int))
 			mult_gain += passive.effect_value
 
-	if card.product == TileCard.Product.SCORE and cadence_energy > 0 and energy_gain > 0.0:
+	if card.product == TileCard.Product.FLAVOUR and cadence_energy > 0 and energy_gain > 0.0:
 		if card.run_trigger_count % cadence_energy == 0:
 			card.bonus_production_amount += energy_gain
 			_refresh_card_visual(tile, card)
@@ -430,7 +430,7 @@ func _apply_closed_orbit(tile: Hex, _card: TileCard, segment_index: int) -> void
 	if gain <= 0.0:
 		return
 	for energy_card in tile.map.get_all_tile_cards_on_segment(segment_index, TileCard.PRODUCER_TYPE_FILTER):
-		if energy_card.product != TileCard.Product.SCORE:
+		if energy_card.product != TileCard.Product.FLAVOUR:
 			continue
 		energy_card.bonus_production_amount += gain
 		var hex := tile.map.get_hex_for_tile_card(energy_card)
@@ -493,7 +493,7 @@ func _is_last_occupied(tile: Hex, segment_index: int) -> bool:
 func _is_numeric_producer(card: TileCard) -> bool:
 	if not TileCard.is_producer_type(card.type):
 		return false
-	return card.product == TileCard.Product.SCORE or card.product == TileCard.Product.MULTIPLIER or card.product == TileCard.Product.GOLD
+	return card.product == TileCard.Product.FLAVOUR or card.product == TileCard.Product.MULTIPLIER or card.product == TileCard.Product.GOLD
 
 
 func _note_numeric_product(segment_index: int, card: TileCard) -> void:

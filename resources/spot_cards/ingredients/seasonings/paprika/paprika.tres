@@ -2,14 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://bgj63dwjlwskh" path="res://assets/icons/food/seasonings/paprika.png" id="1_vsb26"]
 [ext_resource type="Script" uid="uid://co33b54vxvx65" path="res://resources/spot_cards/ingredients/seasonings/paprika/paprika.gd" id="2_bij4x"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_j30mv"]
 
 [resource]
 script = ExtResource("2_bij4x")
-ingredient_kind = 4
 base_production_amount = 6
 rarity = 1
 product = 2
+ingredient_kind = 5
 id = "paprika"
 name = "Paprika"
 icon = ExtResource("1_vsb26")

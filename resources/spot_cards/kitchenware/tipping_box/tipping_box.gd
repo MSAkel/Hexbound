@@ -2,7 +2,7 @@ extends TileCard
 
 ## +2 Flavour for every Gold you have.
 func _on_activate_tile_card(tile: Hex) -> void:
-	add_score(tile, _get_treasury_amount())
+	add_flavour(tile, _get_treasury_amount())
 
 
 func get_board_chip(_tile: Hex = null) -> Dictionary:

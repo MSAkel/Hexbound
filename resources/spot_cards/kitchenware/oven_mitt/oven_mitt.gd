@@ -2,7 +2,7 @@ extends TileCard
 
 ## Lowest Following Flavour ingredient gains +5 Flavour permanently.
 func _on_activate_tile_card(tile: Hex) -> void:
-	var target := _get_lowest_later_score_producer(tile)
+	var target := _get_lowest_later_flavour_producer(tile)
 	if target == null:
 		failed_tile_card_text(tile)
 		return
@@ -15,13 +15,13 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	var target := _get_lowest_later_score_producer(hover_tile)
+	var target := _get_lowest_later_flavour_producer(hover_tile)
 	if target == null:
 		return []
 	return _coords_for_placed_tile_cards(hover_tile, [target])
 
 
-func _get_lowest_later_score_producer(tile: Hex) -> TileCard:
+func _get_lowest_later_flavour_producer(tile: Hex) -> TileCard:
 	var self_index := tile.map._get_hex_trigger_order_index(tile)
 	var lowest: TileCard = null
 	var lowest_amount := 0.0
@@ -35,7 +35,7 @@ func _get_lowest_later_score_producer(tile: Hex) -> TileCard:
 			continue
 		if not TileCard.is_producer_type(card.type):
 			continue
-		if card.product != Product.SCORE:
+		if card.product != Product.FLAVOUR:
 			continue
 
 		var amount := card._get_production_amount()

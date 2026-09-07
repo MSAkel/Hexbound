@@ -2,14 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://dp43udpov58jr" path="res://assets/icons/food/seasonings/onion_powder.png" id="1_qg65g"]
 [ext_resource type="Script" uid="uid://xnh4od44eggy" path="res://resources/spot_cards/ingredients/seasonings/onion_powder/onion_powder.gd" id="2_ttun6"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_2umco"]
 
 [resource]
 script = ExtResource("2_ttun6")
-ingredient_kind = 4
 base_production_amount = 2
 rarity = 1
 product = 2
+ingredient_kind = 5
 id = "onion_powder"
 name = "Onion Powder"
 icon = ExtResource("1_qg65g")

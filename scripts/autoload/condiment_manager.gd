@@ -258,8 +258,8 @@ func relay_product_if_needed(tile: Hex, product: TileCard.Product, amount: Varia
 	if next_index < 0:
 		return
 	match product:
-		TileCard.Product.SCORE:
-			tile.map.add_turn_score_for_segment(next_index, int(round(float(amount))))
+		TileCard.Product.FLAVOUR:
+			tile.map.add_turn_flavour_for_segment(next_index, int(round(float(amount))))
 			tile.map.mark_segment_received_relay(next_index)
 			tile.map.flash_segment_highlight(next_index)
 		TileCard.Product.MULTIPLIER:
@@ -524,7 +524,7 @@ func _apply_next_trigger_mult_fuse(tile: Hex, card: TileCard) -> void:
 func _grant_next_trigger_energy(tile: Hex, amount: int) -> void:
 	if tile == null or tile.map == null:
 		return
-	tile.map.add_turn_score_for_tile(tile, amount)
+	tile.map.add_turn_flavour_for_tile(tile, amount)
 	var pos := tile.map.floating_text_position_for_hex(tile.coordinates)
 	tile.map.create_floating_text(pos, "+%d" % amount, Color.AQUA, TileCard.ICON_FLAVOUR)
 

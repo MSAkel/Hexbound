@@ -100,7 +100,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	var additive_mult := _plated_additive_mult_from_recipe(recipe)
 	var multiplicative_mult := _plated_multiplicative_mult_from_recipe(recipe)
 	if flavour > 0:
-		add_score(tile, flavour)
+		add_flavour(tile, flavour)
 	if not is_zero_approx(additive_mult):
 		add_additive_mult(tile, additive_mult)
 	if not is_zero_approx(multiplicative_mult):
@@ -283,7 +283,7 @@ func _expected_flavour_from_card(card: TileCard, hex: Hex) -> int:
 		return 0
 	if card.hour_flavour_produced != 0:
 		return card.hour_flavour_produced
-	if card.product != Product.SCORE:
+	if card.product != Product.FLAVOUR:
 		return 0
 	return int(round(_chip_amount(card, hex, card._get_production_amount())))
 

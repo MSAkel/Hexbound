@@ -19,6 +19,8 @@ const SKIP_PRESENTATION_YIELD_EVERY := 64
 const SKIP_PRESENTATION_STORM_LIMIT := 400
 
 var map: HexTileMap
+## True when skip-presentation aborted a retrigger drain at SKIP_PRESENTATION_STORM_LIMIT.
+var aborted_retrigger_storm := false
 # Extra rune activations queued by support runes. Resolved before tile flow continues.
 var pending_trigger_queue: Array[Dictionary] = []
 # Remaining chained triggers keyed by the source hex that queued them.
@@ -44,6 +46,7 @@ func setup(tile_map: HexTileMap) -> void:
 func resolve_turn() -> void:
 	map.dismiss_hover_feedback()
 	map.reset_segment_turn_results()
+	aborted_retrigger_storm = false
 	AudioManager.reset_card_trigger_chops()
 
 	TileCard.clear_copied_activation_stack()
@@ -102,6 +105,7 @@ func _resolve_rune_activation(tile: Hex) -> void:
 		)
 		_resolve_trigger_link_entry(entry)
 		if _note_storm_activation(source_hex, target_hex):
+			aborted_retrigger_storm = true
 			push_warning("HexTurnResolver: retrigger storm aborted after %d activations." % SKIP_PRESENTATION_STORM_LIMIT)
 			pending_trigger_queue.clear()
 			break
@@ -291,7 +295,7 @@ func _sum_segment_contributions() -> int:
 	for segment_index in map.get_segment_count():
 		total += GameManager.compute_segment_turn_contribution(
 			segment_index,
-			map.get_segment_turn_score(segment_index),
+			map.get_segment_turn_flavour(segment_index),
 			map.get_segment_additive_mult(segment_index),
 			map.get_segment_multiplicative_mult(segment_index)
 		)
@@ -310,16 +314,16 @@ func _play_segment_turn_result_reveals() -> void:
 func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	if GameManager.should_skip_turn_presentation():
 		return
-	var score := map.get_segment_turn_score(segment_index)
+	var flavour := map.get_segment_turn_flavour(segment_index)
 	var additive_mult := map.get_segment_additive_mult(segment_index)
 	var multiplicative_mult := map.get_segment_multiplicative_mult(segment_index)
 	var gold := map.get_segment_turn_gold(segment_index)
-	if score == 0 and gold == 0:
+	if flavour == 0 and gold == 0:
 		return
 
 	var contribution := GameManager.compute_segment_turn_contribution(
 		segment_index,
-		score,
+		flavour,
 		additive_mult,
 		multiplicative_mult
 	)

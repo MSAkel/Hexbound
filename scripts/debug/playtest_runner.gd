@@ -6,12 +6,14 @@ extends Node
 ## godot --headless --path "E:/Godot/game++" res://scenes/debug/playtest_runner.tscn
 ## Restrict to one layout with `-- --layout=surveyor`.
 ## Player-only batch: `-- --bot=player --full-count=8` (skips starter/R1 suites).
+## Bug hunt: `-- --bot=chaos` or `-- --fuzz`. Continues after missed goals. Fails on storms and invariants.
 ## Human-like run: `-- --layout=surveyor --bot=player --seed=TJU27YGN --no-passives --no-condiments --repeat=5`
 ## Player bot uses Spark on the engine segment, condiments, chip placement, and layout plans.
 ## Surveyor locks a 6–7 hex line through R5. Columnist locks a 7-hex column through R5.
 ## Surveyor then stays on that 7-hex line until full. Columnist rerolls hard through R4.
 
 const HEX_MAP_SCENE := preload("res://scenes/hex_tile_map.tscn")
+const SCRIPT_ERROR_TRACKER := preload("res://scripts/debug/playtest_script_error_tracker.gd")
 const REPORT_PATH := "user://playtest_report.json"
 const STARTER_SEED_COUNT := 16
 const R1_BOT_SEED_COUNT := 4
@@ -22,6 +24,8 @@ const MERCHANT_STOCK_COUNT := 3
 ## spread: put each new card on the emptiest legal segment.
 ## player: commit to the largest line, reroll junk, tokens, Transposition.
 const BOT_IDS: Array[String] = ["fill", "stack", "spread", "player"]
+## Places randomly, prefers retrigger and utility cards, and keeps filling after a missed goal.
+const CHAOS_BOT_ID := "chaos"
 const CHARACTER_IDS: Array[String] = [
 	"surveyor",
 	"encircler",
@@ -83,9 +87,14 @@ var _locked_engine_segment := -1
 var _use_passives := true
 var _use_condiments := true
 var _focused_repeat_count := 1
+var _fuzz_only := false
+var _chaos_step := 0
+var _run_script_errors: Array[String] = []
+var _pending_turn_script_errors: Array[String] = []
 
 
 func _enter_tree() -> void:
+	SCRIPT_ERROR_TRACKER.ensure_logger()
 	GameManager.skip_presentation = true
 
 
@@ -93,13 +102,14 @@ func _ready() -> void:
 	_layouts = _parse_layout_filter()
 	if _layouts.size() == 1:
 		_report_path = "user://playtest_report_%s.json" % _layouts[0]
-	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d passives=%s condiments=%s" % [
+	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d passives=%s condiments=%s fuzz=%s" % [
 		",".join(_layouts),
 		_only_bot if not _only_bot.is_empty() else "all",
 		_only_seed if not _only_seed.is_empty() else "all",
 		_full_run_seed_count,
 		"spark" if _use_passives else "none",
 		"on" if _use_condiments else "off",
+		"on" if _fuzz_only or _only_bot == CHAOS_BOT_ID else "off",
 	])
 	_map = HEX_MAP_SCENE.instantiate() as HexTileMap
 	add_child(_map)
@@ -136,6 +146,8 @@ func _parse_layout_filter() -> Array[String]:
 			_use_passives = false
 		elif arg == "--no-condiments":
 			_use_condiments = false
+		elif arg == "--fuzz":
+			_fuzz_only = true
 	var layouts: Array[String] = []
 	for character_id: String in CHARACTER_IDS:
 		if requested.is_empty() or character_id in requested:
@@ -162,8 +174,17 @@ func _run_all() -> void:
 		])
 		for repeat_index in _focused_repeat_count:
 			for bot_id: String in bots:
-				await _run_one_full_nine(character_id, _only_seed, bot_id, repeat_index)
-		_print_full_nine_summary()
+				if bot_id == CHAOS_BOT_ID:
+					await _run_one_fuzz(character_id, _only_seed, repeat_index)
+				else:
+					await _run_one_full_nine(character_id, _only_seed, bot_id, repeat_index)
+		if CHAOS_BOT_ID in bots:
+			_print_fuzz_summary()
+		if bots != [CHAOS_BOT_ID]:
+			_print_full_nine_summary()
+		return
+	if _fuzz_only or _only_bot == CHAOS_BOT_ID:
+		await _run_fuzz_suite()
 		return
 	if not _only_bot.is_empty():
 		await _run_full_nines()
@@ -185,7 +206,7 @@ func _starter_filler_pool_ids() -> Array[String]:
 			continue
 		if card.type != TileCard.TileCardType.INGREDIENT:
 			continue
-		if card.product != TileCard.Product.SCORE:
+		if card.product != TileCard.Product.FLAVOUR:
 			continue
 		ids.append(card.id)
 	return ids
@@ -223,7 +244,7 @@ func _run_starter_fairness() -> void:
 				var allowed_fillers := _starter_filler_pool_ids()
 				if filler_id not in allowed_fillers:
 					reasons.append(
-						"filler %s is not in the flat-score starter pool %s"
+						"filler %s is not in the flat-Flavour starter pool %s"
 						% [filler_id, str(allowed_fillers)]
 					)
 				if filler_id in BANNED_FILLER_IDS:
@@ -299,7 +320,7 @@ func _run_treasury_at_zero_gold() -> void:
 	var hex := _first_empty_hex()
 	_place_by_id(hex, "treasury")
 	await _resolve_turn()
-	var energy := _map.get_segment_turn_score(_map.get_segment_index(hex.coordinates))
+	var energy := _map.get_segment_turn_flavour(_map.get_segment_index(hex.coordinates))
 	var reasons: Array[String] = []
 	if energy != 6:
 		reasons.append("Treasury at 0 gold scored %d Energy, expected 6" % energy)
@@ -338,7 +359,7 @@ func _run_prosperity_order(allowance_first: bool) -> void:
 
 	await _resolve_turn()
 	var segment_index := _map.get_segment_index(first.coordinates)
-	var energy := _map.get_segment_turn_score(segment_index)
+	var energy := _map.get_segment_turn_flavour(segment_index)
 	var expected := 12 if allowance_first else 8
 	var reasons: Array[String] = []
 	if energy != expected:
@@ -374,7 +395,7 @@ func _run_lucky_draw_gold_branch() -> void:
 		await _resolve_turn()
 		found = GoldManager.amount == 8
 		last_gold = GoldManager.amount
-		last_energy = _map.get_segment_turn_score(_map.get_segment_index(hex.coordinates))
+		last_energy = _map.get_segment_turn_flavour(_map.get_segment_index(hex.coordinates))
 		if found:
 			break
 
@@ -484,11 +505,129 @@ func _run_full_nines() -> void:
 	_print_full_nine_summary()
 
 
+func _run_fuzz_suite() -> void:
+	print("[playtest] fuzz chaos layouts=%s seeds=%d" % [",".join(_layouts), _full_run_seed_count])
+	for character_id: String in _layouts:
+		for index in _full_run_seed_count:
+			var seed_text := _seed_for("FZ", character_id, index)
+			await _run_one_fuzz(character_id, seed_text)
+	_print_fuzz_summary()
+
+
+## Chaos bot keeps placing through R9 even after a missed goal. Fail only on invariants.
+func _run_one_fuzz(character_id: String, seed_text: String, repeat_index: int = 0) -> void:
+	_active_bot = CHAOS_BOT_ID
+	_chaos_step = 0
+	var repeat_tag := "" if repeat_index <= 0 else " #%d" % (repeat_index + 1)
+	print("[playtest] start fuzz/chaos %s %s%s" % [character_id, seed_text, repeat_tag])
+	_begin_run(character_id, seed_text)
+	var hand := PlayerCharacter.get_starting_hand_cards(GameManager.selected_character)
+	_place_opening_hand(hand)
+
+	var round_log: Array[Dictionary] = []
+	var picks: Array[String] = []
+	var buys: Array[String] = []
+	var invariant_hits: Array[String] = []
+	var storms := 0
+
+	while GameManager.current_round <= FULL_RUN_TARGET_ROUND:
+		var round_number := GameManager.current_round
+		var goal := GameManager.required_score
+		var turns_used := 0
+		while GameManager.remaining_turns > 0:
+			var score_before := GameManager.total_round_score
+			await _resolve_turn()
+			turns_used += 1
+			var turn_failures := _collect_invariant_failures(score_before)
+			if not turn_failures.is_empty():
+				invariant_hits.append_array(turn_failures)
+				for reason: String in turn_failures:
+					print("[playtest]   INVARIANT R%d T%d %s" % [round_number, turns_used, reason])
+			if _map.turn_resolver != null and _map.turn_resolver.aborted_retrigger_storm:
+				storms += 1
+			if GameManager.total_round_score >= goal:
+				break
+			if GameManager.remaining_turns <= 0:
+				break
+			var picked := _draft_and_pick_pack(false, round_number, GameManager.remaining_turns + 1)
+			if picked != null:
+				picks.append("%s:%s" % [round_number, picked.id])
+				_place_one_card(picked)
+
+		var score := GameManager.total_round_score
+		var cleared := score >= goal
+		var round_entry := {
+			"round": round_number,
+			"goal": goal,
+			"score": score,
+			"turns_used": turns_used,
+			"gold": GoldManager.amount,
+			"cleared": cleared,
+			"invariants": invariant_hits.duplicate(),
+		}
+		if round_number in SEGMENT_SNAPSHOT_ROUNDS:
+			var snapshot := _segment_contribution_snapshot()
+			round_entry["segments"] = snapshot
+			_print_segment_snapshot(round_number, snapshot)
+		round_log.append(round_entry)
+		print(
+			"[playtest]   R%d %d/%d turns=%d gold=%d storms=%d invariants=%d %s"
+			% [
+				round_number,
+				score,
+				goal,
+				turns_used,
+				GoldManager.amount,
+				storms,
+				invariant_hits.size(),
+				"clear" if cleared else "miss",
+			]
+		)
+		if not invariant_hits.is_empty():
+			break
+		if round_number >= FULL_RUN_TARGET_ROUND:
+			break
+
+		if cleared:
+			GoldManager.apply_round_speed_rewards(GameManager.get_skipped_turns())
+		var completed_round := round_number
+		var reward := _draft_and_pick_pack(true, completed_round, 0)
+		GameManager.advance_round()
+		if reward != null:
+			picks.append("reward%s:%s" % [completed_round, reward.id])
+			_place_one_card(reward)
+		buys.append_array(_shop_current_round())
+		EventBus.turn_started.emit()
+
+	var reasons: Array[String] = invariant_hits.duplicate()
+	_record(
+		"fuzz",
+		character_id,
+		seed_text,
+		reasons.is_empty(),
+		reasons,
+		{
+			"bot": CHAOS_BOT_ID,
+			"reached_round": GameManager.current_round,
+			"gold": GoldManager.amount,
+			"picks": picks,
+			"buys": buys,
+			"rounds": round_log,
+			"storms": storms,
+			"segment_sizes": GameManager.selected_character.segment_sizes,
+			"segments_count": GameManager.selected_character.segments_count,
+			"repeat_index": repeat_index,
+		}
+	)
+
+
 func _full_nine_bots() -> Array[String]:
 	if _only_bot.is_empty():
 		return BOT_IDS.duplicate()
+	if _only_bot == CHAOS_BOT_ID:
+		return []
 	if _only_bot not in BOT_IDS:
-		push_error("PlaytestRunner: unknown bot %s (expected one of %s)" % [_only_bot, str(BOT_IDS)])
+		push_error("PlaytestRunner: unknown bot %s (expected one of %s or %s)" % [_only_bot, str(BOT_IDS), CHAOS_BOT_ID])
 		return BOT_IDS.duplicate()
 	return [_only_bot]
 
@@ -608,6 +747,8 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_turns: int) -> TileCard:
 	if EventManager.get_cards_pack_size(is_reward) <= 0:
 		return null
+	if _active_bot == CHAOS_BOT_ID:
+		return _draft_and_pick_pack_chaos(is_reward, round_number, fail_remaining_turns)
 	if _active_bot == "player":
 		return _draft_and_pick_pack_player(is_reward, round_number, fail_remaining_turns)
 	var stream_name := RunRng.build_card_offer_stream_name(
@@ -631,6 +772,32 @@ func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_tur
 		if _can_bot_place_card(card):
 			return card
 	return null
+
+
+func _draft_and_pick_pack_chaos(
+	is_reward: bool,
+	round_number: int,
+	fail_remaining_turns: int
+) -> TileCard:
+	var stream_name := RunRng.build_card_offer_stream_name(
+		round_number,
+		fail_remaining_turns,
+		is_reward,
+		0
+	)
+	var pack := CardLoot.card_draw(
+		EventManager.get_cards_pack_size(is_reward),
+		GameManager.tile_cards_pool,
+		true,
+		RunRng.create_rng(stream_name)
+	)
+	var placeable: Array[TileCard] = []
+	for card: TileCard in pack:
+		if _can_bot_place_card(card):
+			placeable.append(card)
+	if placeable.is_empty():
+		return null
+	return _chaos_weighted_pick(placeable)
 
 
 func _draft_and_pick_pack_player(
@@ -676,7 +843,7 @@ func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: i
 		if not _columnist_locked_has_producer():
 			if (
 				TileCard.is_producer_type(best.type)
-				and best.product in [TileCard.Product.SCORE, TileCard.Product.MULTIPLIER]
+				and best.product in [TileCard.Product.FLAVOUR, TileCard.Product.MULTIPLIER]
 			):
 				return false
 			return true
@@ -750,7 +917,7 @@ func _pick_best_player_card(pack: Array[TileCard]) -> TileCard:
 			if GameManager.current_round <= 3 and not _columnist_locked_has_producer():
 				if (
 					TileCard.is_producer_type(card.type)
-					and card.product in [TileCard.Product.SCORE, TileCard.Product.MULTIPLIER]
+					and card.product in [TileCard.Product.FLAVOUR, TileCard.Product.MULTIPLIER]
 				):
 					value += 80.0
 		if best == null or value > best_value:
@@ -760,6 +927,8 @@ func _pick_best_player_card(pack: Array[TileCard]) -> TileCard:
 
 
 func _shop_current_round() -> Array[String]:
+	if _active_bot == CHAOS_BOT_ID:
+		return _shop_chaos_round()
 	if _active_bot == "player":
 		return _shop_player_round()
 	var bought: Array[String] = []
@@ -957,7 +1126,7 @@ func _card_keep_value(card: TileCard) -> float:
 	match card.product:
 		TileCard.Product.MULTIPLIER:
 			return 40.0 + float(card.base_production_amount) * 20.0
-		TileCard.Product.SCORE:
+		TileCard.Product.FLAVOUR:
 			return 10.0 + float(card.base_production_amount)
 		TileCard.Product.GOLD:
 			return 12.0 + float(card.base_production_amount) * 8.0
@@ -978,7 +1147,7 @@ func _card_player_value(card: TileCard) -> float:
 	if _prefers_off_engine(card):
 		return _best_off_engine_preview_value(card)
 	var engine := _player_engine_index()
-	var energy := _segment_product_count(engine, TileCard.Product.SCORE)
+	var energy := _segment_product_count(engine, TileCard.Product.FLAVOUR)
 	var mult := _segment_product_count(engine, TileCard.Product.MULTIPLIER)
 	var value := 8.0
 	match card.product:
@@ -986,7 +1155,7 @@ func _card_player_value(card: TileCard) -> float:
 			value = 45.0 + float(card.base_production_amount) * 20.0
 			if energy > 0 and mult <= energy:
 				value += 20.0
-		TileCard.Product.SCORE:
+		TileCard.Product.FLAVOUR:
 			value = 18.0 + float(card.base_production_amount)
 			if mult > 0 and energy <= mult:
 				value += 16.0
@@ -1079,7 +1248,7 @@ func _layout_segment_priority(segment_index: int) -> float:
 
 
 func _segment_engine_rating(segment_index: int) -> float:
-	var energy := _map.get_segment_turn_score(segment_index)
+	var energy := _map.get_segment_turn_flavour(segment_index)
 	var additive_mult := _map.get_segment_additive_mult(segment_index)
 	var multiplicative_mult := _map.get_segment_multiplicative_mult(segment_index)
 	var contribution := float(
@@ -1092,7 +1261,7 @@ func _segment_engine_rating(segment_index: int) -> float:
 	)
 	var cards := float(_segment_card_count(segment_index))
 	var producers := float(
-		_segment_product_count(segment_index, TileCard.Product.SCORE)
+		_segment_product_count(segment_index, TileCard.Product.FLAVOUR)
 		+ _segment_product_count(segment_index, TileCard.Product.MULTIPLIER)
 	)
 	var commitment := float(maxi(0, _segment_card_count(segment_index) - 1)) * 35.0
@@ -1140,13 +1309,13 @@ func _can_place_on_locked_column(card: TileCard) -> bool:
 func _columnist_engine_balance_bonus(card: TileCard) -> float:
 	if _locked_engine_segment < 0:
 		return 0.0
-	var energy := _segment_product_count(_locked_engine_segment, TileCard.Product.SCORE)
+	var energy := _segment_product_count(_locked_engine_segment, TileCard.Product.FLAVOUR)
 	var mult := _segment_product_count(_locked_engine_segment, TileCard.Product.MULTIPLIER)
 	match card.product:
 		TileCard.Product.MULTIPLIER:
 			if energy > 0 and mult <= energy:
 				return 24.0
-		TileCard.Product.SCORE:
+		TileCard.Product.FLAVOUR:
 			if mult > 0 and energy <= mult:
 				return 24.0
 	return 8.0
@@ -1159,7 +1328,7 @@ func _columnist_locked_has_producer() -> bool:
 		var card := hex.active_tile_card
 		if card == null or not TileCard.is_producer_type(card.type):
 			continue
-		if card.product in [TileCard.Product.SCORE, TileCard.Product.MULTIPLIER]:
+		if card.product in [TileCard.Product.FLAVOUR, TileCard.Product.MULTIPLIER]:
 			return true
 	return false
 
@@ -1401,7 +1570,7 @@ func _placement_trigger_bonus(card: TileCard, hex: Hex, segment_index: int) -> f
 	match card.product:
 		TileCard.Product.MULTIPLIER:
 			return early_bias * 18.0
-		TileCard.Product.SCORE:
+		TileCard.Product.FLAVOUR:
 			return float(order_index) / float(segment_len) * 12.0
 		_:
 			if card.type == TileCard.TileCardType.KITCHENWARE:
@@ -1554,7 +1723,9 @@ func _can_bot_place_card(card: TileCard) -> bool:
 	if card == null:
 		return false
 	if card.type == TileCard.TileCardType.UTILITY:
-		# Player bot can swap two occupied tiles. Other utilities stay too fiddly.
+		# Chaos swaps any two occupied tiles. Player bot uses a scored swap.
+		if _active_bot == CHAOS_BOT_ID and card.id == "transposition":
+			return _occupied_hexes().size() >= 2
 		if _active_bot == "player" and card.id == "transposition":
 			return _find_player_swap().size() == 2
 		return false
@@ -1570,6 +1741,12 @@ func _can_bot_place_card(card: TileCard) -> bool:
 
 func _place_opening_hand(hand: Array[TileCard]) -> void:
 	match _active_bot:
+		"chaos":
+			var shuffled: Array = hand.duplicate()
+			RunRng.shuffle_with(_next_chaos_rng(), shuffled)
+			for card: TileCard in shuffled:
+				_place_one_card(card)
+			return
 		"player":
 			_init_layout_engine_lock()
 			for card: TileCard in _order_hand_for_line(hand):
@@ -1624,6 +1801,10 @@ func _place_hand_on_largest_segments(hand: Array[TileCard]) -> bool:
 func _place_one_card(card: TileCard) -> bool:
 	if not _can_bot_place_card(card):
 		return false
+	if _active_bot == CHAOS_BOT_ID:
+		if card.id == "transposition":
+			return _play_chaos_transposition()
+		return _place_chaos_card(card)
 	if _active_bot == "player" and card.id == "transposition":
 		var played := _play_transposition()
 		if played:
@@ -1723,12 +1904,12 @@ func _stack_segment_rank() -> Array[int]:
 	for index in _map.get_segment_count():
 		ranked.append(index)
 	ranked.sort_custom(func(a: int, b: int) -> bool:
-		var score_a := _segment_product_count(a, TileCard.Product.SCORE)
-		var score_b := _segment_product_count(b, TileCard.Product.SCORE)
+		var flavour_a := _segment_product_count(a, TileCard.Product.FLAVOUR)
+		var flavour_b := _segment_product_count(b, TileCard.Product.FLAVOUR)
 		var mult_a := _segment_product_count(a, TileCard.Product.MULTIPLIER)
 		var mult_b := _segment_product_count(b, TileCard.Product.MULTIPLIER)
-		var combo_a := score_a + mult_a * 3 + _segment_card_count(a)
-		var combo_b := score_b + mult_b * 3 + _segment_card_count(b)
+		var combo_a := flavour_a + mult_a * 3 + _segment_card_count(a)
+		var combo_b := flavour_b + mult_b * 3 + _segment_card_count(b)
 		if combo_a != combo_b:
 			return combo_a > combo_b
 		var size_a := _map.get_segment_size(a)
@@ -1781,7 +1962,7 @@ func _segment_contribution_snapshot() -> Array[Dictionary]:
 	if _map == null:
 		return rows
 	for index in _map.get_segment_count():
-		var energy := _map.get_segment_turn_score(index)
+		var energy := _map.get_segment_turn_flavour(index)
 		var additive_mult := _map.get_segment_additive_mult(index)
 		var multiplicative_mult := _map.get_segment_multiplicative_mult(index)
 		rows.append({
@@ -1977,7 +2158,7 @@ func _player_swap_weight(card: TileCard) -> int:
 	match card.product:
 		TileCard.Product.MULTIPLIER:
 			return 4
-		TileCard.Product.SCORE:
+		TileCard.Product.FLAVOUR:
 			return 3
 		TileCard.Product.GOLD:
 			return 0
@@ -1996,6 +2177,9 @@ func _play_transposition() -> bool:
 
 
 func _begin_run(character_id: String, seed_text: String) -> void:
+	_run_script_errors.clear()
+	_pending_turn_script_errors.clear()
+	SCRIPT_ERROR_TRACKER.mark()
 	GameManager.skip_presentation = true
 	GameManager.selected_character = PlayerCharacter.get_character_by_id(character_id)
 	GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
@@ -2008,6 +2192,7 @@ func _begin_run(character_id: String, seed_text: String) -> void:
 	_map.generate_terrain()
 	_map.apply_run_start_randomization()
 	_locked_engine_segment = -1
+	_chaos_step = 0
 	# Passives and Spark are optional. Other bots stay passive-free.
 	if _active_bot != "player" or not _use_passives:
 		GameManager.bind_segment_passives_for_debug({})
@@ -2123,15 +2308,15 @@ func _place_on_first_legal(card: TileCard, slots: Array[Hex]) -> bool:
 
 
 func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
-	var score_cards: Array[TileCard] = []
+	var flavour_cards: Array[TileCard] = []
 	var gold_cards: Array[TileCard] = []
 	var mult_cards: Array[TileCard] = []
 	var dish_cards: Array[TileCard] = []
 	var other_cards: Array[TileCard] = []
 	for card: TileCard in hand:
 		match card.product:
-			TileCard.Product.SCORE:
-				score_cards.append(card)
+			TileCard.Product.FLAVOUR:
+				flavour_cards.append(card)
 			TileCard.Product.GOLD:
 				gold_cards.append(card)
 			TileCard.Product.MULTIPLIER:
@@ -2142,7 +2327,7 @@ func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
 				else:
 					other_cards.append(card)
 	var ordered: Array[TileCard] = []
-	ordered.append_array(score_cards)
+	ordered.append_array(flavour_cards)
 	ordered.append_array(gold_cards)
 	ordered.append_array(mult_cards)
 	ordered.append_array(other_cards)
@@ -2170,10 +2355,219 @@ func _cards_on_one_segment_only() -> bool:
 	return used.size() <= 1
 
 
+func _next_chaos_rng() -> RandomNumberGenerator:
+	_chaos_step += 1
+	return RunRng.create_rng("chaos:%d" % _chaos_step)
+
+
+func _chaos_stress_value(card: TileCard) -> float:
+	if card == null:
+		return 0.0
+	if card.id == "transposition":
+		return 90.0
+	match card.type:
+		TileCard.TileCardType.KITCHENWARE:
+			return 70.0
+		TileCard.TileCardType.DISH:
+			return 55.0
+		TileCard.TileCardType.UTILITY:
+			return 45.0
+		_:
+			return 12.0
+
+
+func _chaos_weighted_pick(cards: Array[TileCard]) -> TileCard:
+	if cards.is_empty():
+		return null
+	var total := 0.0
+	var weights: Array[float] = []
+	for card: TileCard in cards:
+		var weight := _chaos_stress_value(card) + _next_chaos_rng().randf() * 8.0
+		weights.append(weight)
+		total += weight
+	var roll := _next_chaos_rng().randf() * total
+	var cursor := 0.0
+	for index in cards.size():
+		cursor += weights[index]
+		if roll <= cursor:
+			return cards[index]
+	return cards[cards.size() - 1]
+
+
+func _occupied_hexes() -> Array[Hex]:
+	var hexes: Array[Hex] = []
+	if _map == null:
+		return hexes
+	for hex: Hex in _map.get_hexes_in_trigger_order():
+		if hex.active_tile_card != null:
+			hexes.append(hex)
+	return hexes
+
+
+func _place_chaos_card(card: TileCard) -> bool:
+	var slots: Array[Hex] = []
+	for hex: Hex in _map.get_hexes_in_trigger_order():
+		if hex.is_placement_blocked() or hex.active_tile_card != null:
+			continue
+		if card.can_place_on_tile(hex):
+			slots.append(hex)
+	if slots.is_empty():
+		return false
+	var hex: Hex = slots[_next_chaos_rng().randi_range(0, slots.size() - 1)]
+	hex.place_tile_card(card)
+	return true
+
+
+func _play_chaos_transposition() -> bool:
+	var occupied := _occupied_hexes()
+	if occupied.size() < 2:
+		return false
+	var rng := _next_chaos_rng()
+	var index_a := rng.randi_range(0, occupied.size() - 1)
+	var index_b := rng.randi_range(0, occupied.size() - 2)
+	if index_b >= index_a:
+		index_b += 1
+	_map.swap_placed_tile_cards(occupied[index_a], occupied[index_b])
+	return true
+
+
+func _shop_chaos_round() -> Array[String]:
+	var bought: Array[String] = []
+	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, 0)
+	var stock := CardLoot.card_draw(
+		MERCHANT_STOCK_COUNT,
+		GameManager.tile_cards_pool,
+		true,
+		RunRng.create_rng(stream_name)
+	)
+	var placeable: Array[TileCard] = []
+	for card: TileCard in stock:
+		if _can_bot_place_card(card) and GoldManager.can_afford(card.get_shop_price()):
+			placeable.append(card)
+	var mix: Array = []
+	for card: TileCard in placeable:
+		mix.append(card)
+	RunRng.shuffle_with(_next_chaos_rng(), mix)
+	for entry: Variant in mix:
+		var card: TileCard = entry
+		var price := card.get_shop_price()
+		if not GoldManager.can_afford(price):
+			continue
+		GoldManager.remove(price)
+		bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
+		_place_one_card(card)
+		if bought.size() >= 3:
+			break
+	return bought
+
+
+func _collect_invariant_failures(score_before: int) -> Array[String]:
+	var reasons: Array[String] = []
+	if _map == null:
+		reasons.append("map is null after resolve")
+		return reasons
+	if _map.turn_resolver != null and _map.turn_resolver.aborted_retrigger_storm:
+		reasons.append(
+			"retrigger storm aborted at %d activations"
+			% HexTurnResolver.SKIP_PRESENTATION_STORM_LIMIT
+		)
+	if GoldManager.amount < 0:
+		reasons.append("gold went negative (%d)" % GoldManager.amount)
+	if GoldManager.merchant_tokens < 0:
+		reasons.append("merchant tokens went negative (%d)" % GoldManager.merchant_tokens)
+	if GoldManager.merchant_tokens > GoldManager.MAX_MERCHANT_TOKENS:
+		reasons.append("merchant tokens above cap (%d)" % GoldManager.merchant_tokens)
+	if GameManager.remaining_turns < 0:
+		reasons.append("remaining_turns went negative (%d)" % GameManager.remaining_turns)
+
+	var expected := 0
+	var seen_instances: Dictionary = {}
+	for hex: Hex in _map.get_hexes_in_trigger_order():
+		var card := hex.active_tile_card
+		if card == null:
+			continue
+		if card.id.strip_edges().is_empty():
+			reasons.append("placed card with empty id at %s" % str(hex.coordinates))
+		var instance_id := card.get_instance_id()
+		if seen_instances.has(instance_id):
+			reasons.append(
+				"same card instance on %s and %s"
+				% [str(seen_instances[instance_id]), str(hex.coordinates)]
+			)
+		else:
+			seen_instances[instance_id] = hex.coordinates
+		var lookup := _map.get_hex_for_tile_card(card)
+		if lookup != hex:
+			reasons.append("get_hex_for_tile_card mismatch for %s" % card.id)
+		var segment_index := _map.get_segment_index(hex.coordinates)
+		if segment_index < 0 or segment_index >= _map.get_segment_count():
+			reasons.append("hex %s has segment_index %d" % [str(hex.coordinates), segment_index])
+
+	for index in _map.get_segment_count():
+		var occupied := _segment_card_count(index)
+		var size := _map.get_segment_size(index)
+		if occupied > size:
+			reasons.append("segment %d has %d cards on %d tiles" % [index, occupied, size])
+		var flavour := _map.get_segment_turn_flavour(index)
+		var additive := _map.get_segment_additive_mult(index)
+		var multiplicative := _map.get_segment_multiplicative_mult(index)
+		if flavour < 0:
+			reasons.append("segment %d flavour %d" % [index, flavour])
+		if is_nan(additive) or is_inf(additive) or additive < 0.0:
+			reasons.append("segment %d additive mult %s" % [index, str(additive)])
+		if is_nan(multiplicative) or is_inf(multiplicative) or multiplicative < 0.0:
+			reasons.append("segment %d multiplicative mult %s" % [index, str(multiplicative)])
+		var contribution := GameManager.compute_segment_turn_contribution(
+			index,
+			flavour,
+			additive,
+			multiplicative
+		)
+		if contribution < 0:
+			reasons.append("segment %d contribution %d" % [index, contribution])
+		expected += contribution
+
+	var storm := _map.turn_resolver != null and _map.turn_resolver.aborted_retrigger_storm
+	var delta := GameManager.total_round_score - score_before
+	if not storm and delta != expected:
+		reasons.append("turn score delta %d != segment sum %d" % [delta, expected])
+	for script_err: String in _pending_turn_script_errors:
+		reasons.append("script error: %s" % script_err)
+	return reasons
+
+
+func _print_fuzz_summary() -> void:
+	print("[playtest] --- fuzz by layout ---")
+	for character_id: String in _layouts:
+		var runs := 0
+		var fails := 0
+		var storms := 0
+		for case_data: Dictionary in _cases:
+			if str(case_data.get("suite", "")) != "fuzz":
+				continue
+			if str(case_data.get("character", "")) != character_id:
+				continue
+			runs += 1
+			if not bool(case_data.get("passed", false)):
+				fails += 1
+			var details: Dictionary = case_data.get("details", {})
+			storms += int(details.get("storms", 0))
+		if runs <= 0:
+			continue
+		print(
+			"[playtest]   %s  %d/%d clean  storms=%d  invariant-fails=%d"
+			% [character_id, runs - fails, runs, storms, fails]
+		)
+
+
 func _resolve_turn() -> void:
 	EventBus.turn_ended.emit()
 	while GameManager.is_processing_turn:
 		await get_tree().process_frame
+	_pending_turn_script_errors = SCRIPT_ERROR_TRACKER.collect_new()
+	for script_err: String in _pending_turn_script_errors:
+		_run_script_errors.append(script_err)
+		print("[playtest]   SCRIPT %s" % script_err)
 
 
 func _seed_for(prefix: String, character_id: String, index: int) -> String:
@@ -2239,6 +2633,13 @@ func _record(
 	reasons: Array[String],
 	details: Dictionary
 ) -> void:
+	var script_errors := SCRIPT_ERROR_TRACKER.collect_new()
+	for script_err: String in script_errors:
+		_run_script_errors.append(script_err)
+	for script_err: String in _run_script_errors:
+		reasons.append("script error: %s" % script_err)
+	if not _run_script_errors.is_empty():
+		passed = false
 	if not passed:
 		_failed += 1
 	_cases.append({

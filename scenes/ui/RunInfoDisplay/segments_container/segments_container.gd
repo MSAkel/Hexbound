@@ -293,7 +293,7 @@ func _sync_rows_from_tile_map(animate: bool) -> void:
 
 	for child in segment_results_list.get_children():
 		var course_index: int = child.course_index
-		var flavour := tile_map.get_segment_turn_score(course_index)
+		var flavour := tile_map.get_segment_turn_flavour(course_index)
 		var additive_mult := tile_map.get_segment_additive_mult(course_index)
 		var multiplicative_mult := tile_map.get_segment_multiplicative_mult(course_index)
 		var rating := GameManager.compute_segment_turn_contribution(

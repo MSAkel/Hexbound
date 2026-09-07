@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://dklwprbruhqgo"]
+
+[ext_resource type="Texture2D" uid="uid://bcq5x3x5nr1ro" path="res://assets/icons/food/ingredients/steak.png" id="1_yg0m3"]
+[ext_resource type="Script" uid="uid://bgog0qghmjhgd" path="res://resources/spot_cards/ingredients/proteins/steak/steak.gd" id="2_o0xgm"]
+
+[resource]
+script = ExtResource("2_o0xgm")
+base_production_amount = 10
+rarity = 2
+product = 1
+ingredient_kind = 4
+id = "steak"
+name = "Steak"
+icon = ExtResource("1_yg0m3")
+description = "+10 Flavour per Seasoning on this course. Max +40"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

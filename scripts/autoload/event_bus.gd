@@ -33,7 +33,7 @@ signal total_round_score_changed()
 ## Per-segment flavour, additive mult, multiplicative mult, rating, and gold during turn resolution.
 signal segment_turn_results_changed(
 	segment_index: int,
-	score: int,
+	flavour: int,
 	additive_mult: float,
 	multiplicative_mult: float,
 	total_score: int,

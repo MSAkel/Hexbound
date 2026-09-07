@@ -23,8 +23,8 @@ var _trigger_order_cache: Array[Vector2i] = []
 var _trigger_order_cache_valid: bool = false
 # Vector2i -> segment index, filled whenever segments are rebuilt.
 var _segment_index_by_coords: Dictionary = {}
-# Per-segment score and gold produced during the current turn resolution.
-var _segment_turn_scores: Array[int] = []
+# Per-segment Flavour and Gold produced during the current turn resolution.
+var _segment_turn_flavours: Array[int] = []
 var _segment_additive_mult: Array[float] = []
 var _segment_multiplicative_mult: Array[float] = []
 var _segment_turn_gold: Array[int] = []
@@ -238,7 +238,7 @@ func get_tile_card_in_relative_segment(
 # Clears per-segment turn totals so the next resolution starts from zero.
 func reset_turn_results() -> void:
 	var segment_count := build_segments().size()
-	_segment_turn_scores.resize(segment_count)
+	_segment_turn_flavours.resize(segment_count)
 	_segment_additive_mult.resize(segment_count)
 	_segment_multiplicative_mult.resize(segment_count)
 	_segment_turn_gold.resize(segment_count)
@@ -247,8 +247,8 @@ func reset_turn_results() -> void:
 	_segment_received_relay.resize(segment_count)
 	_segment_breaks.resize(segment_count)
 	for i in segment_count:
-		_segment_turn_scores[i] = 0
-		# Base additive mult is 1 so score is unchanged when no mult runes fire in a segment.
+		_segment_turn_flavours[i] = 0
+		# Base additive mult is 1 so Flavour is unchanged when no mult cards fire in a segment.
 		_segment_additive_mult[i] = 1.0
 		# Base multiplicative mult is 1 so empty segments keep Flavour unchanged.
 		_segment_multiplicative_mult[i] = 1.0
@@ -259,11 +259,11 @@ func reset_turn_results() -> void:
 		_segment_breaks[i] = 0
 
 
-# Adds score produced by a rune on the given segment index.
-func add_segment_turn_score(segment_index: int, amount: int) -> void:
-	if segment_index < 0 or segment_index >= _segment_turn_scores.size():
+# Adds Flavour produced by a card on the given segment index.
+func add_segment_turn_flavour(segment_index: int, amount: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_turn_flavours.size():
 		return
-	_segment_turn_scores[segment_index] += amount
+	_segment_turn_flavours[segment_index] += amount
 
 
 func add_segment_additive_mult(segment_index: int, amount: float) -> void:
@@ -286,10 +286,10 @@ func add_segment_turn_gold(segment_index: int, amount: int) -> void:
 	_segment_turn_gold[segment_index] += amount
 
 
-func get_segment_turn_score(segment_index: int) -> int:
-	if segment_index < 0 or segment_index >= _segment_turn_scores.size():
+func get_segment_turn_flavour(segment_index: int) -> int:
+	if segment_index < 0 or segment_index >= _segment_turn_flavours.size():
 		return 0
-	return _segment_turn_scores[segment_index]
+	return _segment_turn_flavours[segment_index]
 
 func get_segment_additive_mult(segment_index: int) -> float:
 	if segment_index < 0 or segment_index >= _segment_additive_mult.size():
@@ -371,7 +371,7 @@ func get_segment_breaks(segment_index: int) -> int:
 
 func capture_turn_results() -> Dictionary:
 	return {
-		"scores": _segment_turn_scores.duplicate(),
+		"flavours": _segment_turn_flavours.duplicate(),
 		"additive_mults": _segment_additive_mult.duplicate(),
 		"multiplicative_mults": _segment_multiplicative_mult.duplicate(),
 		"gold": _segment_turn_gold.duplicate(),
@@ -380,21 +380,22 @@ func capture_turn_results() -> Dictionary:
 
 
 func apply_turn_results(state: Dictionary) -> void:
-	var scores: Array = state.get("scores", [])
+	# "scores" keeps turn snapshots from older saves loadable after the terminology rename.
+	var flavours: Array = state.get("flavours", state.get("scores", []))
 	var additive_mults: Array = state.get("additive_mults", state.get("multipliers", []))
 	var multiplicative_mults: Array = state.get("multiplicative_mults", [])
 	var gold_amounts: Array = state.get("gold", [])
 	var triggers: Array = state.get("triggers", [])
 	var segment_count := build_segments().size()
 
-	_segment_turn_scores.resize(segment_count)
+	_segment_turn_flavours.resize(segment_count)
 	_segment_additive_mult.resize(segment_count)
 	_segment_multiplicative_mult.resize(segment_count)
 	_segment_turn_gold.resize(segment_count)
 	_segment_turn_triggers.resize(segment_count)
 
 	for i in segment_count:
-		_segment_turn_scores[i] = int(scores[i]) if i < scores.size() else 0
+		_segment_turn_flavours[i] = int(flavours[i]) if i < flavours.size() else 0
 		_segment_additive_mult[i] = float(additive_mults[i]) if i < additive_mults.size() else 1.0
 		_segment_multiplicative_mult[i] = float(multiplicative_mults[i]) if i < multiplicative_mults.size() else 1.0
 		_segment_turn_gold[i] = int(gold_amounts[i]) if i < gold_amounts.size() else 0

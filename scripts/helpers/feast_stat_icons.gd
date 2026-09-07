@@ -34,7 +34,7 @@ const LOADING_SPLASH: Array[Texture2D] = [
 
 static func get_pile_icon(product: TileCard.Product) -> Texture2D:
 	match product:
-		TileCard.Product.SCORE:
+		TileCard.Product.FLAVOUR:
 			return FLAVOUR
 		TileCard.Product.GOLD:
 			return GOLD

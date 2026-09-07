@@ -2,7 +2,7 @@ extends TileCard
 
 ## The Following Flavour permanently gains +10
 func _on_activate_tile_card(tile: Hex) -> void:
-	var targets := _get_following_same_segment_producers_by_product(tile, Product.SCORE)
+	var targets := _get_following_same_segment_producers_by_product(tile, Product.FLAVOUR)
 	for rune: TileCard in targets:
 		rune.bonus_production_amount += base_production_amount
 		var target_hex := tile.map.get_hex_for_tile_card(rune)
@@ -12,4 +12,4 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_following_same_segment_producers_by_product(hover_tile, Product.SCORE)
+	return _coords_for_following_same_segment_producers_by_product(hover_tile, Product.FLAVOUR)

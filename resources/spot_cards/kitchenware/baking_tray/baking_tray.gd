@@ -1,7 +1,7 @@
 extends TileCard
 ## Pass 45% of this course's Flavour pile and 20% of its bonus Mult to the next course.
 
-const ENERGY_RELAY_FRACTION := 0.45
+const FLAVOUR_RELAY_FRACTION := 0.45
 const MULT_RELAY_FRACTION := 0.2
 
 
@@ -10,15 +10,15 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if next_segment_index < 0:
 		failed_tile_card_text(tile)
 		return
-	var energy_relayed := int(round(float(_get_segment_turn_score(tile)) * ENERGY_RELAY_FRACTION))
+	var flavour_relayed := int(round(float(_get_segment_turn_flavour(tile)) * FLAVOUR_RELAY_FRACTION))
 	# Empty-segment Mult stays 1.0. Relay a slice of bonus Mult, not the implicit 1.0 base.
 	var mult_bonus := maxf(0.0, _get_segment_additive_mult(tile) - 1.0)
 	var mult_relayed := mult_bonus * MULT_RELAY_FRACTION
-	if energy_relayed <= 0 and mult_relayed <= 0.0:
+	if flavour_relayed <= 0 and mult_relayed <= 0.0:
 		failed_tile_card_text(tile)
 		return
-	if energy_relayed > 0:
-		add_score_to_segment(tile, next_segment_index, energy_relayed)
+	if flavour_relayed > 0:
+		add_flavour_to_segment(tile, next_segment_index, flavour_relayed)
 	if mult_relayed > 0.0:
 		add_additive_mult_to_segment(tile, next_segment_index, mult_relayed)
 

@@ -91,7 +91,7 @@ func _sync_from_tile_map() -> void:
 		_apply_results(0, 1, 1, 0, false)
 		return
 
-	var flavour := tile_map.get_segment_turn_score(course_index)
+	var flavour := tile_map.get_segment_turn_flavour(course_index)
 	var additive_mult := tile_map.get_segment_additive_mult(course_index)
 	var multiplicative_mult := tile_map.get_segment_multiplicative_mult(course_index)
 	_apply_results(flavour, additive_mult, multiplicative_mult, 0, false)
@@ -460,7 +460,7 @@ func _course_has_flavour() -> bool:
 	var tile_map := _get_tile_map()
 	if tile_map == null or course_index < 0:
 		return false
-	return tile_map.get_segment_turn_score(course_index) > 0
+	return tile_map.get_segment_turn_flavour(course_index) > 0
 
 
 func _set_reveal_active(active: bool) -> void:

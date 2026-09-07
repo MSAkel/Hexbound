@@ -11,7 +11,7 @@ enum TileCardRarity {
 }
 
 enum TileCardType {
-	## Seated Ingredients. Core (Product.SCORE → Flavour) and Seasonings (Product.MULTIPLIER → Mult).
+	## Seated Ingredients. Core (Product.FLAVOUR) and Seasonings (Product.MULTIPLIER).
 	INGREDIENT,
 	KITCHENWARE,
 	UTILITY,
@@ -36,7 +36,7 @@ static func matches_type_filter(card_type: TileCardType, filter_type: Variant) -
 
 enum Product {
 	GOLD,
-	SCORE, ## Flavour
+	FLAVOUR,
 	MULTIPLIER, ## Mult
 	HYBRID,
 	NONE,
@@ -120,7 +120,7 @@ var _activation_output_scale: float = 1.0
 static var _copied_activation_stack: Array[TileCard] = []
 # True when this activation consumed Double. Checked by cards that pay extra on Double.
 var _activation_was_empowered: bool = false
-# Flavour this instance paid with add_score this Hour. Dishes read the prefix snapshot.
+# Flavour this instance paid with add_flavour this Hour. Dishes read the prefix snapshot.
 var hour_flavour_produced: int = 0
 # Additive Mult this instance paid this Hour, including relays.
 var hour_additive_mult_produced: float = 0.0
@@ -178,7 +178,7 @@ func get_stat_kind() -> StatKind:
 	if not is_producer_type(type):
 		return StatKind.NONE
 	match product:
-		Product.SCORE:
+		Product.FLAVOUR:
 			return StatKind.FLAVOUR
 		Product.MULTIPLIER:
 			return StatKind.MULT
@@ -580,12 +580,12 @@ func get_trigger_preview_invalid_coords(_hover_tile: Hex) -> Array[Vector2i]:
 
 
 #region --- Flavour, Gold, Mult, and floating text helpers ---
-func add_score(tile: Hex, base_points: Variant) -> void:
+func add_flavour(tile: Hex, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
 	hour_flavour_produced += points
-	tile.map.add_turn_score_for_tile(tile, points)
+	tile.map.add_turn_flavour_for_tile(tile, points)
 	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR)
-	CondimentManager.relay_product_if_needed(tile, Product.SCORE, points)
+	CondimentManager.relay_product_if_needed(tile, Product.FLAVOUR, points)
 
 func add_gold(tile: Hex, base_amount: Variant) -> void:
 	if not EventManager.can_gain_gold():
@@ -648,13 +648,13 @@ func multiply_multiplicative_mult_to_segment(tile: Hex, segment_index: int, fact
 
 
 # Credits another course's Flavour. Float stays on this spot.
-func add_score_to_segment(tile: Hex, segment_index: int, base_points: Variant) -> void:
+func add_flavour_to_segment(tile: Hex, segment_index: int, base_points: Variant) -> void:
 	if EventManager.are_relays_blocked():
 		failed_tile_card_text(tile)
 		return
 	var points := int(round(float(base_points) * _activation_output_scale))
 	hour_flavour_produced += points
-	tile.map.add_turn_score_for_segment(segment_index, points)
+	tile.map.add_turn_flavour_for_segment(segment_index, points)
 	tile.map.mark_segment_received_relay(segment_index)
 	_create_floating_text(tile, "+%d →" % points, Color.AQUA, ICON_FLAVOUR)
 
@@ -1021,8 +1021,8 @@ func _get_earlier_segment_gold_preview(tile: Hex) -> int:
 
 
 ## Flavour piled on this course so far this hour, before Mult.
-func _get_segment_turn_score(tile: Hex) -> int:
-	return tile.map.get_segment_turn_score(_get_segment_index(tile))
+func _get_segment_turn_flavour(tile: Hex) -> int:
+	return tile.map.get_segment_turn_flavour(_get_segment_index(tile))
 
 
 ## Additive Mult piled on this course so far this hour, including the 1.0 base.

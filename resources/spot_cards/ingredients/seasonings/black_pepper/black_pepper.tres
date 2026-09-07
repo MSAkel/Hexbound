@@ -2,14 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://ctmlqfppkdxgx" path="res://assets/icons/food/seasonings/black_pepper.png" id="1_07jkk"]
 [ext_resource type="Script" uid="uid://t464sweri7r2" path="res://resources/spot_cards/ingredients/seasonings/black_pepper/black_pepper.gd" id="2_k1sei"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_sm408"]
 
 [resource]
 script = ExtResource("2_k1sei")
-ingredient_kind = 4
 base_production_amount = 4
 rarity = 1
 product = 2
+ingredient_kind = 5
 id = "black_pepper"
 name = "Black Pepper"
 icon = ExtResource("1_07jkk")

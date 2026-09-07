@@ -2,13 +2,12 @@
 
 [ext_resource type="Texture2D" uid="uid://dkj5bvsqku8xr" path="res://assets/icons/food/seasonings/cumin.png" id="1_mioiv"]
 [ext_resource type="Script" uid="uid://dgtvnyyf1awb8" path="res://resources/spot_cards/ingredients/seasonings/cumin/cumin.gd" id="2_lcem1"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_7f2ac"]
 
 [resource]
 script = ExtResource("2_lcem1")
-ingredient_kind = 4
 base_production_amount = 5
 product = 2
+ingredient_kind = 5
 stat_kind = 6
 id = "cumin"
 name = "Cumin"

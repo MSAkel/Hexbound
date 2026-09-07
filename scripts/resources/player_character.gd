@@ -54,7 +54,7 @@ static func get_starting_hand_cards(character: CharacterDefinition) -> Array[Til
 		return hand
 
 	hand.append_array(_get_guaranteed_starter_cards())
-	hand.append_array(_draw_flat_score_starter(1))
+	hand.append_array(_draw_flat_flavour_starter(1))
 	hand.append_array(_get_random_common_cards(2, TileCard.TileCardType.KITCHENWARE))
 
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
@@ -81,15 +81,15 @@ static func _get_guaranteed_starter_cards() -> Array[TileCard]:
 	return cards
 
 
-# Common score producers tagged for reliable turn-1 output.
-static func _get_flat_score_starter_pool() -> Array[TileCard]:
+# Common Flavour producers tagged for reliable turn-1 output.
+static func _get_flat_flavour_starter_pool() -> Array[TileCard]:
 	var pool: Array[TileCard] = []
 	for card in GameManager.tile_cards_pool:
 		if card.rarity != TileCard.TileCardRarity.COMMON:
 			continue
 		if card.type != TileCard.TileCardType.INGREDIENT:
 			continue
-		if card.product != TileCard.Product.SCORE:
+		if card.product != TileCard.Product.FLAVOUR:
 			continue
 		if not card.starting_hand_eligible:
 			continue
@@ -101,9 +101,9 @@ static func _get_flat_score_starter_pool() -> Array[TileCard]:
 	return pool
 
 
-# Draw score producers from the flat starter pool. Falls back to any common score producer.
-static func _draw_flat_score_starter(count: int) -> Array[TileCard]:
-	var flat_pool := _get_flat_score_starter_pool()
+# Draw Flavour producers from the flat starter pool. Falls back to any common Flavour producer.
+static func _draw_flat_flavour_starter(count: int) -> Array[TileCard]:
+	var flat_pool := _get_flat_flavour_starter_pool()
 	if not flat_pool.is_empty():
 		return CardLoot.draw_filtered(
 			count,
@@ -111,11 +111,11 @@ static func _draw_flat_score_starter(count: int) -> Array[TileCard]:
 			TileCard.TileCardRarity.COMMON,
 			TileCard.TileCardType.INGREDIENT,
 			true,
-			TileCard.Product.SCORE
+			TileCard.Product.FLAVOUR
 		)
 
-	push_warning("No flat-score starter cards tagged. Falling back to any common score producer.")
-	return _get_random_common_cards(count, TileCard.TileCardType.INGREDIENT, TileCard.Product.SCORE)
+	push_warning("No flat-Flavour starter cards tagged. Falling back to any common Flavour producer.")
+	return _get_random_common_cards(count, TileCard.TileCardType.INGREDIENT, TileCard.Product.FLAVOUR)
 
 
 # Remove support cards before optional producers. Never discard locked starters.

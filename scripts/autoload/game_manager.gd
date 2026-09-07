@@ -297,7 +297,7 @@ func register_tile_card_activation(rune: TileCard) -> void:
 		MetaProgressionManager.add_lifetime_triggers(1)
 		if TileCard.is_producer_type(rune.type):
 			MetaProgressionManager.add_producer_trigger()
-			if rune.product == TileCard.Product.SCORE:
+			if rune.product == TileCard.Product.FLAVOUR:
 				MetaProgressionManager.note_energy_card_triggers(rune.run_trigger_count)
 			elif rune.product == TileCard.Product.MULTIPLIER:
 				MetaProgressionManager.note_mult_card_triggers(rune.run_trigger_count)
@@ -370,14 +370,14 @@ func get_passives_for_segment(segment_index: int) -> Array[SegmentPassive]:
 ## Rating is Flavour x (additive mult x multiplicative mult), rounded at the segment.
 func get_segment_turn_contribution_breakdown(
 	_segment_index: int,
-	energy: int,
+	flavour: int,
 	additive_mult: float,
 	multiplicative_mult: float = 1.0
 ) -> Dictionary:
 	var combined_mult := additive_mult * multiplicative_mult
-	var contribution := int(round(float(energy) * combined_mult))
+	var contribution := int(round(float(flavour) * combined_mult))
 	return {
-		"display_energy": energy,
+		"display_flavour": flavour,
 		"display_additive_mult": additive_mult,
 		"display_multiplicative_mult": multiplicative_mult,
 		"contribution": contribution,
@@ -386,14 +386,14 @@ func get_segment_turn_contribution_breakdown(
 
 func compute_segment_turn_contribution(
 	segment_index: int,
-	energy: int,
+	flavour: int,
 	additive_mult: float,
 	multiplicative_mult: float = 1.0
 ) -> int:
 	return int(
 		get_segment_turn_contribution_breakdown(
 			segment_index,
-			energy,
+			flavour,
 			additive_mult,
 			multiplicative_mult
 		)["contribution"]
