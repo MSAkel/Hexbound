@@ -9,7 +9,6 @@ recipe_vegetable_count = 2
 recipe_kitchenware_count = 1
 type = 3
 product = 1
-stat_kind = 1
 id = "salad"
 name = "Salad"
 icon = ExtResource("1_6y8cb")

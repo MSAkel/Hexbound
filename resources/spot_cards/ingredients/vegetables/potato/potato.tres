@@ -7,7 +7,7 @@
 
 [resource]
 script = ExtResource("2_tslg8")
-ingredient_kind = 1
+ingredient_tags = Array[StringName]([&"vegetable"])
 rarity = 1
 product = 1
 id = "potato"

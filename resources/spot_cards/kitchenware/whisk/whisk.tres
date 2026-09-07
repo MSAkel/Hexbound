@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_qg46y")
 type = 1
-stat_kind = 4
+support_role = 1
 id = "whisk"
 name = "Whisk"
 icon = ExtResource("1_4lioc")

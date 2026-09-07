@@ -514,11 +514,12 @@ func create_floating_text(
 	text: String,
 	color: Color = Color.WHITE,
 	icon: Texture2D = null,
-	target_icon: Texture2D = null
+	target_icon: Texture2D = null,
+	doubled: bool = false
 ) -> void:
 	if GameManager.should_skip_turn_presentation():
 		return
-	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon)
+	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon, doubled)
 	floating_text.play_float_and_free()
 
 
@@ -527,12 +528,13 @@ func _spawn_floating_text(
 	text: String,
 	color: Color,
 	icon: Texture2D = null,
-	target_icon: Texture2D = null
+	target_icon: Texture2D = null,
+	doubled: bool = false
 ) -> FloatingText:
 	var floating_text := FLOATING_TEXT_SCENE.instantiate() as FloatingText
 	floating_text.position = pos
 	get_tree().current_scene.add_child(floating_text)
-	floating_text.set_text(text, color, icon, target_icon)
+	floating_text.set_text(text, color, icon, target_icon, doubled)
 	return floating_text
 
 

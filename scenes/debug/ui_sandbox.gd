@@ -24,8 +24,10 @@ func _bootstrap_run_state() -> void:
 		"current_round": 7,
 		"highest_round_score": 4200,
 		"total_round_score": 1850,
-		"total_rune_activations": 42,
 		"remaining_turns": 2,
+	})
+	RunLedger.apply_run_state({
+		"total_fires": 42,
 	})
 
 	GoldManager.apply_run_state({

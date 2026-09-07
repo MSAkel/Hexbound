@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_script")
 type = 1
-stat_kind = 5
+support_role = 2
 id = "peeler"
 name = "Peeler"
 icon = ExtResource("1_xf1wp")

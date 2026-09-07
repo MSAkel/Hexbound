@@ -7,7 +7,7 @@
 script = ExtResource("2_eelmb")
 base_production_amount = 2
 product = 2
-ingredient_kind = 5
+ingredient_tags = Array[StringName]([&"seasoning"])
 id = "chili_flakes"
 name = "Chili Flakes"
 icon = ExtResource("1_vg4bh")

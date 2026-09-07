@@ -11,12 +11,12 @@ const MAX_TURNS_PER_ROUND := 4
 var current_round: int = 1
 ## Highest completed/current round score reached during this run.
 var highest_round_score: int = 0
-## Total tile card activations this run, shown on the game-over screen.
-var _total_rune_activations: int = 0
 
+## Total tile card activations this run, shown on the game-over screen.
+## Stored on RunLedger so payoff tallies and history share one run fire count.
 var total_rune_activations: int:
 	get:
-		return _total_rune_activations
+		return RunLedger.total_fires
 
 #region Turn state
 ## Remaining turns in the current round (counts down from get_max_turns_per_round()).
@@ -89,8 +89,8 @@ var tile_cards_pool: Array[TileCard] = []
 
 #region TileCard activation tracking
 
-## Cleared at turn start, filled as each rune resolves during turn processing.
-var _activated_tile_cards_this_turn: Array[TileCard] = []
+## This-Hour fire counts keyed by card instance. Used for resolve identity, not payoff tallies.
+var _activation_counts_this_turn: Dictionary = {}
 ## Incremented on each turn_started, placed runes use this to gate once-per-turn permanent effects.
 var turn_stamp: int = 0
 
@@ -205,7 +205,7 @@ func _wait_for_round_score_count_finished() -> void:
 func _on_turn_started() -> void:
 	_reset_turn_presentation_skip()
 	turn_stamp += 1
-	_activated_tile_cards_this_turn.clear()
+	_activation_counts_this_turn.clear()
 	_current_turn_trigger_count = 0
 	GoldManager.reset_turn_tracking()
 	passive_runtime.reset_turn()
@@ -286,11 +286,12 @@ func _apply_round_state() -> void:
 #endregion
 
 #region TileCard activation
-## Register a tile card activation from tile_card.gd activate_tile_card() 
+## Register a tile card activation from tile_card.gd activate_tile_card()
 ## for it to be read by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
 func register_tile_card_activation(rune: TileCard) -> void:
-	_activated_tile_cards_this_turn.append(rune)
-	_total_rune_activations += 1
+	var hour_count := int(_activation_counts_this_turn.get(rune, 0)) + 1
+	_activation_counts_this_turn[rune] = hour_count
+	var is_retrigger := hour_count >= 2
 	_current_turn_trigger_count += 1
 	_run_peak_triggers_single_turn = maxi(_run_peak_triggers_single_turn, _current_turn_trigger_count)
 	if not RunRng.is_unlock_progress_disabled():
@@ -305,21 +306,23 @@ func register_tile_card_activation(rune: TileCard) -> void:
 			MetaProgressionManager.add_support_trigger()
 		elif rune.type == TileCard.TileCardType.DISH:
 			MetaProgressionManager.add_dish_trigger()
-		if _activated_tile_cards_this_turn.count(rune) >= 2:
+		if is_retrigger:
 			if TileCard.is_producer_type(rune.type):
 				MetaProgressionManager.add_producer_retrigger()
 			elif rune.type == TileCard.TileCardType.KITCHENWARE:
 				MetaProgressionManager.add_support_retrigger()
+	# Ledger owns run fire tallies. Pass retrigger so it does not scan Hour identity again.
+	RunLedger.record_card_fired(rune, is_retrigger)
 
 ## Read rune activation to check if it has already fired this turn.
 ## Used by hex_tile_map.gd can_consume_next_tile_card_in_trigger_order()
 func has_tile_card_activated_this_turn(rune: TileCard) -> bool:
-	return _activated_tile_cards_this_turn.has(rune)
+	return int(_activation_counts_this_turn.get(rune, 0)) > 0
 
 
 ## How many times this tile card has activated so far this turn (includes the current one).
 func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
-	return _activated_tile_cards_this_turn.count(rune)
+	return int(_activation_counts_this_turn.get(rune, 0))
 
 #endregion
 
@@ -506,13 +509,12 @@ func reset_for_new_run() -> void:
 	RoundFlow.reset_for_new_run()
 	current_round = 1
 	highest_round_score = 0
-	_total_rune_activations = 0
 	_remaining_turns = MAX_TURNS_PER_ROUND
 	_is_processing_turn = false
 	required_score = ScoreProgression.get_required_score(current_round)
 	_total_round_score = 0
 	_turn_score = 0
-	_activated_tile_cards_this_turn.clear()
+	_activation_counts_this_turn.clear()
 	turn_stamp = 0
 	game_speed = GameSettings.game_speed
 	clear_run_peak_tracking()
@@ -520,6 +522,7 @@ func reset_for_new_run() -> void:
 	if selected_character != null:
 		apply_active_segment_passives(selected_character.id)
 	CondimentManager.reset_for_new_run()
+	RunLedger.reset_for_new_run()
 
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.
@@ -554,7 +557,6 @@ func capture_run_state() -> Dictionary:
 	return {
 		"highest_round_score": highest_round_score,
 		"current_round": current_round,
-		"total_rune_activations": _total_rune_activations,
 		"remaining_turns": _remaining_turns,
 		# Always idle in a checkpoint. Restoring mid-resolve would freeze input.
 		"is_processing_turn": false,
@@ -573,14 +575,13 @@ func capture_run_state() -> Dictionary:
 func apply_run_state(state: Dictionary) -> void:
 	current_round = int(state.get("current_round", 1))
 	highest_round_score = int(state.get("highest_round_score", state.get("total_round_score", 0)))
-	_total_rune_activations = int(state.get("total_rune_activations", 0))
 	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_ROUND))
 	_is_processing_turn = false
 	required_score = int(state.get("required_score", ScoreProgression.get_required_score(current_round)))
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
 	turn_stamp = int(state.get("turn_stamp", 0))
-	_activated_tile_cards_this_turn.clear()
+	_activation_counts_this_turn.clear()
 	game_speed = float(state.get("game_speed", 1.0))
 	_run_peak_gold_held = int(state.get("peak_gold_held", 0))
 	_run_peak_segment_score_single_turn = int(state.get("peak_segment_score_single_turn", 0))

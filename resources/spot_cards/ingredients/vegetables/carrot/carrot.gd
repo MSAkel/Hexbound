@@ -7,7 +7,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	## Permanent +5 applies after scoring, so this fire still uses the current amount.
 	activation_count += 1
 	if activation_count % 2 == 0:
-		bonus_production_amount += 5
+		_grow_permanent(tile, self, 5.0)
 
 
 func capture_placed_save_state() -> Dictionary:

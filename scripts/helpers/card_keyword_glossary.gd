@@ -37,18 +37,13 @@ class Keyword:
 static var _keywords: Array[Keyword] = []
 static var _match_regex: RegEx = null
 
-const COLOR_FLAVOUR := Color(0.0, 0.52, 0.66)
-const COLOR_RATING := Color(0.0, 0.42, 0.55)
-const COLOR_MULT := Color(0.52, 0.16, 0.48)
-const COLOR_DOUBLE := Color(0.78, 0.34, 0.0)
-const COLOR_FOLLOWING := Color(0.18, 0.52, 0.36)
-const COLOR_AGAIN := Color(0.45, 0.35, 0.72)
-const COLOR_SPOIL := Color(0.72, 0.22, 0.22)
-const COLOR_PASS := Color(0.28, 0.48, 0.62)
-const COLOR_INGREDIENT := Color(0.42, 0.52, 0.28)
-const COLOR_HOUR := Color(0.55, 0.42, 0.28)
-const COLOR_DAY := Color(0.35, 0.48, 0.62)
-
+const COLOR_FLAVOUR := Color("#0085a8")
+const COLOR_MULT := Color("#85297a")
+const COLOR_DOUBLE := Color("#E26110")
+const COLOR_FOLLOWING := Color("#2e855c")
+const COLOR_SPOIL := Color("#b83838")
+const COLOR_PASS := Color("#477a9e")
+const COLOR_INGREDIENT := Color("#6b8547")
 
 static func _static_init() -> void:
 	# Longer tokens are matched before shorter ones.

@@ -193,6 +193,7 @@ func save_current_run() -> void:
 		"gold": GoldManager.capture_run_state(),
 		"rerolls": RerollManager.capture_run_state(),
 		"condiments": CondimentManager.capture_run_state(),
+		"run_ledger": RunLedger.capture_run_state(),
 		"events": EventManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
 		"run_rng": RunRng.capture_run_state(),
@@ -245,6 +246,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	RunRng.apply_run_state(payload.get("run_rng", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	CondimentManager.apply_run_state(payload.get("condiments", {}))
+	RunLedger.apply_run_state(payload.get("run_ledger", {}))
 	hand.restore_hand_state(payload.get("hand", {}))
 	_warn_if_save_hand_is_incomplete(hand, payload)
 	_apply_offer_ui_state(payload)

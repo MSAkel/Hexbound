@@ -925,7 +925,7 @@ func play_segment_result_animation() -> void:
 #region Ongoing resolution effects
 
 ## Starts the persistent sparks that show this card is empowered.
-## Repeated calls are idempotent. Sparks sit under the chip so the board output remains readable.
+## Repeated calls are idempotent. Sparks sit above the card art and under the chip so the board output remains readable.
 func start_empower_sparks() -> void:
 	if empower_sparks == null:
 		return

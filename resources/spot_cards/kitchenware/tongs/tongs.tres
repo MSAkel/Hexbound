@@ -7,7 +7,7 @@
 script = ExtResource("2_cqhas")
 rarity = 1
 type = 1
-stat_kind = 5
+support_role = 2
 id = "tongs"
 name = "Tongs"
 icon = ExtResource("1_oxu3q")

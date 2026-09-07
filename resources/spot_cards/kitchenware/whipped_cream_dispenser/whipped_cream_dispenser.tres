@@ -7,7 +7,7 @@
 script = ExtResource("2_k0o0a")
 rarity = 2
 type = 1
-stat_kind = 5
+support_role = 2
 id = "whipped_cream_dispenser"
 name = "Whipped Cream Dispenser"
 icon = ExtResource("1_t45ve")

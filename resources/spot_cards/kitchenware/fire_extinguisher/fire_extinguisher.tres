@@ -8,7 +8,7 @@
 script = ExtResource("2_7k1bx")
 rarity = 1
 type = 1
-stat_kind = 5
+support_role = 2
 id = "fire_extinguisher"
 name = "Fire Extinguisher"
 icon = ExtResource("1_86g7x")

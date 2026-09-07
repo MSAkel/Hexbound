@@ -9,7 +9,6 @@ base_production_amount = 1
 rarity = 1
 type = 3
 product = 2
-stat_kind = 2
 id = "fruit_salad"
 name = "Fruit Salad"
 icon = ExtResource("1_k6e86")

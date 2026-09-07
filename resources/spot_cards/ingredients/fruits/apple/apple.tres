@@ -7,7 +7,7 @@
 script = ExtResource("2_80ooo")
 base_production_amount = 16
 product = 1
-ingredient_kind = 2
+ingredient_tags = Array[StringName]([&"fruit"])
 starting_hand_eligible = true
 id = "apple"
 name = "Apple"

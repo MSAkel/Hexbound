@@ -32,7 +32,7 @@ const LOADING_SPLASH: Array[Texture2D] = [
 ]
 
 
-static func get_pile_icon(product: TileCard.Product) -> Texture2D:
+static func get_product_icon(product: TileCard.Product) -> Texture2D:
 	match product:
 		TileCard.Product.FLAVOUR:
 			return FLAVOUR
@@ -44,21 +44,17 @@ static func get_pile_icon(product: TileCard.Product) -> Texture2D:
 			return null
 
 
-static func get_stat_icon(stat_kind: TileCard.StatKind) -> Texture2D:
-	match stat_kind:
-		TileCard.StatKind.FLAVOUR:
-			return FLAVOUR
-		TileCard.StatKind.MULT:
-			return MULT
-		TileCard.StatKind.GOLD:
-			return GOLD
-		TileCard.StatKind.DOUBLE:
+static func get_relay_icon() -> Texture2D:
+	return PASS
+
+
+static func get_support_icon(role: TileCard.SupportRole) -> Texture2D:
+	match role:
+		TileCard.SupportRole.DOUBLE:
 			return DOUBLE
-		TileCard.StatKind.FIRE:
+		TileCard.SupportRole.FIRE:
 			return FIRE
-		TileCard.StatKind.PASS:
-			return PASS
-		TileCard.StatKind.PROOF:
+		TileCard.SupportRole.PROOF:
 			return PROOF
 		_:
 			return null

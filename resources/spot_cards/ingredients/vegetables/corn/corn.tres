@@ -2,15 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://7ep0yxmlb8ph" path="res://assets/icons/food/ingredients/corn.png" id="1_tpb3g"]
 [ext_resource type="Script" uid="uid://cipa81s1njo6j" path="res://resources/spot_cards/ingredients/vegetables/corn/corn.gd" id="2_dqgyx"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_78g7e"]
-
 
 [resource]
 script = ExtResource("2_dqgyx")
-ingredient_kind = 1
 base_production_amount = 14
 rarity = 1
 product = 1
+ingredient_tags = Array[StringName]([&"vegetable", &"grain"])
 id = "corn"
 name = "Corn"
 icon = ExtResource("1_tpb3g")

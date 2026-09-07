@@ -7,11 +7,11 @@ const LOCAL_MULT := 1.5
 
 
 func _plated_flavour_from_recipe(recipe: Array[TileCard]) -> int:
-	return _scale_flavour(_sum_hour_flavour_for_kind(recipe, IngredientKind.VEGETABLE))
+	return _scale_flavour(_sum_hour_flavour_for_kind(recipe, TAG_VEGETABLE))
 
 
 func _preview_plated_flavour(tile: Hex) -> int:
-	return _scale_flavour(_sum_expected_flavour_for_kind(tile, IngredientKind.VEGETABLE))
+	return _scale_flavour(_sum_expected_flavour_for_kind(tile, TAG_VEGETABLE))
 
 
 func _scale_flavour(meal_flavour: int) -> int:

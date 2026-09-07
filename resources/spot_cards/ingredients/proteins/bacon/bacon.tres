@@ -7,8 +7,8 @@
 script = ExtResource("2_5ltv8")
 base_production_amount = 40
 product = 1
-ingredient_kind = 4
-stat_kind = 6
+ingredient_tags = Array[StringName]([&"protein"])
+relay_mode = 1
 id = "bacon"
 name = "Bacon"
 icon = ExtResource("1_itvb5")

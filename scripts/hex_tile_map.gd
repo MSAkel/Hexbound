@@ -1045,7 +1045,10 @@ func is_segment_resolved(segment_index: int) -> bool:
 
 
 func mark_segment_received_relay(segment_index: int) -> void:
+	if segment_index < 0 or segment_index >= get_segment_count():
+		return
 	_layout.mark_segment_received_relay(segment_index)
+	RunLedger.record_pass_relay(segment_index)
 
 
 func count_segments_that_received_relay() -> int:
@@ -1441,6 +1444,52 @@ func _get_hex_trigger_order_index(current_tile: Hex) -> int:
 	return -1
 
 
+## Public fire-order index for card scripts. -1 when the spot is not on this map.
+func get_hex_trigger_order_index(current_tile: Hex) -> int:
+	return _get_hex_trigger_order_index(current_tile)
+
+
+## Contiguous previous seats in fire order, including empties. Gaps are not skipped.
+func get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
+	var result: Array[Hex] = []
+	if tile == null or count <= 0:
+		return result
+	var hexes := get_hexes_in_trigger_order()
+	var self_index := _get_hex_trigger_order_index(tile)
+	if self_index < 0:
+		return result
+	for i in range(1, count + 1):
+		var prev_index := self_index - i
+		if prev_index < 0:
+			break
+		result.append(hexes[prev_index])
+	return result
+
+
+## Occupied cards on this course that fire after tile, in fire order.
+func get_later_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	if tile == null:
+		return result
+	var self_index := _get_hex_trigger_order_index(tile)
+	if self_index < 0:
+		return result
+	for tile_card: TileCard in get_all_tile_cards_on_same_segment(tile, filter_type):
+		var hex := get_hex_for_tile_card(tile_card)
+		if hex == null:
+			continue
+		if _get_hex_trigger_order_index(hex) > self_index:
+			result.append(tile_card)
+	result.sort_custom(func(a: TileCard, b: TileCard) -> bool:
+		var hex_a := get_hex_for_tile_card(a)
+		var hex_b := get_hex_for_tile_card(b)
+		if hex_a == null or hex_b == null:
+			return hex_a != null
+		return _get_hex_trigger_order_index(hex_a) < _get_hex_trigger_order_index(hex_b)
+	)
+	return result
+
+
 ## TileCard on the next occupied hex in global trigger order (null when empty).
 func get_next_tile_card_in_trigger_order(current_tile: Hex) -> TileCard:
 	var hexes := get_hexes_in_trigger_order()
@@ -1586,9 +1635,10 @@ func create_floating_text(
 	text: String,
 	color: Color = Color.WHITE,
 	icon: Texture2D = null,
-	target_icon: Texture2D = null
+	target_icon: Texture2D = null,
+	doubled: bool = false
 ) -> void:
-	turn_resolver.create_floating_text(pos, text, color, icon, target_icon)
+	turn_resolver.create_floating_text(pos, text, color, icon, target_icon, doubled)
 
 
 ## True while a hand card is snapping onto a hex and has not committed yet.

@@ -6,9 +6,9 @@
 [resource]
 script = ExtResource("2_o0xgm")
 base_production_amount = 10
-rarity = 2
+rarity = 1
 product = 1
-ingredient_kind = 4
+ingredient_tags = Array[StringName]([&"protein"])
 id = "steak"
 name = "Steak"
 icon = ExtResource("1_yg0m3")

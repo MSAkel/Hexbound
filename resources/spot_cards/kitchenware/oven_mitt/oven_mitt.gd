@@ -7,11 +7,8 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 
-	target.bonus_production_amount += base_production_amount
-	var target_hex := tile.map.get_hex_for_tile_card(target)
-	if target_hex != null:
-		_create_floating_text(target_hex, "Gained +%d" % base_production_amount, Color.AQUA)
-		target_hex.refresh_tile_card_visual_state()
+	# Shared growth path records ledger and refreshes the target chip.
+	_grow_permanent(tile, target, float(base_production_amount))
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
@@ -22,11 +19,11 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 
 func _get_lowest_later_flavour_producer(tile: Hex) -> TileCard:
-	var self_index := tile.map._get_hex_trigger_order_index(tile)
+	var self_index := tile.map.get_hex_trigger_order_index(tile)
 	var lowest: TileCard = null
 	var lowest_amount := 0.0
 	for hex: Hex in tile.map.get_hexes_in_trigger_order():
-		if tile.map._get_hex_trigger_order_index(hex) <= self_index:
+		if tile.map.get_hex_trigger_order_index(hex) <= self_index:
 			continue
 		if not tile.map.is_tile_card_triggerable(hex):
 			continue

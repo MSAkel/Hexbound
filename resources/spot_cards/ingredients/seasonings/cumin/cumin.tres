@@ -7,8 +7,8 @@
 script = ExtResource("2_lcem1")
 base_production_amount = 5
 product = 2
-ingredient_kind = 5
-stat_kind = 6
+ingredient_tags = Array[StringName]([&"seasoning"])
+relay_mode = 1
 id = "cumin"
 name = "Cumin"
 icon = ExtResource("1_mioiv")

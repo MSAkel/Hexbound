@@ -100,6 +100,7 @@ func archive_from_save_payload(save_payload: Dictionary, is_win: bool) -> void:
 	var gold_state: Dictionary = save_payload.get("gold", {})
 	var run_rng_state: Dictionary = save_payload.get("run_rng", {})
 	var map_state: Dictionary = save_payload.get("map", {})
+	var ledger_state: Dictionary = save_payload.get("run_ledger", {})
 	var entry := {
 		"ended_at": int(Time.get_unix_time_from_system()),
 		"is_win": is_win,
@@ -110,7 +111,7 @@ func archive_from_save_payload(save_payload: Dictionary, is_win: bool) -> void:
 		"is_seeded_run": bool(run_rng_state.get("is_seeded_run", false)),
 		"highest_round_score": int(game_state.get("highest_round_score", 0)),
 		"gold_earned": int(gold_state.get("total_earned_this_run", 0)),
-		"card_triggers": int(game_state.get("total_rune_activations", 0)),
+		"card_triggers": int(ledger_state.get("total_fires", 0)),
 		"peak_gold_held": int(game_state.get("peak_gold_held", 0)),
 		"board": _board_snapshot_from_map_state(map_state),
 	}

@@ -7,7 +7,7 @@
 script = ExtResource("2_xbp6g")
 base_production_amount = 2
 product = 2
-ingredient_kind = 5
+ingredient_tags = Array[StringName]([&"seasoning"])
 id = "salt"
 name = "Salt"
 icon = ExtResource("1_boeif")

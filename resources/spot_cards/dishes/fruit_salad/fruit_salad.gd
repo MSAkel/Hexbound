@@ -12,6 +12,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 	multiply_multiplicative_mult(tile, factor)
+	RunLedger.record_dish_plated()
 
 
 func get_board_chip(tile: Hex = null) -> Dictionary:
@@ -24,7 +25,7 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(hover_tile, _get_adjacent_fruit_cards(hover_tile))
+	return _coords_for_cards_by_kind(hover_tile, TAG_FRUIT, QueryScope.ADJACENT)
 
 
 func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
@@ -39,11 +40,4 @@ func _adjacent_fruit_xmult(tile: Hex) -> float:
 
 
 func _get_adjacent_fruit_cards(tile: Hex) -> Array[TileCard]:
-	var fruits: Array[TileCard] = []
-	if tile == null or tile.map == null:
-		return fruits
-	for card: TileCard in _get_all_adjacent_tile_cards(tile, PRODUCER_TYPE_FILTER):
-		if card.ingredient_kind != IngredientKind.FRUIT:
-			continue
-		fruits.append(card)
-	return fruits
+	return _cards_by_kind(tile, TAG_FRUIT, QueryScope.ADJACENT)

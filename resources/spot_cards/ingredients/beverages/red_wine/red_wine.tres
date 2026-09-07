@@ -2,12 +2,12 @@
 
 [ext_resource type="Texture2D" uid="uid://cgjt0sceg6g1b" path="res://assets/icons/food/beverage/red_wine.png" id="1_6q2nt"]
 [ext_resource type="Script" uid="uid://bnhfuolde4bp2" path="res://resources/spot_cards/ingredients/beverages/red_wine/red_wine.gd" id="2_1baws"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_wsred"]
 
 [resource]
 script = ExtResource("2_1baws")
 rarity = 1
 product = 1
+ingredient_tags = Array[StringName]([&"beverage"])
 id = "red_wine"
 name = "Red Wine"
 icon = ExtResource("1_6q2nt")

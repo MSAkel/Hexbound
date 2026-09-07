@@ -7,7 +7,7 @@
 
 [resource]
 script = ExtResource("2_be4u4")
-ingredient_kind = 1
+ingredient_tags = Array[StringName]([&"vegetable"])
 base_production_amount = 28
 product = 1
 placement_restriction = 1

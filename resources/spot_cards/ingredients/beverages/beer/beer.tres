@@ -8,6 +8,7 @@ script = ExtResource("2_2prqf")
 base_production_amount = 60
 rarity = 1
 product = 1
+ingredient_tags = Array[StringName]([&"beverage"])
 id = "beer"
 name = "Beer"
 icon = ExtResource("1_jtv2p")

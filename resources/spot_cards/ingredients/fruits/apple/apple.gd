@@ -5,13 +5,7 @@ const EMPTY_FOLLOWING_BONUS := 8
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	add_flavour(tile, _get_spark_plug_amount(tile))
-
-
-func get_board_chip(tile: Hex = null) -> Dictionary:
-	if tile == null:
-		return _amount_board_chip(_get_production_amount())
-	return _amount_board_chip(_get_spark_plug_amount(tile))
+	_pay_effect_amount(tile)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
@@ -25,7 +19,9 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	return coords
 
 
-func _get_spark_plug_amount(tile: Hex) -> float:
+func _effect_amount(tile: Hex) -> float:
+	if tile == null:
+		return _get_production_amount()
 	var amount := _get_production_amount()
 	if _has_empty_following_hex(tile):
 		amount += float(EMPTY_FOLLOWING_BONUS)

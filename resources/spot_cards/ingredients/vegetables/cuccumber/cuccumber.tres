@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3 uid="uid://ofsoxumvkdbk"]
+
+[ext_resource type="Texture2D" uid="uid://x6qihxu2choq" path="res://assets/icons/food/ingredients/cuccumber.png" id="1_6r37u"]
+[ext_resource type="Script" uid="uid://cyp0078ca4dxy" path="res://resources/spot_cards/ingredients/vegetables/cuccumber/cuccumber.gd" id="2_tlxhs"]
+
+[resource]
+script = ExtResource("2_tlxhs")
+base_production_amount = 15
+rarity = 1
+product = 1
+ingredient_tags = Array[StringName]([&"vegetable"])
+id = "cuccumber"
+name = "Cuccumber"
+icon = ExtResource("1_6r37u")
+description = "+15 Flavour. When another card in this course spoils, permanently gain +10 Flavour"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

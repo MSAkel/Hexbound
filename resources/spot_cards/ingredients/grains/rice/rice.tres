@@ -7,7 +7,7 @@
 script = ExtResource("2_0j3x7")
 base_production_amount = 8
 product = 1
-ingredient_kind = 3
+ingredient_tags = Array[StringName]([&"grain"])
 id = "rice"
 name = "Rice"
 icon = ExtResource("1_s8aqm")

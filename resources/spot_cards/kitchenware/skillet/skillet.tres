@@ -7,7 +7,7 @@
 script = ExtResource("2_fojqp")
 base_production_amount = 10
 type = 1
-stat_kind = 7
+support_role = 3
 id = "skillet"
 name = "Skillet"
 icon = ExtResource("1_htrpw")

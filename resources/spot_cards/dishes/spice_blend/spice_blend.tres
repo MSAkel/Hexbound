@@ -6,9 +6,9 @@
 [resource]
 script = ExtResource("2_script")
 recipe_seasoning_count = 2
+rarity = 1
 type = 3
 product = 2
-stat_kind = 2
 id = "spice_blend"
 name = "Spice Blend"
 icon = ExtResource("1_4ddug")

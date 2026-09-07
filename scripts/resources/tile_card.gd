@@ -42,15 +42,27 @@ enum Product {
 	NONE,
 }
 
-## Primary Ingredient aisle for dish recipes. Kitchenware matches by shelf, not this enum.
-enum IngredientKind {
-	NONE,
-	VEGETABLE,
-	FRUIT,
-	GRAIN,
-	PROTEIN,
-	SEASONING,
-}
+## Closed ingredient tag catalog. Serialized as StringName, never as enum ints.
+const TAG_VEGETABLE := &"vegetable"
+const TAG_FRUIT := &"fruit"
+const TAG_GRAIN := &"grain"
+const TAG_PROTEIN := &"protein"
+const TAG_SEASONING := &"seasoning"
+const TAG_BEVERAGE := &"beverage"
+const TAG_MEAT := &"meat"
+const TAG_DAIRY := &"dairy"
+const TAG_PRESERVED := &"preserved"
+const TAG_KITCHENWARE := &"kitchenware"
+const TAG_DISH := &"dish"
+
+## Aisle tags dishes can demand today. Extra tags are membership only until a dish uses them.
+const RECIPE_AISLE_TAGS: Array[StringName] = [
+	TAG_VEGETABLE,
+	TAG_FRUIT,
+	TAG_GRAIN,
+	TAG_PROTEIN,
+	TAG_SEASONING,
+]
 
 # Limits which spots can receive this card during placement.
 enum PlacementRestriction {
@@ -67,15 +79,17 @@ enum LayoutRequirement {
 	REQUIRES_EXACT_SEGMENT_SIZE,
 }
 
-# Small stat icon on placed spot cards that identifies the card's main role.
-enum StatKind {
+# Whether payout is delivered locally or passed to the next course.
+enum RelayMode {
 	NONE,
-	FLAVOUR,
-	MULT,
-	GOLD,
+	NEXT_SEGMENT,
+}
+
+# Kitchenware ability with no pile output. Composes with relay on pass cards.
+enum SupportRole {
+	NONE,
 	DOUBLE,
 	FIRE,
-	PASS,
 	PROOF,
 }
 
@@ -87,13 +101,30 @@ enum BoardChipMode {
 	PROGRESS,
 }
 
+## Spatial scope for producer and kind queries. Cards pick a scope instead of a lookalike helper name.
+enum QueryScope {
+	## Map neighbors of this spot.
+	ADJACENT,
+	## Neighbors that fire after this spot.
+	FOLLOWING_ADJACENT,
+	## Following neighbors that also share this course.
+	FOLLOWING_SAME_SEGMENT,
+	## Occupied seats on this course.
+	SAME_SEGMENT,
+	## Every triggerable seated card on the map.
+	PLACED,
+}
+
 const EMPOWER_OUTPUT_SCALE := 2.0
+## Shared chip fill. White numbers stay readable on this purple.
+const CHIP_PANEL_COLOR := Color(0.22, 0.16, 0.28)
 ## Pile icons for floating text and Ingredient output chips.
 const ICON_FLAVOUR := FeastStatIcons.FLAVOUR
 const ICON_GOLD := FeastStatIcons.GOLD
 const ICON_MULT := FeastStatIcons.MULT
 const ICON_DOUBLE := FeastStatIcons.DOUBLE
 const ICON_FIRE := FeastStatIcons.FIRE
+const ICON_PASS := FeastStatIcons.PASS
 
 # Fallback merchant prices when a card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
@@ -129,14 +160,17 @@ var hour_additive_mult_produced: float = 0.0
 @export var rarity: TileCardRarity
 @export var type: TileCardType
 @export var product: Product = Product.NONE
-## Vegetable, Fruit, Grain, Protein, or Seasoning. Leave NONE when the card is not a recipe ingredient.
-@export var ingredient_kind: IngredientKind = IngredientKind.NONE
+## Recipe membership tags. Use catalog constants such as TAG_VEGETABLE in scripts.
+## Array order is inspect display order. Put the main aisle first when it matters.
+@export var ingredient_tags: Array[StringName] = []
 # only activates once per turn even if retriggered.
 @export var single_activation_per_turn: bool = false
 # When set, only matching spots accept this card during placement.
 @export var placement_restriction: PlacementRestriction = PlacementRestriction.NONE
-# Kitchenware cards set this explicitly. Core and Seasoning cards derive stat from product when NONE.
-@export var stat_kind: StatKind = StatKind.NONE
+# Pass cards relay payout to the next course. Kitchenware and Ingredients may both set this.
+@export var relay_mode: RelayMode = RelayMode.NONE
+# Kitchenware ability role shown on the board chip when the card does not produce a pile.
+@export var support_role: SupportRole = SupportRole.NONE
 ## When true, this common Flavour Ingredient may appear in flat-Flavour starter draws.
 @export var starting_hand_eligible: bool = false
 # Packs and shop omit this card when the selected layout cannot host it.
@@ -170,35 +204,72 @@ func is_legal_for_layout(character: CharacterDefinition) -> bool:
 			return true
 
 
-func get_stat_kind() -> StatKind:
-	if stat_kind != StatKind.NONE:
-		return stat_kind
-	if type == TileCardType.DISH:
-		return StatKind.FLAVOUR
-	if not is_producer_type(type):
-		return StatKind.NONE
-	match product:
-		Product.FLAVOUR:
-			return StatKind.FLAVOUR
-		Product.MULTIPLIER:
-			return StatKind.MULT
-		Product.GOLD:
-			return StatKind.GOLD
-		_:
-			return StatKind.NONE
-
-
-func get_stat_texture() -> Texture2D:
-	return FeastStatIcons.get_stat_icon(get_stat_kind())
-
-## Switched to identical panel color as its easier to read.
-func get_chip_panel_color() -> Color:
-	return Color(0.22, 0.16, 0.28)
-
+func relays_to_next_segment() -> bool:
+	return relay_mode == RelayMode.NEXT_SEGMENT
 
 
 func get_product_icon() -> Texture2D:
-	return FeastStatIcons.get_pile_icon(product)
+	return FeastStatIcons.get_product_icon(product)
+
+
+func get_relay_icon() -> Texture2D:
+	if relays_to_next_segment():
+		return FeastStatIcons.get_relay_icon()
+	return null
+
+
+func get_support_icon() -> Texture2D:
+	return FeastStatIcons.get_support_icon(support_role)
+
+
+## Switched to identical panel color as its easier to read.
+func get_chip_panel_color() -> Color:
+	return CHIP_PANEL_COLOR
+
+
+## True when this card's tags include tag.
+func has_ingredient_tag(tag: StringName) -> bool:
+	if tag == &"":
+		return false
+	return tag in ingredient_tags
+
+
+## True when card matches a kind tag, an array of tags, or any tag when filter_kind is null.
+## TAG_KITCHENWARE and TAG_DISH match shelf type so Dishes and Kitchenware are queryable.
+static func matches_kind_filter(card: TileCard, filter_kind: Variant) -> bool:
+	if card == null:
+		return false
+	if filter_kind == null:
+		return true
+	if filter_kind is Array:
+		for entry in filter_kind:
+			if matches_kind_filter(card, entry):
+				return true
+		return false
+	var tag := StringName(str(filter_kind))
+	if tag == &"":
+		return false
+	if tag == TAG_KITCHENWARE:
+		return card.type == TileCardType.KITCHENWARE
+	if tag == TAG_DISH:
+		return card.type == TileCardType.DISH
+	return card.has_ingredient_tag(tag)
+
+
+## Ingredient tags plus a shelf tag for Kitchenware and Dish cards.
+static func queryable_kind_tags(card: TileCard) -> Array[StringName]:
+	var tags: Array[StringName] = []
+	if card == null:
+		return tags
+	for tag: StringName in card.ingredient_tags:
+		if tag == &"" or tag in tags:
+			continue
+		tags.append(tag)
+	if card.type == TileCardType.KITCHENWARE and TAG_KITCHENWARE not in tags:
+		tags.append(TAG_KITCHENWARE)
+	elif card.type == TileCardType.DISH and TAG_DISH not in tags:
+		tags.append(TAG_DISH)
+	return tags
 
 
 func get_inspect_subtitle() -> String:
@@ -219,11 +290,11 @@ func get_inspect_subtitle() -> String:
 	return "%s  ·  %s" % [base, tag]
 
 
-# Ingredient subcategory such as Vegetable. Empty when it matches the shelf name.
+# Ingredient tags such as Vegetable or Vegetable · Fruit. Empty when none are set.
 func get_distinct_recipe_tag_label() -> String:
 	if type != TileCardType.INGREDIENT:
 		return ""
-	var tag := FeastDisplay.get_ingredient_kind_label(ingredient_kind)
+	var tag := FeastDisplay.format_ingredient_tags_label(ingredient_tags)
 	if tag.is_empty():
 		return ""
 	var shelf := FeastDisplay.get_tile_card_shelf_label(self)
@@ -241,28 +312,61 @@ func get_card_type_display() -> String:
 
 
 func _get_role_label() -> String:
-	return FeastDisplay.get_stat_label(get_stat_kind(), product)
+	return FeastDisplay.get_role_label(product, relay_mode, support_role)
 
 
-# Default chip: Ingredients show amount. Kitchenware shows their stat in the same slot.
-func get_board_chip(_tile: Hex = null) -> Dictionary:
-	if not is_producer_type(type):
-		return _stat_board_chip()
-	if product == Product.HYBRID or product == Product.NONE:
-		return _hidden_board_chip()
-	var amount := _get_production_amount()
-	if amount <= 0.0:
-		return _hidden_board_chip()
-	if product == Product.MULTIPLIER:
-		return _amount_board_chip_float(amount)
-	return _amount_board_chip(int(round(amount)))
+# Default chip: Ingredients show amount. Kitchenware shows their role icon in the same slot.
+# Uses _effect_amount so chips stay honest when a card scales from the board.
+func get_board_chip(tile: Hex = null) -> Dictionary:
+	if is_producer_type(type):
+		if product == Product.HYBRID or product == Product.NONE:
+			return _hidden_board_chip()
+		var amount := _effect_amount(tile)
+		if amount <= 0.0:
+			return _hidden_board_chip()
+		var chip: Dictionary
+		if product == Product.MULTIPLIER:
+			chip = _amount_board_chip_float(amount)
+		else:
+			chip = _amount_board_chip(int(round(amount)))
+		if relays_to_next_segment():
+			chip = _compose_board_chip(chip, ICON_PASS)
+		return chip
+	if support_role != SupportRole.NONE:
+		return _support_role_chip(support_role)
+	if relays_to_next_segment():
+		return _relay_only_chip()
+	return _hidden_board_chip()
 
 
 func _stat_board_chip() -> Dictionary:
-	var stat_texture := get_stat_texture()
-	if stat_texture == null:
+	if support_role != SupportRole.NONE:
+		return _support_role_chip(support_role)
+	if relays_to_next_segment():
+		return _relay_only_chip()
+	return _hidden_board_chip()
+
+
+func _support_role_chip(role: SupportRole) -> Dictionary:
+	var role_texture := FeastStatIcons.get_support_icon(role)
+	if role_texture == null:
 		return _hidden_board_chip()
-	return _make_board_chip(BoardChipMode.AMOUNT, "", stat_texture, get_chip_panel_color())
+	return _make_board_chip(BoardChipMode.AMOUNT, "", role_texture, CHIP_PANEL_COLOR)
+
+
+func _relay_only_chip() -> Dictionary:
+	var relay_texture := get_relay_icon()
+	if relay_texture == null:
+		return _hidden_board_chip()
+	return _make_board_chip(BoardChipMode.AMOUNT, "", relay_texture, CHIP_PANEL_COLOR)
+
+
+func _compose_board_chip(base_chip: Dictionary, extra_icon: Texture2D, extra_text: String = "") -> Dictionary:
+	var chip := base_chip.duplicate()
+	chip["extra_icon"] = extra_icon
+	if not extra_text.is_empty():
+		chip["extra_text"] = extra_text
+	return chip
 
 
 func _hidden_board_chip() -> Dictionary:
@@ -277,19 +381,20 @@ func _amount_board_chip(amount: Variant, amount_icon: Texture2D = null) -> Dicti
 		BoardChipMode.AMOUNT,
 		str(int(round(value))),
 		chip_icon,
-		get_chip_panel_color(),
+		CHIP_PANEL_COLOR,
 		"",
 		value
 	)
 
 
+## Additive Mult chip. Same panel as Flavour, with a +n.n label.
 func _amount_board_chip_float(amount: float, amount_icon: Texture2D = null) -> Dictionary:
 	var chip_icon: Texture2D = amount_icon if amount_icon != null else get_product_icon()
 	return _make_board_chip(
 		BoardChipMode.AMOUNT,
 		CountingNumber.format_additive_mult(amount),
 		chip_icon,
-		get_chip_panel_color(),
+		CHIP_PANEL_COLOR,
 		"",
 		amount
 	)
@@ -311,7 +416,7 @@ func _multiplicative_mult_board_chip(amount: float, amount_icon: Texture2D = nul
 		BoardChipMode.AMOUNT,
 		CountingNumber.format_multiplicative_mult(amount),
 		chip_icon,
-		get_chip_panel_color(),
+		CHIP_PANEL_COLOR,
 		"",
 		amount
 	)
@@ -552,7 +657,7 @@ func has_placement_restriction() -> bool:
 func can_place_on_tile(tile: Hex) -> bool:
 	match placement_restriction:
 		PlacementRestriction.EDGE_TILE:
-			return _is_on_map_edge(tile)
+			return tile.map.is_edge_tile(tile.coordinates)
 		PlacementRestriction.SEGMENT_FIRST_TILE:
 			return tile.map.is_first_tile_in_segment(tile.coordinates)
 		PlacementRestriction.SEGMENT_LAST_TILE:
@@ -564,9 +669,9 @@ func can_place_on_tile(tile: Hex) -> bool:
 
 
 # Spot coordinates that would be impacted when this card is placed on hover_tile.
-# Override in cards that fire or otherwise affect other spots.
-func get_trigger_preview_coords(_hover_tile: Hex) -> Array[Vector2i]:
-	return []
+# Override when the preview is not a placed-card list from _effect_preview_cards.
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(hover_tile, _effect_preview_cards(hover_tile))
 
 
 ## Seats that count toward this card's output. Dishes override with matching prefix tags.
@@ -584,7 +689,7 @@ func add_flavour(tile: Hex, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
 	hour_flavour_produced += points
 	tile.map.add_turn_flavour_for_tile(tile, points)
-	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR)
+	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR, null, _payout_float_is_doubled())
 	CondimentManager.relay_product_if_needed(tile, Product.FLAVOUR, points)
 
 func add_gold(tile: Hex, base_amount: Variant) -> void:
@@ -593,7 +698,7 @@ func add_gold(tile: Hex, base_amount: Variant) -> void:
 	var amount := int(round(float(base_amount) * _activation_output_scale))
 	amount += GameManager.passive_runtime.extra_gold_for_card(tile, self)
 	tile.map.add_turn_gold_for_tile(tile, amount)
-	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD)
+	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD, null, _payout_float_is_doubled())
 	CondimentManager.relay_product_if_needed(tile, Product.GOLD, amount)
 
 func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
@@ -602,7 +707,14 @@ func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> 
 		amount *= _activation_output_scale
 	hour_additive_mult_produced += amount
 	tile.map.add_turn_additive_mult_for_tile(tile, amount)
-	_create_floating_text(tile, CountingNumber.format_additive_mult(amount), Color.PLUM, ICON_MULT)
+	_create_floating_text(
+		tile,
+		CountingNumber.format_additive_mult(amount),
+		Color.PLUM,
+		ICON_MULT,
+		null,
+		_payout_float_is_doubled(scaled)
+	)
 	CondimentManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
 
 
@@ -611,7 +723,14 @@ func multiply_multiplicative_mult(tile: Hex, factor: Variant, scaled: bool = tru
 	if scaled:
 		amount *= _activation_output_scale
 	tile.map.multiply_turn_multiplicative_mult_for_tile(tile, amount)
-	_create_floating_text(tile, CountingNumber.format_multiplicative_mult(amount), Color.PLUM, ICON_MULT)
+	_create_floating_text(
+		tile,
+		CountingNumber.format_multiplicative_mult(amount),
+		Color.PLUM,
+		ICON_MULT,
+		null,
+		_payout_float_is_doubled(scaled)
+	)
 
 
 # Credits another course's additive Mult. Float stays on this spot.
@@ -625,9 +744,11 @@ func add_additive_mult_to_segment(tile: Hex, segment_index: int, base_amount: Va
 	tile.map.mark_segment_received_relay(segment_index)
 	_create_floating_text(
 		tile,
-		"%s →" % CountingNumber.format_additive_mult(amount),
+		"%s" % CountingNumber.format_additive_mult(amount),
 		Color.PLUM,
-		ICON_MULT
+		ICON_PASS,
+		ICON_MULT,
+		_payout_float_is_doubled()
 	)
 
 
@@ -643,7 +764,9 @@ func multiply_multiplicative_mult_to_segment(tile: Hex, segment_index: int, fact
 		tile,
 		"%s →" % CountingNumber.format_multiplicative_mult(amount),
 		Color.PLUM,
-		ICON_MULT
+		ICON_MULT,
+		null,
+		_payout_float_is_doubled()
 	)
 
 
@@ -656,7 +779,7 @@ func add_flavour_to_segment(tile: Hex, segment_index: int, base_points: Variant)
 	hour_flavour_produced += points
 	tile.map.add_turn_flavour_for_segment(segment_index, points)
 	tile.map.mark_segment_received_relay(segment_index)
-	_create_floating_text(tile, "+%d →" % points, Color.AQUA, ICON_FLAVOUR)
+	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_PASS, ICON_FLAVOUR, _payout_float_is_doubled())
 
 
 func failed_tile_card_text(tile: Hex) -> void:
@@ -674,14 +797,6 @@ func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
 		return false
 	var target_hex := source_tile.map.get_hex_for_tile_card(tile_card)
 	return target_hex != null and source_tile.map.is_tile_card_triggerable(target_hex)
-
-
-func _filter_triggerable_tile_cards(source_tile: Hex, tile_cards: Array[TileCard]) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for card in tile_cards:
-		if _is_triggerable_tile_card(source_tile, card):
-			result.append(card)
-	return result
 
 
 ## Empowers a triggerable spot card that is not already empowered.
@@ -704,13 +819,20 @@ func _create_floating_text(
 	text: String,
 	color: Color = Color.WHITE,
 	text_icon: Texture2D = null,
-	target_icon: Texture2D = null
+	target_icon: Texture2D = null,
+	doubled: bool = false
 ) -> void:
 	var tile_pos := tile.map.floating_text_position_for_hex(tile.coordinates)
-	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon)
+	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon, doubled)
 
 
-## Kitchenware target feedback as ability icon → target card icon.
+# True when this fire consumed Double and the payout was actually scaled.
+# Null Charge still spends Double, but those floats stay normal.
+func _payout_float_is_doubled(scaled: bool = true) -> bool:
+	return scaled and _activation_was_empowered and not EventManager.are_empowers_blocked()
+
+
+## Kitchenware target feedback as [ability icon] [target card icon].
 func _create_targeted_ability_floating_text(
 	tile: Hex,
 	ability_icon: Texture2D,
@@ -742,6 +864,35 @@ func _play_trigger_sound() -> void:
 func _get_production_amount() -> float:
 	return float(base_production_amount) + bonus_production_amount
 
+
+## Amount this card should pay and show. Override instead of duplicating chip and activate math.
+func _effect_amount(_tile: Hex) -> float:
+	return _get_production_amount()
+
+
+## Placed cards this effect cares about. Default preview maps these to coordinates.
+func _effect_preview_cards(_tile: Hex) -> Array[TileCard]:
+	return []
+
+
+## Pays _effect_amount using this card's product. Silent when the amount is empty.
+func _pay_effect_amount(tile: Hex) -> void:
+	var amount := _effect_amount(tile)
+	match product:
+		Product.FLAVOUR:
+			if amount <= 0.0:
+				return
+			add_flavour(tile, amount)
+		Product.MULTIPLIER:
+			if is_zero_approx(amount):
+				return
+			add_additive_mult(tile, amount)
+		Product.GOLD:
+			if amount <= 0.0:
+				return
+			add_gold(tile, amount)
+
+
 func _empower() -> void:
 	if is_empowered:
 		return
@@ -752,33 +903,14 @@ func _empower() -> void:
 func _on_activate_tile_card(_tile: Hex) -> void:
 	pass
 
-# Check if the spot is on the edge of the map.
-func _is_on_map_edge(tile: Hex) -> bool:
-	return tile.map.is_edge_tile(tile.coordinates)
 
+#region --- Map query helpers ---
 # Get all spot cards placed on the map.
 func _get_all_placed_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_placed_tile_cards(filter_type)
 
-# Count placed Ingredient cards whose product matches filter_product (e.g. Product.GOLD).
-func _get_producer_count_by_product_type(tile: Hex, filter_product: Product) -> int:
-	var count := 0
-	for tile_card: TileCard in _get_all_placed_tile_cards(tile):
-		if not is_producer_type(tile_card.type):
-			continue
-		if tile_card.product != filter_product:
-			continue
-		count += 1
-	return count
-
-#region --- Adjacent spot card helpers ---
-## Counts all adjacent spots occupied by a card. Pass filter_type to filter by shelf.
-## filter_type: TileCardType, or TileCard.PRODUCER_TYPE_FILTER for any seated Ingredient.
-func _count_all_occupied_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> int:
-	return tile.map.count_all_occupied_adjacent_tile_cards(tile.coordinates, filter_type)
 
 ## All cards on map-adjacent spots around tile (unordered).
-## filter_type: TileCardType, or TileCard.PRODUCER_TYPE_FILTER for any seated Ingredient.
 func _get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_adjacent_tile_cards(tile, filter_type)
 
@@ -795,56 +927,9 @@ func _get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) 
 	return tile.map.get_following_adjacent_tile_cards(tile, filter_type)
 
 
-## Adjacent Following Ingredients with a matching product.
-func _get_following_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_following_adjacent_tile_cards(tile, PRODUCER_TYPE_FILTER):
-		if tile_card.product != filter_product:
-			continue
-		result.append(tile_card)
-	return result
-
-
-## Adjacent Following Ingredients with a matching product on this course.
-func _get_following_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
-	var segment_index := _get_segment_index(tile)
-	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_following_adjacent_tile_cards_by_product(tile, filter_product):
-		var hex := tile.map.get_hex_for_tile_card(tile_card)
-		if hex == null:
-			continue
-		if tile.map.get_segment_index(hex.coordinates) != segment_index:
-			continue
-		result.append(tile_card)
-	return result
-
-
 ## Cards on this course that fire after this spot, in fire order.
 func _get_later_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	var self_index := tile.map._get_hex_trigger_order_index(tile)
-	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_all_tile_cards_on_same_segment(tile, filter_type):
-		var hex := tile.map.get_hex_for_tile_card(tile_card)
-		if hex == null:
-			continue
-		if tile.map._get_hex_trigger_order_index(hex) > self_index:
-			result.append(tile_card)
-	result.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-		var hex_a := tile.map.get_hex_for_tile_card(a)
-		var hex_b := tile.map.get_hex_for_tile_card(b)
-		if hex_a == null or hex_b == null:
-			return hex_a != null
-		return tile.map._get_hex_trigger_order_index(hex_a) < tile.map._get_hex_trigger_order_index(hex_b)
-	)
-	return result
-
-
-func _coords_for_following_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(tile, _get_following_adjacent_tile_cards_by_product(tile, filter_product))
-
-
-func _coords_for_following_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(tile, _get_following_same_segment_producers_by_product(tile, filter_product))
+	return tile.map.get_later_tile_cards_on_same_segment(tile, filter_type)
 
 
 func _is_first_producer_in_segment(tile: Hex) -> bool:
@@ -876,13 +961,6 @@ func _effective_producer_on_hex(hex: Hex, preview_tile: Hex) -> TileCard:
 		return self
 	return null
 
-#endregion --- Adjacent spot card helpers ---
-
-#region --- Fire order helpers ---
-## All adjacent spot cards sorted in the map's global fire order.
-## filter_type: TileCardType, or TileCard.PRODUCER_TYPE_FILTER for any seated Ingredient.
-func _get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	return tile.map.get_all_adjacent_tile_cards_in_trigger_order(tile, filter_type)
 
 # Up to count spot cards that fire after this one in fire order.
 func _get_next_tile_cards_in_trigger_order(
@@ -891,6 +969,7 @@ func _get_next_tile_cards_in_trigger_order(
 	filter_type: Variant = null
 ) -> Array[TileCard]:
 	return tile.map.get_next_tile_cards_in_trigger_order(tile, count, filter_type)
+
 
 # Up to count spot cards that fired before this one in fire order.
 func _get_previous_tile_cards_in_trigger_order(
@@ -904,17 +983,9 @@ func _get_previous_tile_cards_in_trigger_order(
 ## The count spots immediately before this spot in fire order, including empties.
 ## These are contiguous previous seats. Gaps and wrong cards are not skipped.
 func _get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
-	var result: Array[Hex] = []
-	var hexes := tile.map.get_hexes_in_trigger_order()
-	var self_index := tile.map._get_hex_trigger_order_index(tile)
-	if self_index < 0:
-		return result
-	for i in range(1, count + 1):
-		var prev_index := self_index - i
-		if prev_index < 0:
-			break
-		result.append(hexes[prev_index])
-	return result
+	if tile == null or tile.map == null:
+		return []
+	return tile.map.get_immediately_previous_hexes(tile, count)
 
 
 ## Cards sitting on those immediately previous spots. Empty slots are omitted, not skipped over.
@@ -944,15 +1015,6 @@ func reset_hour_product_snapshot() -> void:
 func _get_next_tile_card_in_trigger_order(tile: Hex) -> TileCard:
 	return tile.map.get_next_tile_card_in_trigger_order(tile)
 
-# True when the next spot card in fire order can be consumed in-sequence this hour.
-func _can_consume_next_tile_card_in_trigger_order(tile: Hex) -> bool:
-	return tile.map.can_consume_next_tile_card_in_trigger_order(tile)
-
-#endregion --- Fire order helpers ---
-
-#region --- Course helpers ---
-# Courses are character-specific groups of spots (rows for Surveyor, rings for Encircler, etc.).
-# Each course has an index: 0, 1, 2, ... following fire order.
 
 # Course index for tile under the active character grouping (-1 when unknown).
 func _get_segment_index(tile: Hex) -> int:
@@ -960,9 +1022,11 @@ func _get_segment_index(tile: Hex) -> int:
 		return -1
 	return tile.map.get_segment_index(tile.coordinates)
 
+
 # Number of spots in this card's course (0 when the course is unknown).
 func _get_segment_size(tile: Hex) -> int:
 	return tile.map.get_segment_size(_get_segment_index(tile))
+
 
 func _get_segment_count(tile: Hex) -> int:
 	return tile.map.get_segment_count()
@@ -974,6 +1038,7 @@ func _get_next_segment_index(tile: Hex) -> int:
 	if next_segment_index < 0 or next_segment_index >= _get_segment_count(tile):
 		return -1
 	return next_segment_index
+
 
 # All placed spot cards on the same course as tile (optional filter_type for TileCard.TileCardType).
 func _get_all_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
@@ -987,39 +1052,6 @@ func _get_segment_trigger_count_this_turn(tile: Hex) -> int:
 	return tile.map.get_segment_turn_trigger_count(_get_segment_index(tile))
 
 
-# Extra activations beyond each card's first fire on this course this hour.
-func _get_segment_retrigger_count_this_turn(tile: Hex) -> int:
-	var retrigger_count := 0
-	for tile_card: TileCard in _get_all_tile_cards_on_same_segment(tile):
-		var activations := GameManager.get_tile_card_activation_count_this_turn(tile_card)
-		if activations > 1:
-			retrigger_count += activations - 1
-	return retrigger_count
-
-
-func _get_segment_turn_gold(tile: Hex) -> int:
-	return tile.map.get_segment_turn_gold(_get_segment_index(tile))
-
-
-## Gold that cards before this spot on the same course would produce.
-## Used by chips so leftover gold from later cards does not inflate the preview.
-func _get_earlier_segment_gold_preview(tile: Hex) -> int:
-	if tile == null or tile.map == null:
-		return 0
-	var self_index := tile.map._get_hex_trigger_order_index(tile)
-	if self_index < 0:
-		return 0
-	var gold := 0
-	for hex: Hex in tile.map.get_hexes_in_segment(_get_segment_index(tile)):
-		if tile.map._get_hex_trigger_order_index(hex) >= self_index:
-			continue
-		var card := hex.active_tile_card
-		if card == null or card.product != Product.GOLD:
-			continue
-		gold += int(round(card._get_production_amount()))
-	return gold
-
-
 ## Flavour piled on this course so far this hour, before Mult.
 func _get_segment_turn_flavour(tile: Hex) -> int:
 	return tile.map.get_segment_turn_flavour(_get_segment_index(tile))
@@ -1030,69 +1062,71 @@ func _get_segment_additive_mult(tile: Hex) -> float:
 	return tile.map.get_segment_additive_mult(_get_segment_index(tile))
 
 
-## Multiplicative Mult piled on this course so far this hour, including the 1.0 base.
-func _get_segment_multiplicative_mult(tile: Hex) -> float:
-	return tile.map.get_segment_multiplicative_mult(_get_segment_index(tile))
+## Placed cards in a spatial scope. Optional shelf filter such as PRODUCER_TYPE_FILTER.
+func _cards_in_scope(tile: Hex, scope: QueryScope, filter_type: Variant = null) -> Array[TileCard]:
+	if tile == null or tile.map == null:
+		return []
+	match scope:
+		QueryScope.ADJACENT:
+			return _get_all_adjacent_tile_cards(tile, filter_type)
+		QueryScope.FOLLOWING_ADJACENT:
+			return _get_following_adjacent_tile_cards(tile, filter_type)
+		QueryScope.FOLLOWING_SAME_SEGMENT:
+			return _cards_on_same_segment(_get_following_adjacent_tile_cards(tile, filter_type), tile)
+		QueryScope.SAME_SEGMENT:
+			return _get_all_tile_cards_on_same_segment(tile, filter_type)
+		QueryScope.PLACED:
+			return _get_all_placed_tile_cards(tile, filter_type)
+		_:
+			return []
 
 
-## All placed spot cards on the same course whose product matches filter_product.
-func _get_all_tile_cards_on_same_segment_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_all_tile_cards_on_same_segment(tile):
-		if tile_card.product != filter_product:
-			continue
-		result.append(tile_card)
-	return result
-
-
-## All placed Ingredient cards on the map whose product matches filter_product.
-func _get_all_placed_producers_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_all_placed_tile_cards(tile):
-		if not is_producer_type(tile_card.type):
-			continue
-		if tile_card.product != filter_product:
-			continue
-		result.append(tile_card)
-	return result
-
-
-## Adjacent Ingredient cards whose product matches filter_product.
-func _get_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_all_adjacent_tile_cards(tile, PRODUCER_TYPE_FILTER):
-		if tile_card.product != filter_product:
-			continue
-		result.append(tile_card)
-	return result
-
-
-## Adjacent Ingredients of the given product that share this spot's course.
-func _get_adjacent_same_segment_producers_by_product(tile: Hex, filter_product: Product) -> Array[TileCard]:
+## Keeps cards that sit on the same course as tile.
+func _cards_on_same_segment(cards: Array[TileCard], tile: Hex) -> Array[TileCard]:
 	var segment_index := _get_segment_index(tile)
 	var result: Array[TileCard] = []
-	for tile_card: TileCard in _get_adjacent_tile_cards_by_product(tile, filter_product):
-		var hex := tile.map.get_hex_for_tile_card(tile_card)
+	for card: TileCard in cards:
+		var hex := tile.map.get_hex_for_tile_card(card)
 		if hex == null:
 			continue
 		if tile.map.get_segment_index(hex.coordinates) != segment_index:
 			continue
-		result.append(tile_card)
+		result.append(card)
 	return result
 
 
-func _get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	return tile.map.get_all_tile_cards_on_other_segments(tile, filter_type)
+## Seated Ingredients in scope whose product matches filter_product.
+func _producers_by_product(tile: Hex, filter_product: Product, scope: QueryScope) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	for card: TileCard in _cards_in_scope(tile, scope, PRODUCER_TYPE_FILTER):
+		if card.product != filter_product:
+			continue
+		result.append(card)
+	return result
+
+
+## Cards in scope matching a kind tag. Includes Kitchenware and Dish when those tags are used.
+func _cards_by_kind(tile: Hex, filter_kind: Variant, scope: QueryScope) -> Array[TileCard]:
+	return _filter_tile_cards_by_kind(_cards_in_scope(tile, scope), filter_kind)
+
+
+## Keeps only cards that match filter_kind.
+func _filter_tile_cards_by_kind(cards: Array[TileCard], filter_kind: Variant) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	for card: TileCard in cards:
+		if matches_kind_filter(card, filter_kind):
+			result.append(card)
+	return result
 
 
 func _get_all_tile_cards_on_later_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_all_tile_cards_on_later_segments(tile, filter_type)
 
 
-## Other courses that either host an Ingredient or do not, depending on want_producer.
-func _count_other_segments_by_producer(tile: Hex, want_producer: bool) -> int:
+## Other course indexes that either host an Ingredient or do not, depending on want_producer.
+func _other_segment_indexes_matching_producer(tile: Hex, want_producer: bool) -> Array[int]:
 	var self_index := _get_segment_index(tile)
-	var count := 0
+	var matches: Array[int] = []
 	for segment_index in range(_get_segment_count(tile)):
 		if segment_index == self_index:
 			continue
@@ -1100,24 +1134,21 @@ func _count_other_segments_by_producer(tile: Hex, want_producer: bool) -> int:
 			segment_index, PRODUCER_TYPE_FILTER
 		).is_empty()
 		if has_producer == want_producer:
-			count += 1
-	return count
+			matches.append(segment_index)
+	return matches
+
+
+func _count_other_segments_by_producer(tile: Hex, want_producer: bool) -> int:
+	return _other_segment_indexes_matching_producer(tile, want_producer).size()
 
 
 ## Preview spots in other courses that match Wide Ratio or Tall Cell.
 func _coords_for_other_segments_matching_producer(tile: Hex, want_producer: bool) -> Array[Vector2i]:
-	var self_index := _get_segment_index(tile)
 	var coords: Array[Vector2i] = []
-	for segment_index in range(_get_segment_count(tile)):
-		if segment_index == self_index:
-			continue
-		var has_producer := not tile.map.get_all_tile_cards_on_segment(
-			segment_index, PRODUCER_TYPE_FILTER
-		).is_empty()
-		if has_producer != want_producer:
-			continue
+	for segment_index in _other_segment_indexes_matching_producer(tile, want_producer):
 		coords.append_array(_coords_for_segment(tile, segment_index))
 	return coords
+
 
 # Returns the first or last placed spot card in a map course near this spot.
 #
@@ -1141,9 +1172,7 @@ func _get_first_or_last_tile_card_in_relative_segment(
 		tile, segment_index_offset, pick_first_in_segment, filter_type
 	)
 
-#endregion --- Course helpers ---
 
-#region --- Opposite spot helpers ---
 ## Spot on the opposite side of the map from tile, or null when that cell is missing.
 func _get_opposite_hex(tile: Hex) -> Hex:
 	return tile.map.get_opposite_hex(tile.coordinates)
@@ -1156,12 +1185,12 @@ func _coords_for_opposite_tile(tile: Hex) -> Array[Vector2i]:
 		return []
 	return [opposite.coordinates]
 
-#endregion --- Opposite spot helpers ---
 
-#region --- Spot card destruction helpers ---
 ## Resolves placed spot cards to their map coordinates for placement previews.
 func _coords_for_placed_tile_cards(tile: Hex, tile_cards: Array[TileCard]) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
+	if tile == null or tile.map == null:
+		return coords
 	for tile_card: TileCard in tile_cards:
 		var hex := tile.map.get_hex_for_tile_card(tile_card)
 		if hex != null:
@@ -1174,36 +1203,22 @@ func _coords_for_same_segment_tile_cards(tile: Hex, filter_type: Variant = null)
 	return _coords_for_placed_tile_cards(tile, _get_all_tile_cards_on_same_segment(tile, filter_type))
 
 
-## Highlights same-course spot cards that match a product type.
-func _coords_for_same_segment_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(tile, _get_all_tile_cards_on_same_segment_by_product(tile, filter_product))
-
-
-## Highlights all placed Ingredients on the map that match a product type.
-func _coords_for_placed_producers_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(tile, _get_all_placed_producers_by_product(tile, filter_product))
-
-
-## Highlights adjacent Ingredients that match a product type.
-func _coords_for_adjacent_tile_cards_by_product(tile: Hex, filter_product: Product) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(tile, _get_adjacent_tile_cards_by_product(tile, filter_product))
-
-
-## Highlights adjacent same-course Ingredients that match a product type.
-func _coords_for_adjacent_same_segment_producers_by_product(
+func _coords_for_producers_by_product(
 	tile: Hex,
-	filter_product: Product
+	filter_product: Product,
+	scope: QueryScope
 ) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(
-		tile,
-		_get_adjacent_same_segment_producers_by_product(tile, filter_product)
-	)
+	return _coords_for_placed_tile_cards(tile, _producers_by_product(tile, filter_product, scope))
+
+
+func _coords_for_cards_by_kind(tile: Hex, filter_kind: Variant, scope: QueryScope) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(tile, _cards_by_kind(tile, filter_kind, scope))
 
 
 ## All spots in a course, used to preview where forwarded Flavour or Mult will land.
 func _coords_for_segment(tile: Hex, segment_index: int) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
-	if segment_index < 0:
+	if tile == null or tile.map == null or segment_index < 0:
 		return coords
 	for hex: Hex in tile.map.get_hexes_in_segment(segment_index):
 		coords.append(hex.coordinates)
@@ -1213,6 +1228,8 @@ func _coords_for_segment(tile: Hex, segment_index: int) -> Array[Vector2i]:
 ## Spots in the course after this one. Empty when this spot is on the last course.
 func _coords_for_next_segment(tile: Hex) -> Array[Vector2i]:
 	return _coords_for_segment(tile, _get_next_segment_index(tile))
+
+#endregion --- Map query helpers ---
 
 
 ## Remove a placed spot card instance from the map (clears its spot and cancels queued triggers).
@@ -1234,6 +1251,39 @@ func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard, counts_as_
 		MetaProgressionManager.record_card_broken(on_one_tile)
 		source_tile.map.notify_card_broke(tile_card)
 	source_tile.map.destroy_placed_tile_card(tile_card)
+
+
+## Removes a placed card during resolve without counting as a spoil.
+## Skips Ward, break-save, and on_other_segment_card_broke. Replaces do not use this path.
+func _consume_placed_tile_card(source_tile: Hex, tile_card: TileCard) -> void:
+	if source_tile == null or source_tile.map == null or tile_card == null:
+		return
+	if source_tile.map.get_hex_for_tile_card(tile_card) == null:
+		return
+	RunLedger.record_card_consumed(tile_card)
+	_destroy_placed_tile_card(source_tile, tile_card, false)
+
+
+## Permanent production growth that survives days and is saved with the placed card.
+func _grow_permanent(source_tile: Hex, target: TileCard, amount: float, reason: String = "") -> void:
+	if target == null or amount == 0.0:
+		return
+	target.bonus_production_amount += amount
+	RunLedger.record_permanent_growth(amount)
+	if source_tile == null or source_tile.map == null:
+		return
+	var target_hex := source_tile.map.get_hex_for_tile_card(target)
+	if target_hex == null:
+		target_hex = source_tile
+	var label := reason
+	if label.is_empty():
+		var gained := int(round(amount))
+		if gained >= 0:
+			label = "Gained +%d" % gained
+		else:
+			label = "Gained %d" % gained
+	_create_floating_text(target_hex, label, Color.AQUA)
+	target_hex.refresh_tile_card_visual_state()
 
 
 ## Remove a placed spot card after its queued chained triggers finish resolving.

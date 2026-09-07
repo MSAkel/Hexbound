@@ -10,7 +10,6 @@ type = 3
 product = 1
 recipe_vegetable_count = 1
 recipe_seasoning_count = 1
-stat_kind = 1
 id = "vinaigrette"
 name = "Vinaigrette"
 icon = ExtResource("1_8emet")

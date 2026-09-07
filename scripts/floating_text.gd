@@ -23,10 +23,24 @@ const CARD_MIN_FONT_SIZE := 40
 const STACK_GROUP_DISTANCE := 8.0
 ## Extra pixels between stacked card floats, on top of the previous line's font height.
 const STACK_GAP := 6.0
-## Extra pixels between icons in kitchenware ability → target floats.
+## Extra pixels between icons in composed ability and relay floats.
 const ICON_TEXT_SEPARATION := 6
 ## Centers card activation text over its rune, slightly above the rune's midpoint.
 const CARD_FLOAT_ANCHOR_OFFSET := Vector2(0.0, -24.0)
+## Doubled payouts hit harder. Squash, stretch, then settle.
+const DOUBLE_BANG_SQUASH := Vector2(1.62, 0.72)
+const DOUBLE_BANG_STRETCH := Vector2(0.88, 1.32)
+const DOUBLE_BANG_HIT := 0.055
+const DOUBLE_BANG_REBOUND := 0.07
+const DOUBLE_BANG_SETTLE := 0.12
+## Heavier stroke and slightly larger glyphs so Doubled amounts read bolder.
+const DOUBLE_OUTLINE_SIZE := 16
+const DOUBLE_FONT_SCALE := 1.18
+const CARD_OUTLINE_SIZE := 9
+const SCORE_OUTLINE_SIZE := 12
+## Warmer, denser ink behind Doubled amounts.
+const DOUBLE_GLOW_COLOR := Color(0.42, 0.22, 0.06, 0.62)
+const DEFAULT_GLOW_COLOR := Color(0.10, 0.14, 0.20, 0.48)
 const GLOW_SHADER := preload("res://scenes/animations/floating_text_glow.gdshader")
 
 ## Live card floats. Used to stack extra lines above the first at that tile.
@@ -36,6 +50,8 @@ static var _active_card_floats: Array[FloatingText] = []
 var _stack_anchor: Vector2 = Vector2.ZERO
 var _text_root: Node2D
 var _target_icon: Texture2D
+var _doubled: bool = false
+var _double_bang_tween: Tween
 
 
 func _ready() -> void:
@@ -47,17 +63,22 @@ func set_text(
 	text: String,
 	_color: Color = Color.WHITE,
 	icon: Texture2D = null,
-	target_icon: Texture2D = null
+	target_icon: Texture2D = null,
+	doubled: bool = false
 ) -> void:
 	if not is_node_ready():
 		await ready
 
+	_doubled = doubled
 	label.bbcode_enabled = false
 	label.text = text
 	# Scene preview uses 1.2 scale. Card floats stay at 1 so size matches CARD_FONT_SIZE.
 	label.scale = Vector2.ONE
-	# One color for every tile-card float. Icons still distinguish Energy, Gold, and Mult.
-	_apply_label_style(Color.WHITE, ScoreReadoutStyle.parse_amount(text), true)
+	# Normal card floats stay white. Doubled payouts use the Double keyword color.
+	# Product icons still distinguish Flavour, Gold, and Mult.
+	var label_color := CardKeywordGlossary.COLOR_DOUBLE if _doubled else Color.WHITE
+	var font_scale := DOUBLE_FONT_SCALE if _doubled else 1.0
+	_apply_label_style(label_color, ScoreReadoutStyle.parse_amount(text), true, font_scale)
 	_target_icon = target_icon
 	_apply_icon(icon)
 
@@ -70,7 +91,10 @@ func _apply_label_style(
 ) -> void:
 	label.add_theme_color_override("default_color", color)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 9 if card_float else 12)
+	var outline := CARD_OUTLINE_SIZE if card_float else SCORE_OUTLINE_SIZE
+	if _doubled:
+		outline = DOUBLE_OUTLINE_SIZE
+	label.add_theme_constant_override("outline_size", outline)
 	var font_size: float
 	if card_float:
 		font_size = _card_font_size_for_text(label.text)
@@ -91,6 +115,10 @@ func play_float_and_free() -> void:
 	if not await _play_character_pop():
 		queue_free()
 		return
+
+	# Bang overlaps the hold so resolve pace does not stretch.
+	if _doubled:
+		_play_double_bang()
 
 	await GameManager.create_pauseable_timer(HOLD_AFTER_POP / GameManager.game_speed).timeout
 	if not is_instance_valid(self):
@@ -145,10 +173,10 @@ func _play_character_pop() -> bool:
 	add_child(_text_root)
 
 	var row := HBoxContainer.new()
-	var uses_icon_pair := has_icon and has_target_icon
+	var uses_composed_icons := has_icon and has_target_icon
 	row.add_theme_constant_override(
 		"separation",
-		ICON_TEXT_SEPARATION if uses_icon_pair or has_icon else 1
+		ICON_TEXT_SEPARATION if uses_composed_icons or has_icon else 1
 	)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_text_root.add_child(row)
@@ -160,13 +188,15 @@ func _play_character_pop() -> bool:
 		pop_items.append(icon_rect)
 
 	var color := label.get_theme_color("default_color")
-	if uses_icon_pair:
-		var arrow := _make_character_label("→", color)
-		row.add_child(arrow)
-		pop_items.append(arrow)
-		var target_rect := _make_icon_rect(_target_icon)
-		row.add_child(target_rect)
-		pop_items.append(target_rect)
+	if uses_composed_icons:
+		var trailing_rect := _make_icon_rect(_target_icon)
+		row.add_child(trailing_rect)
+		pop_items.append(trailing_rect)
+		if not label.text.is_empty():
+			for character in label.text:
+				var char_label := _make_character_label(character, color)
+				row.add_child(char_label)
+				pop_items.append(char_label)
 	elif not label.text.is_empty():
 		for character in label.text:
 			var char_label := _make_character_label(character, color)
@@ -211,6 +241,8 @@ func _make_glow_backdrop(row_size: Vector2) -> ColorRect:
 	var glow := ColorRect.new()
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var pad := Vector2(maxf(18.0, row_size.y * 0.4), row_size.y * 0.32)
+	if _doubled:
+		pad *= 1.2
 	glow.size = row_size + pad * 2.0
 	glow.position = -glow.size * 0.5
 	glow.pivot_offset = glow.size * 0.5
@@ -220,6 +252,7 @@ func _make_glow_backdrop(row_size: Vector2) -> ColorRect:
 	var mat := ShaderMaterial.new()
 	mat.shader = GLOW_SHADER
 	mat.set_shader_parameter("aspect", glow.size.x / maxf(glow.size.y, 1.0))
+	mat.set_shader_parameter("ink_color", DOUBLE_GLOW_COLOR if _doubled else DEFAULT_GLOW_COLOR)
 	glow.material = mat
 	return glow
 
@@ -263,6 +296,41 @@ func _make_icon_rect(texture: Texture2D) -> TextureRect:
 
 func _icon_pixel_size() -> float:
 	return float(label.get_theme_font_size("normal_font_size"))
+
+
+# Comic-book bang after the glyphs land. Squash on impact, stretch on rebound, then settle.
+func _play_double_bang() -> void:
+	if _text_root == null:
+		return
+	if _double_bang_tween != null and _double_bang_tween.is_valid():
+		_double_bang_tween.kill()
+
+	var rest_scale := _text_root.scale
+	var hit := DOUBLE_BANG_HIT / GameManager.game_speed
+	var rebound := DOUBLE_BANG_REBOUND / GameManager.game_speed
+	var settle := DOUBLE_BANG_SETTLE / GameManager.game_speed
+	_double_bang_tween = create_tween()
+	_double_bang_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	_double_bang_tween.set_parallel(true)
+	_double_bang_tween.tween_property(_text_root, "scale", DOUBLE_BANG_SQUASH * rest_scale, hit).set_trans(
+		Tween.TRANS_BACK
+	).set_ease(Tween.EASE_OUT)
+	_double_bang_tween.tween_property(_text_root, "modulate", Color(1.35, 1.18, 0.85, 1.0), hit).set_ease(
+		Tween.EASE_OUT
+	)
+	_double_bang_tween.chain()
+	_double_bang_tween.set_parallel(true)
+	_double_bang_tween.tween_property(_text_root, "scale", DOUBLE_BANG_STRETCH * rest_scale, rebound).set_trans(
+		Tween.TRANS_BACK
+	).set_ease(Tween.EASE_OUT)
+	_double_bang_tween.chain()
+	_double_bang_tween.set_parallel(true)
+	_double_bang_tween.tween_property(_text_root, "scale", rest_scale, settle).set_trans(
+		Tween.TRANS_ELASTIC
+	).set_ease(Tween.EASE_OUT)
+	_double_bang_tween.tween_property(_text_root, "modulate", Color.WHITE, settle).set_ease(
+		Tween.EASE_IN
+	)
 
 
 func _set_font_size(value: float) -> void:

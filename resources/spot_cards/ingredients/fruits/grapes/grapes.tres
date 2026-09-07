@@ -2,15 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://xdvmo1ol25pr" path="res://assets/icons/food/ingredients/grape.png" id="1_s0prh"]
 [ext_resource type="Script" uid="uid://bke723f5gj6w1" path="res://resources/spot_cards/ingredients/fruits/grapes/grapes.gd" id="2_d4tnr"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_pvu6m"]
-
 
 [resource]
 script = ExtResource("2_d4tnr")
-ingredient_kind = 2
 base_production_amount = 12
 rarity = 1
 product = 1
+ingredient_tags = Array[StringName]([&"fruit"])
 id = "grapes"
 name = "Grapes"
 icon = ExtResource("1_s0prh")

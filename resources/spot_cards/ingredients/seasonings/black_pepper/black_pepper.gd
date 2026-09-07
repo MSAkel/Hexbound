@@ -1,17 +1,15 @@
 extends TileCard
 
 # +4 Mult increased by 1 for each Mult rune on the same segment
-func _on_activate_tile_card(_tile: Hex) -> void:
-	var mult_count := _get_all_tile_cards_on_same_segment_by_product(_tile, Product.MULTIPLIER).size()
-	add_additive_mult(_tile, mult_count + _get_production_amount())
+func _on_activate_tile_card(tile: Hex) -> void:
+	_pay_effect_amount(tile)
 
 
-func get_board_chip(tile: Hex = null) -> Dictionary:
+func _effect_amount(tile: Hex) -> float:
 	if tile == null:
-		return _amount_board_chip_float(_get_production_amount())
-	var mult_count := _get_all_tile_cards_on_same_segment_by_product(tile, Product.MULTIPLIER).size()
-	return _amount_board_chip_float(float(mult_count) + _get_production_amount())
+		return _get_production_amount()
+	return float(_effect_preview_cards(tile).size()) + _get_production_amount()
 
 
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_same_segment_tile_cards_by_product(hover_tile, Product.MULTIPLIER)
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	return _producers_by_product(tile, Product.MULTIPLIER, QueryScope.SAME_SEGMENT)
