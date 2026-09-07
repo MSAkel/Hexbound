@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3 uid="uid://dbrbhtm421ndy"]
+
+[ext_resource type="Texture2D" uid="uid://b3vj6x8ncfhlh" path="res://assets/icons/food/dishes/steak_dinner.png" id="1_x6el4"]
+[ext_resource type="Script" uid="uid://bmxd1j0ch2q0y" path="res://resources/spot_cards/dishes/steak_dinner/steak_dinner.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+recipe_protein_count = 1
+recipe_kitchenware_count = 1
+base_production_amount = 60
+rarity = 1
+type = 3
+product = 1
+stat_kind = 1
+id = "steak_dinner"
+name = "Steak Dinner"
+icon = ExtResource("1_x6el4")
+description = "+60 Flavour. Doubles the Following neighbouring card if it's wine"
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

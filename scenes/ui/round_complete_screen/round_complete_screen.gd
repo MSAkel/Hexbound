@@ -47,6 +47,16 @@ func _on_show_panel() -> void:
 	else:
 		tokens_lost_label.visible = false
 
+	# Deferred so the panel is laid out and visible before the button takes focus.
+	call_deferred("_focus_continue")
+
+
+## Seats keyboard and gamepad focus on the only action this summary offers.
+func _focus_continue() -> void:
+	if not visible:
+		return
+	MenuFocus.grab_named(self, "ContinueButton")
+
 
 func _turns_remaining_phrase(turns_remaining: int) -> String:
 	if turns_remaining == 1:

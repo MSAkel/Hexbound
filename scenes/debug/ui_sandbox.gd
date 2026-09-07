@@ -93,7 +93,7 @@ func _show_round_complete() -> void:
 
 func _show_rune_selection() -> void:
 	_hide_active_panel()
-	UiManager.show_runes_choice_panel.emit()
+	UiManager.show_cards_choice_panel.emit()
 
 
 func _show_passive_unlock() -> void:

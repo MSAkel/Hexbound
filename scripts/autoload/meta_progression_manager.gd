@@ -536,6 +536,10 @@ func add_support_trigger() -> void:
 	_add_stat("support_triggers", 1)
 
 
+func add_dish_trigger() -> void:
+	_add_stat("dish_triggers", 1)
+
+
 func add_producer_retrigger() -> void:
 	_add_stat("producer_retriggers", 1)
 

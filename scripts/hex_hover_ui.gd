@@ -74,6 +74,21 @@ func hide_tile_panel() -> void:
 	_clear_occupied_inspect_overlay()
 
 
+## Re-stamp inspect overlays after a condiment lands without waiting for mouse motion.
+func refresh_current_hover() -> void:
+	if _tile_panel_hover_coords == Vector2i(-1, -1):
+		return
+	if not map.map_data.has(_tile_panel_hover_coords):
+		return
+	var hex: Hex = map.map_data[_tile_panel_hover_coords]
+	if hex.active_tile_card == null:
+		hide_tile_panel()
+		return
+	_update_occupied_inspect_overlay(hex)
+	if map.tile_panel.visible:
+		map.tile_panel.set_hex(hex, map._get_tile_screen_rect(_tile_panel_hover_coords))
+
+
 func _set_panel_process(enabled: bool) -> void:
 	set_process(enabled)
 

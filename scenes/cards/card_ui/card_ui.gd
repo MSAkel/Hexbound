@@ -101,6 +101,9 @@ func _ready() -> void:
 	_resting_z_index = z_index
 	_apply_interaction_mode()
 	tree_exiting.connect(_hide_keyword_tooltips)
+	# Shop and choice cards double as gamepad focus targets, so mirror hover on focus.
+	focus_entered.connect(_on_focus_entered)
+	focus_exited.connect(_on_focus_exited)
 
 
 # Parent screens call this after instantiation to choose how the card responds to input.
@@ -156,7 +159,51 @@ func _apply_interaction_mode() -> void:
 	if interaction_mode != InteractionMode.HAND:
 		offset_transform_scale = Vector2.ONE
 
+	_refresh_focus_mode()
 	drop_point_area.monitoring = false
+
+
+## Shop and choice cards are directional-navigation targets.
+## Hand cards are excluded because Hand runs its own controller focus ring.
+func _supports_focus() -> bool:
+	if _is_sold:
+		return false
+	match interaction_mode:
+		InteractionMode.MERCHANT, InteractionMode.MERCHANT_STOCK, InteractionMode.CHOICE:
+			return true
+		_:
+			return false
+
+
+func _refresh_focus_mode() -> void:
+	var wants_focus := _supports_focus()
+	focus_mode = Control.FOCUS_ALL if wants_focus else Control.FOCUS_NONE
+	if not wants_focus and has_focus():
+		release_focus()
+
+
+func _on_focus_entered() -> void:
+	if _is_sold:
+		return
+	set_hover_elevated(true)
+	_show_keyword_tooltips()
+
+
+func _on_focus_exited() -> void:
+	_hide_keyword_tooltips()
+	# Choice and stock cards lose focus as they are freed. Skip the tween in that case.
+	if not is_inside_tree() or is_queued_for_deletion():
+		return
+	set_hover_elevated(false)
+
+
+## Confirm on a focused card. Matches the left-click path for the current mode.
+func _activate_focused_card() -> void:
+	if _is_sold:
+		return
+	if interaction_mode == InteractionMode.MERCHANT and not GoldManager.can_afford(price):
+		return
+	action_requested.emit(self)
 
 
 ## Merchant price chip sits above the frame. Hand cards keep the original full-bleed layout.
@@ -454,6 +501,11 @@ func _input(event: InputEvent) -> void:
 
 
 func _on_gui_input(event: InputEvent) -> void:
+	if _supports_focus() and event.is_action_pressed("ui_accept"):
+		_activate_focused_card()
+		accept_event()
+		return
+
 	match interaction_mode:
 		InteractionMode.HAND:
 			card_state_machine.on_gui_input(event)
@@ -480,12 +532,15 @@ func _on_mouse_entered() -> void:
 
 
 func _on_mouse_exited() -> void:
-	_hide_keyword_tooltips()
+	if not has_focus():
+		_hide_keyword_tooltips()
 	match interaction_mode:
 		InteractionMode.HAND:
 			card_state_machine.on_mouse_exited()
 		InteractionMode.MERCHANT, InteractionMode.MERCHANT_STOCK, InteractionMode.CHOICE:
-			set_hover_elevated(false)
+			# A focused card keeps its lift so the gamepad cursor does not vanish.
+			if not has_focus():
+				set_hover_elevated(false)
 
 
 func _handle_merchant_gui_input(event: InputEvent) -> void:
@@ -774,6 +829,8 @@ func mark_sold() -> void:
 		custom_minimum_size.y = MERCHANT_STOCK_SLOT_HEIGHT
 	mouse_default_cursor_shape = Control.CURSOR_ARROW
 	_hide_keyword_tooltips()
+	_purchase_tray.set_focusable(false)
+	_refresh_focus_mode()
 
 
 func refresh_affordability() -> void:
@@ -861,7 +918,17 @@ func set_merchant_selected(selected: bool) -> void:
 	)
 	if selected:
 		refresh_purchase_tray()
+	# Buy buttons only enter the focus chain while their tray is on screen.
+	_purchase_tray.set_focusable(_purchase_tray.visible)
 	_apply_offset_transform(true)
+
+
+## Move focus onto the buy row after this shelf card is selected.
+## False when the tray is hidden or every buy option is unaffordable.
+func focus_purchase_tray() -> bool:
+	if not _purchase_tray.visible:
+		return false
+	return _purchase_tray.focus_first_enabled()
 
 
 func _show_keyword_tooltips() -> void:

@@ -25,3 +25,24 @@ func set_gold_enabled(enabled: bool) -> void:
 
 func set_token_enabled(enabled: bool) -> void:
 	_token_button.disabled = not enabled
+
+
+## Buy buttons join the focus chain only while the tray is shown for a selected item.
+## Otherwise directional navigation would stop on invisible controls.
+func set_focusable(enabled: bool) -> void:
+	var mode := Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	for button: Button in [_gold_button, _token_button]:
+		button.focus_mode = mode
+		if not enabled and button.has_focus():
+			button.release_focus()
+
+
+## Grabs the first buy button the player can actually press.
+## False when both are disabled, so the caller can fall back elsewhere.
+func focus_first_enabled() -> bool:
+	for button: Button in [_gold_button, _token_button]:
+		if button.disabled or button.focus_mode == Control.FOCUS_NONE:
+			continue
+		button.grab_focus()
+		return true
+	return false

@@ -279,31 +279,31 @@ func get_max_turns_per_round() -> int:
 
 
 ## Pack size for the current offer.
-func get_runes_pack_size(is_round_reward: Variant = null) -> int:
+func get_cards_pack_size(is_round_reward: Variant = null) -> int:
 	var reward := bool(is_round_reward) if is_round_reward != null else RoundFlow.is_transitioning()
 	if _get_governing_event(reward) == Type.DEALT_HAND:
 		return 1
-	return GameManager.RUNES_PACK_SIZE
+	return GameManager.CARDS_PACK_SIZE
 
 
 ## Dealt Hand skips the draft overlay and grants the lone card immediately.
-func should_auto_grant_rune(is_round_reward: bool = false) -> bool:
+func should_auto_grant_card(is_round_reward: bool = false) -> bool:
 	return _get_governing_event(is_round_reward) == Type.DEALT_HAND
 
 
 ## Draws one card from the same stream as the draft panel and adds it to the hand.
-func grant_auto_rune(is_round_reward: bool, fail_remaining_turns: int = -1) -> bool:
-	if not should_auto_grant_rune(is_round_reward):
+func grant_auto_card(is_round_reward: bool, fail_remaining_turns: int = -1) -> bool:
+	if not should_auto_grant_card(is_round_reward):
 		return false
 	if GameManager.tile_cards_pool.is_empty():
-		push_error("EventManager: cannot auto-grant rune, pool is empty.")
+		push_error("EventManager: cannot auto-grant card, pool is empty.")
 		return false
 
 	var round_number := GameManager.current_round
 	if is_round_reward and RoundFlow.is_transitioning():
-		round_number = RoundFlow.get_transition_rune_pick_round()
+		round_number = RoundFlow.get_transition_card_pick_round()
 	var remaining_turns := fail_remaining_turns if fail_remaining_turns >= 0 else GameManager.remaining_turns
-	var stream_name := RunRng.build_rune_offer_stream_name(
+	var stream_name := RunRng.build_card_offer_stream_name(
 		round_number,
 		remaining_turns,
 		is_round_reward,

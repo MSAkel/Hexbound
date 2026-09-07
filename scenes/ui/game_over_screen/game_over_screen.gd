@@ -32,6 +32,15 @@ func _on_game_ended() -> void:
 	UiManager.show_panel(self)
 	AudioManager.play_sfx(UISounds.GAME_OVER)
 	layout_xp_bar.play_gain(from_xp, xp_gain, 0.45)
+	# Deferred so the panel is laid out and visible before the button takes focus.
+	call_deferred("_focus_main_menu")
+
+
+## Seats keyboard and gamepad focus on Main Menu rather than the Copy Seed button.
+func _focus_main_menu() -> void:
+	if not visible:
+		return
+	MenuFocus.grab_named(self, "MainMenuButton")
 
 
 func _current_layout_xp() -> int:

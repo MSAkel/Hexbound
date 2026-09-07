@@ -152,15 +152,15 @@ func pick_random_placed_tile_card(
 
 ## Build a stable stream key from run position so the same moment always rolls the same pack.
 ## Fail offers include remaining_turns so they do not depend on event turn-cap math.
-func build_rune_offer_stream_name(
+func build_card_offer_stream_name(
 	round_number: int,
 	remaining_turns: int,
 	is_round_reward: bool,
 	reroll_index: int
 ) -> String:
 	if is_round_reward:
-		return "rune_offer:r%d:reward:e%d" % [round_number, reroll_index]
-	return "rune_offer:r%d:fail:t%d:e%d" % [round_number, remaining_turns, reroll_index]
+		return "card_offer:r%d:reward:e%d" % [round_number, reroll_index]
+	return "card_offer:r%d:fail:t%d:e%d" % [round_number, remaining_turns, reroll_index]
 
 
 func build_merchant_stream_name(round_number: int, reroll_index: int) -> String:

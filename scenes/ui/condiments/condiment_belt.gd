@@ -55,7 +55,9 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		_finish_drop()
-		get_viewport().set_input_as_handled()
+		# Leave this mouse-up unhandled. The slot Control that took the press must
+		# still see the release, or Viewport keeps GUI mouse focus on the belt
+		# and map hover stops receiving motion until the next click.
 
 
 func _refresh() -> void:
@@ -95,6 +97,8 @@ func _on_targeting_changed(_slot_index: int) -> void:
 
 func _on_consume_started(slot_index: int, _condiment: Condiment) -> void:
 	_awaiting_consume = true
+	if slot_index >= 0 and slot_index < _slots.size():
+		_slots[slot_index].clear_press()
 	if GameManager.skip_presentation:
 		_finish_consume_visuals()
 		EventBus.condiment_consume_animation_finished.emit()
@@ -153,11 +157,14 @@ func _finish_consume_visuals() -> void:
 	_drag_index = -1
 	_awaiting_consume = false
 	_refresh()
+	EventBus.tooltip_hover_refresh_requested.emit()
 
 
 func _cancel_drag() -> void:
 	if _drag_index < 0:
 		return
+	if _drag_index < _slots.size():
+		_slots[_drag_index].clear_press()
 	CondimentManager.cancel_targeting()
 	_ghost.visible = false
 	_drag_index = -1

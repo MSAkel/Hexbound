@@ -167,6 +167,9 @@ static func format_display_mult(additive_mult: float, multiplicative_mult: float
 
 
 ## Multiplicative mult display for floating text when a card grants xMult directly.
+## Whole numbers stay x3. Fractional values keep one decimal, such as x0.5.
 static func format_multiplicative_mult(value: float) -> String:
-	var rounded := int(round(value))
-	return "x%d" % rounded
+	var snapped := snappedf(value, 0.1)
+	if is_equal_approx(snapped, round(snapped)):
+		return "x%d" % int(round(snapped))
+	return "x%.1f" % snapped

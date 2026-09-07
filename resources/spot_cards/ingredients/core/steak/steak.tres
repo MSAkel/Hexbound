@@ -5,15 +5,12 @@
 
 [resource]
 script = ExtResource("2_pyice")
-base_production_amount = 80
+base_production_amount = 10
 rarity = 2
 product = 1
 ingredient_kind = 3
-placement_restriction = 4
-layout_requirement = 1
-layout_requirement_size = 1
 id = "steak"
 name = "Steak"
 icon = ExtResource("1_bxdtk")
-description = "+80 Flavour. Must be on a 1-spot course"
+description = "+10 Flavour per Seasoning on this course. Max +40"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

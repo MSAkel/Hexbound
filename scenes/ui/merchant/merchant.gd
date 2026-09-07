@@ -42,6 +42,8 @@ func _ready() -> void:
 	EventBus.condiment_belt_changed.connect(_on_currency_changed)
 	EventBus.condiment_targeting_changed.connect(_on_condiment_targeting_changed)
 	UiManager.show_merchant_panel.connect(open)
+	# Picking up a controller mid-shop should place a focus ring without a re-open.
+	InputManager.input_mode_changed.connect(_on_input_mode_changed)
 	_update_currency_display()
 	_update_reroll_button()
 	_clear_selection()
@@ -67,6 +69,7 @@ func open() -> void:
 	await _refresh_merchant_stock()
 	_apply_sold_indices(sold_card_indices)
 	_apply_sold_condiment_indices(sold_condiment_indices)
+	_queue_focus()
 	if restoring:
 		return
 	AudioManager.play_sfx(UISounds.MERCHANT_BELL)
@@ -78,11 +81,53 @@ func _input(event: InputEvent) -> void:
 		return
 	if get_viewport().is_input_handled():
 		return
+	# Back on a selected item drops the buy tray and returns focus to the shelf.
+	if _has_selection() and InputManager.is_back_pressed(event):
+		_clear_selection()
+		_queue_focus()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseButton \
 			and event.pressed \
 			and event.button_index == MOUSE_BUTTON_RIGHT:
 		_clear_selection()
 		get_viewport().set_input_as_handled()
+
+
+func _on_input_mode_changed(using_gamepad: bool) -> void:
+	if using_gamepad and visible:
+		_queue_focus()
+
+
+func _has_selection() -> bool:
+	return _selected_card_ui != null or _selected_condiment_ui != null
+
+
+func _queue_focus() -> void:
+	call_deferred("_focus_merchant")
+
+
+## Places the gamepad focus ring on the most useful control for the current shop state.
+## Mouse and keyboard players are left alone so no stray focus ring appears mid-run.
+func _focus_merchant() -> void:
+	if not visible or not InputManager.is_using_gamepad():
+		return
+	if not _content_panel.visible:
+		_show_merchant_button.grab_focus()
+		return
+	if _selected_card_ui != null and _selected_card_ui.focus_purchase_tray():
+		return
+	if _selected_condiment_ui != null and _selected_condiment_ui.focus_purchase_tray():
+		return
+	for card_ui in _displayed_cards:
+		if not card_ui.is_sold():
+			card_ui.grab_focus()
+			return
+	for condiment_ui in _displayed_condiments:
+		if not condiment_ui.is_sold():
+			condiment_ui.grab_focus()
+			return
+	leave_button.grab_focus()
 
 
 func _on_show_board_button_pressed() -> void:
@@ -99,6 +144,7 @@ func _set_board_view(active: bool) -> void:
 	_content_panel.visible = not active
 	_show_merchant_button.visible = active
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if active else Control.MOUSE_FILTER_STOP
+	_queue_focus()
 
 
 func _on_condiment_targeting_changed(slot_index: int) -> void:
@@ -183,6 +229,7 @@ func _on_stock_card_selected(card_ui: CardUI) -> void:
 	_selected_card_ui = card_ui
 	_selected_card_ui.set_merchant_selected(true)
 	_refresh_selected_purchase_tray()
+	_queue_focus()
 
 
 func _on_stock_condiment_selected(item: CondimentShopItem) -> void:
@@ -194,6 +241,7 @@ func _on_stock_condiment_selected(item: CondimentShopItem) -> void:
 	_selected_condiment_ui = item
 	_selected_condiment_ui.set_merchant_selected(true)
 	_refresh_selected_purchase_tray()
+	_queue_focus()
 
 
 func _on_stock_card_gold_purchase_requested(card_ui: CardUI) -> void:
@@ -252,6 +300,8 @@ func _complete_purchase(pay_with_tokens: bool) -> void:
 	)
 	_clear_selection()
 	_update_reroll_button()
+	# The bought card left the focus chain, so hand the ring to the next shelf item.
+	_queue_focus()
 
 
 func _complete_condiment_purchase(pay_with_tokens: bool) -> void:
@@ -276,6 +326,8 @@ func _complete_condiment_purchase(pay_with_tokens: bool) -> void:
 	)
 	_clear_selection()
 	_update_reroll_button()
+	# The bought bottle left the focus chain, so hand the ring to the next shelf item.
+	_queue_focus()
 
 
 func _on_reroll_button_pressed() -> void:
@@ -291,6 +343,8 @@ func _on_reroll_button_pressed() -> void:
 	_stock_reroll_count += 1
 	await _refresh_merchant_stock()
 	_update_reroll_button()
+	# Fresh stock replaced the focused card, so re-seat the ring on the new grid.
+	_queue_focus()
 	RunSaveManager.request_autosave()
 
 

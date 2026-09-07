@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-signal show_runes_choice_panel
+signal show_cards_choice_panel
 signal show_merchant_panel
 signal show_round_complete_panel
 

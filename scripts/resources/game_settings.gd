@@ -9,6 +9,16 @@ const DISPLAY_MODE_FULLSCREEN := 0
 const DISPLAY_MODE_WINDOWED := 1
 const DISPLAY_MODE_BORDERLESS := 2
 
+const RESOLUTIONS := [
+	Vector2i(1024, 576),
+	Vector2i(1280, 720),
+	Vector2i(1366, 768),
+	Vector2i(1600, 900),
+	Vector2i(1920, 1080),
+	Vector2i(2560, 1440),
+	Vector2i(3840, 2160),
+]
+
 ## When true, the in-run tutorial banner appears the next time a run starts.
 static var tutorial_enabled: bool = true
 static var screen_shake_enabled: bool = true
@@ -25,7 +35,26 @@ static var _loaded: bool = false
 
 static func detect_device_resolution() -> Vector2i:
 	var screen := DisplayServer.window_get_current_screen()
-	return DisplayServer.screen_get_size(screen)
+	return snap_resolution_to_preset(DisplayServer.screen_get_size(screen))
+
+
+## Maps saved or detected sizes onto the nearest supported preset.
+static func snap_resolution_to_preset(value: Vector2i) -> Vector2i:
+	for preset in RESOLUTIONS:
+		if preset == value:
+			return preset
+	var best := RESOLUTIONS[0]
+	var best_distance := _resolution_distance(value, best)
+	for preset in RESOLUTIONS:
+		var distance := _resolution_distance(value, preset)
+		if distance < best_distance:
+			best_distance = distance
+			best = preset
+	return best
+
+
+static func _resolution_distance(a: Vector2i, b: Vector2i) -> int:
+	return absi(a.x - b.x) + absi(a.y - b.y)
 
 
 static func ensure_loaded() -> void:
@@ -57,11 +86,19 @@ static func ensure_loaded() -> void:
 			DISPLAY_MODE_BORDERLESS
 		)
 		var saved_resolution = settings.get("resolution", detect_device_resolution())
+		var loaded_resolution := detect_device_resolution()
 		if saved_resolution is Vector2i:
-			resolution = saved_resolution
+			loaded_resolution = saved_resolution
 		elif saved_resolution is Vector2:
-			resolution = Vector2i(saved_resolution)
+			loaded_resolution = Vector2i(saved_resolution)
+		var snapped_resolution := snap_resolution_to_preset(loaded_resolution)
+		resolution = snapped_resolution
 		last_character_selection_id = String(settings.get("last_character_selection_id", ""))
+		_apply_display_settings()
+		_apply_vsync()
+		if snapped_resolution != loaded_resolution:
+			_save()
+		return
 	_apply_display_settings()
 	_apply_vsync()
 
@@ -139,36 +176,74 @@ static func set_resolution(value: Vector2i) -> void:
 static func _apply_display_settings() -> void:
 	match display_mode:
 		DISPLAY_MODE_WINDOWED:
-			_shrink_fullscreen_sized_resolution()
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 			DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, false)
 			_apply_windowed_resolution()
+			# Decorations are often still 0 the frame we leave fullscreen. Refit once they exist.
+			_queue_windowed_resolution_refresh()
 		DISPLAY_MODE_BORDERLESS:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 
 
+static func _queue_windowed_resolution_refresh() -> void:
+	var tree := Engine.get_main_loop()
+	if tree is SceneTree:
+		var scene_tree := tree as SceneTree
+		if not scene_tree.process_frame.is_connected(_apply_windowed_resolution):
+			scene_tree.process_frame.connect(_apply_windowed_resolution, CONNECT_ONE_SHOT)
+
+
 static func _apply_windowed_resolution() -> void:
-	DisplayServer.window_set_size(resolution)
 	var screen := DisplayServer.window_get_current_screen()
-	var screen_position := DisplayServer.screen_get_position(screen)
-	var screen_size := DisplayServer.screen_get_size(screen)
-	var delta := screen_size - resolution
-	DisplayServer.window_set_position(
-		screen_position + Vector2i(delta.x >> 1, delta.y >> 1)
+	var usable := DisplayServer.screen_get_usable_rect(screen)
+	var window_size := _get_fitted_windowed_size(usable)
+	DisplayServer.window_set_size(window_size)
+	# Windows may still clip a window that does not fit. If that happens, scale again from the real client size.
+	var actual_size := DisplayServer.window_get_size()
+	if actual_size != window_size:
+		window_size = _scale_resolution_to_fit(resolution, actual_size)
+		DisplayServer.window_set_size(window_size)
+	_center_window_in_usable_rect(usable)
+
+
+## Fits the saved preset into the usable desktop, including title bar and borders.
+## Scales both axes together so the window stays 16:9. Independent clamping causes side black bars.
+static func _get_fitted_windowed_size(usable: Rect2i) -> Vector2i:
+	var decoration := DisplayServer.window_get_size_with_decorations() - DisplayServer.window_get_size()
+	decoration = Vector2i(maxi(decoration.x, 0), maxi(decoration.y, 0))
+	var max_client := Vector2i(
+		maxi(usable.size.x - decoration.x, 1),
+		maxi(usable.size.y - decoration.y, 1)
 	)
+	return _scale_resolution_to_fit(resolution, max_client)
 
 
-## Keeps windowed mode inside the usable desktop area without resetting to a preset size.
-static func _shrink_fullscreen_sized_resolution() -> void:
-	var screen := DisplayServer.window_get_current_screen()
-	var usable_size := DisplayServer.screen_get_usable_rect(screen).size
-	if resolution.x > usable_size.x or resolution.y > usable_size.y:
-		resolution = Vector2i(
-			mini(resolution.x, usable_size.x),
-			mini(resolution.y, usable_size.y)
-		)
+## Uniformly scales a preset so it fits inside max_size without changing its aspect ratio.
+static func _scale_resolution_to_fit(requested: Vector2i, max_size: Vector2i) -> Vector2i:
+	if requested.x <= 0 or requested.y <= 0:
+		return requested
+	if requested.x <= max_size.x and requested.y <= max_size.y:
+		return requested
+	var scale := minf(float(max_size.x) / float(requested.x), float(max_size.y) / float(requested.y))
+	# Height is usually the limit because of the taskbar and title bar. Derive width from it to keep 16:9.
+	var fitted_height := maxi(1, roundi(float(requested.y) * scale))
+	var fitted_width := maxi(1, roundi(float(fitted_height) * float(requested.x) / float(requested.y)))
+	if fitted_width > max_size.x:
+		fitted_width = max_size.x
+		fitted_height = maxi(1, roundi(float(fitted_width) * float(requested.y) / float(requested.x)))
+	return Vector2i(fitted_width, fitted_height)
+
+
+## Centers the decorated window inside the usable desktop, not the full screen.
+static func _center_window_in_usable_rect(usable: Rect2i) -> void:
+	var decorated_size := DisplayServer.window_get_size_with_decorations()
+	var extra := usable.size - decorated_size
+	var origin := usable.position + Vector2i(extra.x >> 1, extra.y >> 1)
+	origin.x = clampi(origin.x, usable.position.x, usable.position.x + maxi(usable.size.x - decorated_size.x, 0))
+	origin.y = clampi(origin.y, usable.position.y, usable.position.y + maxi(usable.size.y - decorated_size.y, 0))
+	DisplayServer.window_set_position(origin)
 
 
 ## Clears progression-related preferences while keeping audio, display, and control options.

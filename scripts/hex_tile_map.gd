@@ -159,6 +159,9 @@ func _refresh_condiment_fuse_badges() -> void:
 	for hex: Hex in map_data.values():
 		if hex.card_icon_ui != null and hex.active_tile_card != null:
 			hex.card_icon_ui.refresh_condiment_badges(hex.active_tile_card, hex.coordinates)
+	_refresh_map_focus_overlays()
+	if hover_ui != null:
+		hover_ui.refresh_current_hover()
 
 
 func _exit_tree() -> void:
@@ -560,11 +563,17 @@ func refresh_dashed_outlines() -> void:
 	trigger_order_overlay.refresh_display_state()
 
 
-## Recompute dish chips after prefix cards are placed, buffed, or fire.
-func refresh_dish_output_chips() -> void:
+## Recompute output chips that read other placed cards. Dishes, steak-style ingredients, and similar.
+func refresh_board_output_chips() -> void:
 	for hex: Hex in map_data.values():
-		if hex.active_tile_card is DishCard:
-			hex.refresh_tile_card_visual_state()
+		if hex.active_tile_card == null or hex.card_icon_ui == null:
+			continue
+		hex.card_icon_ui.refresh_output_chip(hex.active_tile_card)
+
+
+## Kept for older call sites. Refreshes every context-sensitive board chip, not just dishes.
+func refresh_dish_output_chips() -> void:
+	refresh_board_output_chips()
 
 
 func _should_hide_dashed_outline(coords: Vector2i) -> bool:
@@ -1565,7 +1574,12 @@ func schedule_destroy_after_trigger_link(
 	turn_resolver.schedule_destroy_after_trigger_link(source_hex, tile_card, on_destroy)
 
 
-## Show floating text at a world position on the current scene.
+## Scene-global center of a hex tile. Use for floating text on the main scene root.
+func floating_text_position_for_hex(coords: Vector2i) -> Vector2:
+	return to_global(base_layer.map_to_local(coords))
+
+
+## Show floating text at a scene-global position on the current scene.
 func create_floating_text(
 	pos: Vector2,
 	text: String,
@@ -1574,11 +1588,6 @@ func create_floating_text(
 	target_icon: Texture2D = null
 ) -> void:
 	turn_resolver.create_floating_text(pos, text, color, icon, target_icon)
-
-
-## Converts map coordinates to local pixel position on the base tile layer.
-func map_to_local(coords: Vector2i) -> Vector2i:
-	return base_layer.map_to_local(coords)
 
 
 ## True while a hand card is snapping onto a hex and has not committed yet.

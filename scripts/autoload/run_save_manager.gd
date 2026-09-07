@@ -9,7 +9,7 @@ const SAVE_VERSION := 4
 const MIN_SUPPORTED_SAVE_VERSION := 4
 const HAND_GROUP := "run_hand"
 const MERCHANT_GROUP := "run_merchant"
-const RUNE_SELECTION_GROUP := "run_rune_selection"
+const CARD_SELECTION_GROUP := "run_card_selection"
 const GAME_OVER_GROUP := "run_game_over"
 
 # Set before loading main.tscn from the main menu Continue button.
@@ -204,9 +204,9 @@ func save_current_run() -> void:
 	if merchant != null:
 		payload["merchant"] = merchant.capture_shop_state()
 
-	var rune_selection = _find_rune_selection()
-	if rune_selection != null:
-		payload["rune_offer"] = rune_selection.capture_offer_state()
+	var card_selection = _find_card_selection()
+	if card_selection != null:
+		payload["card_offer"] = card_selection.capture_offer_state()
 
 	var json_text := JSON.stringify(payload, "\t")
 	if not SAVE_FILE.write_text(SAVE_PATH, json_text):
@@ -258,7 +258,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	# Re-show the panel the run was sitting on, after the HUD has caught up.
 	RoundFlow.restore_after_load()
 	if not _pending_turn_resume:
-		_restore_idle_rune_pick()
+		_restore_idle_card_pick()
 	_is_restoring = false
 	return true
 
@@ -347,15 +347,15 @@ func _apply_offer_ui_state(payload: Dictionary) -> void:
 	if merchant != null:
 		merchant.apply_shop_state(payload.get("merchant", {}))
 
-	var rune_selection = _find_rune_selection()
-	if rune_selection != null:
-		rune_selection.apply_offer_state(payload.get("rune_offer", {}))
+	var card_selection = _find_card_selection()
+	if card_selection != null:
+		card_selection.apply_offer_state(payload.get("card_offer", {}))
 
 
-func _restore_idle_rune_pick() -> void:
-	var rune_selection = _find_rune_selection()
-	if rune_selection != null:
-		rune_selection.restore_open_if_needed()
+func _restore_idle_card_pick() -> void:
+	var card_selection = _find_card_selection()
+	if card_selection != null:
+		card_selection.restore_open_if_needed()
 
 	var merchant = _find_merchant()
 	if merchant != null:
@@ -379,8 +379,8 @@ func _find_merchant():
 	return get_tree().get_first_node_in_group(MERCHANT_GROUP)
 
 
-func _find_rune_selection():
-	return get_tree().get_first_node_in_group(RUNE_SELECTION_GROUP)
+func _find_card_selection():
+	return get_tree().get_first_node_in_group(CARD_SELECTION_GROUP)
 
 
 func _is_game_over_visible() -> bool:

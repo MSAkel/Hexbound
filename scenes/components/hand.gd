@@ -73,9 +73,9 @@ func build_starting_hand() -> void:
 		int(GameManager.selected_difficulty),
 	]
 	RunRng.using_fresh_stream(stream_name, func() -> void:
-		var starting_runes := PlayerCharacter.get_starting_hand_runes(character)
-		for rune in starting_runes:
-			_add_tile_card(rune)
+		var starting_cards := PlayerCharacter.get_starting_hand_cards(character)
+		for card in starting_cards:
+			_add_tile_card(card)
 
 		_add_debug_starting_cards()
 

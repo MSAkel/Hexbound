@@ -7,6 +7,7 @@ extends Control
 @onready var rarity_label: Label = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge/RarityLabel
 @onready var card_subtitle: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
 @onready var card_chip_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneChipLine
+@onready var card_recipe_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneRecipeLine
 @onready var card_description: RichTextLabel = $VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
 @onready var card_bonus_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneBonusLine
 @onready var condiment_fuse_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/CondimentFuseLine
@@ -36,6 +37,7 @@ func _ready() -> void:
 	# Keep above map UI chrome while ignoring mouse so hover can leave the spot.
 	z_index = 100
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ignore_mouse_on_descendants(self)
 	_pin_content_sized_layout()
 	_pin_rune_icon_size()
 	reset_size()
@@ -65,6 +67,7 @@ func _refresh_spot_card() -> void:
 		card_subtitle.text = card.get_inspect_subtitle()
 		card_subtitle.visible = not card_subtitle.text.is_empty()
 		_set_chip_line(card)
+		_set_recipe_line(card)
 		var description_bbcode := CardKeywordGlossary.to_bbcode(card.description)
 		card_description.text = description_bbcode
 		_set_bonus_line(card)
@@ -76,6 +79,7 @@ func _refresh_spot_card() -> void:
 		card_subtitle.text = ""
 		card_subtitle.hide()
 		card_chip_line.hide()
+		card_recipe_line.hide()
 		card_description.text = ""
 		card_bonus_line.hide()
 		condiment_fuse_line.hide()
@@ -98,6 +102,19 @@ func _set_chip_line(card: TileCard) -> void:
 	else:
 		card_chip_line.text = "%s  ·  %s" % [chip_text, detail]
 	card_chip_line.show()
+
+
+func _set_recipe_line(card: TileCard) -> void:
+	var dish := card as DishCard
+	if dish == null:
+		card_recipe_line.hide()
+		return
+	var recipe_text := dish.get_inspect_recipe_text(hex)
+	if recipe_text.is_empty():
+		card_recipe_line.hide()
+		return
+	card_recipe_line.text = recipe_text
+	card_recipe_line.show()
 
 
 func _set_rarity_badge(card: TileCard) -> void:
@@ -194,9 +211,20 @@ func _pin_rune_icon_size() -> void:
 	card_icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	card_icon.custom_minimum_size = Vector2(100, 100)
 	card_icon.size = Vector2(100, 100)
+	card_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+func _ignore_mouse_on_descendants(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_ignore_mouse_on_descendants(child)
 
 
 func _fit_and_position() -> void:
+	_pin_content_sized_layout()
+	_pin_rune_icon_size()
+	_ignore_mouse_on_descendants(self)
 	reset_size()
 	_update_position()
 

@@ -5,7 +5,7 @@ extends Node
 signal game_speed_changed(new_speed: float)
 
 ## Number of runes in a rune pack, picked at the end of each turn
-const RUNES_PACK_SIZE := 3
+const CARDS_PACK_SIZE := 3
 const MAX_TURNS_PER_ROUND := 4
 
 var current_round: int = 1
@@ -181,10 +181,10 @@ func finish_turn_processing() -> void:
 			_complete_current_round()
 	else:
 		if not skip_presentation:
-			if EventManager.should_auto_grant_rune(false):
-				EventManager.grant_auto_rune(false, remaining_turns)
-			elif EventManager.get_runes_pack_size(false) > 0:
-				UiManager.show_runes_choice_panel.emit()
+			if EventManager.should_auto_grant_card(false):
+				EventManager.grant_auto_card(false, remaining_turns)
+			elif EventManager.get_cards_pack_size(false) > 0:
+				UiManager.show_cards_choice_panel.emit()
 		EventBus.turn_started.emit()
 
 	if should_consume_turn:
@@ -303,6 +303,8 @@ func register_tile_card_activation(rune: TileCard) -> void:
 				MetaProgressionManager.note_mult_card_triggers(rune.run_trigger_count)
 		elif rune.type == TileCard.TileCardType.KITCHENWARE:
 			MetaProgressionManager.add_support_trigger()
+		elif rune.type == TileCard.TileCardType.DISH:
+			MetaProgressionManager.add_dish_trigger()
 		if _activated_tile_cards_this_turn.count(rune) >= 2:
 			if TileCard.is_producer_type(rune.type):
 				MetaProgressionManager.add_producer_retrigger()

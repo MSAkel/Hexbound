@@ -304,6 +304,19 @@ func _dual_amount_board_chip(flavour_amount: int, mult_amount: float) -> Diction
 	return chip
 
 
+## Course ×Mult chip. Uses an x prefix so it does not look like additive +Mult.
+func _multiplicative_mult_board_chip(amount: float, amount_icon: Texture2D = null) -> Dictionary:
+	var chip_icon: Texture2D = amount_icon if amount_icon != null else ICON_MULT
+	return _make_board_chip(
+		BoardChipMode.AMOUNT,
+		CountingNumber.format_multiplicative_mult(amount),
+		chip_icon,
+		get_chip_panel_color(),
+		"",
+		amount
+	)
+
+
 func _make_board_chip(
 	mode: BoardChipMode,
 	text: String,
@@ -693,7 +706,7 @@ func _create_floating_text(
 	text_icon: Texture2D = null,
 	target_icon: Texture2D = null
 ) -> void:
-	var tile_pos := tile.map.base_layer.map_to_local(tile.coordinates)
+	var tile_pos := tile.map.floating_text_position_for_hex(tile.coordinates)
 	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon)
 
 

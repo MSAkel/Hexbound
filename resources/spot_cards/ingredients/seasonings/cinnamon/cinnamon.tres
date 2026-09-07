@@ -10,5 +10,5 @@ ingredient_kind = 4
 id = "cinnamon"
 name = "Cinnamon"
 icon = ExtResource("1_icon")
-description = "+1-20 Mult, picked at random"
+description = "+1-20 Mult"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

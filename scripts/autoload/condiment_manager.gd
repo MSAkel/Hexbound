@@ -202,7 +202,7 @@ func _show_tile_drop_failure_at_coords(tile_map: HexTileMap, coords: Vector2i) -
 	var message := _tile_drop_failure_message_at_coords(tile_map, coords)
 	if message.is_empty():
 		return
-	var world_pos := tile_map.to_global(tile_map.base_layer.map_to_local(coords)) \
+	var world_pos := tile_map.floating_text_position_for_hex(coords) \
 		if tile_map.is_in_map(coords) \
 		else tile_map.get_global_mouse_position()
 	tile_map.create_floating_text(world_pos, message, Color(1.0, 0.45, 0.45, 1.0))
@@ -279,7 +279,7 @@ func after_card_activated(tile: Hex, card: TileCard) -> void:
 		return
 	if _card_has_fuse(card, Condiment.EffectType.MINT_SIP):
 		tile.map.add_turn_gold_for_tile(tile, 1)
-		var pos := tile.map.base_layer.map_to_local(tile.coordinates)
+		var pos := tile.map.floating_text_position_for_hex(tile.coordinates)
 		tile.map.create_floating_text(pos, "+1", Color(1.0, 0.85, 0.2, 1.0))
 	if _take_activation_fuse(card, Condiment.EffectType.EMPOWER):
 		pass
@@ -376,12 +376,14 @@ func _consume_instant(index: int) -> void:
 	await _await_consume_animation()
 	if belt[index] != condiment:
 		_consuming = false
+		_restore_board_hover_after_drink()
 		return
 	belt[index] = null
 	_apply_instant(condiment)
 	EventBus.condiment_belt_changed.emit()
 	_consuming = false
 	RunSaveManager.request_autosave()
+	_restore_board_hover_after_drink()
 
 
 func _consume_targeted(index: int, condiment: Condiment, hex: Hex) -> void:
@@ -392,6 +394,7 @@ func _consume_targeted(index: int, condiment: Condiment, hex: Hex) -> void:
 	await _await_consume_animation()
 	if belt[index] != condiment:
 		_consuming = false
+		_restore_board_hover_after_drink()
 		return
 	belt[index] = null
 	_apply_to_card(condiment, hex)
@@ -401,6 +404,7 @@ func _consume_targeted(index: int, condiment: Condiment, hex: Hex) -> void:
 	EventBus.condiment_fuses_changed.emit()
 	_consuming = false
 	RunSaveManager.request_autosave()
+	_restore_board_hover_after_drink()
 
 
 func _apply_instant(condiment: Condiment) -> void:
@@ -521,7 +525,7 @@ func _grant_next_trigger_energy(tile: Hex, amount: int) -> void:
 	if tile == null or tile.map == null:
 		return
 	tile.map.add_turn_score_for_tile(tile, amount)
-	var pos := tile.map.base_layer.map_to_local(tile.coordinates)
+	var pos := tile.map.floating_text_position_for_hex(tile.coordinates)
 	tile.map.create_floating_text(pos, "+%d" % amount, Color.AQUA, TileCard.ICON_FLAVOUR)
 
 
@@ -529,7 +533,7 @@ func _grant_next_trigger_mult(tile: Hex, amount: float) -> void:
 	if tile == null or tile.map == null:
 		return
 	tile.map.add_turn_additive_mult_for_tile(tile, amount)
-	var pos := tile.map.base_layer.map_to_local(tile.coordinates)
+	var pos := tile.map.floating_text_position_for_hex(tile.coordinates)
 	tile.map.create_floating_text(
 		pos,
 		CountingNumber.format_additive_mult(amount),
@@ -667,6 +671,11 @@ func _await_consume_animation() -> void:
 		await get_tree().process_frame
 	if EventBus.condiment_consume_animation_finished.is_connected(on_done):
 		EventBus.condiment_consume_animation_finished.disconnect(on_done)
+
+
+func _restore_board_hover_after_drink() -> void:
+	# Drink drag swallows mouse-up. Replay pointer motion so map hover resumes.
+	EventBus.tooltip_hover_refresh_requested.emit()
 
 
 func _hex_under_mouse() -> Hex:

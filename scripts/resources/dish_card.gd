@@ -3,7 +3,7 @@ extends TileCard
 
 ## Seated plate. Reads the N spots immediately before it in fire order, never the whole course.
 ## Those seats are a bag of tags. Empty or wrong cards break the dish. No skipping gaps.
-## On a match, this card plates a local meal pile. It never writes course-wide ×Mult.
+## On a match, this card plates a local meal pile. Some dishes also write course ×Mult.
 
 ## Dish recipe bag. Prefix length is the sum of these counts.
 @export var recipe_vegetable_count: int = 0
@@ -70,37 +70,53 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 		return _stat_board_chip()
 	var flavour := int(plated.get("flavour", 0))
 	var additive_mult := float(plated.get("additive_mult", 0.0))
+	var multiplicative_mult := float(plated.get("multiplicative_mult", 0.0))
 	var has_flavour := flavour > 0
 	var has_mult := not is_zero_approx(additive_mult)
+	var has_xmult := not is_zero_approx(multiplicative_mult)
+	if not has_flavour and not has_mult and not has_xmult:
+		return _stat_board_chip()
 	if has_flavour and has_mult:
 		return _dual_amount_board_chip(flavour, additive_mult)
+	if has_flavour and has_xmult:
+		var chip := _amount_board_chip(flavour, ICON_FLAVOUR)
+		chip["extra_text"] = CountingNumber.format_multiplicative_mult(multiplicative_mult)
+		chip["extra_icon"] = ICON_MULT
+		chip["extra_amount"] = multiplicative_mult
+		return chip
 	if has_mult:
 		return _amount_board_chip_float(additive_mult, ICON_MULT)
+	if has_xmult:
+		return _multiplicative_mult_board_chip(multiplicative_mult)
 	return _amount_board_chip(flavour, ICON_FLAVOUR)
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	var recipe := get_matched_prefix_recipe(tile)
-	if recipe.is_empty():
+	if not is_recipe_ready(tile):
 		failed_tile_card_text(tile)
 		return
+	var recipe := get_matched_prefix_recipe(tile)
 	var flavour := _plated_flavour_from_recipe(recipe)
 	var additive_mult := _plated_additive_mult_from_recipe(recipe)
+	var multiplicative_mult := _plated_multiplicative_mult_from_recipe(recipe)
 	if flavour > 0:
 		add_score(tile, flavour)
 	if not is_zero_approx(additive_mult):
 		add_additive_mult(tile, additive_mult)
-	if flavour <= 0 and is_zero_approx(additive_mult):
+	if not is_zero_approx(multiplicative_mult):
+		multiply_multiplicative_mult(tile, multiplicative_mult)
+	if flavour <= 0 and is_zero_approx(additive_mult) and is_zero_approx(multiplicative_mult):
 		failed_tile_card_text(tile)
 
 
 ## Empty when the prefix recipe is incomplete.
 func _compute_plated_outputs(tile: Hex) -> Dictionary:
-	if get_matched_prefix_recipe(tile).is_empty():
+	if not is_recipe_ready(tile):
 		return {}
 	return {
 		"flavour": _preview_plated_flavour(tile),
 		"additive_mult": _preview_plated_additive_mult(tile),
+		"multiplicative_mult": _preview_plated_multiplicative_mult(tile),
 	}
 
 
@@ -113,19 +129,30 @@ func _plated_additive_mult_from_recipe(_recipe: Array[TileCard]) -> float:
 	return 0.0
 
 
+func _plated_multiplicative_mult_from_recipe(_recipe: Array[TileCard]) -> float:
+	return 0.0
+
+
 ## Chip estimate. Uses Hour snapshots after those cards fire, otherwise their board chips.
 func _preview_plated_flavour(tile: Hex) -> int:
 	var recipe := get_matched_prefix_recipe(tile)
-	if recipe.is_empty():
+	if get_recipe_prefix_size() > 0 and recipe.is_empty():
 		return 0
 	return _plated_flavour_from_recipe(recipe)
 
 
 func _preview_plated_additive_mult(tile: Hex) -> float:
 	var recipe := get_matched_prefix_recipe(tile)
-	if recipe.is_empty():
+	if get_recipe_prefix_size() > 0 and recipe.is_empty():
 		return 0.0
 	return _plated_additive_mult_from_recipe(recipe)
+
+
+func _preview_plated_multiplicative_mult(tile: Hex) -> float:
+	var recipe := get_matched_prefix_recipe(tile)
+	if get_recipe_prefix_size() > 0 and recipe.is_empty():
+		return 0.0
+	return _plated_multiplicative_mult_from_recipe(recipe)
 
 
 ## How many fire-order seats this dish reads immediately before itself.
@@ -138,6 +165,48 @@ func get_recipe_prefix_size() -> int:
 		+ recipe_seasoning_count
 		+ recipe_kitchenware_count
 	)
+
+
+## True when this dish has no prefix bag, or the fire-order prefix currently matches.
+func is_recipe_ready(tile: Hex) -> bool:
+	if get_recipe_prefix_size() <= 0:
+		return true
+	return not get_matched_prefix_recipe(tile).is_empty()
+
+
+## Inspect copy for the hover panel. Bag first, then whether this seat's prefix matches.
+func get_inspect_recipe_text(tile: Hex = null) -> String:
+	var bag := _recipe_bag_text()
+	if bag.is_empty():
+		return ""
+	if tile == null or tile.map == null:
+		return "Recipe: %s" % bag
+	if not is_recipe_ready(tile):
+		return "Recipe: %s\nPrefix incomplete" % bag
+	return "Recipe: %s\nPrefix ready" % bag
+
+
+func _recipe_bag_text() -> String:
+	var parts: PackedStringArray = []
+	_append_recipe_part(parts, recipe_vegetable_count, "Vegetable")
+	_append_recipe_part(parts, recipe_fruit_count, "Fruit")
+	_append_recipe_part(parts, recipe_grain_count, "Grain")
+	_append_recipe_part(parts, recipe_protein_count, "Protein")
+	_append_recipe_part(parts, recipe_seasoning_count, FeastDisplay.SEASONING)
+	_append_recipe_part(parts, recipe_kitchenware_count, "Kitchenware")
+	return ", ".join(parts)
+
+
+func _append_recipe_part(parts: PackedStringArray, count: int, tag: String) -> void:
+	if count <= 0:
+		return
+	if count == 1:
+		parts.append("1 %s" % tag)
+		return
+	var plural := tag
+	if tag != "Kitchenware":
+		plural = "%ss" % tag
+	parts.append("%d %s" % [count, plural])
 
 
 ## Prefix cards when every required seat is filled and the tag bag matches. Empty on fail.

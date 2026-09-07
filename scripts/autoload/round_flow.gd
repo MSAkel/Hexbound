@@ -2,13 +2,13 @@ extends Node
 
 ## Owns the ordered round-transition sequence so no single screen decides what comes next.
 ## Round goal met -> summary -> rune pick -> merchant -> event reveal -> first turn of the round.
-## Mid-turn rune picks also use rune_selection_ui outside this transition.
+## Mid-turn card picks also use card_selection_ui outside this transition.
 
 enum Step {
 	## Normal play. No transition is running.
 	IDLE,
 	SUMMARY,
-	RUNE_PICK,
+	CARD_PICK,
 	MERCHANT,
 	EVENT_REVEAL,
 	VICTORY,
@@ -27,8 +27,8 @@ var _advance_round_after_merchant := false
 ## Event that governed the round being left. The reward rune pick still belongs to that
 ## round, so an event starting on the next round must not change it.
 var _outgoing_event := -1
-## Round that owns a transition rune pick. Set when entering RUNE_PICK.
-var _transition_rune_pick_round := 1
+## Round that owns a transition card pick. Set when entering CARD_PICK.
+var _transition_card_pick_round := 1
 ## Identity check so a stale timeout cannot complete a newer reveal.
 var _reveal_timeout_token: SceneTreeTimer = null
 
@@ -53,12 +53,12 @@ func get_outgoing_event() -> int:
 	return _outgoing_event
 
 
-func is_transition_rune_pick() -> bool:
-	return _step == Step.RUNE_PICK
+func is_transition_card_pick() -> bool:
+	return _step == Step.CARD_PICK
 
 
-func get_transition_rune_pick_round() -> int:
-	return _transition_rune_pick_round
+func get_transition_card_pick_round() -> int:
+	return _transition_card_pick_round
 
 
 ## True when the merchant step will advance the round after closing, as on the victory path.
@@ -97,19 +97,19 @@ func notify_summary_confirmed() -> void:
 	# The round bonus has to land before the merchant so the player can spend it there.
 	GameManager.advance_round()
 	_arm_event_reveal()
-	_enter_step(Step.RUNE_PICK)
+	_enter_step(Step.CARD_PICK)
 
 
 func notify_victory_continue() -> void:
 	if _step != Step.VICTORY:
 		return
 
-	_enter_step(Step.RUNE_PICK)
+	_enter_step(Step.CARD_PICK)
 
 
-func notify_rune_picked() -> void:
-	# Turn-loop rune picks happen outside a transition and must not drive the flow.
-	if _step != Step.RUNE_PICK:
+func notify_card_picked() -> void:
+	# Turn-loop card picks happen outside a transition and must not drive the flow.
+	if _step != Step.CARD_PICK:
 		return
 
 	_enter_step(Step.MERCHANT)
@@ -153,17 +153,17 @@ func _enter_step(step: Step) -> void:
 		Step.VICTORY:
 			EventBus.event_banner_hidden.emit()
 			EventBus.all_events_completed.emit()
-		Step.RUNE_PICK:
+		Step.CARD_PICK:
 			# Summary already advanced the round. Victory keeps the completed round number.
 			if _advance_round_after_merchant:
-				_transition_rune_pick_round = GameManager.current_round
+				_transition_card_pick_round = GameManager.current_round
 			else:
-				_transition_rune_pick_round = maxi(1, GameManager.current_round - 1)
-			if EventManager.should_auto_grant_rune(true):
-				EventManager.grant_auto_rune(true)
-				notify_rune_picked()
+				_transition_card_pick_round = maxi(1, GameManager.current_round - 1)
+			if EventManager.should_auto_grant_card(true):
+				EventManager.grant_auto_card(true)
+				notify_card_picked()
 			else:
-				UiManager.show_runes_choice_panel.emit()
+				UiManager.show_cards_choice_panel.emit()
 		Step.MERCHANT:
 			UiManager.show_merchant_panel.emit()
 		Step.EVENT_REVEAL:
@@ -216,7 +216,7 @@ func _abort_transition() -> void:
 	_event_reveal_armed = false
 	_advance_round_after_merchant = false
 	_outgoing_event = -1
-	_transition_rune_pick_round = 1
+	_transition_card_pick_round = 1
 
 
 func capture_run_state() -> Dictionary:
@@ -225,7 +225,7 @@ func capture_run_state() -> Dictionary:
 		"event_reveal_armed": _event_reveal_armed,
 		"advance_round_after_merchant": _advance_round_after_merchant,
 		"outgoing_event": _outgoing_event,
-		"transition_rune_pick_round": _transition_rune_pick_round,
+		"transition_card_pick_round": _transition_card_pick_round,
 	}
 
 
@@ -235,7 +235,7 @@ func apply_run_state(state: Dictionary) -> void:
 	_event_reveal_armed = bool(state.get("event_reveal_armed", false))
 	_advance_round_after_merchant = bool(state.get("advance_round_after_merchant", false))
 	_outgoing_event = int(state.get("outgoing_event", -1))
-	_transition_rune_pick_round = int(state.get("transition_rune_pick_round", GameManager.current_round))
+	_transition_card_pick_round = int(state.get("transition_card_pick_round", GameManager.current_round))
 
 
 ## Re-shows the panel the saved run was sitting on so a mid-transition save resumes in place.

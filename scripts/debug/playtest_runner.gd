@@ -29,7 +29,6 @@ const CHARACTER_IDS: Array[String] = [
 	"columnist",
 	"converger",
 ]
-const ALLOWED_FILLER_IDS: Array[String] = ["incremental", "rising_tempo", "spark_plug"]
 const BANNED_FILLER_IDS: Array[String] = ["compact_power", "edge_card", "treasury"]
 const LOCKED_STARTER_IDS: Array[String] = ["tomato", "salt"]
 const SEGMENT_SNAPSHOT_ROUNDS: Array[int] = [3, 6, 9]
@@ -177,6 +176,21 @@ func _run_all() -> void:
 	await _run_full_nines()
 
 
+func _starter_filler_pool_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for card: TileCard in GameManager.tile_cards_pool:
+		if not card.starting_hand_eligible:
+			continue
+		if card.id in LOCKED_STARTER_IDS:
+			continue
+		if card.type != TileCard.TileCardType.INGREDIENT:
+			continue
+		if card.product != TileCard.Product.SCORE:
+			continue
+		ids.append(card.id)
+	return ids
+
+
 func _run_starter_fairness() -> void:
 	for character_id: String in _layouts:
 		GameManager.selected_character = PlayerCharacter.get_character_by_id(character_id)
@@ -184,7 +198,7 @@ func _run_starter_fairness() -> void:
 		for index in STARTER_SEED_COUNT:
 			var seed_text := _seed_for("ST", character_id, index)
 			RunRng.begin_new_run(seed_text)
-			var hand := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
+			var hand := PlayerCharacter.get_starting_hand_cards(GameManager.selected_character)
 			var ids: Array[String] = []
 			for card: TileCard in hand:
 				ids.append(card.id)
@@ -206,8 +220,12 @@ func _run_starter_fairness() -> void:
 				reasons.append("expected 1 filler producer, got %s" % str(filler_ids))
 			else:
 				var filler_id := filler_ids[0]
-				if filler_id not in ALLOWED_FILLER_IDS:
-					reasons.append("filler %s is not Incremental / Rising Tempo / Spark Plug" % filler_id)
+				var allowed_fillers := _starter_filler_pool_ids()
+				if filler_id not in allowed_fillers:
+					reasons.append(
+						"filler %s is not in the flat-score starter pool %s"
+						% [filler_id, str(allowed_fillers)]
+					)
 				if filler_id in BANNED_FILLER_IDS:
 					reasons.append("banned filler %s" % filler_id)
 
@@ -388,7 +406,7 @@ func _run_two_segment_r1() -> void:
 
 func _run_one_two_segment_r1(character_id: String, seed_text: String) -> void:
 	_begin_run(character_id, seed_text)
-	var hand := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
+	var hand := PlayerCharacter.get_starting_hand_cards(GameManager.selected_character)
 	var hand_ids: Array[String] = []
 	for card: TileCard in hand:
 		hand_ids.append(card.id)
@@ -480,7 +498,7 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 	var repeat_tag := "" if repeat_index <= 0 else " #%d" % (repeat_index + 1)
 	print("[playtest] start full_nine/%s %s %s%s" % [bot_id, character_id, seed_text, repeat_tag])
 	_begin_run(character_id, seed_text)
-	var hand := PlayerCharacter.get_starting_hand_runes(GameManager.selected_character)
+	var hand := PlayerCharacter.get_starting_hand_cards(GameManager.selected_character)
 	_place_opening_hand(hand)
 	if bot_id == "player" and _use_passives:
 		_apply_spark_on_engine()
@@ -588,18 +606,18 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 
 
 func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_turns: int) -> TileCard:
-	if EventManager.get_runes_pack_size(is_reward) <= 0:
+	if EventManager.get_cards_pack_size(is_reward) <= 0:
 		return null
 	if _active_bot == "player":
 		return _draft_and_pick_pack_player(is_reward, round_number, fail_remaining_turns)
-	var stream_name := RunRng.build_rune_offer_stream_name(
+	var stream_name := RunRng.build_card_offer_stream_name(
 		round_number,
 		fail_remaining_turns,
 		is_reward,
 		0
 	)
 	var pack := CardLoot.card_draw(
-		EventManager.get_runes_pack_size(is_reward),
+		EventManager.get_cards_pack_size(is_reward),
 		GameManager.tile_cards_pool,
 		true,
 		RunRng.create_rng(stream_name)
@@ -622,14 +640,14 @@ func _draft_and_pick_pack_player(
 ) -> TileCard:
 	var reroll_index := 0
 	while true:
-		var stream_name := RunRng.build_rune_offer_stream_name(
+		var stream_name := RunRng.build_card_offer_stream_name(
 			round_number,
 			fail_remaining_turns,
 			is_reward,
 			reroll_index
 		)
 		var pack := CardLoot.card_draw(
-			EventManager.get_runes_pack_size(is_reward),
+			EventManager.get_cards_pack_size(is_reward),
 			GameManager.tile_cards_pool,
 			true,
 			RunRng.create_rng(stream_name)
@@ -932,6 +950,8 @@ func _player_wants_to_pay_tokens(card: TileCard, price: int) -> bool:
 
 
 func _card_keep_value(card: TileCard) -> float:
+	if card.type == TileCard.TileCardType.DISH:
+		return _dish_card_value(card)
 	if card.type == TileCard.TileCardType.UTILITY:
 		return 1.0
 	match card.product:
@@ -949,6 +969,8 @@ func _card_keep_value(card: TileCard) -> float:
 func _card_player_value(card: TileCard) -> float:
 	if card == null:
 		return 0.0
+	if card.type == TileCard.TileCardType.DISH:
+		return _dish_card_value(card)
 	if card.id == "transposition":
 		return 55.0 if _find_player_swap().size() == 2 else 0.0
 	if card.type == TileCard.TileCardType.UTILITY:
@@ -1026,9 +1048,17 @@ func _chip_numeric_value(chip: Dictionary) -> float:
 		return 0.0
 	if int(chip.get("mode", TileCard.BoardChipMode.HIDDEN)) == TileCard.BoardChipMode.HIDDEN:
 		return 0.0
+	var amount := float(chip.get("amount", 0.0))
+	if amount != 0.0:
+		return amount
+	var extra := float(chip.get("extra_amount", 0.0))
+	if extra != 0.0:
+		return extra
 	var text := str(chip.get("text", "0")).strip_edges()
 	if text.is_empty():
 		return 0.0
+	if text.begins_with("+") or text.begins_with("x"):
+		text = text.substr(1)
 	if text.is_valid_float():
 		return float(text)
 	return 0.0
@@ -1615,7 +1645,58 @@ func _place_one_card(card: TileCard) -> bool:
 		"spread":
 			if _place_on_preferred_segments(card, _spread_segment_rank()):
 				return true
+	if _is_dish_card(card) and _place_dish_card(card):
+		if _active_bot == "player":
+			_apply_spark_on_engine()
+		return true
 	return _place_first_legal_empty(card)
+
+
+func _is_dish_card(card: TileCard) -> bool:
+	return card != null and card.type == TileCard.TileCardType.DISH
+
+
+## Prefer a seat where the prefix recipe is already complete in fire order.
+func _place_dish_card(card: TileCard) -> bool:
+	var dish := card as DishCard
+	if dish == null:
+		return _place_first_legal_empty(card)
+	var best_hex: Hex = null
+	var best_score := -1.0
+	for hex: Hex in _map.get_hexes_in_trigger_order():
+		if hex.is_placement_blocked() or hex.active_tile_card != null:
+			continue
+		if not dish.can_place_on_tile(hex):
+			continue
+		var score := _dish_placement_score(dish, hex)
+		if score > best_score:
+			best_score = score
+			best_hex = hex
+	if best_hex == null or best_score <= 0.0:
+		return false
+	best_hex.place_tile_card(card)
+	return true
+
+
+func _dish_placement_score(dish: DishCard, hex: Hex) -> float:
+	if not dish.is_recipe_ready(hex):
+		return 0.0
+	return 1000.0 + _chip_numeric_value(dish.get_board_chip(hex))
+
+
+func _dish_card_value(card: TileCard) -> float:
+	var dish := card as DishCard
+	if dish == null:
+		return 8.0
+	for hex: Hex in _map.get_hexes_in_trigger_order():
+		if hex.is_placement_blocked() or hex.active_tile_card != null:
+			continue
+		if not dish.can_place_on_tile(hex):
+			continue
+		if not dish.is_recipe_ready(hex):
+			continue
+		return 70.0 + _chip_numeric_value(dish.get_board_chip(hex))
+	return 18.0
 
 
 func _place_first_legal_empty(card: TileCard) -> bool:
@@ -2045,6 +2126,7 @@ func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
 	var score_cards: Array[TileCard] = []
 	var gold_cards: Array[TileCard] = []
 	var mult_cards: Array[TileCard] = []
+	var dish_cards: Array[TileCard] = []
 	var other_cards: Array[TileCard] = []
 	for card: TileCard in hand:
 		match card.product:
@@ -2055,12 +2137,16 @@ func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
 			TileCard.Product.MULTIPLIER:
 				mult_cards.append(card)
 			_:
-				other_cards.append(card)
+				if card.type == TileCard.TileCardType.DISH:
+					dish_cards.append(card)
+				else:
+					other_cards.append(card)
 	var ordered: Array[TileCard] = []
 	ordered.append_array(score_cards)
 	ordered.append_array(gold_cards)
 	ordered.append_array(mult_cards)
 	ordered.append_array(other_cards)
+	ordered.append_array(dish_cards)
 	return ordered
 
 

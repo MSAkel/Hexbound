@@ -65,6 +65,11 @@ func set_lifted(lifted: bool) -> void:
 		EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 
+func clear_press() -> void:
+	_press_held = false
+	_cancel_hold_drag()
+
+
 func set_controller_focused(focused: bool) -> void:
 	if controller_focused == focused:
 		return

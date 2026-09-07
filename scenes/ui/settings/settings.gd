@@ -2,7 +2,7 @@ extends Control
 
 signal closed
 
-# @onready var master_volume_slider: HSlider = $Container/SettingsContainer/MasterVolume/HSlider
+@onready var master_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/MasterVolume/HSlider
 @onready var music_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/MusicVolume/MusicVolumeSlider
 @onready var sfx_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/SFXVolume/SFXVolumeSlider
 @onready var game_speed_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton
@@ -13,21 +13,11 @@ signal closed
 @onready var tutorial_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/TutorialCheckBox
 @onready var back_button: Button = $VBoxContainer/BackButton
 
-const RESOLUTIONS := [
-	Vector2i(1024, 576),
-	Vector2i(1280, 720),
-	Vector2i(1366, 768),
-	Vector2i(1600, 900),
-	Vector2i(1920, 1080),
-	Vector2i(2560, 1440),
-	Vector2i(3840, 2160),
-]
-
 var _resolution_options: Array[Vector2i] = []
 
 func _ready() -> void:
 	# Initialize sliders with current values
-	# master_volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
+	master_volume_slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
 	music_volume_slider.value = AudioManager.music_volume
 	sfx_volume_slider.value = AudioManager.sfx_volume
 	_populate_resolution_options()
@@ -35,7 +25,7 @@ func _ready() -> void:
 	visibility_changed.connect(_on_visibility_changed)
 	
 	# Connect slider signals
-	# master_volume_slider.value_changed.connect(_on_master_volume_changed)
+	master_volume_slider.value_changed.connect(_on_master_volume_changed)
 	music_volume_slider.value_changed.connect(_on_music_volume_changed)
 	sfx_volume_slider.value_changed.connect(_on_sfx_volume_changed)
 
@@ -67,19 +57,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _populate_resolution_options() -> void:
 	GameSettings.ensure_loaded()
-	_resolution_options.assign(RESOLUTIONS)
-	if _resolution_options.find(GameSettings.resolution) < 0:
-		_resolution_options.append(GameSettings.resolution)
-		_resolution_options.sort_custom(_sort_resolution_options)
+	_resolution_options.assign(GameSettings.RESOLUTIONS)
 	resolution_option_button.clear()
 	for resolution in _resolution_options:
 		resolution_option_button.add_item("%dx%d" % [resolution.x, resolution.y])
-
-
-func _sort_resolution_options(a: Vector2i, b: Vector2i) -> bool:
-	if a.x == b.x:
-		return a.y < b.y
-	return a.x < b.x
 
 
 func _sync_settings_controls() -> void:

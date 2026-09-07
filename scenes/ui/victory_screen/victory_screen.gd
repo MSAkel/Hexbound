@@ -38,6 +38,15 @@ func _on_all_events_completed() -> void:
 		GameManager.build_run_snapshot(true)
 	)
 	layout_xp_bar.play_gain(from_xp, xp_gain, 0.65)
+	# Deferred so the entrance tween has claimed the panel before focus lands.
+	call_deferred("_focus_continue")
+
+
+## Seats keyboard and gamepad focus on Continue Run rather than the Copy Seed button.
+func _focus_continue() -> void:
+	if not visible:
+		return
+	MenuFocus.grab_named(self, "ContinueButton")
 
 
 func _play_entrance_animation() -> void:

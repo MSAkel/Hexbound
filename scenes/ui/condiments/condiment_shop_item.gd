@@ -35,6 +35,10 @@ func _ready() -> void:
 	gui_input.connect(_on_gui_input)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	# Shelf bottles are gamepad targets alongside the merchant card grid.
+	focus_mode = Control.FOCUS_ALL
+	focus_entered.connect(_on_focus_entered)
+	focus_exited.connect(_on_focus_exited)
 	_refresh()
 
 
@@ -56,7 +60,11 @@ func mark_sold() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	modulate = Color(1, 1, 1, 0.0)
 	_purchase_tray.visible = false
+	_purchase_tray.set_focusable(false)
 	_tray_gap.visible = false
+	focus_mode = Control.FOCUS_NONE
+	if has_focus():
+		release_focus()
 	_update_layout_height()
 	_refresh()
 
@@ -68,8 +76,18 @@ func set_merchant_selected(active: bool) -> void:
 	_purchase_tray.visible = show_tray
 	if active:
 		refresh_purchase_tray()
+	# Buy buttons only enter the focus chain while their tray is on screen.
+	_purchase_tray.set_focusable(show_tray)
 	_update_layout_height()
 	_refresh()
+
+
+## Move focus onto the buy row after this bottle is selected.
+## False when the tray is hidden or every buy option is unaffordable.
+func focus_purchase_tray() -> bool:
+	if not _purchase_tray.visible:
+		return false
+	return _purchase_tray.focus_first_enabled()
 
 
 func _update_layout_height() -> void:
@@ -129,6 +147,10 @@ func _tooltip_text() -> String:
 func _on_gui_input(event: InputEvent) -> void:
 	if _sold:
 		return
+	if event.is_action_pressed("ui_accept"):
+		selected.emit(self)
+		accept_event()
+		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		selected.emit(self)
 		accept_event()
@@ -142,4 +164,18 @@ func _on_mouse_entered() -> void:
 
 
 func _on_mouse_exited() -> void:
+	# A focused bottle keeps its tooltip so the gamepad cursor stays readable.
+	if has_focus():
+		return
+	EventBus.toggle_tooltip.emit(false, "", Rect2())
+
+
+func _on_focus_entered() -> void:
+	if _sold:
+		return
+	AudioManager.play_condiment_hover()
+	EventBus.toggle_tooltip.emit(true, _tooltip_text(), get_global_rect())
+
+
+func _on_focus_exited() -> void:
 	EventBus.toggle_tooltip.emit(false, "", Rect2())

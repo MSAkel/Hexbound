@@ -141,9 +141,9 @@ func refresh_tile_card_visual_state() -> void:
 		card_icon_ui.start_empower_sparks()
 	else:
 		card_icon_ui.stop_empower_sparks()
-	# Prefix dishes read other cards' chips. Refresh them when those cards change.
-	if map != null and not (active_tile_card is DishCard):
-		map.refresh_dish_output_chips()
+	# Board-dependent chips, such as dish prefixes and steak-style course totals.
+	if map != null:
+		map.refresh_board_output_chips()
 
 
 func set_tile_card_event_modulate(modulate: Color) -> void:

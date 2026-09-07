@@ -164,7 +164,6 @@ theme_override_styles/panel = SubResource("StyleBoxEmpty_vxwtt")
 [node name="Icon" parent="Content/IconContainer" unique_id=742371266 instance=ExtResource("6_cardicon")]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
-hex_dish = null
 
 [node name="CardTypeLabel" type="Label" parent="Content" unique_id=1751951717]
 layout_mode = 2

@@ -75,7 +75,7 @@ hex_map_group=""
 main_ui="UI which is always on display"
 run_hand="Run hand used by checkpoints"
 run_merchant="Merchant overlay used by checkpoints"
-run_rune_selection="Rune pick overlay used by checkpoints"
+run_card_selection="Card pick overlay used by checkpoints"
 run_game_over="Game over overlay, blocks run checkpoints"
 
 [gui]

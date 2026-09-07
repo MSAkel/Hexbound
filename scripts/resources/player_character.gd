@@ -48,14 +48,14 @@ static func get_character_by_id(character_id: String) -> CharacterDefinition:
 
 # Build the starting hand cards for the given character.
 # 2 locked producers, 1 random producer, and 2 support. Difficulty may trim support first.
-static func get_starting_hand_runes(character: CharacterDefinition) -> Array[TileCard]:
+static func get_starting_hand_cards(character: CharacterDefinition) -> Array[TileCard]:
 	var hand: Array[TileCard] = []
 	if character == null:
 		return hand
 
-	hand.append_array(_get_guaranteed_starter_runes())
+	hand.append_array(_get_guaranteed_starter_cards())
 	hand.append_array(_draw_flat_score_starter(1))
-	hand.append_array(_get_random_common_runes(2, TileCard.TileCardType.KITCHENWARE))
+	hand.append_array(_get_random_common_cards(2, TileCard.TileCardType.KITCHENWARE))
 
 	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
 	_apply_starting_hand_reduction(hand, reduction)
@@ -70,15 +70,15 @@ static func get_expected_opening_hand_size(difficulty: Difficulty.Level) -> int:
 
 
 # Locked opening producers that always enable a turn-1 Flavour x Mult line.
-static func _get_guaranteed_starter_runes() -> Array[TileCard]:
-	var runes: Array[TileCard] = []
+static func _get_guaranteed_starter_cards() -> Array[TileCard]:
+	var cards: Array[TileCard] = []
 	for starter_id: String in GUARANTEED_STARTER_IDS:
 		var template := GameManager.get_tile_card_by_id(starter_id)
 		if template == null:
 			push_error("Missing guaranteed starter tile card: %s" % starter_id)
 			continue
-		runes.append(template.duplicate(true))
-	return runes
+		cards.append(template.duplicate(true))
+	return cards
 
 
 # Common score producers tagged for reliable turn-1 output.
@@ -115,7 +115,7 @@ static func _draw_flat_score_starter(count: int) -> Array[TileCard]:
 		)
 
 	push_warning("No flat-score starter cards tagged. Falling back to any common score producer.")
-	return _get_random_common_runes(count, TileCard.TileCardType.INGREDIENT, TileCard.Product.SCORE)
+	return _get_random_common_cards(count, TileCard.TileCardType.INGREDIENT, TileCard.Product.SCORE)
 
 
 # Remove support cards before optional producers. Never discard locked starters.
@@ -143,17 +143,17 @@ static func _apply_starting_hand_reduction(hand: Array[TileCard], reduction: int
 			break
 
 
-# Pick random common runes of the given type from the pool.
-static func _get_random_common_runes(
+# Pick random common cards of the given type from the pool.
+static func _get_random_common_cards(
 	count: int,
-	rune_type: TileCard.TileCardType,
+	card_type: TileCard.TileCardType,
 	product: Variant = null
 ) -> Array[TileCard]:
 	return CardLoot.draw_filtered(
 		count,
 		GameManager.tile_cards_pool,
 		TileCard.TileCardRarity.COMMON,
-		rune_type,
+		card_type,
 		true,
 		product
 	)

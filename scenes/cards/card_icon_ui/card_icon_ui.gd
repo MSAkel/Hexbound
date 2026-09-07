@@ -1,9 +1,18 @@
 class_name CardIconUI
 extends Control
 
-## Board token for a tile card on a hex. Embeds CardIcon for the face, then adds
-## the output chip, condiment badges, particles, hex stroke, and placement or activation tweens.
-## Hex and placement ghosts instantiate this scene. Use CardIcon alone when you only need the art.
+## Visual representation of a [TileCard] on the hex map.
+##
+## This scene wraps [CardIcon] with board-only presentation: the output chip,
+## condiment fuse badges, a hex outline, particle effects, and placement/resolution
+## animations. Both placed cards and card-placement ghosts instantiate this class;
+## call [method prepare_placement_ghost] to make a copy display-only.
+##
+## [Hex] supplies [member tile], [member map], and [member center_coordinates] before
+## calling [method setup] for a placed card. Use [CardIcon] directly when only the
+## card artwork is needed outside the board.
+
+#region Scene references
 
 @onready var rune_button: TextureButton = $Container/RuneButton
 @onready var card_icon: CardIcon = $Container/RuneButton/CardIcon
@@ -19,25 +28,41 @@ extends Control
 @onready var output_chip_extra_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipExtraIcon
 @onready var output_chip_extra_label: Label = $Container/OutputChip/OutputChipRow/OutputChipExtraLabel
 
+## Map that owns this icon. Assigned by [Hex] for placed cards and landing previews.
 var map: HexTileMap
+## Hex whose card this icon represents. May be [code]null[/code] for a cursor ghost.
 var tile: Hex
+## Board coordinates used to look up location-specific condiment fuses.
 var center_coordinates: Vector2i
 
-# Keeps activation tweens from stacking if triggers overlap.
+#endregion
+
+#region Presentation state
+
+# Long-lived tween references serve as state as well as allowing overlapping effects
+# to be cancelled. A transient tween owns the animated properties until it finishes.
 var _activation_tween: Tween
 var _trigger_link_flash_tween: Tween
 var _seal_tween: Tween
 var _inspect_hover_tween: Tween
 var _inspect_hover_active := false
-# Resting color when no activation or trigger-link tween is running.
+# Color is composed in layers: Hex state -> sealed tint -> recipe-preview dim.
+# Transient animation colors temporarily override that composed resting color.
 var _base_resting_modulate := Color.WHITE
 var _resting_modulate := Color.WHITE
-var _fuse_bar: HBoxContainer
-var _condiment_splash: GPUParticles2D
 var _is_segment_sealed := false
+# A seal may arrive during an activation. Delay its persistent rim so the two effects
+# remain legible instead of fighting over the icon at the same time.
 var _pending_sealed_rim := false
 var _seal_shine: SealHexShine
 var _recipe_preview_dimmed := false
+# Condiment UI is created lazily because placement ghosts and most cards never use it.
+var _fuse_bar: HBoxContainer
+var _condiment_splash: GPUParticles2D
+
+#endregion
+
+#region Presentation constants
 
 # Pop, squash, then settle. Durations must stay in sync with HexTileMap._wait_for_activation_animation.
 const ACTIVATION_PEAK_SCALE := Vector2(1.12, 1.12)
@@ -86,12 +111,21 @@ const OUTPUT_CHIP_BOTTOM_INSET := 28.0
 # Dim placed cards whose tags cannot fill the hovered dish recipe.
 const RECIPE_INVALID_DIM := Color(0.42, 0.42, 0.48, 1.0)
 
+#endregion
 
-## Full seal slam timing. Keep in sync with HexTileMap.wait_for_segment_seal().
+#region Setup and board chip
+
+## Returns the unscaled duration of the complete segment-seal slam.
+## Keep this in sync with [method HexTileMap.wait_for_segment_seal].
 static func get_segment_seal_duration() -> float:
 	return SEAL_LIFT_DURATION + SEAL_SLAM_DURATION + SEAL_SETTLE_DURATION
 
 
+## Binds [param rune] to the embedded icon and builds its board-specific overlays.
+##
+## If the node has not entered the scene tree yet, setup is deferred until its
+## [code]@onready[/code] references exist. Assign [member tile] and
+## [member center_coordinates] first when this represents a placed card.
 func setup(rune: TileCard) -> void:
 	if not is_node_ready():
 		call_deferred("setup", rune)
@@ -102,7 +136,9 @@ func setup(rune: TileCard) -> void:
 	refresh_condiment_badges(rune, center_coordinates)
 
 
-## Ghost copy used while aiming a hand card. Same chip as a placed rune, no input.
+## Configures this instance as the display-only ghost used while aiming a hand card.
+## The ghost retains the same card face and output chip as a placed card, but cannot
+## consume mouse input and does not draw the board's persistent hex stroke.
 func prepare_placement_ghost() -> void:
 	mouse_filter = MOUSE_FILTER_IGNORE
 	if rune_button != null:
@@ -115,7 +151,10 @@ func prepare_placement_ghost() -> void:
 	reset_ghost_visuals()
 
 
-## Hover scale lives on the inner container so seat tweens read correctly.
+## Applies the floating placement-preview scale, multiplied by [param pulse].
+##
+## The scale lives on the inner container so the root can move between screen and
+## board coordinates while the snap/seat animation independently changes its pose.
 func set_ghost_float_scale(pulse: float = 1.0) -> void:
 	scale = Vector2.ONE
 	if _anim_target == null:
@@ -126,6 +165,7 @@ func set_ghost_float_scale(pulse: float = 1.0) -> void:
 	_anim_target.scale = Vector2.ONE * PLACEMENT_HOVER_SCALE * pulse
 
 
+## Restores a reusable placement ghost to its visible, non-emitting hover pose.
 func reset_ghost_visuals() -> void:
 	_silence_particle_emitters()
 	modulate = Color.WHITE
@@ -151,13 +191,16 @@ func _silence_emitter(emitter: GPUParticles2D) -> void:
 	emitter.visible = false
 
 
+## Hides both rows of the output chip without changing their cached content.
 func hide_output_chip() -> void:
 	if output_chip != null:
 		output_chip.hide()
 	_hide_extra_chip_row()
 
 
-# Refresh the output chip after bonuses, chance, or progress change.
+## Rebuilds the output chip after the card's bonuses, chance, or progress changes.
+## [member tile] is passed through to [method TileCard.get_board_chip] so a card may
+## derive its display from neighboring board state. A hidden chip mode hides the panel.
 func refresh_output_chip(rune: TileCard) -> void:
 	if not is_node_ready() or rune == null:
 		return
@@ -168,6 +211,7 @@ func _show_output_chip(rune: TileCard) -> void:
 	if output_chip == null:
 		return
 	var chip: Dictionary = rune.get_board_chip(tile)
+	# TileCard owns the chip data contract; this class only turns that data into UI.
 	var mode: Variant = chip.get("mode", TileCard.BoardChipMode.HIDDEN)
 	if mode == TileCard.BoardChipMode.HIDDEN:
 		output_chip.hide()
@@ -232,8 +276,13 @@ func _fit_output_chip() -> void:
 	output_chip.offset_top = -OUTPUT_CHIP_BOTTOM_INSET - chip_size.y
 
 
-#region Animations and colors
-# Drops the oversized hover pose into the hex with a hard slam, then seats at rest.
+#endregion
+
+#region Placement presentation
+
+## Drops a newly placed click-to-place card into its hex with a hard slam.
+## This path owns the impact shake, dust burst, and outline draw; drag placement uses
+## [method animate_ghost_snap_to] followed by [method play_drag_seat_animation].
 func play_placement_animation() -> void:
 	_anim_target.pivot_offset = _anim_target.size / 2
 	if _anim_target.pivot_offset == Vector2.ZERO:
@@ -284,7 +333,9 @@ func play_placement_animation() -> void:
 	)
 
 
-## Glide the dragged ghost into the hex center. Ease-out so it decelerates on arrival.
+## Moves a dragged ghost to [param target_pos] and returns after the snap tween finishes.
+## [param target_pos] is a global canvas position. Ease-out makes the ghost decelerate
+## as it reaches the hex; a non-positive [param duration] snaps immediately.
 func animate_ghost_snap_to(target_pos: Vector2, duration: float) -> void:
 	modulate = Color.WHITE
 	_anim_target.pivot_offset = _anim_target.size / 2
@@ -310,7 +361,8 @@ func animate_ghost_snap_to(target_pos: Vector2, duration: float) -> void:
 	await snap_tween.finished
 
 
-## Seat a dragged ghost that is already over the hex. Gentle squash, then settle.
+## Seats a dragged ghost that is already centered over its target hex.
+## Returns after a gentler squash-and-settle than the click-to-place slam.
 func play_drag_seat_animation() -> void:
 	_anim_target.pivot_offset = _anim_target.size / 2
 	if _anim_target.pivot_offset == Vector2.ZERO:
@@ -351,7 +403,11 @@ func _on_placement_impact() -> void:
 		hex_stroke.play_clockwise_draw()
 
 
-# White dust puff from under the hex. Smoke gives volume, slashes shoot straight out from the center.
+## Plays the impact burst on the real card after a drag ghost has landed.
+##
+## The drag workflow hides its ghost before committing the card, so particles are
+## emitted by the newly placed instance instead. Smoke is reserved for segment seals;
+## placement uses dust and radial slashes plus the clockwise outline draw.
 func play_placement_land_particles() -> void:
 	_play_placement_dust()
 	if hex_stroke != null:
@@ -376,6 +432,15 @@ func _burst_emitter(emitter: GPUParticles2D) -> void:
 	emitter.emitting = true
 
 
+#endregion
+
+#region Resting color and inspect hover
+
+## Sets the base tint supplied by the owning [Hex].
+##
+## The sealed-state tint is recomputed from this color, then recipe-preview dimming is
+## applied when displayed. If a transient animation currently owns [member modulate],
+## the new resting color is stored and applied when that animation ends.
 func apply_resting_modulate(color: Color) -> void:
 	_base_resting_modulate = color
 	_resting_modulate = _compute_resting_modulate()
@@ -383,6 +448,9 @@ func apply_resting_modulate(color: Color) -> void:
 		_anim_target.modulate = _visible_resting_modulate()
 
 
+## Dims cards that cannot contribute to the recipe currently being previewed.
+## Transient activation, trigger-link, and seal effects keep visual priority and restore
+## the requested dim state when they finish.
 func set_recipe_preview_dimmed(dimmed: bool) -> void:
 	_recipe_preview_dimmed = dimmed
 	if _anim_target == null:
@@ -405,6 +473,7 @@ func _compute_resting_modulate() -> Color:
 
 
 func _can_apply_resting_modulate() -> bool:
+	# Writing modulate during one of these states would interrupt its visual feedback.
 	if _activation_tween != null and _activation_tween.is_valid():
 		return false
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
@@ -421,7 +490,9 @@ func _apply_resting_modulate() -> void:
 		_anim_target.modulate = _visible_resting_modulate()
 
 
-## Lift and brighten while the player inspects this placed card on the map.
+## Lifts and brightens this placed card while the player inspects it on the map.
+## Hover is suppressed when a recipe preview has dimmed the card or a higher-priority
+## resolution animation is active.
 func play_inspect_hover_in() -> void:
 	# Recipe-invalid dim is the preview. Do not brighten over it.
 	if _recipe_preview_dimmed:
@@ -442,7 +513,8 @@ func play_inspect_hover_in() -> void:
 	_inspect_hover_tween.tween_property(_anim_target, "modulate", INSPECT_HOVER_MODULATE, duration)
 
 
-## Return to the resting pose when map inspect hover ends.
+## Returns the card to its resting pose when map inspection ends.
+## Any sealed tint or recipe-preview dimming is restored as part of the tween.
 func play_inspect_hover_out() -> void:
 	if not _inspect_hover_active and (_inspect_hover_tween == null or not _inspect_hover_tween.is_valid()):
 		return
@@ -484,7 +556,13 @@ func _clear_inspect_hover_state() -> void:
 	_inspect_hover_active = false
 
 
-# Brief scale pulse + warm flash so the active rune reads clearly during turn resolution.
+#endregion
+
+#region Activation presentation
+
+## Plays the primary activation pop used when this card fires during turn resolution.
+## Existing activation feedback is replaced, empower sparks stop, and map-inspection
+## hover yields to the animation. The card restores its latest resting tint afterward.
 func play_activation_animation() -> void:
 	stop_empower_sparks()
 	_clear_inspect_hover_state()
@@ -554,7 +632,9 @@ func play_activation_animation() -> void:
 	)
 
 
-# Chained fire from another rune. Orange palette and a smaller pop than a primary activation.
+## Plays the smaller orange pop used when this card is fired by another card's trigger.
+## If the source-card trigger-link flash is also active, that looping flash retains
+## ownership of the card color while this animation changes only the scale.
 func play_chained_activation_animation() -> void:
 	stop_empower_sparks()
 
@@ -632,6 +712,8 @@ func _shake_screen(strength: float, duration: float) -> void:
 	camera.shake(strength, duration)
 
 
+## Returns the unscaled duration of either activation pop sequence.
+## Callers that wait for presentation should divide this by [member GameManager.game_speed].
 static func activation_animation_duration() -> float:
 	return ACTIVATION_POP_DURATION + ACTIVATION_SQUASH_DURATION + ACTIVATION_SETTLE_DURATION
 
@@ -644,7 +726,15 @@ func _is_trigger_link_flashing() -> bool:
 	return _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid()
 
 
-## Lift, gold flash, slam, smoke, then a thick gold rim. Skips scale if still firing.
+#endregion
+
+#region Segment presentation
+
+## Marks the card's segment sealed with a lift, gold flash, slam, smoke, and gold rim.
+##
+## If the card is still activating, the scale motion is skipped to preserve the firing
+## animation. The seal still flashes immediately and queues its persistent rim until
+## activation/trigger feedback no longer needs the same visual space.
 func play_segment_seal_animation() -> void:
 	_clear_inspect_hover_state()
 	_is_segment_sealed = true
@@ -752,6 +842,8 @@ func play_segment_seal_animation() -> void:
 	)
 
 
+## Removes the persistent sealed presentation and restores the normal resting state.
+## Called when the map clears its segment results for the next resolution cycle.
 func clear_segment_sealed() -> void:
 	_is_segment_sealed = false
 	_pending_sealed_rim = false
@@ -794,7 +886,9 @@ func _try_apply_pending_sealed_rim() -> void:
 	_start_seal_shine()
 
 
-# Gold highlight flash when a segment's turn totals are revealed.
+## Flashes gold when this card's segment totals are revealed after turn resolution.
+## This reuses the activation tween slot so activation and result feedback cannot
+## compete for the icon's color.
 func play_segment_result_animation() -> void:
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
@@ -826,7 +920,12 @@ func play_segment_result_animation() -> void:
 	)
 
 
-# Sparks sit under the chip so the icon and output stay readable.
+#endregion
+
+#region Ongoing resolution effects
+
+## Starts the persistent sparks that show this card is empowered.
+## Repeated calls are idempotent. Sparks sit under the chip so the board output remains readable.
 func start_empower_sparks() -> void:
 	if empower_sparks == null:
 		return
@@ -838,13 +937,15 @@ func start_empower_sparks() -> void:
 	empower_sparks.emitting = true
 
 
+## Stops and hides the empowered-state sparks.
 func stop_empower_sparks() -> void:
 	if empower_sparks != null:
 		empower_sparks.emitting = false
 		empower_sparks.visible = false
 
 
-# Looping orange pulse on the source rune while its queued triggers resolve.
+## Starts a looping orange pulse and outline on a source card while its triggers resolve.
+## Call [method stop_trigger_link_flash] after all queued linked activations complete.
 func start_trigger_link_flash() -> void:
 	_clear_inspect_hover_state()
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
@@ -869,6 +970,8 @@ func start_trigger_link_flash() -> void:
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
+## Stops source-card trigger feedback and restores the latest resting presentation.
+## A segment-seal rim that was deferred during the flash is applied here.
 func stop_trigger_link_flash() -> void:
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
 		_trigger_link_flash_tween.kill()
@@ -881,6 +984,14 @@ func stop_trigger_link_flash() -> void:
 	_try_apply_pending_sealed_rim()
 
 
+#endregion
+
+#region Condiment presentation
+
+## Rebuilds the fuse badges for [param card] at [param coords].
+##
+## [CondimentManager] determines which fuses are active and their remaining turns;
+## this class only creates their board presentation. Invalid catalog IDs are ignored.
 func refresh_condiment_badges(card: TileCard, coords: Vector2i) -> void:
 	_ensure_fuse_ui()
 	for child in _fuse_bar.get_children():
@@ -897,7 +1008,7 @@ func refresh_condiment_badges(card: TileCard, coords: Vector2i) -> void:
 func _make_fuse_badge(condiment: Condiment, turns: int) -> PanelContainer:
 	# Olive well on the hex face so the flask reads against grass and chip art.
 	var well := PanelContainer.new()
-	well.custom_minimum_size = Vector2(36, 36)
+	well.custom_minimum_size = Vector2(50, 50)
 	well.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	well.add_theme_stylebox_override("panel", _fuse_badge_style())
 
@@ -945,6 +1056,7 @@ func _fuse_badge_style() -> StyleBoxFlat:
 	return style
 
 
+## Bursts particles in [param color] when a condiment is applied or consumed.
 func play_condiment_splash(color: Color) -> void:
 	_ensure_fuse_ui()
 	if _condiment_splash == null:
@@ -955,6 +1067,7 @@ func play_condiment_splash(color: Color) -> void:
 
 
 func _ensure_fuse_ui() -> void:
+	# Badges and splash particles are runtime-built so the base scene stays lightweight.
 	if _fuse_bar != null:
 		return
 	_fuse_bar = HBoxContainer.new()
@@ -995,4 +1108,5 @@ func _ensure_fuse_ui() -> void:
 	_condiment_splash.process_material = splash_material
 	_condiment_splash.texture = preload("res://assets/particles/spark/spark_03.png")
 	add_child(_condiment_splash)
-#endregion Animations and colors
+
+#endregion

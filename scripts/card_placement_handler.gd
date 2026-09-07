@@ -406,7 +406,7 @@ func _show_placement_failed_feedback(hex: Hex, message: String) -> void:
 		return
 	var world_pos: Vector2
 	if hex != null and hex.is_on_map():
-		world_pos = tile_map.to_global(tile_map.base_layer.map_to_local(hex.coordinates))
+		world_pos = tile_map.floating_text_position_for_hex(hex.coordinates)
 	else:
 		world_pos = tile_map.get_global_mouse_position()
 	tile_map.create_floating_text(world_pos, message, Color(1.0, 0.45, 0.45, 1.0))

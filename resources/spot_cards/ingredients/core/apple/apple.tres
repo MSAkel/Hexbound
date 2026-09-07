@@ -5,12 +5,12 @@
 
 [resource]
 script = ExtResource("2_80ooo")
-ingredient_kind = 2
 base_production_amount = 16
 product = 1
+ingredient_kind = 2
 starting_hand_eligible = true
 id = "apple"
 name = "Apple"
 icon = ExtResource("1_amro8")
-description = "+26 Flavour if an adjacent Following spot is empty. Otherwise +16"
+description = "+26 Flavour if a Following adjacent spot is empty. Otherwise +16"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

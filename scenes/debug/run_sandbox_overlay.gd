@@ -224,7 +224,7 @@ func _on_open_merchant_pressed() -> void:
 func _on_open_rune_selection_pressed() -> void:
 	_dismiss_blocking_panels()
 	AudioManager.play_sfx(UISounds.CLICK)
-	UiManager.show_runes_choice_panel.emit()
+	UiManager.show_cards_choice_panel.emit()
 
 
 func _on_character_option_item_selected(index: int) -> void:

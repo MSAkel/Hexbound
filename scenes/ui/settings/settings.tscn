@@ -45,7 +45,6 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 32
 
 [node name="MasterVolume" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/SettingsContainer" unique_id=475721116]
-visible = false
 layout_mode = 2
 theme_override_constants/separation = 50
 
