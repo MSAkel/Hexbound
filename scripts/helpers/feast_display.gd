@@ -17,6 +17,7 @@ const DAY := "Day"
 const HOUR := "Hour"
 const PASS := "Pass"
 const CONDIMENTS := "Condiments"
+const MEAL := "Meal"
 const DISH := "Dish"
 
 const PLACEHOLDER_ICON := preload("res://assets/icons/placeholder.png")
@@ -50,8 +51,8 @@ static func get_tile_card_shelf_label(card: TileCard) -> String:
 			return "Kitchenware"
 		TileCard.TileCardType.INGREDIENT:
 			return INGREDIENT
-		TileCard.TileCardType.DISH:
-			return DISH
+		TileCard.TileCardType.MEAL:
+			return MEAL
 	return card.get_card_kind_label().capitalize()
 
 

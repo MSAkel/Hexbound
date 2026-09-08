@@ -1000,7 +1000,7 @@ func _frame_texture_for_card(data: Card) -> Texture2D:
 		match (data as TileCard).type:
 			TileCard.TileCardType.INGREDIENT:
 				return frame_ingredients
-			TileCard.TileCardType.DISH:
+			TileCard.TileCardType.MEAL:
 				return frame_dish
 			TileCard.TileCardType.KITCHENWARE:
 				return frame_kitchenware

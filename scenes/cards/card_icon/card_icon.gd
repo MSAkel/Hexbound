@@ -51,7 +51,7 @@ func _hex_for_tile_card(card: TileCard) -> Texture2D:
 			return hex_kitchenware
 		TileCard.TileCardType.INGREDIENT:
 			return hex_ingredients
-		TileCard.TileCardType.DISH:
+		TileCard.TileCardType.MEAL:
 			return hex_dish if hex_dish != null else hex_kitchenware
 	return hex_ingredients
 

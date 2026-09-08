@@ -304,7 +304,7 @@ func register_tile_card_activation(rune: TileCard) -> void:
 				MetaProgressionManager.note_mult_card_triggers(rune.run_trigger_count)
 		elif rune.type == TileCard.TileCardType.KITCHENWARE:
 			MetaProgressionManager.add_support_trigger()
-		elif rune.type == TileCard.TileCardType.DISH:
+		elif rune.type == TileCard.TileCardType.MEAL:
 			MetaProgressionManager.add_dish_trigger()
 		if is_retrigger:
 			if TileCard.is_producer_type(rune.type):

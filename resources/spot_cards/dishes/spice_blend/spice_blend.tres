@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_script")
 recipe_seasoning_count = 2
+ingredient_tags = Array[StringName]([&"dish"])
 rarity = 1
 type = 3
 product = 2

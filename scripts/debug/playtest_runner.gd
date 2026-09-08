@@ -1119,7 +1119,7 @@ func _player_wants_to_pay_tokens(card: TileCard, price: int) -> bool:
 
 
 func _card_keep_value(card: TileCard) -> float:
-	if card.type == TileCard.TileCardType.DISH:
+	if card.type == TileCard.TileCardType.MEAL:
 		return _dish_card_value(card)
 	match card.product:
 		TileCard.Product.MULTIPLIER:
@@ -1136,7 +1136,7 @@ func _card_keep_value(card: TileCard) -> float:
 func _card_player_value(card: TileCard) -> float:
 	if card == null:
 		return 0.0
-	if card.type == TileCard.TileCardType.DISH:
+	if card.type == TileCard.TileCardType.MEAL:
 		return _dish_card_value(card)
 	if _prefers_off_engine(card):
 		return _best_off_engine_preview_value(card)
@@ -1779,7 +1779,7 @@ func _place_one_card(card: TileCard) -> bool:
 
 
 func _is_dish_card(card: TileCard) -> bool:
-	return card != null and card.type == TileCard.TileCardType.DISH
+	return card != null and card.type == TileCard.TileCardType.MEAL
 
 
 ## Prefer a seat where the prefix recipe is already complete in fire order.
@@ -2174,7 +2174,7 @@ func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
 			TileCard.Product.MULTIPLIER:
 				mult_cards.append(card)
 			_:
-				if card.type == TileCard.TileCardType.DISH:
+				if card.type == TileCard.TileCardType.MEAL:
 					dish_cards.append(card)
 				else:
 					other_cards.append(card)
@@ -2218,7 +2218,7 @@ func _chaos_stress_value(card: TileCard) -> float:
 	match card.type:
 		TileCard.TileCardType.KITCHENWARE:
 			return 70.0
-		TileCard.TileCardType.DISH:
+		TileCard.TileCardType.MEAL:
 			return 55.0
 		_:
 			return 12.0

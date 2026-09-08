@@ -2,7 +2,7 @@ class_name TileCard
 extends Card
 
 ## Base resource for spot cards played on the Feast map.
-## Shelves are Ingredient, Kitchenware, and Dish.
+## Shelves are Ingredient, Kitchenware, and Meal.
 
 enum TileCardRarity {
 	COMMON,
@@ -16,8 +16,8 @@ enum TileCardType {
 	KITCHENWARE,
 	## Deprecated enum slot. Board tools now live on the condiment belt.
 	UTILITY,
-	## Seated plates. Activate from a fire-order prefix recipe, then add a local meal pile.
-	DISH,
+	## Seated plates. Food uses tag dish, drinks use tag beverage.
+	MEAL,
 }
 
 ## Matches seated Ingredient cards when filtering the map by Flavour or Mult producers.
@@ -231,7 +231,7 @@ func has_ingredient_tag(tag: StringName) -> bool:
 
 
 ## True when card matches a kind tag, an array of tags, or any tag when filter_kind is null.
-## TAG_KITCHENWARE and TAG_DISH match shelf type so Dishes and Kitchenware are queryable.
+## TAG_KITCHENWARE matches shelf type. dish and beverage are authored tags on Meals.
 static func matches_kind_filter(card: TileCard, filter_kind: Variant) -> bool:
 	if card == null:
 		return false
@@ -247,12 +247,10 @@ static func matches_kind_filter(card: TileCard, filter_kind: Variant) -> bool:
 		return false
 	if tag == TAG_KITCHENWARE:
 		return card.type == TileCardType.KITCHENWARE
-	if tag == TAG_DISH:
-		return card.type == TileCardType.DISH
 	return card.has_ingredient_tag(tag)
 
 
-## Ingredient tags plus a shelf tag for Kitchenware and Dish cards.
+## Ingredient tags plus a shelf tag for Kitchenware cards.
 static func queryable_kind_tags(card: TileCard) -> Array[StringName]:
 	var tags: Array[StringName] = []
 	if card == null:
@@ -263,8 +261,6 @@ static func queryable_kind_tags(card: TileCard) -> Array[StringName]:
 		tags.append(tag)
 	if card.type == TileCardType.KITCHENWARE and TAG_KITCHENWARE not in tags:
 		tags.append(TAG_KITCHENWARE)
-	elif card.type == TileCardType.DISH and TAG_DISH not in tags:
-		tags.append(TAG_DISH)
 	return tags
 
 
@@ -286,9 +282,9 @@ func get_inspect_subtitle() -> String:
 	return "%s  ·  %s" % [base, tag]
 
 
-# Ingredient tags such as Vegetable or Vegetable · Fruit. Empty when none are set.
+# Ingredient and Meal tags such as Vegetable or Dish · Beverage. Empty when none are set.
 func get_distinct_recipe_tag_label() -> String:
-	if type != TileCardType.INGREDIENT:
+	if type != TileCardType.INGREDIENT and type != TileCardType.MEAL:
 		return ""
 	var tag := FeastDisplay.format_ingredient_tags_label(ingredient_tags)
 	if tag.is_empty():

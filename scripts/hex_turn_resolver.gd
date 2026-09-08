@@ -191,8 +191,8 @@ func _card_type_label(card: TileCard) -> String:
 			return "ingredients"
 		TileCard.TileCardType.KITCHENWARE:
 			return "kitchenware"
-		TileCard.TileCardType.DISH:
-			return "dish"
+		TileCard.TileCardType.MEAL:
+			return "meal"
 		_:
 			return "other"
 

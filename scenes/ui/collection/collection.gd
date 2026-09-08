@@ -55,7 +55,7 @@ func _configure_tabs() -> void:
 	var titles := PackedStringArray([
 		FeastDisplay.INGREDIENT,
 		"Kitchenware",
-		"Dishes",
+		"Meals",
 		FeastDisplay.CONDIMENTS,
 		"Characters",
 		"Events",
@@ -122,7 +122,7 @@ func _show_kitchenware_cards() -> void:
 func _show_dish_cards() -> void:
 	var cards: Array = []
 	for card in GameManager.tile_cards_pool:
-		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.DISH:
+		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.MEAL:
 			cards.append(card)
 	_show_tile_cards(cards)
 

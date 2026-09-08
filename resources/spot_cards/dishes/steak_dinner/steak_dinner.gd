@@ -1,7 +1,7 @@
 extends DishCard
 
 ## +60 Flavour when the prefix is Protein plus Kitchenware.
-## Doubles the Following neighbour if it is a Beverage.
+## Doubled when the Following neighbour is a Beverage.
 
 
 func _plated_flavour_from_recipe(_recipe: Array[TileCard]) -> int:
@@ -9,10 +9,9 @@ func _plated_flavour_from_recipe(_recipe: Array[TileCard]) -> int:
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
+	if _is_beverage_card(_get_following_neighbouring_card(tile)):
+		_empower()
 	super._on_activate_tile_card(tile)
-	if not is_recipe_ready(tile):
-		return
-	_try_double_following_beverage(tile)
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
@@ -35,15 +34,6 @@ func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
 	if hex != null:
 		gold.append(hex.coordinates)
 	return gold
-
-
-func _try_double_following_beverage(tile: Hex) -> void:
-	var neighbour := _get_following_neighbouring_card(tile)
-	if not _is_beverage_card(neighbour):
-		return
-	if not _try_empower_tile_card(tile, neighbour):
-		return
-	_create_doubled_floating_text(tile, neighbour)
 
 
 ## First occupied adjacent spot that fires after this dish.
