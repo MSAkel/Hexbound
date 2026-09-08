@@ -46,8 +46,6 @@ static func get_tile_card_shelf_label(card: TileCard) -> String:
 	if card == null:
 		return ""
 	match card.type:
-		TileCard.TileCardType.UTILITY:
-			return "Utility"
 		TileCard.TileCardType.KITCHENWARE:
 			return "Kitchenware"
 		TileCard.TileCardType.INGREDIENT:

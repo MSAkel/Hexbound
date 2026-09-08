@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Condiment" format=3]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b5m7jn2ukjr23" path="res://assets/icons/utility/duplicate_order.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "duplicate_order"
+display_name = "Duplicate Order"
+description = "Clone the targeted seated card into hand"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.82, 0.58, 0.92, 1)
+base_price = 7
+effect_type = 18
+target_kind = 1

@@ -1066,9 +1066,9 @@ func _player_engine_shop_cards(stock: Array[TileCard]) -> Array[TileCard]:
 	for card: TileCard in stock:
 		if not _can_bot_place_card(card):
 			continue
-		if not _can_place_for_player(card) and card.id != "transposition":
+		if not _can_place_for_player(card):
 			continue
-		if _card_player_value(card) < SHOP_KEEP_THRESHOLD and card.id != "transposition":
+		if _card_player_value(card) < SHOP_KEEP_THRESHOLD:
 			continue
 		picks.append(card)
 	return picks
@@ -1121,8 +1121,6 @@ func _player_wants_to_pay_tokens(card: TileCard, price: int) -> bool:
 func _card_keep_value(card: TileCard) -> float:
 	if card.type == TileCard.TileCardType.DISH:
 		return _dish_card_value(card)
-	if card.type == TileCard.TileCardType.UTILITY:
-		return 1.0
 	match card.product:
 		TileCard.Product.MULTIPLIER:
 			return 40.0 + float(card.base_production_amount) * 20.0
@@ -1140,10 +1138,6 @@ func _card_player_value(card: TileCard) -> float:
 		return 0.0
 	if card.type == TileCard.TileCardType.DISH:
 		return _dish_card_value(card)
-	if card.id == "transposition":
-		return 55.0 if _find_player_swap().size() == 2 else 0.0
-	if card.type == TileCard.TileCardType.UTILITY:
-		return 0.0
 	if _prefers_off_engine(card):
 		return _best_off_engine_preview_value(card)
 	var engine := _player_engine_index()
@@ -1299,7 +1293,7 @@ func _columnist_early_round() -> bool:
 
 
 func _can_place_on_locked_column(card: TileCard) -> bool:
-	if card == null or card.type == TileCard.TileCardType.UTILITY:
+	if card == null:
 		return false
 	if _locked_engine_segment < 0:
 		return _can_place_for_player(card)
@@ -1361,17 +1355,6 @@ func _player_spill_segment_rank(primary: int) -> Array[int]:
 		return ranked
 	return _player_engine_rank()
 
-
-func _should_drink_borrowed_time(gap: int) -> bool:
-	if gap <= 0 or GameManager.remaining_turns > 1:
-		return false
-	var goal := maxi(1, GameManager.required_score)
-	var near_miss := maxi(50, int(float(goal) * 0.08))
-	if gap <= near_miss:
-		return true
-	if _columnist_early_round() and GameManager.current_round == COLUMNIST_EARLY_ROUND:
-		return gap <= maxi(120, int(float(goal) * 0.12))
-	return false
 
 
 func _uses_engine_lock() -> bool:
@@ -1483,7 +1466,7 @@ func _apply_spark_on_engine() -> void:
 
 
 func _can_place_for_player(card: TileCard) -> bool:
-	if card == null or card.type == TileCard.TileCardType.UTILITY:
+	if card == null:
 		return false
 	if _prefers_off_engine(card):
 		return _can_place_off_engine(card)
@@ -1667,22 +1650,6 @@ func _player_use_belt_before_resolve() -> void:
 		var condiment := CondimentManager.belt[i]
 		if condiment == null:
 			continue
-		if condiment.effect_type == Condiment.EffectType.BORROWED_TIME:
-			if _should_drink_borrowed_time(gap):
-				CondimentManager.headless_use_slot(i)
-				return
-	for i in CondimentManager.BELT_SIZE:
-		var condiment := CondimentManager.belt[i]
-		if condiment == null:
-			continue
-		if condiment.effect_type in [Condiment.EffectType.OPENING_ROUND, Condiment.EffectType.CLOSING_ROUND]:
-			if _engine_producer_hex() != null and gap > int(float(GameManager.required_score) * 0.15):
-				CondimentManager.headless_use_slot(i)
-				return
-	for i in CondimentManager.BELT_SIZE:
-		var condiment := CondimentManager.belt[i]
-		if condiment == null:
-			continue
 		if condiment.effect_type in [
 			Condiment.EffectType.EMPOWER,
 			Condiment.EffectType.ECHO,
@@ -1695,14 +1662,6 @@ func _player_use_belt_before_resolve() -> void:
 			var target := _best_condiment_target_hex(condiment)
 			if target != null and gap > 0:
 				CondimentManager.headless_use_slot(i, target)
-				return
-	for i in CondimentManager.BELT_SIZE:
-		var condiment := CondimentManager.belt[i]
-		if condiment == null:
-			continue
-		if condiment.effect_type == Condiment.EffectType.REWRITE_OMEN:
-			if EventManager.get_next_event_round() != -1 and GameManager.current_round >= 4:
-				CondimentManager.headless_use_slot(i)
 				return
 
 
@@ -1721,13 +1680,6 @@ func _best_condiment_target_hex(condiment: Condiment) -> Hex:
 
 func _can_bot_place_card(card: TileCard) -> bool:
 	if card == null:
-		return false
-	if card.type == TileCard.TileCardType.UTILITY:
-		# Chaos swaps any two occupied tiles. Player bot uses a scored swap.
-		if _active_bot == CHAOS_BOT_ID and card.id == "transposition":
-			return _occupied_hexes().size() >= 2
-		if _active_bot == "player" and card.id == "transposition":
-			return _find_player_swap().size() == 2
 		return false
 	if not card.is_legal_for_layout(GameManager.selected_character):
 		return false
@@ -1802,14 +1754,7 @@ func _place_one_card(card: TileCard) -> bool:
 	if not _can_bot_place_card(card):
 		return false
 	if _active_bot == CHAOS_BOT_ID:
-		if card.id == "transposition":
-			return _play_chaos_transposition()
 		return _place_chaos_card(card)
-	if _active_bot == "player" and card.id == "transposition":
-		var played := _play_transposition()
-		if played:
-			_apply_spark_on_engine()
-		return played
 	match _active_bot:
 		"player":
 			if _place_player_card(card):
@@ -2054,7 +1999,7 @@ func _player_engine_rank() -> Array[int]:
 
 
 func _can_place_on_engine(card: TileCard) -> bool:
-	if card == null or card.type == TileCard.TileCardType.UTILITY:
+	if card == null:
 		return false
 	var engine := _player_engine_index()
 	if engine < 0:
@@ -2081,99 +2026,6 @@ func _can_place_on_segment(card: TileCard, segment_index: int) -> bool:
 		if card.can_place_on_tile(hex):
 			return true
 	return false
-
-
-## Pull a stronger card onto the engine or fix trigger order with Transposition.
-func _find_player_swap() -> Array[Hex]:
-	var engine := _player_engine_index()
-	if engine < 0:
-		return []
-	var occupied: Array[Hex] = []
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.active_tile_card != null:
-			occupied.append(hex)
-	var best_pair: Array[Hex] = []
-	var best_score := 0.0
-	for i in occupied.size():
-		for j in range(i + 1, occupied.size()):
-			var a: Hex = occupied[i]
-			var b: Hex = occupied[j]
-			var score := _score_swap_pair(a, b, engine)
-			if score > best_score:
-				best_score = score
-				best_pair = [a, b]
-	if best_score <= 0.0:
-		return []
-	return best_pair
-
-
-func _score_swap_pair(a: Hex, b: Hex, engine: int) -> float:
-	var seg_a := _map.get_segment_index(a.coordinates)
-	var seg_b := _map.get_segment_index(b.coordinates)
-	var str_a := _hex_strength(a)
-	var str_b := _hex_strength(b)
-	var gain := 0.0
-	if seg_a == engine and str_b > str_a + 4.0:
-		gain += str_b - str_a
-	if seg_b == engine and str_a > str_b + 4.0:
-		gain += str_a - str_b
-	if seg_a == engine and seg_b == engine:
-		gain += _trigger_order_swap_gain(a, b)
-	return gain
-
-
-func _hex_strength(hex: Hex) -> float:
-	var card := hex.active_tile_card
-	if card == null:
-		return 0.0
-	return _chip_numeric_value(card.get_board_chip(hex)) + float(_player_swap_weight(card)) * 8.0
-
-
-func _trigger_order_swap_gain(a: Hex, b: Hex) -> float:
-	var segment_index := _map.get_segment_index(a.coordinates)
-	var hexes := _map.get_hexes_in_segment(segment_index)
-	var order_a := hexes.find(a)
-	var order_b := hexes.find(b)
-	if order_a < 0 or order_b < 0:
-		return 0.0
-	var card_a := a.active_tile_card
-	var card_b := b.active_tile_card
-	if card_a == null or card_b == null:
-		return 0.0
-	var gain := 0.0
-	if card_a.product == TileCard.Product.MULTIPLIER and order_a > order_b:
-		gain += 12.0
-	if card_b.product == TileCard.Product.MULTIPLIER and order_b > order_a:
-		gain += 12.0
-	if card_a.type == TileCard.TileCardType.KITCHENWARE and order_a > order_b:
-		gain += 8.0
-	if card_b.type == TileCard.TileCardType.KITCHENWARE and order_b > order_a:
-		gain += 8.0
-	return gain
-
-
-func _player_swap_weight(card: TileCard) -> int:
-	if card == null:
-		return 0
-	match card.product:
-		TileCard.Product.MULTIPLIER:
-			return 4
-		TileCard.Product.FLAVOUR:
-			return 3
-		TileCard.Product.GOLD:
-			return 0
-		_:
-			if card.type == TileCard.TileCardType.KITCHENWARE:
-				return 2
-			return 1
-
-
-func _play_transposition() -> bool:
-	var pair := _find_player_swap()
-	if pair.size() != 2:
-		return false
-	_map.swap_placed_tile_cards(pair[0], pair[1])
-	return true
 
 
 func _begin_run(character_id: String, seed_text: String) -> void:
@@ -2363,15 +2215,11 @@ func _next_chaos_rng() -> RandomNumberGenerator:
 func _chaos_stress_value(card: TileCard) -> float:
 	if card == null:
 		return 0.0
-	if card.id == "transposition":
-		return 90.0
 	match card.type:
 		TileCard.TileCardType.KITCHENWARE:
 			return 70.0
 		TileCard.TileCardType.DISH:
 			return 55.0
-		TileCard.TileCardType.UTILITY:
-			return 45.0
 		_:
 			return 12.0
 
@@ -2417,18 +2265,6 @@ func _place_chaos_card(card: TileCard) -> bool:
 	hex.place_tile_card(card)
 	return true
 
-
-func _play_chaos_transposition() -> bool:
-	var occupied := _occupied_hexes()
-	if occupied.size() < 2:
-		return false
-	var rng := _next_chaos_rng()
-	var index_a := rng.randi_range(0, occupied.size() - 1)
-	var index_b := rng.randi_range(0, occupied.size() - 2)
-	if index_b >= index_a:
-		index_b += 1
-	_map.swap_placed_tile_cards(occupied[index_a], occupied[index_b])
-	return true
 
 
 func _shop_chaos_round() -> Array[String]:

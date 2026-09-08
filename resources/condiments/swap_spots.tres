@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Condiment" format=3]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://7a81wpsgu4bk" path="res://assets/icons/utility/swap_spots.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "swap_spots"
+display_name = "Swap Spots"
+description = "Swap two seated cards"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.62, 0.72, 0.95, 1)
+base_price = 6
+effect_type = 19
+target_kind = 2

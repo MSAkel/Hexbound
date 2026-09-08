@@ -1004,10 +1004,6 @@ func _frame_texture_for_card(data: Card) -> Texture2D:
 				return frame_dish
 			TileCard.TileCardType.KITCHENWARE:
 				return frame_kitchenware
-			TileCard.TileCardType.UTILITY:
-				return frame_utility
-			TileCard.TileCardType.DISH:
-				return frame_kitchenware
 	return frame_ingredients
 
 

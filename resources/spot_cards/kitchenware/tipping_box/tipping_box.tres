@@ -8,7 +8,6 @@ script = ExtResource("2_s66kk")
 rarity = 1
 type = 1
 product = 1
-utility_target_count = 2
 id = "tipping_box"
 name = "Tipping Box"
 icon = ExtResource("1_3fqxb")

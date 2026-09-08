@@ -2,7 +2,7 @@ class_name TileCard
 extends Card
 
 ## Base resource for spot cards played on the Feast map.
-## Shelves are Ingredient, Kitchenware, Utility, and Dish.
+## Shelves are Ingredient, Kitchenware, and Dish.
 
 enum TileCardRarity {
 	COMMON,
@@ -14,6 +14,7 @@ enum TileCardType {
 	## Seated Ingredients. Core (Product.FLAVOUR) and Seasonings (Product.MULTIPLIER).
 	INGREDIENT,
 	KITCHENWARE,
+	## Deprecated enum slot. Board tools now live on the condiment belt.
 	UTILITY,
 	## Seated plates. Activate from a fire-order prefix recipe, then add a local meal pile.
 	DISH,
@@ -173,8 +174,6 @@ var hour_additive_mult_produced: float = 0.0
 # Packs and shop omit this card when the selected layout cannot host it.
 @export var layout_requirement: LayoutRequirement = LayoutRequirement.NONE
 @export var layout_requirement_size: int = 0
-# Utilities default to one occupied spot. Swap Spots uses two.
-@export var utility_target_count: int = 1
 ## Plays once when this card resolves during fire order. Chance cards still fire on a miss.
 @export var trigger_sound: AudioStream
 
@@ -454,12 +453,10 @@ func get_shop_price(discount: float = 0.0) -> int:
 	return _apply_merchant_discount(base_price, discount)
 
 
-# Occupied spot for utilities, empty spot plus placement restrictions for all others.
+# Empty spot plus placement restrictions.
 func can_play_on(hex: Hex) -> bool:
 	if hex.is_placement_blocked():
 		return false
-	if type == TileCardType.UTILITY:
-		return hex.active_tile_card != null
 	if hex.active_tile_card != null:
 		return false
 	return can_place_on_tile(hex)
@@ -468,17 +465,11 @@ func can_play_on(hex: Hex) -> bool:
 func is_placement_candidate(hex: Hex) -> bool:
 	if hex.is_placement_blocked():
 		return false
-	if type == TileCardType.UTILITY:
-		return hex.active_tile_card != null
 	return hex.active_tile_card == null
 
 
-# Instant-resolve utilities, otherwise occupy the spot.
 func play_on(hex: Hex, animate: bool = true) -> void:
-	if type == TileCardType.UTILITY:
-		apply_on_placement(hex)
-	else:
-		hex.place_tile_card(self, animate)
+	hex.place_tile_card(self, animate)
 
 
 # Entry point for spot card activation. Mainly called by Hex.apply_tile_card_activation()
@@ -599,23 +590,9 @@ func _try_queue_tile_card_triggers(
 	queue_tile_card_triggers(source_tile, triggerable, aligned_scales)
 	return true
 
-# Utility cards resolve immediately on placement instead of occupying a spot.
+# Utility cards used to resolve immediately on placement. Board tools moved to condiments.
 func apply_on_placement(_tile: Hex) -> void:
 	pass
-
-
-## Multi-target utilities collect spots in the placement handler, then resolve here.
-func apply_on_targets(tiles: Array[Hex]) -> void:
-	if tiles.is_empty():
-		return
-	apply_on_placement(tiles[0])
-
-
-## Occupied-spot utilities cannot retarget a spot already chosen this play.
-func can_utility_target(hex: Hex, already_selected: Array[Hex]) -> bool:
-	if hex in already_selected:
-		return false
-	return can_play_on(hex)
 
 
 ## Another card on this course broke. Salvage Core grows from this hook.
@@ -1302,8 +1279,6 @@ func _pick_random_placeable_tile_card(
 ) -> TileCard:
 	var candidates: Array[TileCard] = []
 	for template: TileCard in GameManager.tile_cards_pool:
-		if template.type == TileCardType.UTILITY:
-			continue
 		if filter_rarity != null and template.rarity != filter_rarity:
 			continue
 		if not exclude_id.is_empty() and template.id == exclude_id:

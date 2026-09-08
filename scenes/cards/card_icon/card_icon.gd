@@ -47,8 +47,6 @@ func show_empty(texture: Texture2D) -> void:
 
 func _hex_for_tile_card(card: TileCard) -> Texture2D:
 	match card.type:
-		TileCard.TileCardType.UTILITY:
-			return hex_utility
 		TileCard.TileCardType.KITCHENWARE:
 			return hex_kitchenware
 		TileCard.TileCardType.INGREDIENT:

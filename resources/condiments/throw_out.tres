@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Condiment" format=3]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dh88qr3wki4oj" path="res://assets/icons/utility/throw_out.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "throw_out"
+display_name = "Throw Out"
+description = "Spoils target card, gain random card"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.72, 0.42, 0.28, 1)
+base_price = 6
+effect_type = 14
+target_kind = 1

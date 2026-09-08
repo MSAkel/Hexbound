@@ -24,7 +24,6 @@ enum CollectionTab {
 	KITCHENWARE,
 	DISH,
 	CONDIMENTS,
-	UTILITY,
 	CHARACTERS,
 	EVENTS,
 	PASSIVES,
@@ -58,7 +57,6 @@ func _configure_tabs() -> void:
 		"Kitchenware",
 		"Dishes",
 		FeastDisplay.CONDIMENTS,
-		"Utility",
 		"Characters",
 		"Events",
 		"Passives",
@@ -79,8 +77,6 @@ func _show_tab(tab: int) -> void:
 			_show_dish_cards()
 		CollectionTab.CONDIMENTS:
 			_show_condiments()
-		CollectionTab.UTILITY:
-			_show_utility_cards()
 		CollectionTab.CHARACTERS:
 			_show_characters()
 		CollectionTab.EVENTS:
@@ -127,14 +123,6 @@ func _show_dish_cards() -> void:
 	var cards: Array = []
 	for card in GameManager.tile_cards_pool:
 		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.DISH:
-			cards.append(card)
-	_show_tile_cards(cards)
-
-
-func _show_utility_cards() -> void:
-	var cards: Array = []
-	for card in GameManager.tile_cards_pool:
-		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.UTILITY:
 			cards.append(card)
 	_show_tile_cards(cards)
 

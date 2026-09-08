@@ -27,9 +27,6 @@ var _effect_preview_gold_coords: Array[Vector2i] = []
 var _effect_preview_invalid_coords: Array[Vector2i] = []
 # Valid placement tiles highlighted for first, last, or edge restrictions.
 var _valid_restriction_coords: Array[Vector2i] = []
-# Occupied hexes already chosen for a multi-target utility such as Transposition.
-var _utility_target_hexes: Array[Hex] = []
-var _utility_target_coords: Array[Vector2i] = []
 # True until the mouse-up that belongs to the drag that selected the card.
 var _awaiting_pointer_release: bool = false
 # Screen position of that selecting press, used to tell a click from a drag.
@@ -195,8 +192,6 @@ func _replace_selected_card(card: CardUI) -> void:
 	_switching_selection = true
 	selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
 	_switching_selection = false
-	_utility_target_hexes.clear()
-	_utility_target_coords.clear()
 
 
 func _configure_gamepad_placement() -> void:
@@ -323,7 +318,6 @@ func _update_rune_preview() -> void:
 		_rune_preview.hide_output_chip()
 		tile_map.clear_placement_preview()
 		_clear_hover_highlights()
-		_restamp_utility_target_highlights()
 
 	_update_placed_card_tile_panel(map_coords, mouse_over_card)
 
@@ -374,13 +368,7 @@ func _placement_failure_message(hex: Hex) -> String:
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:
 		return "Can't place here"
-	if tile_card.type == TileCard.TileCardType.UTILITY:
-		if hex.active_tile_card == null:
-			return "Needs an occupied %s" % FeastDisplay.SPOT.to_lower()
-		return "Can't target this %s" % FeastDisplay.SPOT.to_lower()
 	if hex.active_tile_card != null:
-		if tile_card.type == TileCard.TileCardType.UTILITY:
-			return "Can't target this %s" % FeastDisplay.SPOT.to_lower()
 		return ""
 	if not tile_card.can_place_on_tile(hex):
 		return _placement_restriction_message(tile_card)
@@ -430,11 +418,6 @@ func _try_place_card() -> void:
 		_deselect_card()
 		return
 
-	var tile_card := _get_selected_tile_card()
-	if tile_card != null and tile_card.utility_target_count > 1:
-		_collect_utility_target(hex)
-		return
-
 	_place_card_on_hex(hex)
 
 
@@ -458,7 +441,6 @@ func _clear_placement_overlays() -> void:
 	_clear_hover_highlights()
 	_clear_restriction_overlays()
 	_clear_valid_restriction_highlights()
-	_clear_rune_highlights_at(_utility_target_coords)
 	tile_map.rune_highlight_overlay_layer.modulate = Color.WHITE
 
 
@@ -500,10 +482,7 @@ func _clear_rune_highlight_at(coords: Vector2i) -> void:
 
 ## True while this handler currently stamps an effect-preview highlight on coords.
 func is_highlighting_coord(coords: Vector2i) -> bool:
-	return (
-		coords in _effect_preview_coords
-		or coords in _utility_target_coords
-	)
+	return coords in _effect_preview_coords
 
 
 func _stamp_valid_placement_highlight(coords: Vector2i) -> void:
@@ -527,8 +506,6 @@ func _reset_state() -> void:
 	_use_gamepad_preview = false
 	_ghost_float_time = 0.0
 	_is_placing = false
-	_utility_target_hexes.clear()
-	_utility_target_coords.clear()
 
 
 func _has_dragged_from_select() -> bool:
@@ -674,7 +651,6 @@ func _update_placement_overlays() -> void:
 # Highlights tiles the hovered card would affect. The placement tile itself stays unhighlighted.
 func _update_hover_highlights(hover_hex: Hex) -> void:
 	_clear_hover_highlights()
-	_restamp_utility_target_highlights()
 	
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:
@@ -717,43 +693,7 @@ func _is_placement_candidate(hex: Hex) -> bool:
 func _can_place_on_hex(hex: Hex) -> bool:
 	if selected_card == null or selected_card.card == null:
 		return false
-	var tile_card := _get_selected_tile_card()
-	if tile_card != null and tile_card.utility_target_count > 1:
-		return tile_card.can_utility_target(hex, _utility_target_hexes)
 	return selected_card.card.can_play_on(hex)
-
-
-## Stores one occupied hex for a multi-target utility. Resolves when the last target is chosen.
-func _collect_utility_target(hex: Hex) -> void:
-	var tile_card := _get_selected_tile_card()
-	if tile_card == null:
-		return
-
-	_utility_target_hexes.append(hex)
-	_utility_target_coords.append(hex.coordinates)
-	_stamp_effect_preview_highlight(hex.coordinates)
-
-	if _utility_target_hexes.size() < tile_card.utility_target_count:
-		return
-
-	_place_utility_on_targets(tile_card)
-
-
-func _place_utility_on_targets(tile_card: TileCard) -> void:
-	var last_hex := _utility_target_hexes.back() as Hex
-	_is_placing = true
-	_ghost_follow_mouse = false
-	_hide_tile_landing_preview()
-	if tile_map.hover_ui != null:
-		tile_map.hover_ui.hide_tile_panel()
-	if last_hex != null:
-		await _animate_ghost_snap_into_hex(last_hex)
-	if selected_card == null:
-		_is_placing = false
-		return
-	_rune_preview.visible = false
-	tile_card.apply_on_targets(_utility_target_hexes)
-	_finish_playing_selected_card()
 
 
 func _finish_playing_selected_card() -> void:
@@ -763,8 +703,3 @@ func _finish_playing_selected_card() -> void:
 	_clear_preview()
 	_reset_state()
 	card_to_remove.queue_free()
-
-
-func _restamp_utility_target_highlights() -> void:
-	for coords: Vector2i in _utility_target_coords:
-		_stamp_effect_preview_highlight(coords)

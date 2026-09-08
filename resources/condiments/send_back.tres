@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Condiment" format=3]
+
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://crnok4e3kg30" path="res://assets/icons/utility/send_back.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "send_back"
+display_name = "Send Back"
+description = "Return targeted card to hand"
+icon = ExtResource("2_icon")
+liquid_color = Color(0.48, 0.78, 0.62, 1)
+base_price = 5
+effect_type = 17
+target_kind = 1

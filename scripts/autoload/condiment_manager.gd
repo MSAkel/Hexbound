@@ -22,6 +22,8 @@ var _closing_coords: Array[Vector2i] = []
 var _rewrite_use_count := 0
 var _pack_use_count := 0
 var _consuming := false
+## First hex chosen for a two-tile condiment such as Swap Spots.
+var _pending_target_hex: Hex = null
 
 
 func _ready() -> void:
@@ -39,6 +41,7 @@ func reset_for_new_run() -> void:
 	_rewrite_use_count = 0
 	_pack_use_count = 0
 	_consuming = false
+	_pending_target_hex = null
 	EventBus.condiment_belt_changed.emit()
 	EventBus.condiment_fuses_changed.emit()
 
@@ -96,11 +99,7 @@ func can_drink_now() -> bool:
 
 
 func can_use(condiment: Condiment) -> bool:
-	if condiment == null or not can_drink_now():
-		return false
-	if condiment.effect_type == Condiment.EffectType.REWRITE_OMEN:
-		return EventManager.can_rewrite_upcoming()
-	return true
+	return condiment != null and can_drink_now()
 
 
 func request_use_slot(index: int) -> void:
@@ -119,18 +118,28 @@ func request_use_slot(index: int) -> void:
 
 
 ## Headless playtests apply belt drinks immediately with no animation await.
-func headless_use_slot(index: int, hex: Hex = null) -> bool:
+func headless_use_slot(index: int, hex: Hex = null, hex_b: Hex = null) -> bool:
 	if index < 0 or index >= BELT_SIZE:
 		return false
 	var condiment := belt[index]
 	if condiment == null or not can_use(condiment):
 		return false
-	if condiment.needs_tile_target():
+	if condiment.needs_two_tile_target():
+		if hex == null or hex_b == null:
+			return false
+		if hex.active_tile_card == null or hex_b.active_tile_card == null:
+			return false
+		if not _is_valid_tile_target(hex) or not _is_valid_tile_target(hex_b):
+			return false
+		belt[index] = null
+		cancel_targeting()
+		_apply_board_effect(condiment, hex, hex_b)
+	elif condiment.needs_tile_target():
 		if hex == null or hex.active_tile_card == null or not _is_valid_tile_target(hex):
 			return false
 		belt[index] = null
 		cancel_targeting()
-		_apply_to_card(condiment, hex)
+		_apply_board_effect(condiment, hex)
 	else:
 		belt[index] = null
 		_apply_instant(condiment)
@@ -142,9 +151,20 @@ func headless_use_slot(index: int, hex: Hex = null) -> bool:
 func apply_to_hex(hex: Hex) -> void:
 	var condiment := get_targeting_condiment()
 	var slot := targeting_slot
-	if condiment == null or hex == null or hex.active_tile_card == null:
+	if condiment == null or hex == null:
 		return
-	if not _is_valid_tile_target(hex):
+	if condiment.needs_two_tile_target():
+		if hex.active_tile_card == null or not _is_valid_tile_target(hex):
+			return
+		if _pending_target_hex == null:
+			_pending_target_hex = hex
+			_stamp_map_target_highlights()
+			return
+		if hex == _pending_target_hex:
+			return
+		await _consume_two_tile(slot, condiment, _pending_target_hex, hex)
+		return
+	if hex.active_tile_card == null or not _is_valid_tile_target(hex):
 		return
 	await _consume_targeted(slot, condiment, hex)
 
@@ -177,6 +197,22 @@ func _try_apply_to_hex(
 ) -> bool:
 	if targeting_slot < 0 or _consuming:
 		return false
+	var condiment := get_targeting_condiment()
+	if condiment != null and condiment.needs_two_tile_target():
+		if hex == null or hex.active_tile_card == null or not _is_valid_tile_target(hex):
+			if silent_on_miss:
+				return false
+			if tile_map != null:
+				_show_tile_drop_failure_at_coords(tile_map, coords)
+			return false
+		if _pending_target_hex != null and hex == _pending_target_hex:
+			if silent_on_miss:
+				return false
+			if tile_map != null:
+				_show_tile_drop_failure_at_coords(tile_map, coords)
+			return false
+		apply_to_hex(hex)
+		return true
 	if hex != null and _is_valid_tile_target(hex):
 		apply_to_hex(hex)
 		return true
@@ -215,21 +251,24 @@ func _tile_drop_failure_message_at_coords(tile_map: HexTileMap, coords: Vector2i
 		return "Can't use on this tile"
 	var hex: Hex = tile_map.map_data.get(coords)
 	if hex == null or hex.active_tile_card == null:
-		return ""
+		return "Needs an occupied spot"
+	if _pending_target_hex != null and hex == _pending_target_hex:
+		return "Pick a different spot"
 	return "Can't use here"
 
 
 func cancel_targeting() -> void:
-	if targeting_slot < 0:
+	if targeting_slot < 0 and _pending_target_hex == null:
 		return
 	targeting_slot = -1
+	_pending_target_hex = null
 	_clear_map_target_highlights()
 	EventBus.condiment_targeting_changed.emit(-1)
 	EventBus.tooltip_hover_refresh_requested.emit()
 
 
 func is_targeting() -> bool:
-	return targeting_slot >= 0
+	return targeting_slot >= 0 or _pending_target_hex != null
 
 
 ## True while aiming or playing a drink animation. Belt and fuses are not settled yet.
@@ -397,9 +436,28 @@ func _consume_targeted(index: int, condiment: Condiment, hex: Hex) -> void:
 		_restore_board_hover_after_drink()
 		return
 	belt[index] = null
-	_apply_to_card(condiment, hex)
-	if hex.card_icon_ui != null:
+	_apply_board_effect(condiment, hex)
+	if hex.card_icon_ui != null and condiment.effect_type in _fuse_effect_types():
 		hex.card_icon_ui.play_condiment_splash(condiment.liquid_color)
+	EventBus.condiment_belt_changed.emit()
+	EventBus.condiment_fuses_changed.emit()
+	_consuming = false
+	RunSaveManager.request_autosave()
+	_restore_board_hover_after_drink()
+
+
+func _consume_two_tile(index: int, condiment: Condiment, hex_a: Hex, hex_b: Hex) -> void:
+	_consuming = true
+	cancel_targeting()
+	EventBus.condiment_consume_started.emit(index, condiment)
+	AudioManager.play_sfx(UISounds.CONSUME_CONDIMENT)
+	await _await_consume_animation()
+	if belt[index] != condiment:
+		_consuming = false
+		_restore_board_hover_after_drink()
+		return
+	belt[index] = null
+	_apply_board_effect(condiment, hex_a, hex_b)
 	EventBus.condiment_belt_changed.emit()
 	EventBus.condiment_fuses_changed.emit()
 	_consuming = false
@@ -444,6 +502,43 @@ func _apply_to_card(condiment: Condiment, hex: Hex) -> void:
 		_:
 			pass
 	hex.refresh_tile_card_visual_state()
+
+
+func _apply_board_effect(condiment: Condiment, hex: Hex, hex_b: Hex = null) -> void:
+	match condiment.effect_type:
+		Condiment.EffectType.THROW_OUT:
+			CondimentBoardEffects.throw_out(hex, _board_effect_rng(condiment, hex))
+		Condiment.EffectType.UPGRADE_PLATE:
+			CondimentBoardEffects.upgrade_plate(hex, _board_effect_rng(condiment, hex))
+		Condiment.EffectType.REROLL_PLATE:
+			CondimentBoardEffects.reroll_plate(hex, _board_effect_rng(condiment, hex))
+		Condiment.EffectType.SEND_BACK:
+			CondimentBoardEffects.send_back(hex)
+		Condiment.EffectType.DUPLICATE_ORDER:
+			CondimentBoardEffects.duplicate_order(hex)
+		Condiment.EffectType.SWAP_SPOTS:
+			if hex_b != null:
+				CondimentBoardEffects.swap_spots(hex, hex_b)
+		_:
+			_apply_to_card(condiment, hex)
+
+
+func _board_effect_rng(condiment: Condiment, hex: Hex) -> RandomNumberGenerator:
+	return RunRng.create_rng(
+		"condiment:%s:r%d:%s" % [condiment.id, GameManager.current_round, str(hex.coordinates)]
+	)
+
+
+func _fuse_effect_types() -> Array:
+	return [
+		Condiment.EffectType.EMPOWER,
+		Condiment.EffectType.ECHO,
+		Condiment.EffectType.WARD,
+		Condiment.EffectType.NEXT_TRIGGER_ENERGY,
+		Condiment.EffectType.NEXT_TRIGGER_MULT,
+		Condiment.EffectType.FORWARD_GIFT,
+		Condiment.EffectType.MINT_SIP,
+	]
 
 
 func _grant_pack() -> void:

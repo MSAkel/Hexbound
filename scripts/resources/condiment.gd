@@ -18,11 +18,18 @@ enum EffectType {
 	OPENING_ROUND,
 	CLOSING_ROUND,
 	NEXT_TRIGGER_MULT,
+	THROW_OUT,
+	UPGRADE_PLATE,
+	REROLL_PLATE,
+	SEND_BACK,
+	DUPLICATE_ORDER,
+	SWAP_SPOTS,
 }
 
 enum TargetKind {
 	NONE,
 	TILE,
+	TWO_TILE,
 }
 
 @export var id: String = ""
@@ -42,7 +49,11 @@ func get_shop_price() -> int:
 
 
 func needs_tile_target() -> bool:
-	return target_kind == TargetKind.TILE
+	return target_kind == TargetKind.TILE or target_kind == TargetKind.TWO_TILE
+
+
+func needs_two_tile_target() -> bool:
+	return target_kind == TargetKind.TWO_TILE
 
 
 func fuse_lasts_two_turns() -> bool:
@@ -72,5 +83,17 @@ func get_fuse_summary() -> String:
 			return "Opening Round · this hour"
 		EffectType.CLOSING_ROUND:
 			return "Closing Round · this hour"
+		EffectType.THROW_OUT:
+			return "Spoil seated card, gain random card"
+		EffectType.UPGRADE_PLATE:
+			return "Upgrade seated card"
+		EffectType.REROLL_PLATE:
+			return "Reroll seated card"
+		EffectType.SEND_BACK:
+			return "Return seated card to hand"
+		EffectType.DUPLICATE_ORDER:
+			return "Copy seated card to hand"
+		EffectType.SWAP_SPOTS:
+			return "Swap two seated cards"
 		_:
 			return display_name
