@@ -71,12 +71,6 @@ static func get_ingredient_kind_label(kind: StringName) -> String:
 			return SEASONING
 		TileCard.TAG_BEVERAGE:
 			return "Beverage"
-		TileCard.TAG_MEAT:
-			return "Meat"
-		TileCard.TAG_DAIRY:
-			return "Dairy"
-		TileCard.TAG_PRESERVED:
-			return "Preserved"
 		TileCard.TAG_KITCHENWARE:
 			return "Kitchenware"
 		TileCard.TAG_DISH:
