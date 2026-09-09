@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://c1pr04kg1netg"]
+
+[ext_resource type="Texture2D" uid="uid://berds0aj0ward" path="res://assets/icons/food/meals/beverage/coffee.png" id="1_rc5w3"]
+[ext_resource type="Script" uid="uid://bge12uosu7hts" path="res://resources/spot_cards/meals/beverages/coffee/coffee.gd" id="2_rc5w3"]
+
+[resource]
+script = ExtResource("2_rc5w3")
+type = 3
+product = 0
+ingredient_tags = Array[StringName]([&"beverage"])
+id = "coffee"
+name = "Coffee"
+icon = ExtResource("1_rc5w3")
+description = "+1 Gold every 10 Fires. Excess Fire does not stack"
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://itfbmli3k417"]
+
+[ext_resource type="Texture2D" uid="uid://b3veku1imvt01" path="res://assets/icons/food/ingredients/fruits/blueberry.png" id="1_tfs81"]
+[ext_resource type="Script" uid="uid://bkygj7owbnbq4" path="res://resources/spot_cards/ingredients/fruits/blueberry/blueberry.gd" id="2_81e12"]
+
+[resource]
+script = ExtResource("2_81e12")
+base_production_amount = 3
+product = 2
+ingredient_tags = Array[StringName]([&"fruit"])
+id = "blueberry"
+name = "Blueberry"
+icon = ExtResource("1_tfs81")
+description = "+3 Mult for every passed Day"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -232,6 +232,11 @@ func get_turn_number() -> int:
 	return get_max_turns_per_round() - remaining_turns + 1
 
 
+## Completed Hours in this run. turn_stamp includes the Hour currently in progress.
+func get_passed_hour_count() -> int:
+	return maxi(turn_stamp - 1, 0)
+
+
 ## Turns not used before the round goal was met. Rewards use this, not raw remaining_turns.
 func get_skipped_turns() -> int:
 	return maxi(0, remaining_turns - 1)

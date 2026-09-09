@@ -105,11 +105,11 @@ func _set_chip_line(card: TileCard) -> void:
 
 
 func _set_recipe_line(card: TileCard) -> void:
-	var dish := card as DishCard
-	if dish == null:
+	var meal := card as MealCard
+	if meal == null:
 		card_recipe_line.hide()
 		return
-	var recipe_text := dish.get_inspect_recipe_text(hex)
+	var recipe_text := meal.get_inspect_recipe_text(hex)
 	if recipe_text.is_empty():
 		card_recipe_line.hide()
 		return

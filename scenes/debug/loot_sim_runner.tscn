@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bk7krk8p6m6n1"]
+
+[ext_resource type="Script" path="res://scripts/debug/loot_sim_runner.gd" id="1_runner"]
+
+[node name="LootSimRunner" type="Node"]
+script = ExtResource("1_runner")

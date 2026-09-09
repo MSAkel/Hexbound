@@ -1120,7 +1120,7 @@ func _player_wants_to_pay_tokens(card: TileCard, price: int) -> bool:
 
 func _card_keep_value(card: TileCard) -> float:
 	if card.type == TileCard.TileCardType.MEAL:
-		return _dish_card_value(card)
+		return _meal_card_value(card)
 	match card.product:
 		TileCard.Product.MULTIPLIER:
 			return 40.0 + float(card.base_production_amount) * 20.0
@@ -1137,7 +1137,7 @@ func _card_player_value(card: TileCard) -> float:
 	if card == null:
 		return 0.0
 	if card.type == TileCard.TileCardType.MEAL:
-		return _dish_card_value(card)
+		return _meal_card_value(card)
 	if _prefers_off_engine(card):
 		return _best_off_engine_preview_value(card)
 	var engine := _player_engine_index()
@@ -1771,30 +1771,30 @@ func _place_one_card(card: TileCard) -> bool:
 		"spread":
 			if _place_on_preferred_segments(card, _spread_segment_rank()):
 				return true
-	if _is_dish_card(card) and _place_dish_card(card):
+	if _is_meal_card(card) and _place_meal_card(card):
 		if _active_bot == "player":
 			_apply_spark_on_engine()
 		return true
 	return _place_first_legal_empty(card)
 
 
-func _is_dish_card(card: TileCard) -> bool:
+func _is_meal_card(card: TileCard) -> bool:
 	return card != null and card.type == TileCard.TileCardType.MEAL
 
 
 ## Prefer a seat where the prefix recipe is already complete in fire order.
-func _place_dish_card(card: TileCard) -> bool:
-	var dish := card as DishCard
-	if dish == null:
+func _place_meal_card(card: TileCard) -> bool:
+	var meal := card as MealCard
+	if meal == null:
 		return _place_first_legal_empty(card)
 	var best_hex: Hex = null
 	var best_score := -1.0
 	for hex: Hex in _map.get_hexes_in_trigger_order():
 		if hex.is_placement_blocked() or hex.active_tile_card != null:
 			continue
-		if not dish.can_place_on_tile(hex):
+		if not meal.can_place_on_tile(hex):
 			continue
-		var score := _dish_placement_score(dish, hex)
+		var score := _meal_placement_score(meal, hex)
 		if score > best_score:
 			best_score = score
 			best_hex = hex
@@ -1804,24 +1804,24 @@ func _place_dish_card(card: TileCard) -> bool:
 	return true
 
 
-func _dish_placement_score(dish: DishCard, hex: Hex) -> float:
-	if not dish.is_recipe_ready(hex):
+func _meal_placement_score(meal: MealCard, hex: Hex) -> float:
+	if not meal.is_recipe_ready(hex):
 		return 0.0
-	return 1000.0 + _chip_numeric_value(dish.get_board_chip(hex))
+	return 1000.0 + _chip_numeric_value(meal.get_board_chip(hex))
 
 
-func _dish_card_value(card: TileCard) -> float:
-	var dish := card as DishCard
-	if dish == null:
+func _meal_card_value(card: TileCard) -> float:
+	var meal := card as MealCard
+	if meal == null:
 		return 8.0
 	for hex: Hex in _map.get_hexes_in_trigger_order():
 		if hex.is_placement_blocked() or hex.active_tile_card != null:
 			continue
-		if not dish.can_place_on_tile(hex):
+		if not meal.can_place_on_tile(hex):
 			continue
-		if not dish.is_recipe_ready(hex):
+		if not meal.is_recipe_ready(hex):
 			continue
-		return 70.0 + _chip_numeric_value(dish.get_board_chip(hex))
+		return 70.0 + _chip_numeric_value(meal.get_board_chip(hex))
 	return 18.0
 
 
@@ -2163,7 +2163,7 @@ func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
 	var flavour_cards: Array[TileCard] = []
 	var gold_cards: Array[TileCard] = []
 	var mult_cards: Array[TileCard] = []
-	var dish_cards: Array[TileCard] = []
+	var meal_cards: Array[TileCard] = []
 	var other_cards: Array[TileCard] = []
 	for card: TileCard in hand:
 		match card.product:
@@ -2175,7 +2175,7 @@ func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
 				mult_cards.append(card)
 			_:
 				if card.type == TileCard.TileCardType.MEAL:
-					dish_cards.append(card)
+					meal_cards.append(card)
 				else:
 					other_cards.append(card)
 	var ordered: Array[TileCard] = []
@@ -2183,7 +2183,7 @@ func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
 	ordered.append_array(gold_cards)
 	ordered.append_array(mult_cards)
 	ordered.append_array(other_cards)
-	ordered.append_array(dish_cards)
+	ordered.append_array(meal_cards)
 	return ordered
 
 

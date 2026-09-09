@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://diwpqbjvytjp7"]
+
+[ext_resource type="Script" uid="uid://bj0hsbabor08m" path="res://resources/spot_cards/ingredients/vegetables/chili_pepper/chili_pepper.gd" id="1_0i25s"]
+[ext_resource type="Texture2D" uid="uid://cwbrpl43pp4o8" path="res://assets/icons/food/ingredients/vegetables/chili_pepper.png" id="1_kcgyd"]
+
+[resource]
+script = ExtResource("1_0i25s")
+base_production_amount = 1
+product = 2
+ingredient_tags = Array[StringName]([&"vegetable"])
+id = "chili_pepper"
+name = "Chili Pepper"
+icon = ExtResource("1_kcgyd")
+description = "+1 Mult until the end of the day for every Double on this Course"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

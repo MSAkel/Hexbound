@@ -466,6 +466,7 @@ func _consume_two_tile(index: int, condiment: Condiment, hex_a: Hex, hex_b: Hex)
 
 
 func _apply_instant(condiment: Condiment) -> void:
+	_record_condiment_used()
 	match condiment.effect_type:
 		Condiment.EffectType.GOLD_DROP:
 			GoldManager.add(int(condiment.effect_value))
@@ -505,6 +506,7 @@ func _apply_to_card(condiment: Condiment, hex: Hex) -> void:
 
 
 func _apply_board_effect(condiment: Condiment, hex: Hex, hex_b: Hex = null) -> void:
+	_record_condiment_used()
 	match condiment.effect_type:
 		Condiment.EffectType.THROW_OUT:
 			CondimentBoardEffects.throw_out(hex, _board_effect_rng(condiment, hex))
@@ -521,6 +523,13 @@ func _apply_board_effect(condiment: Condiment, hex: Hex, hex_b: Hex = null) -> v
 				CondimentBoardEffects.swap_spots(hex, hex_b)
 		_:
 			_apply_to_card(condiment, hex)
+
+
+func _record_condiment_used() -> void:
+	RunLedger.record_condiment_used()
+	var tile_map := _tile_map()
+	if tile_map != null:
+		tile_map.refresh_board_output_chips()
 
 
 func _board_effect_rng(condiment: Condiment, hex: Hex) -> RandomNumberGenerator:

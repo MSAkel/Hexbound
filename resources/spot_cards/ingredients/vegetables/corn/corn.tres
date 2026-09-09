@@ -1,16 +1,16 @@
 [gd_resource type="Resource" format=3 uid="uid://y4red7h47dee"]
 
-[ext_resource type="Texture2D" uid="uid://7ep0yxmlb8ph" path="res://assets/icons/food/ingredients/vegetables/corn.png" id="1_tpb3g"]
+[ext_resource type="Texture2D" uid="uid://7ep0yxmlb8ph" path="res://assets/icons/food/ingredients/vegetables/corn.png" id="1_4lt5q"]
 [ext_resource type="Script" uid="uid://cipa81s1njo6j" path="res://resources/spot_cards/ingredients/vegetables/corn/corn.gd" id="2_dqgyx"]
 
 [resource]
 script = ExtResource("2_dqgyx")
-base_production_amount = 14
+base_production_amount = 15
 rarity = 1
 product = 1
 ingredient_tags = Array[StringName]([&"vegetable", &"grain"])
 id = "corn"
 name = "Corn"
-icon = ExtResource("1_tpb3g")
+icon = ExtResource("1_4lt5q")
 description = "+15 Flavour per adjacent Following Ingredient."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

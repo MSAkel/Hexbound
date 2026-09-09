@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3 uid="uid://bwbgwrj0m2k6o"]
+
+[ext_resource type="Texture2D" uid="uid://dyxr32d4xtncu" path="res://assets/icons/food/meals/dishes/hamburger.png" id="1_vqq0o"]
+[ext_resource type="Script" uid="uid://cv5ancao8uehx" path="res://resources/spot_cards/meals/dishes/hamburger/hamburger.gd" id="2_vqq0o"]
+
+[resource]
+script = ExtResource("2_vqq0o")
+recipe_vegetable_count = 1
+recipe_protein_count = 1
+recipe_seasoning_count = 1
+recipe_kitchenware_count = 1
+type = 3
+product = 2
+ingredient_tags = Array[StringName]([&"dish"])
+id = "hamburger"
+name = "Hamburger"
+icon = ExtResource("1_vqq0o")
+description = "Gains x0.1 Mult for every 15 triggers this hour"
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://bffu5k1xj6gm7"]
+
+[ext_resource type="Texture2D" uid="uid://c4xuydytx3y35" path="res://assets/icons/food/ingredients/proteins/meat.png" id="1_vrxjw"]
+[ext_resource type="Script" uid="uid://c1va0412tpilk" path="res://resources/spot_cards/ingredients/proteins/meat/meat.gd" id="2_vrxjw"]
+
+[resource]
+script = ExtResource("2_vrxjw")
+product = 2
+ingredient_tags = Array[StringName]([&"protein"])
+id = "meat"
+name = "Meat"
+icon = ExtResource("1_vrxjw")
+description = "×2 Mult if preceded by a Seasoning"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

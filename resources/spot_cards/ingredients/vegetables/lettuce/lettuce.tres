@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://b3ensx75nxb7r"]
+
+[ext_resource type="Texture2D" uid="uid://l756rdfhyak8" path="res://assets/icons/food/ingredients/vegetables/lettuce.png" id="1_4wvmx"]
+[ext_resource type="Script" uid="uid://b2a718wylkmrb" path="res://resources/spot_cards/ingredients/vegetables/lettuce/lettuce.gd" id="2_wcl2x"]
+
+[resource]
+script = ExtResource("2_wcl2x")
+base_production_amount = 1
+product = 2
+ingredient_tags = Array[StringName]([&"vegetable"])
+id = "lettuce"
+name = "Lettuce"
+icon = ExtResource("1_4wvmx")
+description = "+1 Mult for every passed hour this run"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

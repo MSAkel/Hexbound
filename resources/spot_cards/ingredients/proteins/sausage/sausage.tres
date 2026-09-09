@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://dia2wi5j18o8g"]
+
+[ext_resource type="Texture2D" uid="uid://ceyoiojgowjxv" path="res://assets/icons/food/ingredients/proteins/sausage.png" id="1_iua0u"]
+[ext_resource type="Script" uid="uid://bn2e4r844r0fo" path="res://resources/spot_cards/ingredients/proteins/sausage/sausage.gd" id="2_oduha"]
+
+[resource]
+script = ExtResource("2_oduha")
+base_production_amount = 8
+product = 1
+ingredient_tags = Array[StringName]([&"protein"])
+id = "sausage"
+name = "Sausage"
+icon = ExtResource("1_iua0u")
+description = "+8 Flavour per adjacent Seasoning"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

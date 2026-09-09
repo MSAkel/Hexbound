@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://bduujfiilycmv"]
+
+[ext_resource type="Texture2D" uid="uid://imcmf6fu5w77" path="res://assets/icons/food/ingredients/seasonings/cloves.png" id="1_870pa"]
+[ext_resource type="Script" uid="uid://msliby5hxpno" path="res://resources/spot_cards/ingredients/seasonings/cloves/cloves.gd" id="2_m1363"]
+
+[resource]
+script = ExtResource("2_m1363")
+base_production_amount = 2
+product = 2
+ingredient_tags = Array[StringName]([&"seasoning"])
+id = "cloves"
+name = "Cloves"
+icon = ExtResource("1_870pa")
+description = "+2 Mult for every placed protein"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

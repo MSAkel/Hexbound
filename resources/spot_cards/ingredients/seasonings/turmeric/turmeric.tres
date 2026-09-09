@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://6vhls8qf0vdi"]
+
+[ext_resource type="Texture2D" uid="uid://m6ty3kui7xmg" path="res://assets/icons/food/ingredients/seasonings/turmeric.png" id="1_63li6"]
+[ext_resource type="Script" uid="uid://lu1p74t5mvpf" path="res://resources/spot_cards/ingredients/seasonings/turmeric/turmeric.gd" id="1_gr7nr"]
+
+[resource]
+script = ExtResource("1_gr7nr")
+base_production_amount = 1
+product = 2
+ingredient_tags = Array[StringName]([&"seasoning"])
+id = "turmeric"
+name = "Turmeric"
+icon = ExtResource("1_63li6")
+description = "+1 Mult for every used condiment this run"
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"
