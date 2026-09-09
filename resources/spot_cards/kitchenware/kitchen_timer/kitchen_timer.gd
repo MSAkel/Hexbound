@@ -1,12 +1,17 @@
 extends TileCard
 
-## On the final hour, double every Following Ingredient on this course.
+## On the final hour, double up to three Following Ingredients on this course.
+const MAX_TARGETS := 3
+
+
 func _on_activate_tile_card(tile: Hex) -> void:
 	if GameManager.remaining_turns != 1:
 		failed_tile_card_text(tile)
 		return
 
 	var later_producers := _get_later_tile_cards_on_same_segment(tile, TileCard.PRODUCER_TYPE_FILTER)
+	if later_producers.size() > MAX_TARGETS:
+		later_producers = later_producers.slice(0, MAX_TARGETS)
 	if later_producers.is_empty():
 		failed_tile_card_text(tile)
 		return
@@ -23,7 +28,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(
-		hover_tile,
-		_get_later_tile_cards_on_same_segment(hover_tile, TileCard.PRODUCER_TYPE_FILTER)
-	)
+	var targets := _get_later_tile_cards_on_same_segment(hover_tile, TileCard.PRODUCER_TYPE_FILTER)
+	if targets.size() > MAX_TARGETS:
+		targets = targets.slice(0, MAX_TARGETS)
+	return _coords_for_placed_tile_cards(hover_tile, targets)

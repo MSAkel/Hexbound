@@ -1,7 +1,7 @@
 extends TileCard
-## +8 Flavour. If this activation is Doubled, also +4 Mult. Double already doubles the Flavour.
+## +8 Flavour. If this activation is Doubled, also +3 Mult. Double already doubles the Flavour.
 
-const EMPOWERED_MULT := 4.0
+const EMPOWERED_MULT := 3.0
 
 
 func _on_activate_tile_card(tile: Hex) -> void:

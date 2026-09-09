@@ -66,7 +66,7 @@ static func _static_init() -> void:
 		["double", "doubles", "doubled"],
 		"Double",
 		COLOR_DOUBLE,
-		"Doubles the output"
+		"Doubles output for the rest of the Hour. Stacks up to three times."
 	)
 	register(
 		"following",

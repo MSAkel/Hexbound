@@ -21,6 +21,8 @@ extends Control
 @onready var placement_dust: GPUParticles2D = $PlacementDust
 @onready var placement_slash: GPUParticles2D = $PlacementSlash
 @onready var empower_sparks: GPUParticles2D = $EmpowerSparks
+
+var _empower_stack_label: Label = null
 @onready var hex_stroke: HexStroke = $HexStroke
 @onready var output_chip: PanelContainer = $Container/OutputChip
 @onready var output_chip_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipIcon
@@ -925,8 +927,9 @@ func play_segment_result_animation() -> void:
 #region Ongoing resolution effects
 
 ## Starts the persistent sparks that show this card is empowered.
-## Repeated calls are idempotent. Sparks sit above the card art and under the chip so the board output remains readable.
-func start_empower_sparks() -> void:
+## Repeated calls refresh the stack label. Sparks sit above the card art and under the chip so the board output remains readable.
+func start_empower_sparks(stacks: int = 1) -> void:
+	_refresh_empower_stack_label(stacks)
 	if empower_sparks == null:
 		return
 	if empower_sparks.emitting:
@@ -939,9 +942,44 @@ func start_empower_sparks() -> void:
 
 ## Stops and hides the empowered-state sparks.
 func stop_empower_sparks() -> void:
+	_hide_empower_stack_label()
 	if empower_sparks != null:
 		empower_sparks.emitting = false
 		empower_sparks.visible = false
+
+
+func _refresh_empower_stack_label(stacks: int) -> void:
+	if stacks <= 1:
+		_hide_empower_stack_label()
+		return
+
+	_ensure_empower_stack_label()
+	_empower_stack_label.text = "x%d" % int(pow(TileCard.EMPOWER_OUTPUT_SCALE, stacks))
+	_empower_stack_label.show()
+
+
+func _hide_empower_stack_label() -> void:
+	if _empower_stack_label != null:
+		_empower_stack_label.hide()
+
+
+func _ensure_empower_stack_label() -> void:
+	if _empower_stack_label != null:
+		return
+
+	_empower_stack_label = Label.new()
+	_empower_stack_label.name = "EmpowerStackLabel"
+	_empower_stack_label.z_index = 5
+	_empower_stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_empower_stack_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_empower_stack_label.add_theme_font_size_override("font_size", 22)
+	_empower_stack_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.55, 1.0))
+	_empower_stack_label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.04, 1.0))
+	_empower_stack_label.add_theme_constant_override("outline_size", 4)
+	_empower_stack_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_empower_stack_label.position = Vector2(88, 18)
+	_empower_stack_label.size = Vector2(80, 28)
+	add_child(_empower_stack_label)
 
 
 ## Starts a looping orange pulse and outline on a source card while its triggers resolve.

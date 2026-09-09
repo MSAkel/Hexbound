@@ -1,16 +1,18 @@
 extends TileCard
 
-# Empowers a Prod rune for every currently empowered Prod rune
+# Empowers one un-empowered Ingredient per distinct Doubled Ingredient on the board.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var prod_runes: Array[TileCard] = _get_all_placed_tile_cards(tile, TileCard.PRODUCER_TYPE_FILTER)
 	var empowered_sources: Array[TileCard] = []
 	for rune in prod_runes:
-		if rune.is_empowered:
-			empowered_sources.append(rune)
+		# Count each card once, not once per Double stack.
+		if rune.empower_stacks <= 0:
+			continue
+		empowered_sources.append(rune)
 
 	var unempowered_runes: Array[TileCard] = []
 	for rune in prod_runes:
-		if rune.is_empowered:
+		if rune.empower_stacks > 0:
 			continue
 		if _is_triggerable_tile_card(tile, rune):
 			unempowered_runes.append(rune)
@@ -38,7 +40,7 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	var prod_runes: Array[TileCard] = _get_all_placed_tile_cards(hover_tile, TileCard.PRODUCER_TYPE_FILTER)
 	var targets: Array[TileCard] = []
 	for prod_rune: TileCard in prod_runes:
-		if prod_rune.is_empowered:
+		if prod_rune.empower_stacks > 0:
 			continue
 		if _is_triggerable_tile_card(hover_tile, prod_rune):
 			targets.append(prod_rune)

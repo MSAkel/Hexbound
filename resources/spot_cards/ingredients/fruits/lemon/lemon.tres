@@ -12,5 +12,5 @@ ingredient_tags = Array[StringName]([&"fruit"])
 id = "lemon"
 name = "Lemon"
 icon = ExtResource("1_b8pyn")
-description = "+8 Flavour. If Doubled, also +4 Mult"
+description = "+8 Flavour. If Doubled, also +3 Mult"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

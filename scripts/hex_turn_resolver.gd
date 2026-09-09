@@ -76,6 +76,7 @@ func resolve_turn() -> void:
 		await _wait_for_turn_total_count_finished()
 	map._apply_segment_turn_totals_to_game_manager()
 	map._check_full_map_cards_achievement()
+	_clear_hour_empower()
 	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
 	map._emit_segment_turn_completed_snapshot()
 	await GameManager.finish_turn_processing()
@@ -544,7 +545,7 @@ func _on_tile_card_empowered(rune: TileCard) -> void:
 
 	if GameManager.should_skip_turn_presentation():
 		if hex != null and hex.is_on_map() and hex.active_tile_card == rune and rune.is_empowered:
-			hex.start_empower_sparks()
+			hex.start_empower_sparks(rune.empower_stacks)
 		return
 
 	# Strike first, then the looping overcharge. Same beat as a retrigger bolt landing.
@@ -554,7 +555,14 @@ func _on_tile_card_empowered(rune: TileCard) -> void:
 		return
 
 	AudioManager.play_sfx(UISounds.EMPOWER)
-	hex.start_empower_sparks()
+	hex.start_empower_sparks(rune.empower_stacks)
+
+
+func _clear_hour_empower() -> void:
+	for tile: Hex in map.get_hexes_in_trigger_order():
+		if tile.active_tile_card == null:
+			continue
+		tile.active_tile_card.clear_empower()
 
 
 func _on_tile_card_empower_consumed(rune: TileCard) -> void:

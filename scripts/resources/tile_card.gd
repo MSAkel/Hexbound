@@ -114,6 +114,8 @@ enum QueryScope {
 }
 
 const EMPOWER_OUTPUT_SCALE := 2.0
+## Each Double stack multiplies output by EMPOWER_OUTPUT_SCALE. Two stacks cap at x4.
+const MAX_EMPOWER_STACKS := 2
 ## Shared chip fill. White numbers stay readable on this purple.
 const CHIP_PANEL_COLOR := Color(0.22, 0.16, 0.28)
 ## Pile icons for floating text and Ingredient output chips.
@@ -139,15 +141,23 @@ var bonus_production_amount: float = 0.0
 var personal_output_bonus: float = 0.0
 # Activations of this instance during the current run, used by growth passives.
 var run_trigger_count: int = 0
-# Empowered cards Double their output once on fire.
-var is_empowered: bool = false
+# Double stacks persist for the rest of the Hour and multiply every fire.
+var empower_stacks: int = 0
+var is_empowered: bool:
+	get:
+		return empower_stacks > 0
+	set(value):
+		if value:
+			empower_stacks = maxi(empower_stacks, 1)
+		else:
+			empower_stacks = 0
 ## Short-lived condiment fuses sitting on this placed instance.
 var condiment_fuses: Array[Dictionary] = []
 # Scales all card output during this activation (Flavour, Gold, and Mult).
 var _activation_output_scale: float = 1.0
 # Cards currently being replayed by Imprint or Mirror Copy. Prevents a nested copy from looping.
 static var _copied_activation_stack: Array[TileCard] = []
-# True when this activation consumed Double. Checked by cards that pay extra on Double.
+# True when this activation had at least one Double stack. Checked by cards that pay extra on Double.
 var _activation_was_empowered: bool = false
 # Flavour this instance paid with add_flavour this Hour. Dishes read the prefix snapshot.
 var hour_flavour_produced: int = 0
@@ -481,13 +491,9 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		GameManager.passive_runtime.before_activation(tile, self)
 
 	var output_scale := activation_scale
-	_activation_was_empowered = is_empowered
-	if is_empowered:
-		# Null Charge still spends Double. The doubled output never applies.
-		if not EventManager.are_empowers_blocked():
-			output_scale *= EMPOWER_OUTPUT_SCALE
-		is_empowered = false
-		EventBus.tile_card_empower_consumed.emit(self)
+	_activation_was_empowered = empower_stacks > 0
+	if empower_stacks > 0 and not EventManager.are_empowers_blocked():
+		output_scale *= pow(EMPOWER_OUTPUT_SCALE, empower_stacks)
 	if tile.map != null:
 		output_scale *= GameManager.passive_runtime.get_output_scale_bonus(tile, self)
 
@@ -769,11 +775,12 @@ func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
 	return target_hex != null and source_tile.map.is_tile_card_triggerable(target_hex)
 
 
-## Empowers a triggerable spot card that is not already empowered.
+## Adds one Double stack to a triggerable spot card, up to MAX_EMPOWER_STACKS.
 func _try_empower_tile_card(source_tile: Hex, target: TileCard) -> bool:
-	if not _is_triggerable_tile_card(source_tile, target) or target.is_empowered:
+	if not _is_triggerable_tile_card(source_tile, target):
 		return false
-	target._empower()
+	if not target._empower():
+		return false
 	if type == TileCardType.KITCHENWARE:
 		MetaProgressionManager.add_support_affected_producer()
 	return true
@@ -796,8 +803,8 @@ func _create_floating_text(
 	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon, doubled)
 
 
-# True when this fire consumed Double and the payout was actually scaled.
-# Null Charge still spends Double, but those floats stay normal.
+# True when this fire had Double stacks and the payout was actually scaled.
+# Null Charge blocks the scale, but those floats stay normal.
 func _payout_float_is_doubled(scaled: bool = true) -> bool:
 	return scaled and _activation_was_empowered and not EventManager.are_empowers_blocked()
 
@@ -863,12 +870,23 @@ func _pay_effect_amount(tile: Hex) -> void:
 			add_gold(tile, amount)
 
 
-func _empower() -> void:
-	if is_empowered:
+## Adds one Double stack. Returns false when already at MAX_EMPOWER_STACKS.
+func _empower() -> bool:
+	if empower_stacks >= MAX_EMPOWER_STACKS:
+		return false
+
+	empower_stacks += 1
+	EventBus.tile_card_empowered.emit(self)
+	return true
+
+
+## Clears all Double stacks at Hour end.
+func clear_empower() -> void:
+	if empower_stacks <= 0:
 		return
 
-	is_empowered = true
-	EventBus.tile_card_empowered.emit(self)
+	empower_stacks = 0
+	EventBus.tile_card_empower_consumed.emit(self)
 
 func _on_activate_tile_card(_tile: Hex) -> void:
 	pass

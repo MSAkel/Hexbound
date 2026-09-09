@@ -1876,7 +1876,7 @@ func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 		"bonus_production_amount": tile_card.bonus_production_amount,
 		"personal_output_bonus": tile_card.personal_output_bonus,
 		"run_trigger_count": tile_card.run_trigger_count,
-		"is_empowered": tile_card.is_empowered,
+		"empower_stacks": tile_card.empower_stacks,
 		"condiment_fuses": tile_card.condiment_fuses.duplicate(true),
 	}
 	var card_state := tile_card.capture_placed_save_state()
@@ -1896,7 +1896,7 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	tile_card.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
 	tile_card.personal_output_bonus = float(data.get("personal_output_bonus", 0.0))
 	tile_card.run_trigger_count = int(data.get("run_trigger_count", 0))
-	tile_card.is_empowered = bool(data.get("is_empowered", false))
+	tile_card.empower_stacks = int(data.get("empower_stacks", 0))
 	tile_card.condiment_fuses.clear()
 	for fuse in data.get("condiment_fuses", []):
 		if fuse is Dictionary:

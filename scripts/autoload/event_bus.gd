@@ -72,9 +72,9 @@ signal card_sold(card_ui: CardUI)
 signal tile_card_selected(tile_card: TileCard)
 ## Emitted when a tile card successfully triggers its effect
 signal tile_card_activated(tile_card: TileCard)
-## Emitted when a tile card becomes empowered
+## Emitted when a tile card becomes empowered or gains a Double stack
 signal tile_card_empowered(tile_card: TileCard)
-## Emitted when an empowered tile card triggers and loses empower
+## Emitted when a tile card loses all Double stacks at Hour end
 signal tile_card_empower_consumed(tile_card: TileCard)  
 ## Emitted when a tile effect creates a card that should animate into the hand
 signal generated_hand_card(card: Card)  

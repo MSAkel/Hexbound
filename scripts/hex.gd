@@ -138,7 +138,7 @@ func refresh_tile_card_visual_state() -> void:
 	card_icon_ui.refresh_condiment_badges(active_tile_card, coordinates)
 	# Restore overcharge sparks after load or chip refresh. The strike itself is not replayed.
 	if active_tile_card.is_empowered:
-		card_icon_ui.start_empower_sparks()
+		card_icon_ui.start_empower_sparks(active_tile_card.empower_stacks)
 	else:
 		card_icon_ui.stop_empower_sparks()
 	# Board-dependent chips, such as dish prefixes and steak-style course totals.
@@ -219,10 +219,10 @@ func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
 	refresh_tile_card_visual_state()
 
 
-func start_empower_sparks() -> void:
+func start_empower_sparks(stacks: int = 1) -> void:
 	if card_icon_ui == null:
 		return
-	card_icon_ui.start_empower_sparks()
+	card_icon_ui.start_empower_sparks(stacks)
 
 
 func stop_empower_sparks() -> void:
