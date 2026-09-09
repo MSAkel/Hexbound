@@ -1,6 +1,6 @@
 extends Panel
 
-## Collection screen for browsing cards by shelf, characters, events, and passives.
+## Collection screen for browsing card categories, characters, events, and passives.
 
 signal closed
 

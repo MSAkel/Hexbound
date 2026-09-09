@@ -201,7 +201,7 @@ func _pin_content_sized_layout() -> void:
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
 
-## CardIcon.tscn is authored full-rect with expand flags so it can fill hand and board hosts.
+## CardIcon.tscn is authored at REFERENCE_SIZE and scales with its host.
 ## In this panel it must stay a 100px thumbnail, or the paper stretches with it.
 func _pin_rune_icon_size() -> void:
 	card_icon.set_anchors_preset(Control.PRESET_TOP_LEFT)

@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cy0xj16nwvnn3" path="res://assets/icons/food/ingredients/vegetables/image 86.png" id="6_bmvhl"]
 
 [node name="CardIcon" type="Control" unique_id=328610136]
+custom_minimum_size = Vector2(256, 256)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,7 +33,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_food")
-expand_mode = 1
+expand_mode = 2
 stretch_mode = 5
 
 [node name="Subject" type="TextureRect" parent="." unique_id=532603822]
@@ -43,10 +44,9 @@ anchor_left = 0.16
 anchor_top = 0.16
 anchor_right = 0.84
 anchor_bottom = 0.84
-offset_bottom = 26.825012
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("6_bmvhl")
-expand_mode = 1
+expand_mode = 2
 stretch_mode = 5

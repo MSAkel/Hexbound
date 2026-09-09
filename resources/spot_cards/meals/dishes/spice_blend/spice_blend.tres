@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("2_script")
 recipe_seasoning_count = 2
-ingredient_tags = Array[StringName]([&"dish"])
 rarity = 1
-type = 3
+type = 2
 product = 2
+ingredient_tags = Array[StringName]([&"dish"])
 id = "spice_blend"
 name = "Spice Blend"
 icon = ExtResource("1_4ddug")

@@ -5,11 +5,11 @@
 
 [resource]
 script = ExtResource("2_script")
-rarity = 1
-type = 3
-product = 1
 recipe_vegetable_count = 1
 recipe_seasoning_count = 1
+rarity = 1
+type = 2
+product = 1
 ingredient_tags = Array[StringName]([&"dish"])
 id = "vinaigrette"
 name = "Vinaigrette"

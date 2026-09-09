@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MealCard" format=3 uid="uid://baprycqanrcnx"]
+[gd_resource type="Resource" format=3 uid="uid://baprycqanrcnx"]
 
 [ext_resource type="Texture2D" uid="uid://cwsm8bmux1s0a" path="res://assets/icons/food/meals/dishes/fruit_salad.png" id="1_k6e86"]
 [ext_resource type="Script" uid="uid://b1rquafgvonjk" path="res://resources/spot_cards/meals/dishes/fruit_salad/fruit_salad.gd" id="2_script"]
@@ -7,9 +7,9 @@
 script = ExtResource("2_script")
 base_production_amount = 1
 rarity = 1
-ingredient_tags = Array[StringName]([&"dish"])
-type = 3
+type = 2
 product = 2
+ingredient_tags = Array[StringName]([&"dish"])
 id = "fruit_salad"
 name = "Fruit Salad"
 icon = ExtResource("1_k6e86")

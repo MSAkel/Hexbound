@@ -2,7 +2,7 @@ class_name TileCard
 extends Card
 
 ## Base resource for spot cards played on the Feast map.
-## Shelves are Ingredient, Kitchenware, and Meal.
+## Card types are Ingredient, Kitchenware, and Meal.
 
 enum TileCardRarity {
 	COMMON,
@@ -11,12 +11,8 @@ enum TileCardRarity {
 }
 
 enum TileCardType {
-	## Seated Ingredients. Core (Product.FLAVOUR) and Seasonings (Product.MULTIPLIER).
 	INGREDIENT,
 	KITCHENWARE,
-	## Deprecated enum slot. Board tools now live on the condiment belt.
-	UTILITY,
-	## Seated plates. Food uses tag dish, drinks use tag beverage.
 	MEAL,
 }
 
@@ -43,7 +39,7 @@ enum Product {
 	NONE,
 }
 
-## Closed ingredient tag catalog. Serialized as StringName, never as enum ints.
+## ingredient tag catalog.
 const TAG_VEGETABLE := &"vegetable"
 const TAG_FRUIT := &"fruit"
 const TAG_GRAIN := &"grain"
@@ -53,8 +49,9 @@ const TAG_BEVERAGE := &"beverage"
 const TAG_KITCHENWARE := &"kitchenware"
 const TAG_DISH := &"dish"
 
-## Aisle tags dishes can demand today. Extra tags are membership only until a dish uses them.
-const RECIPE_AISLE_TAGS: Array[StringName] = [
+## Ingredient tags that may satisfy dish recipe slots.
+## Other tags classify cards but are not recipe requirements.
+const RECIPE_INGREDIENT_TAGS: Array[StringName] = [
 	TAG_VEGETABLE,
 	TAG_FRUIT,
 	TAG_GRAIN,
@@ -169,7 +166,7 @@ var hour_additive_mult_produced: float = 0.0
 @export var type: TileCardType
 @export var product: Product = Product.NONE
 ## Recipe membership tags. Use catalog constants such as TAG_VEGETABLE in scripts.
-## Array order is inspect display order. Put the main aisle first when it matters.
+## Array order is inspect display order. Put the primary tag first when it matters.
 @export var ingredient_tags: Array[StringName] = []
 # only activates once per turn even if retriggered.
 @export var single_activation_per_turn: bool = false
@@ -241,7 +238,7 @@ func has_ingredient_tag(tag: StringName) -> bool:
 
 
 ## True when card matches a kind tag, an array of tags, or any tag when filter_kind is null.
-## TAG_KITCHENWARE matches shelf type. dish and beverage are authored tags on Meals.
+## TAG_KITCHENWARE matches the Kitchenware card type. Dish and beverage are authored Meal tags.
 static func matches_kind_filter(card: TileCard, filter_kind: Variant) -> bool:
 	if card == null:
 		return false
@@ -260,7 +257,7 @@ static func matches_kind_filter(card: TileCard, filter_kind: Variant) -> bool:
 	return card.has_ingredient_tag(tag)
 
 
-## Ingredient tags plus a shelf tag for Kitchenware cards.
+## Authored tags plus a type-derived Kitchenware tag used by kind queries.
 static func queryable_kind_tags(card: TileCard) -> Array[StringName]:
 	var tags: Array[StringName] = []
 	if card == null:
@@ -299,18 +296,18 @@ func get_distinct_recipe_tag_label() -> String:
 	var tag := FeastDisplay.format_ingredient_tags_label(ingredient_tags)
 	if tag.is_empty():
 		return ""
-	var shelf := FeastDisplay.get_tile_card_shelf_label(self)
-	if tag.to_lower() == shelf.to_lower():
+	var type_label := FeastDisplay.get_tile_card_type_label(self)
+	if tag.to_lower() == type_label.to_lower():
 		return ""
 	return tag
 
 
 func get_card_type_display() -> String:
-	var shelf := FeastDisplay.get_tile_card_shelf_label(self)
+	var type_label := FeastDisplay.get_tile_card_type_label(self)
 	var tag := get_distinct_recipe_tag_label()
 	if tag.is_empty():
-		return shelf
-	return "%s · %s" % [shelf, tag]
+		return type_label
+	return "%s · %s" % [type_label, tag]
 
 
 func _get_role_label() -> String:
@@ -910,7 +907,7 @@ func _get_following_adjacent_hexes(tile: Hex) -> Array[Hex]:
 	return tile.map.get_following_adjacent_hexes(tile)
 
 
-## Occupied adjacent Following spots, optionally filtered by card shelf.
+## Occupied adjacent Following spots, optionally filtered by card type.
 func _get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	return tile.map.get_following_adjacent_tile_cards(tile, filter_type)
 
@@ -1050,7 +1047,7 @@ func _get_segment_additive_mult(tile: Hex) -> float:
 	return tile.map.get_segment_additive_mult(_get_segment_index(tile))
 
 
-## Placed cards in a spatial scope. Optional shelf filter such as PRODUCER_TYPE_FILTER.
+## Placed cards in a spatial scope. Optional type filter such as PRODUCER_TYPE_FILTER.
 func _cards_in_scope(tile: Hex, scope: QueryScope, filter_type: Variant = null) -> Array[TileCard]:
 	if tile == null or tile.map == null:
 		return []
@@ -1186,7 +1183,7 @@ func _coords_for_placed_tile_cards(tile: Hex, tile_cards: Array[TileCard]) -> Ar
 	return coords
 
 
-## Highlights same-course spot cards, optionally filtered by shelf.
+## Highlights same-course spot cards, optionally filtered by card type.
 func _coords_for_same_segment_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[Vector2i]:
 	return _coords_for_placed_tile_cards(tile, _get_all_tile_cards_on_same_segment(tile, filter_type))
 

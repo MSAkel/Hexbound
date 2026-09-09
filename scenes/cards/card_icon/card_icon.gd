@@ -5,16 +5,19 @@ extends Control
 ## Use this wherever you only need the picture, hand cards, inspect panels, lists.
 ## Board tokens that sit on hexes use CardIconUI, which embeds this scene.
 
+## Authored reference size for one board hex token. Hand and inspect hosts scale this down.
+const REFERENCE_SIZE := Vector2(256, 256)
+## Fraction inset on each side so pixel-art subjects sit inside the hex silhouette.
+const SUBJECT_HEX_INSET := 0.16
+
 @export var hex_ingredients: Texture2D
 @export var hex_kitchenware: Texture2D
 @export var hex_utility: Texture2D
 @export var hex_dish: Texture2D
 
 @onready var _hex: TextureRect = $Hex
+# Subject inset for tile cards lives in card_icon.tscn. Non-tile cards expand to the full control.
 @onready var _subject: TextureRect = $Subject
-
-# Subject fills more of the hex shelf. Inset is (1 - subject_scale) / 2.
-const _SUBJECT_INSET := 0.16
 
 
 func setup(card: Card) -> void:
@@ -26,12 +29,12 @@ func setup(card: Card) -> void:
 	if card is TileCard:
 		_hex.texture = _hex_for_tile_card(card as TileCard)
 		_hex.show()
-		_set_subject_inset(true)
+		_apply_subject_layout(true)
 		_subject.texture = card.icon if card.icon != null else FeastDisplay.PLACEHOLDER_ICON
 		_subject.show()
 		return
 	_hex.hide()
-	_set_subject_inset(false)
+	_apply_subject_layout(false)
 	_subject.texture = card.icon if card.icon != null else FeastDisplay.PLACEHOLDER_ICON
 	_subject.show()
 
@@ -56,17 +59,14 @@ func _hex_for_tile_card(card: TileCard) -> Texture2D:
 	return hex_ingredients
 
 
-func _set_subject_inset(enabled: bool) -> void:
-	if enabled:
-		_subject.anchor_left = _SUBJECT_INSET
-		_subject.anchor_top = _SUBJECT_INSET
-		_subject.anchor_right = 1.0 - _SUBJECT_INSET
-		_subject.anchor_bottom = 1.0 - _SUBJECT_INSET
+func _apply_subject_layout(fits_in_hex: bool) -> void:
+	if fits_in_hex:
+		_subject.anchor_left = SUBJECT_HEX_INSET
+		_subject.anchor_top = SUBJECT_HEX_INSET
+		_subject.anchor_right = 1.0 - SUBJECT_HEX_INSET
+		_subject.anchor_bottom = 1.0 - SUBJECT_HEX_INSET
 	else:
-		_subject.anchor_left = 0.0
-		_subject.anchor_top = 0.0
-		_subject.anchor_right = 1.0
-		_subject.anchor_bottom = 1.0
+		_subject.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_subject.offset_left = 0.0
 	_subject.offset_top = 0.0
 	_subject.offset_right = 0.0

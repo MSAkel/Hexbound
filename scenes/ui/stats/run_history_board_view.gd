@@ -195,7 +195,7 @@ func _texture_for_coords(coords: Vector2i) -> Texture2D:
 func _place_card_icon(host: Control, tile_size: Vector2, card_id: String) -> void:
 	var card := GameManager.get_tile_card_by_id(card_id)
 	var icon: CardIcon = CARD_ICON_SCENE.instantiate()
-	# CardIcon.tscn uses full-rect anchors. Pin top-left so size matches this hex.
+	# CardIcon.tscn is authored at REFERENCE_SIZE. Pin top-left so size matches this hex.
 	icon.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	icon.anchor_right = 0.0
 	icon.anchor_bottom = 0.0

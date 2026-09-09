@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_script")
 rarity = 1
-type = 3
+type = 2
 product = 1
 ingredient_tags = Array[StringName]([&"beverage"])
 id = "red_wine"

@@ -4,6 +4,7 @@
 
 [node name="Camera" type="Camera2D" unique_id=797898644]
 zoom = Vector2(0.43, 0.43)
+limit_enabled = false
 script = ExtResource("1_q64wr")
 rune_shake_strength = 4.0
 rune_shake_duration = 0.2

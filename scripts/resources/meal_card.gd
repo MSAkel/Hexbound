@@ -13,7 +13,7 @@ extends TileCard
 @export var recipe_seasoning_count: int = 0
 @export var recipe_kitchenware_count: int = 0
 
-## Kitchenware is a shelf slot, not an ingredient tag.
+## A Kitchenware recipe slot is matched by card type, not by an authored ingredient tag.
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
@@ -281,7 +281,7 @@ func _compatible_recipe_slots(card: TileCard, remaining: Dictionary) -> Array[St
 		if int(remaining.get(TAG_KITCHENWARE, 0)) > 0:
 			slots.append(TAG_KITCHENWARE)
 		return slots
-	for tag: StringName in RECIPE_AISLE_TAGS:
+	for tag: StringName in RECIPE_INGREDIENT_TAGS:
 		if int(remaining.get(tag, 0)) <= 0:
 			continue
 		if card.has_ingredient_tag(tag):

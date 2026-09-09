@@ -43,7 +43,7 @@ static func courses_count_label(course_count: int) -> String:
 	return "%d %s" % [course_count, COURSE.to_upper() + "S"]
 
 
-static func get_tile_card_shelf_label(card: TileCard) -> String:
+static func get_tile_card_type_label(card: TileCard) -> String:
 	if card == null:
 		return ""
 	match card.type:
