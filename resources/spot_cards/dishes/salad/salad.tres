@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://c4saladplat01"]
 
-[ext_resource type="Texture2D" uid="uid://vhgfidc52ks6" path="res://assets/icons/food/dishes/salad.png" id="1_6y8cb"]
+[ext_resource type="Texture2D" uid="uid://vhgfidc52ks6" path="res://assets/icons/food/meals/dishes/salad.png" id="1_6y8cb"]
 [ext_resource type="Script" uid="uid://b8k4saladpl01" path="res://resources/spot_cards/dishes/salad/salad.gd" id="2_script"]
 
 [resource]

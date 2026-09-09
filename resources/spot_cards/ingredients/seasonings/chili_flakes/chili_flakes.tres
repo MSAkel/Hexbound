@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://lfcsls8o48lq"]
 
-[ext_resource type="Texture2D" uid="uid://bncjsy1xg67u3" path="res://assets/icons/food/seasonings/chili_flakes.png" id="1_vg4bh"]
+[ext_resource type="Texture2D" uid="uid://bncjsy1xg67u3" path="res://assets/icons/food/ingredients/seasonings/chili_flakes.png" id="1_vg4bh"]
 [ext_resource type="Script" uid="uid://y2wmhpw1imld" path="res://resources/spot_cards/ingredients/seasonings/chili_flakes/chili_flakes.gd" id="2_eelmb"]
 
 [resource]

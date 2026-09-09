@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://1yngk6bgvs8i"]
 
-[ext_resource type="Texture2D" uid="uid://b6mir3nxl7wph" path="res://assets/icons/food/seasonings/salt.png" id="1_boeif"]
+[ext_resource type="Texture2D" uid="uid://b6mir3nxl7wph" path="res://assets/icons/food/ingredients/seasonings/salt.png" id="1_boeif"]
 [ext_resource type="Script" uid="uid://xas6lx7nsi1d" path="res://resources/spot_cards/ingredients/seasonings/salt/salt.gd" id="2_xbp6g"]
 
 [resource]

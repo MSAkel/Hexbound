@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://brcduobs460i8"]
 
-[ext_resource type="Texture2D" uid="uid://bhfexlbfbbwpp" path="res://assets/icons/food/dishes/spice_blend.png" id="1_4ddug"]
+[ext_resource type="Texture2D" uid="uid://bhfexlbfbbwpp" path="res://assets/icons/food/meals/dishes/spice_blend.png" id="1_4ddug"]
 [ext_resource type="Script" uid="uid://xek4udaqwhra" path="res://resources/spot_cards/dishes/spice_blend/spice_blend.gd" id="2_script"]
 
 [resource]

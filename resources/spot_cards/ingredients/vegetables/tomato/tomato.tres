@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://c7c2eo74m8q0l"]
 
-[ext_resource type="Texture2D" uid="uid://bywskhtgu66l3" path="res://assets/icons/food/ingredients/tomato.png" id="1_u5wii"]
+[ext_resource type="Texture2D" uid="uid://bywskhtgu66l3" path="res://assets/icons/food/ingredients/vegetables/tomato.png" id="1_u5wii"]
 [ext_resource type="Script" uid="uid://cc6ehbquhicml" path="res://resources/spot_cards/ingredients/vegetables/tomato/tomato.gd" id="2_bn4sl"]
 
 [resource]

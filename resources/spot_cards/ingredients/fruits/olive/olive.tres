@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://bwdxe1r2whlf3"]
 
-[ext_resource type="Texture2D" uid="uid://cpfwml48gl3bq" path="res://assets/icons/food/ingredients/olive.png" id="1_y3d8o"]
+[ext_resource type="Texture2D" uid="uid://cpfwml48gl3bq" path="res://assets/icons/food/ingredients/fruits/olive.png" id="1_y3d8o"]
 [ext_resource type="Script" uid="uid://cybi4hdr06lkl" path="res://resources/spot_cards/ingredients/fruits/olive/olive.gd" id="2_jxmjy"]
 
 [resource]

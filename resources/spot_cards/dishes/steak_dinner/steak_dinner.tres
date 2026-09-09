@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://dbrbhtm421ndy"]
 
-[ext_resource type="Texture2D" uid="uid://b3vj6x8ncfhlh" path="res://assets/icons/food/dishes/steak_dinner.png" id="1_x6el4"]
+[ext_resource type="Texture2D" uid="uid://b3vj6x8ncfhlh" path="res://assets/icons/food/meals/dishes/steak_dinner.png" id="1_x6el4"]
 [ext_resource type="Script" uid="uid://bmxd1j0ch2q0y" path="res://resources/spot_cards/dishes/steak_dinner/steak_dinner.gd" id="2_script"]
 
 [resource]

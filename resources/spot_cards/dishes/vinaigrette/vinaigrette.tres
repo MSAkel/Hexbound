@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://b7vinaigret01"]
 
-[ext_resource type="Texture2D" uid="uid://b1pg5hnvk6hu3" path="res://assets/icons/food/dishes/vinaigrette.png" id="1_8emet"]
+[ext_resource type="Texture2D" uid="uid://b1pg5hnvk6hu3" path="res://assets/icons/food/meals/dishes/vinaigrette.png" id="1_8emet"]
 [ext_resource type="Script" uid="uid://dan2vinaigr01" path="res://resources/spot_cards/dishes/vinaigrette/vinaigrette.gd" id="2_script"]
 
 [resource]

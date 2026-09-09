@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://cl7o5t5jscgg4"]
 
-[ext_resource type="Texture2D" uid="uid://c803xrilhj251" path="res://assets/icons/food/ingredients/avocado.png" id="1_bf5x4"]
+[ext_resource type="Texture2D" uid="uid://c803xrilhj251" path="res://assets/icons/food/ingredients/fruits/avocado.png" id="1_bf5x4"]
 [ext_resource type="Script" uid="uid://b72ami54ald0n" path="res://resources/spot_cards/ingredients/fruits/avocado/avocado.gd" id="2_kotxh"]
 
 [resource]

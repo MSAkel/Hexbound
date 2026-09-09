@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://bnu80oif472g1"]
 
-[ext_resource type="Texture2D" uid="uid://bgj63dwjlwskh" path="res://assets/icons/food/seasonings/paprika.png" id="1_vsb26"]
+[ext_resource type="Texture2D" uid="uid://bgj63dwjlwskh" path="res://assets/icons/food/ingredients/seasonings/paprika.png" id="1_vsb26"]
 [ext_resource type="Script" uid="uid://co33b54vxvx65" path="res://resources/spot_cards/ingredients/seasonings/paprika/paprika.gd" id="2_bij4x"]
 
 [resource]

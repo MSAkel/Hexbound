@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://cfrc7a8fh5yor"]
 
-[ext_resource type="Texture2D" uid="uid://bt8vbmxevwq3o" path="res://assets/icons/food/ingredients/chicken.png" id="1_omyth"]
+[ext_resource type="Texture2D" uid="uid://bt8vbmxevwq3o" path="res://assets/icons/food/ingredients/proteins/chicken.png" id="1_omyth"]
 [ext_resource type="Script" uid="uid://cxk4wilpio178" path="res://resources/spot_cards/ingredients/proteins/chicken/chicken.gd" id="2_fr205"]
 
 [resource]

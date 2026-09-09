@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://b1rm5egt47rj"]
 
-[ext_resource type="Texture2D" uid="uid://c8kv1hgnjor24" path="res://assets/icons/food/ingredients/egg.png" id="1_2pye5"]
+[ext_resource type="Texture2D" uid="uid://c8kv1hgnjor24" path="res://assets/icons/food/ingredients/proteins/egg.png" id="1_2pye5"]
 [ext_resource type="Script" uid="uid://cfd1auillxte2" path="res://resources/spot_cards/ingredients/proteins/egg/egg.gd" id="2_qhpj7"]
 
 [resource]

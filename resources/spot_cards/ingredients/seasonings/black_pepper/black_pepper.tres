@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://lujnlq33gvj4"]
 
-[ext_resource type="Texture2D" uid="uid://ctmlqfppkdxgx" path="res://assets/icons/food/seasonings/black_pepper.png" id="1_07jkk"]
+[ext_resource type="Texture2D" uid="uid://ctmlqfppkdxgx" path="res://assets/icons/food/ingredients/seasonings/black_pepper.png" id="1_07jkk"]
 [ext_resource type="Script" uid="uid://t464sweri7r2" path="res://resources/spot_cards/ingredients/seasonings/black_pepper/black_pepper.gd" id="2_k1sei"]
 
 [resource]

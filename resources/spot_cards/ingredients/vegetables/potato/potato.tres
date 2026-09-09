@@ -1,8 +1,9 @@
 [gd_resource type="Resource" format=3 uid="uid://brqdab64npg1y"]
 
-[ext_resource type="Texture2D" uid="uid://bkcow7w4587sb" path="res://assets/icons/food/ingredients/potato.png" id="1_3okqf"]
+[ext_resource type="Texture2D" uid="uid://bkcow7w4587sb" path="res://assets/icons/food/ingredients/vegetables/potato.png" id="1_3okqf"]
 [ext_resource type="Script" uid="uid://bk3vdj2f2jrpd" path="res://resources/spot_cards/ingredients/vegetables/potato/potato.gd" id="2_tslg8"]
 [ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_u650f"]
+
 
 
 [resource]

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://cjjswhxmkwj7m"]
 
-[ext_resource type="Texture2D" uid="uid://boieo3tlb502b" path="res://assets/icons/food/ingredients/apple.png" id="1_amro8"]
+[ext_resource type="Texture2D" uid="uid://boieo3tlb502b" path="res://assets/icons/food/ingredients/fruits/apple.png" id="1_amro8"]
 [ext_resource type="Script" uid="uid://dw6yhek0amqm" path="res://resources/spot_cards/ingredients/fruits/apple/apple.gd" id="2_80ooo"]
 
 [resource]

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://coc2whuechrjk"]
 
-[ext_resource type="Texture2D" uid="uid://dp43udpov58jr" path="res://assets/icons/food/seasonings/onion_powder.png" id="1_qg65g"]
+[ext_resource type="Texture2D" uid="uid://dp43udpov58jr" path="res://assets/icons/food/ingredients/seasonings/onion_powder.png" id="1_qg65g"]
 [ext_resource type="Script" uid="uid://xnh4od44eggy" path="res://resources/spot_cards/ingredients/seasonings/onion_powder/onion_powder.gd" id="2_ttun6"]
 
 [resource]

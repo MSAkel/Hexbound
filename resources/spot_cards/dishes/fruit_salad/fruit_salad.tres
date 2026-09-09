@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="DishCard" format=3 uid="uid://baprycqanrcnx"]
 
-[ext_resource type="Texture2D" uid="uid://cwsm8bmux1s0a" path="res://assets/icons/food/dishes/fruit_salad.png" id="1_k6e86"]
+[ext_resource type="Texture2D" uid="uid://cwsm8bmux1s0a" path="res://assets/icons/food/meals/dishes/fruit_salad.png" id="1_k6e86"]
 [ext_resource type="Script" uid="uid://b1rquafgvonjk" path="res://resources/spot_cards/dishes/fruit_salad/fruit_salad.gd" id="2_script"]
 
 [resource]

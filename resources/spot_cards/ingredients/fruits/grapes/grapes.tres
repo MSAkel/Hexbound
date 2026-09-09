@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3 uid="uid://baod1ww70w8gw"]
 
-[ext_resource type="Texture2D" uid="uid://xdvmo1ol25pr" path="res://assets/icons/food/ingredients/grape.png" id="1_s0prh"]
+[ext_resource type="Texture2D" uid="uid://xdvmo1ol25pr" path="res://assets/icons/food/ingredients/fruits/grape.png" id="1_s0prh"]
 [ext_resource type="Script" uid="uid://bke723f5gj6w1" path="res://resources/spot_cards/ingredients/fruits/grapes/grapes.gd" id="2_d4tnr"]
 
 [resource]
