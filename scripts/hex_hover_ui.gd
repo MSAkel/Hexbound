@@ -138,9 +138,9 @@ func _update_occupied_inspect_overlay(hex: Hex) -> void:
 			map.stamp_dish_recipe_invalid_highlight(coords)
 			map._inspect_invalid_highlight_coords.append(coords)
 			continue
-		map.rune_highlight_overlay_layer.set_cell(
+		map.card_highlight_overlay_layer.set_cell(
 			coords,
-			HexTileMap.RUNE_HIGHLIGHT_SOURCE_ID,
+			HexTileMap.CARD_HIGHLIGHT_SOURCE_ID,
 			HexTileMap.OVERLAY_TILE_ATLAS_COORDS
 		)
 		map._inspect_highlight_coords.append(coords)
@@ -150,7 +150,7 @@ func _clear_occupied_inspect_overlay() -> void:
 	for coords: Vector2i in map._inspect_highlight_coords:
 		if map._rune_highlight_still_needed(coords, false, false, true):
 			continue
-		map.rune_highlight_overlay_layer.set_cell(coords, -1)
+		map.card_highlight_overlay_layer.set_cell(coords, -1)
 	map._inspect_highlight_coords.clear()
 	map.clear_dish_recipe_gold_highlights_at(map._inspect_gold_highlight_coords)
 	map._inspect_gold_highlight_coords.clear()

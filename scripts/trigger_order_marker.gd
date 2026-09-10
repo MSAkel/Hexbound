@@ -12,23 +12,27 @@ var _order: int = 0
 var _show_number_backdrop: bool = false
 var _number_visible: bool = false
 
-# Pointy-top hex art reads a little high. Nudge the label toward the visual center.
-const ORDER_LABEL_Y_OFFSET := -10.0
-const NUMBER_GROUP_HALF_WIDTH := 56.0
-const NUMBER_GROUP_HALF_HEIGHT := 46.0
-const FLOAT_AMPLITUDE := 8.5
+# Bob distance in pixels. Size and rest placement come from the scene NumberGroup offsets.
+const FLOAT_AMPLITUDE := 4.0
 const FLOAT_HALF_CYCLE_MIN := 1.15
 
 var _float_tween: Tween
+# Authored NumberGroup offsets from the scene. Float animation adds Y on top of these.
+var _group_offset_left: float = 0.0
+var _group_offset_right: float = 0.0
+var _group_offset_top: float = 0.0
+var _group_offset_bottom: float = 0.0
+var _cached_group_rect: bool = false
 
 
 func setup(order: int, _is_start: bool, _is_end: bool) -> void:
 	_ensure_nodes()
+	_cache_authored_group_rect()
 	_order = order
 	size = Hex.HEX_TILE_SIZE
 	custom_minimum_size = Hex.HEX_TILE_SIZE
 	order_label.text = str(order)
-	_apply_group_y_offset(ORDER_LABEL_Y_OFFSET)
+	_apply_group_y_offset(0.0)
 	_apply_visual_state()
 
 
@@ -86,16 +90,28 @@ func _stop_float() -> void:
 
 
 func _set_label_float_offset(offset: float) -> void:
-	_apply_group_y_offset(ORDER_LABEL_Y_OFFSET + offset)
+	_apply_group_y_offset(offset)
+
+
+func _cache_authored_group_rect() -> void:
+	if _cached_group_rect or number_group == null:
+		return
+	# Keep designer size from trigger_order_marker.tscn. Do not replace it with script constants.
+	_group_offset_left = number_group.offset_left
+	_group_offset_right = number_group.offset_right
+	_group_offset_top = number_group.offset_top
+	_group_offset_bottom = number_group.offset_bottom
+	_cached_group_rect = true
 
 
 func _apply_group_y_offset(y: float) -> void:
 	if number_group == null:
 		return
-	number_group.offset_left = -NUMBER_GROUP_HALF_WIDTH
-	number_group.offset_right = NUMBER_GROUP_HALF_WIDTH
-	number_group.offset_top = y - NUMBER_GROUP_HALF_HEIGHT
-	number_group.offset_bottom = y + NUMBER_GROUP_HALF_HEIGHT
+	_cache_authored_group_rect()
+	number_group.offset_left = _group_offset_left
+	number_group.offset_right = _group_offset_right
+	number_group.offset_top = _group_offset_top + y
+	number_group.offset_bottom = _group_offset_bottom + y
 
 
 func _ensure_nodes() -> void:

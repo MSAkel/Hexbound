@@ -14,6 +14,7 @@ var _saved_character: CharacterDefinition = null
 
 func _ready() -> void:
 	_ensure_layout()
+	_apply_preview_tile_size()
 
 
 func setup_character(character_def: CharacterDefinition) -> void:
@@ -67,6 +68,21 @@ func get_tile_pixel_size() -> Vector2:
 	if base_layer.tile_set == null:
 		return Vector2.ZERO
 	return Vector2(base_layer.tile_set.tile_size)
+
+
+## Match gameplay hex pixels. Atlas region follows the PNG so placeholder art still slices as one tile.
+func _apply_preview_tile_size() -> void:
+	if base_layer == null or base_layer.tile_set == null:
+		return
+	base_layer.tile_set.tile_size = HexTileMap.HEX_TEXTURE_SIZE
+	for i in base_layer.tile_set.get_source_count():
+		var source := base_layer.tile_set.get_source(base_layer.tile_set.get_source_id(i))
+		if source is TileSetAtlasSource:
+			var atlas := source as TileSetAtlasSource
+			if atlas.texture != null:
+				atlas.texture_region_size = Vector2i(atlas.texture.get_size())
+			else:
+				atlas.texture_region_size = HexTileMap.HEX_TEXTURE_SIZE
 
 
 func _ensure_layout() -> void:

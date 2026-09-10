@@ -1,7 +1,7 @@
 extends Camera2D
 
-@export var rune_shake_strength: float = 10.0
-@export var rune_shake_duration: float = 0.3
+@export var tile_shake_strength: float = 1.7
+@export var tile_shake_duration: float = 0.2
 
 ## Screen shake state: applied via offset so world position stays fixed.
 var _shake_strength: float = 0.0
@@ -10,17 +10,11 @@ var _shake_timer: float = 0.0
 ## UI/background live on CanvasLayers and ignore Camera2D offset, so mirror shake there too.
 var _shake_canvas_layers: Array[CanvasLayer] = []
 var _shake_canvas_layer_bases: Dictionary = {}
-# Map ref
-var map = HexTileMap
 
 
 func _ready() -> void:
 	set_process(false)
 	GameSettings.ensure_loaded()
-	var maps = get_tree().get_nodes_in_group("hex_map_group")
-	if maps.size() > 0:
-		map = maps[0] as HexTileMap
-
 	EventBus.tile_card_activated.connect(_on_tile_card_activated)
 	_cache_shake_canvas_layers()
 
@@ -29,8 +23,8 @@ func _process(delta: float) -> void:
 	_update_screen_shake(delta)
 
 
-func _on_tile_card_activated(_rune: TileCard) -> void:
-	shake(rune_shake_strength, rune_shake_duration)
+func _on_tile_card_activated(_tile: TileCard) -> void:
+	shake(tile_shake_strength, tile_shake_duration)
 
 
 ## Start or intensify a screen shake, duration scales with game speed like other turn effects.
@@ -54,19 +48,23 @@ func _cache_shake_canvas_layers() -> void:
 	if scene_root == null:
 		return
 	for child in scene_root.get_children():
-		if child is CanvasLayer:
-			var layer := child as CanvasLayer
-			_shake_canvas_layers.append(layer)
-			_shake_canvas_layer_bases[layer] = layer.offset
+		if not child is CanvasLayer:
+			continue
+		if child is SceneEnterTransition:
+			continue
+		var layer := child as CanvasLayer
+		_shake_canvas_layers.append(layer)
+		_shake_canvas_layer_bases[layer] = layer.offset
 
 
-## Camera offset moves the board, CanvasLayer offsets move everything drawn in screen space.
+## Camera offset moves the board in world units. CanvasLayer offset is already screen pixels.
 func _apply_shake_offset(shake_offset: Vector2) -> void:
 	offset = shake_offset
+	var screen_offset := shake_offset * zoom
 	for layer in _shake_canvas_layers:
 		if not is_instance_valid(layer):
 			continue
-		layer.offset = _shake_canvas_layer_bases.get(layer, Vector2.ZERO) + shake_offset
+		layer.offset = _shake_canvas_layer_bases.get(layer, Vector2.ZERO) + screen_offset
 
 
 func _stop_shake() -> void:

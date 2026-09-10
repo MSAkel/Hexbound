@@ -507,7 +507,7 @@ func _clear_trigger_link_sessions() -> void:
 	_deferred_destroy_after_triggers.clear()
 
 
-## Show floating text at a world position on the current scene.
+## Show floating text at a world position, converted onto the screen-space float layer.
 func create_floating_text(
 	pos: Vector2,
 	text: String,
@@ -531,10 +531,28 @@ func _spawn_floating_text(
 	doubled: bool = false
 ) -> FloatingText:
 	var floating_text := FLOATING_TEXT_SCENE.instantiate() as FloatingText
-	floating_text.position = pos
-	get_tree().current_scene.add_child(floating_text)
+	floating_text.position = _world_to_floating_text_screen(pos)
+	_get_floating_text_layer().add_child(floating_text)
 	floating_text.set_text(text, color, icon, target_icon, doubled)
 	return floating_text
+
+
+## Convert a world-space hex center into CanvasLayer viewport pixels.
+func _world_to_floating_text_screen(world_pos: Vector2) -> Vector2:
+	var viewport := get_viewport()
+	if viewport == null:
+		return world_pos
+	return viewport.get_canvas_transform() * world_pos
+
+
+func _get_floating_text_layer() -> Node:
+	var scene := get_tree().current_scene
+	if scene != null:
+		var layer := scene.get_node_or_null("FloatingTextLayer")
+		if layer != null:
+			return layer
+		return scene
+	return map
 
 
 func _on_tile_card_empowered(rune: TileCard) -> void:

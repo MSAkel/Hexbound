@@ -72,20 +72,20 @@ func _make_head_particles() -> GPUParticles2D:
 	particles.amount = 3
 	particles.lifetime = 0.1
 	particles.texture = SPARK_TEXTURE
-	particles.visibility_rect = Rect2(-64, -64, 128, 128)
+	particles.visibility_rect = Rect2(-28, -28, 56, 56)
 	particles.material = _make_additive_material()
 
 	var process_mat := ParticleProcessMaterial.new()
 	process_mat.particle_flag_disable_z = true
 	process_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	process_mat.emission_sphere_radius = 2.0
+	process_mat.emission_sphere_radius = 1.0
 	process_mat.direction = Vector3(1.0, 0.0, 0.0)
 	process_mat.spread = 0.0
 	process_mat.initial_velocity_min = 0.0
 	process_mat.initial_velocity_max = 0.0
 	process_mat.gravity = Vector3.ZERO
-	process_mat.scale_min = 0.22
-	process_mat.scale_max = 0.28
+	process_mat.scale_min = 0.1
+	process_mat.scale_max = 0.12
 	process_mat.color_ramp = _make_color_ramp(HEAD_COLOR, 0.08)
 	particles.process_material = process_mat
 	return particles
@@ -102,7 +102,7 @@ func _make_trail_particles() -> GPUParticles2D:
 	particles.lifetime = 0.11
 	particles.preprocess = 0.05
 	particles.texture = SPARK_TEXTURE
-	particles.visibility_rect = Rect2(-128, -128, 256, 256)
+	particles.visibility_rect = Rect2(-56, -56, 112, 112)
 	particles.material = _make_additive_material()
 
 	var process_mat := ParticleProcessMaterial.new()
@@ -110,13 +110,13 @@ func _make_trail_particles() -> GPUParticles2D:
 	process_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
 	process_mat.direction = Vector3(-1.0, 0.0, 0.0)
 	process_mat.spread = 4.0
-	process_mat.initial_velocity_min = 8.0
-	process_mat.initial_velocity_max = 16.0
+	process_mat.initial_velocity_min = 4.0
+	process_mat.initial_velocity_max = 7.0
 	process_mat.gravity = Vector3.ZERO
 	process_mat.damping_min = 24.0
 	process_mat.damping_max = 32.0
-	process_mat.scale_min = 0.1
-	process_mat.scale_max = 0.16
+	process_mat.scale_min = 0.04
+	process_mat.scale_max = 0.07
 	process_mat.color_ramp = _make_color_ramp(TRAIL_COLOR, 0.06)
 	particles.process_material = process_mat
 	return particles
@@ -132,22 +132,22 @@ func _make_impact_particles() -> GPUParticles2D:
 	particles.amount = 8
 	particles.lifetime = 0.18
 	particles.texture = IMPACT_TEXTURE
-	particles.visibility_rect = Rect2(-96, -96, 192, 192)
+	particles.visibility_rect = Rect2(-42, -42, 84, 84)
 	particles.material = _make_additive_material()
 
 	var process_mat := ParticleProcessMaterial.new()
 	process_mat.particle_flag_disable_z = true
 	process_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	process_mat.emission_sphere_radius = 4.0
+	process_mat.emission_sphere_radius = 2.0
 	process_mat.direction = Vector3(0.0, -1.0, 0.0)
 	process_mat.spread = 55.0
-	process_mat.initial_velocity_min = 18.0
-	process_mat.initial_velocity_max = 34.0
+	process_mat.initial_velocity_min = 8.0
+	process_mat.initial_velocity_max = 15.0
 	process_mat.gravity = Vector3.ZERO
 	process_mat.damping_min = 28.0
 	process_mat.damping_max = 36.0
-	process_mat.scale_min = 0.16
-	process_mat.scale_max = 0.28
+	process_mat.scale_min = 0.07
+	process_mat.scale_max = 0.12
 	process_mat.color_ramp = _make_color_ramp(IMPACT_COLOR, 0.05)
 	particles.process_material = process_mat
 	return particles

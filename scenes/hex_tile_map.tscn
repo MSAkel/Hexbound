@@ -8,102 +8,71 @@
 [ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="3_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://d2i5udp267mcs" path="res://assets/tilesets/fading_sector_challenge_overlay.png" id="3_ekk8a"]
 [ext_resource type="Texture2D" uid="uid://cg8rce2odojjl" path="res://assets/tilesets/gold_overlay.png" id="3_gold"]
-[ext_resource type="Texture2D" uid="uid://d2bvb5fboq3n8" path="res://assets/tilesets/rune_highlight_overlay.png" id="5_3rbfx"]
-[ext_resource type="Texture2D" uid="uid://5k8jhbtupp4u" path="res://assets/tilesets/first_tile_hover_highlight.png" id="6_4rcl8"]
 [ext_resource type="Texture2D" uid="uid://00t25k53gckj" path="res://assets/tilesets/disabled_tile_overlay.png" id="7_3rbfx"]
-[ext_resource type="Texture2D" uid="uid://d145g530anpnc" path="res://assets/tilesets/last_tile_hover_highlight.png" id="7_xmj4m"]
-[ext_resource type="Texture2D" uid="uid://4jxqdacto708" path="res://assets/tilesets/both_tile_hover_highlight.png" id="8_o8iio"]
+[ext_resource type="Texture2D" uid="uid://bdhjkrwrsmwn8" path="res://assets/tilesets/card_ability_highlight.png" id="10_o8iio"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4rcl8"]
 texture = ExtResource("3_8rbqn")
-texture_region_size = Vector2i(221, 255)
+texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_ekk8a"]
 tile_shape = 3
-tile_size = Vector2i(241, 275)
+tile_size = Vector2i(104, 120)
 sources/0 = SubResource("TileSetAtlasSource_4rcl8")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hover"]
 texture = ExtResource("3_3rbfx")
-texture_region_size = Vector2i(221, 255)
-0:0/0 = 0
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hkqs1"]
-texture = ExtResource("6_4rcl8")
-texture_region_size = Vector2i(221, 255)
-0:0/0 = 0
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_o58q6"]
-texture = ExtResource("7_xmj4m")
-texture_region_size = Vector2i(221, 255)
-0:0/0 = 0
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7ky4o"]
-texture = ExtResource("8_o8iio")
-texture_region_size = Vector2i(221, 255)
+texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_3rbfx"]
 tile_shape = 3
-tile_size = Vector2i(241, 275)
+tile_size = Vector2i(104, 120)
 sources/0 = SubResource("TileSetAtlasSource_hover")
-sources/1 = SubResource("TileSetAtlasSource_hkqs1")
-sources/2 = SubResource("TileSetAtlasSource_o58q6")
-sources/3 = SubResource("TileSetAtlasSource_7ky4o")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hovered_tile"]
-texture = ExtResource("3_3rbfx")
-texture_region_size = Vector2i(221, 255)
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_lm00d"]
+texture = ExtResource("10_o8iio")
+texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
-
-[sub_resource type="TileSet" id="TileSet_hovered_tile"]
-tile_shape = 3
-tile_size = Vector2i(241, 275)
-sources/0 = SubResource("TileSetAtlasSource_hovered_tile")
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8rbqn"]
-texture = ExtResource("5_3rbfx")
-texture_region_size = Vector2i(221, 255)
-0:0/0 = 0
-0:0/0/z_index = 3
 
 [sub_resource type="TileSet" id="TileSet_047vf"]
 tile_shape = 3
-tile_size = Vector2i(241, 275)
-sources/0 = SubResource("TileSetAtlasSource_8rbqn")
+tile_size = Vector2i(104, 120)
+sources/0 = SubResource("TileSetAtlasSource_lm00d")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_047vf"]
 texture = ExtResource("7_3rbfx")
-texture_region_size = Vector2i(221, 255)
+texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_r6dd1"]
 tile_shape = 3
-tile_size = Vector2i(241, 275)
+tile_size = Vector2i(104, 120)
 sources/0 = SubResource("TileSetAtlasSource_047vf")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xmj4m"]
 texture = ExtResource("3_ekk8a")
-texture_region_size = Vector2i(221, 255)
+texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_7pmlo"]
 tile_shape = 3
-tile_size = Vector2i(241, 275)
+tile_size = Vector2i(104, 120)
 sources/0 = SubResource("TileSetAtlasSource_xmj4m")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_gold"]
 texture = ExtResource("3_gold")
-texture_region_size = Vector2i(221, 255)
+texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_gold"]
 tile_shape = 3
-tile_size = Vector2i(241, 275)
+tile_size = Vector2i(104, 120)
 sources/0 = SubResource("TileSetAtlasSource_gold")
 
 [node name="HexTileMap" type="Node2D" unique_id=1387675484]
+position = Vector2(0, -84)
 script = ExtResource("1_d5c3r")
 hex_size = 3
 
@@ -126,13 +95,10 @@ tile_set = SubResource("TileSet_ekk8a")
 [node name="SelectionOverlayLayer" type="TileMapLayer" parent="." unique_id=591519296]
 tile_set = SubResource("TileSet_3rbfx")
 
-[node name="HoveredTileOverlayLayer" type="TileMapLayer" parent="." unique_id=474063728]
-tile_set = SubResource("TileSet_hovered_tile")
-
 [node name="PlacementValidOverlayLayer" type="TileMapLayer" parent="." unique_id=593838129]
 tile_set = SubResource("TileSet_3rbfx")
 
-[node name="RuneHighlightOverlayLayer" type="TileMapLayer" parent="." unique_id=272160682]
+[node name="CardHighlightOverlayLayer" type="TileMapLayer" parent="." unique_id=272160682]
 tile_set = SubResource("TileSet_047vf")
 
 [node name="DisabledTileOverlayLayer" type="TileMapLayer" parent="." unique_id=1424799643]

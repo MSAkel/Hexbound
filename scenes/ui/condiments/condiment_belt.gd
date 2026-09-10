@@ -128,7 +128,7 @@ func _on_turn_started() -> void:
 
 func _show_ghost(condiment: Condiment) -> void:
 	_ghost.texture = condiment.icon
-	_ghost.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_ghost.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	# Match the belt well. Leave the flask art untinted.
 	_ghost.self_modulate = Color.WHITE
 	_ghost.modulate = Color.WHITE

@@ -37,13 +37,13 @@ expand_mode = 2
 stretch_mode = 5
 
 [node name="Subject" type="TextureRect" parent="." unique_id=532603822]
-texture_filter = 1
+texture_filter = 2
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.16
-anchor_top = 0.16
-anchor_right = 0.84
-anchor_bottom = 0.84
+anchor_left = 0.142857
+anchor_top = 0.142857
+anchor_right = 0.857143
+anchor_bottom = 0.857143
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2

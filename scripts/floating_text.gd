@@ -4,41 +4,27 @@ extends Node2D
 @onready var label: RichTextLabel = $Label
 @onready var icon_rect: TextureRect = $Icon
 
-## Scale each glyph starts at before popping in. Near-zero so they appear from nothing.
 const POP_START_SCALE := 0.05
-## Seconds for one glyph to scale from POP_START_SCALE to full size.
 const CHAR_POP_DURATION := 0.12
-## Seconds between each glyph's pop, so letters appear in sequence rather than all at once.
 const CHAR_STAGGER := 0.018
-## Pause after the last glyph pops in, before the whole line shrinks away.
 const HOLD_AFTER_POP := 0.85
-## Seconds for the finished line to scale down to zero and then free itself.
 const SHRINK_DURATION := 0.14
-## Readable on a hex, still smaller than the old score-curve sizes that overlapped.
-const CARD_FONT_SIZE := 60
-## Long phrases shrink a little, but never below a size you can still read.
+const CARD_FONT_SIZE := 26
 const CARD_LONG_TEXT_START := 12
-const CARD_MIN_FONT_SIZE := 40
-## Treat nearby spawns as the same tile when stacking extra lines upward.
-const STACK_GROUP_DISTANCE := 8.0
-## Extra pixels between stacked card floats, on top of the previous line's font height.
-const STACK_GAP := 6.0
-## Extra pixels between icons in composed ability and relay floats.
-const ICON_TEXT_SEPARATION := 6
-## Centers card activation text over its rune, slightly above the rune's midpoint.
-const CARD_FLOAT_ANCHOR_OFFSET := Vector2(0.0, -24.0)
-## Doubled payouts hit harder. Squash, stretch, then settle.
+const CARD_MIN_FONT_SIZE := 18
+const STACK_GROUP_DISTANCE := 20.0
+const STACK_GAP := 4.0
+const ICON_TEXT_SEPARATION := 3
+const CARD_FLOAT_ANCHOR_OFFSET := Vector2(0.0, -10.0)
 const DOUBLE_BANG_SQUASH := Vector2(1.62, 0.72)
 const DOUBLE_BANG_STRETCH := Vector2(0.88, 1.32)
 const DOUBLE_BANG_HIT := 0.055
 const DOUBLE_BANG_REBOUND := 0.07
 const DOUBLE_BANG_SETTLE := 0.12
-## Heavier stroke and slightly larger glyphs so Doubled amounts read bolder.
-const DOUBLE_OUTLINE_SIZE := 16
+const DOUBLE_OUTLINE_SIZE := 7
 const DOUBLE_FONT_SCALE := 1.18
-const CARD_OUTLINE_SIZE := 9
-const SCORE_OUTLINE_SIZE := 12
-## Warmer, denser ink behind Doubled amounts.
+const CARD_OUTLINE_SIZE := 4
+const SCORE_OUTLINE_SIZE := 5
 const DOUBLE_GLOW_COLOR := Color(0.42, 0.22, 0.06, 0.62)
 const DEFAULT_GLOW_COLOR := Color(0.10, 0.14, 0.20, 0.48)
 const GLOW_SHADER := preload("res://scenes/animations/floating_text_glow.gdshader")
@@ -240,7 +226,7 @@ func _play_character_pop() -> bool:
 func _make_glow_backdrop(row_size: Vector2) -> ColorRect:
 	var glow := ColorRect.new()
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var pad := Vector2(maxf(18.0, row_size.y * 0.4), row_size.y * 0.32)
+	var pad := Vector2(maxf(8.0, row_size.y * 0.4), row_size.y * 0.32)
 	if _doubled:
 		pad *= 1.2
 	glow.size = row_size + pad * 2.0

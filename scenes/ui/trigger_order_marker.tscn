@@ -1,43 +1,43 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://biy0q6sx1f2ke"]
 
-[ext_resource type="Script" path="res://scripts/trigger_order_marker.gd" id="1_marker"]
+[ext_resource type="Script" uid="uid://cms05udd24iae" path="res://scripts/trigger_order_marker.gd" id="1_marker"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_number_backdrop"]
 bg_color = Color(0.08, 0.1, 0.08, 0.88)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
 border_color = Color(0.95, 0.93, 0.86, 0.45)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
-[node name="TriggerOrderMarker" type="Control"]
-custom_minimum_size = Vector2(221, 255)
-offset_right = 221.0
-offset_bottom = 255.0
+[node name="TriggerOrderMarker" type="Control" unique_id=214617409]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 50.0
+offset_bottom = 50.0
 mouse_filter = 2
 script = ExtResource("1_marker")
 
-[node name="NumberGroup" type="Control" parent="."]
-layout_mode = 0
+[node name="NumberGroup" type="Control" parent="." unique_id=961512809]
+layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -56.0
-offset_top = -46.0
-offset_right = 56.0
-offset_bottom = 46.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = -25.0
+offset_top = -25.0
+offset_right = 25.0
+offset_bottom = 15.0
 mouse_filter = 2
 
-[node name="NumberBackdrop" type="Panel" parent="NumberGroup"]
+[node name="NumberBackdrop" type="Panel" parent="NumberGroup" unique_id=93672384]
 layout_mode = 0
-anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -45,18 +45,15 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_number_backdrop")
 
-[node name="OrderLabel" type="Label" parent="NumberGroup"]
-layout_mode = 0
+[node name="OrderLabel" type="Label" parent="NumberGroup" unique_id=506833185]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.93, 0.86, 1)
 theme_override_colors/font_outline_color = Color(0.12, 0.14, 0.1, 1)
 theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 64
+theme_override_font_sizes/font_size = 24
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1

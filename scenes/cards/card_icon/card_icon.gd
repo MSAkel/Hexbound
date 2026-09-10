@@ -8,7 +8,8 @@ extends Control
 ## Authored reference size for one board hex token. Hand and inspect hosts scale this down.
 const REFERENCE_SIZE := Vector2(256, 256)
 ## Fraction inset on each side so pixel-art subjects sit inside the hex silhouette.
-const SUBJECT_HEX_INSET := 0.16
+## 16px of a 112px board token, which is an 80px subject box.
+const SUBJECT_HEX_INSET := 16.0 / 112.0
 
 @export var hex_ingredients: Texture2D
 @export var hex_kitchenware: Texture2D

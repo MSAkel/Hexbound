@@ -24,10 +24,10 @@ const TILE_SPACING_PX := 6.0
 const TILE_HIT_PADDING_PX := TILE_SPACING_PX
 const PLAYBACK_DURATION := 1.7
 const TRAIL_LENGTH := 4
-const NUMBER_FONT_SIZE := 68
-const NUMBER_OUTLINE_SIZE := 14
+const NUMBER_FONT_SIZE := 32
+const NUMBER_OUTLINE_SIZE := 6
 # Pointy hex art sits a little high. Nudge numbers toward the visual center.
-const NUMBER_Y_OFFSET := -8.0
+const NUMBER_Y_OFFSET := -4.0
 
 const CAPTION_IDLE := "Hover a spot to inspect a course"
 const CAPTION_PLAYING := "Cards fire in this order"

@@ -71,6 +71,9 @@ func _sync_settings_controls() -> void:
 	display_mode_option_button.select(GameSettings.display_mode)
 	var resolution_index := _resolution_options.find(GameSettings.resolution)
 	resolution_option_button.select(resolution_index if resolution_index >= 0 else 0)
+	# Resolution only applies in windowed mode. Grey it out otherwise.
+	var resolution_enabled := GameSettings.display_mode == GameSettings.DISPLAY_MODE_WINDOWED
+	resolution_option_button.disabled = not resolution_enabled
 	tutorial_check_box.set_pressed_no_signal(GameSettings.tutorial_enabled)
 
 func _on_master_volume_changed(value: float) -> void:

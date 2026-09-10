@@ -12,29 +12,22 @@ var turn_resolver: HexTurnResolver
 @onready var segment_path_overlay: SegmentPathOverlay = $SegmentPathOverlay
 @onready var trigger_link_overlay: TriggerLinkOverlay = $TriggerLinkOverlay
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
-@onready var hovered_tile_overlay_layer: TileMapLayer = $HoveredTileOverlayLayer
 @onready var placement_valid_overlay_layer: TileMapLayer = $PlacementValidOverlayLayer
-@onready var rune_highlight_overlay_layer: TileMapLayer = $RuneHighlightOverlayLayer
+@onready var card_highlight_overlay_layer: TileMapLayer = $CardHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
 @onready var gold_overlay_layer: TileMapLayer = $GoldOverlayLayer
 # Counted dish-recipe seats. Own layer so gold modulate cannot leak onto other overlays.
 var dish_recipe_gold_layer: TileMapLayer
 
-# Selection overlay tileset sources in hex_tile_map.tscn.
+# Selection and placement-valid overlays share one hover tile on source 0 in hex_tile_map.tscn.
 const HOVER_OVERLAY_NORMAL := 0
-const HOVER_OVERLAY_FIRST := 1
-const HOVER_OVERLAY_LAST := 2
-const HOVER_OVERLAY_BOTH := 3
-const HOVERED_TILE_OVERLAY_SOURCE_ID := 0
 const OVERLAY_TILE_ATLAS_COORDS := Vector2i(0, 0)
-# Light white wash reserved for a second emphasis pass on the focused tile.
-const HOVERED_TILE_OVERLAY_MODULATE := Color(0.9, 0.9, 0.9, 0.45)
 # Valid placement targets for restricted cards such as edge, first, or last segment tiles.
 const PLACEMENT_VALID_OVERLAY_SOURCE_ID := HOVER_OVERLAY_NORMAL
 const PLACEMENT_VALID_OVERLAY_MODULATE := Color(0.45, 0.88, 1.15, 0.72)
-# TileCard trigger preview overlay on RuneHighlightOverlayLayer.
-const RUNE_HIGHLIGHT_SOURCE_ID := 0
+# TileCard trigger preview overlay on CardHighlightOverlayLayer.
+const CARD_HIGHLIGHT_SOURCE_ID := 0
 # Tile-shaped overlays sit under rune icons. Trigger-order numbers stay above at z 25.
 const TILE_OVERLAY_LAYER_Z_INDEX := 0
 # Disabled and fading-sector layers each expose a single tile on source 0.
@@ -44,13 +37,13 @@ const OVERLAY_TILE_SOURCE_ID := 0
 @export_range(1, 20, 1) var hex_size: int = 2
 # Extra pixels added to tile_size so adjacent hex visuals do not touch.
 # Use a smaller X gap if rows look too far apart compared to the diagonal edges.
-@export_range(0, 64, 1) var hex_tile_gap_x: int = 20
-@export_range(0, 64, 1) var hex_tile_gap_y: int = 20
+@export_range(0, 64, 1) var hex_tile_gap_x: int = 8
+@export_range(0, 64, 1) var hex_tile_gap_y: int = 8
 
 # Pointy-top hex art size. tile_size = this + the X/Y gaps for spacing on the grid.
-const HEX_TEXTURE_SIZE := Vector2i(221, 255)
+const HEX_TEXTURE_SIZE := Vector2i(96, 112)
 # Placed rune UI. Icons are still square with side padding and must stay centered on the cell.
-const HEX_RUNE_SIZE := Vector2(256, 256)
+const HEX_RUNE_SIZE := Vector2(112, 112)
 
 # Atlas coords for the single dashed hex tile on BaseLayer (source 0)
 const BASE_TILE_ATLAS_COORDS := Vector2i(0, 0)
@@ -62,6 +55,9 @@ var _gamepad_focus_cell: Vector2i = Vector2i(-1, -1)
 var map_data: Dictionary = {}
 # Ring distances, trigger order, and segment grouping.
 var _layout: HexMapLayout
+# Scene Transform position, kept after generate_terrain recenters the board.
+var _scene_position := Vector2.ZERO
+var _scene_position_cached := false
 
 # Card placement handler
 var card_placement_handler: CardPlacementHandler
@@ -121,10 +117,8 @@ func _ready() -> void:
 	_layout = HexMapLayout.new()
 	_layout.setup(self)
 	# Hex fills stay under card icons. Order numbers on TriggerOrderOverlay sit above both.
-	rune_highlight_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
+	card_highlight_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	placement_valid_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
-	hovered_tile_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
-	hovered_tile_overlay_layer.self_modulate = HOVERED_TILE_OVERLAY_MODULATE
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
 	gold_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	_setup_dish_recipe_gold_layer()
@@ -168,7 +162,8 @@ func _exit_tree() -> void:
 	_free_map_hexes()
 
 
-# Widen the hex grid cells while keeping the 221x255 textures, creating visible gaps.
+# Widen the hex grid cells while keeping the authored hex textures, creating visible gaps.
+# Atlas region follows the PNG so a single hex still slices as one tile.
 func _apply_tile_spacing() -> void:
 	var spaced_tile_size := Vector2i(
 		HEX_TEXTURE_SIZE.x + hex_tile_gap_x,
@@ -177,17 +172,29 @@ func _apply_tile_spacing() -> void:
 	for layer: TileMapLayer in [
 		base_layer,
 		selection_overlay_layer,
-		hovered_tile_overlay_layer,
 		placement_valid_overlay_layer,
-		rune_highlight_overlay_layer,
+		card_highlight_overlay_layer,
 		disabled_tile_overlay_layer,
 		fading_sector_overlay_layer,
 		gold_overlay_layer,
 		dish_recipe_gold_layer,
 	]:
-		if layer == null:
+		if layer == null or layer.tile_set == null:
 			continue
 		layer.tile_set.tile_size = spaced_tile_size
+		_sync_tileset_atlas_regions(layer.tile_set)
+
+
+## Slice each atlas as a single hex. Use the texture size when present so mismatched art still works.
+func _sync_tileset_atlas_regions(tile_set: TileSet) -> void:
+	for i in tile_set.get_source_count():
+		var source := tile_set.get_source(tile_set.get_source_id(i))
+		if source is TileSetAtlasSource:
+			var atlas := source as TileSetAtlasSource
+			if atlas.texture != null:
+				atlas.texture_region_size = Vector2i(atlas.texture.get_size())
+			else:
+				atlas.texture_region_size = HEX_TEXTURE_SIZE
 
 
 # Handles tile hover highlighting. Left-click no longer locks a selected hex.
@@ -323,7 +330,7 @@ func clear_placement_valid_highlights() -> void:
 func _setup_dish_recipe_gold_layer() -> void:
 	dish_recipe_gold_layer = TileMapLayer.new()
 	dish_recipe_gold_layer.name = "DishRecipeGoldOverlayLayer"
-	dish_recipe_gold_layer.tile_set = rune_highlight_overlay_layer.tile_set
+	dish_recipe_gold_layer.tile_set = card_highlight_overlay_layer.tile_set
 	dish_recipe_gold_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	dish_recipe_gold_layer.modulate = DISH_RECIPE_GOLD_MODULATE
 	add_child(dish_recipe_gold_layer)
@@ -336,7 +343,7 @@ func stamp_dish_recipe_gold_highlight(coords: Vector2i) -> void:
 	_dish_recipe_gold_coords.append(coords)
 	dish_recipe_gold_layer.set_cell(
 		coords,
-		RUNE_HIGHLIGHT_SOURCE_ID,
+		CARD_HIGHLIGHT_SOURCE_ID,
 		OVERLAY_TILE_ATLAS_COORDS
 	)
 
@@ -387,9 +394,9 @@ func clear_dish_recipe_highlights() -> void:
 
 func _refresh_rune_highlight_modulate() -> void:
 	if not _condiment_target_coords.is_empty():
-		rune_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
+		card_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
 		return
-	rune_highlight_overlay_layer.modulate = Color.WHITE
+	card_highlight_overlay_layer.modulate = Color.WHITE
 
 
 func _get_map_focus_cell() -> Vector2i:
@@ -534,7 +541,6 @@ func _move_gamepad_focus_vertical(step: int, rows: Array) -> void:
 
 func _refresh_segment_role_highlights() -> void:
 	selection_overlay_layer.clear()
-	hovered_tile_overlay_layer.clear()
 
 	# Tab peek shows order overlays only. It does not paint tile highlights.
 	if _peek_order_numbers:
@@ -581,26 +587,6 @@ func _should_hide_dashed_outline(coords: Vector2i) -> bool:
 		return false
 	var hex: Hex = map_data[coords]
 	return hex.active_tile_card != null
-
-
-func _stamp_segment_role_selection(coords: Vector2i) -> void:
-	selection_overlay_layer.set_cell(
-		coords,
-		_get_selection_hover_source_id(coords),
-		OVERLAY_TILE_ATLAS_COORDS
-	)
-
-
-func _get_selection_hover_source_id(coords: Vector2i) -> int:
-	var is_start := is_first_tile_in_segment(coords)
-	var is_end := is_last_tile_in_segment(coords)
-	if is_start and is_end:
-		return HOVER_OVERLAY_BOTH
-	if is_start:
-		return HOVER_OVERLAY_FIRST
-	if is_end:
-		return HOVER_OVERLAY_LAST
-	return HOVER_OVERLAY_NORMAL
 
 
 # Convert a map cell into a viewport/CanvasLayer rect so the panel aligns with the camera.
@@ -783,11 +769,10 @@ func generate_terrain() -> void:
 	_free_map_hexes()
 	base_layer.clear()
 	selection_overlay_layer.clear()
-	hovered_tile_overlay_layer.clear()
 	placement_valid_overlay_layer.clear()
 	_placement_preview_cell = Vector2i(-1, -1)
 	_gamepad_focus_cell = Vector2i(-1, -1)
-	rune_highlight_overlay_layer.clear()
+	card_highlight_overlay_layer.clear()
 	if dish_recipe_gold_layer != null:
 		dish_recipe_gold_layer.clear()
 	_dish_recipe_gold_coords.clear()
@@ -800,7 +785,7 @@ func generate_terrain() -> void:
 	_disabled_tile_coords.clear()
 	_hovered_segment_coords.clear()
 	_hovered_segment_index = -1
-	rune_highlight_overlay_layer.modulate = Color.WHITE
+	card_highlight_overlay_layer.modulate = Color.WHITE
 
 	var hex_center := Vector2i(hex_size, hex_size)
 	_place_hex_tile(hex_center)
@@ -822,6 +807,7 @@ func generate_terrain() -> void:
 	_layout.reset_turn_results()
 	trigger_order_overlay.rebuild()
 	segment_path_overlay.rebuild()
+	_center_map_on_origin()
 
 
 ## Frees Hex UI Controls and drops dict refs so Nodes/RefCounted tiles cannot pile up.
@@ -1303,11 +1289,11 @@ func highlight_hovered_segment(segment_index: int) -> void:
 		return
 
 	_hovered_segment_index = segment_index
-	rune_highlight_overlay_layer.modulate = Color.WHITE
+	card_highlight_overlay_layer.modulate = Color.WHITE
 	for hex: Hex in get_hexes_in_segment(segment_index):
-		rune_highlight_overlay_layer.set_cell(
+		card_highlight_overlay_layer.set_cell(
 			hex.coordinates,
-			RUNE_HIGHLIGHT_SOURCE_ID,
+			CARD_HIGHLIGHT_SOURCE_ID,
 			OVERLAY_TILE_ATLAS_COORDS
 		)
 		_hovered_segment_coords.append(hex.coordinates)
@@ -1322,12 +1308,12 @@ func clear_hovered_segment_highlight(segment_index: int = -1) -> void:
 		# Leave cells that card placement or a credit flash still owns on this layer.
 		if _rune_highlight_still_needed(coords, true, false):
 			continue
-		rune_highlight_overlay_layer.set_cell(coords, -1)
+		card_highlight_overlay_layer.set_cell(coords, -1)
 	_hovered_segment_coords.clear()
 	_hovered_segment_index = -1
 	# Restore full opacity unless placement or another owner still needs a custom modulate.
 	if card_placement_handler == null or not card_placement_handler.is_card_selected:
-		rune_highlight_overlay_layer.modulate = Color.WHITE
+		card_highlight_overlay_layer.modulate = Color.WHITE
 
 
 ## Briefly lights a segment so the player can see where forwarded Energy or Mult landed.
@@ -1338,9 +1324,9 @@ func flash_segment_highlight(segment_index: int) -> void:
 
 	for hex: Hex in get_hexes_in_segment(segment_index):
 		var coords := hex.coordinates
-		rune_highlight_overlay_layer.set_cell(
+		card_highlight_overlay_layer.set_cell(
 			coords,
-			RUNE_HIGHLIGHT_SOURCE_ID,
+			CARD_HIGHLIGHT_SOURCE_ID,
 			OVERLAY_TILE_ATLAS_COORDS
 		)
 		_flashed_segment_coords.append(coords)
@@ -1360,7 +1346,7 @@ func _clear_flashed_segment_highlight() -> void:
 	for coords: Vector2i in _flashed_segment_coords:
 		if _rune_highlight_still_needed(coords, false, true):
 			continue
-		rune_highlight_overlay_layer.set_cell(coords, -1)
+		card_highlight_overlay_layer.set_cell(coords, -1)
 	_flashed_segment_coords.clear()
 
 
@@ -1368,9 +1354,9 @@ func _clear_flashed_segment_highlight() -> void:
 func set_condiment_target_highlights(coords: Array[Vector2i]) -> void:
 	clear_condiment_target_highlights()
 	_condiment_target_coords = coords.duplicate()
-	rune_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
+	card_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
 	for cell in _condiment_target_coords:
-		rune_highlight_overlay_layer.set_cell(
+		card_highlight_overlay_layer.set_cell(
 			cell,
 			OVERLAY_TILE_SOURCE_ID,
 			OVERLAY_TILE_ATLAS_COORDS
@@ -1383,7 +1369,7 @@ func clear_condiment_target_highlights() -> void:
 	for cell in previous:
 		if _rune_highlight_still_needed(cell, false, false):
 			continue
-		rune_highlight_overlay_layer.set_cell(cell, -1)
+		card_highlight_overlay_layer.set_cell(cell, -1)
 	_refresh_rune_highlight_modulate()
 
 
@@ -1624,9 +1610,34 @@ func schedule_destroy_after_trigger_link(
 	turn_resolver.schedule_destroy_after_trigger_link(source_hex, tile_card, on_destroy)
 
 
-## Scene-global center of a hex tile. Use for floating text on the main scene root.
+## Scene-global center of a hex tile. Callers convert this to screen space for CanvasLayer floats.
 func floating_text_position_for_hex(coords: Vector2i) -> Vector2:
 	return to_global(base_layer.map_to_local(coords))
+
+
+## World-space center of the generated hexes.
+func get_map_world_center() -> Vector2:
+	if map_data.is_empty():
+		return global_position
+	var min_p := Vector2(INF, INF)
+	var max_p := Vector2(-INF, -INF)
+	var half := Vector2(HEX_TEXTURE_SIZE) * 0.5
+	for coords: Vector2i in map_data.keys():
+		var center := to_global(base_layer.map_to_local(coords))
+		min_p = min_p.min(center - half)
+		max_p = max_p.max(center + half)
+	return (min_p + max_p) * 0.5
+
+
+## Keep the board centered on world origin so a camera at (0, 0) frames it.
+## Extra shift comes from this node's scene position.
+func _center_map_on_origin() -> void:
+	if not _scene_position_cached:
+		_scene_position = position
+		_scene_position_cached = true
+	position = Vector2.ZERO
+	global_position -= get_map_world_center()
+	position += _scene_position
 
 
 ## Show floating text at a scene-global position on the current scene.

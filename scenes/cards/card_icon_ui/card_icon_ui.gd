@@ -81,7 +81,7 @@ const SEGMENT_REVEAL_FADE_DURATION := 0.16
 # Hover preview sits slightly larger than the hex. Slam overshoots, then seats at rest.
 const PLACEMENT_HOVER_SCALE := 1.16
 const PLACEMENT_SLAM_SCALE := Vector2(1.08, 0.78)
-const PLACEMENT_DROP_OFFSET := -40.0
+const PLACEMENT_DROP_OFFSET := -18.0
 const PLACEMENT_SLAM_DURATION := 0.11
 const PLACEMENT_RECOVER_DURATION := 0.13
 const PLACEMENT_SHAKE_STRENGTH := 8.0
@@ -96,7 +96,7 @@ const TRIGGER_LINK_FLASH_DURATION := 0.42
 const CHAINED_ACTIVATION_PEAK_SCALE := Vector2(1.06, 1.06)
 const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
 # Mid-turn segment close. Smaller than placement slam, big enough to read over activations.
-const SEAL_LIFT_OFFSET := -26.0
+const SEAL_LIFT_OFFSET := -11.0
 const SEAL_PEAK_SCALE := Vector2(1.1, 1.1)
 const SEAL_SQUASH_SCALE := Vector2(1.08, 0.8)
 const SEAL_LIFT_DURATION := 0.07
@@ -109,13 +109,20 @@ const INSPECT_HOVER_SCALE := Vector2(1.08, 1.08)
 const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
 const INSPECT_HOVER_DURATION := 0.12
 # Keep the chip seated above the hex bottom while its width follows the numbers.
-const OUTPUT_CHIP_BOTTOM_INSET := 28.0
+const OUTPUT_CHIP_BOTTOM_INSET := 12.0
 # Dim placed cards whose tags cannot fill the hovered dish recipe.
 const RECIPE_INVALID_DIM := Color(0.42, 0.42, 0.48, 1.0)
 
 #endregion
 
 #region Setup and board chip
+
+func _ready() -> void:
+	var center := size * 0.5
+	for emitter in [placement_smoke, placement_dust, placement_slash, empower_sparks]:
+		if emitter != null:
+			emitter.position = center
+
 
 ## Returns the unscaled duration of the complete segment-seal slam.
 ## Keep this in sync with [method HexTileMap.wait_for_segment_seal].
@@ -972,13 +979,13 @@ func _ensure_empower_stack_label() -> void:
 	_empower_stack_label.z_index = 5
 	_empower_stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_empower_stack_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_empower_stack_label.add_theme_font_size_override("font_size", 22)
+	_empower_stack_label.add_theme_font_size_override("font_size", 10)
 	_empower_stack_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.55, 1.0))
 	_empower_stack_label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.04, 1.0))
-	_empower_stack_label.add_theme_constant_override("outline_size", 4)
+	_empower_stack_label.add_theme_constant_override("outline_size", 3)
 	_empower_stack_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_empower_stack_label.position = Vector2(88, 18)
-	_empower_stack_label.size = Vector2(80, 28)
+	_empower_stack_label.position = Vector2(38, 8)
+	_empower_stack_label.size = Vector2(35, 12)
 	add_child(_empower_stack_label)
 
 
@@ -1046,15 +1053,15 @@ func refresh_condiment_badges(card: TileCard, coords: Vector2i) -> void:
 func _make_fuse_badge(condiment: Condiment, turns: int) -> PanelContainer:
 	# Olive well on the hex face so the flask reads against grass and chip art.
 	var well := PanelContainer.new()
-	well.custom_minimum_size = Vector2(50, 50)
+	well.custom_minimum_size = Vector2(22, 22)
 	well.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	well.add_theme_stylebox_override("panel", _fuse_badge_style())
 
 	var icon := TextureRect.new()
-	icon.custom_minimum_size = Vector2(26, 26)
+	icon.custom_minimum_size = Vector2(12, 12)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	icon.texture = condiment.icon
 	icon.self_modulate = Color.WHITE
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1063,13 +1070,13 @@ func _make_fuse_badge(condiment: Condiment, turns: int) -> PanelContainer:
 	if turns > 0:
 		var count := Label.new()
 		count.text = str(turns)
-		count.add_theme_font_size_override("font_size", 12)
+		count.add_theme_font_size_override("font_size", 10)
 		count.add_theme_color_override("font_color", Color(1, 0.95, 0.7, 1))
 		count.add_theme_color_override("font_outline_color", Color(0.05, 0.06, 0.04, 1))
 		count.add_theme_constant_override("outline_size", 4)
 		count.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-		count.offset_left = -16.0
-		count.offset_top = -16.0
+		count.offset_left = -7.0
+		count.offset_top = -7.0
 		count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		well.add_child(count)
 	return well
@@ -1115,10 +1122,10 @@ func _ensure_fuse_ui() -> void:
 	_fuse_bar.add_theme_constant_override("separation", 4)
 	# Sit on the hex face, below the top vertex and above the center art.
 	_fuse_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_fuse_bar.offset_left = -72.0
-	_fuse_bar.offset_top = 44.0
-	_fuse_bar.offset_right = 72.0
-	_fuse_bar.offset_bottom = 86.0
+	_fuse_bar.offset_left = -32.0
+	_fuse_bar.offset_top = 19.0
+	_fuse_bar.offset_right = 32.0
+	_fuse_bar.offset_bottom = 38.0
 	if _anim_target != null:
 		_anim_target.add_child(_fuse_bar)
 	else:
@@ -1135,14 +1142,14 @@ func _ensure_fuse_ui() -> void:
 	var splash_material := ParticleProcessMaterial.new()
 	splash_material.particle_flag_disable_z = true
 	splash_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	splash_material.emission_sphere_radius = 18.0
+	splash_material.emission_sphere_radius = 8.0
 	splash_material.direction = Vector3(0, -1, 0)
 	splash_material.spread = 80.0
-	splash_material.initial_velocity_min = 40.0
-	splash_material.initial_velocity_max = 90.0
-	splash_material.gravity = Vector3(0, 80, 0)
-	splash_material.scale_min = 0.08
-	splash_material.scale_max = 0.18
+	splash_material.initial_velocity_min = 18.0
+	splash_material.initial_velocity_max = 39.0
+	splash_material.gravity = Vector3(0, 35, 0)
+	splash_material.scale_min = 0.035
+	splash_material.scale_max = 0.08
 	_condiment_splash.process_material = splash_material
 	_condiment_splash.texture = preload("res://assets/particles/spark/spark_03.png")
 	add_child(_condiment_splash)

@@ -12,6 +12,7 @@ const DISPLAY_MODE_BORDERLESS := 2
 const RESOLUTIONS := [
 	Vector2i(1024, 576),
 	Vector2i(1280, 720),
+	Vector2i(1280, 800),
 	Vector2i(1366, 768),
 	Vector2i(1600, 900),
 	Vector2i(1920, 1080),
@@ -26,7 +27,7 @@ static var game_speed: float = 1.0
 static var vsync_enabled: bool = false
 static var music_volume: float = 0.20
 static var sfx_volume: float = 0.35
-static var display_mode: int = DISPLAY_MODE_WINDOWED
+static var display_mode: int = DISPLAY_MODE_BORDERLESS
 static var resolution: Vector2i = Vector2i(1920, 1080)
 ## Last character shown on the character selection screen, even if no run was started.
 static var last_character_selection_id: String = ""
@@ -62,9 +63,9 @@ static func ensure_loaded() -> void:
 		return
 	_loaded = true
 	if not FileAccess.file_exists(SAVE_PATH):
-		# First launch. Match the monitor and start windowed.
+		# First launch. Match the monitor and start in borderless fullscreen.
 		resolution = detect_device_resolution()
-		display_mode = DISPLAY_MODE_WINDOWED
+		display_mode = DISPLAY_MODE_BORDERLESS
 		_apply_display_settings()
 		_apply_vsync()
 		_save()
@@ -81,7 +82,7 @@ static func ensure_loaded() -> void:
 		music_volume = clampf(float(settings.get("music_volume", 0.20)), 0.0, 1.0)
 		sfx_volume = clampf(float(settings.get("sfx_volume", 0.35)), 0.0, 1.0)
 		display_mode = clampi(
-			int(settings.get("display_mode", DISPLAY_MODE_WINDOWED)),
+			int(settings.get("display_mode", DISPLAY_MODE_BORDERLESS)),
 			DISPLAY_MODE_FULLSCREEN,
 			DISPLAY_MODE_BORDERLESS
 		)
@@ -209,7 +210,7 @@ static func _apply_windowed_resolution() -> void:
 
 
 ## Fits the saved preset into the usable desktop, including title bar and borders.
-## Scales both axes together so the window stays 16:9. Independent clamping causes side black bars.
+## Scales both axes together so the window keeps the preset aspect. Independent clamping causes side black bars.
 static func _get_fitted_windowed_size(usable: Rect2i) -> Vector2i:
 	var decoration := DisplayServer.window_get_size_with_decorations() - DisplayServer.window_get_size()
 	decoration = Vector2i(maxi(decoration.x, 0), maxi(decoration.y, 0))
@@ -227,7 +228,7 @@ static func _scale_resolution_to_fit(requested: Vector2i, max_size: Vector2i) ->
 	if requested.x <= max_size.x and requested.y <= max_size.y:
 		return requested
 	var scale := minf(float(max_size.x) / float(requested.x), float(max_size.y) / float(requested.y))
-	# Height is usually the limit because of the taskbar and title bar. Derive width from it to keep 16:9.
+	# Height is usually the limit because of the taskbar and title bar. Derive width from it to keep the preset aspect.
 	var fitted_height := maxi(1, roundi(float(requested.y) * scale))
 	var fitted_width := maxi(1, roundi(float(fitted_height) * float(requested.x) / float(requested.y)))
 	if fitted_width > max_size.x:

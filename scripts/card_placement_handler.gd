@@ -51,7 +51,7 @@ const GHOST_FLOAT_SCALE_PULSE := 0.006
 # Glide duration on release. Keep this short so the drop reads as a fall, not a float.
 const GHOST_SNAP_DURATION := 0.10
 # Vertical lift while dragging. Negative Y floats the ghost above the board.
-const GHOST_LIFT_OFFSET := -16.0
+const GHOST_LIFT_OFFSET := -7.0
 # Above trigger-order numbers (25) and path traces (22) on the map.
 const DRAGGED_RUNE_Z_INDEX := 40
 const TILE_LANDING_PREVIEW_Z_INDEX := 6
@@ -441,7 +441,7 @@ func _clear_placement_overlays() -> void:
 	_clear_hover_highlights()
 	_clear_restriction_overlays()
 	_clear_valid_restriction_highlights()
-	tile_map.rune_highlight_overlay_layer.modulate = Color.WHITE
+	tile_map.card_highlight_overlay_layer.modulate = Color.WHITE
 
 
 func _clear_restriction_overlays() -> void:
@@ -477,7 +477,7 @@ func _clear_rune_highlight_at(coords: Vector2i) -> void:
 	# Segment-row hover shares this layer, do not erase its tiles while that hover is active.
 	if tile_map.has_hovered_segment_highlight_at(coords):
 		return
-	tile_map.rune_highlight_overlay_layer.set_cell(coords, -1)
+	tile_map.card_highlight_overlay_layer.set_cell(coords, -1)
 
 
 ## True while this handler currently stamps an effect-preview highlight on coords.
@@ -490,9 +490,9 @@ func _stamp_valid_placement_highlight(coords: Vector2i) -> void:
 
 
 func _stamp_effect_preview_highlight(coords: Vector2i) -> void:
-	tile_map.rune_highlight_overlay_layer.set_cell(
+	tile_map.card_highlight_overlay_layer.set_cell(
 		coords,
-		tile_map.RUNE_HIGHLIGHT_SOURCE_ID,
+		tile_map.CARD_HIGHLIGHT_SOURCE_ID,
 		tile_map.OVERLAY_TILE_ATLAS_COORDS
 	)
 

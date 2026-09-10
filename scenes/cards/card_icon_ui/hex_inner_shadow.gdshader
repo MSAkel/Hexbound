@@ -2,10 +2,10 @@ shader_type canvas_item;
 render_mode blend_mul, unshaded;
 
 uniform vec4 shadow_color : source_color = vec4(0.0, 0.0, 0.0, 0.34);
-uniform float shadow_size : hint_range(0.0, 64.0, 0.5) = 16.0;
-uniform float softness : hint_range(0.0, 32.0, 0.5) = 9.0;
-uniform vec2 hex_center = vec2(128.0, 128.0);
-uniform float hex_radius = 127.0;
+uniform float shadow_size : hint_range(0.0, 64.0, 0.5) = 7.0;
+uniform float softness : hint_range(0.0, 32.0, 0.5) = 4.0;
+uniform vec2 hex_center = vec2(56.0, 56.0);
+uniform float hex_radius = 47.0;
 
 const int SIDES = 6;
 const float START_ANGLE_DEG = -90.0;

@@ -6,8 +6,7 @@ extends Node2D
 const TRACE_STREAK := preload("res://assets/particles/trace/trace_04.png")
 const TRACE_GLINT := preload("res://assets/particles/trace/trace_01.png")
 const SIDES := 6
-# Painted hex is 221x255 inside the 256 rune control. Keep the rim inside that silhouette.
-const HEX_TEXTURE_SIZE := Vector2(221, 255)
+const HEX_TEXTURE_SIZE := Vector2(96, 112)
 const RADIUS_SCALE := 0.84
 const SHINE_COLOR := Color(1.02, 0.84, 0.38, 0.72)
 const EDGE_AMOUNT := 8
@@ -92,13 +91,13 @@ func _make_edge_particles(from_pos: Vector2, to_pos: Vector2) -> GPUParticles2D:
 	process_mat.emission_box_extents = Vector3(1.0, length * 0.42, 1.0)
 	process_mat.direction = Vector3(0.0, 1.0, 0.0)
 	process_mat.spread = 0.0
-	process_mat.initial_velocity_min = 10.0
-	process_mat.initial_velocity_max = 18.0
+	process_mat.initial_velocity_min = 4.0
+	process_mat.initial_velocity_max = 8.0
 	process_mat.gravity = Vector3.ZERO
 	process_mat.damping_min = 14.0
 	process_mat.damping_max = 22.0
-	process_mat.scale_min = 0.045
-	process_mat.scale_max = 0.07
+	process_mat.scale_min = 0.02
+	process_mat.scale_max = 0.03
 	process_mat.color = SHINE_COLOR
 	process_mat.color_ramp = _make_color_ramp(SHINE_COLOR)
 	particles.process_material = process_mat
@@ -108,7 +107,7 @@ func _make_edge_particles(from_pos: Vector2, to_pos: Vector2) -> GPUParticles2D:
 func _make_glint_particles() -> GPUParticles2D:
 	var particles := _make_particles()
 	var parent_control := get_parent() as Control
-	var center := Vector2(128, 128)
+	var center := Vector2.ZERO
 	if parent_control != null and parent_control.size != Vector2.ZERO:
 		center = parent_control.size * 0.5
 	particles.position = center
@@ -117,7 +116,7 @@ func _make_glint_particles() -> GPUParticles2D:
 	particles.preprocess = GLINT_LIFETIME * 0.4
 	particles.explosiveness = 0.0
 	particles.texture = TRACE_GLINT
-	particles.visibility_rect = Rect2(-180, -180, 360, 360)
+	particles.visibility_rect = Rect2(-80, -80, 160, 160)
 
 	var radius := _hex_radius()
 	var process_mat := ParticleProcessMaterial.new()
@@ -131,14 +130,14 @@ func _make_glint_particles() -> GPUParticles2D:
 	process_mat.direction = Vector3(0.0, 0.0, 0.0)
 	process_mat.spread = 0.0
 	process_mat.initial_velocity_min = 0.0
-	process_mat.initial_velocity_max = 4.0
+	process_mat.initial_velocity_max = 2.0
 	process_mat.angular_velocity_min = -18.0
 	process_mat.angular_velocity_max = 18.0
 	process_mat.gravity = Vector3.ZERO
 	process_mat.damping_min = 18.0
 	process_mat.damping_max = 28.0
-	process_mat.scale_min = 0.04
-	process_mat.scale_max = 0.06
+	process_mat.scale_min = 0.018
+	process_mat.scale_max = 0.026
 	process_mat.color = SHINE_COLOR
 	process_mat.color_ramp = _make_color_ramp(SHINE_COLOR)
 	particles.process_material = process_mat
@@ -170,14 +169,13 @@ func _make_color_ramp(base_color: Color) -> GradientTexture1D:
 
 
 func _hex_radius() -> float:
-	# Pointy-top circumradius of the painted hex, then inset so quads stay inside.
 	return HEX_TEXTURE_SIZE.y * 0.5 * RADIUS_SCALE
 
 
 func _hex_vertices() -> PackedVector2Array:
 	var vertices := PackedVector2Array()
 	var parent_control := get_parent() as Control
-	var center := Vector2(128, 128)
+	var center := Vector2.ZERO
 	if parent_control != null and parent_control.size != Vector2.ZERO:
 		center = parent_control.size * 0.5
 	var radius := _hex_radius()

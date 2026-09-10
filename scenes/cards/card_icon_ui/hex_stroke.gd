@@ -11,21 +11,21 @@ extends Line2D
 const SIDES := 6
 const DRAW_DURATION := 0.38
 const FADE_DURATION := 0.22
-# Inset from the 256px control so the stroke sits on the hex edge.
+# Inset from the token control so the stroke sits on the hex edge.
 const RADIUS_INSET := 1.0
-const REST_WIDTH := 6.0
+const REST_WIDTH := 3.0
 const REST_COLOR := Color(1.0, 0.86, 0.42, 0.95)
 # Cyan outline so the firing tile does not share the gold segment-reveal flash.
 const ACTIVATION_GLOW_COLOR := Color(0.42, 0.95, 1.0, 1.0)
-const ACTIVATION_GLOW_WIDTH := 11.0
-const ACTIVATION_GLOW_PEAK_WIDTH := 16.0
+const ACTIVATION_GLOW_WIDTH := 5.0
+const ACTIVATION_GLOW_PEAK_WIDTH := 7.0
 # Retrigger orange. Distinct from cyan self-fire and gold empower.
 const TRIGGER_LINK_RING_COLOR := Color(1.0, 0.58, 0.12, 0.92)
-const TRIGGER_LINK_RING_WIDTH := 9.0
-const TRIGGER_LINK_RING_PEAK_WIDTH := 13.0
+const TRIGGER_LINK_RING_WIDTH := 4.0
+const TRIGGER_LINK_RING_PEAK_WIDTH := 6.0
 const CHAINED_ACTIVATION_GLOW_COLOR := Color(1.0, 0.62, 0.18, 1.0)
-const CHAINED_ACTIVATION_GLOW_WIDTH := 10.0
-const CHAINED_ACTIVATION_GLOW_PEAK_WIDTH := 14.0
+const CHAINED_ACTIVATION_GLOW_WIDTH := 4.0
+const CHAINED_ACTIVATION_GLOW_PEAK_WIDTH := 6.0
 
 var _draw_tween: Tween
 var _trigger_link_ring_active := false
@@ -175,7 +175,7 @@ func _rebuild() -> void:
 func _hex_vertices() -> PackedVector2Array:
 	var vertices: PackedVector2Array = PackedVector2Array()
 	var parent_control := get_parent() as Control
-	var center := Vector2(128, 128)
+	var center := Vector2.ZERO
 	if parent_control != null and parent_control.size != Vector2.ZERO:
 		center = parent_control.size * 0.5
 	var radius := minf(center.x, center.y) - RADIUS_INSET
