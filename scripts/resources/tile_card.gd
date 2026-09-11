@@ -85,7 +85,6 @@ enum SupportRole {
 	NONE,
 	DOUBLE,
 	FIRE,
-	PROOF,
 }
 
 # Honest hex chip. HIDDEN when a number would misrepresent this card.

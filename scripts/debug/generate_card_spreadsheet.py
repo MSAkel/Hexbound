@@ -268,22 +268,6 @@ SUGGESTED = [
         "Yes",
         "Corn is the Flavour adjacency card.",
     ),
-    (
-        "Suggested",
-        "Kitchenware",
-        "Common",
-        "Gap Stamp",
-        "gap_stamp",
-        "Proof",
-        "",
-        "If an adjacent Next spot is empty, the next Ingredient permanently +10 Flavour.",
-        "Sparse",
-        "Proof",
-        "No",
-        "",
-        "Yes",
-        "Oven Mitt is +5 to lowest Next with no gap requirement.",
-    ),
 ]
 
 REMOVED = [
@@ -336,8 +320,6 @@ def _product_label(raw_type: str, description: str) -> str:
         return "Again"
     if "pass " in desc or "passes" in desc:
         return "Pass"
-    if "proof" in desc or "permanently" in desc:
-        return "Proof"
     if "gold" in desc and "flavour" not in desc and "mult" not in desc:
         return "Gold"
     if "mult" in desc and "flavour" not in desc:
