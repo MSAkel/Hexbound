@@ -280,19 +280,15 @@ func apply_offer_state(state: Dictionary) -> void:
 	_restore_state = state.duplicate(true)
 
 
-## Fail-turn picks happen while RoundFlow is idle, so Continue must reopen this panel itself.
+## Legacy saves may still carry a pending pick. Deal the pack into the hand instead.
 func restore_open_if_needed() -> void:
 	if _restore_state.is_empty():
 		return
 	var awaiting := bool(_restore_state.get("awaiting", _restore_state.get("open", false)))
-	if not awaiting:
-		_restore_state.clear()
+	_restore_state.clear()
+	_awaiting_pick = false
+	if not awaiting or RoundFlow.is_transition_card_pick():
 		return
-	if RoundFlow.is_transition_card_pick():
-		return
-	if EventManager.should_auto_grant_card(false):
-		_restore_state.clear()
-		_awaiting_pick = false
-		EventManager.grant_auto_card(false)
-		return
-	_on_show_panel()
+	var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+	if hand != null:
+		EventManager.deal_fail_hour_pack(hand)

@@ -3,10 +3,17 @@
 [ext_resource type="Script" uid="uid://cnndmv1aydlal" path="res://scenes/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://clbo25fmtd5ba" path="res://scenes/ui/main_ui.tscn" id="1_sugp2"]
 [ext_resource type="PackedScene" uid="uid://buygicnlcs3ji" path="res://scenes/hex_tile_map.tscn" id="2_jyhfs"]
-[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_tbgi4"]
+[ext_resource type="Texture2D" uid="uid://8dlbxn3x8mrv" path="res://assets/background/background_image_pixel_art.png" id="2_o6xl0"]
 [ext_resource type="PackedScene" uid="uid://cjc15mdf1smci" path="res://scenes/components/camera.tscn" id="3_tbgi4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/scene_enter_transition/scene_enter_transition.tscn" id="4_transition"]
 [ext_resource type="Script" uid="uid://u6vefep427yy" path="res://scripts/gamepad_gameplay_controller.gd" id="5_gamepad"]
+
+[sub_resource type="Gradient" id="Gradient_o6xl0"]
+offsets = PackedFloat32Array(0, 0.998004)
+colors = PackedColorArray(0, 0, 0, 0.19900002, 0.050708726, 0.050708726, 0.050708726, 0.259)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_7pmlo"]
+gradient = SubResource("Gradient_o6xl0")
 
 [node name="Main" type="Node2D" unique_id=1217909312]
 script = ExtResource("1_jyhfs")
@@ -24,7 +31,15 @@ offset_top = -3.0
 offset_bottom = 3.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_tbgi4")
+texture = ExtResource("2_o6xl0")
+
+[node name="TextureRect2" type="TextureRect" parent="CanvasLayer" unique_id=1987641175]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_7pmlo")
 
 [node name="MainUI" parent="." unique_id=629612813 instance=ExtResource("1_sugp2")]
 

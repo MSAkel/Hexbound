@@ -29,6 +29,7 @@ const PLACEMENT_VALID_OVERLAY_MODULATE := Color(0.45, 0.88, 1.15, 0.72)
 # TileCard trigger preview overlay on CardHighlightOverlayLayer.
 const CARD_HIGHLIGHT_SOURCE_ID := 0
 # Tile-shaped overlays sit under rune icons. Trigger-order numbers stay above at z 25.
+# CardHighlightOverlayLayer tiles use per-tile z_index 3 in hex_tile_map.tscn so they paint above hex items_grid.
 const TILE_OVERLAY_LAYER_Z_INDEX := 0
 # Disabled and fading-sector layers each expose a single tile on source 0.
 const OVERLAY_TILE_SOURCE_ID := 0

@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("2_script")
+base_production_amount = 1
 rarity = 1
 type = 2
 product = 2
@@ -12,5 +13,5 @@ ingredient_tags = Array[StringName]([&"beverage"])
 id = "beer"
 name = "Beer"
 icon = ExtResource("1_jtv2p")
-description = "Gains x0.25 Mult for every neighbouring Dish"
+description = "Starts at x1 Mult and gains x0.25 for every neighbouring Dish"
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

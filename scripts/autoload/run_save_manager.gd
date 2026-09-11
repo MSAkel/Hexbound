@@ -9,7 +9,6 @@ const SAVE_VERSION := 4
 const MIN_SUPPORTED_SAVE_VERSION := 4
 const HAND_GROUP := "run_hand"
 const MERCHANT_GROUP := "run_merchant"
-const CARD_SELECTION_GROUP := "run_card_selection"
 const GAME_OVER_GROUP := "run_game_over"
 
 # Set before loading main.tscn from the main menu Continue button.
@@ -205,10 +204,6 @@ func save_current_run() -> void:
 	if merchant != null:
 		payload["merchant"] = merchant.capture_shop_state()
 
-	var card_selection = _find_card_selection()
-	if card_selection != null:
-		payload["card_offer"] = card_selection.capture_offer_state()
-
 	var json_text := JSON.stringify(payload, "\t")
 	if not SAVE_FILE.write_text(SAVE_PATH, json_text):
 		push_error("RunSaveManager: failed to write run save.")
@@ -349,16 +344,14 @@ func _apply_offer_ui_state(payload: Dictionary) -> void:
 	if merchant != null:
 		merchant.apply_shop_state(payload.get("merchant", {}))
 
-	var card_selection = _find_card_selection()
-	if card_selection != null:
-		card_selection.apply_offer_state(payload.get("card_offer", {}))
+	var card_offer: Dictionary = payload.get("card_offer", {})
+	if bool(card_offer.get("awaiting", card_offer.get("open", false))):
+		var hand := _find_hand()
+		if hand != null:
+			EventManager.deal_fail_hour_pack(hand)
 
 
 func _restore_idle_card_pick() -> void:
-	var card_selection = _find_card_selection()
-	if card_selection != null:
-		card_selection.restore_open_if_needed()
-
 	var merchant = _find_merchant()
 	if merchant != null:
 		merchant.restore_open_if_needed()
@@ -379,10 +372,6 @@ func _find_hand() -> Hand:
 
 func _find_merchant():
 	return get_tree().get_first_node_in_group(MERCHANT_GROUP)
-
-
-func _find_card_selection():
-	return get_tree().get_first_node_in_group(CARD_SELECTION_GROUP)
 
 
 func _is_game_over_visible() -> bool:

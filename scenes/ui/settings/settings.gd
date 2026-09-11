@@ -65,7 +65,7 @@ func _populate_resolution_options() -> void:
 
 func _sync_settings_controls() -> void:
 	GameSettings.ensure_loaded()
-	game_speed_option_button.select(clampi(roundi(GameSettings.game_speed) - 1, 0, 2))
+	game_speed_option_button.select(GameSettings.preset_index_for_speed(GameSettings.game_speed))
 	screen_shake_check_box.set_pressed_no_signal(GameSettings.screen_shake_enabled)
 	v_sync_check_box.set_pressed_no_signal(GameSettings.vsync_enabled)
 	display_mode_option_button.select(GameSettings.display_mode)
@@ -86,13 +86,9 @@ func _on_sfx_volume_changed(value: float) -> void:
 	AudioManager.set_sfx_volume(value)
 
 func _on_game_speed_option_button_item_selected(index: int) -> void:
-	match index:
-		0:
-			GameManager.set_game_speed(1.0)
-		1:
-			GameManager.set_game_speed(2.0)
-		2:
-			GameManager.set_game_speed(3.0)
+	var presets := GameSettings.GAME_SPEED_PRESETS
+	var clamped_index := clampi(index, 0, presets.size() - 1)
+	GameManager.set_game_speed(presets[clamped_index])
 	
 
 func _on_back_button_pressed() -> void:

@@ -330,7 +330,7 @@ theme_override_font_sizes/font_size = 23
 theme_override_styles/normal = SubResource("TopButton")
 theme_override_styles/pressed = SubResource("TopButton")
 theme_override_styles/hover = SubResource("TopButton")
-text = "Show Pass"
+text = "Show Board"
 
 [node name="ShowMerchantButton" type="Button" parent="." unique_id=1440697407]
 visible = false

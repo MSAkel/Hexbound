@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b2eiuv5rpwsc3"]
 
 [ext_resource type="Script" path="res://scenes/ui/stats/stats.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image_pixel_ar.png" id="2_bg"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
 
 [sub_resource type="Gradient" id="Gradient_dim"]

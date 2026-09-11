@@ -164,7 +164,7 @@ offset_top = 32.0
 offset_right = 80.0
 offset_bottom = 72.0
 grow_horizontal = 2
-text = "Show Pass"
+text = "Show Board"
 
 [node name="ShowOptionsButton" type="Button" parent="." unique_id=1440697406]
 visible = false

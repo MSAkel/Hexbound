@@ -94,7 +94,8 @@ var _merchant_selected := false
 var _placement_morph_active := false
 var _placement_morph_progress := 0.0
 var _morph_tween: Tween
-var _morph_hide_at_end := false
+## True while the card is invisible but still reserves its hand layout slot.
+var _placement_placeholder_active := false
 
 
 func _ready() -> void:
@@ -314,6 +315,8 @@ func is_hover_elevated() -> bool:
 
 # Selected cards dip slightly while the cursor is not over this card.
 func set_map_tile_hover_active(active: bool, animate: bool = true) -> void:
+	if _placement_placeholder_active:
+		return
 	if _map_tile_hover_active == active:
 		return
 	_map_tile_hover_active = active
@@ -329,6 +332,28 @@ func _update_hand_z_index(elevated: bool) -> void:
 
 func get_hand_spread_x() -> float:
 	return _hand_spread_x
+
+
+## Clears fan spread state without moving the card. Used after siblings slide off-screen.
+func clear_hand_spread_state() -> void:
+	_hand_spread_x = 0.0
+	_hand_spread_rotation = 0.0
+
+
+## Stops hover tweens so a sibling slide can own the offset transform.
+func prepare_hand_slot_slide() -> void:
+	if _elevation_tween != null and _elevation_tween.is_valid():
+		_elevation_tween.kill()
+		_elevation_tween = null
+	offset_transform_enabled = true
+
+
+## Resets fan and hover state before a sibling card slides back into its resting slot.
+func prepare_hand_slot_rest() -> void:
+	clear_hand_spread_state()
+	_is_hover_elevated = false
+	_update_hand_z_index(false)
+	prepare_hand_slot_slide()
 
 
 # Hand uses this to push unhovered cards away from the featured card.
@@ -379,8 +404,9 @@ func _composed_offset_position() -> Vector2:
 
 
 func _apply_offset_transform(animate: bool) -> void:
+	if _placement_placeholder_active:
+		return
 	if _placement_morph_active:
-		_apply_placement_morph(_placement_morph_progress, modulate.a < 0.01)
 		return
 
 	if interaction_mode == InteractionMode.MERCHANT_STOCK:
@@ -614,26 +640,37 @@ func is_mouse_over_hand_slot() -> bool:
 	return get_global_rect().has_point(get_global_mouse_position())
 
 
-## Start the in-hand shrink into the rune icon while this card is selected for placement.
-func begin_placement_morph() -> void:
-	_kill_nudge_tween()
-	_kill_morph_tween()
+## Hide this card without leaving the HBox. Neighbors keep their X while they slide off.
+func begin_board_placement() -> void:
+	_placement_placeholder_active = true
 	_placement_morph_active = true
 	_placement_morph_progress = 0.0
-	modulate.a = 1.0
-	# Let map tiles under the lifted card receive hover while the ghost handles placement.
+	_kill_nudge_tween()
+	_kill_morph_tween()
+	prepare_hand_slot_rest()
+	selection_glow.visible = false
+	panel.modulate = Color.WHITE
+	visible = true
+	modulate.a = 0.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_apply_placement_morph(0.0, false)
+
+
+func end_placement_placeholder() -> void:
+	if not _placement_placeholder_active:
+		return
+	_placement_placeholder_active = false
+	visible = true
+	modulate.a = 1.0
+	if interaction_mode == InteractionMode.HAND:
+		mouse_filter = Control.MOUSE_FILTER_STOP
 
 
 ## Restore the full card after placement is cancelled or the morph is reversed.
 func reset_placement_morph() -> void:
 	_kill_morph_tween()
-	if not _placement_morph_active and is_equal_approx(_placement_morph_progress, 0.0):
-		return
+	end_placement_placeholder()
 	_placement_morph_active = false
 	_placement_morph_progress = 0.0
-	modulate.a = 1.0
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_restore_placement_morph_visuals()
 	if _is_hover_elevated:
@@ -644,16 +681,15 @@ func get_placement_morph_progress() -> float:
 	return _placement_morph_progress
 
 
-## Tween the remaining collapse when the cursor has left the visual card.
+## Tween remaining ghost-progress when the cursor has left the visual card.
 func complete_placement_morph() -> void:
 	if not _placement_morph_active:
 		return
 	if _placement_morph_progress >= 1.0:
-		_apply_placement_morph(1.0, true)
 		return
 	if _morph_tween != null and _morph_tween.is_running():
 		return
-	_tween_placement_morph(1.0, true)
+	_tween_placement_morph(1.0)
 
 
 ## Maps cursor travel from the visual center to the card edge into morph progress.
@@ -661,13 +697,10 @@ func update_placement_morph_from_cursor() -> void:
 	if not _placement_morph_active:
 		return
 	_kill_morph_tween()
-	modulate.a = 1.0
-	var progress := _morph_progress_from_center(
+	_placement_morph_progress = _morph_progress_from_center(
 		get_global_mouse_position(),
 		get_placement_visual_rect()
 	)
-	_placement_morph_progress = progress
-	_apply_placement_morph(progress, false)
 
 
 func get_placement_visual_rect() -> Rect2:
@@ -687,9 +720,8 @@ func _morph_progress_from_center(point: Vector2, rect: Rect2) -> float:
 	return clampf(dist, 0.0, 1.0)
 
 
-func _tween_placement_morph(target: float, hide_at_end: bool) -> void:
+func _tween_placement_morph(target: float) -> void:
 	_kill_morph_tween()
-	_morph_hide_at_end = hide_at_end
 	var start := _placement_morph_progress
 	_morph_tween = create_tween()
 	_morph_tween.tween_method(
@@ -702,7 +734,6 @@ func _tween_placement_morph(target: float, hide_at_end: bool) -> void:
 
 func _on_morph_tween_progress(progress: float) -> void:
 	_placement_morph_progress = progress
-	_apply_placement_morph(progress, _morph_hide_at_end and progress >= 0.999)
 
 
 func _kill_morph_tween() -> void:
@@ -719,7 +750,7 @@ func _kill_nudge_tween() -> void:
 
 ## Short shake on click so a press that does not start a drag still has feedback.
 func play_click_nudge() -> void:
-	if _placement_morph_active:
+	if _placement_morph_active or _placement_placeholder_active:
 		return
 	_kill_nudge_tween()
 	if _elevation_tween and _elevation_tween.is_valid():
@@ -764,35 +795,8 @@ func play_click_nudge() -> void:
 	)
 
 
-func _get_placement_morph_target_scale() -> float:
-	# Keep a slight shrink. The rune ghost at the cursor is the transforming icon.
-	return HAND_HOVER_SCALE * 0.94
-
-
-func _apply_placement_morph(progress: float, hide_hand_card: bool) -> void:
-	if _elevation_tween and _elevation_tween.is_valid():
-		_elevation_tween.kill()
-		_elevation_tween = null
-
-	offset_transform_enabled = true
-	# Stay in the lifted hover pose while collapsing so the card does not dip mid-morph.
-	offset_transform_position = Vector2(_hand_spread_x, HAND_HOVER_ELEVATION_OFFSET)
-	var morph_scale := lerpf(HAND_HOVER_SCALE, _get_placement_morph_target_scale(), progress)
-	offset_transform_scale = Vector2.ONE * morph_scale
-
-	# Fade the whole card, including the icon, so it does not duplicate the cursor ghost.
-	var chrome_alpha := 1.0 - progress
-	panel.modulate = Color(1.15, 1.1, 0.75, chrome_alpha)
-	if selection_glow.visible:
-		selection_glow.modulate.a = chrome_alpha
-	for child in content_container.get_children():
-		if child is CanvasItem:
-			(child as CanvasItem).modulate.a = chrome_alpha
-	icon.scale = Vector2.ONE
-	modulate.a = 0.0 if hide_hand_card else lerpf(1.0, 0.0, progress)
-
-
 func _restore_placement_morph_visuals() -> void:
+	visible = true
 	panel.modulate = Color.WHITE
 	selection_glow.modulate.a = 1.0
 	for child in content_container.get_children():

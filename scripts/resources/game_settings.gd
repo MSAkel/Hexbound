@@ -4,6 +4,8 @@ extends RefCounted
 ## Persistent player options stored in user://, independent of the current run save.
 
 const SAVE_PATH := "user://game_settings.save"
+## Allowed presentation speed presets. Old 3x saves map to 400%.
+const GAME_SPEED_PRESETS: Array[float] = [0.5, 1.0, 2.0, 4.0]
 
 const DISPLAY_MODE_FULLSCREEN := 0
 const DISPLAY_MODE_WINDOWED := 1
@@ -77,7 +79,7 @@ static func ensure_loaded() -> void:
 	if settings is Dictionary:
 		tutorial_enabled = bool(settings.get("tutorial_enabled", true))
 		screen_shake_enabled = bool(settings.get("screen_shake_enabled", true))
-		game_speed = clampf(float(settings.get("game_speed", 1.0)), 1.0, 3.0)
+		game_speed = normalize_game_speed(float(settings.get("game_speed", 1.0)))
 		vsync_enabled = bool(settings.get("vsync_enabled", false))
 		music_volume = clampf(float(settings.get("music_volume", 0.20)), 0.0, 1.0)
 		sfx_volume = clampf(float(settings.get("sfx_volume", 0.35)), 0.0, 1.0)
@@ -112,9 +114,31 @@ static func set_screen_shake_enabled(value: bool) -> void:
 	_save()
 
 
+static func normalize_game_speed(value: float) -> float:
+	# Legacy 3x setting becomes 400%.
+	if is_equal_approx(value, 3.0):
+		return 4.0
+	var best := GAME_SPEED_PRESETS[1]
+	var best_distance := absf(value - best)
+	for preset in GAME_SPEED_PRESETS:
+		var distance := absf(value - preset)
+		if distance < best_distance:
+			best_distance = distance
+			best = preset
+	return best
+
+
+static func preset_index_for_speed(value: float) -> int:
+	var normalized := normalize_game_speed(value)
+	for index in GAME_SPEED_PRESETS.size():
+		if is_equal_approx(normalized, GAME_SPEED_PRESETS[index]):
+			return index
+	return 1
+
+
 static func set_game_speed(value: float) -> void:
 	ensure_loaded()
-	var new_speed := clampf(value, 1.0, 3.0)
+	var new_speed := normalize_game_speed(value)
 	if is_equal_approx(game_speed, new_speed):
 		return
 	game_speed = new_speed

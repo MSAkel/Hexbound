@@ -9,6 +9,7 @@ extends PanelContainer
 @onready var gold_amount_label: Label = $HBoxContainer/GoldRow/GoldAmountLabel
 @onready var token_row: Control = $HBoxContainer/TokenRow
 @onready var token_amount_label: Label = $HBoxContainer/TokenRow/TokenAmountLabel
+@onready var reroll_button: Button = $HBoxContainer/RerollButton
 
 const PUNCH_SCALE := 1.12
 const PUNCH_DURATION := 0.18
@@ -25,6 +26,15 @@ var _punch_tweens: Dictionary = {}
 
 
 func _ready() -> void:
+	if reroll_button != null:
+		reroll_button.pressed.connect(_on_reroll_button_pressed)
+		# turn_started fires before finish_turn_processing clears is_processing_turn.
+		EventBus.turn_started.connect(_queue_reroll_button_refresh)
+		EventBus.turn_ended.connect(_update_reroll_button)
+		EventBus.card_played.connect(_update_reroll_button)
+		EventBus.rerolls_changed.connect(_update_reroll_button)
+		_update_reroll_button()
+
 	_gold_counter = CountingNumber.for_label(self, gold_amount_label)
 	_round_counter = CountingNumber.new(
 		self,
@@ -89,6 +99,34 @@ func _on_round_changed(new_round: int) -> void:
 
 func _on_turn_changed() -> void:
 	_play_counter(_turn_counter, GameManager.remaining_turns, turn_counter_label)
+
+
+func _on_reroll_button_pressed() -> void:
+	var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+	if hand == null:
+		return
+	if EventManager.reroll_fail_hour_pack(hand):
+		RunSaveManager.request_autosave()
+	_update_reroll_button()
+
+
+func _queue_reroll_button_refresh(_unused = null) -> void:
+	call_deferred("_update_reroll_button")
+
+
+func _update_reroll_button(_unused = null) -> void:
+	if reroll_button == null:
+		return
+	var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+	var can_reroll := EventManager.can_reroll_fail_hour_pack(hand)
+	# Stay visible while the run still has rerolls. Disable when the deal cannot be refreshed.
+	reroll_button.visible = RerollManager.remaining > 0 and not RoundFlow.is_transitioning()
+	reroll_button.disabled = not can_reroll
+	var remaining := RerollManager.remaining
+	if remaining <= 0:
+		reroll_button.text = "0 rerolls"
+	else:
+		reroll_button.text = "Reroll (%d)" % remaining
 
 
 func _play_counter(counter: CountingNumber, target: int, punch_target: Control) -> void:

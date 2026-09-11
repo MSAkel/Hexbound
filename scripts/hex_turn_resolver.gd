@@ -5,7 +5,7 @@ extends Node
 
 const FLOATING_TEXT_SCENE: PackedScene = preload("res://scenes/animations/floating_text.tscn")
 # Pause between tile card activations during turn resolution.
-const TILE_ACTIVATION_PACE_DELAY := 0.5
+const TILE_ACTIVATION_PACE_DELAY := 0.2
 const SEGMENT_REVEAL_PAUSE := 0.35
 ## Fallback if the score-breakdown row never emits count-finished (killed or already-done tween).
 const SEGMENT_SCORE_COUNT_TIMEOUT := 2.0

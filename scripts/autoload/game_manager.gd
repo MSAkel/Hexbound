@@ -130,7 +130,7 @@ var game_speed: float:
 	get:
 		return _game_speed
 	set(value):
-		_game_speed = clampf(value, 1.0, 3.0)
+		_game_speed = GameSettings.normalize_game_speed(value)
 		game_speed_changed.emit(_game_speed)
 
 #endregion
@@ -181,10 +181,9 @@ func finish_turn_processing() -> void:
 			_complete_current_round()
 	else:
 		if not skip_presentation:
-			if EventManager.should_auto_grant_card(false):
-				EventManager.grant_auto_card(false, remaining_turns)
-			elif EventManager.get_cards_pack_size(false) > 0:
-				UiManager.show_cards_choice_panel.emit()
+			var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+			if hand != null:
+				EventManager.deal_fail_hour_pack(hand)
 		EventBus.turn_started.emit()
 
 	if should_consume_turn:

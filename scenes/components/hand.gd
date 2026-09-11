@@ -43,6 +43,13 @@ var _featured_card: CardUI = null
 var _spread_clear_pending := false
 ## Index of the hand card highlighted by controller navigation.
 var _controller_focus_index := -1
+## Hand card currently selected for map placement.
+var _placement_focus_card: CardUI = null
+## True while non-selected siblings are slid off-screen for placement.
+var _siblings_hidden_for_placement := false
+var _sibling_slide_tween: Tween = null
+## Bumped to drop stale deferred sibling restores after a new drag starts.
+var _sibling_restore_generation := 0
 
 ## Reparent cards to hand when they are dragged or released
 func _ready() -> void:
@@ -50,6 +57,8 @@ func _ready() -> void:
 	EventBus.card_played.connect(_on_card_played)
 	EventBus.card_sold.connect(_on_card_sold)
 	EventBus.tile_card_selected.connect(_add_tile_card)
+	EventBus.card_drag_started.connect(_on_card_drag_started)
+	EventBus.card_drag_ended.connect(_on_card_drag_ended)
 	EventBus.turn_ended.connect(_hide_hand)
 	EventBus.turn_started.connect(_show_hand)
 	add_to_group("run_hand")
@@ -127,6 +136,19 @@ func _add_card(data: Card) -> CardUI:
 ## Guard against non-card children
 func get_hand_card_count() -> int:
 	return _get_hand_cards().size()
+
+
+## Remove every hand card before a new pack is dealt at hour end.
+func discard_all_cards() -> void:
+	_generated_reveal.interrupt()
+	_featured_card = null
+	_controller_focus_index = -1
+	_reset_placement_sibling_slide_state()
+	for child in get_children():
+		if child is CardUI:
+			remove_child(child)
+			child.queue_free()
+	call_deferred("_refresh_hand_layout")
 
 
 func _get_hand_card_count() -> int:
@@ -291,6 +313,9 @@ func _get_hover_push_amount() -> float:
 
 
 func _apply_hover_spread(animate: bool) -> void:
+	# A picked card owns the hand layout until placement ends. Do not collapse the fan mid-slide.
+	if _placement_focus_card != null:
+		return
 	var cards := _get_hand_cards()
 	# Typed Array.find() rejects null. Skip the lookup when nothing is featured.
 	var featured_index := cards.find(_featured_card) if _featured_card != null else -1
@@ -325,8 +350,13 @@ func _compute_card_spread_rotation(card_index: int, featured_index: int) -> floa
 	return deg_to_rad(direction * HOVER_SPREAD_MAX_ROTATION_DEG * weight)
 
 
-func _on_card_played(_card_ui: CardUI) -> void:
+func _on_card_played(card_ui: CardUI) -> void:
 	cards_played += 1
+	if card_ui == _placement_focus_card:
+		_placement_focus_card = null
+	# Successful plays free the card without card_drag_ended. Restore siblings when play can continue.
+	if not _hand_hidden and _will_have_playable_hand_after_card_removed():
+		_request_sibling_restore()
 	await _check_auto_end_turn_after_card_removed()
 
 
@@ -343,7 +373,51 @@ func _check_auto_end_turn_after_card_removed() -> void:
 		AudioManager.play_end_turn_bell()
 
 
+func _on_card_drag_started(card: CardUI) -> void:
+	if _awaiting_intro or _hand_hidden:
+		return
+	if _placement_focus_card == card and _siblings_hidden_for_placement:
+		return
+	_sibling_restore_generation += 1
+	_placement_focus_card = card
+	_featured_card = card
+	_siblings_hidden_for_placement = true
+	# Invisible in the HBox slot so neighbors keep their X while sliding down.
+	card.begin_board_placement()
+	_animate_siblings_slide(card, true)
+
+
+func _on_card_drag_ended(_unused = null) -> void:
+	# card_drag_ended carries no card argument. Always clear the placement focus here.
+	_placement_focus_card = null
+	if _hand_hidden:
+		return
+	_request_sibling_restore()
+
+
+func _request_sibling_restore() -> void:
+	_sibling_restore_generation += 1
+	var generation := _sibling_restore_generation
+	call_deferred("_restore_siblings_if_needed", generation)
+
+
+func _restore_siblings_if_needed(generation: int) -> void:
+	if generation != _sibling_restore_generation:
+		return
+	if _placement_focus_card != null or _hand_hidden:
+		return
+	if not _siblings_hidden_for_placement:
+		return
+	_animate_siblings_slide(null, false)
+
+
+## The played card is still in the hand when this runs, so look one card ahead.
+func _will_have_playable_hand_after_card_removed() -> bool:
+	return get_hand_card_count() - 1 >= 3
+
+
 func _hide_hand() -> void:
+	_reset_placement_sibling_slide_state()
 	_hand_hidden = true
 	_generated_reveal.interrupt()
 	_animate_hand_slide(true)
@@ -356,6 +430,7 @@ func _show_hand() -> void:
 	# New turn, so reparent index math starts from the full current hand.
 	cards_played = 0
 	_hand_hidden = false
+	_siblings_hidden_for_placement = false
 	_animate_hand_slide(false)
 	if _hand_slide_tween != null and _hand_slide_tween.is_valid():
 		await _hand_slide_tween.finished
@@ -380,6 +455,8 @@ func get_card_rest_offset() -> Vector2:
 ## True while this card's offset_transform is owned by intro, a hidden hand, or a generated reveal.
 func is_preserving_offset_for(card_ui: CardUI) -> bool:
 	if _awaiting_intro or _hand_hidden:
+		return true
+	if _placement_focus_card != null:
 		return true
 	return _generated_reveal != null and _generated_reveal.is_animating_card(card_ui)
 
@@ -458,7 +535,112 @@ func _restore_card_mouse_filters() -> void:
 		card.hover_enabled = true
 
 
+func _reset_placement_sibling_slide_state() -> void:
+	_kill_sibling_slide_tween()
+	_sibling_restore_generation += 1
+	_placement_focus_card = null
+	_siblings_hidden_for_placement = false
+
+
+func _kill_sibling_slide_tween() -> void:
+	if _sibling_slide_tween != null and _sibling_slide_tween.is_valid():
+		_sibling_slide_tween.kill()
+	_sibling_slide_tween = null
+
+
+func _animate_siblings_slide(exclude_card: CardUI, should_hide: bool) -> void:
+	_kill_sibling_slide_tween()
+
+	if should_hide:
+		_siblings_hidden_for_placement = true
+	else:
+		_siblings_hidden_for_placement = false
+		_featured_card = null
+		_spread_clear_pending = false
+
+	var target_y := _get_hand_slide_distance() if should_hide else 0.0
+	var hidden_siblings: Array[CardUI] = []
+	_sibling_slide_tween = create_tween()
+	_sibling_slide_tween.set_parallel(true)
+
+	var animated_cards := 0
+	for child in get_children():
+		if not child is CardUI:
+			continue
+		var card := child as CardUI
+		if card == exclude_card:
+			continue
+		if _generated_reveal != null and _generated_reveal.is_animating_card(card):
+			continue
+		animated_cards += 1
+		hidden_siblings.append(card)
+		if should_hide:
+			_tween_sibling_offscreen(card, target_y)
+		else:
+			_tween_sibling_to_rest(card)
+
+	if animated_cards == 0:
+		_sibling_slide_tween.kill()
+		_sibling_slide_tween = null
+		if should_hide:
+			_siblings_hidden_for_placement = false
+		return
+
+	if should_hide:
+		_sibling_slide_tween.finished.connect(func() -> void:
+			for card in hidden_siblings:
+				if is_instance_valid(card):
+					card.clear_hand_spread_state()
+		)
+	else:
+		_sibling_slide_tween.finished.connect(func() -> void:
+			_restore_sibling_mouse_filters(exclude_card)
+		)
+
+
+func _tween_sibling_offscreen(card: CardUI, target_y: float) -> void:
+	card.prepare_hand_slot_slide()
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var start_pos := card.offset_transform_position
+	# Keep the current X. Only Y leaves the screen.
+	var step := _sibling_slide_tween.tween_method(
+		func(y_pos: float) -> void:
+			card.offset_transform_position = Vector2(start_pos.x, y_pos),
+		start_pos.y,
+		target_y,
+		HAND_SLIDE_DURATION
+	)
+	step.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUART)
+
+
+func _tween_sibling_to_rest(card: CardUI) -> void:
+	card.prepare_hand_slot_rest()
+	_tween_card_offset(card, "offset_transform_position", Vector2.ZERO)
+	_tween_card_offset(card, "offset_transform_rotation", 0.0)
+	_tween_card_offset(card, "offset_transform_scale", Vector2.ONE)
+
+
+func _tween_card_offset(card: CardUI, property: String, target: Variant) -> void:
+	_sibling_slide_tween.tween_property(card, property, target, HAND_SLIDE_DURATION).set_ease(
+		Tween.EASE_OUT
+	).set_trans(Tween.TRANS_QUART)
+
+
+func _restore_sibling_mouse_filters(exclude_card: CardUI) -> void:
+	for child in get_children():
+		if not child is CardUI:
+			continue
+		var card := child as CardUI
+		if card == exclude_card:
+			continue
+		if _generated_reveal != null and _generated_reveal.is_animating_card(card):
+			continue
+		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.hover_enabled = true
+
+
 func _animate_hand_slide(should_hide: bool) -> void:
+	_kill_sibling_slide_tween()
 	if _hand_slide_tween and _hand_slide_tween.is_valid():
 		_hand_slide_tween.kill()
 		_hand_slide_tween = null

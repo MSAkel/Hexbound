@@ -17,7 +17,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 func get_board_chip(tile: Hex = null) -> Dictionary:
 	if tile == null:
-		return _multiplicative_mult_board_chip(MULT_PER_FRUIT)
+		return _multiplicative_mult_board_chip(float(_get_production_amount()) + MULT_PER_FRUIT)
 	var factor := _adjacent_fruit_xmult(tile)
 	if is_zero_approx(factor):
 		return _stat_board_chip()

@@ -103,6 +103,11 @@ layout_mode = 2
 texture = ExtResource("3_y7j43")
 expand_mode = 1
 
+[node name="RerollButton" type="Button" parent="HBoxContainer" unique_id=984512301]
+visible = false
+layout_mode = 2
+text = "Reroll (3)"
+
 [node name="TokenRow" type="HBoxContainer" parent="HBoxContainer" unique_id=741691803]
 visible = false
 layout_mode = 2

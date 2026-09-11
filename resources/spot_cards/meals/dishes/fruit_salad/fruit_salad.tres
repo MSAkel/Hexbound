@@ -13,5 +13,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "fruit_salad"
 name = "Fruit Salad"
 icon = ExtResource("1_k6e86")
-description = "Gains x0.5 Mult for every adjacent fruit"
+description = "Starts at x1 Mult and gains x0.5 for every adjacent fruit"
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

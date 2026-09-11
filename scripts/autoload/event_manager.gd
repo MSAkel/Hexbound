@@ -110,6 +110,8 @@ var _sealed_coords: Array[Vector2i] = []
 ## Saved is_active values so player toggles are restored after each turn's blackout.
 var _disabled_prior_states: Dictionary = {}
 var _tile_map: HexTileMap = null
+## Free rerolls spent rebuilding the current fail-hour pack this hour.
+var _fail_hour_offer_reroll_count := 0
 
 
 func _ready() -> void:
@@ -124,6 +126,7 @@ func init_run() -> void:
 	_clear_sealed_hexes()
 	_disabled_prior_states.clear()
 	_clear_fading_sector_visuals()
+	_fail_hour_offer_reroll_count = 0
 
 	var used: Array[Type] = []
 	var rng := RunRng.create_rng("events")
@@ -286,18 +289,76 @@ func get_cards_pack_size(is_round_reward: Variant = null) -> int:
 	return GameManager.CARDS_PACK_SIZE
 
 
-## Dealt Hand skips the draft overlay and grants the lone card immediately.
+## Dealt Hand uses a one-card pack instead of the usual three.
 func should_auto_grant_card(is_round_reward: bool = false) -> bool:
 	return _get_governing_event(is_round_reward) == Type.DEALT_HAND
 
 
-## Draws one card from the same stream as the draft panel and adds it to the hand.
-func grant_auto_card(is_round_reward: bool, fail_remaining_turns: int = -1) -> bool:
-	if not should_auto_grant_card(is_round_reward):
+## Discard leftovers and deal the full fail-hour pack into the hand.
+func deal_fail_hour_pack(hand: Hand) -> void:
+	if get_cards_pack_size(false) <= 0:
+		return
+	_fail_hour_offer_reroll_count = 0
+	_deal_pack_to_hand(hand, false, GameManager.remaining_turns, _fail_hour_offer_reroll_count)
+
+
+## Discard leftovers and deal the day-reward pack, then RoundFlow continues to the merchant.
+func deal_round_reward_pack(hand: Hand) -> void:
+	_deal_pack_to_hand(hand, true, GameManager.remaining_turns, 0)
+
+
+## True when the player can spend a run reroll to refresh the current fail-hour deal.
+func can_reroll_fail_hour_pack(hand: Hand) -> bool:
+	if not RerollManager.can_reroll():
 		return false
+	if hand == null:
+		return false
+	if GameManager.is_processing_turn:
+		return false
+	if RoundFlow.is_transitioning():
+		return false
+	if hand.cards_played > 0:
+		return false
+	return hand.get_hand_card_count() == get_cards_pack_size(false)
+
+
+## Spend a run reroll and deal a fresh fail-hour pack.
+func reroll_fail_hour_pack(hand: Hand) -> bool:
+	if not can_reroll_fail_hour_pack(hand):
+		return false
+	if not RerollManager.use_reroll():
+		return false
+	_fail_hour_offer_reroll_count += 1
+	_deal_pack_to_hand(hand, false, GameManager.remaining_turns, _fail_hour_offer_reroll_count)
+	return true
+
+
+func _deal_pack_to_hand(
+	hand: Hand,
+	is_round_reward: bool,
+	fail_remaining_turns: int,
+	reroll_index: int
+) -> void:
+	if hand == null:
+		return
 	if GameManager.tile_cards_pool.is_empty():
-		push_error("EventManager: cannot auto-grant card, pool is empty.")
-		return false
+		push_error("EventManager: cannot deal pack, pool is empty.")
+		return
+
+	hand.discard_all_cards()
+	var pack := _draw_card_pack(is_round_reward, fail_remaining_turns, reroll_index)
+	for card in pack:
+		EventBus.tile_card_selected.emit(card)
+
+
+func _draw_card_pack(
+	is_round_reward: bool,
+	fail_remaining_turns: int,
+	reroll_index: int
+) -> Array[TileCard]:
+	var pack_size := get_cards_pack_size(is_round_reward)
+	if pack_size <= 0:
+		return []
 
 	var round_number := GameManager.current_round
 	if is_round_reward and RoundFlow.is_transitioning():
@@ -307,15 +368,10 @@ func grant_auto_card(is_round_reward: bool, fail_remaining_turns: int = -1) -> b
 		round_number,
 		remaining_turns,
 		is_round_reward,
-		0
+		reroll_index
 	)
 	var loot_rng := RunRng.create_rng(stream_name)
-	var pack := CardLoot.card_draw(1, GameManager.tile_cards_pool, true, loot_rng)
-	if pack.is_empty():
-		return false
-
-	EventBus.tile_card_selected.emit(pack[0])
-	return true
+	return CardLoot.card_draw(pack_size, GameManager.tile_cards_pool, true, loot_rng)
 
 
 func _get_governing_event(is_round_reward: bool) -> int:
@@ -613,6 +669,7 @@ func capture_run_state() -> Dictionary:
 		"active_event": active_event,
 		"halved_segment_index": _halved_segment_index,
 		"sealed_coords": sealed,
+		"fail_hour_offer_reroll_count": _fail_hour_offer_reroll_count,
 	}
 
 
@@ -633,6 +690,7 @@ func apply_run_state(state: Dictionary) -> void:
 		_sealed_coords.append(Vector2i(int(coords_data[0]), int(coords_data[1])))
 	_disabled_prior_states.clear()
 	_tile_map = null
+	_fail_hour_offer_reroll_count = int(state.get("fail_hour_offer_reroll_count", 0))
 
 
 func restore_banner_after_load() -> void:

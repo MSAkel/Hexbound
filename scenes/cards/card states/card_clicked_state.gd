@@ -3,13 +3,7 @@ extends CardState
 
 func enter() -> void:
 	card_ui.drop_point_area.monitoring = true
-	
-	# If hover already elevated the card, stay put instead of replaying the tween.
-	if not card_ui.is_hover_elevated():
-		card_ui.set_hover_elevated(true, false)
-	
-	card_ui.show_selection_glow()
-	card_ui.begin_placement_morph()
+	# Hand hides this card in-place and slides siblings. The cursor ghost is the visual.
 	EventBus.card_drag_started.emit(card_ui)
 
 

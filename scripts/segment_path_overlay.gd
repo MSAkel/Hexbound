@@ -7,7 +7,6 @@ extends Node2D
 const PATH_Z_INDEX := 22
 const STREAM_FLAME := preload("res://assets/particles/flame/flame_06.png")
 const CAP_FLAME := preload("res://assets/particles/flame/flame_01.png")
-# Segment links are authored in map-local pixels. Scale with the board hex size.
 const BOARD_PARTICLE_SCALE := float(HexTileMap.HEX_TEXTURE_SIZE.x) / 221.0
 
 const EDGE_LIFETIME := 0.95
