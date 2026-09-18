@@ -13,6 +13,8 @@ enum TriggerOrderStrategy {
 	RINGS_INWARD,
 	# Custom fire order from numbered_order_grid.
 	NUMBERED_GRID,
+	# Top-to-bottom rows, always left-to-right within each row.
+	ROWS_LEFT_TO_RIGHT,
 }
 
 # Rule that groups consecutive tiles in trigger order into segments.

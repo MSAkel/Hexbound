@@ -496,6 +496,14 @@ func _sort_ring_clockwise(cells: Array[Vector2i], start_tile: Vector2i) -> Array
 	return sorted_cells
 
 
+## Trigger order: top-to-bottom rows, always left to right within each row.
+func _get_order_rows_left_to_right() -> Array[Vector2i]:
+	var ordered: Array[Vector2i] = []
+	for row: Array in _get_spatial_rows():
+		ordered.append_array(row)
+	return ordered
+
+
 ## Trigger order: top-to-bottom rows, zigzagging left/right within each row.
 ## Even rows (0-based) go left → right; odd rows go right → left.
 func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
@@ -606,6 +614,8 @@ func _compute_trigger_order() -> Array[Vector2i]:
 	match character.trigger_order_strategy:
 		CharacterDefinition.TriggerOrderStrategy.ZIGZAG_ROWS:
 			return _get_order_top_left_to_bottom_right()
+		CharacterDefinition.TriggerOrderStrategy.ROWS_LEFT_TO_RIGHT:
+			return _get_order_rows_left_to_right()
 		CharacterDefinition.TriggerOrderStrategy.RINGS_OUTWARD:
 			return _get_order_by_rings(true, false)
 		CharacterDefinition.TriggerOrderStrategy.RINGS_INWARD:
