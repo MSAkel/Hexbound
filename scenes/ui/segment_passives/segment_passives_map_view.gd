@@ -39,7 +39,7 @@ var _set_id: String = "A"
 # Pause-menu inspector uses this. Clicks, drags, and right-click remove stay off.
 var read_only: bool = false
 var _preview_map: SegmentPassivesPreviewMap = null
-# Authored-size hex grid. Scaled as a unit so the 37 tiles always fit the panel.
+# Authored-size hex grid. Scaled as a unit so the kitchen board always fits the panel.
 var _content: Control = null
 var _content_size: Vector2 = Vector2.ZERO
 var _tiles: Dictionary = {}
@@ -229,7 +229,7 @@ func _make_tile_button(tile_size: Vector2, segment_index: int, coords: Vector2i)
 	return tile
 
 
-## Scales the authored hex grid down so all 37 tiles fit the available panel.
+## Scales the shared hex grid down so all kitchen tiles fit the available panel.
 func _update_content_transform() -> void:
 	if _content == null or _content_size.x <= 0.0 or _content_size.y <= 0.0:
 		return

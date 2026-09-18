@@ -1,10 +1,6 @@
 extends TileCard
 
 ## +15 Flavour per Following adjacent Flavour card.
-func _on_activate_tile_card(tile: Hex) -> void:
-	_pay_effect_amount(tile)
-
-
 func _effect_amount(tile: Hex) -> float:
 	if tile == null:
 		return _get_production_amount()

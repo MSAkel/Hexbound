@@ -44,6 +44,7 @@ texture = SubResource("GradientTexture2D_7pmlo")
 [node name="MainUI" parent="." unique_id=629612813 instance=ExtResource("1_sugp2")]
 
 [node name="HexTileMap" parent="." unique_id=44134177 groups=["hex_map_group"] instance=ExtResource("2_jyhfs")]
+scale = Vector2(1.35, 1.35)
 
 [node name="Camera" parent="." unique_id=321380676 instance=ExtResource("3_tbgi4")]
 

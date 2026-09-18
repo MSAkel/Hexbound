@@ -9,7 +9,6 @@ const BASE_REROLL_COST := 5
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/CardsGridContainer
 @onready var condiments_grid: HBoxContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/CondimentShelf/CondimentsGrid
 @onready var gold_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/GoldAmount
-@onready var token_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/TokenAmount
 @onready var reroll_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/RerollButton
 @onready var leave_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/LeaveButton
 @onready var _content_panel: Panel = $ContainerPanel
@@ -37,7 +36,6 @@ func _ready() -> void:
 	_show_board_button.pressed.connect(_on_show_board_button_pressed)
 	_show_merchant_button.pressed.connect(_on_show_merchant_button_pressed)
 	EventBus.gold_changed.connect(_on_currency_changed)
-	EventBus.merchant_tokens_changed.connect(_on_currency_changed)
 	EventBus.rerolls_changed.connect(_on_currency_changed)
 	EventBus.condiment_belt_changed.connect(_on_currency_changed)
 	EventBus.condiment_targeting_changed.connect(_on_condiment_targeting_changed)
@@ -201,7 +199,6 @@ func _display_merchant_cards(inventory: Array[Card]) -> void:
 		card_ui.set_card(item)
 		card_ui.action_requested.connect(_on_stock_card_selected)
 		card_ui.gold_purchase_requested.connect(_on_stock_card_gold_purchase_requested)
-		card_ui.token_purchase_requested.connect(_on_stock_card_token_purchase_requested)
 		_displayed_cards.append(card_ui)
 
 
@@ -216,7 +213,6 @@ func _display_merchant_condiments(stock: Array[Condiment]) -> void:
 		item.configure(condiment)
 		item.selected.connect(_on_stock_condiment_selected)
 		item.gold_purchase_requested.connect(_on_stock_condiment_gold_purchase_requested)
-		item.token_purchase_requested.connect(_on_stock_condiment_token_purchase_requested)
 		_displayed_condiments.append(item)
 
 
@@ -247,45 +243,27 @@ func _on_stock_condiment_selected(item: CondimentShopItem) -> void:
 func _on_stock_card_gold_purchase_requested(card_ui: CardUI) -> void:
 	if _selected_card_ui != card_ui:
 		return
-	_complete_purchase(false)
-
-
-func _on_stock_card_token_purchase_requested(card_ui: CardUI) -> void:
-	if _selected_card_ui != card_ui:
-		return
-	_complete_purchase(true)
+	_complete_purchase()
 
 
 func _on_stock_condiment_gold_purchase_requested(item: CondimentShopItem) -> void:
 	if _selected_condiment_ui != item:
 		return
-	_complete_purchase(false)
+	_complete_purchase()
 
 
-func _on_stock_condiment_token_purchase_requested(item: CondimentShopItem) -> void:
-	if _selected_condiment_ui != item:
-		return
-	_complete_purchase(true)
-
-
-func _complete_purchase(pay_with_tokens: bool) -> void:
+func _complete_purchase() -> void:
 	if _selected_condiment_ui != null:
-		_complete_condiment_purchase(pay_with_tokens)
+		_complete_condiment_purchase()
 		return
 	if _selected_card_ui == null or _selected_card_ui.is_sold():
 		return
 
 	var card: Card = _selected_card_ui.card
 	var gold_price := _selected_card_ui.price
-	var token_cost := _selected_card_ui.get_token_cost()
-
-	if pay_with_tokens:
-		if not GoldManager.spend_tokens(token_cost):
-			return
-	else:
-		if not GoldManager.can_afford(gold_price):
-			return
-		GoldManager.remove(gold_price)
+	if not GoldManager.can_afford(gold_price):
+		return
+	GoldManager.remove(gold_price)
 
 	_selected_card_ui.mark_sold()
 	# Keep the control in the grid as an invisible, inert placeholder so the
@@ -295,35 +273,26 @@ func _complete_purchase(pay_with_tokens: bool) -> void:
 	if card is TileCard:
 		EventBus.tile_card_selected.emit(card as TileCard)
 
-	AudioManager.play_sfx(
-		UISounds.CLICK if pay_with_tokens else UISounds.MERCHANT_CARD_PURCHASED
-	)
+	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
 	_clear_selection()
 	_update_reroll_button()
 	# The bought card left the focus chain, so hand the ring to the next shelf item.
 	_queue_focus()
 
 
-func _complete_condiment_purchase(pay_with_tokens: bool) -> void:
+func _complete_condiment_purchase() -> void:
 	if _selected_condiment_ui == null or _selected_condiment_ui.is_sold():
 		return
 	if not CondimentManager.can_add():
 		return
 	var gold_price := _selected_condiment_ui.price
-	var token_cost := _selected_condiment_ui.get_token_cost()
-	if pay_with_tokens:
-		if not GoldManager.spend_tokens(token_cost):
-			return
-	else:
-		if not GoldManager.can_afford(gold_price):
-			return
-		GoldManager.remove(gold_price)
+	if not GoldManager.can_afford(gold_price):
+		return
+	GoldManager.remove(gold_price)
 	if not CondimentManager.add_condiment(_selected_condiment_ui.condiment):
 		return
 	_selected_condiment_ui.mark_sold()
-	AudioManager.play_sfx(
-		UISounds.CLICK if pay_with_tokens else UISounds.MERCHANT_CARD_PURCHASED
-	)
+	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
 	_clear_selection()
 	_update_reroll_button()
 	# The bought bottle left the focus chain, so hand the ring to the next shelf item.
@@ -331,13 +300,10 @@ func _complete_condiment_purchase(pay_with_tokens: bool) -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if RerollManager.can_reroll():
-		RerollManager.use_reroll()
-	else:
-		if not GoldManager.can_afford(_reroll_cost):
-			return
-		GoldManager.remove(_reroll_cost)
-		_reroll_cost += 1
+	if not GoldManager.can_afford(_reroll_cost):
+		return
+	GoldManager.remove(_reroll_cost)
+	_reroll_cost += 1
 
 	AudioManager.play_sfx(UISounds.CLICK)
 	_stock_reroll_count += 1
@@ -391,14 +357,9 @@ func _refresh_selected_purchase_tray() -> void:
 
 func _update_currency_display() -> void:
 	gold_amount_label.text = str(GoldManager.amount)
-	token_amount_label.text = "%d/%d" % [GoldManager.merchant_tokens, GoldManager.MAX_MERCHANT_TOKENS]
 
 
 func _update_reroll_button() -> void:
-	if RerollManager.can_reroll():
-		reroll_button.text = "REROLL (%d free)" % RerollManager.remaining
-		reroll_button.disabled = false
-		return
 	reroll_button.text = "REROLL - %d" % _reroll_cost
 	reroll_button.disabled = not GoldManager.can_afford(_reroll_cost)
 

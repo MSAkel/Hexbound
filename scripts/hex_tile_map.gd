@@ -1,15 +1,14 @@
 class_name HexTileMap
 extends Node2D
 
-# Live map state: tiles, runes, overlays, and save. Turn resolve and hover UI live on helpers.
+# Live map state: tiles, cards, overlays, and save.
+# Geometry lives on HexMapLayout. Seated-card lookups live on HexBoardQuery.
 
 var hover_ui: HexHoverUI
 var turn_resolver: HexTurnResolver
 
 @onready var tile_panel: TilePanel = get_node_or_null("../MainUI/TerrainTileUI")
 @onready var base_layer: TileMapLayer = $BaseLayer
-@onready var trigger_order_overlay: TriggerOrderOverlay = $TriggerOrderOverlay
-@onready var segment_path_overlay: SegmentPathOverlay = $SegmentPathOverlay
 @onready var trigger_link_overlay: TriggerLinkOverlay = $TriggerLinkOverlay
 @onready var selection_overlay_layer: TileMapLayer = $SelectionOverlayLayer
 @onready var placement_valid_overlay_layer: TileMapLayer = $PlacementValidOverlayLayer
@@ -28,14 +27,12 @@ const PLACEMENT_VALID_OVERLAY_SOURCE_ID := HOVER_OVERLAY_NORMAL
 const PLACEMENT_VALID_OVERLAY_MODULATE := Color(0.45, 0.88, 1.15, 0.72)
 # TileCard trigger preview overlay on CardHighlightOverlayLayer.
 const CARD_HIGHLIGHT_SOURCE_ID := 0
-# Tile-shaped overlays sit under rune icons. Trigger-order numbers stay above at z 25.
+# Tile-shaped overlays sit under rune icons.
 # CardHighlightOverlayLayer tiles use per-tile z_index 3 in hex_tile_map.tscn so they paint above hex items_grid.
 const TILE_OVERLAY_LAYER_Z_INDEX := 0
 # Disabled and fading-sector layers each expose a single tile on source 0.
 const OVERLAY_TILE_SOURCE_ID := 0
 
-# Hexagon radius — tiles from center to each outer edge (hex_size=2 → 19 tiles)
-@export_range(1, 20, 1) var hex_size: int = 2
 # Extra pixels added to tile_size so adjacent hex visuals do not touch.
 # Use a smaller X gap if rows look too far apart compared to the diagonal edges.
 @export_range(0, 64, 1) var hex_tile_gap_x: int = 8
@@ -56,6 +53,10 @@ var _gamepad_focus_cell: Vector2i = Vector2i(-1, -1)
 var map_data: Dictionary = {}
 # Ring distances, trigger order, and segment grouping.
 var _layout: HexMapLayout
+# Indexed seated-card lookups. Rebuilt with the board, occupancy updated on place/remove.
+var query: HexBoardQuery
+# Nested visual refreshes must not restart a board-chip walk already in progress.
+var _refreshing_board_chips: bool = false
 # Scene Transform position, kept after generate_terrain recenters the board.
 var _scene_position := Vector2.ZERO
 var _scene_position_cached := false
@@ -72,15 +73,6 @@ var _segment_reveal_glow_coords: Array[Vector2i] = []
 # Quiet gold wash on segments that have finished their natural pass this turn.
 var _segment_sealed_coords: Array[Vector2i] = []
 var _segment_seal_tweens: Array[Tween] = []
-# Tiles highlighted while hovering a segment-results row in the run-info panel.
-var _hovered_segment_coords: Array[Vector2i] = []
-var _hovered_segment_index: int = -1
-# Sticky map overlay toggles from the run-info layout buttons.
-var _sticky_show_tile_cards: bool = true
-var _sticky_order_numbers: bool = false
-var _sticky_segment_links: bool = false
-# Temporary trigger-order numbers while Tab is held.
-var _peek_order_numbers: bool = false
 # Valid placement target while a hand card is selected.
 var _placement_preview_cell: Vector2i = Vector2i(-1, -1)
 # Tiles lit when a card credits another segment's turn total.
@@ -117,20 +109,19 @@ var _inspect_invalid_highlight_coords: Array[Vector2i] = []
 func _ready() -> void:
 	_layout = HexMapLayout.new()
 	_layout.setup(self)
-	# Hex fills stay under card icons. Order numbers on TriggerOrderOverlay sit above both.
+	query = HexBoardQuery.new()
+	query.setup(self)
+	# Hex fills stay under card icons.
 	card_highlight_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	placement_valid_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
 	gold_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	_setup_dish_recipe_gold_layer()
 	_apply_tile_spacing()
-	trigger_order_overlay.setup(self)
-	segment_path_overlay.setup(self)
 	trigger_link_overlay.setup(self)
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
 	EventBus.round_changed.connect(_on_round_changed)
-	EventBus.map_display_overlays_changed.connect(_on_map_display_overlays_changed)
 	EventBus.condiment_fuses_changed.connect(_refresh_condiment_fuse_badges)
 
 	card_placement_handler = CardPlacementHandler.new()
@@ -151,7 +142,7 @@ func _ready() -> void:
 
 
 func _refresh_condiment_fuse_badges() -> void:
-	for hex: Hex in map_data.values():
+	for hex: Hex in get_all_hexes_with_runes():
 		if hex.card_icon_ui != null and hex.active_tile_card != null:
 			hex.card_icon_ui.refresh_condiment_badges(hex.active_tile_card, hex.coordinates)
 	_refresh_map_focus_overlays()
@@ -196,17 +187,6 @@ func _sync_tileset_atlas_regions(tile_set: TileSet) -> void:
 				atlas.texture_region_size = Vector2i(atlas.texture.get_size())
 			else:
 				atlas.texture_region_size = HEX_TEXTURE_SIZE
-
-
-# Handles tile hover highlighting. Left-click no longer locks a selected hex.
-func _input(event: InputEvent) -> void:
-	# Run before GUI focus navigation so Tab still peeks after clicking layout buttons.
-	if event.is_action_pressed("peek_trigger_order"):
-		_set_peek_order_numbers(true)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_released("peek_trigger_order"):
-		_set_peek_order_numbers(false)
-		get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -257,51 +237,16 @@ func dismiss_hover_feedback() -> void:
 	_clear_selection_hover_highlight()
 
 
-func _set_peek_order_numbers(active: bool) -> void:
-	if _peek_order_numbers == active:
-		return
-	_peek_order_numbers = active
-	_refresh_map_focus_overlays()
-
-
-func _is_order_numbers_visible() -> bool:
-	return _sticky_order_numbers or _peek_order_numbers
-
-
-func _is_segment_links_visible() -> bool:
-	return _sticky_segment_links or _peek_order_numbers
-
-
-func is_board_cards_visible() -> bool:
-	return _sticky_show_tile_cards or _peek_order_numbers
-
-
-## Refreshes tile cards, trigger-order numbers, segment links, role tints, and dashed outlines.
+## Refreshes tile cards, hover selection, and dashed outlines.
 func _refresh_map_focus_overlays() -> void:
 	_refresh_tile_card_visibility()
-	_refresh_trigger_order_overlay()
+	_refresh_segment_role_highlights()
+	refresh_dashed_outlines()
 
 
 func _refresh_tile_card_visibility() -> void:
-	for hex: Hex in map_data.values():
+	for hex: Hex in get_all_hexes_with_runes():
 		hex._apply_display_mode()
-
-
-func _refresh_trigger_order_overlay() -> void:
-	var numbers_on := _is_order_numbers_visible()
-	var links_on := _is_segment_links_visible()
-	trigger_order_overlay.set_full_reveal(numbers_on)
-	segment_path_overlay.set_visible_for_order_view(links_on)
-	if numbers_on:
-		trigger_order_overlay.clear_focus()
-	else:
-		var focus_cell := _get_map_focus_cell()
-		if focus_cell != Vector2i(-1, -1):
-			trigger_order_overlay.set_focus_coords(focus_cell, true)
-		else:
-			trigger_order_overlay.clear_focus()
-	_refresh_segment_role_highlights()
-	refresh_dashed_outlines()
 
 
 func set_placement_preview_cell(coords: Vector2i) -> void:
@@ -413,7 +358,9 @@ func get_gamepad_focus_cell() -> Vector2i:
 
 
 func get_default_gamepad_focus_cell() -> Vector2i:
-	return Vector2i(hex_size, hex_size)
+	if _layout != null:
+		return _layout.get_hex_center()
+	return Vector2i.ZERO
 
 
 func ensure_gamepad_focus() -> void:
@@ -543,10 +490,6 @@ func _move_gamepad_focus_vertical(step: int, rows: Array) -> void:
 func _refresh_segment_role_highlights() -> void:
 	selection_overlay_layer.clear()
 
-	# Tab peek shows order overlays only. It does not paint tile highlights.
-	if _peek_order_numbers:
-		return
-
 	var focus_cell := _get_map_focus_cell()
 	if focus_cell != Vector2i(-1, -1):
 		_stamp_hover_selection(focus_cell)
@@ -567,15 +510,18 @@ func refresh_dashed_outlines() -> void:
 			base_layer.set_cell(coords, -1)
 		else:
 			base_layer.set_cell(coords, 0, BASE_TILE_ATLAS_COORDS)
-	trigger_order_overlay.refresh_display_state()
 
 
 ## Recompute output chips that read other placed cards. Dishes, steak-style ingredients, and similar.
 func refresh_board_output_chips() -> void:
-	for hex: Hex in map_data.values():
+	if _refreshing_board_chips:
+		return
+	_refreshing_board_chips = true
+	for hex: Hex in get_all_hexes_with_runes():
 		if hex.active_tile_card == null or hex.card_icon_ui == null:
 			continue
 		hex.card_icon_ui.refresh_output_chip(hex.active_tile_card)
+	_refreshing_board_chips = false
 
 
 ## Kept for older call sites. Refreshes every context-sensitive board chip, not just dishes.
@@ -584,8 +530,6 @@ func refresh_dish_output_chips() -> void:
 
 
 func _should_hide_dashed_outline(coords: Vector2i) -> bool:
-	if not is_board_cards_visible():
-		return false
 	var hex: Hex = map_data[coords]
 	return hex.active_tile_card != null
 
@@ -616,36 +560,24 @@ func is_tile_interactable(coords: Vector2i) -> bool:
 
 ## Returns map-adjacent hex tiles that exist on this map (up to six neighbors).
 func get_all_adjacent_hexes(coords: Vector2i) -> Array[Hex]:
-	var neighbors: Array[Hex] = []
-	for direction in HexMapLayout.NEIGHBORS:
-		var neighbor_coords: Vector2i = base_layer.get_neighbor_cell(coords, direction)
-		if map_data.has(neighbor_coords):
-			neighbors.append(map_data[neighbor_coords])
-	return neighbors
+	if query == null:
+		return []
+	return query.adjacent_hexes(coords)
 
 
 ## Outer ring tiles have at least one hex neighbor direction that leaves the map.
 func is_edge_tile(coords: Vector2i) -> bool:
-	for direction in HexMapLayout.NEIGHBORS:
-		var neighbor_coords: Vector2i = base_layer.get_neighbor_cell(coords, direction)
-		if not map_data.has(neighbor_coords):
-			return true
-	return false
+	if query == null:
+		return false
+	return query.is_edge_tile(coords)
 
 
-## Every rune currently placed on the map.
+## Every seated card currently on the map.
 ## rune_type: TileCardType, or TileCard.PRODUCER_TYPE_FILTER for seated Ingredients.
 func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
-	var runes: Array[TileCard] = []
-	for hex: Hex in map_data.values():
-		if hex.active_tile_card == null:
-			continue
-		if not is_tile_card_triggerable(hex):
-			continue
-		if rune_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, rune_type):
-			continue
-		runes.append(hex.active_tile_card)
-	return runes
+	if query == null:
+		return []
+	return query.placed_cards(rune_type)
 
 
 ## True when a placed rune can fire during its own trigger-order slot this turn.
@@ -672,90 +604,47 @@ func is_tile_card_triggerable(hex: Hex) -> bool:
 	return hex.active_tile_card.can_be_triggered_by_other_card(hex)
 
 
-## Hex tiles that currently hold a rune.
+## Hex tiles that currently hold a card.
 func get_all_hexes_with_runes() -> Array[Hex]:
-	var hexes: Array[Hex] = []
-	for hex: Hex in map_data.values():
-		if hex.active_tile_card != null:
-			hexes.append(hex)
-	return hexes
+	if query == null:
+		return []
+	return query.occupied_hexes()
 
 
-## Counts all adjacent tiles occupied by a rune. Pass rune_type to filter by type.
+## Counts all adjacent tiles occupied by a card. Pass rune_type to filter by type.
 func count_all_occupied_adjacent_tile_cards(coords: Vector2i, rune_type: Variant = null) -> int:
-	var count := 0
-	for hex: Hex in get_all_adjacent_hexes(coords):
-		if hex.active_tile_card == null:
-			continue
-		if not is_tile_card_triggerable(hex):
-			continue
-		if rune_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, rune_type):
-			continue
-		count += 1
-	return count
+	if query == null:
+		return 0
+	return query.cards_from_hexes(query.adjacent_hexes(coords), rune_type).size()
 
 
-## All runes on map-adjacent hexes around tile (unordered).
+## All cards on map-adjacent hexes around tile (unordered).
 func get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for hex: Hex in get_all_adjacent_hexes(tile.coordinates):
-		if hex.active_tile_card == null:
-			continue
-		if not is_tile_card_triggerable(hex):
-			continue
-		if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
-			continue
-		result.append(hex.active_tile_card)
-	return result
+	if query == null:
+		return []
+	return query.adjacent_cards(tile, filter_type)
 
 
 ## Adjacent hexes that activate after this tile in trigger order, including empty tiles.
 ## Returned earliest-first so the first adjacent Following card is always result[0].
 func get_following_adjacent_hexes(tile: Hex) -> Array[Hex]:
-	var result: Array[Hex] = []
-	var self_index := _get_hex_trigger_order_index(tile)
-	if self_index < 0:
-		return result
-	var neighbors := get_all_adjacent_hexes(tile.coordinates)
-	for hex: Hex in get_hexes_in_trigger_order():
-		if hex == tile:
-			continue
-		if not neighbors.has(hex):
-			continue
-		if _get_hex_trigger_order_index(hex) > self_index:
-			result.append(hex)
-	return result
+	if query == null:
+		return []
+	return query.following_adjacent_hexes(tile)
 
 
 ## Occupied adjacent Following hexes, optionally filtered by card type.
 func get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for hex: Hex in get_following_adjacent_hexes(tile):
-		if hex.active_tile_card == null:
-			continue
-		if not is_tile_card_triggerable(hex):
-			continue
-		if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
-			continue
-		result.append(hex.active_tile_card)
-	return result
+	if query == null:
+		return []
+	return query.following_adjacent_cards(tile, filter_type)
 
 
-## All adjacent runes sorted in the map's global trigger order.
+## All adjacent cards sorted in the map's global trigger order.
 func get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	var neighbors := get_all_adjacent_hexes(tile.coordinates)
-	for hex: Hex in get_hexes_in_trigger_order():
-		if hex.active_tile_card == null:
-			continue
-		if not neighbors.has(hex):
-			continue
-		if not is_tile_card_triggerable(hex):
-			continue
-		if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
-			continue
-		result.append(hex.active_tile_card)
-	return result
+	if query == null:
+		return []
+	return query.adjacent_cards_in_trigger_order(tile, filter_type)
 
 
 func _place_hex_tile(offset: Vector2i) -> void:
@@ -765,7 +654,7 @@ func _place_hex_tile(offset: Vector2i) -> void:
 	base_layer.set_cell(offset, 0, BASE_TILE_ATLAS_COORDS)
 
 
-## Builds the hex map from the center tile outward.
+## Builds the shared 32-hex kitchen board as five offset rows.
 func generate_terrain() -> void:
 	_free_map_hexes()
 	base_layer.clear()
@@ -784,30 +673,19 @@ func generate_terrain() -> void:
 	fading_sector_overlay_layer.clear()
 	gold_overlay_layer.clear()
 	_disabled_tile_coords.clear()
-	_hovered_segment_coords.clear()
-	_hovered_segment_index = -1
 	card_highlight_overlay_layer.modulate = Color.WHITE
 
-	var hex_center := Vector2i(hex_size, hex_size)
-	_place_hex_tile(hex_center)
+	var cells := HexMapLayout.compute_board_cells(base_layer)
+	for coords: Vector2i in cells:
+		_place_hex_tile(coords)
 
-	# Expand ring-by-ring using Godot's hex neighbor graph for a symmetric hexagon
-	var frontier: Array[Vector2i] = [hex_center]
-	for _ring in hex_size:
-		var next_frontier: Array[Vector2i] = []
-		for cell in frontier:
-			for direction in HexMapLayout.NEIGHBORS:
-				var neighbor: Vector2i = base_layer.get_neighbor_cell(cell, direction)
-				if map_data.has(neighbor):
-					continue
-				_place_hex_tile(neighbor)
-				next_frontier.append(neighbor)
-		frontier = next_frontier
-
+	var hex_center := HexMapLayout.board_hex_center(cells)
 	_layout.reset(hex_center)
+	if query != null:
+		query.rebuild_spatial_index()
+	if map_data.size() != HexMapLayout.BOARD_TILE_COUNT:
+		push_warning("HexTileMap: expected %d kitchen tiles, got %d." % [HexMapLayout.BOARD_TILE_COUNT, map_data.size()])
 	_layout.reset_turn_results()
-	trigger_order_overlay.rebuild()
-	segment_path_overlay.rebuild()
 	_center_map_on_origin()
 
 
@@ -817,9 +695,17 @@ func _free_map_hexes() -> void:
 		if hex != null:
 			hex.dispose()
 	map_data.clear()
-	# map_data.clear() does not touch layout caches. Stale coords would crash turn resolution.
+	# map_data.clear() does not touch layout or query caches. Stale coords would crash turn resolution.
+	if query != null:
+		query.clear()
 	if _layout != null:
 		_layout.invalidate_caches()
+
+
+## Occupancy changed on a live hex. Keeps HexBoardQuery's card-to-hex index current.
+func notify_tile_card_occupancy_changed(hex: Hex, previous: TileCard, current: TileCard) -> void:
+	if query != null:
+		query.set_occupancy(hex, previous, current)
 
 
 ## Apply difficulty-driven map randomization after run RNG setup rolls.
@@ -890,22 +776,6 @@ func has_event_sealed_overlay_at(coords: Vector2i) -> bool:
 	return coords in _event_sealed_coords
 
 
-func _on_map_display_overlays_changed(
-	show_tile_cards: bool,
-	show_order_numbers: bool,
-	show_segment_links: bool
-) -> void:
-	_sticky_show_tile_cards = show_tile_cards
-	_sticky_order_numbers = show_order_numbers
-	_sticky_segment_links = show_segment_links
-	_refresh_map_focus_overlays()
-
-
-## Ring index from the map center (0 = center, hex_size = outer edge).
-func get_tile_ring_distance(coords: Vector2i) -> int:
-	return _layout.get_ring_distance(coords)
-
-
 ## Tile 180 degrees from coords around the map center.
 func get_opposite_coords(coords: Vector2i) -> Vector2i:
 	return _layout.get_opposite_coords(coords)
@@ -926,10 +796,12 @@ func get_coords_in_trigger_order() -> Array[Vector2i]:
 
 ## All map hex tiles in trigger order.
 func get_hexes_in_trigger_order() -> Array[Hex]:
-	return _layout.get_hexes_in_trigger_order()
+	if query == null:
+		return []
+	return query.hexes_in_trigger_order()
 
 
-## Segment index for a tile under the active character grouping (-1 when unknown).
+## Course (row) index for a tile, or -1 when the tile is not on the board.
 func get_segment_index(coords: Vector2i) -> int:
 	return _layout.get_segment_index(coords)
 
@@ -963,31 +835,32 @@ func build_segments() -> Array[Array]:
 	return _layout.build_segments()
 
 
-## All placed runes on the same segment as tile, optionally filtered by rune type.
+## All placed cards on the same segment as tile, optionally filtered by card type.
 func get_all_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	return _layout.get_all_tile_cards_on_segment(get_segment_index(tile.coordinates), filter_type)
+	if query == null:
+		return []
+	return query.cards_on_same_segment(tile, filter_type)
 
 
-## All placed runes on one segment by index, optionally filtered by rune type.
+## All placed cards on one segment by index, optionally filtered by card type.
 func get_all_tile_cards_on_segment(segment_index: int, filter_type: Variant = null) -> Array[TileCard]:
-	return _layout.get_all_tile_cards_on_segment(segment_index, filter_type)
+	if query == null:
+		return []
+	return query.cards_on_segment(segment_index, filter_type)
 
 
-## All placed runes on other segments, optionally filtered by rune type.
+## All placed cards on other segments, optionally filtered by card type.
 func get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	return _layout.get_all_tile_cards_on_other_segments(tile, filter_type)
+	if query == null:
+		return []
+	return query.cards_on_other_segments(tile, filter_type)
 
 
 ## Cards on segments after this tile's segment.
 func get_all_tile_cards_on_later_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	var current_index := get_segment_index(tile.coordinates)
-	var result: Array[TileCard] = []
-	if current_index < 0:
-		return result
-	for segment_index in range(current_index + 1, get_segment_count()):
-		for card: TileCard in get_all_tile_cards_on_segment(segment_index, filter_type):
-			result.append(card)
-	return result
+	if query == null:
+		return []
+	return query.cards_on_later_segments(tile, filter_type)
 
 
 ## Playable tiles in a segment that currently have no card.
@@ -1071,16 +944,9 @@ func get_ordered_segments() -> Array[Array]:
 
 ## All hex tiles belonging to one segment index.
 func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
-	var hexes: Array[Hex] = []
-	var segments := _layout.build_segments()
-	if segment_index < 0 or segment_index >= segments.size():
-		return hexes
-
-	for coords: Vector2i in segments[segment_index]:
-		var hex: Hex = map_data.get(coords)
-		if hex != null:
-			hexes.append(hex)
-	return hexes
+	if query == null:
+		return []
+	return query.hexes_in_segment(segment_index)
 
 
 ## Clears per-segment turn totals at the start of turn resolution.
@@ -1157,63 +1023,32 @@ func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 	_emit_segment_turn_results_changed(segment_index)
 
 
-## Notifies UI of the latest per-segment Flavour, mult factors, and scored contribution.
-func _emit_segment_turn_results_changed(segment_index: int, use_passive_adjustments: bool = false) -> void:
-	var flavour := _layout.get_segment_turn_flavour(segment_index)
-	var additive_mult := _layout.get_segment_additive_mult(segment_index)
-	var multiplicative_mult := _layout.get_segment_multiplicative_mult(segment_index)
-	var gold := _layout.get_segment_turn_gold(segment_index)
-	if use_passive_adjustments:
-		var breakdown := GameManager.get_segment_turn_contribution_breakdown(
-			segment_index,
-			flavour,
-			additive_mult,
-			multiplicative_mult
-		)
-		EventBus.segment_turn_results_changed.emit(
-			segment_index,
-			breakdown.display_flavour,
-			breakdown.display_additive_mult,
-			breakdown.display_multiplicative_mult,
-			breakdown.contribution,
-			gold
-		)
-		return
-	var contribution := GameManager.compute_segment_turn_contribution(
-		segment_index,
-		flavour,
-		additive_mult,
-		multiplicative_mult
-	)
+## Notifies UI of the latest hour Flavour, Additive, and scored contribution.
+func _emit_segment_turn_results_changed(segment_index: int, _use_passive_adjustments: bool = false) -> void:
+	var flavour := _layout.get_hour_flavour()
+	var additive_mult := _layout.get_hour_additive_mult()
+	var gold := _layout.get_hour_gold()
+	var contribution := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
+	# Keep the segment_index so course-row hover still knows which course just changed.
 	EventBus.segment_turn_results_changed.emit(
 		segment_index,
 		flavour,
 		additive_mult,
-		multiplicative_mult,
+		1.0,
 		contribution,
 		gold
 	)
 
 
-## Each segment forms a Rating independently, then Ratings are summed for the turn.
+## Hour Rating is Flavour x Additive. xMult already folded into Additive as cards fire.
 func _apply_segment_turn_totals_to_game_manager() -> void:
 	GameManager.passive_runtime.on_turn_resolved(self)
-	var total := 0
-	var contributions: Array[int] = []
-	for segment_index in get_segment_count():
-		var flavour := get_segment_turn_flavour(segment_index)
-		var additive_mult := get_segment_additive_mult(segment_index)
-		var multiplicative_mult := get_segment_multiplicative_mult(segment_index)
-		var contribution := GameManager.compute_segment_turn_contribution(
-			segment_index,
-			flavour,
-			additive_mult,
-			multiplicative_mult
-		)
-		contributions.append(contribution)
-		total += contribution
+	var flavour := get_hour_flavour()
+	var additive_mult := get_hour_additive_mult()
+	var contribution := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
+	var contributions: Array[int] = [contribution]
 	GameManager.record_turn_segment_peaks(contributions)
-	GameManager.turn_score = total
+	GameManager.turn_score = contribution
 
 
 func _check_full_map_cards_achievement() -> void:
@@ -1239,6 +1074,28 @@ func get_segment_multiplicative_mult(segment_index: int) -> float:
 
 func get_segment_turn_gold(segment_index: int) -> int:
 	return _layout.get_segment_turn_gold(segment_index)
+
+
+func is_hour_scoring_ready() -> bool:
+	return _layout != null
+
+
+func get_hour_flavour() -> int:
+	if _layout == null:
+		return 0
+	return _layout.get_hour_flavour()
+
+
+func get_hour_additive_mult() -> float:
+	if _layout == null:
+		return 1.0
+	return _layout.get_hour_additive_mult()
+
+
+func get_hour_gold() -> int:
+	if _layout == null:
+		return 0
+	return _layout.get_hour_gold()
 
 
 ## Activations on a segment this turn, including the activation currently resolving.
@@ -1279,44 +1136,6 @@ func clear_event_segment_highlight() -> void:
 	_event_highlighted_coords.clear()
 
 
-## Overlays tiles in a segment while its run-info row is hovered.
-func highlight_hovered_segment(segment_index: int) -> void:
-	# Skip only when the same UI-row hover is requested again.
-	if _hovered_segment_index == segment_index:
-		return
-
-	clear_hovered_segment_highlight()
-	if segment_index < 0:
-		return
-
-	_hovered_segment_index = segment_index
-	card_highlight_overlay_layer.modulate = Color.WHITE
-	for hex: Hex in get_hexes_in_segment(segment_index):
-		card_highlight_overlay_layer.set_cell(
-			hex.coordinates,
-			CARD_HIGHLIGHT_SOURCE_ID,
-			OVERLAY_TILE_ATLAS_COORDS
-		)
-		_hovered_segment_coords.append(hex.coordinates)
-
-
-## Clears the hover overlay. Pass segment_index so a row's mouse-exit cannot wipe a newer hover.
-func clear_hovered_segment_highlight(segment_index: int = -1) -> void:
-	if segment_index >= 0 and _hovered_segment_index != segment_index:
-		return
-
-	for coords: Vector2i in _hovered_segment_coords:
-		# Leave cells that card placement or a credit flash still owns on this layer.
-		if _rune_highlight_still_needed(coords, true, false):
-			continue
-		card_highlight_overlay_layer.set_cell(coords, -1)
-	_hovered_segment_coords.clear()
-	_hovered_segment_index = -1
-	# Restore full opacity unless placement or another owner still needs a custom modulate.
-	if card_placement_handler == null or not card_placement_handler.is_card_selected:
-		card_highlight_overlay_layer.modulate = Color.WHITE
-
-
 ## Briefly lights a segment so the player can see where forwarded Energy or Mult landed.
 func flash_segment_highlight(segment_index: int) -> void:
 	_clear_flashed_segment_highlight()
@@ -1345,7 +1164,7 @@ func flash_segment_highlight(segment_index: int) -> void:
 
 func _clear_flashed_segment_highlight() -> void:
 	for coords: Vector2i in _flashed_segment_coords:
-		if _rune_highlight_still_needed(coords, false, true):
+		if _rune_highlight_still_needed(coords, true):
 			continue
 		card_highlight_overlay_layer.set_cell(coords, -1)
 	_flashed_segment_coords.clear()
@@ -1368,22 +1187,19 @@ func clear_condiment_target_highlights() -> void:
 	var previous := _condiment_target_coords.duplicate()
 	_condiment_target_coords.clear()
 	for cell in previous:
-		if _rune_highlight_still_needed(cell, false, false):
+		if _rune_highlight_still_needed(cell, false):
 			continue
 		card_highlight_overlay_layer.set_cell(cell, -1)
 	_refresh_rune_highlight_modulate()
 
 
-## True while hover, placement preview, a credit flash, or inspect still owns this overlay cell.
+## True while placement preview, a credit flash, inspect, or condiment aim still owns this overlay cell.
 func _rune_highlight_still_needed(
 	coords: Vector2i,
-	from_hover: bool,
 	from_flash: bool,
 	from_inspect: bool = false
 ) -> bool:
 	if card_placement_handler != null and card_placement_handler.is_highlighting_coord(coords):
-		return true
-	if not from_hover and coords in _hovered_segment_coords:
 		return true
 	if not from_flash and coords in _flashed_segment_coords:
 		return true
@@ -1394,11 +1210,10 @@ func _rune_highlight_still_needed(
 	return false
 
 
-## True while a run-info segment row, credit flash, or inspect is lighting this tile.
+## True while a credit flash, inspect, or condiment aim is lighting this tile.
 func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 	return (
-		coords in _hovered_segment_coords
-		or coords in _flashed_segment_coords
+		coords in _flashed_segment_coords
 		or coords in _inspect_highlight_coords
 		or coords in _condiment_target_coords
 	)
@@ -1413,83 +1228,43 @@ func _fading_overlay_still_needed(coords: Vector2i, overlay_owner: FadingOverlay
 	return false
 
 
-## First or last placed rune in a segment relative to tile's segment. See HexMapLayout.get_tile_card_in_relative_segment().
+## First or last placed card in a segment relative to tile's segment. See HexBoardQuery.card_in_relative_segment().
 func get_tile_card_in_relative_segment(
 	tile: Hex,
 	segment_index_offset: int,
 	pick_first_in_segment: bool,
 	filter_type: Variant = null
 ) -> TileCard:
-	return _layout.get_tile_card_in_relative_segment(tile, segment_index_offset, pick_first_in_segment, filter_type)
+	if query == null:
+		return null
+	return query.card_in_relative_segment(tile, segment_index_offset, pick_first_in_segment, filter_type)
 
 
 func _get_hex_trigger_order_index(current_tile: Hex) -> int:
-	var hexes := get_hexes_in_trigger_order()
-	for i in range(hexes.size()):
-		if hexes[i] == current_tile:
-			return i
-	return -1
-
-
-## Public fire-order index for card scripts. -1 when the spot is not on this map.
-func get_hex_trigger_order_index(current_tile: Hex) -> int:
-	return _get_hex_trigger_order_index(current_tile)
+	if query == null:
+		return -1
+	return query.trigger_index(current_tile)
 
 
 ## Contiguous previous seats in fire order, including empties. Gaps are not skipped.
 func get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
-	var result: Array[Hex] = []
-	if tile == null or count <= 0:
-		return result
-	var hexes := get_hexes_in_trigger_order()
-	var self_index := _get_hex_trigger_order_index(tile)
-	if self_index < 0:
-		return result
-	for i in range(1, count + 1):
-		var prev_index := self_index - i
-		if prev_index < 0:
-			break
-		result.append(hexes[prev_index])
-	return result
+	if query == null:
+		return []
+	return query.immediately_previous_hexes(tile, count)
 
 
 ## Occupied cards on this course that fire after tile, in fire order.
 func get_later_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	if tile == null:
-		return result
-	var self_index := _get_hex_trigger_order_index(tile)
-	if self_index < 0:
-		return result
-	for tile_card: TileCard in get_all_tile_cards_on_same_segment(tile, filter_type):
-		var hex := get_hex_for_tile_card(tile_card)
-		if hex == null:
-			continue
-		if _get_hex_trigger_order_index(hex) > self_index:
-			result.append(tile_card)
-	result.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-		var hex_a := get_hex_for_tile_card(a)
-		var hex_b := get_hex_for_tile_card(b)
-		if hex_a == null or hex_b == null:
-			return hex_a != null
-		return _get_hex_trigger_order_index(hex_a) < _get_hex_trigger_order_index(hex_b)
-	)
-	return result
+	if query == null:
+		return []
+	return query.later_cards_on_same_segment(tile, filter_type)
 
 
 ## TileCard on the next occupied hex in global trigger order (null when empty).
 func get_next_tile_card_in_trigger_order(current_tile: Hex) -> TileCard:
-	var hexes := get_hexes_in_trigger_order()
-	var current_index := _get_hex_trigger_order_index(current_tile)
-	if current_index == -1:
+	if query == null:
 		return null
-
-	for i in range(current_index + 1, hexes.size()):
-		var next_hex := hexes[i]
-		if next_hex.active_tile_card == null or _is_bypassed_in_trigger_order(next_hex):
-			continue
-		return next_hex.active_tile_card
-	return null
+	return query.next_card_in_trigger_order(current_tile)
 
 
 ## True when the next rune in trigger order can be consumed in-sequence this turn.
@@ -1542,36 +1317,16 @@ func _get_tile_cards_relative_to_trigger_order(
 	previous: bool,
 	filter_type: Variant = null
 ) -> Array[TileCard]:
-	# Walk hexes in trigger order so previews work on empty placement tiles too.
-	var hexes := get_hexes_in_trigger_order()
-	var current_index := _get_hex_trigger_order_index(current_tile)
-	if current_index == -1:
+	if query == null:
 		return []
-
-	var result: Array[TileCard] = []
-	var start := current_index - 1 if previous else current_index + 1
-	var end := -1 if previous else hexes.size()
-	var step := -1 if previous else 1
-
-	for i in range(start, end, step):
-		var hex := hexes[i]
-		var rune := hex.active_tile_card
-		if rune == null or _is_bypassed_in_trigger_order(hex):
-			continue
-		if filter_type != null and not TileCard.matches_type_filter(rune.type, filter_type):
-			continue
-		result.append(rune)
-		if result.size() >= count:
-			break
-	return result
+	return query.cards_relative_to_trigger_order(current_tile, count, previous, filter_type)
 
 
-## Returns the hex tile that currently holds rune, or null when it is not placed.
+## Returns the hex tile that currently holds the card, or null when it is not placed.
 func get_hex_for_tile_card(rune: TileCard) -> Hex:
-	for hex: Hex in map_data.values():
-		if hex.active_tile_card == rune:
-			return hex
-	return null
+	if query == null:
+		return null
+	return query.get_hex_for_card(rune)
 
 
 ## Moves two placed cards onto each other's tiles without duplicating their resources.
@@ -1716,7 +1471,7 @@ func _clear_segment_sealed_look() -> void:
 		if seal_tween != null and seal_tween.is_valid():
 			seal_tween.kill()
 	_segment_seal_tweens.clear()
-	for hex: Hex in map_data.values():
+	for hex: Hex in get_all_hexes_with_runes():
 		hex.clear_segment_sealed()
 	for coords: Vector2i in _segment_sealed_coords:
 		gold_overlay_layer.set_cell(coords, -1)
@@ -1799,39 +1554,25 @@ func get_round_turn_snapshots() -> Array:
 
 
 func refresh_segment_turn_results_ui() -> void:
-	for segment_index in get_segment_count():
-		_emit_segment_turn_results_changed(segment_index)
+	_emit_segment_turn_results_changed(0)
 
 
-## Packages per-course hour totals for the rating breakdown panel.
+## Packages hour totals for the rating breakdown panel.
 func capture_segment_turn_snapshot() -> Dictionary:
-	var segments: Array = []
-	var total_rating := 0
-	var total_gold := 0
-	for segment_index in get_segment_count():
-		var flavour := get_segment_turn_flavour(segment_index)
-		var additive_mult := get_segment_additive_mult(segment_index)
-		var multiplicative_mult := get_segment_multiplicative_mult(segment_index)
-		var gold := get_segment_turn_gold(segment_index)
-		var breakdown := GameManager.get_segment_turn_contribution_breakdown(
-			segment_index,
-			flavour,
-			additive_mult,
-			multiplicative_mult
-		)
-		segments.append({
-			"flavour": breakdown.display_flavour,
-			"additive_mult": breakdown.display_additive_mult,
-			"multiplicative_mult": breakdown.display_multiplicative_mult,
-			"rating": breakdown.contribution,
-			"gold": gold,
-		})
-		total_rating += breakdown.contribution
-		total_gold += gold
+	var flavour := get_hour_flavour()
+	var additive_mult := get_hour_additive_mult()
+	var gold := get_hour_gold()
+	var rating := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
 	return {
-		"segments": segments,
-		"total_rating": total_rating,
-		"total_gold": total_gold,
+		"segments": [{
+			"flavour": flavour,
+			"additive_mult": additive_mult,
+			"multiplicative_mult": 1.0,
+			"rating": rating,
+			"gold": gold,
+		}],
+		"total_rating": rating,
+		"total_gold": gold,
 	}
 
 

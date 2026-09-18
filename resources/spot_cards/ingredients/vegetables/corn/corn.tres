@@ -12,5 +12,5 @@ ingredient_tags = Array[StringName]([&"vegetable", &"grain"])
 id = "corn"
 name = "Corn"
 icon = ExtResource("1_4lt5q")
-description = "+15 Flavour per adjacent Following Ingredient."
+description = "+15 Flavour per Following adjacent Ingredient."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

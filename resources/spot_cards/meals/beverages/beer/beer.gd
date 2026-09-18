@@ -32,12 +32,8 @@ func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
 	return get_trigger_preview_coords(hover_tile)
 
 
-func _adjacent_dish_meals(tile: Hex) -> Array[TileCard]:
-	return _cards_by_kind(tile, TAG_DISH, QueryScope.ADJACENT)
-
-
 func _adjacent_dish_xmult(tile: Hex) -> float:
-	var dish_count := _adjacent_dish_meals(tile).size()
+	var dish_count := _cards_by_kind(tile, TAG_DISH, QueryScope.ADJACENT).size()
 	if dish_count <= 0:
 		return 0.0
 	return float(_get_production_amount()) + MULT_PER_DISH * float(dish_count)

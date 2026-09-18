@@ -73,9 +73,7 @@ tile_size = Vector2i(104, 120)
 sources/0 = SubResource("TileSetAtlasSource_gold")
 
 [node name="HexTileMap" type="Node2D" unique_id=1387675484]
-position = Vector2(0, -84)
 script = ExtResource("1_d5c3r")
-hex_size = 3
 
 [node name="TriggerOrderOverlay" type="Node2D" parent="." unique_id=426136559]
 visible = false

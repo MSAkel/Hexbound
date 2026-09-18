@@ -31,11 +31,23 @@ func _ready() -> void:
 	_center_burst()
 
 
+## Static readout for character selection and other menus.
+func show_xp_total(xp: int, caption: String = "Chef Level") -> void:
+	_play_id += 1
+	_kill_tweens()
+	%CaptionLabel.text = caption
+	gain_label.visible = true
+	gain_label.text = "%d XP" % xp
+	_apply_visual(xp)
+
+
 func play_gain(from_xp: int, xp_gain: int, start_delay: float = 0.4) -> void:
 	_play_id += 1
 	var play_id := _play_id
 	_kill_tweens()
+	%CaptionLabel.text = "Layout Level"
 	_apply_visual(from_xp)
+	gain_label.visible = true
 	gain_label.text = "+%d XP" % xp_gain if xp_gain > 0 else "No XP gained"
 
 	if xp_gain <= 0:

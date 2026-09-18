@@ -6,7 +6,6 @@ extends RefCounted
 const FLAVOUR := preload("res://assets/icons/stats/flavour.png")
 const MULT := preload("res://assets/icons/stats/mult.png")
 const GOLD := preload("res://assets/icons/stats/gold.png")
-const MERCHANT_TOKEN := preload("res://assets/icons/stats/merchant_token.png")
 
 const DOUBLE := preload("res://assets/icons/stats/double.png")
 const FIRE := preload("res://assets/icons/stats/fire.png")

@@ -48,7 +48,7 @@ func refresh_display_state() -> void:
 	_apply_display_state()
 
 
-## Sticky layout toggle or Tab peek. Shows every trigger index on top of the cards.
+## Shows every trigger index on top of the cards when enabled.
 func set_full_reveal(active: bool) -> void:
 	# Hover refreshes call this every cell change. Reapply only on a real on/off flip.
 	if _full_reveal == active:

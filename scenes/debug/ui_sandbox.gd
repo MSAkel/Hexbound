@@ -34,7 +34,6 @@ func _bootstrap_run_state() -> void:
 		"amount": 120,
 		"total_earned_this_run": 340,
 		"earned_this_turn": 18,
-		"merchant_tokens": 3,
 	})
 
 

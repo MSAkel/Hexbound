@@ -7,7 +7,7 @@ extends Node2D
 
 var character: CharacterDefinition = null
 var map_data: Dictionary = {}
-var hex_size: int = 3
+var hex_size: int = 2
 var _layout: HexMapLayout
 var _saved_character: CharacterDefinition = null
 
@@ -23,10 +23,6 @@ func setup_character(character_def: CharacterDefinition) -> void:
 	_saved_character = GameManager.selected_character
 	GameManager.selected_character = character_def
 	_sync_map_data_from_tiles()
-
-
-func get_layout_character() -> CharacterDefinition:
-	return character
 
 
 func restore_character_context() -> void:
@@ -92,38 +88,21 @@ func _ensure_layout() -> void:
 	_layout.setup(self)
 
 
-## Builds Hex entries from the TileMapLayer cells authored in the scene.
+## Builds Hex entries for the shared 32-hex kitchen board.
 func _sync_map_data_from_tiles() -> void:
 	map_data.clear()
-	for coords: Vector2i in base_layer.get_used_cells():
+	base_layer.clear()
+	var cells := HexMapLayout.compute_board_cells(base_layer)
+	for coords: Vector2i in cells:
 		map_data[coords] = Hex.new(coords)
+		base_layer.set_cell(coords, 0, Vector2i(0, 0))
 	if map_data.is_empty():
-		push_warning("SegmentPassivesPreviewMap: BaseLayer has no tiles. Paint the hex grid in the editor.")
+		push_warning("SegmentPassivesPreviewMap: failed to generate the kitchen board.")
 		return
-	var hex_center := _find_hex_center()
+	var hex_center := HexMapLayout.board_hex_center(cells)
 	_layout.reset(hex_center)
-	hex_size = _compute_hex_size()
-	_layout.reset_turn_results()
-
-
-func _find_hex_center() -> Vector2i:
-	var cells := base_layer.get_used_cells()
-	var sum := Vector2.ZERO
-	for coords: Vector2i in cells:
-		sum += Vector2(coords)
-	var average := sum / float(cells.size())
-	var best: Vector2i = cells[0]
-	var best_dist := INF
-	for coords: Vector2i in cells:
-		var dist := Vector2(coords).distance_squared_to(average)
-		if dist < best_dist:
-			best_dist = dist
-			best = coords
-	return best
-
-
-func _compute_hex_size() -> int:
 	var max_ring := 0
 	for coords: Vector2i in map_data.keys():
 		max_ring = maxi(max_ring, _layout.get_ring_distance(coords))
-	return max_ring
+	hex_size = max_ring
+	_layout.reset_turn_results()

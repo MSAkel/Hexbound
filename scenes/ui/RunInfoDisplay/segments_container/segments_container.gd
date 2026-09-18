@@ -1,13 +1,9 @@
 extends PanelContainer
 
-const SEGMENT_RESULTS_SCENE := preload(
-	"res://scenes/ui/RunInfoDisplay/segments_container/segment_results.tscn"
-)
-
 @onready var prev_turn_button: TextureButton = $VBoxContainer/TurnsContainer/PrevTurnButton
 @onready var turn_label: Label = $VBoxContainer/TurnsContainer/TurnLabel
 @onready var next_turn_button: TextureButton = $VBoxContainer/TurnsContainer/NextTurnButton
-@onready var segment_results_list: VBoxContainer = $VBoxContainer/SegmentResultsList
+@onready var hour_results: PanelContainer = $VBoxContainer/HourResults
 @onready var turn_total_container: PanelContainer = $VBoxContainer/TurnTotalContainer
 @onready var score_total_number: Label = $VBoxContainer/TurnTotalContainer/TotalRow/ScoreTotalNumber
 @onready var round_score_footer: PanelContainer = $VBoxContainer/RoundScoreContainer
@@ -19,7 +15,7 @@ var _resolving_turn: bool = false
 var _score_total_counter: CountingNumber
 var _punch_tweens: Dictionary = {}
 var _total_style: StyleBoxFlat
-## Score footer during live resolve. Grows only as each segment's Score lands.
+## Score footer during live resolve. Grows only as the hour Rating lands.
 var _live_revealed_score: int = 0
 
 const CAMERA_SHAKE_MIN := 5.0
@@ -38,7 +34,8 @@ func _ready() -> void:
 	prev_turn_button.pressed.connect(_on_prev_turn_pressed)
 	next_turn_button.pressed.connect(_on_next_turn_pressed)
 
-	call_deferred("_build_segment_rows")
+	call_deferred("_restore_initial_view")
+	call_deferred("_refresh_view_after_map_ready")
 
 	EventBus.turn_ended.connect(_on_turn_ended)
 	EventBus.turn_started.connect(_on_turn_started)
@@ -52,6 +49,24 @@ func _ready() -> void:
 	turn_total_container.clip_contents = false
 
 
+func _restore_initial_view() -> void:
+	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
+	if tile_map == null:
+		return
+	var snapshots := tile_map.get_round_turn_snapshots()
+	if snapshots.is_empty():
+		return
+	restore_turn_history(snapshots)
+
+
+## Runs after HexTileMap._ready so hour getters can read the layout safely.
+func _refresh_view_after_map_ready() -> void:
+	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
+	if tile_map == null or not tile_map.is_hour_scoring_ready():
+		return
+	_refresh_view(false)
+
+
 func _on_turn_started() -> void:
 	# New turn. Show its empty row before the player ends the turn and resolve begins.
 	_viewed_turn_index = _turn_history.size()
@@ -59,7 +74,7 @@ func _on_turn_started() -> void:
 	_live_revealed_score = 0
 	_score_total_counter.snap_to(0)
 	_style_total_score(0)
-	_set_rows_live_mode(true)
+	_set_hour_results_live_mode(true)
 	_refresh_view(false)
 
 
@@ -69,7 +84,7 @@ func _on_turn_ended() -> void:
 	_score_total_counter.snap_to(0)
 	_style_total_score(0)
 	_viewed_turn_index = _turn_history.size()
-	_set_rows_live_mode(true)
+	_set_hour_results_live_mode(true)
 	_refresh_view(false)
 
 
@@ -85,7 +100,7 @@ func _on_segment_reveals_finished(turn_total_score: int) -> void:
 		return
 	_live_revealed_score = turn_total_score
 	if GameManager.should_skip_turn_presentation():
-		_snap_all_segment_scores_to_zero()
+		_snap_hour_results_to_zero()
 		_score_total_counter.snap_to(turn_total_score)
 		score_total_number.text = _format_stat(turn_total_score)
 		_style_total_score(turn_total_score)
@@ -94,7 +109,7 @@ func _on_segment_reveals_finished(turn_total_score: int) -> void:
 	call_deferred("_play_turn_total_transfer_animation", turn_total_score)
 
 
-## Drains each segment Score to zero while the turn total counts up, then punches.
+## Drains the hour row to zero while the turn total counts up, then punches.
 func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
 	if turn_total_score <= 0:
 		_score_total_counter.snap_to(0)
@@ -102,9 +117,8 @@ func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
 		EventBus.turn_total_count_finished.emit()
 		return
 
-	for child in segment_results_list.get_children():
-		if child.has_method("play_rating_drain_to_zero"):
-			child.play_rating_drain_to_zero()
+	if hour_results.has_method("play_rating_drain_to_zero"):
+		hour_results.play_rating_drain_to_zero()
 
 	_score_total_counter.snap_to(0)
 	var count_tween := _score_total_counter.play(float(turn_total_score))
@@ -127,10 +141,9 @@ func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
 	_finish_turn_total_land_animation()
 
 
-func _snap_all_segment_scores_to_zero() -> void:
-	for child in segment_results_list.get_children():
-		if child.has_method("snap_rating_to_zero"):
-			child.snap_rating_to_zero()
+func _snap_hour_results_to_zero() -> void:
+	if hour_results.has_method("snap_rating_to_zero"):
+		hour_results.snap_rating_to_zero()
 
 
 func _on_round_score_commit_animation_requested(transfer_amount: int, round_score_before: int) -> void:
@@ -183,7 +196,7 @@ func _on_round_changed(_new_round: int) -> void:
 	_turn_history.clear()
 	_viewed_turn_index = 0
 	_resolving_turn = false
-	_set_rows_live_mode(_resolving_turn)
+	_set_hour_results_live_mode(_resolving_turn)
 	_refresh_view(false)
 
 
@@ -213,17 +226,16 @@ func _is_viewing_live_turn() -> bool:
 	return _resolving_turn and _is_viewing_current_turn()
 
 
-func _set_rows_live_mode(enabled: bool) -> void:
-	for child in segment_results_list.get_children():
-		if child.has_method("set_accepts_live_updates"):
-			child.set_accepts_live_updates(enabled)
+func _set_hour_results_live_mode(enabled: bool) -> void:
+	if hour_results.has_method("set_accepts_live_updates"):
+		hour_results.set_accepts_live_updates(enabled)
 
 
 func restore_turn_history(snapshots: Array) -> void:
 	_turn_history = snapshots.duplicate(true)
 	_viewed_turn_index = _turn_history.size()
 	_resolving_turn = false
-	_set_rows_live_mode(true)
+	_set_hour_results_live_mode(true)
 	_refresh_view(false)
 
 
@@ -232,22 +244,21 @@ func _refresh_view(animate: bool) -> void:
 	_update_navigation_buttons()
 
 	if _is_viewing_live_turn():
-		_set_rows_live_mode(true)
-		_sync_rows_from_tile_map(animate)
+		_set_hour_results_live_mode(true)
+		_sync_hour_results_from_tile_map(animate)
 		return
 
 	if _is_viewing_current_turn():
-		_set_rows_live_mode(true)
-		_apply_empty_snapshot(animate)
+		_set_hour_results_live_mode(true)
+		_apply_empty_hour_results(animate)
 		return
 
-	_set_rows_live_mode(false)
+	_set_hour_results_live_mode(false)
 	if _turn_history.is_empty():
-		_apply_empty_snapshot(animate)
+		_apply_empty_hour_results(animate)
 		return
 
-	var snapshot: Dictionary = _turn_history[_viewed_turn_index]
-	_apply_snapshot(snapshot, animate)
+	_apply_snapshot(_turn_history[_viewed_turn_index], animate)
 
 
 func _update_turn_label() -> void:
@@ -260,53 +271,63 @@ func _update_navigation_buttons() -> void:
 
 
 func _apply_snapshot(snapshot: Dictionary, animate: bool) -> void:
-	var segments: Array = snapshot.get("segments", [])
-	for child in segment_results_list.get_children():
-		var course_index: int = child.course_index
-		if course_index < 0 or course_index >= segments.size():
-			child.apply_turn_snapshot(0, 1, 1, 0, animate)
-			continue
-
-		var segment_data: Dictionary = segments[course_index]
-		child.apply_turn_snapshot(
-			int(segment_data.get("flavour", 0)),
-			float(segment_data.get("additive_mult", segment_data.get("mult", 1.0))),
-			float(segment_data.get("multiplicative_mult", 1.0)),
-			int(segment_data.get("rating", 0)),
-			animate
-		)
-
+	var hour_data := _hour_data_from_snapshot(snapshot)
+	_apply_hour_results(
+		int(hour_data.get("flavour", 0)),
+		float(hour_data.get("additive_mult", hour_data.get("mult", 1.0))),
+		float(hour_data.get("multiplicative_mult", 1.0)),
+		int(hour_data.get("rating", 0)),
+		animate
+	)
 	_update_turn_total(int(snapshot.get("total_rating", 0)), animate)
 
 
-func _apply_empty_snapshot(animate: bool) -> void:
-	for child in segment_results_list.get_children():
-		child.apply_turn_snapshot(0, 1, 1, 0, animate)
+func _apply_empty_hour_results(animate: bool) -> void:
+	_apply_hour_results(0, 1.0, 1.0, 0, animate)
 	_update_turn_total(0, animate)
 
 
-func _sync_rows_from_tile_map(animate: bool) -> void:
+func _sync_hour_results_from_tile_map(animate: bool) -> void:
 	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
-	if tile_map == null:
-		_apply_empty_snapshot(animate)
+	if tile_map == null or not tile_map.is_hour_scoring_ready():
+		_apply_empty_hour_results(animate)
 		return
 
-	for child in segment_results_list.get_children():
-		var course_index: int = child.course_index
-		var flavour := tile_map.get_segment_turn_flavour(course_index)
-		var additive_mult := tile_map.get_segment_additive_mult(course_index)
-		var multiplicative_mult := tile_map.get_segment_multiplicative_mult(course_index)
-		var rating := GameManager.compute_segment_turn_contribution(
-			course_index,
-			flavour,
-			additive_mult,
-			multiplicative_mult
-		)
-		child.apply_turn_snapshot(flavour, additive_mult, multiplicative_mult, rating, animate, false)
+	var flavour := tile_map.get_hour_flavour()
+	var additive_mult := tile_map.get_hour_additive_mult()
+	var rating := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
+	_apply_hour_results(flavour, additive_mult, 1.0, rating, animate, false)
 
 	# Turn total is driven by the reveal transfer beat, not live tile-map sync.
 	if not _is_viewing_live_turn():
 		_score_total_counter.snap_to(_live_revealed_score)
+
+
+func _hour_data_from_snapshot(snapshot: Dictionary) -> Dictionary:
+	var segments: Array = snapshot.get("segments", [])
+	if segments.is_empty():
+		return {}
+	return segments[0]
+
+
+func _apply_hour_results(
+	flavour: int,
+	additive_mult: float,
+	multiplicative_mult: float,
+	rating: int,
+	animate: bool,
+	reveal_rating: bool = true
+) -> void:
+	if not hour_results.has_method("apply_turn_snapshot"):
+		return
+	hour_results.apply_turn_snapshot(
+		flavour,
+		additive_mult,
+		multiplicative_mult,
+		rating,
+		animate,
+		reveal_rating
+	)
 
 
 func _update_turn_total(total_score: int, animate: bool) -> void:
@@ -413,28 +434,6 @@ func _shake_screen(value: int) -> void:
 		return
 	var intensity := ScoreReadoutStyle.intensity_for_score(value)
 	camera.shake(lerpf(CAMERA_SHAKE_MIN, CAMERA_SHAKE_MAX, intensity), SHAKE_DURATION)
-
-
-## Creates one segment_results row for each map segment after the board is generated.
-func _build_segment_rows() -> void:
-	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
-	if tile_map == null:
-		return
-
-	for child in segment_results_list.get_children():
-		child.queue_free()
-
-	for course_index in tile_map.get_segment_count():
-		var row: PanelContainer = SEGMENT_RESULTS_SCENE.instantiate()
-		row.course_index = course_index
-		segment_results_list.add_child(row)
-
-	_set_rows_live_mode(_is_viewing_live_turn())
-	var snapshots := tile_map.get_round_turn_snapshots()
-	if not snapshots.is_empty():
-		restore_turn_history(snapshots)
-	else:
-		_refresh_view(false)
 
 
 func _exit_tree() -> void:

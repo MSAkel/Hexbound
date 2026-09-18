@@ -106,8 +106,6 @@ static func pick_random_placeable(
 			continue
 		if not exclude_id.is_empty() and template.id == exclude_id:
 			continue
-		if not template.is_legal_for_layout(GameManager.selected_character):
-			continue
 		candidates.append(template)
 
 	if candidates.is_empty():

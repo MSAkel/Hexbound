@@ -20,9 +20,7 @@ const ITEM_BACKGROUND := Color("182b30e8")
 const ITEM_BORDER := Color("617575")
 
 enum CollectionTab {
-	INGREDIENT,
-	KITCHENWARE,
-	DISH,
+	CARDS,
 	CONDIMENTS,
 	CHARACTERS,
 	EVENTS,
@@ -53,9 +51,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _configure_tabs() -> void:
 	var titles := PackedStringArray([
-		FeastDisplay.INGREDIENT,
-		"Kitchenware",
-		"Meals",
+		"Cards",
 		FeastDisplay.CONDIMENTS,
 		"Characters",
 		"Events",
@@ -69,12 +65,8 @@ func _configure_tabs() -> void:
 func _show_tab(tab: int) -> void:
 	_clear_collection()
 	match tab:
-		CollectionTab.INGREDIENT:
-			_show_ingredients_cards()
-		CollectionTab.KITCHENWARE:
-			_show_kitchenware_cards()
-		CollectionTab.DISH:
-			_show_dish_cards()
+		CollectionTab.CARDS:
+			_show_cards()
 		CollectionTab.CONDIMENTS:
 			_show_condiments()
 		CollectionTab.CHARACTERS:
@@ -103,32 +95,12 @@ func _show_tile_cards(cards: Array) -> void:
 		card_ui.set_card(card)
 
 
-func _show_ingredients_cards() -> void:
+func _show_cards() -> void:
 	var cards: Array = []
 	for card in GameManager.tile_cards_pool:
-		if card is TileCard and _is_ingredients_card(card as TileCard):
+		if card is TileCard:
 			cards.append(card)
 	_show_tile_cards(cards)
-
-
-func _show_kitchenware_cards() -> void:
-	var cards: Array = []
-	for card in GameManager.tile_cards_pool:
-		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.KITCHENWARE:
-			cards.append(card)
-	_show_tile_cards(cards)
-
-
-func _show_dish_cards() -> void:
-	var cards: Array = []
-	for card in GameManager.tile_cards_pool:
-		if card is TileCard and (card as TileCard).type == TileCard.TileCardType.MEAL:
-			cards.append(card)
-	_show_tile_cards(cards)
-
-
-func _is_ingredients_card(card: TileCard) -> bool:
-	return card.type == TileCard.TileCardType.INGREDIENT
 
 
 func _show_condiments() -> void:
@@ -268,18 +240,14 @@ func _create_character_entry(character: CharacterDefinition) -> PanelContainer:
 
 	details.add_child(_create_label(character.display_name.to_upper(), 27, TEXT_PRIMARY))
 	details.add_child(_create_separator())
-	details.add_child(_create_label("FIRE ORDER", 14, ACCENT))
-	var order_label := _create_label(character.trigger_order_display_name, 20, TEXT_PRIMARY)
-	order_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	details.add_child(order_label)
+	details.add_child(_create_label("PASSIVE", 14, ACCENT))
+	var passive_label := _create_label(character.passive_description, 20, TEXT_PRIMARY)
+	passive_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	passive_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.add_child(passive_label)
 
-	var description := _create_label(character.trigger_order_description, 16, TEXT_SECONDARY)
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	description.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	details.add_child(description)
-
-	var segment_text := "Variable courses" if character.segments_count < 0 else "%d courses" % character.segments_count
-	details.add_child(_create_label(segment_text.to_upper(), 14, ACCENT))
+	var course_text := "%d courses" % HexMapLayout.BOARD_ROW_LENGTHS.size()
+	details.add_child(_create_label(course_text.to_upper(), 14, ACCENT))
 	return panel
 
 

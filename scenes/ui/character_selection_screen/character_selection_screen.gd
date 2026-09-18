@@ -37,7 +37,6 @@ func _ready() -> void:
 	var music := SOUNDTRACK.get_music_for_scene(scene_file_path)
 	if music:
 		AudioManager.play_music(music)
-	SegmentPassiveUnlockPresenter.present_if_needed(self)
 	abandon_run_confirm_panel.confirmed.connect(_on_abandon_run_confirmed)
 	abandon_run_confirm_panel.cancelled.connect(_on_abandon_run_cancelled)
 	_bind_screen_hover_sounds()
@@ -161,10 +160,10 @@ func _on_abandon_run_cancelled() -> void:
 
 func _start_new_run() -> void:
 	var selected_character := layout_details.get_selected_character()
-	# Character choice locks in layout rules for the entire run.
+	# Character choice locks in chef passives for the entire run.
 	GameManager.selected_character = selected_character
 	GameManager.selected_difficulty = difficulty_container.get_selected_difficulty()
-	GameManager.apply_active_segment_passives(selected_character.id)
+	GameManager.bind_chef_passives()
 	RunSaveManager.set_pending_run_seed(seeded_run_panel.get_effective_seed_text())
 	RunSaveManager.request_scene_enter_transition()
 	get_tree().change_scene_to_file(ScenePaths.MAIN)

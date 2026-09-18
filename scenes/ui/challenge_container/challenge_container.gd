@@ -1,10 +1,8 @@
-extends Control
+extends PanelContainer
 
-@onready var event_panel: PanelContainer = $"."
-@onready var next_event_round: Label = $VBoxContainer/NextEventRound
-@onready var event_name: Label = $VBoxContainer/EventName
-@onready var event_description: Label = $VBoxContainer/EventDescription
-@onready var event_icon: TextureRect = $TextureRect
+## Top-right event chip. Tooltip carries the full event copy.
+
+@onready var event_icon: TextureRect = $EventIcon
 
 const ACTIVE_ICON_MODULATE := Color(1.35, 1.15, 0.55)
 const IDLE_ICON_MODULATE := Color.WHITE
@@ -15,36 +13,18 @@ func _ready() -> void:
 	EventBus.event_schedule_changed.connect(_update_event_preview)
 	EventBus.event_changed.connect(_update_event_preview)
 
-	event_panel.mouse_entered.connect(_on_mouse_entered)
-	event_panel.mouse_exited.connect(_on_mouse_exited)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
 
 	_update_event_preview()
 
 
 func _update_event_preview(_new_day: int = -1) -> void:
-	# Keep showing the active event name until its day completes.
 	if EventManager.active_event != -1:
-		event_name.text = EventManager.get_event_name(EventManager.active_event)
 		event_icon.modulate = ACTIVE_ICON_MODULATE
 		return
 
 	event_icon.modulate = IDLE_ICON_MODULATE
-
-	var next_day: int = EventManager.get_next_event_round()
-	if next_day == -1:
-		next_event_round.text = "None"
-		event_name.text = ""
-		event_description.text = ""
-		return
-
-	var next_event := EventManager.get_next_event_type()
-	next_event_round.text = "Day %s" % next_day
-	if next_event == -1:
-		event_name.text = ""
-		event_description.text = ""
-	else:
-		event_name.text = EventManager.get_event_name(next_event)
-		event_description.text = EventManager.get_event_description(next_event)
 
 
 func _get_tooltip_text() -> String:
@@ -66,15 +46,11 @@ func _get_tooltip_text() -> String:
 	return "Day %d — %s\n%s" % [next_day, next_name, description]
 
 
-func _get_tooltip_rect() -> Rect2:
-	return event_panel.get_global_rect()
-
-
 func _on_mouse_entered() -> void:
 	var text := _get_tooltip_text()
 	if text.is_empty():
 		return
-	EventBus.toggle_tooltip.emit(true, text, _get_tooltip_rect())
+	EventBus.toggle_tooltip.emit(true, text, get_global_rect())
 
 
 func _on_mouse_exited() -> void:

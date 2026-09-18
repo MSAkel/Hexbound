@@ -1,29 +1,17 @@
 [gd_scene format=3 uid="uid://crffik30sf5rg"]
 
-[ext_resource type="Texture2D" uid="uid://badassbgep53i" path="res://assets/gui/panels/notebook.png" id="1_amxqk"]
+[ext_resource type="Texture2D" uid="uid://cq5hq3s8fedo8" path="res://assets/gui/restaurant_theme/large_box_panel.png" id="1_i0t37"]
 [ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bsyc5shwtko4o" path="res://assets/icons/others/navigation_arrow.png" id="2_arrow"]
 [ext_resource type="Script" uid="uid://bj3fm6loe7jfv" path="res://scenes/ui/RunInfoDisplay/segments_container/round_score_footer.gd" id="2_round_score"]
+[ext_resource type="PackedScene" uid="uid://behfllgh3b7fc" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.tscn" id="3_hour_results"]
 
 [sub_resource type="StyleBoxTexture" id="PanelMain"]
 content_margin_left = 70.0
 content_margin_top = 61.0
 content_margin_right = 54.0
 content_margin_bottom = 63.0
-texture = ExtResource("1_amxqk")
-
-[sub_resource type="StyleBoxFlat" id="HeaderStrip"]
-content_margin_left = 10.0
-content_margin_top = 5.0
-content_margin_right = 10.0
-content_margin_bottom = 5.0
-bg_color = Color(0.898, 0.808, 0.639, 0.58)
-border_width_bottom = 1
-border_color = Color(0.545, 0.431, 0.243, 0.42)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+texture = ExtResource("1_i0t37")
 
 [sub_resource type="StyleBoxFlat" id="TotalPanel"]
 content_margin_left = 14.0
@@ -43,7 +31,9 @@ corner_radius_bottom_left = 10
 
 [node name="SegmentsContainer" type="PanelContainer" unique_id=1933303425]
 texture_filter = 1
-custom_minimum_size = Vector2(430, 0)
+custom_minimum_size = Vector2(400, 0)
+offset_right = 430.0
+offset_bottom = 326.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("PanelMain")
@@ -54,14 +44,8 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 6
 
-[node name="Title" type="Label" parent="VBoxContainer" unique_id=49207560 groups=["main_ui"]]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
-theme_override_font_sizes/font_size = 20
-text = "Rating Breakdown"
-horizontal_alignment = 1
-
 [node name="TurnsContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=201524887]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 12
@@ -95,78 +79,8 @@ ignore_texture_size = true
 stretch_mode = 5
 flip_h = true
 
-[node name="ColumnHeader" type="PanelContainer" parent="VBoxContainer" unique_id=1758466040]
-visible = false
+[node name="HourResults" parent="VBoxContainer" unique_id=1594320159 instance=ExtResource("3_hour_results")]
 layout_mode = 2
-theme_override_styles/panel = SubResource("HeaderStrip")
-
-[node name="HeaderRow" type="HBoxContainer" parent="VBoxContainer/ColumnHeader" unique_id=663174480]
-layout_mode = 2
-theme_override_constants/separation = 7
-
-[node name="SegmentLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1083075877]
-custom_minimum_size = Vector2(46, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.72)
-theme_override_font_sizes/font_size = 11
-text = "#"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="EnergyLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=378371480]
-custom_minimum_size = Vector2(68, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.8
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.88)
-theme_override_font_sizes/font_size = 11
-text = "FLAVOUR"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Times" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1489884249]
-custom_minimum_size = Vector2(14, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.72)
-theme_override_font_sizes/font_size = 16
-text = "x"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="MultLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1744533715]
-custom_minimum_size = Vector2(54, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.7
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 0.88)
-theme_override_font_sizes/font_size = 11
-text = "MULT"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Equals" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=536594487]
-custom_minimum_size = Vector2(14, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 1)
-theme_override_font_sizes/font_size = 17
-text = "="
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ScoreLabel" type="Label" parent="VBoxContainer/ColumnHeader/HeaderRow" unique_id=1635139380]
-custom_minimum_size = Vector2(120, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.7
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
-theme_override_font_sizes/font_size = 11
-text = "RATING"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="SegmentResultsList" type="VBoxContainer" parent="VBoxContainer" unique_id=1045123781]
-layout_mode = 2
-theme_override_constants/separation = 3
 
 [node name="TurnTotalContainer" type="PanelContainer" parent="VBoxContainer" unique_id=1366490092]
 layout_mode = 2
@@ -185,12 +99,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.178, 0.417, 0.426, 1)
 theme_override_font_sizes/font_size = 18
 text = "HOUR TOTAL"
-
-[node name="PayoffLabel" type="Label" parent="VBoxContainer/TurnTotalContainer/TotalRow/TotalCopy" unique_id=698713244]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 0.9)
-theme_override_font_sizes/font_size = 16
-text = "COMBINED RATING"
 
 [node name="ScoreTotalNumber" type="Label" parent="VBoxContainer/TurnTotalContainer/TotalRow" unique_id=934089326 groups=["main_ui"]]
 layout_mode = 2

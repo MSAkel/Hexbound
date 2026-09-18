@@ -1,6 +1,6 @@
 extends Control
 
-## Center-screen event reveal. Stays until continue is pressed, then flies into EventContainer.
+## Center-screen event reveal. Stays until continue is pressed, then flies into the event HUD chip.
 
 enum Phase { HIDDEN, INTRO, DOCKING, DOCKED }
 

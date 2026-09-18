@@ -33,11 +33,7 @@ func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 
 func _adjacent_fruit_xmult(tile: Hex) -> float:
-	var fruit_count := _get_adjacent_fruit_cards(tile).size()
+	var fruit_count := _cards_by_kind(tile, TAG_FRUIT, QueryScope.ADJACENT).size()
 	if fruit_count <= 0:
 		return 0.0
 	return float(_get_production_amount()) + MULT_PER_FRUIT * float(fruit_count)
-
-
-func _get_adjacent_fruit_cards(tile: Hex) -> Array[TileCard]:
-	return _cards_by_kind(tile, TAG_FRUIT, QueryScope.ADJACENT)

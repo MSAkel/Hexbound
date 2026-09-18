@@ -128,11 +128,14 @@ func pick_random_with(rng: RandomNumberGenerator, array: Array) -> Variant:
 ## Sort placed runes by map coordinates so pool order cannot change a pick.
 func sort_placed_tile_cards(candidates: Array[TileCard], tile_map: HexTileMap) -> Array[TileCard]:
 	var sorted := candidates.duplicate()
+	# Snapshot coords once. The comparator would otherwise look up each card on every compare.
+	var coords_by_card := {}
+	for card: TileCard in sorted:
+		var hex := tile_map.get_hex_for_tile_card(card) if tile_map != null else null
+		coords_by_card[card] = hex.coordinates if hex != null else Vector2i(2147483647, 2147483647)
 	sorted.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-		var a_hex := tile_map.get_hex_for_tile_card(a) if tile_map != null else null
-		var b_hex := tile_map.get_hex_for_tile_card(b) if tile_map != null else null
-		var a_coords := a_hex.coordinates if a_hex != null else Vector2i(2147483647, 2147483647)
-		var b_coords := b_hex.coordinates if b_hex != null else Vector2i(2147483647, 2147483647)
+		var a_coords: Vector2i = coords_by_card[a]
+		var b_coords: Vector2i = coords_by_card[b]
 		if a_coords.x != b_coords.x:
 			return a_coords.x < b_coords.x
 		if a_coords.y != b_coords.y:

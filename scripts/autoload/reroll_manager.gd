@@ -18,6 +18,12 @@ func reset_for_new_run() -> void:
 	EventBus.rerolls_changed.emit(_remaining)
 
 
+## Refill the pool at the start of each day.
+func reset_for_new_round() -> void:
+	_remaining = STARTING_REROLLS_PER_RUN
+	EventBus.rerolls_changed.emit(_remaining)
+
+
 func can_reroll() -> bool:
 	return _remaining > 0
 

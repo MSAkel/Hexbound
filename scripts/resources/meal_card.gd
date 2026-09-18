@@ -15,6 +15,10 @@ extends TileCard
 
 ## A Kitchenware recipe slot is matched by card type, not by an authored ingredient tag.
 
+## Last prefix resolve for this instance. Cleared at each public chip, inspect, or fire.
+var _prefix_memo_tile: Hex = null
+var _prefix_memo: Dictionary = {}
+
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	return _coords_for_immediately_previous_hexes(hover_tile, get_recipe_prefix_size())
@@ -22,25 +26,22 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 ## Prefix seats holding a card whose tag this dish can use. Gold even if the bag is incomplete.
 func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
-	var gold: Array[Vector2i] = []
-	for hex: Hex in _get_immediately_previous_hexes(hover_tile, get_recipe_prefix_size()):
-		if hex.active_tile_card == null:
-			continue
-		if card_matches_needed_tag(hex.active_tile_card):
-			gold.append(hex.coordinates)
-	return gold
+	return _prefix_preview_coords(hover_tile, true)
 
 
 ## Occupied prefix seats whose tags cannot fill this dish's recipe.
 func get_trigger_preview_invalid_coords(hover_tile: Hex) -> Array[Vector2i]:
-	var invalid: Array[Vector2i] = []
+	return _prefix_preview_coords(hover_tile, false)
+
+
+func _prefix_preview_coords(hover_tile: Hex, matching: bool) -> Array[Vector2i]:
+	var coords: Array[Vector2i] = []
 	for hex: Hex in _get_immediately_previous_hexes(hover_tile, get_recipe_prefix_size()):
 		if hex.active_tile_card == null:
 			continue
-		if card_matches_needed_tag(hex.active_tile_card):
-			continue
-		invalid.append(hex.coordinates)
-	return invalid
+		if card_matches_needed_tag(hex.active_tile_card) == matching:
+			coords.append(hex.coordinates)
+	return coords
 
 
 ## True when this card's tag could fill at least one slot in the recipe bag.
@@ -54,6 +55,7 @@ func card_matches_needed_tag(card: TileCard) -> bool:
 
 
 func get_board_chip(tile: Hex = null) -> Dictionary:
+	_clear_prefix_memo()
 	if tile == null:
 		return _stat_board_chip()
 	var plated := _compute_plated_outputs(tile)
@@ -83,10 +85,11 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	if not is_recipe_ready(tile):
+	_clear_prefix_memo()
+	var recipe := get_matched_prefix_recipe(tile)
+	if get_recipe_prefix_size() > 0 and recipe.is_empty():
 		failed_tile_card_text(tile)
 		return
-	var recipe := get_matched_prefix_recipe(tile)
 	var flavour := _plated_flavour_from_recipe(recipe)
 	var additive_mult := _plated_additive_mult_from_recipe(recipe)
 	var multiplicative_mult := _plated_multiplicative_mult_from_recipe(recipe)
@@ -104,7 +107,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 
 ## Empty when the prefix recipe is incomplete.
 func _compute_plated_outputs(tile: Hex) -> Dictionary:
-	if not is_recipe_ready(tile):
+	if get_recipe_prefix_size() > 0 and _resolved_prefix(tile).is_empty():
 		return {}
 	return {
 		"flavour": _preview_plated_flavour(tile),
@@ -169,6 +172,7 @@ func is_recipe_ready(tile: Hex) -> bool:
 
 ## Inspect copy for the hover panel. Bag first, then whether this seat's prefix matches.
 func get_inspect_recipe_text(tile: Hex = null) -> String:
+	_clear_prefix_memo()
 	var bag := _recipe_bag_text()
 	if bag.is_empty():
 		return ""
@@ -204,12 +208,40 @@ func _append_recipe_part(parts: PackedStringArray, count: int, tag: String) -> v
 
 ## Prefix cards when every required seat is filled and the tag bag matches. Empty on fail.
 func get_matched_prefix_recipe(tile: Hex) -> Array[TileCard]:
+	var resolved := _resolved_prefix(tile)
+	if resolved.is_empty():
+		var empty: Array[TileCard] = []
+		return empty
+	var cards: Array[TileCard] = resolved["cards"]
+	return cards
+
+
+func _clear_prefix_memo() -> void:
+	_prefix_memo_tile = null
+	_prefix_memo = {}
+
+
+## Occupied prefix plus slot assignment. Memoized for one chip, inspect, or fire call.
+func _resolved_prefix(tile: Hex) -> Dictionary:
+	if tile == _prefix_memo_tile:
+		return _prefix_memo
+	_prefix_memo_tile = tile
+	_prefix_memo = _compute_resolved_prefix(tile)
+	return _prefix_memo
+
+
+func _compute_resolved_prefix(tile: Hex) -> Dictionary:
 	var cards := _prefix_recipe_cards(tile)
 	if cards.is_empty():
-		return []
-	if _assign_recipe_slots(cards).is_empty():
-		return []
-	return cards
+		return {}
+	var assigned := _assign_recipe_slots(cards)
+	if assigned.is_empty():
+		return {}
+	return {
+		"cards": cards,
+		"assigned": assigned,
+		"hexes": _get_immediately_previous_hexes(tile, cards.size()),
+	}
 
 
 func _recipe_slot_counts() -> Dictionary:
@@ -322,7 +354,7 @@ func _sum_hour_additive_mult_for_kind(cards: Array[TileCard], kind: StringName) 
 
 func _cards_assigned_to_kind(cards: Array[TileCard], kind: StringName) -> Array[TileCard]:
 	var matched: Array[TileCard] = []
-	var assigned := _assign_recipe_slots(cards)
+	var assigned := _assignment_for_cards(cards)
 	if assigned.is_empty():
 		return matched
 	for card: TileCard in cards:
@@ -330,6 +362,13 @@ func _cards_assigned_to_kind(cards: Array[TileCard], kind: StringName) -> Array[
 			continue
 		matched.append(card)
 	return matched
+
+
+## Reuses the memo assignment when these are the same prefix cards just resolved.
+func _assignment_for_cards(cards: Array[TileCard]) -> Dictionary:
+	if _prefix_memo.has("cards") and _prefix_memo["cards"] == cards:
+		return _prefix_memo.get("assigned", {})
+	return _assign_recipe_slots(cards)
 
 
 ## Flavour this prefix card will pay. Hour snapshot after it fires, otherwise its chip.
@@ -364,14 +403,13 @@ func _chip_amount(card: TileCard, hex: Hex, fallback: float) -> float:
 
 
 func _sum_expected_flavour_for_kind(tile: Hex, kind: StringName) -> int:
-	var cards := _prefix_recipe_cards(tile)
-	if cards.is_empty():
+	var resolved := _resolved_prefix(tile)
+	if resolved.is_empty():
 		return 0
-	var assigned := _assign_recipe_slots(cards)
-	if assigned.is_empty():
-		return 0
+	var cards: Array[TileCard] = resolved["cards"]
+	var assigned: Dictionary = resolved["assigned"]
+	var hexes: Array = resolved["hexes"]
 	var total := 0
-	var hexes := _get_immediately_previous_hexes(tile, get_recipe_prefix_size())
 	for i in range(cards.size()):
 		if assigned.get(cards[i], &"") != kind:
 			continue
@@ -380,14 +418,13 @@ func _sum_expected_flavour_for_kind(tile: Hex, kind: StringName) -> int:
 
 
 func _sum_expected_additive_mult_for_kind(tile: Hex, kind: StringName) -> float:
-	var cards := _prefix_recipe_cards(tile)
-	if cards.is_empty():
+	var resolved := _resolved_prefix(tile)
+	if resolved.is_empty():
 		return 0.0
-	var assigned := _assign_recipe_slots(cards)
-	if assigned.is_empty():
-		return 0.0
+	var cards: Array[TileCard] = resolved["cards"]
+	var assigned: Dictionary = resolved["assigned"]
+	var hexes: Array = resolved["hexes"]
 	var total := 0.0
-	var hexes := _get_immediately_previous_hexes(tile, get_recipe_prefix_size())
 	for i in range(cards.size()):
 		if assigned.get(cards[i], &"") != kind:
 			continue

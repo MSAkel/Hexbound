@@ -39,15 +39,6 @@ static func _roll_rarity(
 	return TileCard.TileCardRarity.COMMON
 
 
-static func _legal_pool(pool: Array[TileCard]) -> Array[TileCard]:
-	var character := GameManager.selected_character
-	var legal: Array[TileCard] = []
-	for card: TileCard in pool:
-		if card.is_legal_for_layout(character):
-			legal.append(card)
-	return legal
-
-
 # Keep runes that match optional rarity, type, and product filters.
 static func _filter_runes(
 	pool: Array[TileCard],
@@ -97,11 +88,11 @@ static func _shuffle_array(array: Array, rng: RandomNumberGenerator) -> void:
 		array[swap_index] = temp
 
 
+## Picks one rune from a pool that is already in a stable order. Callers sort first.
 static func _pick_from(pool: Array[TileCard], rng: RandomNumberGenerator) -> TileCard:
-	var sorted := _sorted_by_id(pool)
-	if sorted.is_empty():
+	if pool.is_empty():
 		return null
-	return sorted[_randi_range(rng, 0, sorted.size() - 1)]
+	return pool[_randi_range(rng, 0, pool.size() - 1)]
 
 
 # Draw `count` runes with rarity weights. Each slot rolls rarity, then picks from that bucket.
@@ -114,7 +105,7 @@ static func card_draw(
 	rng: RandomNumberGenerator = null
 ) -> Array[TileCard]:
 	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
-	var available := _sorted_by_id(_legal_pool(source_pool))
+	var available := _sorted_by_id(source_pool)
 	var result: Array[TileCard] = []
 
 	for _i in count:
@@ -149,7 +140,7 @@ static func draw_filtered(
 	rng: RandomNumberGenerator = null
 ) -> Array[TileCard]:
 	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
-	var available := _sorted_by_id(_filter_runes(_legal_pool(source_pool), rarity, rune_type, product))
+	var available := _sorted_by_id(_filter_runes(source_pool, rarity, rune_type, product))
 	var result: Array[TileCard] = []
 
 	if available.is_empty():

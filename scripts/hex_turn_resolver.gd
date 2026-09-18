@@ -54,12 +54,13 @@ func resolve_turn() -> void:
 	_clear_trigger_link_sessions()
 	_skip_presentation_steps = 0
 
-	for tile: Hex in map.get_hexes_in_trigger_order():
+	var hexes := map.get_hexes_in_trigger_order()
+	for tile: Hex in hexes:
 		if tile.active_tile_card != null:
 			tile.active_tile_card.reset_hour_product_snapshot()
 	map.refresh_dish_output_chips()
 
-	for tile: Hex in map.get_hexes_in_trigger_order():
+	for tile: Hex in hexes:
 		if _should_bypass_primary_trigger_order_activation(tile):
 			await _mark_segment_resolved_if_natural_pass_done(tile)
 			continue
@@ -240,14 +241,12 @@ func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> void:
 	if segment_index < 0:
 		return
 	var seen_current := false
-	for hex: Hex in map.get_hexes_in_trigger_order():
+	for hex: Hex in map.get_hexes_in_segment(segment_index):
 		if hex == current:
 			seen_current = true
 			continue
 		if not seen_current:
 			continue
-		if map.get_segment_index(hex.coordinates) != segment_index:
-			break
 		if map.is_tile_card_active(hex):
 			return
 	if not map.mark_segment_resolved(segment_index):
@@ -288,17 +287,12 @@ func _wait_pace(duration: float) -> void:
 		await get_tree().process_frame
 
 
-## Flavour x (additive mult x multiplicative mult) summed across segments.
+## Flavour x Additive for the whole hour. xMult is already folded into Additive.
 func _sum_segment_contributions() -> int:
-	var total := 0
-	for segment_index in map.get_segment_count():
-		total += GameManager.compute_segment_turn_contribution(
-			segment_index,
-			map.get_segment_turn_flavour(segment_index),
-			map.get_segment_additive_mult(segment_index),
-			map.get_segment_multiplicative_mult(segment_index)
-		)
-	return total
+	return GameManager.compute_hour_turn_contribution(
+		map.get_hour_flavour(),
+		map.get_hour_additive_mult()
+	)
 
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
@@ -309,31 +303,27 @@ func _play_segment_turn_result_reveals() -> void:
 	EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 
 
-## Updates the breakdown row once this segment's seal animation finishes.
+## Updates the hour Rating row after the last course finishes firing.
 func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	if GameManager.should_skip_turn_presentation():
 		return
-	var flavour := map.get_segment_turn_flavour(segment_index)
-	var additive_mult := map.get_segment_additive_mult(segment_index)
-	var multiplicative_mult := map.get_segment_multiplicative_mult(segment_index)
-	var gold := map.get_segment_turn_gold(segment_index)
+	if segment_index != map.get_segment_count() - 1:
+		return
+
+	var flavour := map.get_hour_flavour()
+	var additive_mult := map.get_hour_additive_mult()
+	var gold := map.get_hour_gold()
+	var contribution := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
 	if flavour == 0 and gold == 0:
 		return
 
-	var contribution := GameManager.compute_segment_turn_contribution(
-		segment_index,
-		flavour,
-		additive_mult,
-		multiplicative_mult
-	)
-
-	EventBus.segment_reveal_started.emit(segment_index)
+	EventBus.segment_reveal_started.emit(0)
 
 	if contribution > 0:
 		AudioManager.play_sfx(UISounds.COURSE_RESULT)
-		map._emit_segment_turn_results_changed(segment_index, true)
-		EventBus.segment_score_revealed.emit(segment_index, contribution)
-		await _wait_for_segment_score_count_finished(segment_index)
+		map._emit_segment_turn_results_changed(0, true)
+		EventBus.segment_score_revealed.emit(0, contribution)
+		await _wait_for_segment_score_count_finished(0)
 		if _should_linger_on_product():
 			await _wait_pace(TUTORIAL_SCORE_LINGER)
 
@@ -577,10 +567,9 @@ func _on_tile_card_empowered(rune: TileCard) -> void:
 
 
 func _clear_hour_empower() -> void:
-	for tile: Hex in map.get_hexes_in_trigger_order():
-		if tile.active_tile_card == null:
-			continue
-		tile.active_tile_card.clear_empower()
+	for tile: Hex in map.get_all_hexes_with_runes():
+		if tile.active_tile_card != null:
+			tile.active_tile_card.clear_empower()
 
 
 func _on_tile_card_empower_consumed(rune: TileCard) -> void:

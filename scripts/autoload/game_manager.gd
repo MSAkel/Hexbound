@@ -84,6 +84,8 @@ var turn_score: int:
 
 ## Every rune resource loaded from disk at startup.
 var tile_cards_pool: Array[TileCard] = []
+## Same pool keyed by card id. Startup load and get_tile_card_by_id share this index.
+var _tile_cards_by_id: Dictionary = {}
 
 #endregion
 
@@ -98,11 +100,15 @@ var turn_stamp: int = 0
 
 #region Character selection
 
-## Chosen on the character selection screen, drives layout rules and starting hand.
+## Chosen on the character selection screen. Drives chef passives and starting hand.
 var selected_character: CharacterDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
 ## Character being edited on the segment passives screen.
 var segment_passives_editor_character: CharacterDefinition = null
+## Keep cooking leftover hours after the day target is met.
+var continue_after_goal: bool = false
+const ChefPassiveRuntimeScript := preload("res://scripts/chef_passive_runtime.gd")
+var chef_passives := ChefPassiveRuntimeScript.new()
 
 #endregion
 
@@ -160,8 +166,6 @@ func end_turn() -> void:
 
 
 func finish_turn_processing() -> void:
-	# A turn is only consumed when it failed to reach the round goal.
-	var should_consume_turn := remaining_turns > 0 and total_round_score + turn_score < required_score
 	CondimentManager.on_turn_resolved()
 
 	var committed_turn_score := turn_score
@@ -173,23 +177,30 @@ func finish_turn_processing() -> void:
 		await _wait_for_round_score_count_finished()
 		await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
 
-	if _has_met_round_goal():
+	var goal_met := _has_met_round_goal()
+	# Continue cooking leftover hours only while the checkbox is on and hours remain after this one.
+	var keep_playing := goal_met and continue_after_goal and remaining_turns > 1
+	var should_consume_turn := remaining_turns > 0 and (not goal_met or keep_playing)
+
+	if goal_met and not keep_playing:
 		if skip_presentation:
-			# RoundFlow waits on summary UI. Playtests record the clear and stop here.
 			pass
 		else:
 			_complete_current_round()
-	else:
+	elif not goal_met:
 		if not skip_presentation:
 			var hand := get_tree().get_first_node_in_group("run_hand") as Hand
 			if hand != null:
 				EventManager.deal_fail_hour_pack(hand)
 		EventBus.turn_started.emit()
+	else:
+		EventBus.turn_started.emit()
 
 	if should_consume_turn:
 		remaining_turns -= 1
 		EventBus.turn_changed.emit()
-		_check_run_loss()
+		if not _has_met_round_goal():
+			_check_run_loss()
 
 	_is_processing_turn = false
 	_reset_turn_presentation_skip()
@@ -208,6 +219,7 @@ func _on_turn_started() -> void:
 	_current_turn_trigger_count = 0
 	GoldManager.reset_turn_tracking()
 	passive_runtime.reset_turn()
+	chef_passives.reset_turn()
 
 
 func _has_met_round_goal() -> bool:
@@ -272,6 +284,7 @@ func advance_round() -> void:
 	current_round += 1
 	# Round-spend counters reset before the round bonus so cards start fresh.
 	GoldManager.reset_round_tracking()
+	RerollManager.reset_for_new_round()
 	total_round_score = 0
 	_apply_round_state()
 
@@ -336,23 +349,12 @@ func get_current_turn_trigger_count() -> int:
 	return _current_turn_trigger_count
 
 
-func apply_active_segment_passives(character_id: String) -> void:
+func bind_chef_passives() -> void:
+	# Segment passives are unused this overhaul. Chef passives are the only run modifiers.
 	_active_passives_by_segment.clear()
-	var set_id := MetaProgressionManager.get_selected_set_id(character_id)
-	var segments := MetaProgressionManager.get_segment_placements(character_id, set_id)
-	for segment_key: String in segments.keys():
-		var segment_index := int(segment_key)
-		var passive_ids: Array = segments[segment_key]
-		if not passive_ids is Array:
-			continue
-		var passives: Array[SegmentPassive] = []
-		for entry in passive_ids:
-			var passive := MetaProgressionManager.get_passive_by_id(String(entry))
-			if passive != null:
-				passives.append(passive)
-		_active_passives_by_segment[segment_index] = passives
-	passive_runtime.bind(_active_passives_by_segment)
+	passive_runtime.bind({})
 	passive_runtime.reset_turn()
+	chef_passives.bind(selected_character)
 
 
 ## Playtest and sandbox helper. Does not write the player profile.
@@ -374,21 +376,28 @@ func get_passives_for_segment(segment_index: int) -> Array[SegmentPassive]:
 	return passive_runtime.get_passives(segment_index)
 
 
-## Rating is Flavour x (additive mult x multiplicative mult), rounded at the segment.
+## Rating is Flavour x Additive. xMult already folded into Additive when it fired.
 func get_segment_turn_contribution_breakdown(
 	_segment_index: int,
 	flavour: int,
 	additive_mult: float,
-	multiplicative_mult: float = 1.0
+	_multiplicative_mult: float = 1.0
 ) -> Dictionary:
-	var combined_mult := additive_mult * multiplicative_mult
-	var contribution := int(round(float(flavour) * combined_mult))
+	return get_hour_turn_contribution_breakdown(flavour, additive_mult)
+
+
+func get_hour_turn_contribution_breakdown(flavour: int, additive_mult: float) -> Dictionary:
+	var contribution := int(round(float(flavour) * additive_mult))
 	return {
 		"display_flavour": flavour,
 		"display_additive_mult": additive_mult,
-		"display_multiplicative_mult": multiplicative_mult,
+		"display_multiplicative_mult": 1.0,
 		"contribution": contribution,
 	}
+
+
+func compute_hour_turn_contribution(flavour: int, additive_mult: float) -> int:
+	return int(get_hour_turn_contribution_breakdown(flavour, additive_mult)["contribution"])
 
 
 func compute_segment_turn_contribution(
@@ -486,17 +495,11 @@ func _load_tile_cards_from_directory(dir_path: String) -> void:
 			push_error("Failed to load rune: " + resource_path)
 			continue
 
-		if _has_tile_card_with_id(rune.id):
+		if _tile_cards_by_id.has(rune.id):
 			continue
 
 		tile_cards_pool.append(rune)
-
-
-func _has_tile_card_with_id(rune_id: String) -> bool:
-	for existing_rune in tile_cards_pool:
-		if existing_rune.id == rune_id:
-			return true
-	return false
+		_tile_cards_by_id[rune.id] = rune
 
 
 func _sort_tile_cards_pool() -> void:
@@ -522,9 +525,10 @@ func reset_for_new_run() -> void:
 	turn_stamp = 0
 	game_speed = GameSettings.game_speed
 	clear_run_peak_tracking()
-	# Peak tracking clears the loadout. Re-apply the selected character's passives for this run.
+	continue_after_goal = false
+	# Peak tracking clears the loadout. Bind chef passives and skip segment passives.
 	if selected_character != null:
-		apply_active_segment_passives(selected_character.id)
+		bind_chef_passives()
 	CondimentManager.reset_for_new_run()
 	RunLedger.reset_for_new_run()
 
@@ -573,6 +577,7 @@ func capture_run_state() -> Dictionary:
 		"peak_segment_score_single_turn": _run_peak_segment_score_single_turn,
 		"peak_triggers_single_turn": _run_peak_triggers_single_turn,
 		"full_map_cards": _run_full_map_cards_achieved,
+		"continue_after_goal": continue_after_goal,
 	}
 
 
@@ -591,16 +596,14 @@ func apply_run_state(state: Dictionary) -> void:
 	_run_peak_segment_score_single_turn = int(state.get("peak_segment_score_single_turn", 0))
 	_run_peak_triggers_single_turn = int(state.get("peak_triggers_single_turn", 0))
 	_run_full_map_cards_achieved = bool(state.get("full_map_cards", false))
-	# Continue does not go through reset_for_new_run, so re-bind the loadout.
+	continue_after_goal = bool(state.get("continue_after_goal", false))
+	# Continue does not go through reset_for_new_run, so re-bind chef passives.
 	if selected_character != null:
-		apply_active_segment_passives(selected_character.id)
+		bind_chef_passives()
 
 
 func get_tile_card_by_id(card_id: String) -> TileCard:
-	for tile_card in tile_cards_pool:
-		if tile_card.id == card_id:
-			return tile_card
-	return null
+	return _tile_cards_by_id.get(card_id) as TileCard
 
 
 #endregion

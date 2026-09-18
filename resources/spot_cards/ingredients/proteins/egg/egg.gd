@@ -13,8 +13,8 @@ func _get_census_amount(tile: Hex) -> float:
 	var segments := 0
 	if tile != null:
 		segments = _get_segment_count(tile)
-	elif GameManager.selected_character != null:
-		segments = GameManager.selected_character.segments_count
+	else:
+		segments = HexMapLayout.BOARD_ROW_LENGTHS.size()
 	if segments <= 0:
 		return _get_production_amount()
 	return _get_production_amount() * float(segments)

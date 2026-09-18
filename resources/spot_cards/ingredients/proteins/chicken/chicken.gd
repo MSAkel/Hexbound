@@ -5,10 +5,6 @@ const FIRST_PRODUCER_AMOUNT := 24
 const OTHER_PRODUCER_AMOUNT := 8
 
 
-func _on_activate_tile_card(tile: Hex) -> void:
-	_pay_effect_amount(tile)
-
-
 func _effect_amount(tile: Hex) -> float:
 	if tile == null:
 		return float(FIRST_PRODUCER_AMOUNT)

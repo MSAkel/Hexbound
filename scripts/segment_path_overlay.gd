@@ -2,7 +2,7 @@ class_name SegmentPathOverlay
 extends Node2D
 
 ## Flame trails along each course in fire order.
-## Shown with the segment-links layout toggle or Tab peek.
+## Shown when the fire-order path overlay is enabled.
 
 const PATH_Z_INDEX := 22
 const STREAM_FLAME := preload("res://assets/particles/flame/flame_06.png")

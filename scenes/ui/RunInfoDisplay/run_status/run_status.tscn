@@ -35,7 +35,7 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = SubResource("FontVariation_i0xcj")
 theme_override_font_sizes/font_size = 21
-text = "Day 1"
+text = "Day 1/9"
 
 [node name="VDivider" type="TextureRect" parent="HBoxContainer" unique_id=1767232975]
 custom_minimum_size = Vector2(2, 45)
@@ -66,6 +66,13 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
 text = "Hours Left"
 horizontal_alignment = 1
+
+[node name="ContinueHoursCheckBox" type="CheckBox" parent="HBoxContainer" unique_id=767591705]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
+theme_override_font_sizes/font_size = 16
+text = "Keep cooking"
 
 [node name="VDivider2" type="TextureRect" parent="HBoxContainer" unique_id=2112698102]
 custom_minimum_size = Vector2(2, 45)
@@ -107,22 +114,3 @@ expand_mode = 1
 visible = false
 layout_mode = 2
 text = "Reroll (3)"
-
-[node name="TokenRow" type="HBoxContainer" parent="HBoxContainer" unique_id=741691803]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="TokenTitle" type="Label" parent="HBoxContainer/TokenRow" unique_id=1388690095]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
-theme_override_font_sizes/font_size = 18
-text = "Tokens"
-
-[node name="TokenAmountLabel" type="Label" parent="HBoxContainer/TokenRow" unique_id=150557310]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
-theme_override_font_sizes/font_size = 24
-text = "0"
-horizontal_alignment = 1

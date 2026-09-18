@@ -564,10 +564,13 @@ func _empower_first_producers() -> void:
 	for hex in _first_or_last_producers(true):
 		hex.active_tile_card._empower()
 		_opening_coords.append(hex.coordinates)
-		hex.refresh_tile_card_visual_state()
+		hex.refresh_own_visuals()
 		if hex.card_icon_ui != null:
 			hex.card_icon_ui.play_condiment_splash(Color(1.0, 0.72, 0.28, 1.0))
 	EventBus.condiment_fuses_changed.emit()
+	var tile_map := _tile_map()
+	if tile_map != null:
+		tile_map.refresh_board_output_chips()
 
 
 func _empower_last_producers() -> void:
@@ -575,31 +578,26 @@ func _empower_last_producers() -> void:
 	for hex in _first_or_last_producers(false):
 		hex.active_tile_card._empower()
 		_closing_coords.append(hex.coordinates)
-		hex.refresh_tile_card_visual_state()
+		hex.refresh_own_visuals()
 		if hex.card_icon_ui != null:
 			hex.card_icon_ui.play_condiment_splash(Color(0.86, 0.38, 0.18, 1.0))
 	EventBus.condiment_fuses_changed.emit()
+	var tile_map := _tile_map()
+	if tile_map != null:
+		tile_map.refresh_board_output_chips()
 
 
 func _first_or_last_producers(want_first: bool) -> Array[Hex]:
 	var result: Array[Hex] = []
 	var tile_map := _tile_map()
-	if tile_map == null:
+	if tile_map == null or tile_map.query == null:
 		return result
 	for segment_index in tile_map.get_segment_count():
-		var chosen: Hex = null
-		for hex in tile_map.get_hexes_in_segment(segment_index):
-			var card := hex.active_tile_card
-			if card == null or not TileCard.is_producer_type(card.type):
-				continue
-			if not tile_map.is_tile_card_triggerable(hex):
-				continue
-			if want_first:
-				chosen = hex
-				break
-			chosen = hex
-		if chosen != null:
-			result.append(chosen)
+		var hex := tile_map.query.first_or_last_hex_on_segment(
+			segment_index, want_first, TileCard.PRODUCER_TYPE_FILTER
+		)
+		if hex != null:
+			result.append(hex)
 	return result
 
 
@@ -694,7 +692,9 @@ func _tick_two_turn_fuses() -> void:
 			fuse["remaining_turns"] = turns
 			kept.append(fuse)
 		card.condiment_fuses = kept
-		hex.refresh_tile_card_visual_state()
+		hex.refresh_own_visuals()
+	if tile_map != null:
+		tile_map.refresh_board_output_chips()
 
 
 func _is_valid_tile_target(hex: Hex) -> bool:

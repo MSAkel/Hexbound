@@ -17,22 +17,17 @@ func _on_activate_tile_card(tile: Hex) -> void:
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	var coords := super.get_trigger_preview_coords(hover_tile)
 	var neighbour := _get_following_neighbouring_card(hover_tile)
-	if neighbour == null or hover_tile.map == null:
-		return coords
-	var hex := hover_tile.map.get_hex_for_tile_card(neighbour)
-	if hex != null:
-		coords.append(hex.coordinates)
+	if neighbour != null:
+		coords.append_array(_coords_for_placed_tile_cards(hover_tile, [neighbour]))
 	return coords
 
 
 func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
 	var gold := super.get_trigger_preview_gold_coords(hover_tile)
 	var neighbour := _get_following_neighbouring_card(hover_tile)
-	if not _is_beverage_card(neighbour) or hover_tile.map == null:
+	if not _is_beverage_card(neighbour):
 		return gold
-	var hex := hover_tile.map.get_hex_for_tile_card(neighbour)
-	if hex != null:
-		gold.append(hex.coordinates)
+	gold.append_array(_coords_for_placed_tile_cards(hover_tile, [neighbour]))
 	return gold
 
 

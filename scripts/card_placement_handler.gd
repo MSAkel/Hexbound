@@ -383,8 +383,6 @@ func _placement_restriction_message(tile_card: TileCard) -> String:
 			return "Must be the first %s in the %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
 		TileCard.PlacementRestriction.SEGMENT_LAST_TILE:
 			return "Must be the last %s in the %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
-		TileCard.PlacementRestriction.ONE_TILE_SEGMENT:
-			return "Must be a one-%s %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
 		_:
 			return "Can't place here"
 
@@ -474,7 +472,7 @@ func _clear_rune_highlights_at(coords_list: Array[Vector2i]) -> void:
 
 
 func _clear_rune_highlight_at(coords: Vector2i) -> void:
-	# Segment-row hover shares this layer, do not erase its tiles while that hover is active.
+	# Credit flash, inspect, and condiment aim share this layer. Do not erase their tiles.
 	if tile_map.has_hovered_segment_highlight_at(coords):
 		return
 	tile_map.card_highlight_overlay_layer.set_cell(coords, -1)

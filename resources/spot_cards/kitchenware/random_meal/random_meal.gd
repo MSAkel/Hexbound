@@ -2,7 +2,7 @@ extends TileCard
 
 ## Fires two random cards on following courses.
 func _on_activate_tile_card(tile: Hex) -> void:
-	var later_runes := _get_all_tile_cards_on_later_segments(tile)
+	var later_runes := _effect_preview_cards(tile)
 	if later_runes.is_empty():
 		failed_tile_card_text(tile)
 		return
@@ -15,5 +15,5 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	_try_queue_tile_card_triggers(tile, to_trigger)
 
 
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_placed_tile_cards(hover_tile, _get_all_tile_cards_on_later_segments(hover_tile))
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	return _get_all_tile_cards_on_later_segments(tile)

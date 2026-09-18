@@ -1,10 +1,9 @@
 extends PanelContainer
 
-## One row in the run-info panel, presented as Flavour x Mult = Rating.
+## Hour rating row in the run-info panel, presented as Flavour x Mult.
 
-var course_index: int = -1
+const HOUR_SEGMENT_INDEX := 0
 
-@onready var course_no: Label = $HBoxContainer/CourseBadge/BadgeRow/CourseNo
 @onready var flavour_label: Label = $HBoxContainer/FlavourContainer/CourseFlavour
 @onready var mult_label: Label = $HBoxContainer/MultContainer/CourseMult
 @onready var rating_container: PanelContainer = $HBoxContainer/RatingContainer
@@ -38,14 +37,14 @@ func _ready() -> void:
 	add_theme_stylebox_override("panel", _row_style)
 	_rating_style = rating_container.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	rating_container.add_theme_stylebox_override("panel", _rating_style)
-	_flavour_counter = _make_stat_counter(flavour_label)
-	_mult_counter = _make_stat_counter(mult_label)
+	_flavour_counter = _make_flavour_counter(flavour_label)
+	_mult_counter = _make_mult_counter(mult_label)
 	_rating_counter = CountingNumber.new(
 		self,
 		func(_text: String) -> void: pass,
 		false,
 		func(as_int: int) -> void:
-			rating_label.text = _format_stat(as_int)
+			rating_label.text = _format_flavour_stat(as_int)
 			_apply_rating_style(as_int)
 	)
 	EventBus.segment_turn_results_changed.connect(_on_segment_turn_results_changed)
@@ -53,8 +52,8 @@ func _ready() -> void:
 	EventBus.segment_score_revealed.connect(_on_segment_rating_revealed)
 	EventBus.segment_reveal_started.connect(_on_segment_reveal_started)
 	EventBus.segment_reveal_ended.connect(_on_segment_reveal_ended)
-	_set_course_no(course_index + 1)
-	_sync_from_tile_map()
+	# Parent segments_container refreshes this row once the hex map layout exists.
+	_apply_results(0, 1, 1, 0, false)
 	clip_contents = false
 	rating_container.clip_contents = false
 
@@ -87,14 +86,13 @@ func _sync_from_tile_map() -> void:
 		return
 
 	var tile_map := _get_tile_map()
-	if tile_map == null or course_index < 0:
+	if tile_map == null or not tile_map.is_hour_scoring_ready():
 		_apply_results(0, 1, 1, 0, false)
 		return
 
-	var flavour := tile_map.get_segment_turn_flavour(course_index)
-	var additive_mult := tile_map.get_segment_additive_mult(course_index)
-	var multiplicative_mult := tile_map.get_segment_multiplicative_mult(course_index)
-	_apply_results(flavour, additive_mult, multiplicative_mult, 0, false)
+	var flavour := tile_map.get_hour_flavour()
+	var additive_mult := tile_map.get_hour_additive_mult()
+	_apply_results(flavour, additive_mult, 1.0, 0, false)
 
 
 func _on_segment_turn_results_changed(
@@ -105,8 +103,9 @@ func _on_segment_turn_results_changed(
 	reported_rating: int,
 	_ignored_reward: int
 ) -> void:
-	if not _accepts_live_updates or changed_index != course_index:
+	if not _accepts_live_updates:
 		return
+	# Hour scoring is shared. Any course change refreshes this row.
 	# After Rating starts counting, do not restart that tween. Hour resolve awaits it.
 	if _is_revealing and _rating_revealed:
 		_flavour = flavour
@@ -128,7 +127,7 @@ func _on_segment_turn_results_reset() -> void:
 
 
 func _on_segment_rating_revealed(changed_index: int, rating: int) -> void:
-	if changed_index != course_index:
+	if changed_index != HOUR_SEGMENT_INDEX:
 		return
 	_rating_revealed = true
 	_rating = rating
@@ -205,10 +204,10 @@ func snap_rating_to_zero() -> void:
 
 
 func _on_segment_reveal_started(changed_index: int) -> void:
-	if changed_index != course_index:
+	if changed_index != HOUR_SEGMENT_INDEX:
 		_set_reveal_active(false)
 		return
-	_set_reveal_active(_course_has_flavour())
+	_set_reveal_active(_hour_has_flavour())
 
 
 func _on_segment_reveal_ended() -> void:
@@ -259,17 +258,30 @@ func _play_or_snap_display_mult(
 		_play_counter(_mult_counter, display_mult, mult_label)
 
 
-func _make_stat_counter(label: Label) -> CountingNumber:
+func _make_flavour_counter(label: Label) -> CountingNumber:
 	return CountingNumber.new(
 		self,
 		func(_text: String) -> void: pass,
 		false,
-		func(as_int: int) -> void: label.text = _format_stat(as_int)
+		func(as_int: int) -> void: label.text = _format_flavour_stat(as_int)
 	)
 
 
-func _format_stat(value: int) -> String:
+func _make_mult_counter(label: Label) -> CountingNumber:
+	return CountingNumber.new(
+		self,
+		func(_text: String) -> void: pass,
+		false,
+		func(as_int: int) -> void: label.text = _format_mult_stat(as_int)
+	)
+
+
+func _format_flavour_stat(value: int) -> String:
 	return "-" if value == 0 else CountingNumber.format_int(value)
+
+
+func _format_mult_stat(value: int) -> String:
+	return CountingNumber.format_int(maxi(1, value))
 
 
 func _is_idle_display_mult(
@@ -294,7 +306,7 @@ func _apply_mult_display(additive_mult: float, multiplicative_mult: float) -> vo
 		_flavour if has_activity else 0,
 		_rating if has_activity else 0
 	):
-		mult_label.text = "-"
+		mult_label.text = "1"
 	else:
 		mult_label.text = CountingNumber.format_int(display_mult)
 
@@ -454,13 +466,11 @@ func _punch(control: Control, punch_scale: float) -> void:
 	_punch_tweens[control] = tween
 
 
-func _course_has_flavour() -> bool:
+func _hour_has_flavour() -> bool:
 	if _flavour > 0:
 		return true
 	var tile_map := _get_tile_map()
-	if tile_map == null or course_index < 0:
-		return false
-	return tile_map.get_segment_turn_flavour(course_index) > 0
+	return tile_map != null and tile_map.is_hour_scoring_ready() and tile_map.get_hour_flavour() > 0
 
 
 func _set_reveal_active(active: bool) -> void:
@@ -487,27 +497,14 @@ func _set_reveal_active(active: bool) -> void:
 	)
 
 
-func _set_course_no(no: int) -> void:
-	if no <= 0:
-		course_no.text = "-"
-		return
-	course_no.text = "%02d" % no
-
-
 func _on_mouse_entered() -> void:
 	_is_hovered = true
 	_apply_rating_style(_rating if _rating_revealed else 0)
-	var tile_map := _get_tile_map()
-	if tile_map != null:
-		tile_map.highlight_hovered_segment(course_index)
 
 
 func _on_mouse_exited() -> void:
 	_is_hovered = false
 	_apply_rating_style(_rating if _rating_revealed else 0)
-	var tile_map := _get_tile_map()
-	if tile_map != null:
-		tile_map.clear_hovered_segment_highlight(course_index)
 
 
 func _exit_tree() -> void:
@@ -520,9 +517,6 @@ func _exit_tree() -> void:
 		_rating_counter.kill()
 	if _pulse_tween != null and _pulse_tween.is_valid():
 		_pulse_tween.kill()
-	var tile_map := _get_tile_map()
-	if tile_map != null:
-		tile_map.clear_hovered_segment_highlight(course_index)
 
 
 func _disconnect_event_bus() -> void:

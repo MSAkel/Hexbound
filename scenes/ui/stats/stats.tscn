@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b2eiuv5rpwsc3"]
 
-[ext_resource type="Script" path="res://scenes/ui/stats/stats.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image_pixel_ar.png" id="2_bg"]
+[ext_resource type="Script" uid="uid://ucb1cvtf2itl" path="res://scenes/ui/stats/stats.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_bg"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
 
 [sub_resource type="Gradient" id="Gradient_dim"]
@@ -24,7 +24,7 @@ content_margin_right = 20.0
 content_margin_bottom = 16.0
 bg_color = Color(0.15294118, 0.15294118, 0.15294118, 0.28627452)
 
-[node name="Stats" type="Panel"]
+[node name="Stats" type="Panel" unique_id=777720655]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -32,7 +32,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1533554805]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -43,7 +43,7 @@ mouse_filter = 2
 texture = ExtResource("2_bg")
 expand_mode = 1
 
-[node name="Foreground" type="TextureRect" parent="."]
+[node name="Foreground" type="TextureRect" parent="." unique_id=1357713858]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -53,7 +53,7 @@ grow_vertical = 2
 mouse_filter = 2
 texture = SubResource("GradientTexture1D_dim")
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=262397464]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -62,11 +62,11 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_outer")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=210282734]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer"]
+[node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer" unique_id=139918839]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 42)
 layout_mode = 2
@@ -74,23 +74,24 @@ size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 24
 text = "BACK"
 
-[node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer" unique_id=1875228536]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.87, 0.79, 1)
 theme_override_font_sizes/font_size = 36
 text = "Stats"
 
-[node name="ContentPanel" type="PanelContainer" parent="PanelContainer/VBoxContainer"]
+[node name="ContentPanel" type="PanelContainer" parent="PanelContainer/VBoxContainer" unique_id=2070610795]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="ContentVBox" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel"]
+[node name="ContentVBox" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel" unique_id=1605930553]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TabBar" type="TabBar" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox"]
+[node name="TabBar" type="TabBar" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox" unique_id=158869766]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/tab_separation = 8
@@ -99,33 +100,33 @@ tab_count = 2
 tab_0/title = "Lifetime"
 tab_1/title = "Past Runs"
 
-[node name="LifetimeScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox"]
+[node name="LifetimeScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox" unique_id=1049432203]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="LifetimeList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/LifetimeScroll"]
+[node name="LifetimeList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/LifetimeScroll" unique_id=1073914724]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="HistorySplit" type="HBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox"]
+[node name="HistorySplit" type="HBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox" unique_id=1812258604]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 20
 
-[node name="ListColumn" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit"]
+[node name="ListColumn" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit" unique_id=1229473646]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.9
 theme_override_constants/separation = 8
 
-[node name="EmptyHistoryLabel" type="Label" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn"]
+[node name="EmptyHistoryLabel" type="Label" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn" unique_id=1620411798]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -136,30 +137,30 @@ Finish a run to see it here."
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="RunListScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn"]
+[node name="RunListScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn" unique_id=1112959802]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="RunList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn/RunListScroll"]
+[node name="RunList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/ListColumn/RunListScroll" unique_id=1660099875]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="DetailScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit"]
+[node name="DetailScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit" unique_id=1799159320]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.1
 horizontal_scroll_mode = 0
 
-[node name="DetailPanel" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/DetailScroll"]
+[node name="DetailPanel" type="VBoxContainer" parent="PanelContainer/VBoxContainer/ContentPanel/ContentVBox/HistorySplit/DetailScroll" unique_id=1848009885]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="Tooltip" parent="." instance=ExtResource("3_tooltip")]
+[node name="Tooltip" parent="." unique_id=825284340 instance=ExtResource("3_tooltip")]
 layout_mode = 0
 
 [connection signal="pressed" from="PanelContainer/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]

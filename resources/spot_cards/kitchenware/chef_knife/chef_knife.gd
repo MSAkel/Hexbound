@@ -2,7 +2,7 @@ extends TileCard
 
 # Triggers the Following 3 generator runes in the trigger order. Output reduced by 20% per jump.
 func _on_activate_tile_card(tile: Hex) -> void:
-	var next_generators := _get_next_tile_cards_in_trigger_order(tile, 3, TileCard.PRODUCER_TYPE_FILTER)
+	var next_generators := _effect_preview_cards(tile)
 	if next_generators.is_empty():
 		failed_tile_card_text(tile)
 		return
@@ -16,8 +16,5 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	_try_queue_tile_card_triggers(tile, next_generators, activation_scales)
 
 
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	var next_generators := _get_next_tile_cards_in_trigger_order(
-		hover_tile, 3, TileCard.PRODUCER_TYPE_FILTER
-	)
-	return _coords_for_placed_tile_cards(hover_tile, next_generators)
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	return _get_next_tile_cards_in_trigger_order(tile, 3, TileCard.PRODUCER_TYPE_FILTER)

@@ -1,15 +1,14 @@
 extends PanelContainer
 
-## Top run HUD for round, remaining turns, gold, and merchant tokens.
+## Top run HUD for round, remaining turns, gold, and the keep-cooking toggle.
 
 @onready var round_label: Label = $HBoxContainer/RoundLabel
 @onready var turn_counter_label: Label = $HBoxContainer/TurnsContainer/TurnCounterLabel
 @onready var turns_container: Control = $HBoxContainer/TurnsContainer
 @onready var gold_row: Control = $HBoxContainer/GoldRow
 @onready var gold_amount_label: Label = $HBoxContainer/GoldRow/GoldAmountLabel
-@onready var token_row: Control = $HBoxContainer/TokenRow
-@onready var token_amount_label: Label = $HBoxContainer/TokenRow/TokenAmountLabel
 @onready var reroll_button: Button = $HBoxContainer/RerollButton
+@onready var continue_hours_check_box: CheckBox = %ContinueHoursCheckBox
 
 const PUNCH_SCALE := 1.12
 const PUNCH_DURATION := 0.18
@@ -17,7 +16,7 @@ const PUNCH_DURATION := 0.18
 const TOOLTIP_DAY := "Current day. Nine days complete a run."
 const TOOLTIP_HOURS := "Hours left before kitchen close. Reach the day target with hours to spare."
 const TOOLTIP_GOLD := "Gold. Spend at the merchant on cards and condiments."
-const TOOLTIP_TOKENS := "Merchant tokens. Pay for shop items instead of gold. Max %d." % GoldManager.MAX_MERCHANT_TOKENS
+const TOOLTIP_CONTINUE := "Keep cooking leftover hours after you hit the day target. Early-finish gold is skipped."
 
 var _gold_counter: CountingNumber
 var _round_counter: CountingNumber
@@ -43,26 +42,28 @@ func _ready() -> void:
 	_turn_counter = CountingNumber.for_label(self, turn_counter_label)
 
 	_gold_counter.snap_to(GoldManager.amount)
-	_update_token_label(GoldManager.merchant_tokens)
 	_round_counter.snap_to(GameManager.current_round)
 	_turn_counter.snap_to(GameManager.remaining_turns)
+	if continue_hours_check_box != null:
+		continue_hours_check_box.button_pressed = GameManager.continue_after_goal
+		continue_hours_check_box.toggled.connect(_on_continue_hours_toggled)
 
 	EventBus.gold_changed.connect(_on_gold_changed)
-	EventBus.merchant_tokens_changed.connect(_on_merchant_tokens_changed)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.turn_changed.connect(_on_turn_changed)
 	_bind_status_tooltips()
+	call_deferred("_sync_continue_hours_checkbox")
 
 
 func _bind_status_tooltips() -> void:
-	for control: Control in [round_label, turns_container, gold_row, token_row]:
+	for control: Control in [round_label, turns_container, gold_row, continue_hours_check_box]:
 		if control == null:
 			continue
 		control.mouse_filter = Control.MOUSE_FILTER_STOP
 	_bind_tooltip(round_label, TOOLTIP_DAY)
 	_bind_tooltip(turns_container, TOOLTIP_HOURS)
 	_bind_tooltip(gold_row, TOOLTIP_GOLD)
-	_bind_tooltip(token_row, TOOLTIP_TOKENS)
+	_bind_tooltip(continue_hours_check_box, TOOLTIP_CONTINUE)
 
 
 func _bind_tooltip(control: Control, text: String) -> void:
@@ -84,21 +85,25 @@ func _on_gold_changed(new_amount: int) -> void:
 	_play_counter(_gold_counter, new_amount, gold_amount_label)
 
 
-func _on_merchant_tokens_changed(new_amount: int) -> void:
-	_update_token_label(new_amount)
-	_punch(token_amount_label)
-
-
-func _update_token_label(amount: int) -> void:
-	token_amount_label.text = str(amount)
+func _on_continue_hours_toggled(pressed: bool) -> void:
+	GameManager.continue_after_goal = pressed
+	RunSaveManager.request_autosave()
 
 
 func _on_round_changed(new_round: int) -> void:
 	_play_counter(_round_counter, new_round, round_label)
+	_sync_continue_hours_checkbox()
 
 
 func _on_turn_changed() -> void:
 	_play_counter(_turn_counter, GameManager.remaining_turns, turn_counter_label)
+	_sync_continue_hours_checkbox()
+
+
+func _sync_continue_hours_checkbox() -> void:
+	if continue_hours_check_box == null:
+		return
+	continue_hours_check_box.set_pressed_no_signal(GameManager.continue_after_goal)
 
 
 func _on_reroll_button_pressed() -> void:

@@ -120,14 +120,12 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/tab_separation = 8
 current_tab = 0
-tab_count = 7
-tab_0/title = "Ingredients"
-tab_1/title = "Kitchenware"
-tab_2/title = "Condiments"
-tab_3/title = "Utility"
-tab_4/title = "Characters"
-tab_5/title = "Events"
-tab_6/title = "Passives"
+tab_count = 5
+tab_0/title = "Cards"
+tab_1/title = "Condiments"
+tab_2/title = "Characters"
+tab_3/title = "Events"
+tab_4/title = "Passives"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]
 layout_mode = 2

@@ -9,11 +9,9 @@ extends Node
 
 const REPORT_PATH := "user://loot_sim_report.json"
 const CHARACTER_IDS: Array[String] = [
-	"surveyor",
-	"encircler",
-	"spiralist",
-	"columnist",
-	"converger",
+	"sous_chef",
+	"sommelier",
+	"gourmet_restaurant",
 ]
 const DEFAULT_SAMPLES := 10000
 const DEFAULT_PACK_SIZE := 3
@@ -60,7 +58,7 @@ func _simulate_layout(layout_id: String) -> Dictionary:
 	GameManager.selected_character = PlayerCharacter.get_character_by_id(layout_id)
 	RunRng.begin_new_run("%s:%s" % [_seed_text, layout_id])
 
-	var legal_pool := _legal_pool()
+	var legal_pool := GameManager.tile_cards_pool
 	var pool_counts := _count_pool_buckets(legal_pool)
 	var draw_counts := _empty_bucket_counts()
 	var total_draws := 0
@@ -85,14 +83,6 @@ func _simulate_layout(layout_id: String) -> Dictionary:
 	}
 	_print_layout_report(report)
 	return report
-
-
-func _legal_pool() -> Array[TileCard]:
-	var legal: Array[TileCard] = []
-	for card: TileCard in GameManager.tile_cards_pool:
-		if card.is_legal_for_layout(GameManager.selected_character):
-			legal.append(card)
-	return legal
 
 
 func _empty_bucket_counts() -> Dictionary:

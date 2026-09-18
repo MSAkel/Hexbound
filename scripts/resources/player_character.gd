@@ -1,14 +1,12 @@
 extends Resource
 class_name PlayerCharacter
 
-# Registry for playable layout definitions loaded from resources/characters/.
+# Registry for playable chef definitions loaded from resources/characters/.
 
 const CHARACTER_PATHS: Array[String] = [
-	"res://resources/characters/surveyor.tres",
-	"res://resources/characters/encircler.tres",
-	"res://resources/characters/spiralist.tres",
-	"res://resources/characters/columnist.tres",
-	"res://resources/characters/converger.tres",
+	"res://resources/characters/sous_chef.tres",
+	"res://resources/characters/sommelier.tres",
+	"res://resources/characters/gourmet_restaurant.tres",
 ]
 
 ## Always included in the opening hand. Never removed by difficulty trimming.
@@ -94,8 +92,6 @@ static func _get_flat_flavour_starter_pool() -> Array[TileCard]:
 		if not card.starting_hand_eligible:
 			continue
 		if card.id in GUARANTEED_STARTER_IDS:
-			continue
-		if not card.is_legal_for_layout(GameManager.selected_character):
 			continue
 		pool.append(card)
 	return pool

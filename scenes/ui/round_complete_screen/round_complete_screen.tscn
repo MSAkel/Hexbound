@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://s0i54rdptfrm" path="res://scenes/ui/round_complete_screen/round_complete_screen.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="2_gold"]
-[ext_resource type="Texture2D" uid="uid://lccxoysnrcqi" path="res://assets/icons/stats/merchant_token.png" id="3_token"]
 
 [sub_resource type="StyleBoxFlat" id="Overlay"]
 bg_color = Color(0.025840001, 0.050708726, 0.03876, 0.17500001)
@@ -288,50 +287,6 @@ size_flags_vertical = 4
 texture = ExtResource("2_gold")
 expand_mode = 3
 stretch_mode = 5
-
-[node name="TokenRule" type="HSeparator" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=45285921]
-custom_minimum_size = Vector2(0, 12)
-layout_mode = 2
-theme_override_styles/separator = SubResource("Rule")
-
-[node name="MerchantTokensRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=1010758444]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="MerchantTokensTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1060675684]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
-theme_override_font_sizes/font_size = 22
-text = "Merchant Token (x1 per turn)"
-vertical_alignment = 1
-
-[node name="MerchantTokensValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1461419900]
-custom_minimum_size = Vector2(68, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.06, 0.43, 0.43, 1)
-theme_override_font_sizes/font_size = 31
-text = "+1"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="MerchantTokenIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow" unique_id=1524448279]
-custom_minimum_size = Vector2(60, 47)
-custom_maximum_size = Vector2(60, 47)
-layout_mode = 2
-texture = ExtResource("3_token")
-expand_mode = 3
-stretch_mode = 5
-
-[node name="TokensLostLabel" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer" unique_id=401537775]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_colors/font_color = Color(0.62, 0.16, 0.12, 1)
-theme_override_font_sizes/font_size = 16
-text = "Max tokens reached"
-horizontal_alignment = 1
 
 [node name="ButtonSpacer" type="Control" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=2145883020]
 custom_minimum_size = Vector2(0, 4)

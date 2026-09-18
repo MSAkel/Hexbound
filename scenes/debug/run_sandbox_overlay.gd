@@ -15,7 +15,6 @@ const MAX_BODY_HEIGHT := 350.0
 @onready var _tools_body: VBoxContainer = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody
 @onready var _collapse_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/TitleRow/CollapseButton
 @onready var _gold_spin: SpinBox = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow/GoldSpinBox
-@onready var _token_spin: SpinBox = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow/TokenSpinBox
 @onready var _seed_label: Label = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SeedRow/SeedLabel
 @onready var _complete_round_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CompleteRoundButton
 @onready var _jump_round_spin: SpinBox = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow/JumpRoundSpinBox
@@ -37,10 +36,7 @@ var _collapsed := false
 
 func _ready() -> void:
 	_gold_spin.value = GoldManager.amount
-	_token_spin.max_value = GoldManager.MAX_MERCHANT_TOKENS
-	_token_spin.value = GoldManager.merchant_tokens
 	EventBus.gold_changed.connect(_on_gold_changed)
-	EventBus.merchant_tokens_changed.connect(_on_tokens_changed)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.event_changed.connect(_sync_event_option)
 	_jump_round_spin.value = GameManager.current_round
@@ -150,12 +146,6 @@ func _on_gold_changed(new_amount: int) -> void:
 	_gold_spin.value = new_amount
 
 
-func _on_tokens_changed(new_amount: int) -> void:
-	if _token_spin.has_focus():
-		return
-	_token_spin.value = new_amount
-
-
 func _on_complete_round_pressed() -> void:
 	_dismiss_blocking_panels()
 	AudioManager.play_sfx(UISounds.CLICK)
@@ -209,12 +199,6 @@ func _on_set_gold_pressed() -> void:
 	GoldManager.set_amount(int(_gold_spin.value))
 
 
-func _on_set_tokens_pressed() -> void:
-	AudioManager.play_sfx(UISounds.CLICK)
-	GoldManager.set_merchant_tokens(int(_token_spin.value))
-	_token_spin.value = GoldManager.merchant_tokens
-
-
 func _on_open_merchant_pressed() -> void:
 	_dismiss_blocking_panels()
 	AudioManager.play_sfx(UISounds.CLICK)
@@ -242,7 +226,7 @@ func _on_character_option_item_selected(index: int) -> void:
 ## Lock in the new character, drop the current save, and reload the run scene.
 func _restart_run_as(character: CharacterDefinition) -> void:
 	GameManager.selected_character = character
-	GameManager.apply_active_segment_passives(character.id)
+	GameManager.bind_chef_passives()
 	RunSaveManager.delete_save()
 	RunRng.restart_same_seed()
 	RunSaveManager.request_scene_enter_transition()

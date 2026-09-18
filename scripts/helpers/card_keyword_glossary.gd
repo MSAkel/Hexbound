@@ -29,12 +29,13 @@ class Keyword:
 	func matches_token(token: String) -> bool:
 		var needle := token.to_lower()
 		for candidate: String in tokens:
-			if candidate.to_lower() == needle:
+			if candidate == needle:
 				return true
 		return false
 
 
 static var _keywords: Array[Keyword] = []
+static var _token_to_keyword: Dictionary = {}
 static var _match_regex: RegEx = null
 
 const COLOR_FLAVOUR := Color("#0085a8")
@@ -46,7 +47,6 @@ const COLOR_PASS := Color("#477a9e")
 const COLOR_INGREDIENT := Color("#6b8547")
 
 static func _static_init() -> void:
-	# Longer tokens are matched before shorter ones.
 	register(
 		"flavour",
 		["flavour"],
@@ -89,20 +89,20 @@ static func _static_init() -> void:
 		COLOR_PASS,
 		"Moves Flavour, Mult, or Gold to the next course."
 	)
-	register(
-		"ingredient",
-		["ingredient", "ingredients"],
-		"Ingredient",
-		COLOR_INGREDIENT,
-		"Ingredients card on a spot that adds Flavour."
-	)
-	register(
-		"fire",
-		["fire", "fires", "fired"],
-		"Fire",
-		COLOR_FOLLOWING,
-		"Activate the card."
-	)
+	# register(
+	# 	"ingredient",
+	# 	["ingredient", "ingredients"],
+	# 	"Ingredient",
+	# 	COLOR_INGREDIENT,
+	# 	"Ingredients card on a spot that adds Flavour."
+	# )
+	# register(
+	# 	"trigger",
+	# 	["trigger", "retrigger", "retriggers"],
+	# 	"Trigger",
+	# 	COLOR_FOLLOWING,
+	# 	"Activate the card."
+	# )
 	register(
 		"course",
 		["course", "courses"],
@@ -110,13 +110,13 @@ static func _static_init() -> void:
 		COLOR_FOLLOWING,
 		"A section consisting of one or more spots"
 	)
-	register(
-		"dish",
-		["dish", "dishes"],
-		FeastDisplay.DISH,
-		COLOR_DOUBLE,
-		"A plate that scores from the spots immediately before it in fire order."
-	)
+	# register(
+	# 	"dish",
+	# 	["dish", "dishes"],
+	# 	FeastDisplay.DISH,
+	# 	COLOR_DOUBLE,
+	# 	"A plate that scores from the spots immediately before it in fire order."
+	# )
 
 static func register(
 	id: StringName,
@@ -127,7 +127,7 @@ static func register(
 ) -> void:
 	var packed_tokens := PackedStringArray()
 	for token: Variant in tokens:
-		packed_tokens.append(String(token))
+		packed_tokens.append(String(token).to_lower())
 
 	for existing: Keyword in _keywords:
 		if existing.id == id:
@@ -135,11 +135,11 @@ static func register(
 			existing.display_name = display_name
 			existing.color = color
 			existing.tooltip = tooltip
-			_match_regex = null
+			_rebuild_token_index()
 			return
 
 	_keywords.append(Keyword.new(id, packed_tokens, display_name, color, tooltip))
-	_match_regex = null
+	_rebuild_token_index()
 
 
 static func to_bbcode(source: String) -> String:
@@ -203,10 +203,16 @@ static func tooltip_entries(source: String) -> Array[Dictionary]:
 
 
 static func find_keyword(token: String) -> Keyword:
+	return _token_to_keyword.get(token.to_lower()) as Keyword
+
+
+## Rebuilds the lowercase token map after register. Regex rebuilds lazily on next match.
+static func _rebuild_token_index() -> void:
+	_match_regex = null
+	_token_to_keyword.clear()
 	for keyword: Keyword in _keywords:
-		if keyword.matches_token(token):
-			return keyword
-	return null
+		for token: String in keyword.tokens:
+			_token_to_keyword[token] = keyword
 
 
 static func _get_match_regex() -> RegEx:

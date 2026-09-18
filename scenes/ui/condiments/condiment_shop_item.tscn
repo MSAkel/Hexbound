@@ -122,4 +122,3 @@ layout_mode = 2
 mouse_filter = 2
 
 [connection signal="gold_purchase_pressed" from="Column/PurchaseTray" to="." method="_on_gold_purchase_pressed"]
-[connection signal="token_purchase_pressed" from="Column/PurchaseTray" to="." method="_on_token_purchase_pressed"]

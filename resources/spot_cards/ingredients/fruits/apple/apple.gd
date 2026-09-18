@@ -4,10 +4,6 @@ extends TileCard
 const EMPTY_FOLLOWING_BONUS := 8
 
 
-func _on_activate_tile_card(tile: Hex) -> void:
-	_pay_effect_amount(tile)
-
-
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
 	for hex: Hex in _get_following_adjacent_hexes(hover_tile):

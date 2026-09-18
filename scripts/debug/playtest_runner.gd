@@ -27,11 +27,9 @@ const BOT_IDS: Array[String] = ["fill", "stack", "spread", "player"]
 ## Places randomly, prefers retrigger and utility cards, and keeps filling after a missed goal.
 const CHAOS_BOT_ID := "chaos"
 const CHARACTER_IDS: Array[String] = [
-	"surveyor",
-	"encircler",
-	"spiralist",
-	"columnist",
-	"converger",
+	"sous_chef",
+	"sommelier",
+	"gourmet_restaurant",
 ]
 const BANNED_FILLER_IDS: Array[String] = ["compact_power", "edge_card", "treasury"]
 const LOCKED_STARTER_IDS: Array[String] = ["tomato", "salt"]
@@ -44,8 +42,6 @@ const SHOP_KEEP_THRESHOLD := 32.0
 const PLAYER_PACK_REROLL_ROUND := 4
 ## Gold cards stop being worth an engine slot after this round.
 const PLAYER_GOLD_CUTOFF_ROUND := 4
-## Pay a merchant token instead of gold at this shop price.
-const PLAYER_TOKEN_GOLD_PRICE := 8
 const SPARK_PASSIVE_ID := "spark"
 const SHOP_GOLD_RESERVE := 8
 const MAX_SHOP_BUYS_PER_VISIT := 2
@@ -59,19 +55,14 @@ const OFF_ENGINE_CARD_IDS: Array[String] = [
 ]
 ## Layout-specific segment size priorities for engine selection.
 const LAYOUT_ENGINE_SIZE_PRIORITY: Dictionary = {
-	"surveyor": [7, 6],
-	"spiralist": [18, 12, 6],
-	"encircler": [18, 12],
-	"columnist": [7],
-	"converger": [9],
+	"sous_chef": [7, 6],
+	"sommelier": [7, 6],
+	"gourmet_restaurant": [7, 6],
 }
-## Surveyor and Columnist keep one opening engine line through early rounds.
-const SURVEYOR_ENGINE_LOCK_ROUND := 6
-const COLUMNIST_ENGINE_LOCK_ROUND := 6
-const SURVEYOR_ENGINE_MIN_SIZE := 6
-const SURVEYOR_ENGINE_MAX_SIZE := 7
-const COLUMNIST_ENGINE_SIZE := 7
-const COLUMNIST_EARLY_ROUND := 4
+## Player bot keeps one opening engine line through early rounds.
+const ENGINE_LOCK_ROUND := 6
+const ENGINE_SEGMENT_MIN_SIZE := 6
+const ENGINE_SEGMENT_MAX_SIZE := 7
 
 var _map: HexTileMap
 var _cases: Array[Dictionary] = []
@@ -190,8 +181,7 @@ func _run_all() -> void:
 		await _run_full_nines()
 		return
 	_run_starter_fairness()
-	_run_lone_cell_legality()
-	if "surveyor" in _layouts:
+	if "sous_chef" in _layouts:
 		await _run_gold_engines()
 	await _run_two_segment_r1()
 	await _run_full_nines()
@@ -260,54 +250,6 @@ func _run_starter_fairness() -> void:
 			)
 
 
-func _run_lone_cell_legality() -> void:
-	var lone := GameManager.get_tile_card_by_id("lone_cell")
-	if lone == null:
-		_record("lone_cell_legality", "n/a", "", false, ["lone_cell missing from pool"], {})
-		return
-
-	for character_id: String in _layouts:
-		var character := PlayerCharacter.get_character_by_id(character_id)
-		GameManager.selected_character = character
-		var legal := lone.is_legal_for_layout(character)
-		var expect_legal := character.has_segment_of_size(1)
-		var reasons: Array[String] = []
-		if legal != expect_legal:
-			reasons.append(
-				"is_legal_for_layout=%s expected %s (has 1-tile segment=%s)"
-				% [legal, expect_legal, expect_legal]
-			)
-
-		RunRng.begin_new_run("LONECELL")
-		var drew_lone := false
-		for _i in 80:
-			var pack := CardLoot.card_draw(3, GameManager.tile_cards_pool, true, RunRng.create_rng("lone_draw:%d" % _i))
-			for card: TileCard in pack:
-				if card.id == "lone_cell":
-					drew_lone = true
-					break
-			if drew_lone:
-				break
-
-		if drew_lone and not expect_legal:
-			reasons.append("packs offered Lone Cell on a layout with no 1-tile segment")
-		if expect_legal and not legal:
-			reasons.append("Encircler should allow Lone Cell")
-
-		_record(
-			"lone_cell_legality",
-			character_id,
-			"LONECELL",
-			reasons.is_empty(),
-			reasons,
-			{
-				"legal": legal,
-				"has_one_tile_segment": expect_legal,
-				"drew_lone_in_sample": drew_lone,
-			}
-		)
-
-
 func _run_gold_engines() -> void:
 	await _run_treasury_at_zero_gold()
 	await _run_prosperity_vs_allowance()
@@ -315,7 +257,7 @@ func _run_gold_engines() -> void:
 
 
 func _run_treasury_at_zero_gold() -> void:
-	_begin_run("surveyor", "TREASURY")
+	_begin_run("sous_chef", "TREASURY")
 	GoldManager.set_amount(0)
 	var hex := _first_empty_hex()
 	_place_by_id(hex, "treasury")
@@ -326,7 +268,7 @@ func _run_treasury_at_zero_gold() -> void:
 		reasons.append("Treasury at 0 gold scored %d Energy, expected 6" % energy)
 	_record(
 		"gold_engine_treasury_zero",
-		"surveyor",
+		"sous_chef",
 		"TREASURY",
 		reasons.is_empty(),
 		reasons,
@@ -341,11 +283,11 @@ func _run_prosperity_vs_allowance() -> void:
 
 func _run_prosperity_order(allowance_first: bool) -> void:
 	var label := "gold_engine_prosperity_after_allowance" if allowance_first else "gold_engine_prosperity_before_allowance"
-	_begin_run("surveyor", "PROSPER1" if allowance_first else "PROSPER0")
+	_begin_run("sous_chef", "PROSPER1" if allowance_first else "PROSPER0")
 	GoldManager.set_amount(0)
 	var pair := _two_hexes_in_same_segment()
 	if pair.is_empty():
-		_record(label, "surveyor", "", false, ["could not find two tiles in one segment"], {})
+		_record(label, "sous_chef", "", false, ["could not find two tiles in one segment"], {})
 		return
 
 	var first: Hex = pair[0]
@@ -369,7 +311,7 @@ func _run_prosperity_order(allowance_first: bool) -> void:
 
 	_record(
 		label,
-		"surveyor",
+		"sous_chef",
 		RunRng.get_display_seed(),
 		reasons.is_empty(),
 		reasons,
@@ -383,8 +325,8 @@ func _run_lucky_draw_gold_branch() -> void:
 	var last_energy := 0
 	var used_seed := ""
 	for index in 24:
-		used_seed = _seed_for("LD", "surveyor", index)
-		_begin_run("surveyor", used_seed)
+		used_seed = _seed_for("LD", "sous_chef", index)
+		_begin_run("sous_chef", used_seed)
 		GoldManager.set_amount(0)
 		var hex := _first_empty_hex()
 		_place_by_id(hex, "fortune_cookie")
@@ -404,7 +346,7 @@ func _run_lucky_draw_gold_branch() -> void:
 		reasons.append("never hit Fortune Cookie 8-gold branch (last gold=%d energy=%d)" % [last_gold, last_energy])
 	_record(
 		"gold_engine_fortune_cookie_8_gold",
-		"surveyor",
+		"sous_chef",
 		used_seed,
 		reasons.is_empty(),
 		reasons,
@@ -614,8 +556,8 @@ func _run_one_fuzz(character_id: String, seed_text: String, repeat_index: int = 
 			"buys": buys,
 			"rounds": round_log,
 			"storms": storms,
-			"segment_sizes": GameManager.selected_character.segment_sizes,
-			"segments_count": GameManager.selected_character.segments_count,
+			"segment_sizes": HexMapLayout.BOARD_ROW_LENGTHS.duplicate(),
+			"segments_count": HexMapLayout.BOARD_ROW_LENGTHS.size(),
 			"repeat_index": repeat_index,
 		}
 	)
@@ -685,14 +627,13 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 		round_log.append(round_entry)
 		if not _only_seed.is_empty():
 			print(
-				"[playtest]   R%d %d/%d turns=%d gold=%d tokens=%d %s"
+				"[playtest]   R%d %d/%d turns=%d gold=%d %s"
 				% [
 					round_number,
 					score,
 					goal,
 					turns_used,
 					GoldManager.amount,
-					GoldManager.merchant_tokens,
 					"clear" if cleared else "fail",
 				]
 			)
@@ -735,8 +676,8 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 			"buys": buys,
 			"rounds": round_log,
 			"bot": bot_id,
-			"segment_sizes": GameManager.selected_character.segment_sizes,
-			"segments_count": GameManager.selected_character.segments_count,
+			"segment_sizes": HexMapLayout.BOARD_ROW_LENGTHS.duplicate(),
+			"segments_count": HexMapLayout.BOARD_ROW_LENGTHS.size(),
 			"playtest_passives": ["spark"] if bot_id == "player" and _use_passives else [],
 			"playtest_condiments": _use_condiments,
 			"repeat_index": repeat_index,
@@ -836,36 +777,13 @@ func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: i
 	if best == null:
 		return true
 	var keep_threshold := _player_pack_keep_threshold(round_number)
-	if _columnist_early_round() and round_number <= 3:
-		if best == null or not _can_place_on_locked_column(best):
-			return true
-		# R1–R3. Hold out for the first Energy or Mult producer on the locked column.
-		if not _columnist_locked_has_producer():
-			if (
-				TileCard.is_producer_type(best.type)
-				and best.product in [TileCard.Product.FLAVOUR, TileCard.Product.MULTIPLIER]
-			):
-				return false
-			return true
-		if not TileCard.is_producer_type(best.type):
-			return true
-		if _card_player_value(best) < keep_threshold * 0.65:
-			return true
-		return false
-	if _columnist_early_round() and round_number == COLUMNIST_EARLY_ROUND:
-		if best == null or not _can_place_on_locked_column(best):
-			return true
-		if _card_player_value(best) < keep_threshold * 0.75:
-			return true
-		return false
 	if _can_place_for_player(best) and _card_player_value(best) >= keep_threshold * 0.5:
 		return false
 	if is_reward and _can_place_for_player(best):
 		return false
 	if round_number < PLAYER_PACK_REROLL_ROUND and RerollManager.remaining <= 2:
 		var gap_ratio := _round_score_gap_ratio()
-		# Columnist spends rerolls freely in R1–R3 instead of hoarding them.
-		if not (_is_columnist() and round_number <= 3) and gap_ratio < 0.35:
+		if gap_ratio < 0.35:
 			return false
 	return _card_player_value(best) < keep_threshold or not _can_place_for_player(best)
 
@@ -876,10 +794,7 @@ func _player_pack_keep_threshold(round_number: int) -> float:
 	if round_number >= 7:
 		threshold -= 4.0
 	if round_number < PLAYER_PACK_REROLL_ROUND:
-		if _columnist_early_round():
-			threshold -= 12.0
-		else:
-			threshold += 8.0
+		threshold += 8.0
 	return maxf(12.0, threshold)
 
 
@@ -912,14 +827,6 @@ func _pick_best_player_card(pack: Array[TileCard]) -> TileCard:
 		# Engine-legal cards beat off-engine filler even when the raw number is close.
 		if _can_place_for_player(card):
 			value += 25.0
-		if _columnist_early_round() and _can_place_on_locked_column(card):
-			value += 30.0 + _columnist_engine_balance_bonus(card)
-			if GameManager.current_round <= 3 and not _columnist_locked_has_producer():
-				if (
-					TileCard.is_producer_type(card.type)
-					and card.product in [TileCard.Product.FLAVOUR, TileCard.Product.MULTIPLIER]
-				):
-					value += 80.0
 		if best == null or value > best_value:
 			best = card
 			best_value = value
@@ -1003,14 +910,9 @@ func _shop_card_score(card: TileCard) -> float:
 
 func _can_afford_shop_purchase(card: TileCard) -> bool:
 	var price := card.get_shop_price()
-	var token_cost := GoldManager.MERCHANT_TOKEN_COST
-	if _player_wants_to_pay_tokens(card, price) and GoldManager.can_afford_tokens(token_cost):
-		return true
-	if GoldManager.can_afford(price):
-		return GoldManager.amount - price >= SHOP_GOLD_RESERVE or price <= 4
-	if GoldManager.can_afford_tokens(token_cost):
-		return true
-	return false
+	if not GoldManager.can_afford(price):
+		return false
+	return GoldManager.amount - price >= SHOP_GOLD_RESERVE or price <= 4
 
 
 func _draw_merchant_condiments(stock_reroll_count: int) -> Array[Condiment]:
@@ -1042,22 +944,12 @@ func _buy_shop_condiment(condiment: Condiment, bought: Array[String]) -> bool:
 	if condiment == null or not CondimentManager.can_add():
 		return false
 	var price := condiment.get_shop_price()
-	var token_cost := GoldManager.MERCHANT_TOKEN_COST
-	if price >= PLAYER_TOKEN_GOLD_PRICE and GoldManager.can_afford_tokens(token_cost):
-		if not GoldManager.spend_tokens(token_cost):
-			return false
-		bought.append("%s:condiment:%s@token" % [GameManager.current_round, condiment.id])
-	elif GoldManager.can_afford(price):
-		if GoldManager.amount - price < SHOP_GOLD_RESERVE:
-			return false
-		GoldManager.remove(price)
-		bought.append("%s:condiment:%s@%d" % [GameManager.current_round, condiment.id, price])
-	elif GoldManager.can_afford_tokens(token_cost):
-		if not GoldManager.spend_tokens(token_cost):
-			return false
-		bought.append("%s:condiment:%s@token" % [GameManager.current_round, condiment.id])
-	else:
+	if not GoldManager.can_afford(price):
 		return false
+	if GoldManager.amount - price < SHOP_GOLD_RESERVE:
+		return false
+	GoldManager.remove(price)
+	bought.append("%s:condiment:%s@%d" % [GameManager.current_round, condiment.id, price])
 	return CondimentManager.add_condiment(condiment)
 
 
@@ -1092,30 +984,12 @@ func _buy_shop_card(card: TileCard, bought: Array[String]) -> bool:
 	if not _can_bot_place_card(card):
 		return false
 	var price := card.get_shop_price()
-	var token_cost := GoldManager.MERCHANT_TOKEN_COST
-	var pay_tokens := _player_wants_to_pay_tokens(card, price)
-	if pay_tokens and GoldManager.can_afford_tokens(token_cost):
-		if not GoldManager.spend_tokens(token_cost):
-			return false
-		bought.append("%s:%s@token" % [GameManager.current_round, card.id])
-	elif GoldManager.can_afford(price):
-		GoldManager.remove(price)
-		bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
-	elif GoldManager.can_afford_tokens(token_cost):
-		if not GoldManager.spend_tokens(token_cost):
-			return false
-		bought.append("%s:%s@token" % [GameManager.current_round, card.id])
-	else:
+	if not GoldManager.can_afford(price):
 		return false
+	GoldManager.remove(price)
+	bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
 	_place_one_card(card)
 	return true
-
-
-## Spend tokens on rares and expensive stock. Pay gold for cheap commons so tokens last.
-func _player_wants_to_pay_tokens(card: TileCard, price: int) -> bool:
-	if card.rarity != TileCard.TileCardRarity.COMMON:
-		return true
-	return price >= PLAYER_TOKEN_GOLD_PRICE
 
 
 func _card_keep_value(card: TileCard) -> float:
@@ -1275,105 +1149,48 @@ func _segment_engine_rating(segment_index: int) -> float:
 			rating -= 5000.0
 	elif _uses_engine_lock() and segment_index == _locked_engine_segment:
 		rating += 120.0
-	if _is_surveyor() and segment_index == _locked_engine_segment:
-		rating += 200.0
 	return rating
 
 
-func _is_surveyor() -> bool:
-	return GameManager.selected_character != null and GameManager.selected_character.id == "surveyor"
-
-
-func _is_columnist() -> bool:
-	return GameManager.selected_character != null and GameManager.selected_character.id == "columnist"
-
-
-func _columnist_early_round() -> bool:
-	return _is_columnist() and GameManager.current_round <= COLUMNIST_EARLY_ROUND
-
-
-func _can_place_on_locked_column(card: TileCard) -> bool:
-	if card == null:
-		return false
-	if _locked_engine_segment < 0:
-		return _can_place_for_player(card)
-	return _can_place_on_segment(card, _locked_engine_segment)
-
-
-func _columnist_engine_balance_bonus(card: TileCard) -> float:
-	if _locked_engine_segment < 0:
-		return 0.0
-	var energy := _segment_product_count(_locked_engine_segment, TileCard.Product.FLAVOUR)
-	var mult := _segment_product_count(_locked_engine_segment, TileCard.Product.MULTIPLIER)
-	match card.product:
-		TileCard.Product.MULTIPLIER:
-			if energy > 0 and mult <= energy:
-				return 24.0
-		TileCard.Product.FLAVOUR:
-			if mult > 0 and energy <= mult:
-				return 24.0
-	return 8.0
-
-
-func _columnist_locked_has_producer() -> bool:
-	if _locked_engine_segment < 0:
-		return false
-	for hex: Hex in _map.get_hexes_in_segment(_locked_engine_segment):
-		var card := hex.active_tile_card
-		if card == null or not TileCard.is_producer_type(card.type):
-			continue
-		if card.product in [TileCard.Product.FLAVOUR, TileCard.Product.MULTIPLIER]:
-			return true
-	return false
-
-
-## Locked opening line for Surveyor and Columnist. Surveyor keeps this segment all run.
+## Locked opening line for the player bot.
 func _player_primary_segment() -> int:
 	if _uses_engine_lock() and _locked_engine_segment >= 0:
-		if _is_surveyor():
-			return _locked_engine_segment
-		if _engine_lock_active() or _is_columnist():
-			return _locked_engine_segment
+		return _locked_engine_segment
 	var rank := _player_engine_rank()
 	return rank[0] if not rank.is_empty() else -1
 
 
-func _surveyor_primary_has_room() -> bool:
-	if not _is_surveyor() or _locked_engine_segment < 0:
+func _primary_segment_has_room() -> bool:
+	if not _uses_engine_lock() or _locked_engine_segment < 0:
 		return false
 	return not _empty_hexes_in_segment(_locked_engine_segment).is_empty()
 
 
 func _player_spill_segment_rank(primary: int) -> Array[int]:
-	if _is_surveyor():
-		var ranked: Array[int] = []
-		if primary >= 0:
-			ranked.append(primary)
-		for index: int in _candidate_engine_segments():
-			if index != primary:
-				ranked.append(index)
-		return ranked
-	return _player_engine_rank()
+	if not _uses_engine_lock():
+		return _player_engine_rank()
+	var ranked: Array[int] = []
+	if primary >= 0:
+		ranked.append(primary)
+	for index: int in _candidate_engine_segments():
+		if index != primary:
+			ranked.append(index)
+	if ranked.is_empty():
+		return _player_engine_rank()
+	return ranked
 
 
 
 func _uses_engine_lock() -> bool:
 	if _active_bot != "player" or GameManager.selected_character == null:
 		return false
-	var character_id := GameManager.selected_character.id
-	return character_id == "surveyor" or character_id == "columnist"
+	return true
 
 
 func _engine_lock_unlock_round() -> int:
 	if GameManager.selected_character == null:
 		return 999
-	match GameManager.selected_character.id:
-		"surveyor":
-			return SURVEYOR_ENGINE_LOCK_ROUND
-		"columnist":
-			return COLUMNIST_ENGINE_LOCK_ROUND
-		_:
-			return 999
+	return ENGINE_LOCK_ROUND
 
 
 func _engine_lock_active() -> bool:
@@ -1390,15 +1207,8 @@ func _candidate_engine_segments() -> Array[int]:
 		return candidates
 	for index in _map.get_segment_count():
 		var size := _map.get_segment_size(index)
-		match GameManager.selected_character.id:
-			"surveyor":
-				if size >= SURVEYOR_ENGINE_MIN_SIZE and size <= SURVEYOR_ENGINE_MAX_SIZE:
-					candidates.append(index)
-			"columnist":
-				if size >= COLUMNIST_ENGINE_SIZE:
-					candidates.append(index)
-			_:
-				pass
+		if size >= ENGINE_SEGMENT_MIN_SIZE and size <= ENGINE_SEGMENT_MAX_SIZE:
+			candidates.append(index)
 	return candidates
 
 
@@ -1533,8 +1343,8 @@ func _placement_score(card: TileCard, hex: Hex, segment_index: int) -> float:
 	var score := _chip_numeric_value(card.get_board_chip(hex))
 	score += _placement_trigger_bonus(card, hex, segment_index)
 	var primary := _player_primary_segment()
-	if _is_surveyor() and primary >= 0 and segment_index != primary:
-		if _surveyor_primary_has_room():
+	if _uses_engine_lock() and primary >= 0 and segment_index != primary:
+		if _primary_segment_has_room():
 			score -= 800.0
 	if segment_index == primary or segment_index == _player_engine_index():
 		score += 20.0
@@ -1604,8 +1414,6 @@ func _condiment_player_value(condiment: Condiment) -> float:
 		Condiment.EffectType.BORROWED_TIME:
 			if gap > 0 and GameManager.remaining_turns <= 1:
 				return 90.0 + float(gap) / 500.0
-			if _columnist_early_round():
-				return 22.0
 			return 4.0
 		Condiment.EffectType.EMPOWER, Condiment.EffectType.ECHO:
 			return 48.0 if _engine_producer_hex() != null else 8.0
@@ -1680,8 +1488,6 @@ func _best_condiment_target_hex(condiment: Condiment) -> Hex:
 
 func _can_bot_place_card(card: TileCard) -> bool:
 	if card == null:
-		return false
-	if not card.is_legal_for_layout(GameManager.selected_character):
 		return false
 	for hex: Hex in _map.get_hexes_in_trigger_order():
 		if hex.is_placement_blocked() or hex.active_tile_card != null:
@@ -1960,7 +1766,7 @@ func _player_engine_index() -> int:
 	if _map == null:
 		return -1
 	if _uses_engine_lock() and _locked_engine_segment >= 0:
-		if _is_surveyor() and _surveyor_primary_has_room():
+		if _primary_segment_has_room():
 			return _locked_engine_segment
 		if _engine_lock_active():
 			return _locked_engine_segment
@@ -1979,12 +1785,11 @@ func _player_engine_index() -> int:
 ## Highest-rated line first. Tie-break with layout size priorities.
 func _player_engine_rank() -> Array[int]:
 	if _uses_engine_lock() and _locked_engine_segment >= 0:
-		if _is_surveyor() or _engine_lock_active():
-			var locked_rank: Array[int] = [_locked_engine_segment]
-			for index: int in _candidate_engine_segments():
-				if index != _locked_engine_segment:
-					locked_rank.append(index)
-			return locked_rank
+		var locked_rank: Array[int] = [_locked_engine_segment]
+		for index: int in _candidate_engine_segments():
+			if index != _locked_engine_segment:
+				locked_rank.append(index)
+		return locked_rank
 	var ranked: Array[int] = []
 	for index in _map.get_segment_count():
 		ranked.append(index)
@@ -2010,12 +1815,6 @@ func _can_place_on_engine(card: TileCard) -> bool:
 	for segment_index: int in next_sizes:
 		if segment_index == engine:
 			continue
-		if _is_surveyor():
-			if _can_place_on_segment(card, segment_index):
-				return true
-			continue
-		if _map.get_segment_size(segment_index) < 6:
-			break
 		if _can_place_on_segment(card, segment_index):
 			return true
 	return false
@@ -2309,14 +2108,9 @@ func _collect_invariant_failures(score_before: int) -> Array[String]:
 		)
 	if GoldManager.amount < 0:
 		reasons.append("gold went negative (%d)" % GoldManager.amount)
-	if GoldManager.merchant_tokens < 0:
-		reasons.append("merchant tokens went negative (%d)" % GoldManager.merchant_tokens)
-	if GoldManager.merchant_tokens > GoldManager.MAX_MERCHANT_TOKENS:
-		reasons.append("merchant tokens above cap (%d)" % GoldManager.merchant_tokens)
 	if GameManager.remaining_turns < 0:
 		reasons.append("remaining_turns went negative (%d)" % GameManager.remaining_turns)
 
-	var expected := 0
 	var seen_instances: Dictionary = {}
 	for hex: Hex in _map.get_hexes_in_trigger_order():
 		var card := hex.active_tile_card
@@ -2353,20 +2147,16 @@ func _collect_invariant_failures(score_before: int) -> Array[String]:
 			reasons.append("segment %d additive mult %s" % [index, str(additive)])
 		if is_nan(multiplicative) or is_inf(multiplicative) or multiplicative < 0.0:
 			reasons.append("segment %d multiplicative mult %s" % [index, str(multiplicative)])
-		var contribution := GameManager.compute_segment_turn_contribution(
-			index,
-			flavour,
-			additive,
-			multiplicative
-		)
-		if contribution < 0:
-			reasons.append("segment %d contribution %d" % [index, contribution])
-		expected += contribution
+
+	var expected := GameManager.compute_hour_turn_contribution(
+		_map.get_hour_flavour(),
+		_map.get_hour_additive_mult()
+	)
 
 	var storm := _map.turn_resolver != null and _map.turn_resolver.aborted_retrigger_storm
 	var delta := GameManager.total_round_score - score_before
 	if not storm and delta != expected:
-		reasons.append("turn score delta %d != segment sum %d" % [delta, expected])
+		reasons.append("turn score delta %d != hour rating %d" % [delta, expected])
 	for script_err: String in _pending_turn_script_errors:
 		reasons.append("script error: %s" % script_err)
 	return reasons

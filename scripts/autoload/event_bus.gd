@@ -25,7 +25,6 @@ signal card_drag_ended()
 
 ## Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
-signal merchant_tokens_changed(new_amount: int)
 ## Emitted when the shared run reroll budget changes.
 signal rerolls_changed(remaining: int)
 
@@ -84,9 +83,6 @@ signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)
 signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect2, source: Object)
 ## Re-evaluate the control beneath a stationary cursor after a covering UI closes.
 signal tooltip_hover_refresh_requested
-
-## Independent map overlay toggles from the run-info layout buttons.
-signal map_display_overlays_changed(show_tile_cards: bool, show_order_numbers: bool, show_segment_links: bool)
 
 ## Condiment belt contents changed.
 signal condiment_belt_changed

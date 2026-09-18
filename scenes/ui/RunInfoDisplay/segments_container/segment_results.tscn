@@ -18,17 +18,6 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="StyleBoxFlat" id="CourseBadge"]
-content_margin_left = 3.0
-content_margin_top = 1.0
-content_margin_right = 3.0
-content_margin_bottom = 1.0
-bg_color = Color(0.3529412, 0.40784314, 0.29411766, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
 [sub_resource type="StyleBoxFlat" id="RatingPanel"]
 content_margin_left = 8.0
 content_margin_top = 2.0
@@ -45,7 +34,7 @@ corner_radius_top_right = 7
 corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 
-[node name="SegmentResultsPanel" type="PanelContainer" unique_id=1594320159]
+[node name="HourResults" type="PanelContainer" unique_id=1594320159]
 custom_minimum_size = Vector2(0, 40)
 mouse_default_cursor_shape = 2
 theme_override_styles/panel = SubResource("RowPanel")
@@ -54,27 +43,6 @@ script = ExtResource("1_script")
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=817973673]
 layout_mode = 2
 theme_override_constants/separation = 7
-
-[node name="CourseBadge" type="PanelContainer" parent="HBoxContainer" unique_id=51434357]
-custom_minimum_size = Vector2(45, 0)
-layout_mode = 2
-theme_override_styles/panel = SubResource("CourseBadge")
-
-[node name="BadgeRow" type="HBoxContainer" parent="HBoxContainer/CourseBadge" unique_id=1627611491]
-layout_mode = 2
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="CourseNo" type="Label" parent="HBoxContainer/CourseBadge/BadgeRow" unique_id=1697636753]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.96, 0.82, 1)
-theme_override_colors/font_outline_color = Color(0.08, 0.2, 0.19, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 18
-text = "01"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="FlavourContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=632288051]
 custom_minimum_size = Vector2(68, 0)
@@ -115,23 +83,12 @@ theme_override_colors/font_color = Color(0.64, 0.35, 0.11, 1)
 theme_override_colors/font_outline_color = Color(0.98, 0.94, 0.82, 0.9)
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 19
-text = "-"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Equals" type="Label" parent="HBoxContainer" unique_id=767748739]
-visible = false
-custom_minimum_size = Vector2(14, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 1)
-theme_override_colors/font_outline_color = Color(0.98, 0.94, 0.82, 0.8)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 19
-text = "="
+text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RatingContainer" type="PanelContainer" parent="HBoxContainer" unique_id=201998490]
+visible = false
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3

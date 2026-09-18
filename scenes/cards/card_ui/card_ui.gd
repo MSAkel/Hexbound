@@ -5,7 +5,6 @@ signal reparent_requested(which_card_ui: CardUI)
 # Emitted in MERCHANT and CHOICE modes when the player clicks an actionable card.
 signal action_requested(card_ui: CardUI)
 signal gold_purchase_requested(card_ui: CardUI)
-signal token_purchase_requested(card_ui: CardUI)
 
 # Ingredients, Kitchenware, Utility, and Dish frames. Dishes reuse the Kitchenware frame.
 @export var frame_ingredients: Texture2D
@@ -89,7 +88,6 @@ var _hand_spread_x := 0.0
 var _hand_spread_rotation := 0.0
 var _is_sold := false
 var _discount := 0.0
-var _token_cost := 0
 var _merchant_selected := false
 var _placement_morph_active := false
 var _placement_morph_progress := 0.0
@@ -263,10 +261,6 @@ func _card_frame_bottom_y() -> float:
 
 func _on_gold_purchase_pressed() -> void:
 	gold_purchase_requested.emit(self)
-
-
-func _on_token_purchase_pressed() -> void:
-	token_purchase_requested.emit(self)
 
 
 func _get_hover_elevation_offset() -> float:
@@ -865,7 +859,6 @@ func _refresh_merchant_price() -> void:
 		return
 
 	price = card.get_shop_price(_discount)
-	_token_cost = GoldManager.MERCHANT_TOKEN_COST
 	_price_chip_label.text = MerchantShopStyling.format_price(price)
 	_refresh_price_chip_affordability()
 
@@ -896,13 +889,7 @@ func _update_stock_affordability() -> void:
 
 func refresh_purchase_tray() -> void:
 	var gold_enabled := not _is_sold and GoldManager.can_afford(price)
-	var token_enabled := not _is_sold and GoldManager.can_afford_tokens(_token_cost)
 	_purchase_tray.set_gold_enabled(gold_enabled)
-	_purchase_tray.set_token_enabled(token_enabled)
-
-
-func get_token_cost() -> int:
-	return _token_cost
 
 
 func set_merchant_selected(selected: bool) -> void:

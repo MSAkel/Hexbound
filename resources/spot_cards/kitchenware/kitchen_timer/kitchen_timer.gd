@@ -9,9 +9,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 
-	var later_producers := _get_later_tile_cards_on_same_segment(tile, TileCard.PRODUCER_TYPE_FILTER)
-	if later_producers.size() > MAX_TARGETS:
-		later_producers = later_producers.slice(0, MAX_TARGETS)
+	var later_producers := _effect_preview_cards(tile)
 	if later_producers.is_empty():
 		failed_tile_card_text(tile)
 		return
@@ -27,8 +25,8 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 
 
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	var targets := _get_later_tile_cards_on_same_segment(hover_tile, TileCard.PRODUCER_TYPE_FILTER)
-	if targets.size() > MAX_TARGETS:
-		targets = targets.slice(0, MAX_TARGETS)
-	return _coords_for_placed_tile_cards(hover_tile, targets)
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	var later_producers := _get_later_tile_cards_on_same_segment(tile, TileCard.PRODUCER_TYPE_FILTER)
+	if later_producers.size() > MAX_TARGETS:
+		return later_producers.slice(0, MAX_TARGETS)
+	return later_producers

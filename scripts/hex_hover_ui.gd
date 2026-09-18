@@ -148,7 +148,7 @@ func _update_occupied_inspect_overlay(hex: Hex) -> void:
 
 func _clear_occupied_inspect_overlay() -> void:
 	for coords: Vector2i in map._inspect_highlight_coords:
-		if map._rune_highlight_still_needed(coords, false, false, true):
+		if map._rune_highlight_still_needed(coords, false, true):
 			continue
 		map.card_highlight_overlay_layer.set_cell(coords, -1)
 	map._inspect_highlight_coords.clear()

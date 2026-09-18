@@ -3,9 +3,8 @@ extends TileCard
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	var host := _activation_host_card(tile)
-	var segment_cards := _get_all_tile_cards_on_same_segment(tile)
 	var to_trigger: Array[TileCard] = []
-	for card: TileCard in segment_cards:
+	for card: TileCard in _effect_preview_cards(tile):
 		# Skip the acting tile. Copied Break Glass would otherwise retrigger Mirror Copy or Imprint forever.
 		if card == host:
 			continue
@@ -24,5 +23,5 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	)
 
 
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_same_segment_tile_cards(hover_tile)
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	return _get_all_tile_cards_on_same_segment(tile)

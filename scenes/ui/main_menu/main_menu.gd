@@ -22,7 +22,6 @@ func _ready() -> void:
 	get_tree().paused = false
 	game_version.text = ProjectSettings.get_setting("application/config/version")
 	_refresh_continue_button()
-	SegmentPassiveUnlockPresenter.present_if_needed(self)
 	call_deferred("_focus_main_menu")
 
 	# Play main menu music

@@ -6,10 +6,6 @@ extends Panel
 @onready var base_gold_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow/BaseGoldValue
 @onready var early_gold_row: HBoxContainer = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow
 @onready var early_gold_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow/EarlyGoldValue
-@onready var token_rule: HSeparator = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/TokenRule
-@onready var tokens_row: HBoxContainer = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow
-@onready var tokens_earned_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/MerchantTokensRow/MerchantTokensValue
-@onready var tokens_lost_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/TokensLostLabel
 
 
 func _ready() -> void:
@@ -32,20 +28,9 @@ func _on_show_panel() -> void:
 
 	var has_early_bonus := skipped_turns > 0
 	early_gold_row.visible = has_early_bonus
-	token_rule.visible = has_early_bonus
-	tokens_row.visible = has_early_bonus
 
 	if has_early_bonus:
 		early_gold_label.text = "+%d" % reward.get("early_gold", 0)
-
-		var tokens_earned: int = reward.get("tokens_earned", 0)
-		var tokens_lost: int = reward.get("tokens_lost", 0)
-		tokens_earned_label.text = "+%d" % tokens_earned
-		tokens_lost_label.visible = tokens_lost > 0
-		if tokens_lost > 0:
-			tokens_lost_label.text = "Max tokens reached"
-	else:
-		tokens_lost_label.visible = false
 
 	# Deferred so the panel is laid out and visible before the button takes focus.
 	call_deferred("_focus_continue")

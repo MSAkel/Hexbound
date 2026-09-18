@@ -79,6 +79,8 @@ func place_tile_card(rune: TileCard, animate: bool = true) -> void:
 	
 	# Each tile needs its own rune instance. hand/pool cards often share one .tres reference.
 	active_tile_card = rune.duplicate(true)
+	# Index this occupant before chip refresh walks the board.
+	_notify_occupancy_changed(null, active_tile_card)
 	var new_rune_instance: CardIconUI = CARD_ICON_UI.instantiate()
 	card_icon_ui = new_rune_instance
 	new_rune_instance.map = map
@@ -102,6 +104,8 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 		return
 
 	active_tile_card = rune
+	# Index this occupant before chip refresh walks the board.
+	_notify_occupancy_changed(null, active_tile_card)
 	var new_rune_instance: CardIconUI = CARD_ICON_UI.instantiate()
 	card_icon_ui = new_rune_instance
 	new_rune_instance.map = map
@@ -118,12 +122,12 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 
 func _apply_display_mode() -> void:
 	var has_rune := card_icon_ui != null and active_tile_card != null
-	var show_cards := map == null or map.is_board_cards_visible()
 	if card_icon_ui != null:
-		card_icon_ui.visible = has_rune and show_cards
+		card_icon_ui.visible = has_rune
 
 
-func refresh_tile_card_visual_state() -> void:
+## Resting modulate, this seat's chip, condiment badges, and empower sparks.
+func refresh_own_visuals() -> void:
 	if card_icon_ui == null or active_tile_card == null:
 		return
 
@@ -141,27 +145,34 @@ func refresh_tile_card_visual_state() -> void:
 		card_icon_ui.start_empower_sparks(active_tile_card.empower_stacks)
 	else:
 		card_icon_ui.stop_empower_sparks()
-	# Board-dependent chips, such as dish prefixes and steak-style course totals.
+
+
+## Own visuals plus every board-dependent chip. Dishes and steak-style cards read other seats.
+func refresh_tile_card_visual_state() -> void:
+	refresh_own_visuals()
 	if map != null:
 		map.refresh_board_output_chips()
 
 
 func set_tile_card_event_modulate(modulate: Color) -> void:
 	_event_rune_modulate = modulate
-	refresh_tile_card_visual_state()
+	refresh_own_visuals()
 
 
 func clear_tile_card_event_modulate() -> void:
 	_event_rune_modulate = Color.WHITE
-	refresh_tile_card_visual_state()
+	refresh_own_visuals()
 
 
 # Clear the placed rune from this tile and remove its map UI.
 func remove_tile_card() -> void:
 	if active_tile_card == null:
 		return
-	
+
+	var removed := active_tile_card
 	active_tile_card = null
+	# Drop the occupant from the board query before other chips refresh.
+	_notify_occupancy_changed(removed, null)
 	_event_rune_modulate = Color.WHITE
 	if card_icon_ui != null:
 		card_icon_ui.queue_free()
@@ -209,6 +220,12 @@ func clear_segment_sealed() -> void:
 	if card_icon_ui == null:
 		return
 	card_icon_ui.clear_segment_sealed()
+
+
+## Keeps HexBoardQuery's card-to-hex index aligned with this seat.
+func _notify_occupancy_changed(previous: TileCard, current: TileCard) -> void:
+	if map != null:
+		map.notify_tile_card_occupancy_changed(self, previous, current)
 
 
 func apply_tile_card_activation(activation_scale: float = 1.0) -> void:

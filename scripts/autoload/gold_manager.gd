@@ -1,13 +1,10 @@
 extends Node
 
-## Tracks spendable gold, merchant tokens, and per-turn or per-round gold earnings.
-## Gold is used for rune activation and merchant purchases.
+## Tracks spendable gold and per-turn or per-round gold earnings.
+## Gold is used for card activation and merchant purchases.
 
 
 ## Starting gold amount is set in diffculty.gd
-const MAX_MERCHANT_TOKENS := 4
-const MERCHANT_TOKEN_COST := 1
-## Flat gold paid every time a round goal is met.
 const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
 const GOLD_PER_UNUSED_TURN := 1
@@ -19,7 +16,6 @@ var _total_earned_this_run: int = 0
 var _earned_this_turn: int = 0
 ## Resets when a new round begins. Used by cards that scale with gold spent this round.
 var _spent_this_round: int = 0
-var _merchant_tokens: int = 0
 ## Breakdown from the most recent round-completion reward, for the summary UI.
 var _last_speed_reward: Dictionary = {}
 
@@ -44,11 +40,6 @@ var spent_this_round: int:
 		return _spent_this_round
 
 
-var merchant_tokens: int:
-	get:
-		return _merchant_tokens
-
-
 var last_speed_reward: Dictionary:
 	get:
 		return _last_speed_reward
@@ -57,14 +48,14 @@ var last_speed_reward: Dictionary:
 ## Set starting gold for a new run based on difficulty and notify UI listeners.
 func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	_amount = Difficulty.get_starting_gold(difficulty)
+	if GameManager.chef_passives != null:
+		_amount += int(GameManager.chef_passives.extra_starting_gold())
 	_total_earned_this_run = 0
 	_earned_this_turn = 0
 	_spent_this_round = 0
-	_merchant_tokens = 0
 	_last_speed_reward = {}
 	GameManager.record_peak_gold_held(_amount)
 	EventBus.gold_changed.emit(_amount)
-	EventBus.merchant_tokens_changed.emit(_merchant_tokens)
 
 
 ## Debug helper. Replaces the current gold wallet without counting it as earned or spent.
@@ -72,12 +63,6 @@ func set_amount(new_amount: int) -> void:
 	_amount = maxi(0, new_amount)
 	GameManager.record_peak_gold_held(_amount)
 	EventBus.gold_changed.emit(_amount)
-
-
-## Debug helper. Sets merchant tokens without exceeding the wallet cap.
-func set_merchant_tokens(new_amount: int) -> void:
-	_merchant_tokens = clampi(new_amount, 0, MAX_MERCHANT_TOKENS)
-	EventBus.merchant_tokens_changed.emit(_merchant_tokens)
 
 
 func add(amount_to_add: int) -> void:
@@ -101,36 +86,13 @@ func can_afford(cost: int) -> bool:
 	return _amount >= cost
 
 
-func can_afford_tokens(cost: int) -> bool:
-	return cost > 0 and _merchant_tokens >= cost
-
-
-func spend_tokens(cost: int) -> bool:
-	if not can_afford_tokens(cost):
-		return false
-	_merchant_tokens -= cost
-	EventBus.merchant_tokens_changed.emit(_merchant_tokens)
-	return true
-
-
-## Awards tokens up to the wallet cap. Returns how many were earned and how many were lost to overflow.
-func earn_merchant_tokens(amount_to_earn: int) -> Dictionary:
-	if amount_to_earn <= 0:
-		return {"earned": 0, "lost": 0}
-
-	var space := MAX_MERCHANT_TOKENS - _merchant_tokens
-	var earned := mini(amount_to_earn, space)
-	var lost := amount_to_earn - earned
-	_merchant_tokens += earned
-	EventBus.merchant_tokens_changed.emit(_merchant_tokens)
-	return {"earned": earned, "lost": lost}
-
-
-## Pays round completion gold, early-finish bonus, and merchant tokens when the goal is met.
+## Pays round completion gold and early-finish bonus when the goal is met.
 func apply_round_speed_rewards(skipped_turns: int) -> void:
-	var base_gold := ROUND_COMPLETION_GOLD
+	var gourmet_bonus := 0
+	if GameManager.chef_passives != null:
+		gourmet_bonus = int(GameManager.chef_passives.extra_day_completion_gold())
+	var base_gold := ROUND_COMPLETION_GOLD + gourmet_bonus
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns
-	var token_result := earn_merchant_tokens(skipped_turns)
 	var total_gold := base_gold + early_gold
 	if not EventManager.can_gain_gold():
 		base_gold = 0
@@ -145,8 +107,6 @@ func apply_round_speed_rewards(skipped_turns: int) -> void:
 		"skipped_turns": skipped_turns,
 		"base_gold": base_gold,
 		"early_gold": early_gold,
-		"tokens_earned": token_result["earned"],
-		"tokens_lost": token_result["lost"],
 	}
 
 
@@ -166,7 +126,6 @@ func capture_run_state() -> Dictionary:
 		"amount": _amount,
 		"earned_this_turn": _earned_this_turn,
 		"spent_this_round": _spent_this_round,
-		"merchant_tokens": _merchant_tokens,
 	}
 
 
@@ -175,7 +134,5 @@ func apply_run_state(state: Dictionary) -> void:
 	_total_earned_this_run = int(state.get("total_earned_this_run", 0))
 	_earned_this_turn = int(state.get("earned_this_turn", 0))
 	_spent_this_round = int(state.get("spent_this_round", 0))
-	_merchant_tokens = int(state.get("merchant_tokens", 0))
 	_last_speed_reward = {}
 	EventBus.gold_changed.emit(_amount)
-	EventBus.merchant_tokens_changed.emit(_merchant_tokens)

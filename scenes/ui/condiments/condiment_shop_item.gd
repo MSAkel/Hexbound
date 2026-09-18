@@ -6,7 +6,6 @@ extends Control
 
 signal selected(item: CondimentShopItem)
 signal gold_purchase_requested(item: CondimentShopItem)
-signal token_purchase_requested(item: CondimentShopItem)
 
 const SIZE := Vector2(108, 136)
 const MERCHANT_TRAY_HEIGHT := 44.0
@@ -23,7 +22,6 @@ const MERCHANT_TRAY_GAP := 10.0
 
 var condiment: Condiment
 var price: int = 0
-var _token_cost := 1
 var _sold := false
 var _chosen := false
 
@@ -46,7 +44,6 @@ func configure(new_condiment: Condiment) -> void:
 	condiment = new_condiment
 	if condiment != null:
 		price = condiment.get_shop_price()
-	_token_cost = GoldManager.MERCHANT_TOKEN_COST
 	_refresh()
 
 
@@ -101,13 +98,7 @@ func _update_layout_height() -> void:
 func refresh_purchase_tray() -> void:
 	var belt_full := not CondimentManager.can_add()
 	var gold_enabled := not _sold and not belt_full and GoldManager.can_afford(price)
-	var token_enabled := not _sold and not belt_full and GoldManager.can_afford_tokens(_token_cost)
 	_purchase_tray.set_gold_enabled(gold_enabled)
-	_purchase_tray.set_token_enabled(token_enabled)
-
-
-func get_token_cost() -> int:
-	return _token_cost
 
 
 func refresh_affordability() -> void:
@@ -117,10 +108,6 @@ func refresh_affordability() -> void:
 
 func _on_gold_purchase_pressed() -> void:
 	gold_purchase_requested.emit(self)
-
-
-func _on_token_purchase_pressed() -> void:
-	token_purchase_requested.emit(self)
 
 
 func _refresh() -> void:

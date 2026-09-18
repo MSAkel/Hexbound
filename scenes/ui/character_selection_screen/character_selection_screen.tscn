@@ -13,7 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
 [ext_resource type="Texture2D" uid="uid://ckj7ydre0t2d2" path="res://assets/gui/buttons/button_accent_hover.png" id="13_s21rt"]
 [ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/character_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
-[ext_resource type="PackedScene" uid="uid://c8abandonrun01" path="res://scenes/ui/character_selection_screen/abandon_run_confirm_panel.tscn" id="14_abandon_panel"]
+[ext_resource type="PackedScene" uid="uid://ronbvr33lwb5" path="res://scenes/ui/character_selection_screen/abandon_run_confirm_panel.tscn" id="14_abandon_panel"]
 [ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="14_back"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_layout_prev"]
@@ -69,6 +69,7 @@ theme_override_constants/margin_bottom = 44
 
 [node name="Page" type="HBoxContainer" parent="SafeArea" unique_id=813806966]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/separation = 20
 
 [node name="PrevSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1203913993]
@@ -85,12 +86,13 @@ flip_h = true
 
 [node name="UnifiedPanel" type="PanelContainer" parent="SafeArea/Page" unique_id=1251914286]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
+size_flags_horizontal = 4
+size_flags_vertical = 6
 theme_override_styles/panel = SubResource("StyleBoxTexture_parchment")
 
 [node name="Content" type="VBoxContainer" parent="SafeArea/Page/UnifiedPanel" unique_id=39843696]
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_constants/separation = 16
 
 [node name="Header" type="HBoxContainer" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=1964102201]
@@ -132,7 +134,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.42745098, 0.23529412, 0.06666667, 1)
 theme_override_font_sizes/font_size = 42
-text = "Layout Selection"
+text = "Character Selection"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -149,6 +151,7 @@ mouse_filter = 2
 [node name="LayoutDetails" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=181299471 instance=ExtResource("3_details")]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 2
 
 [node name="FooterRule" type="ColorRect" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=749394700]
 custom_minimum_size = Vector2(0, 2)
@@ -210,6 +213,7 @@ stretch_mode = 3
 
 [node name="AbandonRunConfirmPanel" parent="." unique_id=1982736451 instance=ExtResource("14_abandon_panel")]
 unique_name_in_owner = true
+layout_mode = 1
 
 [connection signal="pressed" from="SafeArea/Page/PrevSelectionButton" to="." method="_on_prev_selection_pressed"]
 [connection signal="pressed" from="SafeArea/Page/UnifiedPanel/Content/Header/HeaderLeft/BackButton" to="." method="_on_back_button_pressed"]

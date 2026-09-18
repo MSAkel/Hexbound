@@ -1,7 +1,14 @@
 class_name HexMapLayout
 extends RefCounted
 
-# Ring distances, trigger-order sorting, and character segment grouping for a hex map.
+# Shared kitchen board helpers. Ring distances, fire order, and course grouping.
+# Seated-card lookups live on HexBoardQuery. Hour piles live in the scoring region below.
+
+# Shared kitchen board. Five visual rows, 32 hexes, left-to-right fire order.
+const BOARD_ROW_LENGTHS: Array[int] = [6, 7, 6, 7, 6]
+const BOARD_TILE_COUNT := 32
+# Offset origin so every generated cell stays in non-negative tile coords.
+const BOARD_ORIGIN := Vector2i(2, 0)
 
 const NEIGHBORS: Array[TileSet.CellNeighbor] = [
 	TileSet.CELL_NEIGHBOR_RIGHT_SIDE,
@@ -17,17 +24,23 @@ var _hex_center: Vector2i = Vector2i.ZERO
 var _ring_distances: Dictionary = {}
 var _segments_cache: Array[Array] = []
 var _segments_cache_valid: bool = false
-# Trigger order is stable until the map is regenerated. Cache it so NUMBERED_GRID
-# lookups do not rebuild and sort the whole grid on every call.
+# Fire order is stable until the map is regenerated. Cache it so lookups skip a full sort.
 var _trigger_order_cache: Array[Vector2i] = []
 var _trigger_order_cache_valid: bool = false
 # Vector2i -> segment index, filled whenever segments are rebuilt.
 var _segment_index_by_coords: Dictionary = {}
+# Visual rows used by fire order, courses, and gamepad navigation. Rebuilt with segments.
+var _spatial_rows_cache: Array = []
+# Vector2i -> opposite board cell around the map center. Stable until regenerate.
+var _opposite_by_coords: Dictionary = {}
 # Per-segment Flavour and Gold produced during the current turn resolution.
 var _segment_turn_flavours: Array[int] = []
 var _segment_additive_mult: Array[float] = []
 var _segment_multiplicative_mult: Array[float] = []
 var _segment_turn_gold: Array[int] = []
+# Hour-wide scoring piles. Rating is Flavour x Additive. xMult folds into Additive immediately.
+var _hour_flavour: int = 0
+var _hour_additive_mult: float = 1.0
 # Completed tile card activations on each segment during the current turn.
 var _segment_turn_triggers: Array[int] = []
 # True after a segment's natural trigger pass has finished this turn.
@@ -43,12 +56,45 @@ func setup(map: Node) -> void:
 	_map = map
 
 
-## Rebuilds ring distances and clears the segment cache after terrain generation.
+## Walks Godot hex neighbors to build the shared 6-7-6-7-6 rectangle.
+static func compute_board_cells(base_layer: TileMapLayer, origin: Vector2i = BOARD_ORIGIN) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	var row_start := origin
+	for row_i in BOARD_ROW_LENGTHS.size():
+		var length: int = BOARD_ROW_LENGTHS[row_i]
+		var cell := row_start
+		for col in length:
+			cells.append(cell)
+			if col < length - 1:
+				cell = base_layer.get_neighbor_cell(cell, TileSet.CELL_NEIGHBOR_RIGHT_SIDE)
+		if row_i >= BOARD_ROW_LENGTHS.size() - 1:
+			continue
+		var next_length: int = BOARD_ROW_LENGTHS[row_i + 1]
+		# Longer rows start one hex left-down so they pick up an extra seat.
+		if next_length > length:
+			row_start = base_layer.get_neighbor_cell(row_start, TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)
+		else:
+			row_start = base_layer.get_neighbor_cell(row_start, TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)
+	return cells
+
+
+## Center seat used for ring math and gamepad default focus.
+static func board_hex_center(cells: Array[Vector2i]) -> Vector2i:
+	if cells.is_empty():
+		return BOARD_ORIGIN
+	# Middle of row 3 (0-based index 2). Rows 0-1 hold 13 tiles, then three more into the 6-wide row.
+	var center_index := mini(15, cells.size() - 1)
+	return cells[center_index]
+
+
+## Rebuilds ring distances, opposite seats, and clears the segment cache after terrain generation.
 func reset(hex_center: Vector2i) -> void:
 	_hex_center = hex_center
 	_ring_distances.clear()
+	_opposite_by_coords.clear()
 	_invalidate_segments_cache()
 	_compute_ring_distances()
+	_compute_opposites()
 
 
 ## Map center tile used as the origin for ring distance calculations.
@@ -58,43 +104,25 @@ func get_hex_center() -> Vector2i:
 
 ## Tile 180 degrees from coords around the map center. Returns coords when the map is empty.
 func get_opposite_coords(coords: Vector2i) -> Vector2i:
-	if _map == null or _map.map_data.is_empty():
-		return coords
-	var center_pos: Vector2 = _get_screen_position(_hex_center)
-	var reflected_pos: Vector2 = center_pos * 2.0 - _get_screen_position(coords)
-	var best: Vector2i = coords
-	var best_dist := INF
-	for map_coords: Vector2i in _map.map_data.keys():
-		var dist := reflected_pos.distance_squared_to(_get_screen_position(map_coords))
-		if dist < best_dist:
-			best_dist = dist
-			best = map_coords
-	return best
+	return _opposite_by_coords.get(coords, coords)
 
 
-## Ring index from the map center (0 = center, outer ring = map hex_size).
+## Ring index from the map center (0 = center).
 func get_ring_distance(coords: Vector2i) -> int:
 	return _ring_distances.get(coords, -1)
 
 
-## All map coordinates sorted by the active character trigger-order rule.
+## All map coordinates in fire order. Top-to-bottom rows, left to right within each row.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
 	if _trigger_order_cache_valid and _trigger_order_cache_matches_map():
 		return _trigger_order_cache
 
-	_trigger_order_cache = _compute_trigger_order()
+	var ordered: Array[Vector2i] = []
+	for row: Array in build_segments():
+		ordered.append_array(row)
+	_trigger_order_cache = ordered
 	_trigger_order_cache_valid = true
 	return _trigger_order_cache
-
-
-## All map hex tiles in the same order as get_coords_in_trigger_order().
-func get_hexes_in_trigger_order() -> Array[Hex]:
-	var hexes: Array[Hex] = []
-	for coords: Vector2i in get_coords_in_trigger_order():
-		var hex: Hex = _map.map_data.get(coords)
-		if hex != null:
-			hexes.append(hex)
-	return hexes
 
 
 ## Drops cached trigger order and segment groups. Call when map_data keys change.
@@ -103,7 +131,7 @@ func invalidate_caches() -> void:
 	_invalidate_segments_cache()
 
 
-## Segment index for coords under the active character's row/ring grouping (-1 when unknown).
+## Course (row) index for coords, or -1 when the tile is not on the board.
 func get_segment_index(coords: Vector2i) -> int:
 	# Ensures the coords lookup is populated. Segment grouping is stable until reset().
 	build_segments()
@@ -158,7 +186,7 @@ func get_segment_size(segment_index: int) -> int:
 	return segments[segment_index].size()
 
 
-## Character-specific segment groups (each segment is an ordered list of coordinates).
+## Course groups. Each course is an ordered list of coordinates.
 func build_segments() -> Array[Array]:
 	if _segments_cache_valid:
 		return _segments_cache
@@ -172,69 +200,7 @@ func build_segments() -> Array[Array]:
 	return _segments_cache
 
 
-## All placed runes on one segment, optionally filtered by rune type.
-func get_all_tile_cards_on_segment(segment_index: int, filter_type: Variant = null) -> Array[TileCard]:
-	var segments := build_segments()
-	if segment_index < 0 or segment_index >= segments.size():
-		return []
-
-	var result: Array[TileCard] = []
-	for coords: Vector2i in segments[segment_index]:
-		var rune := _get_rune_on_coords(coords, filter_type)
-		if rune != null:
-			result.append(rune)
-	return result
-
-
-## All placed runes on other segments, optionally filtered by rune type.
-func get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	# Resolves the tile’s segment index (returns [] if unknown)
-	var tile_segment_index := get_segment_index(tile.coordinates)
-	if tile_segment_index < 0:
-		return []
-
-	var result: Array[TileCard] = []
-	var segments := build_segments()
-	# Walks every other segment in trigger order
-	for segment_index in range(segments.size()):
-		if segment_index == tile_segment_index:
-			continue
-		# Collects placed runes from each, applying filter_type when provided
-		for coords: Vector2i in segments[segment_index]:
-			var rune := _get_rune_on_coords(coords, filter_type)
-			if rune != null:
-				result.append(rune)
-	return result
-
-
-## First or last matching rune in a segment relative to tile's segment.
-## segment_index_offset is added to the tile's segment index (0 = same segment, -1 = previous, +1 = next).
-## pick_first_in_segment: true = first placed rune in segment, false = last placed rune in segment.
-func get_tile_card_in_relative_segment(
-	tile: Hex,
-	segment_index_offset: int,
-	pick_first_in_segment: bool,
-	filter_type: Variant = null
-) -> TileCard:
-	var segment_index := get_segment_index(tile.coordinates) + segment_index_offset
-	var segments := build_segments()
-	if segment_index < 0 or segment_index >= segments.size():
-		return null
-
-	var segment: Array = segments[segment_index]
-	if pick_first_in_segment:
-		for coords: Vector2i in segment:
-			var rune := _get_rune_on_coords(coords, filter_type)
-			if rune != null:
-				return rune
-	else:
-		for i in range(segment.size() - 1, -1, -1):
-			var rune := _get_rune_on_coords(segment[i], filter_type)
-			if rune != null:
-				return rune
-	return null
-
-
+#region --- Hour scoring ledger ---
 # Clears per-segment turn totals so the next resolution starts from zero.
 func reset_turn_results() -> void:
 	var segment_count := build_segments().size()
@@ -246,6 +212,8 @@ func reset_turn_results() -> void:
 	_segment_resolved.resize(segment_count)
 	_segment_received_relay.resize(segment_count)
 	_segment_breaks.resize(segment_count)
+	_hour_flavour = 0
+	_hour_additive_mult = 1.0
 	for i in segment_count:
 		_segment_turn_flavours[i] = 0
 		# Base additive mult is 1 so Flavour is unchanged when no mult cards fire in a segment.
@@ -264,12 +232,14 @@ func add_segment_turn_flavour(segment_index: int, amount: int) -> void:
 	if segment_index < 0 or segment_index >= _segment_turn_flavours.size():
 		return
 	_segment_turn_flavours[segment_index] += amount
+	_hour_flavour += amount
 
 
 func add_segment_additive_mult(segment_index: int, amount: float) -> void:
 	if segment_index < 0 or segment_index >= _segment_additive_mult.size():
 		return
 	_segment_additive_mult[segment_index] += amount
+	_hour_additive_mult += amount
 
 
 func multiply_segment_multiplicative_mult(segment_index: int, factor: float) -> void:
@@ -278,6 +248,8 @@ func multiply_segment_multiplicative_mult(segment_index: int, factor: float) -> 
 	if is_zero_approx(factor):
 		return
 	_segment_multiplicative_mult[segment_index] *= factor
+	# xMult immediately folds into the shared Additive pile used for hour Rating.
+	_hour_additive_mult *= factor
 
 ## Adds gold produced by a rune on the given segment index.
 func add_segment_turn_gold(segment_index: int, amount: int) -> void:
@@ -306,6 +278,21 @@ func get_segment_turn_gold(segment_index: int) -> int:
 	if segment_index < 0 or segment_index >= _segment_turn_gold.size():
 		return 0
 	return _segment_turn_gold[segment_index]
+
+
+func get_hour_flavour() -> int:
+	return _hour_flavour
+
+
+func get_hour_additive_mult() -> float:
+	return _hour_additive_mult
+
+
+func get_hour_gold() -> int:
+	var total := 0
+	for amount: int in _segment_turn_gold:
+		total += amount
+	return total
 
 
 # Counts one completed activation on the given segment this turn.
@@ -343,12 +330,6 @@ func mark_segment_received_relay(segment_index: int) -> void:
 	_segment_received_relay[segment_index] = true
 
 
-func did_segment_receive_relay(segment_index: int) -> bool:
-	if segment_index < 0 or segment_index >= _segment_received_relay.size():
-		return false
-	return _segment_received_relay[segment_index]
-
-
 func count_segments_that_received_relay() -> int:
 	var count := 0
 	for received: bool in _segment_received_relay:
@@ -376,6 +357,8 @@ func capture_turn_results() -> Dictionary:
 		"multiplicative_mults": _segment_multiplicative_mult.duplicate(),
 		"gold": _segment_turn_gold.duplicate(),
 		"triggers": _segment_turn_triggers.duplicate(),
+		"hour_flavour": _hour_flavour,
+		"hour_additive_mult": _hour_additive_mult,
 	}
 
 
@@ -400,6 +383,24 @@ func apply_turn_results(state: Dictionary) -> void:
 		_segment_multiplicative_mult[i] = float(multiplicative_mults[i]) if i < multiplicative_mults.size() else 1.0
 		_segment_turn_gold[i] = int(gold_amounts[i]) if i < gold_amounts.size() else 0
 		_segment_turn_triggers[i] = int(triggers[i]) if i < triggers.size() else 0
+	_hour_flavour = int(state.get("hour_flavour", _sum_int_array(_segment_turn_flavours)))
+	_hour_additive_mult = float(state.get("hour_additive_mult", 1.0))
+	if not state.has("hour_additive_mult"):
+		# Older saves stored xMult separately. Reconstruct the folded Additive as well as we can.
+		_hour_additive_mult = 1.0
+		for i in segment_count:
+			_hour_additive_mult += maxf(_segment_additive_mult[i] - 1.0, 0.0)
+			_hour_additive_mult *= _segment_multiplicative_mult[i]
+
+
+#endregion --- Hour scoring ledger ---
+
+
+func _sum_int_array(values: Array[int]) -> int:
+	var total := 0
+	for value: int in values:
+		total += value
+	return total
 
 
 ## Clears cached segment groups so the next build_segments() call rebuilds them.
@@ -407,6 +408,7 @@ func _invalidate_segments_cache() -> void:
 	_segments_cache_valid = false
 	_segments_cache.clear()
 	_segment_index_by_coords.clear()
+	_spatial_rows_cache.clear()
 	_trigger_order_cache_valid = false
 	_trigger_order_cache.clear()
 
@@ -436,122 +438,38 @@ func _compute_ring_distances() -> void:
 			queue.append(neighbor)
 
 
-## All map coordinates whose ring distance equals ring.
-func _get_tiles_in_ring(ring: int) -> Array[Vector2i]:
-	var tiles: Array[Vector2i] = []
-	for coords: Vector2i in _map.map_data.keys():
-		if _ring_distances.get(coords, -1) == ring:
-			tiles.append(coords)
-	return tiles
-
-
 ## Screen-space pixel position for a map coordinate (used for sorting and segments).
 func _get_screen_position(coords: Vector2i) -> Vector2:
 	return _map.base_layer.map_to_local(coords)
 
 
-## Top-left tile in screen space from a set of coordinates.
-func _find_top_left_tile(cells: Array[Vector2i]) -> Vector2i:
-	var best: Vector2i = cells[0]
-	for cell: Vector2i in cells:
-		var pos: Vector2 = _get_screen_position(cell)
-		var best_pos: Vector2 = _get_screen_position(best)
-		if pos.y < best_pos.y or (is_equal_approx(pos.y, best_pos.y) and pos.x < best_pos.x):
-			best = cell
-	return best
-
-
-## Tile closest to the northeast direction from the map center (spiral start tile).
-func _find_ne_start_tile(cells: Array[Vector2i]) -> Vector2i:
-	var center_pos: Vector2 = _get_screen_position(_hex_center)
-	const NE_ANGLE := -PI / 3.0
-	var best: Vector2i = cells[0]
-	var best_diff: float = INF
-	for cell: Vector2i in cells:
-		var pos: Vector2 = _get_screen_position(cell)
-		var angle: float = atan2(pos.y - center_pos.y, pos.x - center_pos.x)
-		var diff: float = absf(fmod(angle - NE_ANGLE + PI, TAU) - PI)
-		if diff < best_diff:
-			best_diff = diff
-			best = cell
-	return best
-
-
-## Sorts ring tiles clockwise starting from start_tile around the map center.
-func _sort_ring_clockwise(cells: Array[Vector2i], start_tile: Vector2i) -> Array[Vector2i]:
-	var sorted_cells: Array[Vector2i] = cells.duplicate()
-	var center_pos: Vector2 = _get_screen_position(_hex_center)
-	var start_pos: Vector2 = _get_screen_position(start_tile)
-	var start_angle: float = atan2(start_pos.y - center_pos.y, start_pos.x - center_pos.x)
-
-	sorted_cells.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
-		var pos_a: Vector2 = _get_screen_position(a)
-		var pos_b: Vector2 = _get_screen_position(b)
-		var angle_a: float = atan2(pos_a.y - center_pos.y, pos_a.x - center_pos.x)
-		var angle_b: float = atan2(pos_b.y - center_pos.y, pos_b.x - center_pos.x)
-		var order_a: float = fmod(angle_a - start_angle + TAU, TAU)
-		var order_b: float = fmod(angle_b - start_angle + TAU, TAU)
-		return order_a < order_b
-	)
-	return sorted_cells
-
-
-## Trigger order: top-to-bottom rows, always left to right within each row.
-func _get_order_rows_left_to_right() -> Array[Vector2i]:
-	var ordered: Array[Vector2i] = []
-	for row: Array in _get_spatial_rows():
-		ordered.append_array(row)
-	return ordered
-
-
-## Trigger order: top-to-bottom rows, zigzagging left/right within each row.
-## Even rows (0-based) go left → right; odd rows go right → left.
-func _get_order_top_left_to_bottom_right() -> Array[Vector2i]:
-	var ordered: Array[Vector2i] = []
-	var row_index := 0
-	for row: Array in _get_spatial_rows():
-		var row_slice: Array = row.duplicate()
-		# Odd rows traverse right → left.
-		if row_index % 2 == 1:
-			row_slice.reverse()
-		ordered.append_array(row_slice)
-		row_index += 1
-	return ordered
-
-
-## Trigger order: ring-by-ring traversal, optionally from the outside in.
-func _get_order_by_rings(from_outer: bool, use_ne_start: bool) -> Array[Vector2i]:
-	var coords: Array[Vector2i] = []
-	var ring: int = _map.hex_size if from_outer else 0
-	var end: int = -1 if from_outer else _map.hex_size + 1
-	var step := -1 if from_outer else 1
-
-	while ring != end:
-		if ring == 0:
-			coords.append(_hex_center)
-		else:
-			var ring_tiles: Array[Vector2i] = _get_tiles_in_ring(ring)
-			var start_tile: Vector2i = (
-				_find_ne_start_tile(ring_tiles) if use_ne_start
-				else _find_top_left_tile(ring_tiles)
-			)
-			coords.append_array(_sort_ring_clockwise(ring_tiles, start_tile))
-		ring += step
-	return coords
-
-
 ## Groups map tiles into visual rows (top-to-bottom, left-to-right within each row).
 func get_spatial_rows() -> Array:
-	return _get_spatial_rows()
+	build_segments()
+	return _spatial_rows_cache
+
+
+## Courses are the visual rows. Fire order already walks each row left to right.
+func _build_segments_uncached() -> Array[Array]:
+	_spatial_rows_cache = _compute_spatial_rows()
+	var segments: Array[Array] = []
+	for row: Array in _spatial_rows_cache:
+		var segment: Array[Vector2i] = []
+		segment.assign(row)
+		segments.append(segment)
+	return segments
 
 
 ## Groups map tiles into visual rows (top-to-bottom, left-to-right within each row).
-func _get_spatial_rows() -> Array:
+func _compute_spatial_rows() -> Array:
 	var coords: Array[Vector2i] = []
 	coords.assign(_map.map_data.keys())
+	var positions: Dictionary = {}
+	for cell: Vector2i in coords:
+		positions[cell] = _get_screen_position(cell)
 	coords.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
-		var pos_a: Vector2 = _get_screen_position(a)
-		var pos_b: Vector2 = _get_screen_position(b)
+		var pos_a: Vector2 = positions[a]
+		var pos_b: Vector2 = positions[b]
 		if not is_equal_approx(pos_a.y, pos_b.y):
 			return pos_a.y < pos_b.y
 		return pos_a.x < pos_b.x
@@ -560,136 +478,31 @@ func _get_spatial_rows() -> Array:
 	var rows: Array = []
 	var row_start: int = 0
 	while row_start < coords.size():
-		var row_y: float = _get_screen_position(coords[row_start]).y
+		var row_y: float = positions[coords[row_start]].y
 		var row_end: int = row_start + 1
-		while row_end < coords.size() and is_equal_approx(_get_screen_position(coords[row_end]).y, row_y):
+		while row_end < coords.size() and is_equal_approx(positions[coords[row_end]].y, row_y):
 			row_end += 1
 		rows.append(coords.slice(row_start, row_end))
 		row_start = row_end
 	return rows
 
 
-## Maps a numbered preview grid onto live map coordinates to produce trigger order.
-func _get_order_from_numbered_grid(order_grid: Array) -> Array[Vector2i]:
-	var rows := _get_spatial_rows()
-	if rows.size() != order_grid.size():
-		push_warning("Trigger-order grid row count does not match the map layout.")
-		return _get_order_top_left_to_bottom_right()
-
-	var order_to_coords: Dictionary = {}
-	for row_idx in range(rows.size()):
-		var row_coords: Array = rows[row_idx]
-		var row_orders: Array = order_grid[row_idx]
-		if row_coords.size() != row_orders.size():
-			push_warning("Trigger-order grid column count mismatch at row %d." % row_idx)
-			return _get_order_top_left_to_bottom_right()
-		for col_idx in range(row_coords.size()):
-			order_to_coords[row_orders[col_idx]] = row_coords[col_idx]
-
-	var ordered: Array[Vector2i] = []
-	for order in range(1, _map.map_data.size() + 1):
-		if not order_to_coords.has(order):
-			push_warning("Trigger-order grid is missing index %d." % order)
-			return _get_order_top_left_to_bottom_right()
-		ordered.append(order_to_coords[order])
-	return ordered
-
-
-## Character that owns this map. Preview maps expose get_layout_character() so
-## layout select can compute order without changing GameManager.selected_character.
-func _active_character() -> CharacterDefinition:
-	if _map != null and _map.has_method("get_layout_character"):
-		var mapped: Variant = _map.get_layout_character()
-		if mapped is CharacterDefinition:
-			return mapped
-	return GameManager.selected_character
-
-
-## Trigger order for the active character, computed once per map generation.
-func _compute_trigger_order() -> Array[Vector2i]:
-	var character := _active_character()
-	if character == null:
-		return _get_order_top_left_to_bottom_right()
-
-	match character.trigger_order_strategy:
-		CharacterDefinition.TriggerOrderStrategy.ZIGZAG_ROWS:
-			return _get_order_top_left_to_bottom_right()
-		CharacterDefinition.TriggerOrderStrategy.ROWS_LEFT_TO_RIGHT:
-			return _get_order_rows_left_to_right()
-		CharacterDefinition.TriggerOrderStrategy.RINGS_OUTWARD:
-			return _get_order_by_rings(true, false)
-		CharacterDefinition.TriggerOrderStrategy.RINGS_INWARD:
-			return _get_order_by_rings(false, true)
-		CharacterDefinition.TriggerOrderStrategy.NUMBERED_GRID:
-			return _get_order_from_numbered_grid(character.numbered_order_grid)
-		_:
-			return _get_order_top_left_to_bottom_right()
-
-
-## Segment index for custom layouts where yellow preview tiles start a new segment.
-func _get_layout_segment_index(coords: Vector2i, segment_starts: Array[int]) -> int:
-	# Uses the cached trigger-order list. Do not rebuild the numbered grid per tile.
-	var order: int = get_coords_in_trigger_order().find(coords) + 1
-	if order <= 0:
-		return 0
-
-	var segment_idx := 0
-	for i in range(segment_starts.size()):
-		if order >= segment_starts[i]:
-			segment_idx = i
-	return segment_idx
-
-
-## Segment grouping key for the active character (row Y, ring index, or layout segment).
-func _get_segment_key(coords: Vector2i) -> Variant:
-	var character := _active_character()
-	if character == null:
-		return _get_screen_position(coords).y
-
-	match character.segment_key_strategy:
-		CharacterDefinition.SegmentKeyStrategy.ROW_Y:
-			return _get_screen_position(coords).y
-		CharacterDefinition.SegmentKeyStrategy.RING:
-			return get_ring_distance(coords)
-		CharacterDefinition.SegmentKeyStrategy.NUMBERED_GRID:
-			return _get_layout_segment_index(coords, character.segment_starts)
-		_:
-			return _get_screen_position(coords).y
-
-
-## Compares segment keys, using approximate equality for float row positions.
-func _segment_keys_equal(a: Variant, b: Variant) -> bool:
-	if a is float and b is float:
-		return is_equal_approx(a, b)
-	return a == b
-
-
-## Splits the map into contiguous groups that share the same segment key in trigger order.
-func _build_segments_uncached() -> Array[Array]:
-	var segments: Array[Array] = []
-	var current_segment: Array[Vector2i] = []
-	var current_key: Variant = null
-
-	for coords: Vector2i in get_coords_in_trigger_order():
-		var key: Variant = _get_segment_key(coords)
-		if current_key != null and not _segment_keys_equal(key, current_key):
-			segments.append(current_segment)
-			current_segment = []
-		current_key = key
-		current_segment.append(coords)
-
-	if not current_segment.is_empty():
-		segments.append(current_segment)
-	return segments
-
-
-## Returns the rune on coords when present, triggerable, and matching filter_type.
-func _get_rune_on_coords(coords: Vector2i, filter_type: Variant = null) -> TileCard:
-	var hex: Hex = _map.map_data.get(coords)
-	if hex == null or hex.active_tile_card == null:
-		return null
-	if not _map.is_tile_card_triggerable(hex):
-		return null
-	if filter_type != null and not TileCard.matches_type_filter(hex.active_tile_card.type, filter_type):
-		return null
-	return hex.active_tile_card
+## Caches the seat 180 degrees from each cell around the map center.
+func _compute_opposites() -> void:
+	_opposite_by_coords.clear()
+	if _map == null or _map.map_data.is_empty():
+		return
+	var center_pos: Vector2 = _get_screen_position(_hex_center)
+	var positions: Dictionary = {}
+	for map_coords: Vector2i in _map.map_data.keys():
+		positions[map_coords] = _get_screen_position(map_coords)
+	for coords: Vector2i in _map.map_data.keys():
+		var reflected_pos: Vector2 = center_pos * 2.0 - positions[coords]
+		var best: Vector2i = coords
+		var best_dist := INF
+		for map_coords: Vector2i in _map.map_data.keys():
+			var dist := reflected_pos.distance_squared_to(positions[map_coords])
+			if dist < best_dist:
+				best_dist = dist
+				best = map_coords
+		_opposite_by_coords[coords] = best

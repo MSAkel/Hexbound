@@ -24,7 +24,7 @@ const PLACEHOLDER_ICON := preload("res://assets/icons/placeholder.png")
 
 
 static func day_label(day_number: int) -> String:
-	return "%s %d" % [DAY, day_number]
+	return "%s %d/9" % [DAY, day_number]
 
 
 static func hours_left_label(hours: int) -> String:

@@ -12,5 +12,5 @@ starting_hand_eligible = true
 id = "avocado"
 name = "Avocado"
 icon = ExtResource("1_bf5x4")
-description = "+5 Flavour for every fire on this course so far this hour"
+description = "+5 Flavour for every trigger on this course so far this hour"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

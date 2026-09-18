@@ -5,9 +5,9 @@ extends PanelContainer
 
 const STEP_TEXTS: PackedStringArray = [
 	"Select a card to place it on an empty spot.\nReach the day's Rating target before you run out of hours.",
-	"Hover over a spot to view its stats. Hold Tab to quickly switch between the regular and fire-order views.\nTool cards aren't always limited to their own course.",
+	"Hover over a spot to view its stats.\nTool cards aren't always limited to their own course.",
 	"The hour ends when only two cards remain. Leftover cards are discarded and three new cards are dealt.\nComplete nine days to win.",
-	"Each course builds Flavour and Mult separately. Flavour × Mult becomes that course's Rating, then all course Ratings are added for the hour.\n",
+	"Flavour and Additive Mult are shared across the whole kitchen. Flavour × Additive becomes the hour's Rating. Multiplicative Mult immediately multiplies the current Additive.\n",
 ]
 
 const FADE_OUT_DURATION := 0.18

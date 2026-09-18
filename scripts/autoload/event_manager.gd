@@ -469,7 +469,8 @@ func _apply_blackout() -> void:
 			continue
 		_disabled_prior_states[rune] = rune.is_active
 		rune.is_active = false
-		hex.refresh_tile_card_visual_state()
+		hex.refresh_own_visuals()
+	tile_map.refresh_board_output_chips()
 
 
 func _restore_event_disabled_runes() -> void:
@@ -480,8 +481,10 @@ func _restore_event_disabled_runes() -> void:
 			if tile_map != null:
 				var hex := tile_map.get_hex_for_tile_card(rune)
 				if hex != null:
-					hex.refresh_tile_card_visual_state()
+					hex.refresh_own_visuals()
 	_disabled_prior_states.clear()
+	if tile_map != null:
+		tile_map.refresh_board_output_chips()
 
 
 func _pick_halved_segment() -> void:
@@ -526,7 +529,7 @@ func _clear_fading_sector_visuals() -> void:
 		return
 
 	tile_map.clear_event_segment_highlight()
-	for hex: Hex in tile_map.map_data.values():
+	for hex: Hex in tile_map.get_all_hexes_with_runes():
 		hex.clear_tile_card_event_modulate()
 
 

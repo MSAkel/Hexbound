@@ -179,21 +179,6 @@ allow_greater = true
 layout_mode = 2
 text = "Set gold"
 
-[node name="TokenRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=469025336]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="TokenSpinBox" type="SpinBox" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow" unique_id=319026015]
-custom_minimum_size = Vector2(120, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-max_value = 5.0
-rounded = true
-
-[node name="SetTokensButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow" unique_id=2072866728]
-layout_mode = 2
-text = "Set tokens"
-
 [node name="OpenMerchantButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=2072866729]
 layout_mode = 2
 text = "Open merchant"
@@ -288,7 +273,6 @@ columns = 6
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/ActivateEventButton" to="." method="_on_activate_event_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow/AddCondimentButton" to="." method="_on_add_condiment_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
-[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/TokenRow/SetTokensButton" to="." method="_on_set_tokens_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton" to="." method="_on_open_merchant_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenRuneSelectionButton" to="." method="_on_open_rune_selection_pressed"]
 [connection signal="gui_input" from="CardPicker/Dim" to="." method="_on_card_picker_dim_gui_input"]
