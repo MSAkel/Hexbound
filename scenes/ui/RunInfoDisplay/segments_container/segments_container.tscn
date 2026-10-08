@@ -1,17 +1,43 @@
 [gd_scene format=3 uid="uid://crffik30sf5rg"]
 
-[ext_resource type="Texture2D" uid="uid://cq5hq3s8fedo8" path="res://assets/gui/restaurant_theme/large_box_panel.png" id="1_i0t37"]
 [ext_resource type="Script" uid="uid://g05n6bff7ewy" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bsyc5shwtko4o" path="res://assets/icons/others/navigation_arrow.png" id="2_arrow"]
 [ext_resource type="Script" uid="uid://bj3fm6loe7jfv" path="res://scenes/ui/RunInfoDisplay/segments_container/round_score_footer.gd" id="2_round_score"]
 [ext_resource type="PackedScene" uid="uid://behfllgh3b7fc" path="res://scenes/ui/RunInfoDisplay/segments_container/segment_results.tscn" id="3_hour_results"]
 
-[sub_resource type="StyleBoxTexture" id="PanelMain"]
-content_margin_left = 70.0
-content_margin_top = 61.0
-content_margin_right = 54.0
-content_margin_bottom = 63.0
-texture = ExtResource("1_i0t37")
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oety5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_amxqk"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.940048, 0.8849714, 0.73006314, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.545, 0.431, 0.243, 0.48)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i0t37"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 11.0
+bg_color = Color(0.96489865, 0.92021066, 0.78999025, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.545, 0.431, 0.243, 0.78)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="TotalPanel"]
 content_margin_left = 14.0
@@ -36,7 +62,7 @@ offset_right = 430.0
 offset_bottom = 326.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
-theme_override_styles/panel = SubResource("PanelMain")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_oety5")
 script = ExtResource("1_script")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1508546180]
@@ -81,10 +107,11 @@ flip_h = true
 
 [node name="HourResults" parent="VBoxContainer" unique_id=1594320159 instance=ExtResource("3_hour_results")]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_amxqk")
 
 [node name="TurnTotalContainer" type="PanelContainer" parent="VBoxContainer" unique_id=1366490092]
 layout_mode = 2
-theme_override_styles/panel = SubResource("TotalPanel")
+theme_override_styles/panel = SubResource("StyleBoxFlat_i0t37")
 
 [node name="TotalRow" type="HBoxContainer" parent="VBoxContainer/TurnTotalContainer" unique_id=1477728965]
 layout_mode = 2

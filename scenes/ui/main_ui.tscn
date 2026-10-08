@@ -1,8 +1,7 @@
 [gd_scene format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
-[ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/RunInfoDisplay/RunInfoDisplay.tscn" id="2_8s2gp"]
-[ext_resource type="PackedScene" uid="uid://dh8s60bf3jvak" path="res://scenes/ui/challenge_container/challenge_container.tscn" id="2_challenge"]
+[ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/RunInfoDisplay/run_info_display.tscn" id="2_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/tile_panel.tscn" id="2_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/cards/card_icon_ui/card_selection_ui.tscn" id="6_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://br3dhulnhrxyl" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="7_oxwcw"]
@@ -26,9 +25,6 @@
 script = ExtResource("1_l8t6x")
 
 [node name="RunInfoUI" parent="." unique_id=237509013 instance=ExtResource("2_8s2gp")]
-scale = Vector2(0.9969174, 1)
-
-[node name="ChallengeContainer" parent="." unique_id=521758828 instance=ExtResource("2_challenge")]
 
 [node name="TutorialTextContainer" parent="." unique_id=1844229200 instance=ExtResource("17_tutorial")]
 visible = false
@@ -45,7 +41,7 @@ rotation = 0.0016232448
 
 [node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
 
-[node name="EndDayButton" parent="." instance=ExtResource("23_end_day")]
+[node name="EndDayButton" parent="." unique_id=2011836714 instance=ExtResource("23_end_day")]
 
 [node name="CardSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false

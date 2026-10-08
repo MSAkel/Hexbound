@@ -21,7 +21,6 @@ offset_top = 32.0
 offset_right = -32.0
 offset_bottom = 98.0
 grow_horizontal = 0
-mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
 script = ExtResource("1_script")
 

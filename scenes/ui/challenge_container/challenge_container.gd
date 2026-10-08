@@ -1,6 +1,6 @@
 extends PanelContainer
 
-## Top-right event chip. Tooltip carries the full event copy.
+## Top-left event chip, docked beside the run status bar. Tooltip carries the full event copy.
 
 @onready var event_icon: TextureRect = $EventIcon
 

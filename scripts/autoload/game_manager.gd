@@ -162,13 +162,12 @@ func finish_turn_processing() -> void:
 			pass
 		else:
 			_complete_current_round()
-	elif not goal_met:
+	else:
+		# Every new hour gets a fresh pack, including leftover hours after the goal.
 		if not skip_presentation:
 			var hand := get_tree().get_first_node_in_group("run_hand") as Hand
 			if hand != null:
 				EventManager.deal_fail_hour_pack(hand)
-		EventBus.turn_started.emit()
-	else:
 		EventBus.turn_started.emit()
 
 	if should_consume_turn:
