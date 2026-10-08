@@ -99,7 +99,7 @@ func _on_segment_reveals_finished(turn_total_score: int) -> void:
 		EventBus.turn_total_count_finished.emit()
 		return
 	_live_revealed_score = turn_total_score
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		_snap_hour_results_to_zero()
 		_score_total_counter.snap_to(turn_total_score)
 		score_total_number.text = _format_stat(turn_total_score)

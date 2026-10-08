@@ -9,7 +9,6 @@ const MENU_FLOW_SCENES: Array[String] = [
 	ScenePaths.MAIN_MENU,
 	ScenePaths.DEVELOPER_MENU,
 	ScenePaths.CHARACTER_SELECTION,
-	ScenePaths.SEGMENT_PASSIVES,
 ]
 
 var _view: Control

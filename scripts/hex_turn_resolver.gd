@@ -69,14 +69,13 @@ func resolve_turn() -> void:
 		await _wait_between_tile_activations()
 		await _mark_segment_resolved_if_natural_pass_done(tile)
 
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		map._clear_segment_sealed_look()
 		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 	else:
 		_play_segment_turn_result_reveals()
 		await _wait_for_turn_total_count_finished()
 	map._apply_segment_turn_totals_to_game_manager()
-	map._check_full_map_cards_achievement()
 	_clear_hour_empower()
 	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
 	map._emit_segment_turn_completed_snapshot()
@@ -221,10 +220,10 @@ func _activate_tile_card_on_tile(
 	activation_scale *= EventManager.get_producer_output_multiplier(tile)
 
 	if from_trigger and trigger_source_hex != null:
-		if not GameManager.should_skip_turn_presentation():
+		if not GameManager.skip_presentation:
 			map.trigger_link_overlay.play_bolt(trigger_source_hex, tile)
 			tile.play_chained_tile_card_activation_animation()
-	elif not GameManager.should_skip_turn_presentation():
+	elif not GameManager.skip_presentation:
 		tile.play_tile_card_activation_animation()
 	await _wait_for_activation_animation()
 
@@ -276,12 +275,10 @@ func _wait_between_tile_activations() -> void:
 
 
 func _wait_pace(duration: float) -> void:
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		return
 	var timer := GameManager.create_pauseable_timer(duration / GameManager.game_speed)
 	while timer.time_left > 0.0:
-		if GameManager.should_skip_turn_presentation():
-			return
 		if not is_inside_tree():
 			return
 		await get_tree().process_frame
@@ -298,14 +295,12 @@ func _sum_segment_contributions() -> int:
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
 func _play_segment_turn_result_reveals() -> void:
 	map._clear_segment_sealed_look()
-	if GameManager.should_skip_turn_presentation():
-		map._clear_segment_reveal_glow()
 	EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 
 
 ## Updates the hour Rating row after the last course finishes firing.
 func _reveal_segment_score_after_seal(segment_index: int) -> void:
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		return
 	if segment_index != map.get_segment_count() - 1:
 		return
@@ -321,7 +316,7 @@ func _reveal_segment_score_after_seal(segment_index: int) -> void:
 
 	if contribution > 0:
 		AudioManager.play_sfx(UISounds.COURSE_RESULT)
-		map._emit_segment_turn_results_changed(0, true)
+		map._emit_segment_turn_results_changed(0)
 		EventBus.segment_score_revealed.emit(0, contribution)
 		await _wait_for_segment_score_count_finished(0)
 		if _should_linger_on_product():
@@ -343,8 +338,6 @@ func _wait_for_segment_score_count_finished(segment_index: int) -> void:
 	)
 	timer.timeout.connect(func() -> void: state.done = true)
 	while not state.done and is_inside_tree():
-		if GameManager.should_skip_turn_presentation():
-			return
 		await get_tree().process_frame
 	if EventBus.segment_score_count_finished.is_connected(on_finished):
 		EventBus.segment_score_count_finished.disconnect(on_finished)
@@ -361,8 +354,6 @@ func _wait_for_turn_total_count_finished() -> void:
 	)
 	timer.timeout.connect(func() -> void: state.done = true)
 	while not state.done and is_inside_tree():
-		if GameManager.should_skip_turn_presentation():
-			return
 		await get_tree().process_frame
 	if EventBus.turn_total_count_finished.is_connected(on_finished):
 		EventBus.turn_total_count_finished.disconnect(on_finished)
@@ -506,7 +497,7 @@ func create_floating_text(
 	target_icon: Texture2D = null,
 	doubled: bool = false
 ) -> void:
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		return
 	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon, doubled)
 	floating_text.play_float_and_free()
@@ -551,7 +542,7 @@ func _on_tile_card_empowered(rune: TileCard) -> void:
 		AudioManager.play_sfx(UISounds.EMPOWER)
 		return
 
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		if hex != null and hex.is_on_map() and hex.active_tile_card == rune and rune.is_empowered:
 			hex.start_empower_sparks(rune.empower_stacks)
 		return

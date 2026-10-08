@@ -1,6 +1,6 @@
 extends Panel
 
-## Collection screen for browsing card categories, characters, events, and passives.
+## Collection screen for browsing card categories, characters, and events.
 
 signal closed
 
@@ -10,8 +10,6 @@ signal closed
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const EVENT_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
-const PASSIVE_TILE := preload("res://assets/passives/passives_tile.png")
-const LOCKED_PASSIVE_ICON := preload("res://assets/passives/icons/locked_modifier.png")
 
 const TEXT_PRIMARY := Color("e8dfc9")
 const TEXT_SECONDARY := Color("aeb9b3")
@@ -24,7 +22,6 @@ enum CollectionTab {
 	CONDIMENTS,
 	CHARACTERS,
 	EVENTS,
-	PASSIVES,
 }
 
 
@@ -55,7 +52,6 @@ func _configure_tabs() -> void:
 		FeastDisplay.CONDIMENTS,
 		"Characters",
 		"Events",
-		"Passives",
 	])
 	tab_bar.tab_count = titles.size()
 	for i: int in titles.size():
@@ -73,8 +69,6 @@ func _show_tab(tab: int) -> void:
 			_show_characters()
 		CollectionTab.EVENTS:
 			_show_events()
-		CollectionTab.PASSIVES:
-			_show_passives()
 
 
 func _clear_collection() -> void:
@@ -131,7 +125,7 @@ func _create_condiment_entry(condiment: Condiment) -> PanelContainer:
 	column.add_child(name_label)
 
 	panel.mouse_entered.connect(_show_condiment_tooltip.bind(panel, condiment))
-	panel.mouse_exited.connect(_hide_passive_tooltip)
+	panel.mouse_exited.connect(_hide_tooltip)
 	return panel
 
 
@@ -152,71 +146,7 @@ func _show_events() -> void:
 		collection_grid_container.add_child(_create_event_entry(event_type))
 
 
-func _show_passives() -> void:
-	collection_grid_container.columns = 5
-	for passive: SegmentPassive in MetaProgressionManager.get_all_passives():
-		collection_grid_container.add_child(_create_passive_entry(passive))
-
-
-func _create_passive_entry(passive: SegmentPassive) -> PanelContainer:
-	var panel := _create_item_panel(Vector2(210, 180))
-	panel.mouse_default_cursor_shape = Control.CURSOR_HELP
-
-	var center := CenterContainer.new()
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(center)
-
-	var hex := TextureRect.new()
-	hex.custom_minimum_size = Vector2(112, 130)
-	hex.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hex.texture = PASSIVE_TILE
-	hex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	hex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	center.add_child(hex)
-
-	var unlocked := MetaProgressionManager.is_unlocked(passive.id)
-	var icon := TextureRect.new()
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.texture = passive.icon if unlocked else LOCKED_PASSIVE_ICON
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	icon.offset_left = 20
-	icon.offset_top = 24
-	icon.offset_right = -20
-	icon.offset_bottom = -24
-	hex.add_child(icon)
-	if not unlocked:
-		hex.modulate = Color(0.7, 0.7, 0.72, 1.0)
-
-	panel.mouse_entered.connect(_show_passive_tooltip.bind(panel, passive, unlocked))
-	panel.mouse_exited.connect(_hide_passive_tooltip)
-	return panel
-
-
-func _show_passive_tooltip(
-	panel: Control,
-	passive: SegmentPassive,
-	unlocked: bool
-) -> void:
-	var tile_count := maxi(1, passive.tile_cost)
-	var tile_text := "Spot size: %d spot%s" % [tile_count, "" if tile_count == 1 else "s"]
-	var passive_tip: String
-	if unlocked:
-		passive_tip = "%s\n%s\n%s" % [
-			passive.display_name,
-			passive.get_effect_summary(),
-			tile_text,
-		]
-	else:
-		var requirement := "Unlock requirement unavailable"
-		if passive.unlock_condition != null and not passive.unlock_condition.description.is_empty():
-			requirement = passive.unlock_condition.description
-		passive_tip = "Locked\n%s\n%s" % [requirement, tile_text]
-	EventBus.toggle_tooltip.emit(true, passive_tip, panel.get_global_rect())
-
-
-func _hide_passive_tooltip() -> void:
+func _hide_tooltip() -> void:
 	EventBus.toggle_tooltip.emit(false, "")
 
 

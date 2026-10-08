@@ -20,7 +20,6 @@ const EVENT_START = preload("res://assets/audio/sfx/Challenge_start.mp3")
 const COURSE_RESULT = preload("uid://dpmtpk2jh6urk")
 ## Legacy alias. Prefer COURSE_RESULT for new code.
 const SEGMENT_RESULT = COURSE_RESULT
-const PASSIVE_PLACEMENT = preload("res://assets/audio/sfx/passive_placement.mp3")
 const CONDIMENT_HOVER_A = preload("res://assets/audio/sfx/condiments/condiment_hover_a.mp3")
 const CONDIMENT_HOVER_B = preload("res://assets/audio/sfx/condiments/condiment_hover_b.mp3")
 const CONDIMENT_GRAB = preload("res://assets/audio/sfx/condiments/condiment_grab.mp3")

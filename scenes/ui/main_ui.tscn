@@ -18,9 +18,9 @@
 [ext_resource type="PackedScene" uid="uid://casabnpm08k0k" path="res://scenes/ui/tutorial/tutorial_text_container.tscn" id="17_tutorial"]
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_belt.tscn" id="19_condiment_belt"]
-[ext_resource type="PackedScene" uid="uid://cm7k781kw6ho" path="res://scenes/ui/turn_resolve_skip_overlay.tscn" id="20_skip_overlay"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_edge_glow.tscn" id="21_condiment_glow"]
 [ext_resource type="PackedScene" uid="uid://c8sellpanel01" path="res://scenes/ui/sell_panel/card_sell_panel.tscn" id="22_sell_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/end_day_button/end_day_button.tscn" id="23_end_day"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -44,6 +44,8 @@ rotation = 0.0016232448
 [node name="CardSellPanel" parent="." unique_id=1404687552 instance=ExtResource("22_sell_panel")]
 
 [node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
+
+[node name="EndDayButton" parent="." instance=ExtResource("23_end_day")]
 
 [node name="CardSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
@@ -79,9 +81,6 @@ z_index = 90
 visible = false
 
 [node name="CondimentEdgeGlow" parent="." unique_id=449245889 instance=ExtResource("21_condiment_glow")]
-
-[node name="TurnResolveSkipOverlay" parent="." unique_id=180410833 instance=ExtResource("20_skip_overlay")]
-visible = false
 
 [node name="Collection" parent="." unique_id=552452183 instance=ExtResource("18_collection")]
 unique_name_in_owner = true

@@ -84,7 +84,7 @@ func _on_continue_pressed() -> void:
 
 func _on_back_to_menu_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(true), true)
+	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(true))
 	RunHistoryManager.archive_finished_run(true)
 	RunSaveManager.save_current_run()
 	get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

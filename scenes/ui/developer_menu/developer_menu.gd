@@ -9,7 +9,6 @@ const HOVER_DURATION := 0.12
 
 @onready var menu_items_container: VBoxContainer = $MenuContainer/MenuItemsContainer
 @onready var ui_sandbox_button: Button = $MenuContainer/MenuItemsContainer/UISandboxButton
-@onready var passives_sandbox_button: Button = $MenuContainer/MenuItemsContainer/PassivesSandboxButton
 
 # Tracks in-flight hover tweens so rapid enter/exit does not stack.
 var _hover_tweens: Dictionary = {}
@@ -74,7 +73,7 @@ func _on_focus_entered() -> void:
 
 
 func _apply_debug_sandbox_buttons() -> void:
-	var sandbox_buttons: Array[Button] = [ui_sandbox_button, passives_sandbox_button]
+	var sandbox_buttons: Array[Button] = [ui_sandbox_button]
 	var debug := OS.is_debug_build()
 	for button in sandbox_buttons:
 		if button == null:
@@ -89,7 +88,7 @@ func _setup_reset_confirm_dialog() -> void:
 	_reset_confirm_dialog = ConfirmationDialog.new()
 	_reset_confirm_dialog.title = "Reset progression?"
 	_reset_confirm_dialog.dialog_text = (
-		"This resets all unlocks, layout XP, passive loadouts, lifetime stats, and run history. "
+		"This resets layout XP, lifetime stats, and run history. "
 		+ "Your in-progress run save is also deleted. This cannot be undone."
 	)
 	_reset_confirm_dialog.ok_button_text = "Reset"
@@ -122,10 +121,3 @@ func _on_ui_sandbox_button_pressed() -> void:
 		return
 	AudioManager.play_sfx(UISounds.CLICK)
 	get_tree().change_scene_to_file(ScenePaths.UI_SANDBOX)
-
-
-func _on_passives_sandbox_button_pressed() -> void:
-	if not OS.is_debug_build():
-		return
-	AudioManager.play_sfx(UISounds.CLICK)
-	get_tree().change_scene_to_file(ScenePaths.SEGMENT_PASSIVES_SANDBOX)

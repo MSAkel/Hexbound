@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://16ej6vcxnuhw" path="res://scenes/ui/pause_menu/pause_menu.gd" id="1_kgchh"]
 [ext_resource type="Texture2D" uid="uid://expxysnruktj" path="res://assets/title/flavour_pass.png" id="2_xgg5q"]
-[ext_resource type="PackedScene" uid="uid://diyhv66o78jip" path="res://scenes/ui/pause_menu/layout_passives_viewer.tscn" id="3_layout"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riqys"]
 bg_color = Color(0.21176471, 0.21176471, 0.21176471, 0.77254903)
@@ -114,16 +113,6 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Settings"
 
-[node name="LayoutPassives" type="Button" parent="Panel/MenuItemsContainer" unique_id=360128381]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
-theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
-text = "Passives"
-
 [node name="Collection" type="Button" parent="Panel/MenuItemsContainer" unique_id=730216108]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
@@ -155,14 +144,8 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "New Run"
 
-[node name="LayoutPassivesViewer" parent="Panel" unique_id=1694693761 instance=ExtResource("3_layout")]
-unique_name_in_owner = true
-layout_mode = 1
-
 [connection signal="pressed" from="Panel/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/Settings" to="." method="_on_settings_pressed"]
-[connection signal="pressed" from="Panel/MenuItemsContainer/LayoutPassives" to="." method="_on_layout_passives_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/Collection" to="." method="_on_collection_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/NewRun" to="." method="_on_new_run_pressed"]
-[connection signal="closed" from="Panel/LayoutPassivesViewer" to="." method="_on_layout_passives_closed"]

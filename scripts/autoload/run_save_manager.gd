@@ -158,9 +158,8 @@ func _record_abandoned_run_from_save(payload: Dictionary) -> void:
 		"gold_earned": int(gold_state.get("total_earned_this_run", 0)),
 		"peak_segment_score_single_turn": int(game_state.get("peak_segment_score_single_turn", 0)),
 		"peak_triggers_single_turn": int(game_state.get("peak_triggers_single_turn", 0)),
-		"full_map_cards": bool(game_state.get("full_map_cards", false)),
 	}
-	MetaProgressionManager.record_run_snapshot(snapshot, true)
+	MetaProgressionManager.record_run_snapshot(snapshot)
 	RunHistoryManager.archive_from_save_payload(payload, false)
 
 

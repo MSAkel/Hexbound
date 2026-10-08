@@ -4,7 +4,6 @@ extends Control
 @onready var pause_menu: Control = $"."
 @onready var panel: Panel = $Panel
 @onready var menu_items_container: VBoxContainer = $Panel/MenuItemsContainer
-@onready var layout_passives_viewer: LayoutPassivesViewer = %LayoutPassivesViewer
 # Sibling overlays under MainUI
 @onready var main_ui: CanvasLayer = get_parent() as CanvasLayer
 @onready var settings_container: PanelContainer = $"../SettingsContainer"
@@ -26,32 +25,11 @@ func _ready() -> void:
 	settings_container.closed.connect(_on_settings_closed)
 	if not collection_screen.closed.is_connected(_on_collection_closed):
 		collection_screen.closed.connect(_on_collection_closed)
-	if not layout_passives_viewer.closed.is_connected(_on_layout_passives_closed):
-		layout_passives_viewer.closed.connect(_on_layout_passives_closed)
 
 
 func _on_continue_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	_close_pause_menu()
-
-
-func _on_layout_passives_pressed() -> void:
-	AudioManager.play_sfx(UISounds.CLICK)
-	# Keep the dimmed pause backdrop. Swap the button list for the read-only map.
-	menu_items_container.hide()
-	layout_passives_viewer.show()
-	call_deferred("_focus_pause_menu")
-
-
-func _on_layout_passives_closed() -> void:
-	_hide_layout_passives_viewer()
-
-
-func _hide_layout_passives_viewer() -> void:
-	layout_passives_viewer.hide()
-	menu_items_container.show()
-	EventBus.toggle_tooltip.emit(false, "")
-	call_deferred("_focus_pause_menu")
 
 
 func _on_settings_pressed() -> void:
@@ -94,7 +72,6 @@ func _on_new_run_pressed() -> void:
 
 func _open_pause_menu() -> void:
 	# Always reopen on the button list, not a leftover overlay.
-	_hide_layout_passives_viewer()
 	_hide_pause_overlay(settings_container)
 	_hide_pause_overlay(collection_screen)
 	panel.show()
@@ -115,15 +92,11 @@ func _focus_pause_menu() -> void:
 	if collection_screen.visible:
 		MenuFocus.grab_first(collection_screen)
 		return
-	if layout_passives_viewer.visible:
-		MenuFocus.grab_first(layout_passives_viewer)
-		return
 	MenuFocus.grab_first(menu_items_container)
 
 
 func _close_pause_menu() -> void:
 	# Dismiss nested overlays so they cannot linger over gameplay.
-	_hide_layout_passives_viewer()
 	_hide_pause_overlay(settings_container)
 	_hide_pause_overlay(collection_screen)
 	panel.show()
@@ -151,9 +124,6 @@ func _handle_pause_toggle() -> void:
 
 
 func _handle_pause_back() -> void:
-	if layout_passives_viewer.visible:
-		_hide_layout_passives_viewer()
-		return
 	if collection_screen.visible:
 		_on_collection_closed()
 		return

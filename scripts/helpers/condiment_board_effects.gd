@@ -145,19 +145,10 @@ static func destroy_placed_at(
 ) -> void:
 	if source_tile == null or source_tile.map == null or placed_card == null:
 		return
-	var broken_hex := source_tile.map.get_hex_for_tile_card(placed_card)
-	if broken_hex == null:
-		broken_hex = source_tile
 	if counts_as_break:
 		if CondimentManager.try_prevent_break(placed_card):
 			_show_text(source_tile, "Warded", Color(0.45, 0.88, 0.58, 1.0))
 			return
-		if GameManager.passive_runtime.try_prevent_break(source_tile, placed_card):
-			_show_text(source_tile, "Saved", Color(0.55, 0.85, 0.7, 1.0))
-			return
-		var segment_index := source_tile.map.get_segment_index(broken_hex.coordinates)
-		var on_one_tile := segment_index == -1 or source_tile.map.get_segment_size(segment_index) == 1
-		MetaProgressionManager.record_card_broken(on_one_tile)
 		source_tile.map.notify_card_broke(placed_card)
 	if not counts_as_break:
 		RunLedger.record_card_consumed(placed_card)

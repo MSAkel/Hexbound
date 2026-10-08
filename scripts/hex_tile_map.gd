@@ -660,6 +660,7 @@ func generate_terrain() -> void:
 	base_layer.clear()
 	selection_overlay_layer.clear()
 	placement_valid_overlay_layer.clear()
+	hovered_cell = Vector2i(-1, -1)
 	_placement_preview_cell = Vector2i(-1, -1)
 	_gamepad_focus_cell = Vector2i(-1, -1)
 	card_highlight_overlay_layer.clear()
@@ -887,7 +888,7 @@ func mark_segment_resolved(segment_index: int) -> bool:
 
 ## Waits until the last card on this segment finishes its seal slam.
 func wait_for_segment_seal(segment_index: int) -> void:
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		return
 	var occupied := _get_occupied_hexes_in_segment(segment_index)
 	if occupied.is_empty():
@@ -1024,7 +1025,7 @@ func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 
 
 ## Notifies UI of the latest hour Flavour, Additive, and scored contribution.
-func _emit_segment_turn_results_changed(segment_index: int, _use_passive_adjustments: bool = false) -> void:
+func _emit_segment_turn_results_changed(segment_index: int) -> void:
 	var flavour := _layout.get_hour_flavour()
 	var additive_mult := _layout.get_hour_additive_mult()
 	var gold := _layout.get_hour_gold()
@@ -1042,23 +1043,12 @@ func _emit_segment_turn_results_changed(segment_index: int, _use_passive_adjustm
 
 ## Hour Rating is Flavour x Additive. xMult already folded into Additive as cards fire.
 func _apply_segment_turn_totals_to_game_manager() -> void:
-	GameManager.passive_runtime.on_turn_resolved(self)
 	var flavour := get_hour_flavour()
 	var additive_mult := get_hour_additive_mult()
 	var contribution := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
 	var contributions: Array[int] = [contribution]
 	GameManager.record_turn_segment_peaks(contributions)
 	GameManager.turn_score = contribution
-
-
-func _check_full_map_cards_achievement() -> void:
-	for coords: Vector2i in map_data.keys():
-		var hex: Hex = map_data[coords]
-		if hex.is_disabled_by_difficulty:
-			continue
-		if hex.active_tile_card == null:
-			return
-	GameManager.mark_full_map_cards_achieved()
 
 
 func get_segment_turn_flavour(segment_index: int) -> int:
@@ -1420,7 +1410,7 @@ func on_turn_ended() -> void:
 
 ## Gold wash lands at once. Occupied cards zip in trigger order. Never awaited.
 func _play_segment_seal(segment_index: int) -> void:
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		return
 
 	var hexes := get_hexes_in_segment(segment_index)
@@ -1627,7 +1617,6 @@ func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 		"activation_count": tile_card.activation_count,
 		"is_active": tile_card.is_active,
 		"bonus_production_amount": tile_card.bonus_production_amount,
-		"personal_output_bonus": tile_card.personal_output_bonus,
 		"run_trigger_count": tile_card.run_trigger_count,
 		"empower_stacks": tile_card.empower_stacks,
 		"condiment_fuses": tile_card.condiment_fuses.duplicate(true),
@@ -1647,7 +1636,6 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	tile_card.activation_count = int(data.get("activation_count", 0))
 	tile_card.is_active = bool(data.get("is_active", true))
 	tile_card.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
-	tile_card.personal_output_bonus = float(data.get("personal_output_bonus", 0.0))
 	tile_card.run_trigger_count = int(data.get("run_trigger_count", 0))
 	tile_card.empower_stacks = int(data.get("empower_stacks", 0))
 	tile_card.condiment_fuses.clear()

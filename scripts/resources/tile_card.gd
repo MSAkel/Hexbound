@@ -126,9 +126,7 @@ var activation_count: int = 0
 var is_active: bool = true
 # Runtime buffs from other cards, added to the base production amount.
 var bonus_production_amount: float = 0.0
-# Extra % output from passives such as Growth Capsule, applied on top of other scales.
-var personal_output_bonus: float = 0.0
-# Activations of this instance during the current run, used by growth passives.
+# Activations of this instance during the current run.
 var run_trigger_count: int = 0
 # Double stacks persist for the rest of the Hour and multiply every fire.
 var empower_stacks: int = 0
@@ -458,15 +456,11 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	GameManager.register_tile_card_activation(self)
 	EventBus.tile_card_activated.emit(self)
 
-	if tile.map != null:
-		GameManager.passive_runtime.before_activation(tile, self)
-
 	var output_scale := activation_scale
 	_activation_was_empowered = empower_stacks > 0
 	if empower_stacks > 0 and not EventManager.are_empowers_blocked():
 		output_scale *= pow(EMPOWER_OUTPUT_SCALE, empower_stacks)
 	if tile.map != null:
-		output_scale *= GameManager.passive_runtime.get_output_scale_bonus(tile, self)
 		output_scale *= GameManager.chef_passives.beverage_output_scale(self)
 
 	_activation_output_scale = output_scale
@@ -474,13 +468,6 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
 	_play_trigger_sound()
-	if tile.map != null:
-		GameManager.passive_runtime.after_activation(tile, self)
-		var segment_index := tile.map.get_segment_index(tile.coordinates)
-		if tile.map.get_segment_size(segment_index) == 1:
-			MetaProgressionManager.add_one_tile_activation()
-			MetaProgressionManager.note_one_tile_same_card_triggers(run_trigger_count)
-	_try_segment_passive_retrigger(tile)
 	GameManager.chef_passives.maybe_repeat_kitchenware(tile, self)
 	CondimentManager.after_card_activated(tile, _activation_host_card(tile))
 	_activation_output_scale = 1.0
@@ -557,11 +544,6 @@ func _try_queue_tile_card_triggers(
 		failed_tile_card_text(source_tile)
 		return false
 
-	if type == TileCardType.KITCHENWARE:
-		for card in triggerable:
-			if is_producer_type(card.type):
-				MetaProgressionManager.add_support_affected_producer()
-
 	queue_tile_card_triggers(source_tile, triggerable, aligned_scales)
 	return true
 
@@ -569,14 +551,6 @@ func _try_queue_tile_card_triggers(
 ## Another card on this course broke. Salvage Core grows from this hook.
 func on_other_segment_card_broke(_broken: TileCard, _tile: Hex) -> void:
 	pass
-
-
-func _try_segment_passive_retrigger(tile: Hex) -> void:
-	if tile == null or tile.map == null:
-		return
-	if not GameManager.passive_runtime.should_retrigger(tile, self):
-		return
-	_try_queue_tile_card_triggers(tile, [self])
 
 
 ## Isolated RNG for this card's current activation. Same seed and same play replay.
@@ -639,7 +613,6 @@ func add_gold(tile: Hex, base_amount: Variant) -> void:
 	if not EventManager.can_gain_gold():
 		return
 	var amount := int(round(float(base_amount) * _activation_output_scale))
-	amount += GameManager.passive_runtime.extra_gold_for_card(tile, self)
 	tile.map.add_turn_gold_for_tile(tile, amount)
 	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD, null, _payout_float_is_doubled())
 	CondimentManager.relay_product_if_needed(tile, Product.GOLD, amount)
@@ -728,11 +701,7 @@ func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
 func _try_empower_tile_card(source_tile: Hex, target: TileCard) -> bool:
 	if not _is_triggerable_tile_card(source_tile, target):
 		return false
-	if not target._empower():
-		return false
-	if type == TileCardType.KITCHENWARE:
-		MetaProgressionManager.add_support_affected_producer()
-	return true
+	return target._empower()
 
 
 # Queues a newly created card for the hand reveal animation. Does not use tile_card_selected.
@@ -781,7 +750,7 @@ func _create_fired_floating_text(tile: Hex, target: TileCard) -> void:
 
 ## Shared activation blip for every fire, including misses with no float text.
 func _play_trigger_sound() -> void:
-	if GameManager.should_skip_turn_presentation():
+	if GameManager.skip_presentation:
 		return
 	AudioManager.play_card_trigger_chop()
 
@@ -1169,19 +1138,10 @@ func _hex_for(tile: Hex, card: TileCard) -> Hex:
 func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard, counts_as_break: bool = true) -> void:
 	if source_tile == null or source_tile.map == null or tile_card == null:
 		return
-	var broken_hex := _hex_for(source_tile, tile_card)
-	if broken_hex == null:
-		broken_hex = source_tile
 	if counts_as_break:
 		if CondimentManager.try_prevent_break(tile_card):
 			_create_floating_text(source_tile, "Warded", Color(0.45, 0.88, 0.58, 1.0))
 			return
-		if GameManager.passive_runtime.try_prevent_break(source_tile, tile_card):
-			_create_floating_text(source_tile, "Saved", Color(0.55, 0.85, 0.7, 1.0))
-			return
-		var segment_index := source_tile.map.get_segment_index(broken_hex.coordinates)
-		var on_one_tile := segment_index == -1 or source_tile.map.get_segment_size(segment_index) == 1
-		MetaProgressionManager.record_card_broken(on_one_tile)
 		source_tile.map.notify_card_broke(tile_card)
 	source_tile.map.destroy_placed_tile_card(tile_card)
 

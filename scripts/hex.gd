@@ -40,6 +40,8 @@ func setup(map_ref: Node2D) -> void:
 	items_grid = Control.new()
 	items_grid.custom_minimum_size = HEX_TILE_SIZE
 	items_grid.size = HEX_TILE_SIZE
+	# Layout only. A default STOP filter would swallow motion before the map's hover sees it.
+	items_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	items_grid.position = map.base_layer.map_to_local(coordinates) - HEX_TILE_HALF
 	map.add_child(items_grid)
 

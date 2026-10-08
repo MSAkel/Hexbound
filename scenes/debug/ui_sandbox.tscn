@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://ckimm3hpof6t5" path="res://scenes/ui/merchant/merchant.tscn" id="4_merchant"]
 [ext_resource type="PackedScene" uid="uid://di0jbf4swcn62" path="res://scenes/ui/round_complete_screen/round_complete_screen.tscn" id="5_round_complete"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/cards/card_icon_ui/card_selection_ui.tscn" id="6_rune_selection"]
-[ext_resource type="PackedScene" uid="uid://b77xc5y6w8mq2" path="res://scenes/ui/segment_passives/segment_passive_unlock_reveal.tscn" id="7_passive_unlock"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trigger_panel"]
 content_margin_left = 12.0
@@ -73,7 +72,3 @@ text = "UI Sandbox"
 [node name="RoundCompleteScreen" parent="PanelLayer" unique_id=889966669 instance=ExtResource("5_round_complete")]
 
 [node name="CardSelectionUI" parent="PanelLayer" unique_id=2051509530 instance=ExtResource("6_rune_selection")]
-
-[node name="SegmentPassiveUnlockReveal" parent="PanelLayer" unique_id=2016194325 instance=ExtResource("7_passive_unlock")]
-visible = false
-auto_present = false

@@ -7,8 +7,8 @@ extends Node
 ## Restrict to one layout with `-- --layout=surveyor`.
 ## Player-only batch: `-- --bot=player --full-count=8` (skips starter/R1 suites).
 ## Bug hunt: `-- --bot=chaos` or `-- --fuzz`. Continues after missed goals. Fails on storms and invariants.
-## Human-like run: `-- --layout=surveyor --bot=player --seed=TJU27YGN --no-passives --no-condiments --repeat=5`
-## Player bot uses Spark on the engine segment, condiments, chip placement, and layout plans.
+## Human-like run: `-- --layout=surveyor --bot=player --seed=TJU27YGN --no-condiments --repeat=5`
+## Player bot uses condiments, chip placement, and layout plans.
 ## Surveyor locks a 6–7 hex line through R5. Columnist locks a 7-hex column through R5.
 ## Surveyor then stays on that 7-hex line until full. Columnist rerolls hard through R4.
 
@@ -42,7 +42,6 @@ const SHOP_KEEP_THRESHOLD := 32.0
 const PLAYER_PACK_REROLL_ROUND := 4
 ## Gold cards stop being worth an engine slot after this round.
 const PLAYER_GOLD_CUTOFF_ROUND := 4
-const SPARK_PASSIVE_ID := "spark"
 const SHOP_GOLD_RESERVE := 8
 const MAX_SHOP_BUYS_PER_VISIT := 2
 const CONDIMENT_SHOP_STOCK := 3
@@ -75,7 +74,6 @@ var _only_seed := ""
 var _full_run_seed_count := FULL_RUN_SEED_COUNT
 ## Surveyor and Columnist opening engine line. -1 means no lock.
 var _locked_engine_segment := -1
-var _use_passives := true
 var _use_condiments := true
 var _focused_repeat_count := 1
 var _fuzz_only := false
@@ -93,12 +91,11 @@ func _ready() -> void:
 	_layouts = _parse_layout_filter()
 	if _layouts.size() == 1:
 		_report_path = "user://playtest_report_%s.json" % _layouts[0]
-	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d passives=%s condiments=%s fuzz=%s" % [
+	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d condiments=%s fuzz=%s" % [
 		",".join(_layouts),
 		_only_bot if not _only_bot.is_empty() else "all",
 		_only_seed if not _only_seed.is_empty() else "all",
 		_full_run_seed_count,
-		"spark" if _use_passives else "none",
 		"on" if _use_condiments else "off",
 		"on" if _fuzz_only or _only_bot == CHAOS_BOT_ID else "off",
 	])
@@ -133,8 +130,6 @@ func _parse_layout_filter() -> Array[String]:
 			_full_run_seed_count = maxi(1, int(arg.substr("--full-count=".length()).strip_edges()))
 		elif arg.begins_with("--repeat="):
 			_focused_repeat_count = maxi(1, int(arg.substr("--repeat=".length()).strip_edges()))
-		elif arg == "--no-passives":
-			_use_passives = false
 		elif arg == "--no-condiments":
 			_use_condiments = false
 		elif arg == "--fuzz":
@@ -155,11 +150,10 @@ func _run_all() -> void:
 		var bots: Array[String] = BOT_IDS.duplicate()
 		if not _only_bot.is_empty():
 			bots = [_only_bot]
-		print("[playtest] focused seed=%s layout=%s bots=%s passives=%s condiments=%s repeat=%d" % [
+		print("[playtest] focused seed=%s layout=%s bots=%s condiments=%s repeat=%d" % [
 			_only_seed,
 			character_id,
 			",".join(bots),
-			"spark" if _use_passives else "none",
 			"on" if _use_condiments else "off",
 			_focused_repeat_count,
 		])
@@ -437,7 +431,7 @@ func _run_one_two_segment_r1(character_id: String, seed_text: String) -> void:
 
 func _run_full_nines() -> void:
 	var bots := _full_nine_bots()
-	print("[playtest] full 1-9 bots=%s seeds=%d passives=player_spark" % [",".join(bots), _full_run_seed_count])
+	print("[playtest] full 1-9 bots=%s seeds=%d" % [",".join(bots), _full_run_seed_count])
 	for bot_id: String in bots:
 		_active_bot = bot_id
 		for character_id: String in _layouts:
@@ -581,8 +575,6 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 	_begin_run(character_id, seed_text)
 	var hand := PlayerCharacter.get_starting_hand_cards(GameManager.selected_character)
 	_place_opening_hand(hand)
-	if bot_id == "player" and _use_passives:
-		_apply_spark_on_engine()
 
 	var round_log: Array[Dictionary] = []
 	var picks: Array[String] = []
@@ -678,7 +670,6 @@ func _run_one_full_nine(character_id: String, seed_text: String, bot_id: String,
 			"bot": bot_id,
 			"segment_sizes": HexMapLayout.BOARD_ROW_LENGTHS.duplicate(),
 			"segments_count": HexMapLayout.BOARD_ROW_LENGTHS.size(),
-			"playtest_passives": ["spark"] if bot_id == "player" and _use_passives else [],
 			"playtest_condiments": _use_condiments,
 			"repeat_index": repeat_index,
 		}
@@ -885,7 +876,6 @@ func _shop_player_round() -> Array[String]:
 				continue
 			if _buy_shop_card(card, bought):
 				buys_this_visit += 1
-				_apply_spark_on_engine()
 		if buys_this_visit > 0:
 			return bought
 		if (
@@ -1259,22 +1249,6 @@ func _maybe_relock_engine_from_board() -> void:
 		_locked_engine_segment = best
 
 
-func _apply_spark_on_engine() -> void:
-	if _active_bot != "player" or not _use_passives:
-		return
-	var engine := _player_primary_segment()
-	if engine < 0:
-		engine = _player_engine_index()
-	if engine < 0:
-		GameManager.bind_segment_passives_for_debug({})
-		return
-	var spark := MetaProgressionManager.get_passive_by_id(SPARK_PASSIVE_ID)
-	if spark == null:
-		GameManager.bind_segment_passives_for_debug({})
-		return
-	GameManager.bind_segment_passives_for_debug({engine: [spark]})
-
-
 func _can_place_for_player(card: TileCard) -> bool:
 	if card == null:
 		return false
@@ -1564,12 +1538,9 @@ func _place_one_card(card: TileCard) -> bool:
 	match _active_bot:
 		"player":
 			if _place_player_card(card):
-				_apply_spark_on_engine()
 				return true
 			if card.has_placement_restriction():
-				if _place_first_legal_empty(card):
-					_apply_spark_on_engine()
-					return true
+				return _place_first_legal_empty(card)
 			return false
 		"stack":
 			if _place_on_preferred_segments(card, _stack_segment_rank()):
@@ -1578,8 +1549,6 @@ func _place_one_card(card: TileCard) -> bool:
 			if _place_on_preferred_segments(card, _spread_segment_rank()):
 				return true
 	if _is_meal_card(card) and _place_meal_card(card):
-		if _active_bot == "player":
-			_apply_spark_on_engine()
 		return true
 	return _place_first_legal_empty(card)
 
@@ -1844,9 +1813,6 @@ func _begin_run(character_id: String, seed_text: String) -> void:
 	_map.apply_run_start_randomization()
 	_locked_engine_segment = -1
 	_chaos_step = 0
-	# Passives and Spark are optional. Other bots stay passive-free.
-	if _active_bot != "player" or not _use_passives:
-		GameManager.bind_segment_passives_for_debug({})
 	EventBus.turn_started.emit()
 
 

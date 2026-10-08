@@ -23,8 +23,6 @@ var total_rune_activations: int:
 var _remaining_turns := MAX_TURNS_PER_ROUND
 ## Blocks player input while runes are resolving after end turn.
 var _is_processing_turn := false
-## Player clicked skip during turn resolve. Clears at the next turn boundary.
-var _turn_presentation_skip_requested := false
 
 var remaining_turns: int:
 	get:
@@ -35,22 +33,6 @@ var remaining_turns: int:
 var is_processing_turn: bool:
 	get:
 		return _is_processing_turn
-
-
-## True while headless tests or the player skip overlay want resolve animations skipped.
-func should_skip_turn_presentation() -> bool:
-	return skip_presentation or _turn_presentation_skip_requested
-
-
-## Skip remaining turn resolve presentation. Ignored outside turn processing.
-func request_turn_presentation_skip() -> void:
-	if not _is_processing_turn:
-		return
-	_turn_presentation_skip_requested = true
-
-
-func _reset_turn_presentation_skip() -> void:
-	_turn_presentation_skip_requested = false
 
 #endregion
 
@@ -103,25 +85,17 @@ var turn_stamp: int = 0
 ## Chosen on the character selection screen. Drives chef passives and starting hand.
 var selected_character: CharacterDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
-## Character being edited on the segment passives screen.
-var segment_passives_editor_character: CharacterDefinition = null
-## Keep cooking leftover hours after the day target is met.
-var continue_after_goal: bool = false
 const ChefPassiveRuntimeScript := preload("res://scripts/chef_passive_runtime.gd")
 var chef_passives := ChefPassiveRuntimeScript.new()
 
 #endregion
 
-#region Segment passives (active run loadout)
+#region Run peak tracking
 
-## segment_index -> placed passives for the current run.
-var _active_passives_by_segment: Dictionary = {}
-var passive_runtime := SegmentPassiveRuntime.new()
 var _run_peak_triggers_single_turn: int = 0
 var _run_peak_segment_score_single_turn: int = 0
 var _run_peak_gold_held: int = 0
 var _current_turn_trigger_count: int = 0
-var _run_full_map_cards_achieved: bool = false
 
 #endregion
 
@@ -172,14 +146,15 @@ func finish_turn_processing() -> void:
 	var round_score_before := total_round_score
 	total_round_score += turn_score
 	turn_score = 0
-	if not should_skip_turn_presentation():
+	if not skip_presentation:
 		EventBus.round_score_commit_animation_requested.emit(committed_turn_score, round_score_before)
 		await _wait_for_round_score_count_finished()
 		await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
 
 	var goal_met := _has_met_round_goal()
-	# Continue cooking leftover hours only while the checkbox is on and hours remain after this one.
-	var keep_playing := goal_met and continue_after_goal and remaining_turns > 1
+	# Leftover hours stay playable after the goal. The End Day button closes the day early.
+	# Headless playtests own their round loop, so they still stop at the goal.
+	var keep_playing := goal_met and remaining_turns > 1 and not skip_presentation
 	var should_consume_turn := remaining_turns > 0 and (not goal_met or keep_playing)
 
 	if goal_met and not keep_playing:
@@ -203,7 +178,6 @@ func finish_turn_processing() -> void:
 			_check_run_loss()
 
 	_is_processing_turn = false
-	_reset_turn_presentation_skip()
 	# Committed turn boundary. Card plays themselves are not checkpoints.
 	RunSaveManager.request_autosave()
 
@@ -213,12 +187,10 @@ func _wait_for_round_score_count_finished() -> void:
 
 
 func _on_turn_started() -> void:
-	_reset_turn_presentation_skip()
 	turn_stamp += 1
 	_activation_counts_this_turn.clear()
 	_current_turn_trigger_count = 0
 	GoldManager.reset_turn_tracking()
-	passive_runtime.reset_turn()
 	chef_passives.reset_turn()
 
 
@@ -259,6 +231,21 @@ func add_bonus_turn() -> void:
 	EventBus.turn_changed.emit()
 
 
+## True between hours once the day target is met, while the End Day button may be used.
+func can_end_day_early() -> bool:
+	if _is_processing_turn or RoundFlow.is_transitioning():
+		return false
+	return _has_met_round_goal() and remaining_turns > 0
+
+
+## End Day button. Closes the day at the start of an hour instead of playing it.
+func end_day_early() -> void:
+	if not can_end_day_early():
+		return
+	# The hour in progress was not played, so every remaining hour counts as unused.
+	_complete_current_round(remaining_turns)
+
+
 ## Debug helper. Sets the round score to the goal and starts the normal complete-round flow.
 ## Skips tile resolution so a sandbox can jump straight to the summary, rune pick, and merchant.
 func debug_meet_round_goal_and_complete() -> void:
@@ -271,8 +258,8 @@ func debug_meet_round_goal_and_complete() -> void:
 
 ## Hands the completed round to RoundFlow, which owns every step up to the next turn.
 ## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
-func _complete_current_round() -> void:
-	GoldManager.apply_round_speed_rewards(get_skipped_turns())
+func _complete_current_round(skipped_turns: int = get_skipped_turns()) -> void:
+	GoldManager.apply_round_speed_rewards(skipped_turns)
 	if EventManager.is_completing_final_event_round():
 		RoundFlow.begin_victory_transition()
 		return
@@ -311,23 +298,7 @@ func register_tile_card_activation(rune: TileCard) -> void:
 	var is_retrigger := hour_count >= 2
 	_current_turn_trigger_count += 1
 	_run_peak_triggers_single_turn = maxi(_run_peak_triggers_single_turn, _current_turn_trigger_count)
-	if not RunRng.is_unlock_progress_disabled():
-		MetaProgressionManager.add_lifetime_triggers(1)
-		if TileCard.is_producer_type(rune.type):
-			MetaProgressionManager.add_producer_trigger()
-			if rune.product == TileCard.Product.FLAVOUR:
-				MetaProgressionManager.note_energy_card_triggers(rune.run_trigger_count)
-			elif rune.product == TileCard.Product.MULTIPLIER:
-				MetaProgressionManager.note_mult_card_triggers(rune.run_trigger_count)
-		elif rune.type == TileCard.TileCardType.KITCHENWARE:
-			MetaProgressionManager.add_support_trigger()
-		elif rune.type == TileCard.TileCardType.MEAL:
-			MetaProgressionManager.add_dish_trigger()
-		if is_retrigger:
-			if TileCard.is_producer_type(rune.type):
-				MetaProgressionManager.add_producer_retrigger()
-			elif rune.type == TileCard.TileCardType.KITCHENWARE:
-				MetaProgressionManager.add_support_retrigger()
+	MetaProgressionManager.add_lifetime_triggers(1)
 	# Ledger owns run fire tallies. Pass retrigger so it does not scan Hour identity again.
 	RunLedger.record_card_fired(rune, is_retrigger)
 
@@ -343,37 +314,14 @@ func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
 
 #endregion
 
-#region Segment passive runtime
+#region Chef passives and turn scoring
 
 func get_current_turn_trigger_count() -> int:
 	return _current_turn_trigger_count
 
 
 func bind_chef_passives() -> void:
-	# Segment passives are unused this overhaul. Chef passives are the only run modifiers.
-	_active_passives_by_segment.clear()
-	passive_runtime.bind({})
-	passive_runtime.reset_turn()
 	chef_passives.bind(selected_character)
-
-
-## Playtest and sandbox helper. Does not write the player profile.
-func bind_segment_passives_for_debug(by_segment: Dictionary) -> void:
-	_active_passives_by_segment.clear()
-	for segment_key: Variant in by_segment.keys():
-		var segment_index := int(segment_key)
-		var source: Array = by_segment[segment_key]
-		var passives: Array[SegmentPassive] = []
-		for entry in source:
-			if entry is SegmentPassive:
-				passives.append(entry)
-		_active_passives_by_segment[segment_index] = passives
-	passive_runtime.bind(_active_passives_by_segment)
-	passive_runtime.reset_turn()
-
-
-func get_passives_for_segment(segment_index: int) -> Array[SegmentPassive]:
-	return passive_runtime.get_passives(segment_index)
 
 
 ## Rating is Flavour x Additive. xMult already folded into Additive when it fired.
@@ -426,10 +374,6 @@ func record_peak_gold_held(amount: int) -> void:
 	_run_peak_gold_held = maxi(_run_peak_gold_held, amount)
 
 
-func mark_full_map_cards_achieved() -> void:
-	_run_full_map_cards_achieved = true
-
-
 func build_run_snapshot(is_win: bool) -> Dictionary:
 	var character_id := selected_character.id if selected_character != null else ""
 	return {
@@ -441,20 +385,14 @@ func build_run_snapshot(is_win: bool) -> Dictionary:
 		"gold_earned": GoldManager.total_earned_this_run,
 		"peak_segment_score_single_turn": _run_peak_segment_score_single_turn,
 		"peak_triggers_single_turn": _run_peak_triggers_single_turn,
-		"full_map_cards": _run_full_map_cards_achieved,
 	}
 
 
 func clear_run_peak_tracking() -> void:
-	_active_passives_by_segment.clear()
-	passive_runtime.bind({})
-	passive_runtime.reset_turn()
 	_run_peak_triggers_single_turn = 0
 	_run_peak_segment_score_single_turn = 0
 	_run_peak_gold_held = 0
 	_current_turn_trigger_count = 0
-	_run_full_map_cards_achieved = false
-	MetaProgressionManager.begin_run_tracking()
 
 #endregion
 
@@ -525,8 +463,6 @@ func reset_for_new_run() -> void:
 	turn_stamp = 0
 	game_speed = GameSettings.game_speed
 	clear_run_peak_tracking()
-	continue_after_goal = false
-	# Peak tracking clears the loadout. Bind chef passives and skip segment passives.
 	if selected_character != null:
 		bind_chef_passives()
 	CondimentManager.reset_for_new_run()
@@ -554,7 +490,6 @@ func _debug_apply_round_jump(target_round: int) -> void:
 	GoldManager.reset_round_tracking()
 	current_round = target_round
 	_apply_round_state()
-	passive_runtime.reset_turn()
 	EventBus.turn_started.emit()
 	# No merchant visit precedes a debug jump, so the reveal plays right away.
 	EventManager.play_reveal()
@@ -576,8 +511,6 @@ func capture_run_state() -> Dictionary:
 		"peak_gold_held": _run_peak_gold_held,
 		"peak_segment_score_single_turn": _run_peak_segment_score_single_turn,
 		"peak_triggers_single_turn": _run_peak_triggers_single_turn,
-		"full_map_cards": _run_full_map_cards_achieved,
-		"continue_after_goal": continue_after_goal,
 	}
 
 
@@ -595,8 +528,6 @@ func apply_run_state(state: Dictionary) -> void:
 	_run_peak_gold_held = int(state.get("peak_gold_held", 0))
 	_run_peak_segment_score_single_turn = int(state.get("peak_segment_score_single_turn", 0))
 	_run_peak_triggers_single_turn = int(state.get("peak_triggers_single_turn", 0))
-	_run_full_map_cards_achieved = bool(state.get("full_map_cards", false))
-	continue_after_goal = bool(state.get("continue_after_goal", false))
 	# Continue does not go through reset_for_new_run, so re-bind chef passives.
 	if selected_character != null:
 		bind_chef_passives()

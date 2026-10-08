@@ -67,13 +67,6 @@ theme_override_font_sizes/font_size = 18
 text = "Hours Left"
 horizontal_alignment = 1
 
-[node name="ContinueHoursCheckBox" type="CheckBox" parent="HBoxContainer" unique_id=767591705]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
-theme_override_font_sizes/font_size = 16
-text = "Keep cooking"
-
 [node name="VDivider2" type="TextureRect" parent="HBoxContainer" unique_id=2112698102]
 custom_minimum_size = Vector2(2, 45)
 custom_maximum_size = Vector2(35, 45)
