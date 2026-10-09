@@ -1,7 +1,8 @@
 extends Node
 
 ## Owns the ordered round-transition sequence so no single screen decides what comes next.
-## Round goal met -> summary -> auto-deal reward pack -> merchant -> event reveal -> first hour.
+## Round goal met -> summary -> card pick -> merchant -> event reveal -> first hour.
+## Mid-hour card picks also use card_selection_ui outside this transition.
 
 enum Step {
 	## Normal play. No transition is running.
@@ -158,10 +159,11 @@ func _enter_step(step: Step) -> void:
 				_transition_card_pick_round = GameManager.current_round
 			else:
 				_transition_card_pick_round = maxi(1, GameManager.current_round - 1)
-			var hand := get_tree().get_first_node_in_group("run_hand") as Hand
-			if hand != null:
-				EventManager.deal_round_reward_pack(hand)
-			notify_card_picked()
+			if EventManager.should_auto_grant_card(true):
+				EventManager.grant_auto_card(true)
+				notify_card_picked()
+			else:
+				UiManager.show_cards_choice_panel.emit()
 		Step.MERCHANT:
 			UiManager.show_merchant_panel.emit()
 		Step.EVENT_REVEAL:

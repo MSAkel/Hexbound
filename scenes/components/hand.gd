@@ -138,19 +138,6 @@ func get_hand_card_count() -> int:
 	return _get_hand_cards().size()
 
 
-## Remove every hand card before a new pack is dealt at hour end.
-func discard_all_cards() -> void:
-	_generated_reveal.interrupt()
-	_featured_card = null
-	_controller_focus_index = -1
-	_reset_placement_sibling_slide_state()
-	for child in get_children():
-		if child is CardUI:
-			remove_child(child)
-			child.queue_free()
-	call_deferred("_refresh_hand_layout")
-
-
 func _get_hand_card_count() -> int:
 	return get_hand_card_count()
 
@@ -647,6 +634,9 @@ func _animate_hand_slide(should_hide: bool) -> void:
 
 	var slide_distance := _get_hand_slide_distance()
 	var target_y := slide_distance if should_hide else 0.0
+	if not should_hide:
+		_featured_card = null
+		_spread_clear_pending = false
 
 	_hand_slide_tween = create_tween()
 	_hand_slide_tween.set_parallel(true)
@@ -666,6 +656,11 @@ func _animate_hand_slide(should_hide: bool) -> void:
 			card.set_hover_elevated(false, false)
 			# offset_transform is visual-only by default. Block clicks while off-screen.
 			card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		else:
+			# A fan left over from the last hover must not survive the trip off-screen.
+			card.prepare_hand_slot_rest()
+			card.offset_transform_rotation = 0.0
+			card.offset_transform_scale = Vector2.ONE
 
 		card.offset_transform_enabled = true
 		var step := _hand_slide_tween.tween_property(

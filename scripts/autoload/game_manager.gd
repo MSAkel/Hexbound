@@ -163,11 +163,12 @@ func finish_turn_processing() -> void:
 		else:
 			_complete_current_round()
 	else:
-		# Every new hour gets a fresh pack, including leftover hours after the goal.
+		# Every new hour gets a card pick, including leftover hours after the goal.
 		if not skip_presentation:
-			var hand := get_tree().get_first_node_in_group("run_hand") as Hand
-			if hand != null:
-				EventManager.deal_fail_hour_pack(hand)
+			if EventManager.should_auto_grant_card(false):
+				EventManager.grant_auto_card(false, remaining_turns)
+			elif EventManager.get_cards_pack_size(false) > 0:
+				UiManager.show_cards_choice_panel.emit()
 		EventBus.turn_started.emit()
 
 	if should_consume_turn:

@@ -102,8 +102,3 @@ custom_maximum_size = Vector2(35, 45)
 layout_mode = 2
 texture = ExtResource("3_y7j43")
 expand_mode = 1
-
-[node name="RerollButton" type="Button" parent="HBoxContainer" unique_id=984512301]
-visible = false
-layout_mode = 2
-text = "Reroll (3)"

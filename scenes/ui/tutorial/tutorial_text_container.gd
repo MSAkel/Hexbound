@@ -6,7 +6,7 @@ extends PanelContainer
 const STEP_TEXTS: PackedStringArray = [
 	"Select a card to place it on an empty spot.\nReach the day's Rating target before you run out of hours.",
 	"Hover over a spot to view its stats.\nTool cards aren't always limited to their own course.",
-	"The hour ends when only two cards remain. Leftover cards are discarded and three new cards are dealt.\nComplete nine days to win.",
+	"The hour ends when only two cards remain in your hand.\nComplete nine days to win.",
 	"Flavour and Additive Mult are shared across the whole kitchen. Flavour × Additive becomes the hour's Rating. Multiplicative Mult immediately multiplies the current Additive.\n",
 ]
 
