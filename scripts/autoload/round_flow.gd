@@ -180,6 +180,7 @@ func _finish_transition() -> void:
 	_advance_round_after_merchant = false
 	_outgoing_event = -1
 
+	ChefManager.on_day_started()
 	EventBus.turn_started.emit()
 	RunSaveManager.request_autosave()
 

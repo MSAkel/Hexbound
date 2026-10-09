@@ -11,6 +11,8 @@ signal gold_purchase_requested(card_ui: CardUI)
 @export var frame_dish: Texture2D
 @export var frame_kitchenware: Texture2D
 @export var frame_utility: Texture2D
+# Chef cards borrow the Kitchenware frame until they get their own art.
+@export var frame_chef: Texture2D
 # Name-bar fills are authored on the scene so rarity color is not rebuilt in code.
 @export var rarity_style_common: StyleBoxFlat
 @export var rarity_style_uncommon: StyleBoxFlat
@@ -50,7 +52,7 @@ enum InteractionMode {
 # Typed payload. TileCard occupies hexes on the board.
 var card: Card = null
 var interaction_mode: InteractionMode = InteractionMode.HAND
-# Preview cards (e.g. character select) should not play hover elevation.
+# Preview cards (e.g. specialty select) should not play hover elevation.
 var hover_enabled := true
 var price: int = 0
 
@@ -888,8 +890,10 @@ func _update_stock_affordability() -> void:
 
 
 func refresh_purchase_tray() -> void:
-	var gold_enabled := not _is_sold and GoldManager.can_afford(price)
+	var block_reason := card.get_purchase_block_reason() if card != null else ""
+	var gold_enabled := not _is_sold and block_reason.is_empty() and GoldManager.can_afford(price)
 	_purchase_tray.set_gold_enabled(gold_enabled)
+	_purchase_tray.set_block_reason(block_reason)
 
 
 func set_merchant_selected(selected: bool) -> void:
@@ -961,15 +965,11 @@ func _hide_keyword_tooltips() -> void:
 
 
 func _apply_rarity_name_background(data: Card) -> void:
-	var rarity := TileCard.TileCardRarity.COMMON
-	if data is TileCard:
-		rarity = (data as TileCard).rarity
-
 	var style := rarity_style_common
-	match rarity:
-		TileCard.TileCardRarity.UNCOMMON:
+	match data.rarity:
+		Card.Rarity.UNCOMMON:
 			style = rarity_style_uncommon
-		TileCard.TileCardRarity.RARE:
+		Card.Rarity.RARE:
 			style = rarity_style_rare
 	if style != null:
 		name_container.add_theme_stylebox_override("panel", style)
@@ -995,6 +995,8 @@ func _frame_texture_for_card(data: Card) -> Texture2D:
 				return frame_dish
 			TileCard.TileCardType.KITCHENWARE:
 				return frame_kitchenware
+	if data is ChefCard:
+		return frame_chef if frame_chef != null else frame_kitchenware
 	return frame_ingredients
 
 

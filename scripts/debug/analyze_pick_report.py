@@ -47,7 +47,7 @@ def main() -> None:
         details = case.get("details", {})
         if details.get("bot") != "player":
             continue
-        layout = case.get("character", "?")
+        layout = case.get("specialty", "?")
         total_runs += 1
         layout_runs[layout] += 1
         seen: set[str] = set()

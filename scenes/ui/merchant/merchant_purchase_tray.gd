@@ -12,8 +12,16 @@ func _on_gold_button_pressed() -> void:
 	gold_purchase_pressed.emit()
 
 
+const BUY_LABEL := "Buy"
+
+
 func set_gold_enabled(enabled: bool) -> void:
 	_gold_button.disabled = not enabled
+
+
+## Replaces the Buy label with the reason the item cannot be bought. Empty restores it.
+func set_block_reason(reason: String) -> void:
+	_gold_button.text = BUY_LABEL if reason.is_empty() else reason
 
 
 ## Buy buttons join the focus chain only while the tray is shown for a selected item.

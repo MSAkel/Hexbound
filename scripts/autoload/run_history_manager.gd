@@ -63,15 +63,15 @@ func archive_finished_run(is_win: bool) -> void:
 	_archived_this_run = true
 	ensure_loaded()
 
-	var character_id := ""
-	if GameManager.selected_character != null:
-		character_id = GameManager.selected_character.id
+	var specialty_id := ""
+	if GameManager.selected_specialty != null:
+		specialty_id = GameManager.selected_specialty.id
 
 	var snapshot := GameManager.build_run_snapshot(is_win)
 	var entry := {
 		"ended_at": int(Time.get_unix_time_from_system()),
 		"is_win": is_win,
-		"character_id": character_id,
+		"specialty_id": specialty_id,
 		"difficulty": int(GameManager.selected_difficulty),
 		# Match the Day value shown on victory / game-over screens.
 		"rounds_completed": GameManager.current_round,
@@ -104,7 +104,7 @@ func archive_from_save_payload(save_payload: Dictionary, is_win: bool) -> void:
 	var entry := {
 		"ended_at": int(Time.get_unix_time_from_system()),
 		"is_win": is_win,
-		"character_id": String(save_payload.get("character_id", "")),
+		"specialty_id": String(save_payload.get("specialty_id", "")),
 		"difficulty": int(save_payload.get("difficulty", 0)),
 		"rounds_completed": int(game_state.get("current_round", 1)),
 		"seed": String(run_rng_state.get("display_seed", "")),

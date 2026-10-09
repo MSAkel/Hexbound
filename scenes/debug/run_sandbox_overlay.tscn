@@ -94,14 +94,14 @@ text = "Run seed: --------"
 layout_mode = 2
 text = "Copy"
 
-[node name="CharacterRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1982736460]
+[node name="SpecialtyRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=1982736460]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CharacterOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CharacterRow" unique_id=1982736461]
+[node name="SpecialtyOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SpecialtyRow" unique_id=1982736461]
 layout_mode = 2
 size_flags_horizontal = 3
-tooltip_text = "Changing character restarts the run."
+tooltip_text = "Changing specialty restarts the run."
 
 [node name="CompleteRoundButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody" unique_id=40927998]
 layout_mode = 2
@@ -160,6 +160,19 @@ size_flags_horizontal = 3
 tooltip_text = "Add the selected condiment to the belt."
 
 [node name="AddCondimentButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow" unique_id=1982736464]
+layout_mode = 2
+text = "Add"
+
+[node name="ChefRow" type="HBoxContainer" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChefOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChefRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Seat the selected chef in the first empty chef slot."
+
+[node name="AddChefButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChefRow"]
 layout_mode = 2
 text = "Add"
 
@@ -263,7 +276,7 @@ theme_override_constants/v_separation = 12
 columns = 6
 
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/TitleRow/CollapseButton" to="." method="_on_collapse_button_pressed"]
-[connection signal="item_selected" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CharacterRow/CharacterOption" to="." method="_on_character_option_item_selected"]
+[connection signal="item_selected" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SpecialtyRow/SpecialtyOption" to="." method="_on_specialty_option_item_selected"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SeedRow/CopySeedButton" to="." method="_on_copy_seed_button_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CompleteRoundButton" to="." method="_on_complete_round_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow/JumpRoundButton" to="." method="_on_jump_round_pressed"]
@@ -272,6 +285,7 @@ columns = 6
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PickCardButton" to="." method="_on_pick_card_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/ActivateEventButton" to="." method="_on_activate_event_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow/AddCondimentButton" to="." method="_on_add_condiment_pressed"]
+[connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChefRow/AddChefButton" to="." method="_on_add_chef_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/GoldRow/SetGoldButton" to="." method="_on_set_gold_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton" to="." method="_on_open_merchant_pressed"]
 [connection signal="pressed" from="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenRuneSelectionButton" to="." method="_on_open_rune_selection_pressed"]

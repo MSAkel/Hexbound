@@ -22,11 +22,12 @@ const MAX_BODY_HEIGHT := 350.0
 @onready var _pass_turn_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/PassTurnButton
 @onready var _open_merchant_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenMerchantButton
 @onready var _open_rune_selection_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/OpenRuneSelectionButton
-@onready var _character_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CharacterRow/CharacterOption
+@onready var _specialty_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/SpecialtyRow/SpecialtyOption
 @onready var _event_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/EventOption
 @onready var _activate_event_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/EventRow/ActivateEventButton
 @onready var _condiment_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow/CondimentOption
 @onready var _add_condiment_button: Button = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/CondimentRow/AddCondimentButton
+@onready var _chef_option: OptionButton = $OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/ChefRow/ChefOption
 @onready var _card_picker: Control = $CardPicker
 @onready var _card_search: LineEdit = $CardPicker/Panel/MarginContainer/VBoxContainer/SearchRow/CardSearch
 @onready var _card_grid: GridContainer = $CardPicker/Panel/MarginContainer/VBoxContainer/ScrollContainer/CardGrid
@@ -41,9 +42,10 @@ func _ready() -> void:
 	EventBus.event_changed.connect(_sync_event_option)
 	_jump_round_spin.value = GameManager.current_round
 	_card_picker.hide()
-	_populate_character_options()
+	_populate_specialty_options()
 	_populate_event_options()
 	_populate_condiment_options()
+	_populate_chef_options()
 	_sync_event_option()
 	_refresh_action_buttons()
 	_refresh_seed_label()
@@ -211,40 +213,40 @@ func _on_open_rune_selection_pressed() -> void:
 	UiManager.show_cards_choice_panel.emit()
 
 
-func _on_character_option_item_selected(index: int) -> void:
-	var character_id := str(_character_option.get_item_metadata(index))
-	var character := PlayerCharacter.get_character_by_id(character_id)
-	if character == null:
+func _on_specialty_option_item_selected(index: int) -> void:
+	var specialty_id := str(_specialty_option.get_item_metadata(index))
+	var specialty := SpecialtyRegistry.get_specialty_by_id(specialty_id)
+	if specialty == null:
 		return
-	if GameManager.selected_character != null and GameManager.selected_character.id == character.id:
+	if GameManager.selected_specialty != null and GameManager.selected_specialty.id == specialty.id:
 		return
 
 	AudioManager.play_sfx(UISounds.CLICK)
-	_restart_run_as(character)
+	_restart_run_as(specialty)
 
 
-## Lock in the new character, drop the current save, and reload the run scene.
-func _restart_run_as(character: CharacterDefinition) -> void:
-	GameManager.selected_character = character
-	GameManager.bind_chef_passives()
+## Lock in the new specialty, drop the current save, and reload the run scene.
+func _restart_run_as(specialty: SpecialtyDefinition) -> void:
+	GameManager.selected_specialty = specialty
+	GameManager.bind_specialty_passives()
 	RunSaveManager.delete_save()
 	RunRng.restart_same_seed()
 	RunSaveManager.request_scene_enter_transition()
 	get_tree().change_scene_to_file(ScenePaths.MAIN)
 
 
-func _populate_character_options() -> void:
-	_character_option.clear()
+func _populate_specialty_options() -> void:
+	_specialty_option.clear()
 	var current_id := ""
-	if GameManager.selected_character != null:
-		current_id = GameManager.selected_character.id
+	if GameManager.selected_specialty != null:
+		current_id = GameManager.selected_specialty.id
 
-	for character in PlayerCharacter.get_all_characters():
-		var index := _character_option.item_count
-		_character_option.add_item(character.display_name)
-		_character_option.set_item_metadata(index, character.id)
-		if character.id == current_id:
-			_character_option.select(index)
+	for specialty in SpecialtyRegistry.get_all_specialties():
+		var index := _specialty_option.item_count
+		_specialty_option.add_item(specialty.display_name)
+		_specialty_option.set_item_metadata(index, specialty.id)
+		if specialty.id == current_id:
+			_specialty_option.select(index)
 
 
 func _on_activate_event_pressed() -> void:
@@ -268,6 +270,32 @@ func _on_add_condiment_pressed() -> void:
 	if condiment == null:
 		return
 	CondimentManager.add_condiment(condiment)
+
+
+## Seats the selected chef in the first empty slot. Does nothing when the column is full.
+func _on_add_chef_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	var selected_index := _chef_option.selected
+	if selected_index < 0:
+		return
+	var chef := ChefCatalog.get_by_id(str(_chef_option.get_item_metadata(selected_index)))
+	if chef == null:
+		return
+	ChefManager.add_chef(chef)
+
+
+func _populate_chef_options() -> void:
+	_chef_option.clear()
+	var chefs: Array[ChefCard] = []
+	for chef in ChefCatalog.get_all():
+		chefs.append(chef)
+	chefs.sort_custom(func(a: ChefCard, b: ChefCard) -> bool:
+		return a.name.naturalnocasecmp_to(b.name) < 0
+	)
+	for chef in chefs:
+		var index := _chef_option.item_count
+		_chef_option.add_item(chef.name)
+		_chef_option.set_item_metadata(index, chef.id)
 
 
 func _populate_event_options() -> void:

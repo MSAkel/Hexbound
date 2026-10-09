@@ -63,7 +63,7 @@ func _on_main_menu_pressed() -> void:
 
 func _on_new_run_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	# Same as hold-R. Drops the current save and starts a new seed on this character.
+	# Same as hold-R. Drops the current save and starts a new seed on this specialty.
 	get_tree().paused = false
 	var main := get_tree().current_scene
 	if main != null and main.has_method("restart_run"):

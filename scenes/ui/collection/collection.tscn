@@ -123,7 +123,7 @@ current_tab = 0
 tab_count = 4
 tab_0/title = "Cards"
 tab_1/title = "Condiments"
-tab_2/title = "Characters"
+tab_2/title = "Specialties"
 tab_3/title = "Events"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]

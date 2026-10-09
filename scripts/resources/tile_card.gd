@@ -4,12 +4,6 @@ extends Card
 ## Base resource for spot cards played on the Feast map.
 ## Card types are Ingredient, Kitchenware, and Meal.
 
-enum TileCardRarity {
-	COMMON,
-	UNCOMMON,
-	RARE,
-}
-
 enum TileCardType {
 	INGREDIENT,
 	KITCHENWARE,
@@ -104,6 +98,7 @@ enum QueryScope {
 
 const EMPOWER_OUTPUT_SCALE := 2.0
 ## Each Double stack multiplies output by EMPOWER_OUTPUT_SCALE. Two stacks cap at x4.
+## Chefs can raise the cap. Read ChefManager.max_double_stacks_for() for a seated card.
 const MAX_EMPOWER_STACKS := 2
 ## Shared chip fill. White numbers stay readable on this purple.
 const CHIP_PANEL_COLOR := Color(0.22, 0.16, 0.28)
@@ -117,9 +112,9 @@ const ICON_PASS := FeastStatIcons.PASS
 
 # Fallback merchant prices when a card has no rarity set in its resource.
 const BASE_PRICE_BY_RARITY := {
-	TileCardRarity.COMMON: 3,
-	TileCardRarity.UNCOMMON: 5,
-	TileCardRarity.RARE: 8,
+	Rarity.COMMON: 3,
+	Rarity.UNCOMMON: 5,
+	Rarity.RARE: 8,
 }
 
 var activation_count: int = 0
@@ -152,7 +147,6 @@ var hour_flavour_produced: int = 0
 var hour_additive_mult_produced: float = 0.0
 
 @export var base_production_amount: int = 0
-@export var rarity: TileCardRarity
 @export var type: TileCardType
 @export var product: Product = Product.NONE
 ## Recipe membership tags. Use catalog constants such as TAG_VEGETABLE in scripts.
@@ -461,15 +455,16 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	if empower_stacks > 0 and not EventManager.are_empowers_blocked():
 		output_scale *= pow(EMPOWER_OUTPUT_SCALE, empower_stacks)
 	if tile.map != null:
-		output_scale *= GameManager.chef_passives.beverage_output_scale(self)
+		output_scale *= GameManager.specialty_passives.beverage_output_scale(self)
 
 	_activation_output_scale = output_scale
 	# Count this activation before the card resolves so "triggers so far" includes the current one.
 	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
 	_play_trigger_sound()
-	GameManager.chef_passives.maybe_repeat_kitchenware(tile, self)
+	GameManager.specialty_passives.maybe_repeat_kitchenware(tile, self)
 	CondimentManager.after_card_activated(tile, _activation_host_card(tile))
+	ChefManager.after_card_activated(tile, _activation_host_card(tile))
 	_activation_output_scale = 1.0
 	_activation_was_empowered = false
 
@@ -697,11 +692,17 @@ func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
 	return board.card_on_hex(board.get_hex_for_card(tile_card)) != null
 
 
-## Adds one Double stack to a triggerable spot card, up to MAX_EMPOWER_STACKS.
+## Adds one Double stack to a triggerable spot card, up to its stack cap.
 func _try_empower_tile_card(source_tile: Hex, target: TileCard) -> bool:
 	if not _is_triggerable_tile_card(source_tile, target):
 		return false
-	return target._empower()
+	if not target._empower():
+		return false
+	# Chefs can make a Kitchenware Double land more than once.
+	if type == TileCardType.KITCHENWARE:
+		for _i in ChefManager.extra_double_applications(source_tile, self, target):
+			target._empower()
+	return true
 
 
 # Queues a newly created card for the hand reveal animation. Does not use tile_card_selected.
@@ -794,13 +795,14 @@ func _pay_effect_amount(tile: Hex, fail_if_empty: bool = false) -> bool:
 	return paid
 
 
-## Adds one Double stack. Returns false when already at MAX_EMPOWER_STACKS.
+## Adds one Double stack. Returns false when already at the stack cap.
 func _empower() -> bool:
-	if empower_stacks >= MAX_EMPOWER_STACKS:
+	if empower_stacks >= ChefManager.max_double_stacks_for(self):
 		return false
 
 	empower_stacks += 1
 	EventBus.tile_card_empowered.emit(self)
+	ChefManager.after_card_doubled(self)
 	return true
 
 

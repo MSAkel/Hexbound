@@ -27,11 +27,11 @@ static func upgrade_plate(tile: Hex, rng: RandomNumberGenerator) -> bool:
 	var target := tile.active_tile_card
 	if target == null:
 		return false
-	if target.rarity >= TileCard.TileCardRarity.RARE:
+	if target.rarity >= Card.Rarity.RARE:
 		_show_failure(tile)
 		return false
 
-	var higher_rarity := (target.rarity + 1) as TileCard.TileCardRarity
+	var higher_rarity := (target.rarity + 1) as Card.Rarity
 	var replacement := pick_random_placeable(higher_rarity, "", rng)
 	if replacement == null:
 		_show_failure(tile)

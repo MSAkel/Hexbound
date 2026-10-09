@@ -1,7 +1,7 @@
 class_name CardSellPanel
 extends PanelContainer
 
-## Drop zone in the bottom-left corner. Drag a hand card here and release to sell it.
+## Drop zone in the bottom-left corner. Drag a hand card or a chef here and release to sell it.
 
 const SELL_VALUE := 2
 
@@ -23,14 +23,17 @@ var _panel_style: StyleBoxFlat
 var _panel_style_armed: StyleBoxFlat
 var _panel_style_hover: StyleBoxFlat
 var _drag_card: CardUI = null
+## Chef slot being dragged, or -1. Chefs sell for their own value, not SELL_VALUE.
+var _drag_chef_slot := -1
 
 
 func _ready() -> void:
 	add_to_group("card_sell_panel")
 	_cache_panel_styles()
-	_price_label.text = "+%d" % SELL_VALUE
 	EventBus.card_drag_started.connect(_on_card_drag_started)
 	EventBus.card_drag_ended.connect(_on_card_drag_ended)
+	EventBus.chef_drag_started.connect(_on_chef_drag_started)
+	EventBus.chef_drag_ended.connect(_on_chef_drag_ended)
 	_refresh_state()
 
 
@@ -46,7 +49,7 @@ func _cache_panel_styles() -> void:
 
 
 func _process(_delta: float) -> void:
-	if _drag_card == null:
+	if not _is_armed():
 		return
 	_refresh_state()
 
@@ -59,6 +62,45 @@ func _on_card_drag_started(card: CardUI) -> void:
 func _on_card_drag_ended() -> void:
 	_drag_card = null
 	_refresh_state()
+
+
+func _on_chef_drag_started(slot: int) -> void:
+	_drag_chef_slot = slot
+	_refresh_state()
+
+
+func _on_chef_drag_ended() -> void:
+	_drag_chef_slot = -1
+	_refresh_state()
+
+
+## Used by ChefRail when the player releases a dragged chef. True when it was sold.
+func try_sell_chef(slot: int) -> bool:
+	if not _is_mouse_over():
+		return false
+	if ChefManager.sell_chef(slot) < 0:
+		return false
+	AudioManager.play_sfx(UISounds.GOLD_GAINED)
+	return true
+
+
+## Sells without a pointer check. Controller players pick Sell as a drop target instead.
+func sell_chef_from_controller(slot: int) -> bool:
+	if ChefManager.sell_chef(slot) < 0:
+		return false
+	AudioManager.play_sfx(UISounds.GOLD_GAINED)
+	return true
+
+
+func _is_armed() -> bool:
+	return _drag_card != null or _drag_chef_slot >= 0
+
+
+func _current_sell_value() -> int:
+	var chef := ChefManager.get_chef(_drag_chef_slot)
+	if chef != null:
+		return chef.get_sell_value()
+	return SELL_VALUE
 
 
 ## Used by CardPlacementHandler when the player releases a dragged hand card.
@@ -84,8 +126,9 @@ func _is_mouse_over() -> bool:
 
 ## Idle, armed while a card is dragged, and hover while it sits over the panel.
 func _refresh_state() -> void:
-	var armed := _drag_card != null
+	var armed := _is_armed()
 	var hovered := armed and _is_mouse_over()
+	_price_label.text = "+%d" % _current_sell_value()
 	var style := _panel_style
 	if hovered:
 		style = _panel_style_hover

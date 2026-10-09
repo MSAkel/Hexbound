@@ -82,13 +82,13 @@ static func _static_init() -> void:
 		COLOR_SPOIL,
 		"Remove the card."
 	)
-	register(
-		"pass",
-		["pass", "passes", "passed"],
-		"Pass",
-		COLOR_PASS,
-		"Moves Flavour, Mult, or Gold to the next course."
-	)
+	# register(
+	# 	"pass",
+	# 	["pass", "passes", "passed"],
+	# 	"Pass",
+	# 	COLOR_PASS,
+	# 	"Moves Flavour, Mult, or Gold to the next course."
+	# )
 	# register(
 	# 	"ingredient",
 	# 	["ingredient", "ingredients"],
@@ -96,13 +96,13 @@ static func _static_init() -> void:
 	# 	COLOR_INGREDIENT,
 	# 	"Ingredients card on a spot that adds Flavour."
 	# )
-	# register(
-	# 	"trigger",
-	# 	["trigger", "retrigger", "retriggers"],
-	# 	"Trigger",
-	# 	COLOR_FOLLOWING,
-	# 	"Activate the card."
-	# )
+	register(
+		"trigger",
+		["trigger", "retrigger", "retriggers"],
+		"Trigger",
+		COLOR_FOLLOWING,
+		"Activate the card."
+	)
 	register(
 		"course",
 		["course", "courses"],

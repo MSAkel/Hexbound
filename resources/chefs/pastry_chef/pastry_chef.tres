@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/chefs/pastry_chef/pastry_chef.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "pastry_chef"
+name = "Pastry Chef"
+description = "Cards on this Course can hold one more Double"
+rarity = 2

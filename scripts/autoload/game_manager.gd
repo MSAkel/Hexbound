@@ -80,13 +80,13 @@ var turn_stamp: int = 0
 
 #endregion
 
-#region Character selection
+#region Specialty selection
 
-## Chosen on the character selection screen. Drives chef passives and starting hand.
-var selected_character: CharacterDefinition = null
+## Chosen on the specialty selection screen. Drives specialty passives and starting hand.
+var selected_specialty: SpecialtyDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
-const ChefPassiveRuntimeScript := preload("res://scripts/chef_passive_runtime.gd")
-var chef_passives := ChefPassiveRuntimeScript.new()
+const SpecialtyPassiveRuntimeScript := preload("res://scripts/specialty_passive_runtime.gd")
+var specialty_passives := SpecialtyPassiveRuntimeScript.new()
 
 #endregion
 
@@ -118,8 +118,8 @@ var game_speed: float:
 func _ready() -> void:
 	GameSettings.ensure_loaded()
 	game_speed = GameSettings.game_speed
-	if selected_character == null:
-		selected_character = PlayerCharacter.get_default_character()
+	if selected_specialty == null:
+		selected_specialty = SpecialtyRegistry.get_default_specialty()
 
 	_load_tile_cards_from_directory("res://resources/spot_cards/")
 
@@ -191,7 +191,7 @@ func _on_turn_started() -> void:
 	_activation_counts_this_turn.clear()
 	_current_turn_trigger_count = 0
 	GoldManager.reset_turn_tracking()
-	chef_passives.reset_turn()
+	specialty_passives.reset_turn()
 
 
 func _has_met_round_goal() -> bool:
@@ -260,6 +260,7 @@ func debug_meet_round_goal_and_complete() -> void:
 ## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
 func _complete_current_round(skipped_turns: int = get_skipped_turns()) -> void:
 	GoldManager.apply_round_speed_rewards(skipped_turns)
+	ChefManager.on_day_ended()
 	if EventManager.is_completing_final_event_round():
 		RoundFlow.begin_victory_transition()
 		return
@@ -314,14 +315,14 @@ func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
 
 #endregion
 
-#region Chef passives and turn scoring
+#region Specialty passives and turn scoring
 
 func get_current_turn_trigger_count() -> int:
 	return _current_turn_trigger_count
 
 
-func bind_chef_passives() -> void:
-	chef_passives.bind(selected_character)
+func bind_specialty_passives() -> void:
+	specialty_passives.bind(selected_specialty)
 
 
 ## Rating is Flavour x Additive. xMult already folded into Additive when it fired.
@@ -375,10 +376,10 @@ func record_peak_gold_held(amount: int) -> void:
 
 
 func build_run_snapshot(is_win: bool) -> Dictionary:
-	var character_id := selected_character.id if selected_character != null else ""
+	var specialty_id := selected_specialty.id if selected_specialty != null else ""
 	return {
 		"is_win": is_win,
-		"character_id": character_id,
+		"specialty_id": specialty_id,
 		"difficulty": int(selected_difficulty),
 		"rounds_completed": current_round if is_win else maxi(0, current_round - 1),
 		"peak_gold_held": _run_peak_gold_held,
@@ -463,9 +464,10 @@ func reset_for_new_run() -> void:
 	turn_stamp = 0
 	game_speed = GameSettings.game_speed
 	clear_run_peak_tracking()
-	if selected_character != null:
-		bind_chef_passives()
+	if selected_specialty != null:
+		bind_specialty_passives()
 	CondimentManager.reset_for_new_run()
+	ChefManager.reset_for_new_run()
 	RunLedger.reset_for_new_run()
 
 
@@ -528,9 +530,9 @@ func apply_run_state(state: Dictionary) -> void:
 	_run_peak_gold_held = int(state.get("peak_gold_held", 0))
 	_run_peak_segment_score_single_turn = int(state.get("peak_segment_score_single_turn", 0))
 	_run_peak_triggers_single_turn = int(state.get("peak_triggers_single_turn", 0))
-	# Continue does not go through reset_for_new_run, so re-bind chef passives.
-	if selected_character != null:
-		bind_chef_passives()
+	# Continue does not go through reset_for_new_run, so re-bind specialty passives.
+	if selected_specialty != null:
+		bind_specialty_passives()
 
 
 func get_tile_card_by_id(card_id: String) -> TileCard:

@@ -8,7 +8,7 @@ extends Node
 ## godot --headless --path "E:/Godot/game++" res://scenes/debug/loot_sim_runner.tscn -- --all-layouts
 
 const REPORT_PATH := "user://loot_sim_report.json"
-const CHARACTER_IDS: Array[String] = [
+const SPECIALTY_IDS: Array[String] = [
 	"sous_chef",
 	"sommelier",
 	"gourmet_restaurant",
@@ -30,9 +30,9 @@ func _ready() -> void:
 	_parse_args()
 	await get_tree().process_frame
 	var reports: Array[Dictionary] = []
-	var layouts := CHARACTER_IDS.duplicate() if _all_layouts or _layout_filter.is_empty() else _layout_filter
+	var layouts := SPECIALTY_IDS.duplicate() if _all_layouts or _layout_filter.is_empty() else _layout_filter
 	for layout_id: String in layouts:
-		if layout_id not in CHARACTER_IDS:
+		if layout_id not in SPECIALTY_IDS:
 			push_error("LootSimRunner: unknown layout %s" % layout_id)
 			continue
 		reports.append(_simulate_layout(layout_id))
@@ -55,7 +55,7 @@ func _parse_args() -> void:
 
 
 func _simulate_layout(layout_id: String) -> Dictionary:
-	GameManager.selected_character = PlayerCharacter.get_character_by_id(layout_id)
+	GameManager.selected_specialty = SpecialtyRegistry.get_specialty_by_id(layout_id)
 	RunRng.begin_new_run("%s:%s" % [_seed_text, layout_id])
 
 	var legal_pool := GameManager.tile_cards_pool
@@ -98,7 +98,7 @@ func _empty_bucket_counts() -> Dictionary:
 func _count_pool_buckets(pool: Array[TileCard]) -> Dictionary:
 	var counts := _empty_bucket_counts()
 	for card: TileCard in pool:
-		_bump_bucket(counts, "rarity", _enum_label(TileCard.TileCardRarity, card.rarity))
+		_bump_bucket(counts, "rarity", _enum_label(Card.Rarity, card.rarity))
 		_bump_bucket(counts, "type", _enum_label(TileCard.TileCardType, card.type))
 		_bump_bucket(counts, "product", _enum_label(TileCard.Product, card.product))
 		for tag: StringName in TileCard.queryable_kind_tags(card):
@@ -108,7 +108,7 @@ func _count_pool_buckets(pool: Array[TileCard]) -> Dictionary:
 
 
 func _bump_card_draw(draw_counts: Dictionary, card: TileCard) -> void:
-	_bump_bucket(draw_counts, "rarity", _enum_label(TileCard.TileCardRarity, card.rarity))
+	_bump_bucket(draw_counts, "rarity", _enum_label(Card.Rarity, card.rarity))
 	_bump_bucket(draw_counts, "type", _enum_label(TileCard.TileCardType, card.type))
 	_bump_bucket(draw_counts, "product", _enum_label(TileCard.Product, card.product))
 	for tag: StringName in TileCard.queryable_kind_tags(card):
@@ -156,7 +156,7 @@ func _rarity_target_shares(report: Dictionary) -> Dictionary:
 	for rarity in CardLoot.RARITY_ROLL_ORDER:
 		total_weight += float(weights.get(rarity, 0.0))
 	for rarity in CardLoot.RARITY_ROLL_ORDER:
-		var label := _enum_label(TileCard.TileCardRarity, rarity)
+		var label := _enum_label(Card.Rarity, rarity)
 		targets[label] = float(weights.get(rarity, 0.0)) / total_weight if total_weight > 0.0 else 0.0
 	return targets
 

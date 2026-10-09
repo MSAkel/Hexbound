@@ -13,8 +13,8 @@ extends RefCounted
 
 const MAIN := "res://scenes/main.tscn"
 const MAIN_MENU := "res://scenes/ui/main_menu/main_menu.tscn"
-const CHARACTER_SELECTION := (
-	"res://scenes/ui/character_selection_screen/character_selection_screen.tscn"
+const SPECIALTY_SELECTION := (
+	"res://scenes/ui/specialty_selection_screen/specialty_selection_screen.tscn"
 )
 const COLLECTION := "res://scenes/ui/collection/collection.tscn"
 const STATS := "res://scenes/ui/stats/stats.tscn"

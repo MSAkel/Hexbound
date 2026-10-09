@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_edge_glow.tscn" id="21_condiment_glow"]
 [ext_resource type="PackedScene" uid="uid://c8sellpanel01" path="res://scenes/ui/sell_panel/card_sell_panel.tscn" id="22_sell_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/end_day_button/end_day_button.tscn" id="23_end_day"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chefs/chef_rail.tscn" id="24_chef_rail"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -65,6 +66,8 @@ z_index = 90
 [node name="Merchant" parent="." unique_id=613414351 instance=ExtResource("10_b65ll")]
 visible = false
 rotation = -0.00022035485
+
+[node name="ChefRail" parent="." instance=ExtResource("24_chef_rail")]
 
 [node name="RoundEventNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
 visible = false

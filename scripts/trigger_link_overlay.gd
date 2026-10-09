@@ -17,8 +17,13 @@ func play_bolt(from_hex: Hex, to_hex: Hex) -> void:
 	if _map == null or from_hex == null or to_hex == null or from_hex == to_hex:
 		return
 
-	var from_pos := _hex_center_local(from_hex)
-	var to_pos := _hex_center_local(to_hex)
+	play_bolt_between(_hex_center_local(from_hex), _hex_center_local(to_hex))
+
+
+## Bolt between two map-local points. Chef slots sit off the grid and use this directly.
+func play_bolt_between(from_pos: Vector2, to_pos: Vector2) -> void:
+	if _map == null or from_pos.is_equal_approx(to_pos):
+		return
 	TriggerLinkBurstScript.spawn(self, from_pos, to_pos)
 
 

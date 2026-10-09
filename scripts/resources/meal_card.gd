@@ -21,7 +21,7 @@ var _prefix_memo: Dictionary = {}
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_immediately_previous_hexes(hover_tile, get_recipe_prefix_size())
+	return _coords_for_immediately_previous_hexes(hover_tile, get_effective_prefix_size())
 
 
 ## Prefix seats holding a card whose tag this dish can use. Gold even if the bag is incomplete.
@@ -36,7 +36,7 @@ func get_trigger_preview_invalid_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 func _prefix_preview_coords(hover_tile: Hex, matching: bool) -> Array[Vector2i]:
 	var coords: Array[Vector2i] = []
-	for hex: Hex in _get_immediately_previous_hexes(hover_tile, get_recipe_prefix_size()):
+	for hex: Hex in _get_immediately_previous_hexes(hover_tile, get_effective_prefix_size()):
 		if hex.active_tile_card == null:
 			continue
 		if card_matches_needed_tag(hex.active_tile_card) == matching:
@@ -103,6 +103,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 	RunLedger.record_dish_plated()
+	# Plated short of the full recipe, so a chef waived the missing ingredient.
+	if recipe.size() < get_recipe_prefix_size():
+		ChefManager.notify_dish_discount_used(tile)
 
 
 ## Empty when the prefix recipe is incomplete.
@@ -151,7 +154,7 @@ func _preview_plated_multiplicative_mult(tile: Hex) -> float:
 	return _plated_multiplicative_mult_from_recipe(recipe)
 
 
-## How many fire-order seats this dish reads immediately before itself.
+## Slots in the full recipe bag, before any chef discount.
 func get_recipe_prefix_size() -> int:
 	return (
 		recipe_vegetable_count
@@ -161,6 +164,20 @@ func get_recipe_prefix_size() -> int:
 		+ recipe_seasoning_count
 		+ recipe_kitchenware_count
 	)
+
+
+## Ingredient slots chefs let this dish leave empty. Kitchenware slots are never waived,
+## and at least one seat always has to be filled.
+func get_waived_ingredient_slots() -> int:
+	var prefix_size := get_recipe_prefix_size()
+	var ingredient_slots := prefix_size - recipe_kitchenware_count
+	var max_waived := maxi(mini(ingredient_slots, prefix_size - 1), 0)
+	return clampi(ChefManager.dish_ingredient_discount(), 0, max_waived)
+
+
+## How many fire-order seats this dish reads immediately before itself right now.
+func get_effective_prefix_size() -> int:
+	return get_recipe_prefix_size() - get_waived_ingredient_slots()
 
 
 ## True when this dish has no prefix bag, or the fire-order prefix currently matches.
@@ -176,6 +193,9 @@ func get_inspect_recipe_text(tile: Hex = null) -> String:
 	var bag := _recipe_bag_text()
 	if bag.is_empty():
 		return ""
+	var waived := get_waived_ingredient_slots()
+	if waived > 0:
+		bag = "%s (any %d Ingredient optional)" % [bag, waived]
 	if tile == null or tile.map == null:
 		return "Recipe: %s" % bag
 	if not is_recipe_ready(tile):
@@ -257,7 +277,7 @@ func _recipe_slot_counts() -> Dictionary:
 
 ## Occupied prefix cards in fire-order seats. Empty when a seat is missing or unoccupied.
 func _prefix_recipe_cards(tile: Hex) -> Array[TileCard]:
-	var prefix_size := get_recipe_prefix_size()
+	var prefix_size := get_effective_prefix_size()
 	var cards: Array[TileCard] = []
 	if tile == null or tile.map == null or prefix_size <= 0:
 		return cards
@@ -272,7 +292,7 @@ func _prefix_recipe_cards(tile: Hex) -> Array[TileCard]:
 
 
 ## Each prefix card claims at most one bag slot. Dual-tagged cards take the scarcest remaining slot.
-## Empty dictionary means the bag cannot be filled.
+## Empty dictionary means the bag cannot be filled. Chefs may waive leftover ingredient slots.
 func _assign_recipe_slots(cards: Array[TileCard]) -> Dictionary:
 	var remaining := {}
 	var slot_counts := _recipe_slot_counts()
@@ -300,9 +320,20 @@ func _assign_recipe_slots(cards: Array[TileCard]) -> Dictionary:
 		if int(remaining[chosen]) <= 0:
 			remaining.erase(chosen)
 		pending.remove_at(best_index)
-	if not remaining.is_empty():
+	if not _unfilled_slots_are_waived(remaining):
 		return {}
 	return assigned
+
+
+func _unfilled_slots_are_waived(remaining: Dictionary) -> bool:
+	if remaining.is_empty():
+		return true
+	if remaining.has(TAG_KITCHENWARE):
+		return false
+	var unfilled := 0
+	for tag: StringName in remaining:
+		unfilled += int(remaining[tag])
+	return unfilled <= get_waived_ingredient_slots()
 
 
 func _compatible_recipe_slots(card: TileCard, remaining: Dictionary) -> Array[StringName]:

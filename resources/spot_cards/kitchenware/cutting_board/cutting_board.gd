@@ -41,7 +41,7 @@ func _add_random_common_tile_card_to_hand(tile: Hex) -> void:
 	var drafted := CardLoot.draw_filtered(
 		1,
 		pool,
-		TileCard.TileCardRarity.COMMON,
+		Card.Rarity.COMMON,
 		null,
 		true,
 		null,

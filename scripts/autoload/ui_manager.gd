@@ -3,6 +3,8 @@ extends CanvasLayer
 signal show_cards_choice_panel
 signal show_merchant_panel
 signal show_round_complete_panel
+## The tracked overlay panel opened, closed, or was replaced. Null when none is open.
+signal active_panel_changed(panel: Control)
 
 const PANEL_BOUND_META := "_ui_manager_panel_bound"
 
@@ -20,6 +22,7 @@ func show_panel(panel: Control) -> void:
 	active_panel = panel
 	_bind_panel(panel)
 	panel.show()
+	active_panel_changed.emit(active_panel)
 
 
 ## Drop the tracked panel after it hides or leaves the tree, without hiding it again.
@@ -28,7 +31,10 @@ func release_panel(panel: Control = null) -> void:
 		return
 	if is_instance_valid(active_panel):
 		_unbind_panel(active_panel)
+	if active_panel == null:
+		return
 	active_panel = null
+	active_panel_changed.emit(null)
 
 
 func _bind_panel(panel: Control) -> void:
@@ -62,3 +68,4 @@ func _on_panel_visibility_changed(panel: Control) -> void:
 func _on_panel_tree_exiting(panel: Control) -> void:
 	if active_panel == panel:
 		active_panel = null
+		active_panel_changed.emit(null)

@@ -5,8 +5,8 @@ extends Node
 
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://run_save.json"
-const SAVE_VERSION := 4
-const MIN_SUPPORTED_SAVE_VERSION := 4
+const SAVE_VERSION := 5
+const MIN_SUPPORTED_SAVE_VERSION := 5
 const HAND_GROUP := "run_hand"
 const MERCHANT_GROUP := "run_merchant"
 const CARD_SELECTION_GROUP := "run_card_selection"
@@ -69,14 +69,14 @@ func request_continue_run() -> void:
 		push_warning("Continue requested but no run save exists.")
 		return
 
-	var character := PlayerCharacter.get_character_by_id(payload.get("character_id", ""))
-	if character == null:
-		push_error("RunSaveManager: cannot continue — unknown character in save.")
+	var specialty := SpecialtyRegistry.get_specialty_by_id(payload.get("specialty_id", ""))
+	if specialty == null:
+		push_error("RunSaveManager: cannot continue — unknown specialty in save.")
 		delete_save()
 		return
 
-	# Map generation reads character layout rules during _ready, before main.gd restores state.
-	GameManager.selected_character = character
+	# Map generation reads specialty layout rules during _ready, before main.gd restores state.
+	GameManager.selected_specialty = specialty
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	continue_run_pending = true
 	request_scene_enter_transition()
@@ -152,7 +152,7 @@ func _record_abandoned_run_from_save(payload: Dictionary) -> void:
 	var current_round := int(game_state.get("current_round", 1))
 	var snapshot := {
 		"is_win": false,
-		"character_id": String(payload.get("character_id", "")),
+		"specialty_id": String(payload.get("specialty_id", "")),
 		"difficulty": int(payload.get("difficulty", 0)),
 		"rounds_completed": maxi(0, current_round - 1),
 		"peak_gold_held": int(game_state.get("peak_gold_held", 0)),
@@ -186,12 +186,13 @@ func save_current_run() -> void:
 	var payload := {
 		"version": SAVE_VERSION,
 		"saved_at_unix": Time.get_unix_time_from_system(),
-		"character_id": GameManager.selected_character.id if GameManager.selected_character else "",
+		"specialty_id": GameManager.selected_specialty.id if GameManager.selected_specialty else "",
 		"difficulty": GameManager.selected_difficulty,
 		"game_manager": GameManager.capture_run_state(),
 		"gold": GoldManager.capture_run_state(),
 		"rerolls": RerollManager.capture_run_state(),
 		"condiments": CondimentManager.capture_run_state(),
+		"chefs": ChefManager.capture_run_state(),
 		"run_ledger": RunLedger.capture_run_state(),
 		"events": EventManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
@@ -226,16 +227,16 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 		delete_save()
 		return false
 
-	var character_id: String = payload.get("character_id", "")
-	var character := PlayerCharacter.get_character_by_id(character_id)
-	if character == null:
-		push_error("RunSaveManager: unknown character id '%s'." % character_id)
+	var specialty_id: String = payload.get("specialty_id", "")
+	var specialty := SpecialtyRegistry.get_specialty_by_id(specialty_id)
+	if specialty == null:
+		push_error("RunSaveManager: unknown specialty id '%s'." % specialty_id)
 		delete_save()
 		return false
 
 	_is_restoring = true
 	_pending_turn_resume = false
-	GameManager.selected_character = character
+	GameManager.selected_specialty = specialty
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	GameManager.apply_run_state(payload.get("game_manager", {}))
 	GoldManager.apply_run_state(payload.get("gold", {}))
@@ -243,6 +244,8 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	EventManager.apply_run_state(payload.get("events", {}))
 	RoundFlow.apply_run_state(payload.get("round_flow", {}))
 	RunRng.apply_run_state(payload.get("run_rng", {}))
+	# Chefs first. Dish chips read the recipe discount while the map restores.
+	ChefManager.apply_run_state(payload.get("chefs", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	CondimentManager.apply_run_state(payload.get("condiments", {}))
 	RunLedger.apply_run_state(payload.get("run_ledger", {}))
@@ -416,7 +419,7 @@ func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:
 	var hand_state: Dictionary = payload.get("hand", {})
 	var saved_count: int = hand_state.get("cards", []).size()
 	var difficulty := int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
-	var expected := PlayerCharacter.get_expected_opening_hand_size(difficulty)
+	var expected := SpecialtyRegistry.get_expected_opening_hand_size(difficulty)
 	var map_state: Dictionary = payload.get("map", {})
 	var placed_count: int = map_state.get("placed_spot_cards", []).size()
 	var round_num := int(payload.get("game_manager", {}).get("current_round", 1))

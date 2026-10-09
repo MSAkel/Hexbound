@@ -5,22 +5,22 @@ extends RefCounted
 
 # Chance to roll each rarity when drafting (must sum to 100).
 const RARITY_WEIGHTS := {
-	TileCard.TileCardRarity.COMMON: 55.0,
-	TileCard.TileCardRarity.UNCOMMON: 35.0,
-	TileCard.TileCardRarity.RARE: 10.0,
+	Card.Rarity.COMMON: 55.0,
+	Card.Rarity.UNCOMMON: 35.0,
+	Card.Rarity.RARE: 10.0,
 }
-const RARITY_ROLL_ORDER: Array[TileCard.TileCardRarity] = [
-	TileCard.TileCardRarity.COMMON,
-	TileCard.TileCardRarity.UNCOMMON,
-	TileCard.TileCardRarity.RARE,
+const RARITY_ROLL_ORDER: Array[Card.Rarity] = [
+	Card.Rarity.COMMON,
+	Card.Rarity.UNCOMMON,
+	Card.Rarity.RARE,
 ]
 
 
 # Roll one rarity using RARITY_WEIGHTS (or a custom weight table).
-static func _roll_rarity(
+static func roll_rarity(
 	weights: Dictionary = RARITY_WEIGHTS,
 	rng: RandomNumberGenerator = null
-) -> TileCard.TileCardRarity:
+) -> Card.Rarity:
 	var total_weight := 0.0
 	for rarity in RARITY_ROLL_ORDER:
 		if weights.has(rarity):
@@ -36,7 +36,7 @@ static func _roll_rarity(
 			return rarity
 
 	# Floating-point edge case: land on the last declared rarity.
-	return TileCard.TileCardRarity.COMMON
+	return Card.Rarity.COMMON
 
 
 # Keep runes that match optional rarity, type, and product filters.
@@ -112,7 +112,7 @@ static func card_draw(
 		if available.is_empty():
 			break
 
-		var rarity := _roll_rarity(RARITY_WEIGHTS, rng)
+		var rarity := roll_rarity(RARITY_WEIGHTS, rng)
 		var candidates := _filter_runes(available, rarity, null)
 		var picked: TileCard = (
 			_pick_from(candidates, rng)

@@ -1,0 +1,221 @@
+[gd_scene format=3 uid="uid://bydk46w3lnoju"]
+
+[ext_resource type="Script" uid="uid://6n3v47jlsp0s" path="res://scenes/ui/specialty_selection_screen/specialty_selection_screen.gd" id="1_screen"]
+[ext_resource type="PackedScene" uid="uid://ln018toeb6p5" path="res://scenes/ui/specialty_selection_screen/difficulty_level_container.tscn" id="2_difficulty"]
+[ext_resource type="PackedScene" uid="uid://cdi5v4a8f6h2x" path="res://scenes/ui/specialty_selection_screen/layout_details.tscn" id="3_details"]
+[ext_resource type="Texture2D" uid="uid://cq5hq3s8fedo8" path="res://assets/gui/restaurant_theme/large_box_panel.png" id="5_6jx6k"]
+[ext_resource type="PackedScene" path="res://scenes/ui/scene_enter_transition/scene_enter_transition.tscn" id="5_transition"]
+[ext_resource type="Texture2D" uid="uid://bimqg1nejyky4" path="res://assets/gui/buttons/navigation_arrow_normal.png" id="6_arrow_normal"]
+[ext_resource type="Texture2D" uid="uid://c2asbj1ome6el" path="res://assets/gui/buttons/navigation_arrow_pressed.png" id="7_arrow_pressed"]
+[ext_resource type="Texture2D" uid="uid://b6md3u1njdrel" path="res://assets/gui/buttons/navigation_arrow_hover.png" id="8_arrow_hover"]
+[ext_resource type="Texture2D" uid="uid://c6b8lry1fehy1" path="res://assets/gui/buttons/button_accent_normal.png" id="11_qllxi"]
+[ext_resource type="Texture2D" uid="uid://di3ktqmd2smbl" path="res://assets/gui/buttons/button_accent_pressed.png" id="12_ispof"]
+[ext_resource type="PackedScene" uid="uid://beqvj1gt3ra5m" path="res://scenes/ui/common/ui_vertical_divider.tscn" id="12_vertical_divider"]
+[ext_resource type="Texture2D" uid="uid://ckj7ydre0t2d2" path="res://assets/gui/buttons/button_accent_hover.png" id="13_s21rt"]
+[ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/specialty_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
+[ext_resource type="PackedScene" uid="uid://ronbvr33lwb5" path="res://scenes/ui/specialty_selection_screen/abandon_run_confirm_panel.tscn" id="14_abandon_panel"]
+[ext_resource type="Texture2D" uid="uid://mvjyhl5c060e" path="res://assets/icons/others/arrow_left.png" id="14_back"]
+
+[sub_resource type="InputEventAction" id="InputEventAction_layout_prev"]
+action = &"specialty_layout_prev"
+
+[sub_resource type="Shortcut" id="Shortcut_layout_prev"]
+events = [SubResource("InputEventAction_layout_prev")]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parchment"]
+content_margin_left = 42.0
+content_margin_top = 22.0
+content_margin_right = 42.0
+content_margin_bottom = 30.0
+texture = ExtResource("5_6jx6k")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_back"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m2gea"]
+texture = ExtResource("11_qllxi")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yyyhm"]
+texture = ExtResource("12_ispof")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fvapy"]
+texture = ExtResource("13_s21rt")
+
+[sub_resource type="InputEventAction" id="InputEventAction_layout_next"]
+action = &"specialty_layout_next"
+
+[sub_resource type="Shortcut" id="Shortcut_layout_next"]
+events = [SubResource("InputEventAction_layout_next")]
+
+[node name="SpecialtySelectionScreen" type="Control" unique_id=925662086]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_screen")
+
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=785447064]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 44
+
+[node name="Page" type="HBoxContainer" parent="SafeArea" unique_id=813806966]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+
+[node name="PrevSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1203913993]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+shortcut = SubResource("Shortcut_layout_prev")
+texture_normal = ExtResource("6_arrow_normal")
+texture_pressed = ExtResource("7_arrow_pressed")
+texture_hover = ExtResource("8_arrow_hover")
+stretch_mode = 3
+flip_h = true
+
+[node name="UnifiedPanel" type="PanelContainer" parent="SafeArea/Page" unique_id=1251914286]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme_override_styles/panel = SubResource("StyleBoxTexture_parchment")
+
+[node name="Content" type="VBoxContainer" parent="SafeArea/Page/UnifiedPanel" unique_id=39843696]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=1964102201]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="HeaderLeft" type="HBoxContainer" parent="SafeArea/Page/UnifiedPanel/Content/Header" unique_id=1964102205]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="SafeArea/Page/UnifiedPanel/Content/Header/HeaderLeft" unique_id=1964102202]
+custom_minimum_size = Vector2(160, 48)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.18, 0.24, 0.17, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.16, 0.11, 1)
+theme_override_colors/font_hover_color = Color(0.08, 0.22, 0.24, 1)
+theme_override_colors/icon_normal_color = Color(0.055, 0.22, 0.25, 1)
+theme_override_colors/icon_pressed_color = Color(0.035, 0.14, 0.17, 1)
+theme_override_colors/icon_hover_color = Color(0.075, 0.3, 0.33, 1)
+theme_override_constants/h_separation = 10
+theme_override_constants/icon_max_width = 26
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_back")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_back")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_back")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_back")
+text = "BACK"
+icon = ExtResource("14_back")
+
+[node name="HeaderDividerPadL" type="Control" parent="SafeArea/Page/UnifiedPanel/Content/Header" unique_id=1964102206]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PageTitle" type="Label" parent="SafeArea/Page/UnifiedPanel/Content/Header" unique_id=1964102203]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.42745098, 0.23529412, 0.06666667, 1)
+theme_override_font_sizes/font_size = 42
+text = "Speciality"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HeaderDividerPadR" type="Control" parent="SafeArea/Page/UnifiedPanel/Content/Header" unique_id=1964102207]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HeaderRight" type="Control" parent="SafeArea/Page/UnifiedPanel/Content/Header" unique_id=1964102204]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LayoutDetails" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=181299471 instance=ExtResource("3_details")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 2
+
+[node name="FooterRule" type="ColorRect" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=749394700]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.43, 0.33, 0.19, 0.28)
+
+[node name="Footer" type="HBoxContainer" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=2041827096]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="DifficultyLevelContainer" parent="SafeArea/Page/UnifiedPanel/Content/Footer" unique_id=1103390495 instance=ExtResource("2_difficulty")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FooterDivider" parent="SafeArea/Page/UnifiedPanel/Content/Footer" unique_id=315356182 instance=ExtResource("12_vertical_divider")]
+size_flags_vertical = 4
+span = 82.0
+
+[node name="PlayColumn" type="VBoxContainer" parent="SafeArea/Page/UnifiedPanel/Content/Footer" unique_id=1161585173]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="SeededRunPanel" parent="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn" unique_id=1300363034 instance=ExtResource("13_seeded_run")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PlayButton" type="Button" parent="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn" unique_id=1794758867]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 76)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBoxTexture_m2gea")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_yyyhm")
+theme_override_styles/hover = SubResource("StyleBoxTexture_fvapy")
+text = "PLAY"
+
+[node name="NextSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1794269466]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+shortcut = SubResource("Shortcut_layout_next")
+texture_normal = ExtResource("6_arrow_normal")
+texture_pressed = ExtResource("7_arrow_pressed")
+texture_hover = ExtResource("8_arrow_hover")
+stretch_mode = 3
+
+[node name="SceneEnterTransition" parent="." unique_id=1282953299 instance=ExtResource("5_transition")]
+
+[node name="AbandonRunConfirmPanel" parent="." unique_id=1982736451 instance=ExtResource("14_abandon_panel")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[connection signal="pressed" from="SafeArea/Page/PrevSelectionButton" to="." method="_on_prev_selection_pressed"]
+[connection signal="pressed" from="SafeArea/Page/UnifiedPanel/Content/Header/HeaderLeft/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="SafeArea/Page/NextSelectionButton" to="." method="_on_next_selection_pressed"]

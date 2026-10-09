@@ -1,12 +1,19 @@
 class_name Card
 extends Resource
 
-# Shared hand and shop payload for TileCard. CardUI binds to this type.
+# Shared hand and shop payload for TileCard and ChefCard. CardUI binds to this type.
+
+enum Rarity {
+	COMMON,
+	UNCOMMON,
+	RARE,
+}
 
 @export var id: String
 @export var name: String
 @export var icon: Texture2D
 @export_multiline var description: String
+@export var rarity: Rarity
 
 const DEFAULT_PRICE := 2
 
@@ -38,6 +45,11 @@ func get_save_kind() -> String:
 
 func get_shop_price(discount: float = 0.0) -> int:
 	return _apply_merchant_discount(DEFAULT_PRICE, discount)
+
+
+## Why the merchant cannot sell this card right now. Empty when it can be bought.
+func get_purchase_block_reason() -> String:
+	return ""
 
 
 func _apply_merchant_discount(base_price: int, discount: float) -> int:

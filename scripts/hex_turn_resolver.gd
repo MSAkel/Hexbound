@@ -33,6 +33,8 @@ var _skip_presentation_steps := 0
 var _storm_resolved := 0
 var _storm_counts: Dictionary = {}
 var _storm_edges: Dictionary = {}
+# True while a fire queued by a chef is resolving. Reaction chefs read this to avoid loops.
+var _resolving_chef_trigger := false
 
 
 func setup(tile_map: HexTileMap) -> void:
@@ -50,6 +52,7 @@ func resolve_turn() -> void:
 	AudioManager.reset_card_trigger_chops()
 
 	TileCard.clear_copied_activation_stack()
+	_resolving_chef_trigger = false
 	pending_trigger_queue.clear()
 	_clear_trigger_link_sessions()
 	_skip_presentation_steps = 0
@@ -60,7 +63,13 @@ func resolve_turn() -> void:
 			tile.active_tile_card.reset_hour_product_snapshot()
 	map.refresh_dish_output_chips()
 
+	var active_segment := -1
 	for tile: Hex in hexes:
+		var segment_index := map.get_segment_index(tile.coordinates)
+		if segment_index != active_segment:
+			active_segment = segment_index
+			await _start_course_chef(segment_index)
+
 		if _should_bypass_primary_trigger_order_activation(tile):
 			await _mark_segment_resolved_if_natural_pass_done(tile)
 			continue
@@ -77,9 +86,18 @@ func resolve_turn() -> void:
 		await _wait_for_turn_total_count_finished()
 	map._apply_segment_turn_totals_to_game_manager()
 	_clear_hour_empower()
+	ChefManager.end_hour()
 	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
 	map._emit_segment_turn_completed_snapshot()
 	await GameManager.finish_turn_processing()
+
+
+## The chef linked to this course acts before its first spot fires.
+func _start_course_chef(segment_index: int) -> void:
+	if not ChefManager.course_started(map, segment_index):
+		return
+	await _wait_for_activation_animation()
+	await _wait_between_tile_activations()
 
 
 # Resolve one tile: primary activation, then any queued secondary triggers.
@@ -103,6 +121,7 @@ func _resolve_rune_activation(tile: Hex) -> void:
 			entry["activation_scale"],
 			true,
 			source_hex,
+			int(entry.get("chef_slot", -1)),
 		)
 		_resolve_trigger_link_entry(entry)
 		if _note_storm_activation(source_hex, target_hex):
@@ -213,13 +232,18 @@ func _activate_tile_card_on_tile(
 	activation_scale: float = 1.0,
 	from_trigger: bool = false,
 	trigger_source_hex: Hex = null,
+	chef_slot: int = -1,
 ) -> void:
 	if not _would_activate_tile_card_on_tile(tile, from_trigger):
 		return
 
 	activation_scale *= EventManager.get_producer_output_multiplier(tile)
 
-	if from_trigger and trigger_source_hex != null:
+	if from_trigger and chef_slot >= 0:
+		if not GameManager.skip_presentation:
+			map.play_chef_bolt(chef_slot, tile)
+			tile.play_chained_tile_card_activation_animation()
+	elif from_trigger and trigger_source_hex != null:
 		if not GameManager.skip_presentation:
 			map.trigger_link_overlay.play_bolt(trigger_source_hex, tile)
 			tile.play_chained_tile_card_activation_animation()
@@ -227,7 +251,13 @@ func _activate_tile_card_on_tile(
 		tile.play_tile_card_activation_animation()
 	await _wait_for_activation_animation()
 
+	_resolving_chef_trigger = chef_slot >= 0
 	tile.apply_tile_card_activation(activation_scale)
+	_resolving_chef_trigger = false
+
+
+func is_resolving_chef_trigger() -> bool:
+	return _resolving_chef_trigger
 
 
 func _should_bypass_primary_trigger_order_activation(tile: Hex) -> bool:
@@ -391,11 +421,15 @@ func destroy_placed_tile_card(rune: TileCard) -> void:
 
 
 ## Queues extra rune activations to resolve before the current tile flow continues.
+## chef_slot is set when a chef, not a seated card, asked for the fire.
+## Returns how many activations were actually queued.
 func queue_tile_card_triggers(
 	runes: Array[TileCard],
 	activation_scales: Array[float] = [],
 	source_hex: Hex = null,
-) -> void:
+	chef_slot: int = -1,
+) -> int:
+	var queued := 0
 	for i in range(runes.size()):
 		var target_hex := map.get_hex_for_tile_card(runes[i])
 		if target_hex == null or not map.is_tile_card_triggerable(target_hex):
@@ -411,10 +445,18 @@ func queue_tile_card_triggers(
 			"rune": runes[i],
 			"activation_scale": scale_rune,
 			"source_hex": source_hex,
+			"chef_slot": chef_slot,
 		}
 		pending_trigger_queue.append(entry)
+		queued += 1
 		if source_hex != null:
 			_register_trigger_link_pending(source_hex)
+	return queued
+
+
+## Extra fires requested by the chef in chef_slot. The bolt starts at that chef's hex.
+func queue_chef_triggers(runes: Array[TileCard], chef_slot: int) -> int:
+	return queue_tile_card_triggers(runes, [], null, chef_slot)
 
 
 ## Removes tile_card from the map after every trigger queued from source_hex resolves.

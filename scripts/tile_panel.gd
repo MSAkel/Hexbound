@@ -13,9 +13,9 @@ extends Control
 @onready var condiment_fuse_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/CondimentFuseLine
 
 const RARITY_BG_COLORS := {
-	TileCard.TileCardRarity.COMMON: Color(0.7473333, 0.7472968, 0.77322227, 1),
-	TileCard.TileCardRarity.UNCOMMON: Color(0.72, 0.86, 0.96, 1),
-	TileCard.TileCardRarity.RARE: Color(0.82, 0.72, 0.94, 1),
+	Card.Rarity.COMMON: Color(0.7473333, 0.7472968, 0.77322227, 1),
+	Card.Rarity.UNCOMMON: Color(0.72, 0.86, 0.96, 1),
+	Card.Rarity.RARE: Color(0.82, 0.72, 0.94, 1),
 }
 
 var _rarity_badge_styles: Dictionary = {}
@@ -25,6 +25,8 @@ const OFFSET := Vector2(12, 12)
 const EMPTY_SPOT_ICON := preload("res://assets/tilesets/tile_dashed.png")
 
 var hex: Hex = null
+# Card shown through show_card. Null while the panel inspects a spot.
+var _shown_card: Card = null
 # Screen-space rect of the hovered spot (viewport / CanvasLayer coords).
 var target_rect: Rect2 = Rect2()
 
@@ -45,11 +47,40 @@ func _ready() -> void:
 
 func set_hex(h: Hex, spot_rect: Rect2 = Rect2()) -> void:
 	hex = h
+	_shown_card = null
 	target_rect = spot_rect
 	_refresh_spot_card()
 	show()
 	# Size may change with content. Fit, then position after the layout pass.
 	call_deferred("_fit_and_position")
+
+
+## Inspection for Chef cards.
+func show_card(card: Card, anchor_rect: Rect2) -> void:
+	if card == null:
+		return
+	hex = null
+	_shown_card = card
+	target_rect = anchor_rect
+	card_icon.setup(card)
+	card_name_label.text = card.name
+	_set_rarity_badge(card)
+	card_subtitle.hide()
+	card_chip_line.hide()
+	card_recipe_line.hide()
+	condiment_fuse_line.hide()
+	card_description.text = CardKeywordGlossary.to_bbcode(card.description)
+	card_bonus_line.hide()
+	show()
+	call_deferred("_fit_and_position")
+
+
+## Closes the panel only if it is still showing this card.
+func hide_card(card: Card) -> void:
+	if _shown_card != card:
+		return
+	_shown_card = null
+	hide()
 
 
 # Re-anchor while still hovering (e.g. camera zoom / pan mid-hover).
@@ -117,12 +148,12 @@ func _set_recipe_line(card: TileCard) -> void:
 	card_recipe_line.show()
 
 
-func _set_rarity_badge(card: TileCard) -> void:
+func _set_rarity_badge(card: Card) -> void:
 	var rarity := int(card.rarity)
 	rarity_label.text = _get_rarity_display_name(rarity)
 	var style: StyleBoxFlat = _rarity_badge_styles.get(
 		rarity,
-		_rarity_badge_styles[TileCard.TileCardRarity.COMMON]
+		_rarity_badge_styles[Card.Rarity.COMMON]
 	)
 	rarity_badge.add_theme_stylebox_override("panel", style)
 	rarity_badge.show()
@@ -150,9 +181,9 @@ func _hide_rarity_badge() -> void:
 
 func _get_rarity_display_name(rarity: int) -> String:
 	match rarity:
-		TileCard.TileCardRarity.UNCOMMON:
+		Card.Rarity.UNCOMMON:
 			return "Uncommon"
-		TileCard.TileCardRarity.RARE:
+		Card.Rarity.RARE:
 			return "Rare"
 		_:
 			return "Common"
@@ -260,6 +291,8 @@ func _on_close_button_pressed() -> void:
 
 
 func _on_toggle_spot_card_button_pressed() -> void:
+	if hex == null or hex.active_tile_card == null:
+		return
 	if hex.active_tile_card.is_active:
 		hex.active_tile_card.is_active = false
 	else:

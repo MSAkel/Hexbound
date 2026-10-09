@@ -73,16 +73,16 @@ func build_starting_hand() -> void:
 	if RunSaveManager.should_restore_run():
 		return
 
-	var character := GameManager.selected_character
-	if character == null:
+	var specialty := GameManager.selected_specialty
+	if specialty == null:
 		return
 
 	var stream_name := "starting_hand:%s:%d" % [
-		character.id,
+		specialty.id,
 		int(GameManager.selected_difficulty),
 	]
 	RunRng.using_fresh_stream(stream_name, func() -> void:
-		var starting_cards := PlayerCharacter.get_starting_hand_cards(character)
+		var starting_cards := SpecialtyRegistry.get_starting_hand_cards(specialty)
 		for card in starting_cards:
 			_add_tile_card(card)
 
