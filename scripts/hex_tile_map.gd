@@ -15,7 +15,6 @@ var turn_resolver: HexTurnResolver
 @onready var card_highlight_overlay_layer: TileMapLayer = $CardHighlightOverlayLayer
 @onready var disabled_tile_overlay_layer: TileMapLayer = $DisabledTileOverlayLayer
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
-@onready var gold_overlay_layer: TileMapLayer = $GoldOverlayLayer
 # Counted dish-recipe seats. Own layer so gold modulate cannot leak onto other overlays.
 var dish_recipe_gold_layer: TileMapLayer
 
@@ -68,10 +67,6 @@ var _event_highlighted_coords: Array[Vector2i] = []
 var _disabled_tile_coords: Array[Vector2i] = []
 # Empty tiles locked by the Sealed Hexes event. Shares the disabled overlay layer.
 var _event_sealed_coords: Array[Vector2i] = []
-# Tiles currently lit during the post-turn segment result reveal.
-var _segment_reveal_glow_coords: Array[Vector2i] = []
-# Quiet gold wash on segments that have finished their natural pass this turn.
-var _segment_sealed_coords: Array[Vector2i] = []
 var _segment_seal_tweens: Array[Tween] = []
 # Valid placement target while a hand card is selected.
 var _placement_preview_cell: Vector2i = Vector2i(-1, -1)
@@ -85,12 +80,8 @@ var _chef_screen_centers: Array[Vector2] = []
 ## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
 var _round_turn_snapshots: Array = []
 
-# Owners of cells on fading_sector_overlay_layer, used so one overlay does not erase another.
-enum FadingOverlayOwner { EVENT, REVEAL }
-
-const SEGMENT_REVEAL_GLOW_COLOR := Color(1.35, 1.05, 0.25, 1.0)
 ## Gold wash on a dedicated layer so dish recipe seats do not recolor other rune highlights.
-const DISH_RECIPE_GOLD_MODULATE := SEGMENT_REVEAL_GLOW_COLOR
+const DISH_RECIPE_GOLD_MODULATE := Color(1.35, 1.05, 0.25, 1.0)
 # Occupied-card zip budget. Stagger shrinks on long rings so this never grows.
 const SEGMENT_SEAL_BUDGET := 0.28
 const SEGMENT_SEAL_MAX_STAGGER := 0.045
@@ -117,7 +108,6 @@ func _ready() -> void:
 	card_highlight_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	placement_valid_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
-	gold_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	_setup_dish_recipe_gold_layer()
 	_apply_tile_spacing()
 	trigger_link_overlay.setup(self)
@@ -174,7 +164,6 @@ func _apply_tile_spacing() -> void:
 		card_highlight_overlay_layer,
 		disabled_tile_overlay_layer,
 		fading_sector_overlay_layer,
-		gold_overlay_layer,
 		dish_recipe_gold_layer,
 	]:
 		if layer == null or layer.tile_set == null:
@@ -678,7 +667,6 @@ func generate_terrain() -> void:
 	_inspect_invalid_highlight_coords.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
-	gold_overlay_layer.clear()
 	_disabled_tile_coords.clear()
 	card_highlight_overlay_layer.modulate = Color.WHITE
 
@@ -944,11 +932,6 @@ func get_segment_count() -> int:
 	return _layout.build_segments().size()
 
 
-## Ordered coordinate lists for every segment in trigger order.
-func get_ordered_segments() -> Array[Array]:
-	return _layout.build_segments()
-
-
 ## All hex tiles belonging to one segment index.
 func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 	if query == null:
@@ -1126,8 +1109,6 @@ func highlight_event_segment(segment_index: int) -> void:
 ## Clears the event segment overlay stamped by highlight_event_segment().
 func clear_event_segment_highlight() -> void:
 	for coords: Vector2i in _event_highlighted_coords:
-		if _fading_overlay_still_needed(coords, FadingOverlayOwner.EVENT):
-			continue
 		fading_sector_overlay_layer.set_cell(coords, -1)
 	_event_highlighted_coords.clear()
 
@@ -1213,15 +1194,6 @@ func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 		or coords in _inspect_highlight_coords
 		or coords in _condiment_target_coords
 	)
-
-
-## True when another fading-sector overlay still owns this cell.
-func _fading_overlay_still_needed(coords: Vector2i, overlay_owner: FadingOverlayOwner) -> bool:
-	if overlay_owner != FadingOverlayOwner.EVENT and coords in _event_highlighted_coords:
-		return true
-	if overlay_owner != FadingOverlayOwner.REVEAL and coords in _segment_reveal_glow_coords:
-		return true
-	return false
 
 
 ## First or last placed card in a segment relative to tile's segment. See HexBoardQuery.card_in_relative_segment().
@@ -1451,18 +1423,10 @@ func on_turn_ended() -> void:
 	await turn_resolver.resolve_turn()
 
 
-## Gold wash lands at once. Occupied cards zip in trigger order. Never awaited.
+## Occupied cards zip in trigger order. Never awaited.
 func _play_segment_seal(segment_index: int) -> void:
 	if GameManager.skip_presentation:
 		return
-
-	var hexes := get_hexes_in_segment(segment_index)
-	if hexes.is_empty():
-		return
-
-	# Light the whole row immediately so empty tiles still read as closed.
-	for hex: Hex in hexes:
-		_stamp_segment_sealed_overlay(hex.coordinates)
 
 	var occupied := _get_occupied_hexes_in_segment(segment_index)
 	if occupied.is_empty():
@@ -1488,17 +1452,6 @@ func _get_occupied_hexes_in_segment(segment_index: int) -> Array[Hex]:
 	return occupied
 
 
-func _stamp_segment_sealed_overlay(coords: Vector2i) -> void:
-	if coords in _segment_sealed_coords:
-		return
-	_segment_sealed_coords.append(coords)
-	gold_overlay_layer.set_cell(
-		coords,
-		OVERLAY_TILE_SOURCE_ID,
-		OVERLAY_TILE_ATLAS_COORDS
-	)
-
-
 func _clear_segment_sealed_look() -> void:
 	for seal_tween: Tween in _segment_seal_tweens:
 		if seal_tween != null and seal_tween.is_valid():
@@ -1506,36 +1459,6 @@ func _clear_segment_sealed_look() -> void:
 	_segment_seal_tweens.clear()
 	for hex: Hex in get_all_hexes_with_runes():
 		hex.clear_segment_sealed()
-	for coords: Vector2i in _segment_sealed_coords:
-		gold_overlay_layer.set_cell(coords, -1)
-	_segment_sealed_coords.clear()
-
-
-func _apply_segment_reveal_glow(segment_index: int) -> void:
-	# Reveal gold would fight the quieter sealed wash. Drop the seal first.
-	_clear_segment_sealed_look()
-	_clear_segment_reveal_glow()
-	fading_sector_overlay_layer.modulate = SEGMENT_REVEAL_GLOW_COLOR
-
-	var segments := _layout.build_segments()
-	if segment_index < 0 or segment_index >= segments.size():
-		return
-
-	for coords: Vector2i in segments[segment_index]:
-		fading_sector_overlay_layer.set_cell(
-			coords,
-			OVERLAY_TILE_SOURCE_ID,
-			OVERLAY_TILE_ATLAS_COORDS
-		)
-		_segment_reveal_glow_coords.append(coords)
-
-func _clear_segment_reveal_glow() -> void:
-	for coords: Vector2i in _segment_reveal_glow_coords:
-		if _fading_overlay_still_needed(coords, FadingOverlayOwner.REVEAL):
-			continue
-		fading_sector_overlay_layer.set_cell(coords, -1)
-	_segment_reveal_glow_coords.clear()
-	fading_sector_overlay_layer.modulate = Color.WHITE
 
 
 #region Run save / load

@@ -2,12 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dqndk5mqrifwb" path="res://scripts/hex_tile_map.gd" id="1_d5c3r"]
 [ext_resource type="Script" uid="uid://baxlr0ggs4yo1" path="res://scripts/trigger_link_overlay.gd" id="2_link"]
-[ext_resource type="Script" uid="uid://c6xjcfxyej4h2" path="res://scripts/trigger_order_overlay.gd" id="2_order"]
-[ext_resource type="Script" uid="uid://bgwan8eixdr6g" path="res://scripts/segment_path_overlay.gd" id="2_path"]
 [ext_resource type="Texture2D" uid="uid://u433044huqg5" path="res://assets/tilesets/tile_hover_highlight.png" id="3_3rbfx"]
 [ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="3_8rbqn"]
 [ext_resource type="Texture2D" uid="uid://d2i5udp267mcs" path="res://assets/tilesets/fading_sector_challenge_overlay.png" id="3_ekk8a"]
-[ext_resource type="Texture2D" uid="uid://cg8rce2odojjl" path="res://assets/tilesets/gold_overlay.png" id="3_gold"]
 [ext_resource type="Texture2D" uid="uid://00t25k53gckj" path="res://assets/tilesets/disabled_tile_overlay.png" id="7_3rbfx"]
 [ext_resource type="Texture2D" uid="uid://bdhjkrwrsmwn8" path="res://assets/tilesets/card_ability_highlight.png" id="10_o8iio"]
 
@@ -62,27 +59,8 @@ tile_shape = 3
 tile_size = Vector2i(104, 120)
 sources/0 = SubResource("TileSetAtlasSource_xmj4m")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_gold"]
-texture = ExtResource("3_gold")
-texture_region_size = Vector2i(96, 112)
-0:0/0 = 0
-
-[sub_resource type="TileSet" id="TileSet_gold"]
-tile_shape = 3
-tile_size = Vector2i(104, 120)
-sources/0 = SubResource("TileSetAtlasSource_gold")
-
 [node name="HexTileMap" type="Node2D" unique_id=1387675484]
 script = ExtResource("1_d5c3r")
-
-[node name="TriggerOrderOverlay" type="Node2D" parent="." unique_id=426136559]
-visible = false
-script = ExtResource("2_order")
-
-[node name="SegmentPathOverlay" type="Node2D" parent="." unique_id=1127265752]
-visible = false
-z_index = 22
-script = ExtResource("2_path")
 
 [node name="TriggerLinkOverlay" type="Node2D" parent="." unique_id=1080819135]
 z_index = 15
@@ -105,6 +83,3 @@ tile_set = SubResource("TileSet_r6dd1")
 
 [node name="FadingSectorOverlayLayer" type="TileMapLayer" parent="." unique_id=1681598386]
 tile_set = SubResource("TileSet_7pmlo")
-
-[node name="GoldOverlayLayer" type="TileMapLayer" parent="." unique_id=966783512]
-tile_set = SubResource("TileSet_gold")
