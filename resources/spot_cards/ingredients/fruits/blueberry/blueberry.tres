@@ -11,5 +11,5 @@ ingredient_tags = Array[StringName]([&"fruit"])
 id = "blueberry"
 name = "Blueberry"
 icon = ExtResource("1_tfs81")
-description = "+3 Mult for every passed Day"
+description = "+3 {mult} for every passed Day"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,5 +1,5 @@
 extends TileCard
-## Fires every card on its course. Spoils immediately
+## Fires every card on its station. Spoils immediately
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	var host := _activation_host_card(tile)

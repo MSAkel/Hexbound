@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "echo"
 display_name = "Second Pass"
-description = "Fire again after next fire"
+description = "{trigger} again after next {trigger}"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.95, 0.82, 0.28, 1)
 base_price = 6

@@ -17,8 +17,8 @@ var pass_relays: int = 0
 var retriggers_this_hour: int = 0
 var retriggers_this_run: int = 0
 var permanent_growth_this_run: float = 0.0
-## Course indexes that received at least one Pass this run.
-var _relay_courses: Dictionary = {}
+## Station indexes that received at least one Pass this run.
+var _relay_stations: Dictionary = {}
 
 
 func _ready() -> void:
@@ -35,7 +35,7 @@ func reset_for_new_run() -> void:
 	pass_relays = 0
 	retriggers_this_run = 0
 	permanent_growth_this_run = 0.0
-	_relay_courses.clear()
+	_relay_stations.clear()
 	_reset_hour_counters()
 
 
@@ -51,7 +51,7 @@ func capture_run_state() -> Dictionary:
 		"retriggers_this_hour": retriggers_this_hour,
 		"retriggers_this_run": retriggers_this_run,
 		"permanent_growth_this_run": permanent_growth_this_run,
-		"relay_courses": _relay_courses.keys(),
+		"relay_stations": _relay_stations.keys(),
 	}
 
 
@@ -66,11 +66,11 @@ func apply_run_state(state: Dictionary) -> void:
 	retriggers_this_hour = int(state.get("retriggers_this_hour", 0))
 	retriggers_this_run = int(state.get("retriggers_this_run", 0))
 	permanent_growth_this_run = float(state.get("permanent_growth_this_run", 0.0))
-	_relay_courses.clear()
-	var courses: Variant = state.get("relay_courses", [])
-	if courses is Array:
-		for entry in courses:
-			_relay_courses[int(entry)] = true
+	_relay_stations.clear()
+	var stations: Variant = state.get("relay_stations", [])
+	if stations is Array:
+		for entry in stations:
+			_relay_stations[int(entry)] = true
 
 
 func get_fires_for_kind(tag: StringName) -> int:
@@ -81,8 +81,8 @@ func get_fires_for_type(card_type: TileCard.TileCardType) -> int:
 	return int(fires_by_type.get(_type_key(card_type), 0))
 
 
-func get_distinct_relay_courses() -> int:
-	return _relay_courses.size()
+func get_distinct_relay_stations() -> int:
+	return _relay_stations.size()
 
 
 ## Called from GameManager.register_tile_card_activation after this Hour's count is updated.
@@ -117,7 +117,7 @@ func record_pass_relay(segment_index: int) -> void:
 	pass_relays += 1
 	if segment_index < 0:
 		return
-	_relay_courses[segment_index] = true
+	_relay_stations[segment_index] = true
 
 
 func record_permanent_growth(amount: float) -> void:

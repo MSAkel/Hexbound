@@ -11,5 +11,5 @@ ingredient_tags = Array[StringName]([&"protein"])
 id = "sausage"
 name = "Sausage"
 icon = ExtResource("1_iua0u")
-description = "+8 Flavour per adjacent Seasoning"
+description = "+8 {flavour} per adjacent Seasoning"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

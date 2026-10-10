@@ -1,7 +1,7 @@
 extends MealCard
 
 ## Locked to the card text. Plates prefix vegetable Flavour and seasoning Mult, each ×1.5.
-## That is a local meal pile, not course-wide ×Mult.
+## That is a local meal pile, not station-wide ×Mult.
 
 const LOCAL_MULT := 1.5
 

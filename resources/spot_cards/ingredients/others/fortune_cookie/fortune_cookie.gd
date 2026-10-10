@@ -31,7 +31,7 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 		"%d%%" % percent,
 		null,
 		get_chip_panel_color(),
-		"Chance for 400 Flavour or 8 Gold"
+		CardKeywordGlossary.to_plain("Chance for 400 {flavour} or 8 Gold")
 	)
 
 

@@ -12,5 +12,5 @@ support_role = 2
 id = "random_meal"
 name = "Random Meal"
 icon = ExtResource("1_p3xet")
-description = "Fires two random cards on following courses"
+description = "{triggers} two random cards on {following} {stations}"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

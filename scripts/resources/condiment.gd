@@ -63,18 +63,27 @@ func fuse_lasts_two_turns() -> bool:
 	)
 
 
+## Name and description for hover tooltips, with glossary tokens resolved.
+func get_tooltip_text() -> String:
+	return "%s\n%s" % [display_name, CardKeywordGlossary.to_plain(description)]
+
+
 func get_fuse_summary() -> String:
+	return CardKeywordGlossary.to_plain(_get_fuse_summary_source())
+
+
+func _get_fuse_summary_source() -> String:
 	match effect_type:
 		EffectType.EMPOWER:
-			return "Double (condiment)"
+			return "{double} (condiment)"
 		EffectType.ECHO:
-			return "Echo · next activation"
+			return "Echo · next {trigger}"
 		EffectType.WARD:
 			return "Ward · next break"
 		EffectType.NEXT_TRIGGER_ENERGY:
-			return "+%d Flavour · next fire" % int(effect_value)
+			return "+%d {flavour} · next {trigger}" % int(effect_value)
 		EffectType.NEXT_TRIGGER_MULT:
-			return "+%d Mult · next fire" % int(round(effect_value))
+			return "+%d {mult} · next {trigger}" % int(round(effect_value))
 		EffectType.FORWARD_GIFT:
 			return "Forward Gift"
 		EffectType.MINT_SIP:
@@ -84,7 +93,7 @@ func get_fuse_summary() -> String:
 		EffectType.CLOSING_ROUND:
 			return "Closing Round · this hour"
 		EffectType.THROW_OUT:
-			return "Spoil seated card, gain random card"
+			return "{spoil} seated card, gain random card"
 		EffectType.UPGRADE_PLATE:
 			return "Upgrade seated card"
 		EffectType.REROLL_PLATE:

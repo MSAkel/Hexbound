@@ -15,5 +15,5 @@ starting_hand_eligible = true
 id = "carrot"
 name = "Carrot"
 icon = ExtResource("1_c3voh")
-description = "+5 Flavour. Every 2nd fire: permanently +5 Flavour"
+description = "+5 {flavour}. Every 2nd {trigger}: permanently +5 {flavour}"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

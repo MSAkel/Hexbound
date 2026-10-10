@@ -14,5 +14,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "vinaigrette"
 name = "Vinaigrette"
 icon = ExtResource("1_8emet")
-description = "If the previous 2 spots contain a Vegetable and Seasoning, gain their Flavour and Mult ×1.5"
+description = "If the previous 2 spots contain a Vegetable and Seasoning, gain their {flavour} and {mult} ×1.5"
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

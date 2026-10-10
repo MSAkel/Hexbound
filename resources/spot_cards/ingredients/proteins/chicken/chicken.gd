@@ -1,5 +1,5 @@
 extends TileCard
-## +24 Flavour if this is the first Ingredient in the course, otherwise +8.
+## +24 Flavour if this is the first Ingredient in the station, otherwise +8.
 
 const FIRST_PRODUCER_AMOUNT := 24
 const OTHER_PRODUCER_AMOUNT := 8

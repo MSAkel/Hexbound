@@ -68,7 +68,7 @@ func resolve_turn() -> void:
 		var segment_index := map.get_segment_index(tile.coordinates)
 		if segment_index != active_segment:
 			active_segment = segment_index
-			await _start_course_chef(segment_index)
+			await _start_station_chef(segment_index)
 
 		if _should_bypass_primary_trigger_order_activation(tile):
 			await _mark_segment_resolved_if_natural_pass_done(tile)
@@ -92,9 +92,9 @@ func resolve_turn() -> void:
 	await GameManager.finish_turn_processing()
 
 
-## The chef linked to this course acts before its first spot fires.
-func _start_course_chef(segment_index: int) -> void:
-	if not ChefManager.course_started(map, segment_index):
+## The chef linked to this station acts before its first spot fires.
+func _start_station_chef(segment_index: int) -> void:
+	if not ChefManager.station_started(map, segment_index):
 		return
 	await _wait_for_activation_animation()
 	await _wait_between_tile_activations()
@@ -328,7 +328,7 @@ func _play_segment_turn_result_reveals() -> void:
 	EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 
 
-## Updates the hour Rating row after the last course finishes firing.
+## Updates the hour Rating row after the last station finishes firing.
 func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	if GameManager.skip_presentation:
 		return
@@ -345,7 +345,7 @@ func _reveal_segment_score_after_seal(segment_index: int) -> void:
 	EventBus.segment_reveal_started.emit(0)
 
 	if contribution > 0:
-		AudioManager.play_sfx(UISounds.COURSE_RESULT)
+		AudioManager.play_sfx(UISounds.STATION_RESULT)
 		map._emit_segment_turn_results_changed(0)
 		EventBus.segment_score_revealed.emit(0, contribution)
 		await _wait_for_segment_score_count_finished(0)

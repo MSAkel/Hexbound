@@ -12,5 +12,5 @@ ingredient_tags = Array[StringName]([&"fruit"])
 id = "olive"
 name = "Olive"
 icon = ExtResource("1_y3d8o")
-description = "+10 Flavour then +10 each time this card triggers this hour"
+description = "+10 {flavour} then +10 each time this card {triggers} this hour"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

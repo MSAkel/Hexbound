@@ -16,7 +16,7 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 		"%d-%d" % [MIN_MULT, MAX_MULT],
 		ICON_MULT,
 		get_chip_panel_color(),
-		"Random Mult"
+		CardKeywordGlossary.to_plain("Random {mult}")
 	)
 
 ## +1-20 Mult

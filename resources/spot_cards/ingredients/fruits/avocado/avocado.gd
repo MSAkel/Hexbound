@@ -1,5 +1,5 @@
 extends TileCard
-## +5 Flavour for every fire on this course so far this hour
+## +5 Flavour for every fire on this station so far this hour
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	# Includes this activation

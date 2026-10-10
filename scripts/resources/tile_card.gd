@@ -61,7 +61,7 @@ enum PlacementRestriction {
 	SEGMENT_LAST_TILE,
 }
 
-# Whether payout is delivered locally or passed to the next course.
+# Whether payout is delivered locally or passed to the next station.
 enum RelayMode {
 	NONE,
 	NEXT_SEGMENT,
@@ -88,9 +88,9 @@ enum QueryScope {
 	ADJACENT,
 	## Neighbors that fire after this spot.
 	FOLLOWING_ADJACENT,
-	## Following neighbors that also share this course.
+	## Following neighbors that also share this station.
 	FOLLOWING_SAME_SEGMENT,
-	## Occupied seats on this course.
+	## Occupied seats on this station.
 	SAME_SEGMENT,
 	## Every triggerable seated card on the map.
 	PLACED,
@@ -156,7 +156,7 @@ var hour_additive_mult_produced: float = 0.0
 @export var single_activation_per_turn: bool = false
 # When set, only matching spots accept this card during placement.
 @export var placement_restriction: PlacementRestriction = PlacementRestriction.NONE
-# Pass cards relay payout to the next course. Kitchenware and Ingredients may both set this.
+# Pass cards relay payout to the next station. Kitchenware and Ingredients may both set this.
 @export var relay_mode: RelayMode = RelayMode.NONE
 # Kitchenware ability role shown on the board chip when the card does not produce a pile.
 @export var support_role: SupportRole = SupportRole.NONE
@@ -259,17 +259,17 @@ func get_inspect_subtitle() -> String:
 func get_distinct_recipe_tag_label() -> String:
 	if type != TileCardType.INGREDIENT and type != TileCardType.MEAL:
 		return ""
-	var tag := FeastDisplay.format_ingredient_tags_label(ingredient_tags)
+	var tag := GameTerms.format_ingredient_tags_label(ingredient_tags)
 	if tag.is_empty():
 		return ""
-	var type_label := FeastDisplay.get_tile_card_type_label(self)
+	var type_label := GameTerms.get_tile_card_type_label(self)
 	if tag.to_lower() == type_label.to_lower():
 		return ""
 	return tag
 
 
 func get_card_type_display() -> String:
-	var type_label := FeastDisplay.get_tile_card_type_label(self)
+	var type_label := GameTerms.get_tile_card_type_label(self)
 	var tag := get_distinct_recipe_tag_label()
 	if tag.is_empty():
 		return type_label
@@ -277,7 +277,7 @@ func get_card_type_display() -> String:
 
 
 func _get_role_label() -> String:
-	return FeastDisplay.get_role_label(product, relay_mode, support_role)
+	return GameTerms.get_role_label(product, relay_mode, support_role)
 
 
 # Default chip: Ingredients show amount. Kitchenware shows their role icon in the same slot.
@@ -374,7 +374,7 @@ func _dual_amount_board_chip(flavour_amount: int, mult_amount: float) -> Diction
 	return chip
 
 
-## Course ×Mult chip. Uses an x prefix so it does not look like additive +Mult.
+## Station ×Mult chip. Uses an x prefix so it does not look like additive +Mult.
 func _multiplicative_mult_board_chip(amount: float, amount_icon: Texture2D = null) -> Dictionary:
 	var chip_icon: Texture2D = amount_icon if amount_icon != null else ICON_MULT
 	return _make_board_chip(
@@ -543,7 +543,7 @@ func _try_queue_tile_card_triggers(
 	return true
 
 
-## Another card on this course broke. Salvage Core grows from this hook.
+## Another card on this station broke. Salvage Core grows from this hook.
 func on_other_segment_card_broke(_broken: TileCard, _tile: Hex) -> void:
 	pass
 
@@ -644,7 +644,7 @@ func multiply_multiplicative_mult(tile: Hex, factor: Variant, scaled: bool = tru
 	)
 
 
-# Credits another course's additive Mult. Float stays on this spot.
+# Credits another station's additive Mult. Float stays on this spot.
 func add_additive_mult_to_segment(tile: Hex, segment_index: int, base_amount: Variant) -> void:
 	if EventManager.are_relays_blocked():
 		failed_tile_card_text(tile)
@@ -663,7 +663,7 @@ func add_additive_mult_to_segment(tile: Hex, segment_index: int, base_amount: Va
 	)
 
 
-# Credits another course's Flavour. Float stays on this spot.
+# Credits another station's Flavour. Float stays on this spot.
 func add_flavour_to_segment(tile: Hex, segment_index: int, base_points: Variant) -> void:
 	if EventManager.are_relays_blocked():
 		failed_tile_card_text(tile)
@@ -1050,8 +1050,8 @@ func _coords_for_other_segments_matching_producer(tile: Hex, want_producer: bool
 	return coords
 
 
-## First or last placed card in a course relative to this spot's course.
-## offset 0 is this course, -1 the previous course, +1 the next course.
+## First or last placed card in a station relative to this spot's station.
+## offset 0 is this station, -1 the previous station, +1 the next station.
 func _get_first_or_last_tile_card_in_relative_segment(
 	tile: Hex,
 	segment_index_offset: int,

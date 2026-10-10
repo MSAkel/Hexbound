@@ -12,5 +12,5 @@ ingredient_tags = Array[StringName]([&"vegetable"])
 id = "onion"
 name = "Onions"
 icon = ExtResource("1_inhd7")
-description = "+10 Flavour per other course with no card"
+description = "+10 {flavour} per other {station} with no card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,46 +1,42 @@
-class_name FeastDisplay
+class_name GameTerms
 extends RefCounted
 
-## Player-facing Feast labels. Code enums stay unchanged.
+## Player-facing names for game terms. Code enums stay unchanged.
+## Rename a term here. CardKeywordGlossary reads these and adds inflected forms, colour and tooltips.
 
 const FLAVOUR := "Flavour"
 const MULT := "Mult"
 const RATING := "Rating"
 const INGREDIENT := "Ingredient"
-const CORE := "Core"
+const KITCHENWARE := "Kitchenware"
+const VEGETABLE := "Vegetable"
+const FRUIT := "Fruit"
+const GRAIN := "Grain"
+const PROTEIN := "Protein"
 const SEASONING := "Seasoning"
+const BEVERAGE := "Beverage"
 const GOLD := "Gold"
-const COURSE := "Course"
+const STATION := "Station"
 const SPOT := "Spot"
-const FIRE_ORDER := "Fire Order"
 const DAY := "Day"
 const HOUR := "Hour"
-const PASS := "Pass"
 const CONDIMENTS := "Condiments"
 const MEAL := "Meal"
 const DISH := "Dish"
-
-const PLACEHOLDER_ICON := preload("res://assets/icons/placeholder.png")
+const PASS := "Pass"
+const HYBRID := "Hybrid"
+const DOUBLE := "Double"
+const FOLLOWING := "Following"
+const SPOIL := "Spoil"
+const TRIGGER := "Trigger"
 
 
 static func day_label(day_number: int) -> String:
-	return "%s %d/9" % [DAY, day_number]
-
-
-static func hours_left_label(hours: int) -> String:
-	return str(hours)
+	return "%s %d/%d" % [DAY, day_number, ScoreProgression.RUN_LENGTH_ROUNDS]
 
 
 static func hour_label(hour_number: int) -> String:
 	return "%s %d" % [HOUR.to_upper(), hour_number]
-
-
-static func course_label(course_number: int) -> String:
-	return "%s %d" % [COURSE.to_upper(), course_number]
-
-
-static func courses_count_label(course_count: int) -> String:
-	return "%d %s" % [course_count, COURSE.to_upper() + "S"]
 
 
 static func get_tile_card_type_label(card: TileCard) -> String:
@@ -48,7 +44,7 @@ static func get_tile_card_type_label(card: TileCard) -> String:
 		return ""
 	match card.type:
 		TileCard.TileCardType.KITCHENWARE:
-			return "Kitchenware"
+			return KITCHENWARE
 		TileCard.TileCardType.INGREDIENT:
 			return INGREDIENT
 		TileCard.TileCardType.MEAL:
@@ -59,21 +55,21 @@ static func get_tile_card_type_label(card: TileCard) -> String:
 static func get_ingredient_kind_label(kind: StringName) -> String:
 	match kind:
 		TileCard.TAG_VEGETABLE:
-			return "Vegetable"
+			return VEGETABLE
 		TileCard.TAG_FRUIT:
-			return "Fruit"
+			return FRUIT
 		TileCard.TAG_GRAIN:
-			return "Grain"
+			return GRAIN
 		TileCard.TAG_PROTEIN:
-			return "Protein"
+			return PROTEIN
 		TileCard.TAG_SEASONING:
 			return SEASONING
 		TileCard.TAG_BEVERAGE:
-			return "Beverage"
+			return BEVERAGE
 		TileCard.TAG_KITCHENWARE:
-			return "Kitchenware"
+			return KITCHENWARE
 		TileCard.TAG_DISH:
-			return "Dish"
+			return DISH
 		_:
 			return ""
 
@@ -97,26 +93,35 @@ static func get_role_label(
 ) -> String:
 	var parts: Array[String] = []
 	if relay_mode == TileCard.RelayMode.NEXT_SEGMENT:
-		parts.append("Pass")
-	if support_role != TileCard.SupportRole.NONE:
-		var role_key: Variant = TileCard.SupportRole.find_key(support_role)
-		if role_key != null:
-			parts.append(String(role_key).capitalize())
+		parts.append(PASS)
+	var support_label := _get_support_role_label(support_role)
+	if not support_label.is_empty():
+		parts.append(support_label)
 	var product_label := _get_product_role_label(product)
 	if not product_label.is_empty():
 		parts.append(product_label)
 	return " · ".join(parts)
 
 
+static func _get_support_role_label(support_role: TileCard.SupportRole) -> String:
+	match support_role:
+		TileCard.SupportRole.DOUBLE:
+			return DOUBLE
+		TileCard.SupportRole.FIRE:
+			return TRIGGER
+		_:
+			return ""
+
+
 static func _get_product_role_label(product: TileCard.Product) -> String:
 	match product:
 		TileCard.Product.FLAVOUR:
-			return "Flavour"
+			return FLAVOUR
 		TileCard.Product.MULTIPLIER:
-			return "Mult"
+			return MULT
 		TileCard.Product.GOLD:
-			return "Gold"
+			return GOLD
 		TileCard.Product.HYBRID:
-			return "Hybrid"
+			return HYBRID
 		_:
 			return ""

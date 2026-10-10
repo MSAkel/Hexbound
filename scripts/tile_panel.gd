@@ -105,7 +105,7 @@ func _refresh_spot_card() -> void:
 		_set_condiment_fuse_line(card)
 	else:
 		card_icon.show_empty(EMPTY_SPOT_ICON)
-		card_name_label.text = "Empty %s" % FeastDisplay.SPOT
+		card_name_label.text = "Empty %s" % GameTerms.SPOT
 		_hide_rarity_badge()
 		card_subtitle.text = ""
 		card_subtitle.hide()
@@ -195,7 +195,7 @@ func _set_bonus_line(card: TileCard) -> void:
 	if is_zero_approx(bonus):
 		card_bonus_line.hide()
 		return
-	var stat_label := FeastDisplay.MULT if card.product == TileCard.Product.MULTIPLIER else FeastDisplay.FLAVOUR
+	var stat_label := GameTerms.MULT if card.product == TileCard.Product.MULTIPLIER else GameTerms.FLAVOUR
 	var amount_text: String
 	if card.product == TileCard.Product.MULTIPLIER:
 		amount_text = CountingNumber.format_additive_mult(bonus)

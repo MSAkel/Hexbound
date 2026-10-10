@@ -1,6 +1,6 @@
 extends MealCard
 
-## Gains +x0.1 course Mult for every complete set of 15 fires this Hour.
+## Gains +x0.1 station Mult for every complete set of 15 fires this Hour.
 ## MealCard owns the Protein + Seasoning + Kitchenware prefix recipe check.
 
 const TRIGGERS_PER_XMULT_STEP := 15
@@ -34,7 +34,7 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 		"%d/%d" % [progress, TRIGGERS_PER_XMULT_STEP],
 		ICON_FIRE,
 		get_chip_panel_color(),
-		"Hour fires until x%.1f Mult" % (BASE_XMULT + XMULT_PER_STEP)
+		CardKeywordGlossary.to_plain("Hour {triggers} until x%.1f {mult}") % (BASE_XMULT + XMULT_PER_STEP)
 	)
 
 

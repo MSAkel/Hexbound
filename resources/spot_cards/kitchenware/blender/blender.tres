@@ -11,5 +11,5 @@ support_role = 2
 id = "blender"
 name = "Blender"
 icon = ExtResource("1_iysqn")
-description = "Fire the first Ingredient on the next course again"
+description = "{trigger} the first Ingredient on the next {station} again"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

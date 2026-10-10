@@ -1,7 +1,7 @@
 class_name HexMapLayout
 extends RefCounted
 
-# Shared kitchen board helpers. Ring distances, fire order, and course grouping.
+# Shared kitchen board helpers. Ring distances, fire order, and station grouping.
 # Seated-card lookups live on HexBoardQuery. Hour piles live in the scoring region below.
 
 # Shared kitchen board. Five visual rows, 32 hexes, left-to-right fire order.
@@ -29,7 +29,7 @@ var _trigger_order_cache: Array[Vector2i] = []
 var _trigger_order_cache_valid: bool = false
 # Vector2i -> segment index, filled whenever segments are rebuilt.
 var _segment_index_by_coords: Dictionary = {}
-# Visual rows used by fire order, courses, and gamepad navigation. Rebuilt with segments.
+# Visual rows used by fire order, stations, and gamepad navigation. Rebuilt with segments.
 var _spatial_rows_cache: Array = []
 # Vector2i -> opposite board cell around the map center. Stable until regenerate.
 var _opposite_by_coords: Dictionary = {}
@@ -131,7 +131,7 @@ func invalidate_caches() -> void:
 	_invalidate_segments_cache()
 
 
-## Course (row) index for coords, or -1 when the tile is not on the board.
+## Station (row) index for coords, or -1 when the tile is not on the board.
 func get_segment_index(coords: Vector2i) -> int:
 	# Ensures the coords lookup is populated. Segment grouping is stable until reset().
 	build_segments()
@@ -186,7 +186,7 @@ func get_segment_size(segment_index: int) -> int:
 	return segments[segment_index].size()
 
 
-## Course groups. Each course is an ordered list of coordinates.
+## Station groups. Each station is an ordered list of coordinates.
 func build_segments() -> Array[Array]:
 	if _segments_cache_valid:
 		return _segments_cache
@@ -449,7 +449,7 @@ func get_spatial_rows() -> Array:
 	return _spatial_rows_cache
 
 
-## Courses are the visual rows. Fire order already walks each row left to right.
+## Stations are the visual rows. Fire order already walks each row left to right.
 func _build_segments_uncached() -> Array[Array]:
 	_spatial_rows_cache = _compute_spatial_rows()
 	var segments: Array[Array] = []

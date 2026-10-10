@@ -8,7 +8,7 @@ const FLAVOUR_COLOR := Color.AQUA
 const MULT_COLOR := Color.PLUM
 const GOLD_COLOR := Color(1.0, 0.85, 0.2, 1.0)
 
-## Slot that owns this call. Equals the linked course index.
+## Slot that owns this call. Equals the linked station index.
 var slot: int = -1
 ## Card seated in the slot. Differs from effect when the slot holds a copy chef.
 var owner: ChefCard = null
@@ -20,14 +20,14 @@ var map: HexTileMap = null
 var hour_state: Dictionary = {}
 
 
-func is_on_course(tile: Hex) -> bool:
+func is_on_station(tile: Hex) -> bool:
 	if tile == null or map == null:
 		return false
 	return map.get_segment_index(tile.coordinates) == slot
 
 
-## Every card seated on this course in fire order, including ones that cannot fire.
-func course_cards(filter_type: Variant = null) -> Array[TileCard]:
+## Every card seated on this station in fire order, including ones that cannot fire.
+func station_cards(filter_type: Variant = null) -> Array[TileCard]:
 	if map == null or map.query == null:
 		return []
 	return map.query.cards_from_hexes(
@@ -59,7 +59,7 @@ func add_flavour(amount: int) -> void:
 		return
 	map.add_turn_flavour_for_segment(slot, amount)
 	_float("+%d" % amount, FLAVOUR_COLOR, TileCard.ICON_FLAVOUR)
-	_flash_course()
+	_flash_station()
 	pulse()
 
 
@@ -68,7 +68,7 @@ func add_mult(amount: float) -> void:
 		return
 	map.add_turn_additive_mult_for_segment(slot, amount)
 	_float(CountingNumber.format_additive_mult(amount), MULT_COLOR, TileCard.ICON_MULT)
-	_flash_course()
+	_flash_station()
 	pulse()
 
 
@@ -102,8 +102,8 @@ func pulse(target: Hex = null) -> void:
 	EventBus.chef_effect_triggered.emit(slot)
 
 
-## Brief wash over the linked row so the payout reads as belonging to that course.
-func _flash_course() -> void:
+## Brief wash over the linked row so the payout reads as belonging to that station.
+func _flash_station() -> void:
 	if map != null and not GameManager.skip_presentation:
 		map.flash_segment_highlight(slot)
 

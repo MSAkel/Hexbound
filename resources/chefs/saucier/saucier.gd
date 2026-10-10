@@ -1,17 +1,17 @@
 extends ChefCard
 
-## Doubled Ingredients on this course gain one more Double, once each per Hour.
-## Checked when the course starts and whenever an Ingredient here gains a Double.
+## Doubled Ingredients on this station gain one more Double, once each per Hour.
+## Checked when the station starts and whenever an Ingredient here gains a Double.
 
 
-func on_course_started(ctx: ChefContext) -> void:
-	for card: TileCard in ctx.course_cards(TileCard.TileCardType.INGREDIENT):
+func on_station_started(ctx: ChefContext) -> void:
+	for card: TileCard in ctx.station_cards(TileCard.TileCardType.INGREDIENT):
 		if card.is_empowered:
 			_add_double(ctx, ctx.map.get_hex_for_tile_card(card), card)
 
 
 func on_card_doubled(ctx: ChefContext, tile: Hex, card: TileCard) -> void:
-	if not ctx.is_on_course(tile) or card.type != TileCard.TileCardType.INGREDIENT:
+	if not ctx.is_on_station(tile) or card.type != TileCard.TileCardType.INGREDIENT:
 		return
 	_add_double(ctx, tile, card)
 

@@ -355,7 +355,7 @@ func _refresh() -> void:
 
 
 func _icon_for(card: ChefCard) -> Texture2D:
-	return card.icon if card.icon != null else FeastDisplay.PLACEHOLDER_ICON
+	return card.icon if card.icon != null else FeastStatIcons.PLACEHOLDER
 
 
 func _update_pivot() -> void:

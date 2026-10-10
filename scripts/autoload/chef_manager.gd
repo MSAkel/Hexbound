@@ -7,14 +7,14 @@ const _ChefCatalogScript := preload("res://scripts/helpers/chef_catalog.gd")
 
 ## Run-long chef column. Owns the seated chefs and fans engine events out to their hooks.
 
-## One slot per course on the shared board.
+## One slot per station on the shared board.
 const SLOT_COUNT := 5
 
-## Seated chefs by slot. Null means empty. Slot index equals the linked course index.
+## Seated chefs by slot. Null means empty. Slot index equals the linked station index.
 var slots: Array[ChefCard] = []
 ## Per-slot scratch space for the current Hour.
 var _hour_state: Array[Dictionary] = []
-## Seasoning fires so far this Hour, across every course.
+## Seasoning fires so far this Hour, across every station.
 var _seasoning_fires_this_hour := 0
 ## Live board. HexTileMap registers itself, so headless boards work without the main scene.
 var _board: HexTileMap = null
@@ -169,13 +169,13 @@ func _contexts(map: HexTileMap = null) -> Array[ChefContext]:
 
 #region --- Engine hooks ---
 
-## Fire order reached a new course. Returns true when its chef did something visible.
-func course_started(map: HexTileMap, segment_index: int) -> bool:
+## Fire order reached a new station. Returns true when its chef did something visible.
+func station_started(map: HexTileMap, segment_index: int) -> bool:
 	var ctx := _context_for(segment_index, map)
 	if ctx == null:
 		return false
 	ctx.hour_state.erase("_acted")
-	ctx.effect.on_course_started(ctx)
+	ctx.effect.on_station_started(ctx)
 	return bool(ctx.hour_state.get("_acted", false))
 
 

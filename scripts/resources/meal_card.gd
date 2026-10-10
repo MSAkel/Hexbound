@@ -1,9 +1,9 @@
 class_name MealCard
 extends TileCard
 
-## Seated plate. Reads the N spots immediately before it in fire order, never the whole course.
+## Seated plate. Reads the N spots immediately before it in fire order, never the whole station.
 ## Those seats are a bag of tags. Empty or wrong cards break the dish. No skipping gaps.
-## On a match, this card plates a local meal pile. Some dishes also write course ×Mult.
+## On a match, this card plates a local meal pile. Some dishes also write station ×Mult.
 
 ## Dish recipe bag. Prefix length is the sum of these counts.
 @export var recipe_vegetable_count: int = 0
@@ -205,12 +205,12 @@ func get_inspect_recipe_text(tile: Hex = null) -> String:
 
 func _recipe_bag_text() -> String:
 	var parts: PackedStringArray = []
-	_append_recipe_part(parts, recipe_vegetable_count, "Vegetable")
-	_append_recipe_part(parts, recipe_fruit_count, "Fruit")
-	_append_recipe_part(parts, recipe_grain_count, "Grain")
-	_append_recipe_part(parts, recipe_protein_count, "Protein")
-	_append_recipe_part(parts, recipe_seasoning_count, FeastDisplay.SEASONING)
-	_append_recipe_part(parts, recipe_kitchenware_count, "Kitchenware")
+	_append_recipe_part(parts, recipe_vegetable_count, GameTerms.VEGETABLE)
+	_append_recipe_part(parts, recipe_fruit_count, GameTerms.FRUIT)
+	_append_recipe_part(parts, recipe_grain_count, GameTerms.GRAIN)
+	_append_recipe_part(parts, recipe_protein_count, GameTerms.PROTEIN)
+	_append_recipe_part(parts, recipe_seasoning_count, GameTerms.SEASONING)
+	_append_recipe_part(parts, recipe_kitchenware_count, GameTerms.KITCHENWARE)
 	return ", ".join(parts)
 
 
@@ -221,7 +221,7 @@ func _append_recipe_part(parts: PackedStringArray, count: int, tag: String) -> v
 		parts.append("1 %s" % tag)
 		return
 	var plural := tag
-	if tag != "Kitchenware":
+	if tag != GameTerms.KITCHENWARE:
 		plural = "%ss" % tag
 	parts.append("%d %s" % [count, plural])
 

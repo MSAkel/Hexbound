@@ -1,11 +1,11 @@
 extends ChefCard
 
-## Each Kitchenware on this course sends one fire to a Kitchenware on another course per Hour.
-## Finished courses stay closed, so only courses still waiting to fire can be reached.
+## Each Kitchenware on this station sends one fire to a Kitchenware on another station per Hour.
+## Finished stations stay closed, so only stations still waiting to fire can be reached.
 
 
 func on_card_activated(ctx: ChefContext, tile: Hex, card: TileCard) -> void:
-	if ctx.is_chef_caused_activation() or not ctx.is_on_course(tile):
+	if ctx.is_chef_caused_activation() or not ctx.is_on_station(tile):
 		return
 	if card.type != TileCard.TileCardType.KITCHENWARE:
 		return

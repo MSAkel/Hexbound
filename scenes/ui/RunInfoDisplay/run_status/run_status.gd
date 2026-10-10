@@ -11,7 +11,7 @@ extends PanelContainer
 const PUNCH_SCALE := 1.12
 const PUNCH_DURATION := 0.18
 
-const TOOLTIP_DAY := "Current day. Nine days complete a run."
+const TOOLTIP_DAY := "Current day. %d days complete a run." % ScoreProgression.RUN_LENGTH_ROUNDS
 const TOOLTIP_HOURS := "Hours left before kitchen close. Reach the day target with hours to spare."
 const TOOLTIP_GOLD := "Gold. Spend at the merchant on cards and condiments."
 
@@ -25,7 +25,7 @@ func _ready() -> void:
 	_gold_counter = CountingNumber.for_label(self, gold_amount_label)
 	_round_counter = CountingNumber.new(
 		self,
-		func(text: String) -> void: round_label.text = FeastDisplay.day_label(int(text))
+		func(text: String) -> void: round_label.text = GameTerms.day_label(int(text))
 	)
 	_turn_counter = CountingNumber.for_label(self, turn_counter_label)
 

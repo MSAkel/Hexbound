@@ -1,5 +1,5 @@
 extends TileCard
-## +2 Mult per other course that contains a Ingredient.
+## +2 Mult per other station that contains a Ingredient.
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	_pay_effect_amount(tile, true)

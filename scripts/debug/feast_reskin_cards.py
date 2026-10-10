@@ -57,8 +57,8 @@ DESCRIPTION_REPLACEMENTS: list[tuple[str, str]] = [
     ("this round", "this day"),
     ("This round", "This day"),
     ("the round", "the day"),
-    ("segment", "course"),
-    ("Segment", "Course"),
+    ("segment", "station"),
+    ("Segment", "Station"),
     ("trigger", "fire"),
     ("Trigger", "Fire"),
     ("trigger order", "fire order"),
@@ -71,10 +71,10 @@ DESCRIPTION_REPLACEMENTS: list[tuple[str, str]] = [
     ("Station", "Spot"),
 ]
 
-# Undo an old Following -> Next pass. Keep "next course" and "next fire" relay timing copy.
+# Undo an old Following -> Next pass. Keep "next station" and "next fire" relay timing copy.
 FOLLOWING_RESTORE: list[tuple[str, str]] = [
-    ("each later course", "each following course"),
-    ("on later courses", "on following courses"),
+    ("each later station", "each following station"),
+    ("on later stations", "on following stations"),
     ("Adjacent Next", "Adjacent Following"),
     ("adjacent Next", "adjacent Following"),
     ("every Next Ingredient", "every Following Ingredient"),
@@ -127,7 +127,7 @@ POTIONS: dict[str, dict[str, str]] = {
     },
     "forward_gift": {
         "display_name": "Runner's Ramekin",
-        "description": "For 2 hours, Pass this card's product to the next course",
+        "description": "For 2 hours, Pass this card's product to the next station",
         "icon": "res://assets/icons/condiments/ranch.png",
     },
     "mint_sip": {
@@ -137,12 +137,12 @@ POTIONS: dict[str, dict[str, str]] = {
     },
     "opening_round": {
         "display_name": "Opening Splash",
-        "description": "First Ingredient in every course is Doubled this hour",
+        "description": "First Ingredient in every station is Doubled this hour",
         "icon": "res://assets/icons/condiments/secret_sauce_11.png",
     },
     "closing_round": {
         "display_name": "Closing Glaze",
-        "description": "Last Ingredient in every course is Doubled this hour",
+        "description": "Last Ingredient in every station is Doubled this hour",
         "icon": "res://assets/icons/condiments/secret_sauce_13.png",
     },
     "gold_drop": {

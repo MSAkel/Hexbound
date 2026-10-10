@@ -1,5 +1,5 @@
 extends TileCard
-## +6 Mult if this course has 7 spots or fewer.
+## +6 Mult if this station has 7 spots or fewer.
 
 const MAX_SEGMENT_SIZE := 7
 

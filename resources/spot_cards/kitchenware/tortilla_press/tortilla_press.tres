@@ -12,5 +12,5 @@ support_role = 2
 id = "tortilla_press"
 name = "Tortilla Press"
 icon = ExtResource("1_l4djl")
-description = "Fires the first card of each following course. Must be placed on a course's first spot."
+description = "{triggers} the first card of each {following} {station}. Must be placed on a {station}'s first spot."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

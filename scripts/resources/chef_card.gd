@@ -1,9 +1,9 @@
 class_name ChefCard
 extends Card
 
-## Run-long card seated in the chef column. Each slot is linked to one course.
+## Run-long card seated in the chef column. Each slot is linked to one station.
 ## Chefs never sit on the pass. They react through the hooks below, which ChefManager calls.
-## Course-bound chefs read ctx.slot as their course. Global chefs ignore it.
+## Station-bound chefs read ctx.slot as their station. Global chefs ignore it.
 
 const BASE_PRICE_BY_RARITY := {
 	Rarity.COMMON: 6,
@@ -46,8 +46,8 @@ func resolve_effect(_manager: Node, _slot: int, _depth: int) -> ChefCard:
 	return self
 
 
-## Before the first spot of this chef's course fires.
-func on_course_started(_ctx: ChefContext) -> void:
+## Before the first spot of this chef's station fires.
+func on_station_started(_ctx: ChefContext) -> void:
 	pass
 
 

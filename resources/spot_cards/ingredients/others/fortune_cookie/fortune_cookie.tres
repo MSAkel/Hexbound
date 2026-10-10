@@ -12,5 +12,5 @@ trigger_sound = ExtResource("3_vqet7")
 id = "fortune_cookie"
 name = "Fortune Cookie"
 icon = ExtResource("1_3m2jv")
-description = "3% stacking chance for +300 Flavour or 8 Gold. Resets on success"
+description = "3% stacking chance for +300 {flavour} or 8 Gold. Resets on success"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

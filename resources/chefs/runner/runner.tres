@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "runner"
 name = "Runner"
-description = "After a Kitchenware fires on this Course, fire a Kitchenware on another Course (Once per Kitchenware)"
+description = "After a Kitchenware {triggers} on this {station}, {trigger} a Kitchenware on another {station} (Once per Kitchenware)"
 rarity = 1

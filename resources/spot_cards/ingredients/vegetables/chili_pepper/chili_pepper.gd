@@ -1,6 +1,6 @@
 extends TileCard
 
-## Each Double stack on this course adds +1 Mult for the rest of the current Day.
+## Each Double stack on this station adds +1 Mult for the rest of the current Day.
 
 var day_mult_bonus: float = 0.0
 var bonus_day: int = -1

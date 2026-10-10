@@ -14,5 +14,5 @@ product = 1
 id = "potato"
 name = "Potato"
 icon = ExtResource("1_3okqf")
-description = "+3 Flavour per empty spot in this course, up to 30"
+description = "+3 {flavour} per empty spot in this {station}, up to 30"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -16,7 +16,7 @@ func display_selection(specialty: SpecialtyDefinition) -> void:
 	specialty_name_label.text = specialty.display_name.to_upper()
 	specialty_icon.texture = specialty.icon
 	passive_title_label.text = "PASSIVE"
-	passive_description_label.text = specialty.passive_description
+	passive_description_label.text = CardKeywordGlossary.to_plain(specialty.passive_description)
 	_refresh_xp_display(specialty.id)
 
 

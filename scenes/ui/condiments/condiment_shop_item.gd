@@ -128,7 +128,7 @@ func _refresh() -> void:
 func _tooltip_text() -> String:
 	if condiment == null:
 		return ""
-	return "%s\n%s" % [condiment.display_name, condiment.description]
+	return condiment.get_tooltip_text()
 
 
 func _on_gui_input(event: InputEvent) -> void:

@@ -1,6 +1,6 @@
 extends TileCard
 
-## Applies x2 course Mult when the previous occupied card in fire order is a Seasoning.
+## Applies x2 station Mult when the previous occupied card in fire order is a Seasoning.
 
 const XMULT_FACTOR := 2.0
 

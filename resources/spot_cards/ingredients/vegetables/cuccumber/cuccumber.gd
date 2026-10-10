@@ -1,5 +1,5 @@
 extends TileCard
-## +15 Flavour. When another card in this course spoils, permanently gain +10 Flavour.
+## +15 Flavour. When another card in this station spoils, permanently gain +10 Flavour.
 
 const BREAK_GROWTH := 10
 

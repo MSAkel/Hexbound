@@ -1,7 +1,7 @@
 extends MealCard
 
 ## If the 2 previous spots are seasonings, x3 those seasonings' Mult.
-## That x is local to their additive Mult. It is not course-wide multiplicative_mult.
+## That x is local to their additive Mult. It is not station-wide multiplicative_mult.
 
 const RECIPE_XMULT := 3.0
 

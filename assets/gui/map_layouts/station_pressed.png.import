@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dij3yd86yjful"
-path="res://.godot/imported/course_pressed.png-6a1a326a7566551b96647840b08699a2.ctex"
+path="res://.godot/imported/station_pressed.png-673f66fbe873a8909125418c3861653c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gui/map_layouts/course_pressed.png"
-dest_files=["res://.godot/imported/course_pressed.png-6a1a326a7566551b96647840b08699a2.ctex"]
+source_file="res://assets/gui/map_layouts/station_pressed.png"
+dest_files=["res://.godot/imported/station_pressed.png-673f66fbe873a8909125418c3861653c.ctex"]
 
 [params]
 

@@ -1,6 +1,6 @@
 extends TileCard
 
-## Fires the first card of each following course. Must sit on a first course spot.
+## Fires the first card of each following station. Must sit on a first station spot.
 func _on_activate_tile_card(tile: Hex) -> void:
 	_try_queue_tile_card_triggers(tile, _cards_on_later_segment_ends(tile, true))
 

@@ -162,7 +162,7 @@ func _on_mouse_entered() -> void:
 	AudioManager.play_condiment_hover()
 	EventBus.toggle_tooltip.emit(
 		true,
-		"%s\n%s" % [condiment.display_name, condiment.description],
+		condiment.get_tooltip_text(),
 		get_global_rect()
 	)
 

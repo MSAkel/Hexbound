@@ -1,6 +1,6 @@
 extends TileCard
 
-## +10 Flavour per Seasoning on this course.
+## +10 Flavour per Seasoning on this station.
 func _effect_amount(tile: Hex) -> float:
 	if tile == null:
 		return _get_production_amount()

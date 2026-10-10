@@ -12,5 +12,5 @@ starting_hand_eligible = true
 id = "tomato"
 name = "Tomato"
 icon = ExtResource("1_u5wii")
-description = "+20 Flavour"
+description = "+20 {flavour}"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

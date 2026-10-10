@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "purist"
 name = "Purist"
-description = "If there is no Kitchenware on this Course, gain +100 Flavour"
+description = "If there is no Kitchenware on this {station}, gain +100 {flavour}"
 rarity = 0

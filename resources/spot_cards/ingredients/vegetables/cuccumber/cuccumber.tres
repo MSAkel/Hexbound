@@ -12,5 +12,5 @@ ingredient_tags = Array[StringName]([&"vegetable"])
 id = "cuccumber"
 name = "Cuccumber"
 icon = ExtResource("1_6r37u")
-description = "+15 Flavour. When another card in this course spoils, permanently gain +10 Flavour"
+description = "+15 {flavour}. When another card in this {station} {spoils}, permanently gain +10 {flavour}"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

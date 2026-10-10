@@ -75,7 +75,7 @@ var _flashed_segment_coords: Array[Vector2i] = []
 var _flash_segment_generation: int = 0
 ## Occupied tiles lit while aiming a tile-target condiment.
 var _condiment_target_coords: Array[Vector2i] = []
-## Screen-space centers of the chef hexes, one per course. See set_chef_screen_centers().
+## Screen-space centers of the chef hexes, one per station. See set_chef_screen_centers().
 var _chef_screen_centers: Array[Vector2] = []
 ## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
 var _round_turn_snapshots: Array = []
@@ -796,7 +796,7 @@ func get_hexes_in_trigger_order() -> Array[Hex]:
 	return query.hexes_in_trigger_order()
 
 
-## Course (row) index for a tile, or -1 when the tile is not on the board.
+## Station (row) index for a tile, or -1 when the tile is not on the board.
 func get_segment_index(coords: Vector2i) -> int:
 	return _layout.get_segment_index(coords)
 
@@ -1019,7 +1019,7 @@ func _emit_segment_turn_results_changed(segment_index: int) -> void:
 	var additive_mult := _layout.get_hour_additive_mult()
 	var gold := _layout.get_hour_gold()
 	var contribution := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
-	# Keep the segment_index so course-row hover still knows which course just changed.
+	# Keep the segment_index so station-row hover still knows which station just changed.
 	EventBus.segment_turn_results_changed.emit(
 		segment_index,
 		flavour,
@@ -1221,7 +1221,7 @@ func get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
 	return query.immediately_previous_hexes(tile, count)
 
 
-## Occupied cards on this course that fire after tile, in fire order.
+## Occupied cards on this station that fire after tile, in fire order.
 func get_later_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	if query == null:
 		return []
@@ -1341,7 +1341,7 @@ func set_chef_screen_centers(centers: Array[Vector2]) -> void:
 	_chef_screen_centers = centers
 
 
-## Map-local center of the chef hex linked to a course. The column is fixed on screen,
+## Map-local center of the chef hex linked to a station. The column is fixed on screen,
 ## so its position is converted back through the camera. Headless boards have no column
 ## and fall back to the row's first spot.
 func get_chef_anchor_local(segment_index: int) -> Vector2:

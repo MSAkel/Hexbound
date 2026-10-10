@@ -28,7 +28,7 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 		"%d/%d" % [progress, FIRES_PER_GOLD],
 		ICON_FIRE,
 		get_chip_panel_color(),
-		"Fires until +%d Gold" % GOLD_PER_PAYOUT
+		CardKeywordGlossary.to_plain("{triggers} until +%d Gold") % GOLD_PER_PAYOUT
 	)
 	chip["extra_icon"] = ICON_GOLD
 	return chip

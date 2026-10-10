@@ -49,7 +49,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _configure_tabs() -> void:
 	var titles := PackedStringArray([
 		"Cards",
-		FeastDisplay.CONDIMENTS,
+		GameTerms.CONDIMENTS,
 		"Specialties",
 		"Events",
 	])
@@ -130,8 +130,7 @@ func _create_condiment_entry(condiment: Condiment) -> PanelContainer:
 
 
 func _show_condiment_tooltip(panel: Control, condiment: Condiment) -> void:
-	var tip := "%s\n%s" % [condiment.display_name, condiment.description]
-	EventBus.toggle_tooltip.emit(true, tip, panel.get_global_rect())
+	EventBus.toggle_tooltip.emit(true, condiment.get_tooltip_text(), panel.get_global_rect())
 
 
 func _show_specialties() -> void:
@@ -171,13 +170,15 @@ func _create_specialty_entry(specialty: SpecialtyDefinition) -> PanelContainer:
 	details.add_child(_create_label(specialty.display_name.to_upper(), 27, TEXT_PRIMARY))
 	details.add_child(_create_separator())
 	details.add_child(_create_label("PASSIVE", 14, ACCENT))
-	var passive_label := _create_label(specialty.passive_description, 20, TEXT_PRIMARY)
+	var passive_label := _create_label(
+		CardKeywordGlossary.to_plain(specialty.passive_description), 20, TEXT_PRIMARY
+	)
 	passive_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	passive_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	details.add_child(passive_label)
 
-	var course_text := "%d courses" % HexMapLayout.BOARD_ROW_LENGTHS.size()
-	details.add_child(_create_label(course_text.to_upper(), 14, ACCENT))
+	var station_text := CardKeywordGlossary.to_plain("%d {stations}") % HexMapLayout.BOARD_ROW_LENGTHS.size()
+	details.add_child(_create_label(station_text.to_upper(), 14, ACCENT))
 	return panel
 
 

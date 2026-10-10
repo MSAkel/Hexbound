@@ -15,5 +15,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "steak_dinner"
 name = "Steak Dinner"
 icon = ExtResource("1_x6el4")
-description = "+60 Flavour. Doubled if the Following neighbouring card is a Beverage"
+description = "+60 {flavour}. {doubled} if the {following} neighbouring card is a Beverage"
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

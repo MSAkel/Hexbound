@@ -50,7 +50,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.8
 
-[node name="CourseFlavour" type="Label" parent="HBoxContainer/FlavourContainer" unique_id=1004428651]
+[node name="StationFlavour" type="Label" parent="HBoxContainer/FlavourContainer" unique_id=1004428651]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.0549, 0.3569, 0.3686, 1)
@@ -76,7 +76,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.7
 
-[node name="CourseMult" type="Label" parent="HBoxContainer/MultContainer" unique_id=1993148651]
+[node name="StationMult" type="Label" parent="HBoxContainer/MultContainer" unique_id=1993148651]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.64, 0.35, 0.11, 1)
@@ -95,7 +95,7 @@ size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.7
 theme_override_styles/panel = SubResource("RatingPanel")
 
-[node name="CourseRating" type="Label" parent="HBoxContainer/RatingContainer" unique_id=577569526]
+[node name="StationRating" type="Label" parent="HBoxContainer/RatingContainer" unique_id=577569526]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)

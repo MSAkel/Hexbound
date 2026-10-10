@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "ward"
 display_name = "Cloche Dome"
-description = "Ignore next spoil"
+description = "Ignore next {spoil}"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.32, 0.82, 0.48, 1)
 base_price = 5

@@ -11,5 +11,5 @@ ingredient_tags = Array[StringName]([&"seasoning"])
 id = "salt"
 name = "Salt"
 icon = ExtResource("1_boeif")
-description = "+2 Mult"
+description = "+2 {mult}"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

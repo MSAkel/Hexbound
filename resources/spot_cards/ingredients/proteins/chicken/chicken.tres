@@ -11,5 +11,5 @@ ingredient_tags = Array[StringName]([&"protein"])
 id = "chicken"
 name = "Chicken"
 icon = ExtResource("1_omyth")
-description = "+24 Flavour if first Ingredient in its course. Otherwise +8"
+description = "+24 {flavour} if first Ingredient in its {station}. Otherwise +8"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

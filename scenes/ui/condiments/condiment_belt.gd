@@ -245,7 +245,7 @@ func _announce_controller_slot(slot: CondimentSlot) -> void:
 		AudioManager.play_condiment_hover()
 		EventBus.toggle_tooltip.emit(
 			true,
-			"%s\n%s" % [slot.condiment.display_name, slot.condiment.description],
+			slot.condiment.get_tooltip_text(),
 			slot.get_global_rect()
 		)
 		return

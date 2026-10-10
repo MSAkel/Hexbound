@@ -25,6 +25,7 @@ const DOUBLE_OUTLINE_SIZE := 7
 const DOUBLE_FONT_SCALE := 1.18
 const CARD_OUTLINE_SIZE := 4
 const SCORE_OUTLINE_SIZE := 5
+const DOUBLE_TEXT_COLOR := Color("#E26110")
 const DOUBLE_GLOW_COLOR := Color(0.42, 0.22, 0.06, 0.62)
 const DEFAULT_GLOW_COLOR := Color(0.10, 0.14, 0.20, 0.48)
 const GLOW_SHADER := preload("res://scenes/animations/floating_text_glow.gdshader")
@@ -60,9 +61,9 @@ func set_text(
 	label.text = text
 	# Scene preview uses 1.2 scale. Card floats stay at 1 so size matches CARD_FONT_SIZE.
 	label.scale = Vector2.ONE
-	# Normal card floats stay white. Doubled payouts use the Double keyword color.
+	# Normal card floats stay white. Doubled payouts use their own orange.
 	# Product icons still distinguish Flavour, Gold, and Mult.
-	var label_color := CardKeywordGlossary.COLOR_DOUBLE if _doubled else Color.WHITE
+	var label_color := DOUBLE_TEXT_COLOR if _doubled else Color.WHITE
 	var font_scale := DOUBLE_FONT_SCALE if _doubled else 1.0
 	_apply_label_style(label_color, ScoreReadoutStyle.parse_amount(text), true, font_scale)
 	_target_icon = target_icon

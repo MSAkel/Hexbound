@@ -11,5 +11,5 @@ product = 1
 id = "tipping_box"
 name = "Tipping Box"
 icon = ExtResource("1_3fqxb")
-description = "+2 Flavour per Gold you hold"
+description = "+2 {flavour} per Gold you hold"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

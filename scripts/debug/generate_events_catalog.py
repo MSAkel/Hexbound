@@ -21,7 +21,7 @@ HEADERS = [
 
 # Feast-facing notes for enum names that still use legacy identifiers in code.
 CODE_NOTES = {
-    "FADING_SECTOR": "Enum name is legacy. Player name is Fading Course.",
+    "FADING_SECTOR": "Enum name is legacy. Player name is Fading Station.",
     "SEALED_HEXES": "Enum name is legacy. Player name is Sealed Spots.",
 }
 

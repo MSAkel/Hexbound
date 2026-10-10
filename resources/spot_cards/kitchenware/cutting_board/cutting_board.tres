@@ -10,5 +10,5 @@ type = 1
 id = "cutting_board"
 name = "Cutting Board"
 icon = ExtResource("1_la1bi")
-description = "Adds a random common card to hand. Spoils after 3 fires"
+description = "Adds a random common card to hand. {spoils} after 3 {triggers}"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

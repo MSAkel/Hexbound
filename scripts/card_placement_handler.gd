@@ -364,7 +364,7 @@ func _update_placed_card_tile_panel(map_coords: Vector2i, mouse_over_card: bool)
 
 func _placement_failure_message(hex: Hex) -> String:
 	if hex.is_placement_blocked():
-		return "%s locked" % FeastDisplay.SPOT
+		return "%s locked" % GameTerms.SPOT
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:
 		return "Can't place here"
@@ -378,11 +378,11 @@ func _placement_failure_message(hex: Hex) -> String:
 func _placement_restriction_message(tile_card: TileCard) -> String:
 	match tile_card.placement_restriction:
 		TileCard.PlacementRestriction.EDGE_TILE:
-			return "Must be an edge %s" % FeastDisplay.SPOT.to_lower()
+			return "Must be an edge %s" % GameTerms.SPOT.to_lower()
 		TileCard.PlacementRestriction.SEGMENT_FIRST_TILE:
-			return "Must be the first %s in the %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
+			return "Must be the first %s in the %s" % [GameTerms.SPOT.to_lower(), GameTerms.STATION.to_lower()]
 		TileCard.PlacementRestriction.SEGMENT_LAST_TILE:
-			return "Must be the last %s in the %s" % [FeastDisplay.SPOT.to_lower(), FeastDisplay.COURSE.to_lower()]
+			return "Must be the last %s in the %s" % [GameTerms.SPOT.to_lower(), GameTerms.STATION.to_lower()]
 		_:
 			return "Can't place here"
 

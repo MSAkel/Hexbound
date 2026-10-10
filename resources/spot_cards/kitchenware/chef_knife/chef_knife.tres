@@ -11,5 +11,5 @@ support_role = 2
 id = "chef_knife"
 name = "Chef Knife"
 icon = ExtResource("1_y32ft")
-description = "Fires the Following 3 Ingredients, generated value  reduced by 20% per jump"
+description = "{triggers} the {following} 3 Ingredients, generated value  reduced by 20% per jump"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

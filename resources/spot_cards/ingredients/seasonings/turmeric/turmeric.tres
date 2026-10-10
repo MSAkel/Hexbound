@@ -11,5 +11,5 @@ ingredient_tags = Array[StringName]([&"seasoning"])
 id = "turmeric"
 name = "Turmeric"
 icon = ExtResource("1_63li6")
-description = "+1 Mult for every used Condiment this run"
+description = "+1 {mult} for every used Condiment this run"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

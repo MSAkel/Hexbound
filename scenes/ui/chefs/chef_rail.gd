@@ -1,7 +1,7 @@
 class_name ChefRail
 extends Control
 
-## Chef column fixed to the left edge of the screen. One hex per course, top to bottom,
+## Chef column fixed to the left edge of the screen. One hex per station, top to bottom,
 ## staggered like the rows of the pass.
 ## Drag a chef onto another hex to move or swap it, or onto the Sell panel to sell it.
 ## Sits above the merchant in the tree so chefs stay usable while the shop is open.

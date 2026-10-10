@@ -1,5 +1,5 @@
 extends TileCard
-## +12 Flavour per course on the map.
+## +12 Flavour per station on the map.
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	add_flavour(tile, _get_census_amount(tile))

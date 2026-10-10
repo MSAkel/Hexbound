@@ -5,9 +5,9 @@ extends PanelContainer
 
 const STEP_TEXTS: PackedStringArray = [
 	"Select a card to place it on an empty spot.\nReach the day's Rating target before you run out of hours.",
-	"Hover over a spot to view its stats.\nTool cards aren't always limited to their own course.",
-	"The hour ends when only two cards remain in your hand.\nComplete nine days to win.",
-	"Flavour and Additive Mult are shared across the whole kitchen. Flavour × Additive becomes the hour's Rating. Multiplicative Mult immediately multiplies the current Additive.\n",
+	"Hover over a spot to view its stats.\nTool cards aren't always limited to their own {station}.",
+	"The hour ends when only two cards remain in your hand.\nComplete %d days to win." % ScoreProgression.RUN_LENGTH_ROUNDS,
+	"{flavour} and Additive {mult} are shared across the whole kitchen. {flavour} × Additive becomes the hour's Rating. Multiplicative {mult} immediately multiplies the current Additive.\n",
 ]
 
 const FADE_OUT_DURATION := 0.18
@@ -58,7 +58,7 @@ func _begin_tutorial() -> void:
 	_active = true
 	_step = 0
 	_cards_placed = 0
-	label.text = STEP_TEXTS[0]
+	label.text = CardKeywordGlossary.to_plain(STEP_TEXTS[0])
 	show()
 	_play_text_change_animation(true)
 
@@ -150,7 +150,7 @@ func _play_text_change_animation(is_first_show: bool) -> void:
 
 
 func _apply_step_text() -> void:
-	label.text = STEP_TEXTS[_step]
+	label.text = CardKeywordGlossary.to_plain(STEP_TEXTS[_step])
 
 
 func _update_pivot() -> void:

@@ -1,6 +1,6 @@
 extends TileCard
 
-## On the final hour, double up to three Following Ingredients on this course.
+## On the final hour, double up to three Following Ingredients on this station.
 const MAX_TARGETS := 3
 
 

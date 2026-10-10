@@ -19,7 +19,7 @@ func get_board_chip(_tile: Hex = null) -> Dictionary:
 		"%d/%d" % [activation_count, MAX_TRIGGERS],
 		null,
 		get_chip_panel_color(),
-		"Fires until this card spoils"
+		CardKeywordGlossary.to_plain("{triggers} until this card {spoils}")
 	)
 
 

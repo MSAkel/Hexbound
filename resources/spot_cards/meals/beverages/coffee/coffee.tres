@@ -11,5 +11,5 @@ ingredient_tags = Array[StringName]([&"beverage"])
 id = "coffee"
 name = "Coffee"
 icon = ExtResource("1_rc5w3")
-description = "+1 Gold every 10 Fires. Excess Fire does not stack"
+description = "+1 Gold every 10 {triggers}. Excess {trigger} does not stack"
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

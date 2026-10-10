@@ -1,5 +1,5 @@
 extends TileCard
-## +3 Flavour per empty spot in this course, capped at 30.
+## +3 Flavour per empty spot in this station, capped at 30.
 
 const ENERGY_PER_EMPTY := 3
 const ENERGY_CAP := 30

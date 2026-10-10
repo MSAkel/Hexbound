@@ -12,5 +12,5 @@ support_role = 2
 id = "fire_extinguisher"
 name = "Fire Extinguisher"
 icon = ExtResource("1_86g7x")
-description = "Fires every card on this course. Spoils immediately"
+description = "{triggers} every card on this {station}. {spoils} immediately"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

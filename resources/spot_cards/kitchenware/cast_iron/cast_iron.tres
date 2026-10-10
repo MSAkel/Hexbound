@@ -12,5 +12,5 @@ support_role = 2
 id = "cast_iron"
 name = "Cast Iron"
 icon = ExtResource("1_xj1bu")
-description = "Fire the Following card twice."
+description = "{trigger} the {following} card twice."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

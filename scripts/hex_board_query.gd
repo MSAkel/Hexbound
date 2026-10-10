@@ -26,7 +26,7 @@ var _hexes_in_order: Array[Hex] = []
 var _neighbors_by_coords: Dictionary = {}
 ## Vector2i to true when at least one neighbor direction leaves the board.
 var _edge_by_coords: Dictionary = {}
-## Per-course hex lists in fire order, aligned with HexMapLayout.build_segments().
+## Per-station hex lists in fire order, aligned with HexMapLayout.build_segments().
 var _hexes_by_segment: Array = []
 
 
@@ -246,7 +246,7 @@ func cards_on_later_segments(tile: Hex, filter_type: Variant = null) -> Array[Ti
 	return result
 
 
-## Occupied seats on this course that fire after tile, already in fire order.
+## Occupied seats on this station that fire after tile, already in fire order.
 func later_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
 	var result: Array[TileCard] = []
 	var self_index := trigger_index(tile)
@@ -309,7 +309,7 @@ func cards_relative_to_trigger_order(
 	return result
 
 
-## First or last matching occupied hex in a course.
+## First or last matching occupied hex in a station.
 func first_or_last_hex_on_segment(
 	segment_index: int,
 	pick_first: bool,
@@ -340,7 +340,7 @@ func first_or_last_card_on_segment(
 	return hex.active_tile_card
 
 
-## First or last matching card in a course relative to tile's course.
+## First or last matching card in a station relative to tile's station.
 func card_in_relative_segment(
 	tile: Hex,
 	segment_index_offset: int,
@@ -353,7 +353,7 @@ func card_in_relative_segment(
 	return first_or_last_card_on_segment(segment_index, pick_first_in_segment, filter_type)
 
 
-## Occupied last-or-first seats on every course after tile.
+## Occupied last-or-first seats on every station after tile.
 func cards_on_later_segment_ends(
 	tile: Hex,
 	pick_first: bool,
@@ -370,7 +370,7 @@ func cards_on_later_segment_ends(
 	return cards
 
 
-## Preview seats for later-course first or last cards. Empty end seats still highlight.
+## Preview seats for later-station first or last cards. Empty end seats still highlight.
 func coords_for_later_segment_anchors(
 	tile: Hex,
 	pick_first: bool,
@@ -462,7 +462,7 @@ func coords_for_segment(segment_index: int) -> Array[Vector2i]:
 	return coords_for_hexes(hexes_in_segment(segment_index))
 
 
-## Other course indexes that either host an Ingredient or do not, depending on want_producer.
+## Other station indexes that either host an Ingredient or do not, depending on want_producer.
 func other_segment_indexes_matching_producer(tile: Hex, want_producer: bool) -> Array[int]:
 	var matches: Array[int] = []
 	if tile == null or _map == null:

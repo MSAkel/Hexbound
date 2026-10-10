@@ -68,7 +68,7 @@ SUGGESTED = [
         "trickle_charge",
         "Charge",
         "",
-        "Add 12 charge to the next Ingredient on this course.",
+        "Add 12 charge to the next Ingredient on this station.",
         "Charge",
         "",
         "No",
@@ -180,7 +180,7 @@ SUGGESTED = [
         "last_claim",
         "Flavour",
         "",
-        "+55 Flavour if a card already spoiled on this course this hour, else +16.",
+        "+55 Flavour if a card already spoiled on this station this hour, else +16.",
         "Spoil (tool)",
         "",
         "No",
@@ -196,7 +196,7 @@ SUGGESTED = [
         "opening_ratio",
         "Mult",
         "",
-        "+6 Mult if first Ingredient in course, else +2.",
+        "+6 Mult if first Ingredient in station, else +2.",
         "Bookend",
         "",
         "No",
@@ -212,7 +212,7 @@ SUGGESTED = [
         "last_ratio",
         "Mult",
         "",
-        "+6 Mult if last Ingredient in course, else +2.",
+        "+6 Mult if last Ingredient in station, else +2.",
         "Bookend",
         "",
         "No",
@@ -227,12 +227,12 @@ SUGGESTED = [
         "Lone Ratio",
         "lone_ratio",
         "Mult",
-        "One-spot course",
-        "+8 Mult. 1-spot course only.",
+        "One-spot station",
+        "+8 Mult. 1-spot station only.",
         "Solo Cell",
         "",
         "No",
-        "Size-1 course",
+        "Size-1 station",
         "Yes",
         "Steak is +80 Flavour on the same seat.",
     ),
@@ -244,13 +244,13 @@ SUGGESTED = [
         "mult_sink",
         "Mult",
         "",
-        "+3 Mult per course that already received a Pass this hour.",
-        "Course Pass",
+        "+3 Mult per station that already received a Pass this hour.",
+        "Station Pass",
         "",
         "No",
         "",
         "Yes",
-        "Cumin is flat +5 Mult to the next course.",
+        "Cumin is flat +5 Mult to the next station.",
     ),
     (
         "Suggested",
@@ -406,7 +406,7 @@ def build_summary_rows(rows: list[tuple]) -> list[list]:
     summary.append(["Terminology"])
     summary.append(["Player formula", "Flavour x Mult = Rating"])
     summary.append(["Day / Hour", "round / turn in code"])
-    summary.append(["Course / Spot", "segment / tile in code"])
+    summary.append(["Station / Spot", "segment / tile in code"])
     summary.append(["Events catalog", "docs/events_catalog.csv"])
     summary.append(["Glossary", "docs/feast_glossary.md"])
     return summary

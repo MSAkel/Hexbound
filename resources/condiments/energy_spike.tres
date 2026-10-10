@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "energy_spike"
 display_name = "Gravy"
-description = "+50 Flavour on next fire"
+description = "+50 {flavour} on next {trigger}"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.35, 0.88, 0.95, 1)
 base_price = 5

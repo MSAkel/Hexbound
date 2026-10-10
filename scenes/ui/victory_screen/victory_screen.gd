@@ -6,6 +6,7 @@ extends Control
 @onready var highest_score_value: Label = $RunStatsPanel/VBoxContainer/HighestScoreValue
 @onready var round_value: Label = $RunStatsPanel/VBoxContainer/RoundValue
 @onready var gold_earned_value: Label = $RunStatsPanel/VBoxContainer/GoldEarnedValue
+@onready var card_triggers_label: Label = $RunStatsPanel/VBoxContainer/CardTriggersLabel
 @onready var card_triggers_value: Label = $RunStatsPanel/VBoxContainer/CardTriggersValue
 @onready var seed_value: Label = $RunStatsPanel/VBoxContainer/SeedContainer/SeedValue
 
@@ -15,6 +16,7 @@ var _entrance_tween: Tween
 
 
 func _ready() -> void:
+	card_triggers_label.text = CardKeywordGlossary.to_plain("Card {triggers}")
 	hide()
 	EventBus.all_events_completed.connect(_on_all_events_completed)
 

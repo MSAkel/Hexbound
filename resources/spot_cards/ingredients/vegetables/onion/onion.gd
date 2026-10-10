@@ -1,5 +1,5 @@
 extends TileCard
-## +10 Flavour per other course that has no Ingredient.
+## +10 Flavour per other station that has no Ingredient.
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	_pay_effect_amount(tile, true)

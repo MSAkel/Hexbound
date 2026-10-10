@@ -4,16 +4,16 @@ extends PanelContainer
 
 const HOUR_SEGMENT_INDEX := 0
 
-@onready var flavour_label: Label = $HBoxContainer/FlavourContainer/CourseFlavour
-@onready var mult_label: Label = $HBoxContainer/MultContainer/CourseMult
+@onready var flavour_label: Label = $HBoxContainer/FlavourContainer/StationFlavour
+@onready var mult_label: Label = $HBoxContainer/MultContainer/StationMult
 @onready var rating_container: PanelContainer = $HBoxContainer/RatingContainer
-@onready var rating_label: Label = $HBoxContainer/RatingContainer/CourseRating
+@onready var rating_label: Label = $HBoxContainer/RatingContainer/StationRating
 
 var _flavour: int = 0
 var _additive_mult: float = 1.0
 var _multiplicative_mult: float = 1.0
 var _rating: int = 0
-## Live resolve hides Rating until this course row's reveal beat.
+## Live resolve hides Rating until this station row's reveal beat.
 var _rating_revealed: bool = true
 var _accepts_live_updates: bool = true
 var _flavour_counter: CountingNumber
@@ -105,7 +105,7 @@ func _on_segment_turn_results_changed(
 ) -> void:
 	if not _accepts_live_updates:
 		return
-	# Hour scoring is shared. Any course change refreshes this row.
+	# Hour scoring is shared. Any station change refreshes this row.
 	# After Rating starts counting, do not restart that tween. Hour resolve awaits it.
 	if _is_revealing and _rating_revealed:
 		_flavour = flavour
@@ -485,7 +485,7 @@ func _set_reveal_active(active: bool) -> void:
 		modulate = Color.WHITE
 		return
 
-	# Pulse while this row matches the glowing map course.
+	# Pulse while this row matches the glowing map station.
 	var pulse := 0.2 / GameManager.game_speed
 	_pulse_tween = create_tween()
 	_pulse_tween.set_loops()

@@ -17,10 +17,10 @@ enum Type {
 	RAISED_STAKES,
 }
 
-const EVENT_ROUNDS := [3, 6, 9]
-const ANY_EVENT_ROUND := [3, 6, 9]
-const LATE_EVENT_ROUNDS := [6, 9]
-const FINAL_EVENT_ROUND := [9]
+const EVENT_ROUNDS := [3, 6, ScoreProgression.RUN_LENGTH_ROUNDS]
+const ANY_EVENT_ROUND := [3, 6, ScoreProgression.RUN_LENGTH_ROUNDS]
+const LATE_EVENT_ROUNDS := [6, ScoreProgression.RUN_LENGTH_ROUNDS]
+const FINAL_EVENT_ROUND := [ScoreProgression.RUN_LENGTH_ROUNDS]
 const BLACKOUT_COUNT := 5
 const SEALED_HEX_COUNT := 5
 const RAISED_STAKES_SCORE_SCALE := 1.25
@@ -56,23 +56,23 @@ const EVENT_INFO := {
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.FADING_SECTOR: {
-		"name": "Fading Course",
-		"description": "Every hour, a random course has its Ingredient output halved.",
+		"name": "Fading {station}",
+		"description": "Every hour, a random {station} has its Ingredient output halved.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.DRY_WIRE: {
 		"name": "Dry Wire",
-		"description": "Extra activations effects do not fire.",
+		"description": "Extra {trigger} effects do not Occur.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.NULL_CHARGE: {
 		"name": "Null Charge",
-		"description": "Double still consumes, but it does not double output.",
+		"description": "{double} still consumes, but it does not {double} output.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.LOCAL_CURRENT: {
 		"name": "Local Current",
-		"description": "Products cannot be Passed to another course.",
+		"description": "Products cannot be Passed to another {station}.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.AUSTERITY: {
@@ -259,13 +259,13 @@ func rewrite_upcoming_event(use_index: int) -> bool:
 func get_event_name(event_type: int) -> String:
 	if event_type == -1:
 		return ""
-	return EVENT_INFO[event_type]["name"]
+	return CardKeywordGlossary.to_plain(EVENT_INFO[event_type]["name"])
 
 
 func get_event_description(event_type: int) -> String:
 	if event_type == -1:
 		return ""
-	return EVENT_INFO[event_type]["description"]
+	return CardKeywordGlossary.to_plain(EVENT_INFO[event_type]["description"])
 
 
 func get_active_event_name() -> String:

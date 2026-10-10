@@ -25,18 +25,18 @@ func setup(card: Card) -> void:
 	if not is_node_ready():
 		await ready
 	if card == null:
-		show_empty(FeastDisplay.PLACEHOLDER_ICON)
+		show_empty(FeastStatIcons.PLACEHOLDER)
 		return
 	if card is TileCard:
 		_hex.texture = _hex_for_tile_card(card as TileCard)
 		_hex.show()
 		_apply_subject_layout(true)
-		_subject.texture = card.icon if card.icon != null else FeastDisplay.PLACEHOLDER_ICON
+		_subject.texture = card.icon if card.icon != null else FeastStatIcons.PLACEHOLDER
 		_subject.show()
 		return
 	_hex.hide()
 	_apply_subject_layout(false)
-	_subject.texture = card.icon if card.icon != null else FeastDisplay.PLACEHOLDER_ICON
+	_subject.texture = card.icon if card.icon != null else FeastStatIcons.PLACEHOLDER
 	_subject.show()
 
 

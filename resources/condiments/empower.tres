@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "empower"
 display_name = "Reduction"
-description = "Double"
+description = "{double}"
 icon = ExtResource("2_icon")
 liquid_color = Color(1, 0.62, 0.18, 1)
 base_price = 5

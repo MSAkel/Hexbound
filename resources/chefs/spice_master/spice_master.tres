@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "spice_master"
 name = "Spice Master"
-description = "+1 Mult for every Seasoning fired before this Course"
+description = "+1 {mult} for every Seasoning {triggered} before this {station}"
 rarity = 1

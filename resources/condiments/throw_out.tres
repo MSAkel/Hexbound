@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "throw_out"
 display_name = "Throw Out"
-description = "Spoils target card, gain random card"
+description = "{spoils} target card, gain random card"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.72, 0.42, 0.28, 1)
 base_price = 6

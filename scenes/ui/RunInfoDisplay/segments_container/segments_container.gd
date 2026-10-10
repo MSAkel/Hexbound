@@ -129,7 +129,7 @@ func _play_turn_total_transfer_animation(turn_total_score: int) -> void:
 		_style_total_score(turn_total_score)
 
 	var intensity := ScoreReadoutStyle.intensity_for_score(turn_total_score)
-	AudioManager.play_sfx(UISounds.COURSE_RESULT)
+	AudioManager.play_sfx(UISounds.STATION_RESULT)
 	_land_number(score_total_number, intensity)
 	_pulse_panel(turn_total_container)
 	_shake_screen(turn_total_score)
@@ -262,7 +262,7 @@ func _refresh_view(animate: bool) -> void:
 
 
 func _update_turn_label() -> void:
-	turn_label.text = FeastDisplay.hour_label(_viewed_turn_index + 1)
+	turn_label.text = GameTerms.hour_label(_viewed_turn_index + 1)
 
 
 func _update_navigation_buttons() -> void:

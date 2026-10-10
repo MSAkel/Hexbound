@@ -3,9 +3,11 @@ extends Object
 
 ## Authored round targets and the Endless Mode curve. One table for the whole game.
 
-const ENDLESS_MODE_START_ROUND := 10
+## Days in a standard run. Clearing the last one wins. Endless Mode starts after it.
+const RUN_LENGTH_ROUNDS := 9
+const ENDLESS_MODE_START_ROUND := RUN_LENGTH_ROUNDS + 1
 const MAX_SCORE := 9223372036854775807
-## Round 1 through 9, indexed as AUTHORED_ROUND_SCORES[round - 1].
+## One entry per round of a standard run, indexed as AUTHORED_ROUND_SCORES[round - 1].
 const AUTHORED_ROUND_SCORES: Array[int] = [
 	450,
 	2750,

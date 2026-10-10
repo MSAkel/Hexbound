@@ -13,5 +13,5 @@ support_role = 2
 id = "kitchen_torch"
 name = "Kitchen Torch"
 icon = ExtResource("1_icon")
-description = "Fires the last card of each following course. Must be placed on a last course spot"
+description = "{triggers} the last card of each {following} {station}. Must be placed on a last {station} spot"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,6 +1,6 @@
 extends TileCard
 
-## Fires two random cards on following courses.
+## Fires two random cards on following stations.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var later_runes := _effect_preview_cards(tile)
 	if later_runes.is_empty():

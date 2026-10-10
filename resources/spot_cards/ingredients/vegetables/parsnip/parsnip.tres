@@ -12,5 +12,5 @@ placement_restriction = 1
 id = "parsnip"
 name = "Parsnip"
 icon = ExtResource("1_jwu8b")
-description = "+28 Flavour. Must be on an edge spot"
+description = "+28 {flavour}. Must be on an edge spot"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

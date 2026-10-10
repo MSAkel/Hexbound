@@ -5,11 +5,13 @@ extends Control
 @onready var highest_score_value: Label = $RunStatsPanel/VBoxContainer/HighestScoreValue
 @onready var round_value: Label = $RunStatsPanel/VBoxContainer/RoundValue
 @onready var gold_earned_value: Label = $RunStatsPanel/VBoxContainer/GoldEarnedValue
+@onready var card_triggers_label: Label = $RunStatsPanel/VBoxContainer/CardTriggersLabel
 @onready var card_triggers_value: Label = $RunStatsPanel/VBoxContainer/CardTriggersValue
 @onready var seed_value: Label = $RunStatsPanel/VBoxContainer/SeedContainer/SeedValue
 
 
 func _ready() -> void:
+	card_triggers_label.text = CardKeywordGlossary.to_plain("Card {triggers}")
 	add_to_group("run_game_over")
 	hide()
 	EventBus.game_ended.connect(_on_game_ended)

@@ -12,5 +12,5 @@ ingredient_tags = Array[StringName]([&"seasoning"])
 id = "onion_powder"
 name = "Onion Powder"
 icon = ExtResource("1_qg65g")
-description = "+2 Mult per other course that has a card"
+description = "+2 {mult} per other {station} that has a card"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

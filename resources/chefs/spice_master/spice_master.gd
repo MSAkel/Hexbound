@@ -4,5 +4,5 @@ extends ChefCard
 const MULT_PER_SEASONING := 1.0
 
 
-func on_course_started(ctx: ChefContext) -> void:
+func on_station_started(ctx: ChefContext) -> void:
 	ctx.add_mult(MULT_PER_SEASONING * ChefManager.get_seasoning_fires_this_hour())
