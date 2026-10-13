@@ -3,11 +3,6 @@
 [ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="1_o6pyt"]
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/cards/card_ui/card_ui.gd" id="2_usd0r"]
 [ext_resource type="PackedScene" path="res://scenes/cards/card_face/card_face.tscn" id="3_face"]
-[ext_resource type="Script" uid="uid://ugi8741i5kme" path="res://scenes/cards/card states/card_state_machine.gd" id="4_nmvtt"]
-[ext_resource type="Script" uid="uid://b6e4apk01pkau" path="res://scenes/cards/card states/card_base_state.gd" id="5_onxhv"]
-[ext_resource type="Script" uid="uid://b5q07w8b77b12" path="res://scenes/cards/card states/card_clicked_state.gd" id="6_7xb4v"]
-[ext_resource type="Script" uid="uid://bq7wb4db571h2" path="res://scenes/cards/card states/card_dragging_state.gd" id="7_y3v36"]
-[ext_resource type="Script" uid="uid://lhyqf0q0f5ko" path="res://scenes/cards/card states/card_released_state.gd" id="8_o6pyt"]
 [ext_resource type="PackedScene" uid="uid://dwveidib2jxhc" path="res://scenes/ui/merchant/merchant_purchase_tray.tscn" id="9_tray"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_price_chip"]
@@ -27,9 +22,6 @@ corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 shadow_color = Color(0, 0, 0, 0.22)
 shadow_size = 2
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_s55cg"]
-size = Vector2(214, 317)
 
 [node name="CardUI" type="Control" unique_id=1998448617]
 custom_minimum_size = Vector2(186, 260)
@@ -81,38 +73,7 @@ offset_top = 336.0
 offset_bottom = 380.0
 grow_horizontal = 2
 
-[node name="DropPointArea" type="Area2D" parent="." unique_id=1910631185]
-visible = false
-collision_mask = 2
-monitoring = false
-monitorable = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointArea" unique_id=1742927811]
-position = Vector2(107, 158.5)
-shape = SubResource("RectangleShape2D_s55cg")
-
-[node name="CardStateMachine" type="Node" parent="." unique_id=471583580 node_paths=PackedStringArray("initial_state")]
-script = ExtResource("4_nmvtt")
-initial_state = NodePath("CardBaseState")
-
-[node name="CardBaseState" type="Node" parent="CardStateMachine" unique_id=958706433]
-script = ExtResource("5_onxhv")
-
-[node name="CardClickedState" type="Node" parent="CardStateMachine" unique_id=1165998655]
-script = ExtResource("6_7xb4v")
-state = 1
-
-[node name="CardDraggingState" type="Node" parent="CardStateMachine" unique_id=2049395640]
-script = ExtResource("7_y3v36")
-state = 2
-
-[node name="CardReleasedState" type="Node" parent="CardStateMachine" unique_id=706442126]
-script = ExtResource("8_o6pyt")
-state = 3
-
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
 [connection signal="gold_purchase_pressed" from="MerchantPurchaseTray" to="." method="_on_gold_purchase_pressed"]
-[connection signal="area_entered" from="DropPointArea" to="." method="_on_drop_point_area_entered"]
-[connection signal="area_exited" from="DropPointArea" to="." method="_on_drop_point_area_exited"]

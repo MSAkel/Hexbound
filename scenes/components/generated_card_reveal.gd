@@ -104,7 +104,6 @@ func _play_animation(data: Card) -> void:
 	card_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_ui.hover_enabled = false
 	card_ui.z_index = CARD_Z_INDEX
-	card_ui.offset_transform_enabled = true
 	card_ui.offset_transform_pivot_ratio = Vector2(0.5, 0.5)
 	# Stay in the HBox layout. Hide with alpha until the fly-in offset is applied.
 	card_ui.modulate.a = 0.0
@@ -129,8 +128,8 @@ func _play_animation(data: Card) -> void:
 	var start_offset := _offset_to_reach_global(card_ui, start_global)
 	var showcase_offset := _offset_to_reach_global(card_ui, showcase_global)
 
-	card_ui.offset_transform_position = start_offset
-	card_ui.offset_transform_scale = Vector2.ONE * START_SCALE
+	card_ui.slot_offset = start_offset
+	card_ui.slot_scale = Vector2.ONE * START_SCALE
 	card_ui.modulate.a = 1.0
 	AudioManager.play_sfx(UISounds.CARD_REVEAL)
 
@@ -139,13 +138,13 @@ func _play_animation(data: Card) -> void:
 	_anim_tween.set_parallel(true)
 	_anim_tween.tween_property(
 		card_ui,
-		"offset_transform_position",
+		"slot_offset",
 		showcase_offset,
 		enter_duration
 	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	_anim_tween.tween_property(
 		card_ui,
-		"offset_transform_scale",
+		"slot_scale",
 		Vector2.ONE * SHOWCASE_SCALE,
 		enter_duration
 	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
@@ -158,13 +157,13 @@ func _play_animation(data: Card) -> void:
 	_float_tween.set_loops()
 	_float_tween.tween_property(
 		card_ui,
-		"offset_transform_position",
+		"slot_offset",
 		showcase_offset + Vector2(0.0, -FLOAT_AMPLITUDE),
 		float_half
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_float_tween.tween_property(
 		card_ui,
-		"offset_transform_position",
+		"slot_offset",
 		showcase_offset + Vector2(0.0, FLOAT_AMPLITUDE),
 		float_half
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -183,13 +182,13 @@ func _play_animation(data: Card) -> void:
 	_anim_tween.set_parallel(true)
 	_anim_tween.tween_property(
 		card_ui,
-		"offset_transform_position",
+		"slot_offset",
 		to_hand_offset,
 		to_hand_duration
 	).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
 	_anim_tween.tween_property(
 		card_ui,
-		"offset_transform_scale",
+		"slot_scale",
 		Vector2.ONE,
 		to_hand_duration
 	).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
@@ -205,10 +204,9 @@ func _play_animation(data: Card) -> void:
 func _settle_in_hand(card_ui: CardUI) -> void:
 	card_ui.modulate.a = 1.0
 	card_ui.hover_enabled = true
-	card_ui.offset_transform_enabled = true
 	card_ui.offset_transform_pivot_ratio = Vector2(0.5, 1.0)
-	card_ui.offset_transform_scale = Vector2.ONE
-	card_ui.offset_transform_position = _hand.get_card_rest_offset()
+	card_ui.slot_scale = Vector2.ONE
+	card_ui.slot_offset = _hand.get_card_rest_offset()
 	card_ui.z_index = 0
 	if _hand.is_hand_hidden():
 		card_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -216,7 +214,7 @@ func _settle_in_hand(card_ui: CardUI) -> void:
 		card_ui.mouse_filter = Control.MOUSE_FILTER_STOP
 
 
-# Maps a viewport point onto this card's offset_transform, independent of its hand slot.
+# Slot offset that puts this card at a viewport point, independent of its hand slot.
 func _offset_to_reach_global(card_ui: CardUI, target_global: Vector2) -> Vector2:
 	return target_global - card_ui.global_position
 

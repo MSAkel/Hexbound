@@ -1,22 +1,33 @@
-# Handles hand card selection and placement on the hex tile map.
+# Owns the pick-up, aim and drop of a hand card onto the hex tile map.
+# Every pick-up starts with EventBus.card_drag_started and ends with exactly one
+# EventBus.card_drag_ended, whether the card was played, sold or put back.
 class_name CardPlacementHandler
 extends Node
 
 
+## How a pick-up ended. Sent with EventBus.card_drag_ended.
+enum DragOutcome {
+	CANCELLED,
+	PLAYED,
+	SOLD,
+}
+
 # Reference to the tile map.
 var tile_map: HexTileMap
 
-# True while a hand card is selected for placement.
-var is_card_selected: bool = false
-# True while a drop is snapping in and play_on has not committed yet.
-var _is_placing := false
-
+## Hand card currently picked up, or null.
 var selected_card: CardUI = null
+## True while a hand card is picked up for placement.
+var is_card_selected: bool:
+	get:
+		return selected_card != null
+
+# True from a drop on a legal hex until play_on commits. Cancel input is ignored meanwhile.
+var _is_placing := false
+# Ghost of the picked card. It follows the cursor, or the focused hex on a controller.
 var _rune_preview: CardIconUI
 # Faded copy snapped to the hex the dragged rune would land on.
 var _tile_landing_preview: CardIconUI
-# Prevents deselect cleanup when swapping from one selected card to another.
-var _switching_selection: bool = false
 # Tiles temporarily marked invalid while placing a restricted rune card.
 var _restricted_invalid_coords: Array[Vector2i] = []
 # Tiles currently showing trigger-effect preview highlights.
@@ -27,29 +38,50 @@ var _effect_preview_gold_coords: Array[Vector2i] = []
 var _effect_preview_invalid_coords: Array[Vector2i] = []
 # Valid placement tiles highlighted for first, last, or edge restrictions.
 var _valid_restriction_coords: Array[Vector2i] = []
-# True until the mouse-up that belongs to the drag that selected the card.
-var _awaiting_pointer_release: bool = false
-# Screen position of that selecting press, used to tell a click from a drag.
-var _select_press_position := Vector2.ZERO
-# Ghost stays on the cursor until a successful drop snaps it into the hex.
-var _ghost_follow_mouse := false
+# Legal hex whose landing preview and effect highlights are showing, or NO_CELL.
+var _previewed_cell := NO_CELL
+# True until the mouse-up that belongs to the drag that picked the card up.
+var _awaiting_pointer_release := false
 # Preview follows the gamepad hex cursor instead of the mouse.
 var _use_gamepad_preview := false
 var _ghost_float_time := 0.0
+# Smoothed ghost position, before the float bob is added.
+var _ghost_position := Vector2.ZERO
+var _ghost_tilt := 0.0
+var _ghost_tint_target := Color.WHITE
+# Scale multiplier that pops the ghost in on pick-up.
+var _ghost_pickup_scale := 1.0
+var _pickup_tween: Tween
+# Flies the ghost back to the hand or into the sell panel after the pick-up has ended.
+var _ghost_exit_tween: Tween
 
-const VALID_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.7)
-const INVALID_PREVIEW_COLOR := Color(1.0, 0.35, 0.35, 0.45)
+const NO_CELL := Vector2i(-1, -1)
 const CARD_ICON_UI: PackedScene = preload("res://scenes/cards/card_icon_ui/card_icon_ui.tscn")
-# Pointer travel from the selecting press before a release is treated as a drop.
-const DRAG_PLACE_THRESHOLD_PX := 8.0
+# Ghost tint over a spot the card cannot be dropped on.
+const INVALID_GHOST_TINT := Color(1.0, 0.45, 0.45, 0.75)
+# How fast the tint blends. Higher is snappier.
+const GHOST_TINT_SPEED := 18.0
 # Bob height in pixels. Raise for more float, lower toward 0 to calm it.
 const GHOST_FLOAT_AMPLITUDE := 2.0
 # Cycles per second. Raise to bob faster, lower to bob slower.
 const GHOST_FLOAT_HZ := 0.85
 # Extra scale swing around 1. Set to 0 to disable the pulse.
 const GHOST_FLOAT_SCALE_PULSE := 0.006
+# How tightly the ghost trails its target. Higher is stiffer, lower is floatier.
+const GHOST_FOLLOW_SPEED := 30.0
+# Lean into horizontal travel, in radians per pixel per second. Set to 0 for no tilt.
+const GHOST_TILT_PER_SPEED := 0.00025
+const GHOST_MAX_TILT_DEGREES := 7.0
+const GHOST_TILT_SPEED := 14.0
+# The ghost pops in from this scale when a card is picked up.
+const GHOST_PICKUP_START_SCALE := 0.6
+const GHOST_PICKUP_DURATION := 0.14
 # Glide duration on release. Keep this short so the drop reads as a fall, not a float.
 const GHOST_SNAP_DURATION := 0.10
+# Flight back to the hand after a cancel, and into the sell panel after a sale.
+const GHOST_RETURN_DURATION := 0.16
+const GHOST_SELL_DURATION := 0.2
+const GHOST_EXIT_SCALE := 0.35
 # Vertical lift while dragging. Negative Y floats the ghost above the board.
 const GHOST_LIFT_OFFSET := -7.0
 # Above trigger-order numbers (25) and path traces (22) on the map.
@@ -64,12 +96,8 @@ func is_placement_in_progress() -> bool:
 
 
 func _ready() -> void:
-	EventBus.card_drag_started.connect(_on_card_selected)
-	EventBus.card_drag_ended.connect(_on_card_deselected)
-	_setup_rune_preview()
-
-
-func _setup_rune_preview() -> void:
+	EventBus.card_drag_requested.connect(_on_card_drag_requested)
+	EventBus.turn_ended.connect(_on_turn_ended)
 	_rune_preview = _make_ghost_rune(DRAGGED_RUNE_Z_INDEX)
 	_tile_landing_preview = _make_ghost_rune(TILE_LANDING_PREVIEW_Z_INDEX)
 
@@ -87,279 +115,242 @@ func _make_ghost_rune(z: int) -> CardIconUI:
 
 
 func _process(delta: float) -> void:
-	if not is_card_selected:
-		return
-	if _use_gamepad_preview:
-		_ghost_float_time += delta
-		if _rune_preview.visible:
-			_place_rune_preview_at_active_target()
-		return
-	if not _ghost_follow_mouse:
+	if selected_card == null or _is_placing:
 		return
 	_ghost_float_time += delta
-	_place_rune_preview_at_mouse()
+	_update_ghost_motion(delta)
 
 
 func _input(event: InputEvent) -> void:
-	if not is_card_selected or _is_placing:
+	if selected_card == null or _is_placing:
 		return
 
-	# The selecting Control keeps mouse focus, so _unhandled_input never sees this drag.
+	if event.is_action_pressed("right_mouse") or event.is_action_pressed("ui_cancel"):
+		_cancel_selection()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Tracked here so the preview keeps up while the cursor crosses HUD controls.
 	if event is InputEventMouseMotion:
 		_update_rune_preview()
 		return
 
-	if not (event is InputEventMouseButton and not event.pressed):
-		return
-	if event.button_index != MOUSE_BUTTON_LEFT:
-		return
 	if not _awaiting_pointer_release:
 		return
-
-	_awaiting_pointer_release = false
-	# A press-and-release on the card, or a tiny drag, is not a drop.
-	if selected_card != null and _is_cursor_over_hand_card():
-		_deselect_card()
-		return
-	if not _has_dragged_from_select():
-		_deselect_card()
-		return
-
-	if _try_sell_at_cursor():
-		return
-
-	_try_place_card()
-	# Leave this mouse-up unhandled. The card Control that took the press must
-	# still see the release, or Viewport keeps GUI mouse focus on the hand card
-	# and map hover, tooltips, and highlights stop receiving motion.
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if not is_card_selected or _is_placing:
-		return
-	
-	if event is InputEventMouseMotion:
-		_update_rune_preview()
-	
-	if event is InputEventMouseButton and not event.pressed:
-		if event.button_index == MOUSE_BUTTON_RIGHT:
-			_deselect_card()
-			get_viewport().set_input_as_handled()
-			return
-		
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if not _try_sell_at_cursor():
-				_try_place_card()
-			get_viewport().set_input_as_handled()
-	
-	if event.is_action_pressed("ui_cancel"):
-		_deselect_card()
+	if event is InputEventMouseButton \
+			and event.button_index == MOUSE_BUTTON_LEFT \
+			and not event.pressed:
+		_awaiting_pointer_release = false
+		_drop_at_cursor()
+		# Hand took the matching press before any Control saw it, so nothing waits on this release.
 		get_viewport().set_input_as_handled()
 
 
-func _on_card_selected(card: CardUI) -> void:
-	_replace_selected_card(card)
-	is_card_selected = true
-	selected_card = card
-	_update_preview_texture()
-	_update_placement_overlays()
-	if _use_gamepad_preview:
-		_configure_gamepad_placement()
+## Click-to-place. Only reached when a controller pick-up was handed over to the mouse,
+## so there is no held button whose release would drop the card.
+func _unhandled_input(event: InputEvent) -> void:
+	if selected_card == null or _is_placing:
 		return
-	# The card is selected on mouse-down. A later mouse-up over a hex should place it.
-	_awaiting_pointer_release = true
-	_select_press_position = tile_map.get_global_mouse_position()
-	_ghost_float_time = 0.0
-	_ghost_follow_mouse = true
-	_update_rune_preview()
+	if event is InputEventMouseButton \
+			and event.button_index == MOUSE_BUTTON_LEFT \
+			and not event.pressed:
+		_drop_at_cursor()
+		get_viewport().set_input_as_handled()
 
 
-## Select a hand card for placement with the controller. Skips mouse drag.
+#region Pick-up lifecycle
+
+func _on_card_drag_requested(card: CardUI) -> void:
+	_begin_selection(card, false)
+
+
+## Pick a hand card up with the controller. Skips the mouse drag.
 func begin_gamepad_placement(card: CardUI) -> void:
 	if card == null:
 		return
-	_use_gamepad_preview = true
-	_replace_selected_card(card)
-	if selected_card == card and is_card_selected:
+	if selected_card == card:
 		_configure_gamepad_placement()
+		_update_rune_preview()
 		return
-	card.card_state_machine.transition_to_state(CardState.State.CLICKED)
+	_begin_selection(card, true)
 
 
-func _replace_selected_card(card: CardUI) -> void:
-	if selected_card == null or selected_card == card:
+func _begin_selection(card: CardUI, use_gamepad: bool) -> void:
+	if _is_placing:
 		return
-	_switching_selection = true
-	selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
-	_switching_selection = false
+	if selected_card != null:
+		_end_selection(DragOutcome.CANCELLED)
+
+	selected_card = card
+	EventBus.card_drag_started.emit(card)
+	_update_preview_texture()
+	_update_placement_overlays()
+
+	if use_gamepad:
+		_configure_gamepad_placement()
+	else:
+		_use_gamepad_preview = false
+		# The card was picked up on mouse-down. The matching mouse-up drops it.
+		_awaiting_pointer_release = true
+	_show_ghost_for_pickup()
+	_update_rune_preview()
 
 
 func _configure_gamepad_placement() -> void:
 	_awaiting_pointer_release = false
-	_ghost_follow_mouse = false
 	_use_gamepad_preview = true
 	tile_map.ensure_gamepad_focus()
 	_focus_gamepad_on_placeable_tile()
-	_ghost_float_time = 0.0
-	_update_rune_preview()
 
 
-## Moves controller focus onto the nearest legal placement tile when the current cell cannot be used.
-func _focus_gamepad_on_placeable_tile() -> void:
-	var focus := tile_map.get_gamepad_focus_cell()
-	if _is_placeable_map_coords(focus):
+## Clears every preview and reports how the pick-up ended. Callers deal with the cursor ghost.
+func _end_selection(outcome: DragOutcome) -> void:
+	var card := selected_card
+	if card == null:
 		return
-	var origin := focus if focus != Vector2i(-1, -1) else tile_map.get_default_gamepad_focus_cell()
-	var origin_pos := tile_map.base_layer.map_to_local(origin)
-	var best := Vector2i(-1, -1)
-	var best_dist_sq := INF
-	for coords: Vector2i in tile_map.map_data:
-		if not _is_placeable_map_coords(coords):
-			continue
-		var dist_sq := origin_pos.distance_squared_to(tile_map.base_layer.map_to_local(coords))
-		if dist_sq < best_dist_sq:
-			best_dist_sq = dist_sq
-			best = coords
-	if best != Vector2i(-1, -1):
-		tile_map.set_gamepad_focus_cell(best)
+	if tile_map.hover_ui != null:
+		tile_map.hover_ui.hide_tile_panel()
+	_hide_tile_landing_preview()
+	_clear_placement_overlays()
+	_previewed_cell = NO_CELL
+	selected_card = null
+	_awaiting_pointer_release = false
+	_use_gamepad_preview = false
+	_is_placing = false
+	EventBus.card_drag_ended.emit(card, outcome)
 
 
-func _is_placeable_map_coords(coords: Vector2i) -> bool:
-	if not tile_map.is_tile_interactable(coords):
-		return false
-	return _can_place_on_hex(tile_map.map_data[coords])
-
-
-func refresh_gamepad_preview() -> void:
-	if _use_gamepad_preview and is_card_selected:
-		_update_rune_preview()
-
-
-func try_place_from_gamepad() -> void:
-	if not is_card_selected or _is_placing:
+## Puts the picked card back in the hand.
+func _cancel_selection(fly_back: bool = true) -> void:
+	var card := selected_card
+	if card == null:
 		return
-	_try_place_card()
+	_end_selection(DragOutcome.CANCELLED)
+	if fly_back and _rune_preview.visible and not GameManager.skip_presentation:
+		_fly_ghost_to(_control_center_in_world(card), GHOST_RETURN_DURATION)
+	else:
+		_hide_ghost()
 
 
 func cancel_gamepad_placement() -> void:
-	_deselect_card()
+	_cancel_selection()
+
+
+## A resolving turn slides the hand away. Do not leave a card on the cursor.
+func _on_turn_ended() -> void:
+	if selected_card != null and not _is_placing:
+		_cancel_selection(false)
 
 
 ## Keeps an active placement when the player switches from controller to mouse.
 func switch_to_mouse_preview() -> void:
-	if not is_card_selected:
+	if selected_card == null:
 		return
 	_use_gamepad_preview = false
-	_ghost_follow_mouse = true
 	_awaiting_pointer_release = false
 	_update_rune_preview()
 
 
-func _on_card_deselected() -> void:
-	if _switching_selection:
+func refresh_gamepad_preview() -> void:
+	if _use_gamepad_preview and selected_card != null:
+		_update_rune_preview()
+
+
+func try_place_from_gamepad() -> void:
+	if selected_card == null or _is_placing:
 		return
-	_clear_preview()
-	_reset_state()
+	_try_place_card()
 
+#endregion
 
-func _deselect_card() -> void:
-	if selected_card and selected_card.card_state_machine:
-		selected_card.card_state_machine.transition_to_state(CardState.State.BASE)
+#region Dropping
 
-
-func _update_preview_texture() -> void:
-	var tile_card := _get_selected_tile_card()
-	if tile_card == null:
+func _drop_at_cursor() -> void:
+	# Released back on its own hand slot. Treat it as a change of mind.
+	if _is_cursor_over_hand_slot():
+		_cancel_selection()
 		return
-	_rune_preview.prepare_placement_ghost()
-	_rune_preview.setup(tile_card)
-	_rune_preview.hide_output_chip()
-	_tile_landing_preview.prepare_placement_ghost()
-	_tile_landing_preview.setup(tile_card)
-	_tile_landing_preview.hide_output_chip()
+	var sell_panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
+	if sell_panel != null and sell_panel.is_cursor_over():
+		_sell_selected_card(sell_panel)
+		return
+	_try_place_card()
 
 
-func _update_rune_preview() -> void:
+func _is_cursor_over_hand_slot() -> bool:
+	var map_coords := _get_active_map_coords()
+	# The fan overlaps the bottom hexes. A reachable tile wins over the slot beneath it.
+	if tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords):
+		return false
+	return selected_card.is_mouse_over()
+
+
+func _sell_selected_card(sell_panel: CardSellPanel) -> void:
+	var card := selected_card
+	sell_panel.sell_card()
+	_end_selection(DragOutcome.SOLD)
+	EventBus.card_sold.emit(card)
+	card.queue_free()
+	if not _rune_preview.visible or GameManager.skip_presentation:
+		_hide_ghost()
+		sell_panel.play_sell_pulse()
+		return
+	_fly_ghost_to(_control_center_in_world(sell_panel), GHOST_SELL_DURATION, func() -> void:
+		if is_instance_valid(sell_panel):
+			sell_panel.play_sell_pulse()
+	)
+
+
+func _try_place_card() -> void:
 	if selected_card == null or _is_placing:
 		return
 
 	var map_coords := _get_active_map_coords()
-	var hex: Hex = tile_map.map_data.get(map_coords) if tile_map.is_in_map(map_coords) else null
-	var over_interactable_map := hex != null and tile_map.is_tile_interactable(map_coords)
-	var over_valid_tile := over_interactable_map \
-		and _can_place_on_hex(hex)
-	# The lifted card overlaps bottom hexes. Use the hand slot, not the hover pose.
-	var mouse_over_card := false
-	if not _use_gamepad_preview:
-		mouse_over_card = selected_card.is_mouse_over_hand_slot() and not over_interactable_map
 
-	# Dip once the cursor leaves the selected card, not only when a tile is targeted.
-	selected_card.set_map_tile_hover_active(not mouse_over_card)
-
-	if mouse_over_card:
-		selected_card.update_placement_morph_from_cursor()
-	else:
-		selected_card.complete_placement_morph()
-
-	_show_cursor_rune_preview(selected_card.get_placement_morph_progress())
-
-	if over_valid_tile:
-		# Chip rides on the cursor ghost so it is not hidden under the icon.
-		tile_map.set_placement_preview_cell(map_coords)
-		_show_tile_landing_preview(hex)
-		var tile_card := _get_selected_tile_card()
-		if tile_card != null:
-			_rune_preview.tile = hex
-			_rune_preview.refresh_output_chip(tile_card)
-		_update_hover_highlights(hex)
-	else:
-		_hide_tile_landing_preview()
-		_rune_preview.tile = null
-		_rune_preview.hide_output_chip()
-		tile_map.clear_placement_preview()
-		_clear_hover_highlights()
-
-	_update_placed_card_tile_panel(map_coords, mouse_over_card)
-
-
-func _get_mouse_map_coords() -> Vector2i:
-	return tile_map.base_layer.local_to_map(
-		tile_map.to_local(tile_map.get_global_mouse_position())
-	)
-
-
-func _get_active_map_coords() -> Vector2i:
-	if _use_gamepad_preview:
-		var coords := tile_map.get_gamepad_focus_cell()
-		if coords != Vector2i(-1, -1):
-			return coords
-	return _get_mouse_map_coords()
-
-
-func _is_cursor_over_hand_card() -> bool:
-	if selected_card == null:
-		return false
-	var map_coords := _get_active_map_coords()
-	if tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords):
-		return false
-	return selected_card.is_mouse_over_hand_slot()
-
-
-# Occupied tiles under the cursor show the placed card inspect panel while dragging to place.
-func _update_placed_card_tile_panel(map_coords: Vector2i, mouse_over_card: bool) -> void:
-	if tile_map.hover_ui == null:
+	if not tile_map.is_in_map(map_coords):
+		_cancel_selection()
 		return
-	if mouse_over_card:
-		tile_map.hover_ui.hide_tile_panel()
-		return
-	if not tile_map.is_in_map(map_coords) or not tile_map.is_tile_interactable(map_coords):
-		tile_map.hover_ui.hide_tile_panel()
-		return
+
 	var hex: Hex = tile_map.map_data[map_coords]
-	if hex.active_tile_card == null:
-		tile_map.hover_ui.hide_tile_panel()
+	if not tile_map.is_tile_interactable(map_coords) or not _can_place_on_hex(hex):
+		_show_placement_failed_feedback(hex, _placement_failure_message(hex))
+		_cancel_selection()
 		return
-	tile_map.hover_ui.update_tile_panel_hover(map_coords, true)
+
+	_place_card_on_hex(hex)
+
+
+func _place_card_on_hex(hex: Hex) -> void:
+	# The drop is committed from here. Remember the card, since the snap is awaited.
+	var card := selected_card
+	_is_placing = true
+	_hide_tile_landing_preview()
+	if tile_map.hover_ui != null:
+		tile_map.hover_ui.hide_tile_panel()
+	await _animate_ghost_snap_into_hex(hex)
+	if selected_card != card or not is_instance_valid(card) or card.card == null:
+		_is_placing = false
+		return
+	_hide_ghost()
+	card.card.play_on(hex, false)
+	# Ghost hide would kill in-flight particles. Burst on the seated rune instead.
+	if hex.card_icon_ui != null and not GameManager.skip_presentation:
+		hex.card_icon_ui.play_placement_land_particles()
+	EventBus.card_played.emit(card)
+	AudioManager.play_sfx(UISounds.GROUND_IMPACT)
+	_end_selection(DragOutcome.PLAYED)
+	card.queue_free()
+
+
+func _animate_ghost_snap_into_hex(hex: Hex) -> void:
+	_kill_ghost_tweens()
+	_rune_preview.visible = true
+	_rune_preview.set_ghost_float_scale(1.0)
+	var snap_duration := 0.0 if GameManager.skip_presentation else GHOST_SNAP_DURATION
+	await _rune_preview.animate_ghost_snap_to(_hex_ghost_target_position(hex), snap_duration)
+	if GameManager.skip_presentation:
+		return
+	await _rune_preview.play_drag_seat_animation()
 
 
 func _placement_failure_message(hex: Hex) -> String:
@@ -397,42 +388,241 @@ func _show_placement_failed_feedback(hex: Hex, message: String) -> void:
 		world_pos = tile_map.get_global_mouse_position()
 	tile_map.create_floating_text(world_pos, message, Color(1.0, 0.45, 0.45, 1.0))
 
+#endregion
 
-func _try_place_card() -> void:
+#region Aiming preview
+
+func _update_preview_texture() -> void:
+	var tile_card := _get_selected_tile_card()
+	if tile_card == null:
+		return
+	_rune_preview.prepare_placement_ghost()
+	_rune_preview.setup(tile_card)
+	_rune_preview.hide_output_chip()
+	_tile_landing_preview.prepare_placement_ghost()
+	_tile_landing_preview.setup(tile_card)
+	_tile_landing_preview.hide_output_chip()
+
+
+## Re-aims the preview at the hex under the cursor or controller focus.
+func _update_rune_preview() -> void:
 	if selected_card == null or _is_placing:
 		return
-	
+
 	var map_coords := _get_active_map_coords()
-	
-	if not tile_map.is_in_map(map_coords):
-		_deselect_card()
+	var hex: Hex = tile_map.map_data.get(map_coords) if tile_map.is_in_map(map_coords) else null
+	var over_interactable_map := hex != null and tile_map.is_tile_interactable(map_coords)
+	var over_valid_tile := over_interactable_map and _can_place_on_hex(hex)
+
+	# Warn before the drop, not after it.
+	_ghost_tint_target = (
+		INVALID_GHOST_TINT if over_interactable_map and not over_valid_tile else Color.WHITE
+	)
+	_update_placed_card_tile_panel(map_coords)
+
+	# Highlights and the output chip only change when the targeted hex does.
+	var target_cell := map_coords if over_valid_tile else NO_CELL
+	if target_cell == _previewed_cell:
 		return
-	
-	var hex: Hex = tile_map.map_data[map_coords]
-	if not tile_map.is_tile_interactable(map_coords) or not _can_place_on_hex(hex):
-		var failure_message := _placement_failure_message(hex)
-		if not failure_message.is_empty():
-			_show_placement_failed_feedback(hex, failure_message)
-		_deselect_card()
+	_previewed_cell = target_cell
+
+	if over_valid_tile:
+		# Chip rides on the cursor ghost so it is not hidden under the icon.
+		tile_map.set_placement_preview_cell(map_coords)
+		_show_tile_landing_preview(hex)
+		var tile_card := _get_selected_tile_card()
+		if tile_card != null:
+			_rune_preview.tile = hex
+			_rune_preview.refresh_output_chip(tile_card)
+		_update_hover_highlights(hex)
+	else:
+		_hide_tile_landing_preview()
+		_rune_preview.tile = null
+		_rune_preview.hide_output_chip()
+		tile_map.clear_placement_preview()
+		_clear_hover_highlights()
+
+
+func _get_mouse_map_coords() -> Vector2i:
+	return tile_map.base_layer.local_to_map(
+		tile_map.to_local(tile_map.get_global_mouse_position())
+	)
+
+
+func _get_active_map_coords() -> Vector2i:
+	if _use_gamepad_preview:
+		var coords := tile_map.get_gamepad_focus_cell()
+		if coords != Vector2i(-1, -1):
+			return coords
+	return _get_mouse_map_coords()
+
+
+# Occupied tiles under the cursor show the placed card inspect panel while dragging to place.
+func _update_placed_card_tile_panel(map_coords: Vector2i) -> void:
+	if tile_map.hover_ui == null:
 		return
-
-	_place_card_on_hex(hex)
-
-
-func _clear_preview() -> void:
-	_ghost_follow_mouse = false
-	_is_placing = false
-	if tile_map.hover_ui != null:
+	if not tile_map.is_in_map(map_coords) or not tile_map.is_tile_interactable(map_coords):
 		tile_map.hover_ui.hide_tile_panel()
-	if selected_card != null:
-		selected_card.set_map_tile_hover_active(false, false)
-		selected_card.reset_placement_morph()
+		return
+	var hex: Hex = tile_map.map_data[map_coords]
+	if hex.active_tile_card == null:
+		tile_map.hover_ui.hide_tile_panel()
+		return
+	tile_map.hover_ui.update_tile_panel_hover(map_coords, true)
+
+
+## Moves controller focus onto the nearest legal placement tile when the current cell cannot be used.
+func _focus_gamepad_on_placeable_tile() -> void:
+	var focus := tile_map.get_gamepad_focus_cell()
+	if _is_placeable_map_coords(focus):
+		return
+	var origin := focus if focus != Vector2i(-1, -1) else tile_map.get_default_gamepad_focus_cell()
+	var origin_pos := tile_map.base_layer.map_to_local(origin)
+	var best := Vector2i(-1, -1)
+	var best_dist_sq := INF
+	for coords: Vector2i in tile_map.map_data:
+		if not _is_placeable_map_coords(coords):
+			continue
+		var dist_sq := origin_pos.distance_squared_to(tile_map.base_layer.map_to_local(coords))
+		if dist_sq < best_dist_sq:
+			best_dist_sq = dist_sq
+			best = coords
+	if best != Vector2i(-1, -1):
+		tile_map.set_gamepad_focus_cell(best)
+
+
+func _is_placeable_map_coords(coords: Vector2i) -> bool:
+	if not tile_map.is_tile_interactable(coords):
+		return false
+	return _can_place_on_hex(tile_map.map_data[coords])
+
+
+func _show_tile_landing_preview(hex: Hex) -> void:
+	_tile_landing_preview.map = tile_map
+	_tile_landing_preview.tile = hex
+	_tile_landing_preview.global_position = _hex_ghost_target_position(hex)
+	_tile_landing_preview.set_ghost_float_scale(1.0)
+	_tile_landing_preview.modulate = TILE_LANDING_PREVIEW_COLOR
+	_tile_landing_preview.visible = true
+	_tile_landing_preview.hide_output_chip()
+
+
+func _hide_tile_landing_preview() -> void:
+	_tile_landing_preview.visible = false
+	_tile_landing_preview.tile = null
+	_tile_landing_preview.hide_output_chip()
+
+#endregion
+
+#region Cursor ghost
+
+func _show_ghost_for_pickup() -> void:
+	_kill_ghost_tweens()
+	_ghost_float_time = 0.0
+	_ghost_tilt = 0.0
+	_ghost_tint_target = Color.WHITE
+	_ghost_position = _ghost_target_position()
+	_rune_preview.reset_ghost_visuals()
+	_rune_preview.visible = true
+
+	_ghost_pickup_scale = 1.0
+	if not GameManager.skip_presentation:
+		_ghost_pickup_scale = GHOST_PICKUP_START_SCALE
+		_pickup_tween = create_tween()
+		_pickup_tween.tween_property(
+			self, "_ghost_pickup_scale", 1.0, GHOST_PICKUP_DURATION
+		).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_update_ghost_motion(0.0)
+
+
+## Trails the ghost behind its target with a little lag, lean and bob.
+func _update_ghost_motion(delta: float) -> void:
+	var previous_x := _ghost_position.x
+	_ghost_position = _ghost_position.lerp(
+		_ghost_target_position(), 1.0 - exp(-GHOST_FOLLOW_SPEED * delta)
+	)
+	if delta > 0.0:
+		var max_tilt := deg_to_rad(GHOST_MAX_TILT_DEGREES)
+		var target_tilt := clampf(
+			(_ghost_position.x - previous_x) / delta * GHOST_TILT_PER_SPEED, -max_tilt, max_tilt
+		)
+		_ghost_tilt = lerpf(_ghost_tilt, target_tilt, 1.0 - exp(-GHOST_TILT_SPEED * delta))
+
+	var wave := sin(_ghost_float_time * TAU * GHOST_FLOAT_HZ)
+	_rune_preview.global_position = (
+		_ghost_position + Vector2(0.0, GHOST_LIFT_OFFSET + wave * GHOST_FLOAT_AMPLITUDE)
+	)
+	_rune_preview.rotation = _ghost_tilt
+	_rune_preview.set_ghost_float_scale(
+		(1.0 + wave * GHOST_FLOAT_SCALE_PULSE) * _ghost_pickup_scale
+	)
+	_rune_preview.modulate = _rune_preview.modulate.lerp(
+		_ghost_tint_target, 1.0 - exp(-GHOST_TINT_SPEED * delta)
+	)
+
+
+## Top-left corner the ghost is drawn toward. The focused hex on a controller, else the cursor.
+func _ghost_target_position() -> Vector2:
+	if _use_gamepad_preview:
+		var coords := _get_active_map_coords()
+		if tile_map.is_in_map(coords):
+			return _hex_ghost_target_position(tile_map.map_data[coords])
+	return tile_map.get_global_mouse_position() - HexTileMap.HEX_RUNE_SIZE / 2.0
+
+
+func _hex_ghost_target_position(hex: Hex) -> Vector2:
+	# Match Hex._fit_rune_ui so the ghost lands where the placed rune will sit.
+	if hex.is_on_map():
+		return hex.items_grid.global_position + (Hex.HEX_TILE_SIZE - Hex.HEX_RUNE_SIZE) * 0.5
+	var tile_center: Vector2 = tile_map.base_layer.map_to_local(hex.coordinates)
+	return tile_map.to_global(tile_center - Hex.HEX_RUNE_SIZE * 0.5)
+
+
+## Shrinks the ghost into a point on the map canvas, then hides it. Used once the pick-up has ended.
+func _fly_ghost_to(world_center: Vector2, duration: float, on_arrived: Callable = Callable()) -> void:
+	_kill_ghost_tweens()
+	_rune_preview.tile = null
+	_rune_preview.hide_output_chip()
+	_ghost_exit_tween = create_tween().set_parallel(true)
+	_ghost_exit_tween.tween_property(
+		_rune_preview, "global_position", world_center - HexTileMap.HEX_RUNE_SIZE / 2.0, duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_ghost_exit_tween.tween_property(
+		_rune_preview, "scale", Vector2.ONE * GHOST_EXIT_SCALE, duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_ghost_exit_tween.tween_property(_rune_preview, "rotation", 0.0, duration)
+	_ghost_exit_tween.tween_property(
+		_rune_preview, "modulate:a", 0.0, duration
+	).set_ease(Tween.EASE_IN)
+	_ghost_exit_tween.chain().tween_callback(func() -> void:
+		_hide_ghost()
+		if on_arrived.is_valid():
+			on_arrived.call()
+	)
+
+
+## Center of a HUD control in the map's world space, where the ghost lives.
+func _control_center_in_world(control: Control) -> Vector2:
+	var screen_pos := control.get_canvas_transform() * control.get_global_rect().get_center()
+	return tile_map.get_canvas_transform().affine_inverse() * screen_pos
+
+
+func _hide_ghost() -> void:
 	_rune_preview.visible = false
 	_rune_preview.tile = null
 	_rune_preview.reset_ghost_visuals()
-	_hide_tile_landing_preview()
-	_clear_placement_overlays()
 
+
+func _kill_ghost_tweens() -> void:
+	if _pickup_tween != null and _pickup_tween.is_valid():
+		_pickup_tween.kill()
+	if _ghost_exit_tween != null and _ghost_exit_tween.is_valid():
+		_ghost_exit_tween.kill()
+	_ghost_pickup_scale = 1.0
+
+#endregion
+
+#region Board overlays
 
 func _clear_placement_overlays() -> void:
 	tile_map.clear_placement_preview()
@@ -493,130 +683,6 @@ func _stamp_effect_preview_highlight(coords: Vector2i) -> void:
 		tile_map.CARD_HIGHLIGHT_SOURCE_ID,
 		tile_map.OVERLAY_TILE_ATLAS_COORDS
 	)
-
-
-func _reset_state() -> void:
-	selected_card = null
-	is_card_selected = false
-	_awaiting_pointer_release = false
-	_select_press_position = Vector2.ZERO
-	_ghost_follow_mouse = false
-	_use_gamepad_preview = false
-	_ghost_float_time = 0.0
-	_is_placing = false
-
-
-func _has_dragged_from_select() -> bool:
-	return tile_map.get_global_mouse_position().distance_to(_select_press_position) >= DRAG_PLACE_THRESHOLD_PX
-
-
-func _try_sell_at_cursor() -> bool:
-	var sell_panel: Node = get_tree().get_first_node_in_group("card_sell_panel")
-	if sell_panel == null or selected_card == null or not sell_panel.has_method("try_sell"):
-		return false
-	if not sell_panel.call("try_sell", selected_card):
-		return false
-	get_viewport().set_input_as_handled()
-	return true
-
-
-## Clears placement previews when a selected hand card is sold instead of played.
-func cancel_selection_for_sell(card_ui: CardUI) -> void:
-	if selected_card == card_ui:
-		_clear_preview()
-		_reset_state()
-	if card_ui.card_state_machine != null:
-		card_ui.card_state_machine.transition_to_state(CardState.State.BASE)
-
-
-func _show_cursor_rune_preview(morph_progress: float) -> void:
-	if morph_progress <= 0.05:
-		_rune_preview.visible = false
-		return
-	if not _use_gamepad_preview:
-		_ghost_follow_mouse = true
-	_place_rune_preview_at_active_target()
-	_rune_preview.modulate = Color.WHITE
-	_rune_preview.visible = true
-
-
-func _show_tile_landing_preview(hex: Hex) -> void:
-	_tile_landing_preview.map = tile_map
-	_tile_landing_preview.tile = hex
-	_tile_landing_preview.global_position = _hex_ghost_target_position(hex)
-	_tile_landing_preview.set_ghost_float_scale(1.0)
-	_tile_landing_preview.modulate = TILE_LANDING_PREVIEW_COLOR
-	_tile_landing_preview.visible = true
-	_tile_landing_preview.hide_output_chip()
-
-
-func _hide_tile_landing_preview() -> void:
-	_tile_landing_preview.visible = false
-	_tile_landing_preview.tile = null
-	_tile_landing_preview.hide_output_chip()
-
-
-func _place_rune_preview_at_mouse() -> void:
-	var bob := sin(_ghost_float_time * TAU * GHOST_FLOAT_HZ) * GHOST_FLOAT_AMPLITUDE
-	var pulse := 1.0 + sin(_ghost_float_time * TAU * GHOST_FLOAT_HZ) * GHOST_FLOAT_SCALE_PULSE
-	_rune_preview.global_position = (
-		tile_map.get_global_mouse_position()
-		- HexTileMap.HEX_RUNE_SIZE / 2.0
-		+ Vector2(0.0, GHOST_LIFT_OFFSET + bob)
-	)
-	_rune_preview.set_ghost_float_scale(pulse)
-
-
-func _place_rune_preview_at_active_target() -> void:
-	if _use_gamepad_preview:
-		var coords := _get_active_map_coords()
-		if tile_map.is_in_map(coords):
-			var hex: Hex = tile_map.map_data[coords]
-			var bob := sin(_ghost_float_time * TAU * GHOST_FLOAT_HZ) * GHOST_FLOAT_AMPLITUDE
-			var pulse := 1.0 + sin(_ghost_float_time * TAU * GHOST_FLOAT_HZ) * GHOST_FLOAT_SCALE_PULSE
-			_rune_preview.global_position = (
-				_hex_ghost_target_position(hex)
-				+ Vector2(0.0, GHOST_LIFT_OFFSET + bob)
-			)
-			_rune_preview.set_ghost_float_scale(pulse)
-			return
-	_place_rune_preview_at_mouse()
-
-
-func _hex_ghost_target_position(hex: Hex) -> Vector2:
-	# Match Hex._fit_rune_ui so the ghost lands where the placed rune will sit.
-	if hex.is_on_map():
-		return hex.items_grid.global_position + (Hex.HEX_TILE_SIZE - Hex.HEX_RUNE_SIZE) * 0.5
-	var tile_center: Vector2 = tile_map.base_layer.map_to_local(hex.coordinates)
-	return tile_map.to_global(tile_center - Hex.HEX_RUNE_SIZE * 0.5)
-
-
-func _place_card_on_hex(hex: Hex) -> void:
-	_is_placing = true
-	_ghost_follow_mouse = false
-	_hide_tile_landing_preview()
-	if tile_map.hover_ui != null:
-		tile_map.hover_ui.hide_tile_panel()
-	await _animate_ghost_snap_into_hex(hex)
-	if selected_card == null or selected_card.card == null:
-		_is_placing = false
-		return
-	_rune_preview.visible = false
-	selected_card.card.play_on(hex, false)
-	# Ghost hide would kill in-flight particles. Burst on the seated rune instead.
-	if hex.card_icon_ui != null and not GameManager.skip_presentation:
-		hex.card_icon_ui.play_placement_land_particles()
-	_finish_playing_selected_card()
-
-
-func _animate_ghost_snap_into_hex(hex: Hex) -> void:
-	if not _rune_preview.visible:
-		_rune_preview.visible = true
-	var snap_duration := 0.0 if GameManager.skip_presentation else GHOST_SNAP_DURATION
-	await _rune_preview.animate_ghost_snap_to(_hex_ghost_target_position(hex), snap_duration)
-	if GameManager.skip_presentation:
-		return
-	await _rune_preview.play_drag_seat_animation()
 
 
 # Disables invalid tiles and highlights valid ones for runes with placement restrictions.
@@ -693,11 +759,4 @@ func _can_place_on_hex(hex: Hex) -> bool:
 		return false
 	return selected_card.card.can_play_on(hex)
 
-
-func _finish_playing_selected_card() -> void:
-	EventBus.card_played.emit(selected_card)
-	AudioManager.play_sfx(UISounds.GROUND_IMPACT)
-	var card_to_remove := selected_card
-	_clear_preview()
-	_reset_state()
-	card_to_remove.queue_free()
+#endregion

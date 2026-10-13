@@ -62,6 +62,8 @@ var _scene_position_cached := false
 
 # Card placement handler
 var card_placement_handler: CardPlacementHandler
+# Looked up on first use. Absent in headless playtests.
+var _hand: Hand
 
 var _event_highlighted_coords: Array[Vector2i] = []
 var _disabled_tile_coords: Array[Vector2i] = []
@@ -193,10 +195,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		if card_placement_handler.is_card_selected:
 			# CardPlacementHandler drives tile-panel inspect during placement drag.
 			pass
+		elif _is_cursor_on_hand_card():
+			# A lifted hand card covers the bottom hexes. Do not inspect tiles through it.
+			dismiss_hover_feedback()
 		else:
 			_update_hover_highlight()
 			if hover_ui != null:
 				hover_ui.update_tile_panel_hover(_mouse_map_coords())
+
+
+func _is_cursor_on_hand_card() -> bool:
+	if not is_instance_valid(_hand):
+		_hand = get_tree().get_first_node_in_group("run_hand") as Hand
+	return _hand != null and _hand.is_mouse_on_card()
 
 
 func _update_hover_highlight() -> void:

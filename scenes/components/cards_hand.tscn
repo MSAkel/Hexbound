@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dokobqfpi35ci" path="res://scenes/components/hand.gd" id="1_0y3yv"]
 [ext_resource type="Script" uid="uid://bgesqtywkhtmh" path="res://scenes/components/generated_card_reveal.gd" id="1_reveal"]
 
-[node name="CardsHand" type="Control" unique_id=19796645 groups=["ui_layer"]]
+[node name="CardsHand" type="Control" unique_id=19796645]
 custom_minimum_size = Vector2(600, 125)
 layout_mode = 3
 anchors_preset = 7

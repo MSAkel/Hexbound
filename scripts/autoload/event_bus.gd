@@ -20,8 +20,12 @@ signal event_banner_hidden
 signal event_reveal_finished
 signal all_events_completed
 
+## A hand card was dragged past its threshold and asks to be picked up.
+signal card_drag_requested(card: CardUI)
+## CardPlacementHandler picked a hand card up, by drag or by controller confirm.
 signal card_drag_started(card: CardUI)
-signal card_drag_ended()
+## Follows every card_drag_started exactly once. outcome is a CardPlacementHandler.DragOutcome.
+signal card_drag_ended(card: CardUI, outcome: int)
 
 ## Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes

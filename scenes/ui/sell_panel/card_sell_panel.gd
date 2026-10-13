@@ -14,6 +14,10 @@ const IDLE_MODULATE := Color(1, 1, 1, 0.88)
 const ARMED_BORDER_COLOR := Color(0.87, 0.6, 0.16)
 const HOVER_BG_COLOR := Color(0.86, 0.93, 0.76)
 const HOVER_BORDER_COLOR := Color(0.33, 0.56, 0.2)
+# The price pops when a sold card lands on the panel.
+const SELL_PULSE_SCALE := 1.35
+const SELL_PULSE_RISE := 0.08
+const SELL_PULSE_SETTLE := 0.22
 
 @onready var _title_label: Label = %TitleLabel
 @onready var _hint_label: Label = %HintLabel
@@ -22,9 +26,11 @@ const HOVER_BORDER_COLOR := Color(0.33, 0.56, 0.2)
 var _panel_style: StyleBoxFlat
 var _panel_style_armed: StyleBoxFlat
 var _panel_style_hover: StyleBoxFlat
-var _drag_card: CardUI = null
+## True while a hand card is picked up.
+var _card_dragged := false
 ## Chef slot being dragged, or -1. Chefs sell for their own value, not SELL_VALUE.
 var _drag_chef_slot := -1
+var _pulse_tween: Tween
 
 
 func _ready() -> void:
@@ -54,13 +60,13 @@ func _process(_delta: float) -> void:
 	_refresh_state()
 
 
-func _on_card_drag_started(card: CardUI) -> void:
-	_drag_card = card
+func _on_card_drag_started(_card: CardUI) -> void:
+	_card_dragged = true
 	_refresh_state()
 
 
-func _on_card_drag_ended() -> void:
-	_drag_card = null
+func _on_card_drag_ended(_card: CardUI, _outcome: int) -> void:
+	_card_dragged = false
 	_refresh_state()
 
 
@@ -76,7 +82,7 @@ func _on_chef_drag_ended() -> void:
 
 ## Used by ChefRail when the player releases a dragged chef. True when it was sold.
 func try_sell_chef(slot: int) -> bool:
-	if not _is_mouse_over():
+	if not is_cursor_over():
 		return false
 	if ChefManager.sell_chef(slot) < 0:
 		return false
@@ -93,7 +99,7 @@ func sell_chef_from_controller(slot: int) -> bool:
 
 
 func _is_armed() -> bool:
-	return _drag_card != null or _drag_chef_slot >= 0
+	return _card_dragged or _drag_chef_slot >= 0
 
 
 func _current_sell_value() -> int:
@@ -103,31 +109,38 @@ func _current_sell_value() -> int:
 	return SELL_VALUE
 
 
-## Used by CardPlacementHandler when the player releases a dragged hand card.
-func try_sell(card_ui: CardUI) -> bool:
-	if card_ui == null or not _is_mouse_over():
-		return false
-
+## Pays out for a hand card dropped on the panel. CardPlacementHandler removes the card.
+func sell_card() -> void:
 	GoldManager.add(SELL_VALUE)
 	AudioManager.play_sfx(UISounds.GOLD_GAINED)
 
-	var tile_map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
-	if tile_map != null and tile_map.card_placement_handler != null:
-		tile_map.card_placement_handler.cancel_selection_for_sell(card_ui)
 
-	EventBus.card_sold.emit(card_ui)
-	card_ui.queue_free()
-	return true
+## Pops the price as the sold card's ghost lands on the panel.
+func play_sell_pulse() -> void:
+	if GameManager.skip_presentation:
+		return
+	if _pulse_tween != null and _pulse_tween.is_valid():
+		_pulse_tween.kill()
+	_price_label.pivot_offset = _price_label.size * 0.5
+	_price_label.scale = Vector2.ONE
+	_pulse_tween = create_tween()
+	_pulse_tween.tween_property(
+		_price_label, "scale", Vector2.ONE * SELL_PULSE_SCALE, SELL_PULSE_RISE
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_pulse_tween.tween_property(
+		_price_label, "scale", Vector2.ONE, SELL_PULSE_SETTLE
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
-func _is_mouse_over() -> bool:
+## True when a card or chef released now would land on the panel.
+func is_cursor_over() -> bool:
 	return get_global_rect().has_point(get_global_mouse_position())
 
 
 ## Idle, armed while a card is dragged, and hover while it sits over the panel.
 func _refresh_state() -> void:
 	var armed := _is_armed()
-	var hovered := armed and _is_mouse_over()
+	var hovered := armed and is_cursor_over()
 	_price_label.text = "+%d" % _current_sell_value()
 	var style := _panel_style
 	if hovered:

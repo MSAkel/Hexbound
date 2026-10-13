@@ -179,6 +179,7 @@ func reset_ghost_visuals() -> void:
 	_silence_particle_emitters()
 	modulate = Color.WHITE
 	scale = Vector2.ONE
+	rotation = 0.0
 	if _anim_target != null:
 		_anim_target.pivot_offset = _anim_target.size / 2
 		_anim_target.position = Vector2.ZERO
@@ -352,6 +353,7 @@ func animate_ghost_snap_to(target_pos: Vector2, duration: float) -> void:
 		_anim_target.pivot_offset = size / 2
 	if duration <= 0.0:
 		global_position = target_pos
+		rotation = 0.0
 		_anim_target.scale = Vector2.ONE
 		return
 	var snap_tween := create_tween().set_parallel(true)
@@ -361,6 +363,8 @@ func animate_ghost_snap_to(target_pos: Vector2, duration: float) -> void:
 		target_pos,
 		duration
 	).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	# Level out the drag tilt before the ghost seats.
+	snap_tween.tween_property(self, "rotation", 0.0, duration)
 	snap_tween.tween_property(
 		_anim_target,
 		"scale",
