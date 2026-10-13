@@ -8,7 +8,7 @@ extends Line2D
 		progress = clampf(value, 0.0, 1.0)
 		_rebuild()
 
-const SIDES := 6
+const SIDES := HexShape.SIDES
 const DRAW_DURATION := 0.38
 const FADE_DURATION := 0.22
 # Inset from the token control so the stroke sits on the hex edge.
@@ -173,14 +173,9 @@ func _rebuild() -> void:
 
 
 func _hex_vertices() -> PackedVector2Array:
-	var vertices: PackedVector2Array = PackedVector2Array()
 	var parent_control := get_parent() as Control
 	var center := Vector2.ZERO
 	if parent_control != null and parent_control.size != Vector2.ZERO:
 		center = parent_control.size * 0.5
 	var radius := minf(center.x, center.y) - RADIUS_INSET
-	# Start at the top, then step 60 degrees clockwise in Godot's y-down space.
-	for i in SIDES:
-		var angle := deg_to_rad(-90.0 + float(i) * 60.0)
-		vertices.append(center + Vector2(cos(angle), sin(angle)) * radius)
-	return vertices
+	return HexShape.corners(center, radius)

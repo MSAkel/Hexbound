@@ -1,0 +1,265 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cya1lmn5g3ovh" path="res://scenes/cards/card_face/card_face.gd" id="1_face"]
+[ext_resource type="Texture2D" uid="uid://c1iwjaikk22iy" path="res://assets/card/card_bg.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://ckuh5wl3h5jn2" path="res://assets/card/card_inside_design_details.png" id="3_details"]
+[ext_resource type="Texture2D" uid="uid://o4ohey6hgcwq" path="res://assets/card/card_inside_border.png" id="4_border"]
+[ext_resource type="Texture2D" uid="uid://bjx0s4l84q85e" path="res://assets/card/card_name_bg.png" id="5_namebg"]
+[ext_resource type="Texture2D" uid="uid://cyex1pcrhf44w" path="res://assets/card/card_icon_bg.png" id="6_iconbg"]
+[ext_resource type="PackedScene" uid="uid://dgghwt6uw18en" path="res://scenes/cards/card_icon/card_icon.tscn" id="7_cardicon"]
+[ext_resource type="Texture2D" uid="uid://bcec0j150koyu" path="res://assets/card/card_icon_container.png" id="8_iconframe"]
+[ext_resource type="Script" uid="uid://djlmbkcnx2l0l" path="res://scenes/cards/card_face/ribbon_text_effect.gd" id="9_ribbon"]
+[ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="10_glow"]
+
+[sub_resource type="SystemFont" id="SystemFont_face"]
+subpixel_positioning = 0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_name_banner"]
+content_margin_left = 8.0
+content_margin_top = 1.0
+content_margin_right = 8.0
+content_margin_bottom = 1.0
+texture = ExtResource("5_namebg")
+texture_margin_left = 4.0
+texture_margin_right = 4.0
+
+[sub_resource type="Curve" id="Curve_ribbon"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, -1), 0.0, 0.0, 0, 0, Vector2(0.42, 0.08), 3.2, 3.2, 0, 0, Vector2(0.78, 0.82), 0.4, 0.4, 0, 0, Vector2(1, 0.85), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="RichTextEffect" id="RichTextEffect_ribbon"]
+script = ExtResource("9_ribbon")
+curve = SubResource("Curve_ribbon")
+amplitude = 8.5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sold"]
+bg_color = Color(0.09019608, 0.09019608, 0.09019608, 0.5647059)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 11
+
+[sub_resource type="FontVariation" id="FontVariation_sold"]
+variation_embolden = 0.09
+
+[node name="CardFace" type="Control" unique_id=877198386]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 214.0
+offset_bottom = 317.0
+mouse_filter = 2
+script = ExtResource("1_face")
+
+[node name="Background" type="TextureRect" parent="." unique_id=932652994]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+
+[node name="Details" type="TextureRect" parent="Background" unique_id=639494313]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 15.0
+offset_right = -18.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_details")
+expand_mode = 1
+
+[node name="Border" type="TextureRect" parent="Background" unique_id=1071969678]
+unique_name_in_owner = true
+modulate = Color(0.1764706, 0.49019608, 0.50980395, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 7.0
+offset_right = -12.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_border")
+expand_mode = 1
+
+[node name="NameBanner" type="PanelContainer" parent="." unique_id=322151785]
+unique_name_in_owner = true
+self_modulate = Color(0.1764706, 0.49019608, 0.50980395, 1)
+custom_minimum_size = Vector2(79, 18)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -39.5
+offset_top = 8.0
+offset_right = 39.5
+offset_bottom = 26.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_name_banner")
+
+[node name="NameLabel" type="Label" parent="NameBanner" unique_id=780871484]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = SubResource("SystemFont_face")
+theme_override_font_sizes/font_size = 12
+text = "Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IconDisplay" type="Control" parent="." unique_id=1784689084]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -59.5
+offset_top = 44.0
+offset_right = 59.5
+offset_bottom = 192.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="IconBackdrop" type="TextureRect" parent="IconDisplay" unique_id=1792449164]
+unique_name_in_owner = true
+modulate = Color(0.1764706, 0.49019608, 0.50980395, 1)
+layout_mode = 0
+offset_left = 21.0
+offset_top = 15.0
+offset_right = 101.0
+offset_bottom = 87.5
+mouse_filter = 2
+texture = ExtResource("6_iconbg")
+expand_mode = 1
+
+[node name="Icon" parent="IconDisplay" unique_id=742371266 instance=ExtResource("7_cardicon")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 35.0
+offset_top = 27.0
+offset_right = 87.0
+offset_bottom = 79.0
+show_hex = false
+
+[node name="IconFrame" type="TextureRect" parent="IconDisplay" unique_id=2036677826]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_iconframe")
+expand_mode = 1
+
+[node name="TypeLabel" type="RichTextLabel" parent="IconDisplay" unique_id=1751951717]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 0
+offset_left = 16.0
+offset_top = 86.0
+offset_right = 108.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.13, 0.09, 0.07, 1)
+theme_override_fonts/normal_font = SubResource("SystemFont_face")
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = true
+text = "[ribbon]Type[/ribbon]"
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+vertical_alignment = 1
+custom_effects = [SubResource("RichTextEffect_ribbon")]
+
+[node name="Description" type="RichTextLabel" parent="." unique_id=2119088894]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 196.0
+offset_right = -30.0
+offset_bottom = -25.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.13, 0.09, 0.07, 1)
+theme_override_fonts/normal_font = SubResource("SystemFont_face")
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
+text = "Description"
+scroll_active = false
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SelectionGlow" type="Panel" parent="." unique_id=2130580828]
+unique_name_in_owner = true
+visible = false
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("10_glow")
+
+[node name="SoldOverlay" type="Panel" parent="." unique_id=993550490]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_sold")
+
+[node name="SoldLabel" type="Label" parent="SoldOverlay" unique_id=1355951540]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -30.0
+offset_right = 80.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -0.24842073
+theme_override_colors/font_color = Color(6.8345666e-06, 0.7738233, 1.540184e-06, 1)
+theme_override_colors/font_outline_color = Color(0.20871013, 0.20871016, 0.20871013, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = SubResource("FontVariation_sold")
+theme_override_font_sizes/font_size = 46
+text = "SOLD"
+horizontal_alignment = 1
+vertical_alignment = 1

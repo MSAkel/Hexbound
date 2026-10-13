@@ -2,17 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://bkcow7w4587sb" path="res://assets/icons/food/ingredients/vegetables/potato.png" id="1_3okqf"]
 [ext_resource type="Script" uid="uid://bk3vdj2f2jrpd" path="res://resources/spot_cards/ingredients/vegetables/potato/potato.gd" id="2_tslg8"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_u650f"]
-
-
 
 [resource]
 script = ExtResource("2_tslg8")
-ingredient_tags = Array[StringName]([&"vegetable"])
-rarity = 1
 product = 1
+ingredient_tags = Array[StringName]([&"vegetable"])
 id = "potato"
 name = "Potato"
 icon = ExtResource("1_3okqf")
 description = "+3 {flavour} per empty spot in this {station}, up to 30"
+rarity = 1
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

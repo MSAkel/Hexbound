@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("2_r6li0")
 base_production_amount = 10
-rarity = 2
 product = 1
 ingredient_tags = Array[StringName]([&"vegetable"])
 id = "onion"
 name = "Onions"
 icon = ExtResource("1_inhd7")
 description = "+10 {flavour} per other {station} with no card"
+rarity = 2
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

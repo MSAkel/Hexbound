@@ -6,36 +6,13 @@ signal reparent_requested(which_card_ui: CardUI)
 signal action_requested(card_ui: CardUI)
 signal gold_purchase_requested(card_ui: CardUI)
 
-# Ingredients, Kitchenware, Utility, and Dish frames. Dishes reuse the Kitchenware frame.
-@export var frame_ingredients: Texture2D
-@export var frame_dish: Texture2D
-@export var frame_kitchenware: Texture2D
-@export var frame_utility: Texture2D
-# Chef cards borrow the Kitchenware frame until they get their own art.
-@export var frame_chef: Texture2D
-# Name-bar fills are authored on the scene so rarity color is not rebuilt in code.
-@export var rarity_style_common: StyleBoxFlat
-@export var rarity_style_uncommon: StyleBoxFlat
-@export var rarity_style_rare: StyleBoxFlat
-
-@onready var name_container: PanelContainer = $Content/NameContainer
-@onready var card_name: Label = $Content/NameContainer/CardName
-@onready var icon: CardIcon = $Content/IconContainer/Icon
-@onready var card_description: RichTextLabel = $Content/DescriptionContainer/CardDescription
-@onready var card_type_label: Label = $Content/CardTypeLabel
-
+# Printed side of the card. This script only positions it and forwards state to it.
+@onready var card_face: CardFace = $CardFace
 @onready var drop_point_area: Area2D = $DropPointArea
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
 @onready var targets: Array[Node] = []
 @onready var starting_hand_position := self.get_index()
 
-# Textured card frame. Used for hover tint and to ignore mouse so the root Control gets clicks.
-@onready var panel: Panel = $CardBackground
-@onready var content_container: VBoxContainer = $Content
-@onready var overlays: Control = $Overlays
-# Scene-authored border glow, toggled when the card enters or exits the clicked placement state.
-@onready var selection_glow: Panel = $Overlays/SelectionGlow
-@onready var sold_overlay: Panel = $Overlays/SoldOverlay
 # Merchant chrome lives in the scene and is shown only in shop interaction modes.
 @onready var _price_chip_row: VBoxContainer = $MerchantPriceRow
 @onready var _price_chip_label: Label = $MerchantPriceRow/PriceCenter/PriceChip/PriceChipLabel
@@ -77,7 +54,6 @@ const MERCHANT_STOCK_CARD_HEIGHT := 340.0
 const MERCHANT_STOCK_SLOT_HEIGHT := (
 	MERCHANT_STOCK_CARD_HEIGHT + PRICE_CHIP_ROW_HEIGHT + MERCHANT_TRAY_GAP + MERCHANT_TRAY_HEIGHT
 )
-const HAND_CONTENT_HEIGHT := 310.0
 # How long the leftover morph tweens when the cursor leaves the card quickly.
 const PLACEMENT_MORPH_TWEEN_DURATION := 0.2
 var _is_hover_elevated := false
@@ -100,6 +76,7 @@ var _placement_placeholder_active := false
 
 func _ready() -> void:
 	_resting_z_index = z_index
+	resized.connect(_layout_card_face)
 	_apply_interaction_mode()
 	tree_exiting.connect(_hide_keyword_tooltips)
 	# Shop and choice cards double as gamepad focus targets, so mirror hover on focus.
@@ -124,37 +101,38 @@ func configure_interaction(mode: InteractionMode, options: Dictionary = {}) -> v
 				call_deferred("_update_affordability")
 
 
+func _is_merchant_mode() -> bool:
+	return (
+		interaction_mode == InteractionMode.MERCHANT
+		or interaction_mode == InteractionMode.MERCHANT_STOCK
+	)
+
+
 func _apply_interaction_mode() -> void:
 	_disable_state_machine()
 
 	match interaction_mode:
 		InteractionMode.HAND:
 			hover_enabled = true
-			sold_overlay.visible = false
 			# Grow from the bottom edge so the card lifts and scales upward in the fan.
 			offset_transform_pivot_ratio = Vector2(0.5, 1.0)
 			card_state_machine.init(self)
 		InteractionMode.MERCHANT:
 			hover_enabled = true
-			sold_overlay.visible = _is_sold
 			_refresh_merchant_price()
 			_update_affordability()
 		InteractionMode.MERCHANT_STOCK:
 			hover_enabled = true
-			sold_overlay.visible = _is_sold
 			_refresh_merchant_price()
 			_update_stock_affordability()
 		InteractionMode.CHOICE:
 			hover_enabled = true
-			sold_overlay.visible = false
 		InteractionMode.PREVIEW:
 			hover_enabled = false
-			sold_overlay.visible = false
 
-	_layout_merchant_price(
-		interaction_mode == InteractionMode.MERCHANT
-		or interaction_mode == InteractionMode.MERCHANT_STOCK
-	)
+	# Only shop cards can be sold out.
+	card_face.set_sold(_is_sold and _is_merchant_mode())
+	_layout_merchant_price(_is_merchant_mode())
 
 	# Hand cards animate scale via offset transform. Other modes stay at default size.
 	if interaction_mode != InteractionMode.HAND:
@@ -210,30 +188,25 @@ func _activate_focused_card() -> void:
 ## Merchant price chip sits above the frame. Hand cards keep the original full-bleed layout.
 func _layout_merchant_price(enabled: bool) -> void:
 	_price_chip_row.visible = enabled
+	_layout_card_face()
 	if enabled:
-		_apply_merchant_card_insets(true)
 		_update_merchant_stock_height()
 		return
 	_purchase_tray.visible = false
-	_apply_merchant_card_insets(false)
 	_reset_merchant_stock_lift_targets()
 
 
-func _apply_merchant_card_insets(enabled: bool) -> void:
-	if enabled:
-		panel.offset_top = PRICE_CHIP_ROW_HEIGHT - 1.0
-		panel.offset_bottom = _merchant_card_frame_bottom_offset()
-		overlays.offset_top = PRICE_CHIP_ROW_HEIGHT
-		overlays.offset_bottom = _merchant_card_frame_bottom_offset()
-		content_container.offset_top = PRICE_CHIP_ROW_HEIGHT + 6.0
-		content_container.offset_bottom = HAND_CONTENT_HEIGHT
-		return
-	panel.offset_top = -1.0
-	panel.offset_bottom = -3.0
-	overlays.offset_top = 0.0
-	overlays.offset_bottom = 0.0
-	content_container.offset_top = 6.0
-	content_container.offset_bottom = HAND_CONTENT_HEIGHT
+## Runs on every resize, so the face follows whatever slot the parent gives this card.
+func _layout_card_face() -> void:
+	card_face.fit_to(_card_frame_rect())
+
+
+## Area the card face may fill. Merchant modes reserve the chip row above and the tray below.
+func _card_frame_rect() -> Rect2:
+	if not _is_merchant_mode():
+		return Rect2(Vector2.ZERO, size)
+	var bottom := size.y + _merchant_card_frame_bottom_offset()
+	return Rect2(0.0, PRICE_CHIP_ROW_HEIGHT, size.x, bottom - PRICE_CHIP_ROW_HEIGHT)
 
 
 func _merchant_card_frame_bottom_offset() -> float:
@@ -247,8 +220,6 @@ func _update_merchant_stock_height() -> void:
 	if interaction_mode != InteractionMode.MERCHANT_STOCK:
 		return
 	custom_minimum_size.y = MERCHANT_STOCK_SLOT_HEIGHT
-	if _price_chip_row.visible:
-		_apply_merchant_card_insets(true)
 	_purchase_tray.offset_top = _purchase_tray_top()
 	_purchase_tray.offset_bottom = _purchase_tray_top() + MERCHANT_TRAY_HEIGHT
 
@@ -460,9 +431,7 @@ func _apply_offset_transform(animate: bool) -> void:
 func _merchant_stock_lift_targets() -> Array[Control]:
 	var lift_targets: Array[Control] = []
 	lift_targets.append(_price_chip_row)
-	lift_targets.append(panel)
-	lift_targets.append(content_container)
-	lift_targets.append(overlays)
+	lift_targets.append(card_face)
 	return lift_targets
 
 
@@ -603,16 +572,7 @@ func set_card(data: Card) -> void:
 		await ready
 
 	card = data
-	card_name.text = data.name
-	_apply_rarity_name_background(data)
-	icon.setup(data)
-	# Keywords such as Flavour, Mult, and Rating are colored in CardKeywordGlossary.
-	card_description.text = CardKeywordGlossary.to_bbcode(data.description)
-	if data is TileCard:
-		card_type_label.text = (data as TileCard).get_card_type_display()
-	else:
-		card_type_label.text = data.get_card_kind_label()
-	_apply_card_frame()
+	card_face.set_card(data)
 
 	if interaction_mode == InteractionMode.MERCHANT:
 		_refresh_merchant_price()
@@ -644,8 +604,7 @@ func begin_board_placement() -> void:
 	_kill_nudge_tween()
 	_kill_morph_tween()
 	prepare_hand_slot_rest()
-	selection_glow.visible = false
-	panel.modulate = Color.WHITE
+	card_face.set_selected(false)
 	visible = true
 	modulate.a = 0.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -793,24 +752,15 @@ func play_click_nudge() -> void:
 
 func _restore_placement_morph_visuals() -> void:
 	visible = true
-	panel.modulate = Color.WHITE
-	selection_glow.modulate.a = 1.0
-	for child in content_container.get_children():
-		if child is CanvasItem:
-			(child as CanvasItem).modulate.a = 1.0
-	icon.scale = Vector2.ONE
 	modulate.a = 1.0
 
 
 func show_selection_glow() -> void:
-	selection_glow.visible = true
-	# Warm highlight so the selected card reads clearly above the rest of the hand.
-	panel.modulate = Color(1.15, 1.1, 0.75, 1.0)
+	card_face.set_selected(true)
 
 
 func hide_selection_glow() -> void:
-	selection_glow.visible = false
-	panel.modulate = Color.WHITE
+	card_face.set_selected(false)
 	reset_placement_morph()
 	set_map_tile_hover_active(false, false)
 
@@ -821,7 +771,7 @@ func is_sold() -> bool:
 
 func mark_sold() -> void:
 	_is_sold = true
-	sold_overlay.visible = true
+	card_face.set_sold(true)
 	hide_selection_glow()
 	set_hover_elevated(false, false)
 	_purchase_tray.visible = false
@@ -843,7 +793,7 @@ func refresh_affordability() -> void:
 
 
 func apply_discount(discount: float) -> void:
-	if interaction_mode != InteractionMode.MERCHANT and interaction_mode != InteractionMode.MERCHANT_STOCK:
+	if not _is_merchant_mode():
 		return
 	if _is_sold:
 		return
@@ -962,42 +912,6 @@ func _visual_global_rect_for(pose_offset: Vector2, pose_scale: Vector2) -> Rect2
 
 func _hide_keyword_tooltips() -> void:
 	EventBus.toggle_keyword_tooltips.emit(false, [], Rect2(), self)
-
-
-func _apply_rarity_name_background(data: Card) -> void:
-	var style := rarity_style_common
-	match data.rarity:
-		Card.Rarity.UNCOMMON:
-			style = rarity_style_uncommon
-		Card.Rarity.RARE:
-			style = rarity_style_rare
-	if style != null:
-		name_container.add_theme_stylebox_override("panel", style)
-
-
-func _apply_card_frame() -> void:
-	var frame := _frame_texture_for_card(card)
-	if frame == null:
-		return
-
-	var current_style := panel.get_theme_stylebox("panel")
-	if current_style is StyleBoxTexture:
-		# Scene stylebox is local-to-scene, so this instance can swap texture in place.
-		(current_style as StyleBoxTexture).texture = frame
-
-
-func _frame_texture_for_card(data: Card) -> Texture2D:
-	if data is TileCard:
-		match (data as TileCard).type:
-			TileCard.TileCardType.INGREDIENT:
-				return frame_ingredients
-			TileCard.TileCardType.MEAL:
-				return frame_dish
-			TileCard.TileCardType.KITCHENWARE:
-				return frame_kitchenware
-	if data is ChefCard:
-		return frame_chef if frame_chef != null else frame_kitchenware
-	return frame_ingredients
 
 
 func _on_drop_point_area_entered(area: Area2D) -> void:

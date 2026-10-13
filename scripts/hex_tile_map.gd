@@ -1390,6 +1390,11 @@ func get_map_world_center() -> Vector2:
 	return (min_p + max_p) * 0.5
 
 
+## Where the middle of the board lands on screen. Lets fixed UI line up with the board.
+func get_map_screen_center() -> Vector2:
+	return get_canvas_transform() * get_map_world_center()
+
+
 ## Keep the board centered on world origin so a camera at (0, 0) frames it.
 ## Extra shift comes from this node's scene position.
 func _center_map_on_origin() -> void:

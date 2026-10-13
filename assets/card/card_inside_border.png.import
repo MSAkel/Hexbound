@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ceqwvidfjqd3y"
-path="res://.godot/imported/dish_card_frame.png-eebe17a9aeeda66818c81cba19461d60.ctex"
+uid="uid://o4ohey6hgcwq"
+path="res://.godot/imported/card_inside_border.png-0565afa57af53afe6ccb6c5bff864d8d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/cards/dish_card_frame.png"
-dest_files=["res://.godot/imported/dish_card_frame.png-eebe17a9aeeda66818c81cba19461d60.ctex"]
+source_file="res://assets/card/card_inside_border.png"
+dest_files=["res://.godot/imported/card_inside_border.png-0565afa57af53afe6ccb6c5bff864d8d.ctex"]
 
 [params]
 

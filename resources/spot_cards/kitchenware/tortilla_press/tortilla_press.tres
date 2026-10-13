@@ -5,7 +5,6 @@
 
 [resource]
 script = ExtResource("2_3w5an")
-rarity = 2
 type = 1
 placement_restriction = 2
 support_role = 2
@@ -13,4 +12,5 @@ id = "tortilla_press"
 name = "Tortilla Press"
 icon = ExtResource("1_l4djl")
 description = "{triggers} the first card of each {following} {station}. Must be placed on a {station}'s first spot."
+rarity = 2
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

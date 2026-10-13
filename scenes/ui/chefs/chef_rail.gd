@@ -104,7 +104,7 @@ func _refresh() -> void:
 
 #region --- Layout ---
 
-## Honeycomb column against the left edge, centered vertically. Slot 0 is the top hex.
+## Honeycomb column against the left edge, centered vertically on the pass. Slot 0 is the top hex.
 ## Pointy-top hexes interlock, so rows sit three quarters of a hex apart and every
 ## other one shifts sideways by half a cell. Even slots sit inward, like the short rows of the pass.
 func _slot_rects() -> Array[Rect2]:
@@ -112,7 +112,7 @@ func _slot_rects() -> Array[Rect2]:
 	var pitch := SLOT_SIZE.y * 0.75 + SLOT_GAP
 	var stagger := (SLOT_SIZE.x + SLOT_GAP) * 0.5
 	var column_height := pitch * float(_slots.size() - 1) + SLOT_SIZE.y
-	var top := (viewport_size.y - column_height) * 0.5
+	var top := _board_center_y(viewport_size) - column_height * 0.5
 	var rects: Array[Rect2] = []
 	for i in _slots.size():
 		var x := EDGE_MARGIN + (stagger if i % 2 == 1 else 0.0)
@@ -120,7 +120,17 @@ func _slot_rects() -> Array[Rect2]:
 	return rects
 
 
+## Screen Y of the middle of the pass, so the column follows the board when it is moved.
+## Falls back to the middle of the screen when there is no board.
+func _board_center_y(viewport_size: Vector2) -> float:
+	if _tile_map == null:
+		return viewport_size.y * 0.5
+	return _tile_map.get_map_screen_center().y
+
+
 func _layout() -> void:
+	if not is_instance_valid(_tile_map):
+		_tile_map = _find_tile_map()
 	var rects := _slot_rects()
 	var centers: Array[Vector2] = []
 	for i in _slots.size():
@@ -129,8 +139,6 @@ func _layout() -> void:
 		centers.append(rects[i].get_center())
 	_ghost.size = SLOT_SIZE
 	# Bolts and payout text start at the chef, so the board needs to know where each one is.
-	if not is_instance_valid(_tile_map):
-		_tile_map = _find_tile_map()
 	if _tile_map != null:
 		_tile_map.set_chef_screen_centers(centers)
 
