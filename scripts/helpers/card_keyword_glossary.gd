@@ -51,9 +51,12 @@ static func _static_init() -> void:
 		"Multiplies {flavour} in the same {station}."
 	)
 	register(
-		"double",
-		{"double": GameTerms.DOUBLE, "doubles": "Doubles", "doubled": "Doubled"},
-		"{doubles} output for the rest of the Hour. Stacks up to three times."
+		"garnish",
+		{"garnish": GameTerms.GARNISH, "garnishes": "Garnishes", "garnished": "Garnished"},
+		"A {garnished} card has x%d output for the rest of the Hour. Stacks up to %d times." % [
+			int(TileCard.GARNISH_OUTPUT_SCALE),
+			TileCard.MAX_GARNISH_STACKS,
+		]
 	)
 	register(
 		"following",

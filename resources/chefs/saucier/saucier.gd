@@ -1,26 +1,26 @@
 extends ChefCard
 
-## Doubled Ingredients on this station gain one more Double, once each per Hour.
-## Checked when the station starts and whenever an Ingredient here gains a Double.
+## Garnished Ingredients on this station gain one more Garnish, once each per Hour.
+## Checked when the station starts and whenever an Ingredient here gains a Garnish.
 
 
 func on_station_started(ctx: ChefContext) -> void:
 	for card: TileCard in ctx.station_cards(TileCard.TileCardType.INGREDIENT):
-		if card.is_empowered:
-			_add_double(ctx, ctx.map.get_hex_for_tile_card(card), card)
+		if card.is_garnished:
+			_add_garnish(ctx, ctx.map.get_hex_for_tile_card(card), card)
 
 
-func on_card_doubled(ctx: ChefContext, tile: Hex, card: TileCard) -> void:
+func on_card_garnished(ctx: ChefContext, tile: Hex, card: TileCard) -> void:
 	if not ctx.is_on_station(tile) or card.type != TileCard.TileCardType.INGREDIENT:
 		return
-	_add_double(ctx, tile, card)
+	_add_garnish(ctx, tile, card)
 
 
-func _add_double(ctx: ChefContext, tile: Hex, card: TileCard) -> void:
+func _add_garnish(ctx: ChefContext, tile: Hex, card: TileCard) -> void:
 	var boosted: Array = ctx.hour_state.get_or_add("boosted", [])
 	if card in boosted:
 		return
-	# Mark first. The extra Double re-enters on_card_doubled for this same card.
+	# Mark first. The extra Garnish re-enters on_card_garnished for this same card.
 	boosted.append(card)
-	if card._empower():
+	if card.add_garnish():
 		ctx.pulse(tile)

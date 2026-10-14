@@ -192,9 +192,9 @@ func get_seasoning_fires_this_hour() -> int:
 	return _seasoning_fires_this_hour
 
 
-## Double stack cap for this seated card, including chef bonuses.
-func max_double_stacks_for(card: TileCard) -> int:
-	var cap := TileCard.MAX_EMPOWER_STACKS
+## Garnish stack cap for this seated card, including chef bonuses.
+func max_garnish_stacks_for(card: TileCard) -> int:
+	var cap := TileCard.MAX_GARNISH_STACKS
 	var map := _tile_map()
 	if map == null or card == null:
 		return cap
@@ -202,11 +202,11 @@ func max_double_stacks_for(card: TileCard) -> int:
 	if tile == null:
 		return cap
 	for ctx: ChefContext in _contexts(map):
-		cap += ctx.effect.bonus_max_double_stacks(ctx, tile, card)
+		cap += ctx.effect.bonus_max_garnish_stacks(ctx, tile, card)
 	return cap
 
 
-func after_card_doubled(card: TileCard) -> void:
+func after_card_garnished(card: TileCard) -> void:
 	var map := _tile_map()
 	if map == null or card == null:
 		return
@@ -214,15 +214,15 @@ func after_card_doubled(card: TileCard) -> void:
 	if tile == null:
 		return
 	for ctx: ChefContext in _contexts(map):
-		ctx.effect.on_card_doubled(ctx, tile, card)
+		ctx.effect.on_card_garnished(ctx, tile, card)
 
 
-func extra_double_applications(source_tile: Hex, source_card: TileCard, target: TileCard) -> int:
+func extra_garnish_applications(source_tile: Hex, source_card: TileCard, target: TileCard) -> int:
 	if source_tile == null:
 		return 0
 	var extra := 0
 	for ctx: ChefContext in _contexts(source_tile.map):
-		extra += ctx.effect.extra_double_applications(ctx, source_tile, source_card, target)
+		extra += ctx.effect.extra_garnish_applications(ctx, source_tile, source_card, target)
 	return extra
 
 

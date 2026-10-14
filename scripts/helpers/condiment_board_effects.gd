@@ -90,7 +90,7 @@ static func swap_spots(hex_a: Hex, hex_b: Hex) -> bool:
 static func copy_placed_to_hand(source_card: TileCard) -> void:
 	var hand_copy: TileCard = source_card.duplicate(true)
 	hand_copy.activation_count = 0
-	hand_copy.is_empowered = false
+	hand_copy.is_garnished = false
 	hand_copy.is_active = true
 	EventBus.tile_card_selected.emit(hand_copy)
 

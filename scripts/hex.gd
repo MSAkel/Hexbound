@@ -128,7 +128,7 @@ func _apply_display_mode() -> void:
 		card_icon_ui.visible = has_rune
 
 
-## Resting modulate, this seat's chip, condiment badges, and empower sparks.
+## Resting modulate, this seat's chip, condiment badges, and garnish sparks.
 func refresh_own_visuals() -> void:
 	if card_icon_ui == null or active_tile_card == null:
 		return
@@ -143,10 +143,10 @@ func refresh_own_visuals() -> void:
 	card_icon_ui.refresh_output_chip(active_tile_card)
 	card_icon_ui.refresh_condiment_badges(active_tile_card, coordinates)
 	# Restore overcharge sparks after load or chip refresh. The strike itself is not replayed.
-	if active_tile_card.is_empowered:
-		card_icon_ui.start_empower_sparks(active_tile_card.empower_stacks)
+	if active_tile_card.is_garnished:
+		card_icon_ui.start_garnish_sparks(active_tile_card.garnish_stacks)
 	else:
-		card_icon_ui.stop_empower_sparks()
+		card_icon_ui.stop_garnish_sparks()
 
 
 ## Own visuals plus every board-dependent chip. Dishes and steak-style cards read other seats.
@@ -238,16 +238,16 @@ func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
 	refresh_tile_card_visual_state()
 
 
-func start_empower_sparks(stacks: int = 1) -> void:
+func start_garnish_sparks(stacks: int = 1) -> void:
 	if card_icon_ui == null:
 		return
-	card_icon_ui.start_empower_sparks(stacks)
+	card_icon_ui.start_garnish_sparks(stacks)
 
 
-func stop_empower_sparks() -> void:
+func stop_garnish_sparks() -> void:
 	if card_icon_ui == null:
 		return
-	card_icon_ui.stop_empower_sparks()
+	card_icon_ui.stop_garnish_sparks()
 
 
 func start_trigger_link_flash() -> void:

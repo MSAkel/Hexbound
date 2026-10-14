@@ -1,6 +1,6 @@
 extends TileCard
 
-## On the final hour, double up to three Following Ingredients on this station.
+## On the final hour, garnish up to three Following Ingredients on this station.
 const MAX_TARGETS := 3
 
 
@@ -14,14 +14,14 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 
-	var empowered_any := false
+	var garnished_any := false
 	for rune in later_producers:
-		if not _try_empower_tile_card(tile, rune):
+		if not _try_garnish_tile_card(tile, rune):
 			continue
-		empowered_any = true
-		_create_doubled_floating_text(tile, rune)
+		garnished_any = true
+		_create_garnish_floating_text(tile, rune)
 
-	if not empowered_any:
+	if not garnished_any:
 		failed_tile_card_text(tile)
 
 

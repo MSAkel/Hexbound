@@ -156,7 +156,7 @@ func _play_level_up(new_xp: int, play_id: int) -> void:
 	_punch_level()
 	_burst_particles()
 	_flash_bar()
-	AudioManager.play_sfx(UISounds.EMPOWER)
+	AudioManager.play_sfx(UISounds.GARNISH)
 	await get_tree().create_timer((PUNCH_DURATION + LEVEL_HOLD) / _speed()).timeout
 	if not _is_play_current(play_id):
 		return

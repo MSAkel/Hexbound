@@ -1424,9 +1424,9 @@ func create_floating_text(
 	color: Color = Color.WHITE,
 	icon: Texture2D = null,
 	target_icon: Texture2D = null,
-	doubled: bool = false
+	garnished: bool = false
 ) -> void:
-	turn_resolver.create_floating_text(pos, text, color, icon, target_icon, doubled)
+	turn_resolver.create_floating_text(pos, text, color, icon, target_icon, garnished)
 
 
 ## True while a hand card is snapping onto a hex and has not committed yet.
@@ -1600,7 +1600,7 @@ func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 		"is_active": tile_card.is_active,
 		"bonus_production_amount": tile_card.bonus_production_amount,
 		"run_trigger_count": tile_card.run_trigger_count,
-		"empower_stacks": tile_card.empower_stacks,
+		"garnish_stacks": tile_card.garnish_stacks,
 		"condiment_fuses": tile_card.condiment_fuses.duplicate(true),
 	}
 	var card_state := tile_card.capture_placed_save_state()
@@ -1619,7 +1619,7 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	tile_card.is_active = bool(data.get("is_active", true))
 	tile_card.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
 	tile_card.run_trigger_count = int(data.get("run_trigger_count", 0))
-	tile_card.empower_stacks = int(data.get("empower_stacks", 0))
+	tile_card.garnish_stacks = int(data.get("garnish_stacks", 0))
 	tile_card.condiment_fuses.clear()
 	for fuse in data.get("condiment_fuses", []):
 		if fuse is Dictionary:

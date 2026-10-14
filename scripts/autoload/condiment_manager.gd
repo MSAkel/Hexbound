@@ -320,7 +320,7 @@ func after_card_activated(tile: Hex, card: TileCard) -> void:
 		tile.map.add_turn_gold_for_tile(tile, 1)
 		var pos := tile.map.floating_text_position_for_hex(tile.coordinates)
 		tile.map.create_floating_text(pos, "+1", Color(1.0, 0.85, 0.2, 1.0))
-	if _take_activation_fuse(card, Condiment.EffectType.EMPOWER):
+	if _take_activation_fuse(card, Condiment.EffectType.GARNISH):
 		pass
 	_apply_next_trigger_energy_fuse(tile, card)
 	_apply_next_trigger_mult_fuse(tile, card)
@@ -481,9 +481,9 @@ func _apply_instant(condiment: Condiment) -> void:
 		Condiment.EffectType.CONDIMENT_PACK:
 			_grant_pack()
 		Condiment.EffectType.OPENING_ROUND:
-			_empower_first_producers()
+			_garnish_first_producers()
 		Condiment.EffectType.CLOSING_ROUND:
-			_empower_last_producers()
+			_garnish_last_producers()
 		_:
 			pass
 
@@ -493,8 +493,8 @@ func _apply_to_card(condiment: Condiment, hex: Hex) -> void:
 	if card == null:
 		return
 	match condiment.effect_type:
-		Condiment.EffectType.EMPOWER:
-			card._empower()
+		Condiment.EffectType.GARNISH:
+			card.add_garnish()
 			_add_fuse(card, condiment, 0, 1)
 		Condiment.EffectType.ECHO, Condiment.EffectType.WARD, Condiment.EffectType.NEXT_TRIGGER_ENERGY, Condiment.EffectType.NEXT_TRIGGER_MULT:
 			_add_fuse(card, condiment, 0, 1)
@@ -540,7 +540,7 @@ func _board_effect_rng(condiment: Condiment, hex: Hex) -> RandomNumberGenerator:
 
 func _fuse_effect_types() -> Array:
 	return [
-		Condiment.EffectType.EMPOWER,
+		Condiment.EffectType.GARNISH,
 		Condiment.EffectType.ECHO,
 		Condiment.EffectType.WARD,
 		Condiment.EffectType.NEXT_TRIGGER_ENERGY,
@@ -559,10 +559,10 @@ func _grant_pack() -> void:
 			break
 
 
-func _empower_first_producers() -> void:
+func _garnish_first_producers() -> void:
 	_opening_coords.clear()
 	for hex in _first_or_last_producers(true):
-		hex.active_tile_card._empower()
+		hex.active_tile_card.add_garnish()
 		_opening_coords.append(hex.coordinates)
 		hex.refresh_own_visuals()
 		if hex.card_icon_ui != null:
@@ -573,10 +573,10 @@ func _empower_first_producers() -> void:
 		tile_map.refresh_board_output_chips()
 
 
-func _empower_last_producers() -> void:
+func _garnish_last_producers() -> void:
 	_closing_coords.clear()
 	for hex in _first_or_last_producers(false):
-		hex.active_tile_card._empower()
+		hex.active_tile_card.add_garnish()
 		_closing_coords.append(hex.coordinates)
 		hex.refresh_own_visuals()
 		if hex.card_icon_ui != null:

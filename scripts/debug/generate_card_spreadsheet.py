@@ -100,9 +100,9 @@ SUGGESTED = [
         "overfill",
         "Flavour",
         "",
-        "When charge reaches 30, dump all charge as Flavour and Double this card.",
+        "When charge reaches 30, dump all charge as Flavour and Garnish this card.",
         "Charge",
-        "Double",
+        "Garnish",
         "No",
         "",
         "Yes",
@@ -144,17 +144,17 @@ SUGGESTED = [
         "Suggested",
         "Kitchenware",
         "Uncommon",
-        "Reserve Double",
-        "reserve_double",
-        "Double",
+        "Reserve Garnish",
+        "reserve_garnish",
+        "Garnish",
         "",
-        "If you hold at least 8 Gold, Double the next Ingredient. Does not spend Gold.",
+        "If you hold at least 8 Gold, Garnish the next Ingredient. Does not spend Gold.",
         "Gold Ledger",
-        "Double",
+        "Garnish",
         "No",
         "",
         "Yes",
-        "Replaces spend-on-board double tools.",
+        "Replaces spend-on-board garnish tools.",
     ),
     (
         "Suggested",
@@ -164,13 +164,13 @@ SUGGESTED = [
         "peak_hit",
         "Flavour",
         "",
-        "+24 Flavour. If Doubled, also +6 Mult.",
-        "Double",
+        "+24 Flavour. If Garnished, also +6 Mult.",
+        "Garnish",
         "",
         "No",
         "",
         "Yes",
-        "Lemonade is the small Doubled payoff.",
+        "Lemonade is the small Garnished payoff.",
     ),
     (
         "Suggested",
@@ -314,8 +314,8 @@ def _product_label(raw_type: str, description: str) -> str:
     if raw_type in mapping:
         return mapping[raw_type]
     desc = description.lower()
-    if "double" in desc or "doubled" in desc:
-        return "Double"
+    if "garnish" in desc:
+        return "Garnish"
     if "fire again" in desc or "fires again" in desc:
         return "Again"
     if "pass " in desc or "passes" in desc:

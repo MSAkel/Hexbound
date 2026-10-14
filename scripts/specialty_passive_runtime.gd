@@ -54,7 +54,7 @@ func extra_day_completion_gold() -> int:
 	return GOURMET_DAY_GOLD if is_gourmet() else 0
 
 
-## Sommelier doubles Beverage card output. Same path as Double/empower.
+## Sommelier doubles Beverage card output. Same output scale path as Garnish.
 func beverage_output_scale(card: TileCard) -> float:
 	if not is_sommelier() or card == null:
 		return 1.0

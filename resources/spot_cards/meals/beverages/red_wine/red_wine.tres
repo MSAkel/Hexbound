@@ -12,5 +12,5 @@ ingredient_tags = Array[StringName]([&"beverage"])
 id = "red_wine"
 name = "Red Wine"
 icon = ExtResource("1_6q2nt")
-description = "{doubles} every neighbouring {following} Dish"
+description = "{garnishes} every neighbouring {following} Dish"
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

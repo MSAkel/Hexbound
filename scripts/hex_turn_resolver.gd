@@ -1,7 +1,7 @@
 class_name HexTurnResolver
 extends Node
 
-## Turn resolve, queued retriggers, floating text, and empower FX for HexTileMap.
+## Turn resolve, queued retriggers, floating text, and garnish FX for HexTileMap.
 
 const FLOATING_TEXT_SCENE: PackedScene = preload("res://scenes/animations/floating_text.tscn")
 # Pause between tile card activations during turn resolution.
@@ -40,8 +40,8 @@ var _resolving_chef_trigger := false
 func setup(tile_map: HexTileMap) -> void:
 	map = tile_map
 	# Named methods so EventBus drops these when the resolver leaves the tree.
-	EventBus.tile_card_empowered.connect(_on_tile_card_empowered)
-	EventBus.tile_card_empower_consumed.connect(_on_tile_card_empower_consumed)
+	EventBus.tile_card_garnished.connect(_on_tile_card_garnished)
+	EventBus.tile_card_garnish_cleared.connect(_on_tile_card_garnish_cleared)
 
 
 ## Resolves every placed rune in trigger order when the player ends the turn.
@@ -85,7 +85,7 @@ func resolve_turn() -> void:
 		_play_segment_turn_result_reveals()
 		await _wait_for_turn_total_count_finished()
 	map._apply_segment_turn_totals_to_game_manager()
-	_clear_hour_empower()
+	_clear_hour_garnish()
 	ChefManager.end_hour()
 	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
 	map._emit_segment_turn_completed_snapshot()
@@ -537,11 +537,11 @@ func create_floating_text(
 	color: Color = Color.WHITE,
 	icon: Texture2D = null,
 	target_icon: Texture2D = null,
-	doubled: bool = false
+	garnished: bool = false
 ) -> void:
 	if GameManager.skip_presentation:
 		return
-	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon, doubled)
+	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon, garnished)
 	floating_text.play_float_and_free()
 
 
@@ -551,12 +551,12 @@ func _spawn_floating_text(
 	color: Color,
 	icon: Texture2D = null,
 	target_icon: Texture2D = null,
-	doubled: bool = false
+	garnished: bool = false
 ) -> FloatingText:
 	var floating_text := FLOATING_TEXT_SCENE.instantiate() as FloatingText
 	floating_text.position = _world_to_floating_text_screen(pos)
 	_get_floating_text_layer().add_child(floating_text)
-	floating_text.set_text(text, color, icon, target_icon, doubled)
+	floating_text.set_text(text, color, icon, target_icon, garnished)
 	return floating_text
 
 
@@ -578,34 +578,34 @@ func _get_floating_text_layer() -> Node:
 	return map
 
 
-func _on_tile_card_empowered(rune: TileCard) -> void:
+func _on_tile_card_garnished(rune: TileCard) -> void:
 	var hex := map.get_hex_for_tile_card(rune)
 	if hex == null:
-		AudioManager.play_sfx(UISounds.EMPOWER)
+		AudioManager.play_sfx(UISounds.GARNISH)
 		return
 
 	if GameManager.skip_presentation:
-		if hex != null and hex.is_on_map() and hex.active_tile_card == rune and rune.is_empowered:
-			hex.start_empower_sparks(rune.empower_stacks)
+		if hex != null and hex.is_on_map() and hex.active_tile_card == rune and rune.is_garnished:
+			hex.start_garnish_sparks(rune.garnish_stacks)
 		return
 
 	# Strike first, then the looping overcharge. Same beat as a retrigger bolt landing.
-	var strike_travel := map.trigger_link_overlay.play_empower_strike(hex)
+	var strike_travel := map.trigger_link_overlay.play_garnish_strike(hex)
 	await _wait_pace(strike_travel)
-	if hex == null or not hex.is_on_map() or hex.active_tile_card != rune or not rune.is_empowered:
+	if hex == null or not hex.is_on_map() or hex.active_tile_card != rune or not rune.is_garnished:
 		return
 
-	AudioManager.play_sfx(UISounds.EMPOWER)
-	hex.start_empower_sparks(rune.empower_stacks)
+	AudioManager.play_sfx(UISounds.GARNISH)
+	hex.start_garnish_sparks(rune.garnish_stacks)
 
 
-func _clear_hour_empower() -> void:
+func _clear_hour_garnish() -> void:
 	for tile: Hex in map.get_all_hexes_with_runes():
 		if tile.active_tile_card != null:
-			tile.active_tile_card.clear_empower()
+			tile.active_tile_card.clear_garnish()
 
 
-func _on_tile_card_empower_consumed(rune: TileCard) -> void:
+func _on_tile_card_garnish_cleared(rune: TileCard) -> void:
 	var hex := map.get_hex_for_tile_card(rune)
 	if hex != null:
-		hex.stop_empower_sparks()
+		hex.stop_garnish_sparks()

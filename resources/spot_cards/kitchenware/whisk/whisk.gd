@@ -1,6 +1,6 @@
 extends TileCard
 
-## Doubles the Following Ingredient in fire order.
+## Garnishes the Following Ingredient in fire order.
 func _on_activate_tile_card(tile: Hex) -> void:
 	var next_producers := _effect_preview_cards(tile)
 	if next_producers.is_empty():
@@ -8,11 +8,11 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		return
 
 	var target := next_producers[0]
-	if not _try_empower_tile_card(tile, target):
+	if not _try_garnish_tile_card(tile, target):
 		failed_tile_card_text(tile)
 		return
 
-	_create_doubled_floating_text(tile, target)
+	_create_garnish_floating_text(tile, target)
 
 
 func _effect_preview_cards(tile: Hex) -> Array[TileCard]:

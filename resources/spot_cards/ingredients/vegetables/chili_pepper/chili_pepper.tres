@@ -11,5 +11,5 @@ ingredient_tags = Array[StringName]([&"vegetable"])
 id = "chili_pepper"
 name = "Chili Pepper"
 icon = ExtResource("1_kcgyd")
-description = "+1 {mult} until the end of the day for every {double} on this {station}"
+description = "+1 {mult} until the end of the day for every {garnish} on this {station}"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -16,17 +16,17 @@ const STACK_GROUP_DISTANCE := 20.0
 const STACK_GAP := 4.0
 const ICON_TEXT_SEPARATION := 3
 const CARD_FLOAT_ANCHOR_OFFSET := Vector2(0.0, -10.0)
-const DOUBLE_BANG_SQUASH := Vector2(1.62, 0.72)
-const DOUBLE_BANG_STRETCH := Vector2(0.88, 1.32)
-const DOUBLE_BANG_HIT := 0.055
-const DOUBLE_BANG_REBOUND := 0.07
-const DOUBLE_BANG_SETTLE := 0.12
-const DOUBLE_OUTLINE_SIZE := 7
-const DOUBLE_FONT_SCALE := 1.18
+const GARNISH_BANG_SQUASH := Vector2(1.62, 0.72)
+const GARNISH_BANG_STRETCH := Vector2(0.88, 1.32)
+const GARNISH_BANG_HIT := 0.055
+const GARNISH_BANG_REBOUND := 0.07
+const GARNISH_BANG_SETTLE := 0.12
+const GARNISH_OUTLINE_SIZE := 7
+const GARNISH_FONT_SCALE := 1.18
 const CARD_OUTLINE_SIZE := 4
 const SCORE_OUTLINE_SIZE := 5
-const DOUBLE_TEXT_COLOR := Color("#E26110")
-const DOUBLE_GLOW_COLOR := Color(0.42, 0.22, 0.06, 0.62)
+const GARNISH_TEXT_COLOR := Color("#E26110")
+const GARNISH_GLOW_COLOR := Color(0.42, 0.22, 0.06, 0.62)
 const DEFAULT_GLOW_COLOR := Color(0.10, 0.14, 0.20, 0.48)
 const GLOW_SHADER := preload("res://scenes/animations/floating_text_glow.gdshader")
 
@@ -37,8 +37,8 @@ static var _active_card_floats: Array[FloatingText] = []
 var _stack_anchor: Vector2 = Vector2.ZERO
 var _text_root: Node2D
 var _target_icon: Texture2D
-var _doubled: bool = false
-var _double_bang_tween: Tween
+var _garnished: bool = false
+var _garnish_bang_tween: Tween
 
 
 func _ready() -> void:
@@ -51,20 +51,20 @@ func set_text(
 	_color: Color = Color.WHITE,
 	icon: Texture2D = null,
 	target_icon: Texture2D = null,
-	doubled: bool = false
+	garnished: bool = false
 ) -> void:
 	if not is_node_ready():
 		await ready
 
-	_doubled = doubled
+	_garnished = garnished
 	label.bbcode_enabled = false
 	label.text = text
 	# Scene preview uses 1.2 scale. Card floats stay at 1 so size matches CARD_FONT_SIZE.
 	label.scale = Vector2.ONE
-	# Normal card floats stay white. Doubled payouts use their own orange.
+	# Normal card floats stay white. Garnished payouts use their own orange.
 	# Product icons still distinguish Flavour, Gold, and Mult.
-	var label_color := DOUBLE_TEXT_COLOR if _doubled else Color.WHITE
-	var font_scale := DOUBLE_FONT_SCALE if _doubled else 1.0
+	var label_color := GARNISH_TEXT_COLOR if _garnished else Color.WHITE
+	var font_scale := GARNISH_FONT_SCALE if _garnished else 1.0
 	_apply_label_style(label_color, ScoreReadoutStyle.parse_amount(text), true, font_scale)
 	_target_icon = target_icon
 	_apply_icon(icon)
@@ -79,8 +79,8 @@ func _apply_label_style(
 	label.add_theme_color_override("default_color", color)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	var outline := CARD_OUTLINE_SIZE if card_float else SCORE_OUTLINE_SIZE
-	if _doubled:
-		outline = DOUBLE_OUTLINE_SIZE
+	if _garnished:
+		outline = GARNISH_OUTLINE_SIZE
 	label.add_theme_constant_override("outline_size", outline)
 	var font_size: float
 	if card_float:
@@ -104,8 +104,8 @@ func play_float_and_free() -> void:
 		return
 
 	# Bang overlaps the hold so resolve pace does not stretch.
-	if _doubled:
-		_play_double_bang()
+	if _garnished:
+		_play_garnish_bang()
 
 	await GameManager.create_pauseable_timer(HOLD_AFTER_POP / GameManager.game_speed).timeout
 	if not is_instance_valid(self):
@@ -228,7 +228,7 @@ func _make_glow_backdrop(row_size: Vector2) -> ColorRect:
 	var glow := ColorRect.new()
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var pad := Vector2(maxf(8.0, row_size.y * 0.4), row_size.y * 0.32)
-	if _doubled:
+	if _garnished:
 		pad *= 1.2
 	glow.size = row_size + pad * 2.0
 	glow.position = -glow.size * 0.5
@@ -239,7 +239,7 @@ func _make_glow_backdrop(row_size: Vector2) -> ColorRect:
 	var mat := ShaderMaterial.new()
 	mat.shader = GLOW_SHADER
 	mat.set_shader_parameter("aspect", glow.size.x / maxf(glow.size.y, 1.0))
-	mat.set_shader_parameter("ink_color", DOUBLE_GLOW_COLOR if _doubled else DEFAULT_GLOW_COLOR)
+	mat.set_shader_parameter("ink_color", GARNISH_GLOW_COLOR if _garnished else DEFAULT_GLOW_COLOR)
 	glow.material = mat
 	return glow
 
@@ -286,36 +286,36 @@ func _icon_pixel_size() -> float:
 
 
 # Comic-book bang after the glyphs land. Squash on impact, stretch on rebound, then settle.
-func _play_double_bang() -> void:
+func _play_garnish_bang() -> void:
 	if _text_root == null:
 		return
-	if _double_bang_tween != null and _double_bang_tween.is_valid():
-		_double_bang_tween.kill()
+	if _garnish_bang_tween != null and _garnish_bang_tween.is_valid():
+		_garnish_bang_tween.kill()
 
 	var rest_scale := _text_root.scale
-	var hit := DOUBLE_BANG_HIT / GameManager.game_speed
-	var rebound := DOUBLE_BANG_REBOUND / GameManager.game_speed
-	var settle := DOUBLE_BANG_SETTLE / GameManager.game_speed
-	_double_bang_tween = create_tween()
-	_double_bang_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
-	_double_bang_tween.set_parallel(true)
-	_double_bang_tween.tween_property(_text_root, "scale", DOUBLE_BANG_SQUASH * rest_scale, hit).set_trans(
+	var hit := GARNISH_BANG_HIT / GameManager.game_speed
+	var rebound := GARNISH_BANG_REBOUND / GameManager.game_speed
+	var settle := GARNISH_BANG_SETTLE / GameManager.game_speed
+	_garnish_bang_tween = create_tween()
+	_garnish_bang_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	_garnish_bang_tween.set_parallel(true)
+	_garnish_bang_tween.tween_property(_text_root, "scale", GARNISH_BANG_SQUASH * rest_scale, hit).set_trans(
 		Tween.TRANS_BACK
 	).set_ease(Tween.EASE_OUT)
-	_double_bang_tween.tween_property(_text_root, "modulate", Color(1.35, 1.18, 0.85, 1.0), hit).set_ease(
+	_garnish_bang_tween.tween_property(_text_root, "modulate", Color(1.35, 1.18, 0.85, 1.0), hit).set_ease(
 		Tween.EASE_OUT
 	)
-	_double_bang_tween.chain()
-	_double_bang_tween.set_parallel(true)
-	_double_bang_tween.tween_property(_text_root, "scale", DOUBLE_BANG_STRETCH * rest_scale, rebound).set_trans(
+	_garnish_bang_tween.chain()
+	_garnish_bang_tween.set_parallel(true)
+	_garnish_bang_tween.tween_property(_text_root, "scale", GARNISH_BANG_STRETCH * rest_scale, rebound).set_trans(
 		Tween.TRANS_BACK
 	).set_ease(Tween.EASE_OUT)
-	_double_bang_tween.chain()
-	_double_bang_tween.set_parallel(true)
-	_double_bang_tween.tween_property(_text_root, "scale", rest_scale, settle).set_trans(
+	_garnish_bang_tween.chain()
+	_garnish_bang_tween.set_parallel(true)
+	_garnish_bang_tween.tween_property(_text_root, "scale", rest_scale, settle).set_trans(
 		Tween.TRANS_ELASTIC
 	).set_ease(Tween.EASE_OUT)
-	_double_bang_tween.tween_property(_text_root, "modulate", Color.WHITE, settle).set_ease(
+	_garnish_bang_tween.tween_property(_text_root, "modulate", Color.WHITE, settle).set_ease(
 		Tween.EASE_IN
 	)
 

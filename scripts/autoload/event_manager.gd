@@ -67,7 +67,7 @@ const EVENT_INFO := {
 	},
 	Type.NULL_CHARGE: {
 		"name": "Null Charge",
-		"description": "{double} still consumes, but it does not {double} output.",
+		"description": "{garnish} still stacks, but it does not double output.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.LOCAL_CURRENT: {
@@ -350,8 +350,8 @@ func are_retriggers_blocked() -> bool:
 	return active_event == Type.DRY_WIRE
 
 
-## Null Charge. Empower is still consumed so it cannot leak into the next round.
-func are_empowers_blocked() -> bool:
+## Null Charge. Garnish stacks are still cleared so they cannot leak into the next round.
+func are_garnishes_blocked() -> bool:
 	return active_event == Type.NULL_CHARGE
 
 

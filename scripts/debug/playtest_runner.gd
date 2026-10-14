@@ -1389,7 +1389,7 @@ func _condiment_player_value(condiment: Condiment) -> float:
 			if gap > 0 and GameManager.remaining_turns <= 1:
 				return 90.0 + float(gap) / 500.0
 			return 4.0
-		Condiment.EffectType.EMPOWER, Condiment.EffectType.ECHO:
+		Condiment.EffectType.GARNISH, Condiment.EffectType.ECHO:
 			return 48.0 if _engine_producer_hex() != null else 8.0
 		Condiment.EffectType.WARD:
 			return 24.0 if _engine_producer_hex() != null else 6.0
@@ -1433,7 +1433,7 @@ func _player_use_belt_before_resolve() -> void:
 		if condiment == null:
 			continue
 		if condiment.effect_type in [
-			Condiment.EffectType.EMPOWER,
+			Condiment.EffectType.GARNISH,
 			Condiment.EffectType.ECHO,
 			Condiment.EffectType.NEXT_TRIGGER_ENERGY,
 			Condiment.EffectType.NEXT_TRIGGER_MULT,

@@ -1,7 +1,7 @@
 extends MealCard
 
 ## +60 Flavour when the prefix is Protein plus Kitchenware.
-## Doubled when the Following neighbour is a Beverage.
+## Garnished when the Following neighbour is a Beverage.
 
 
 func _plated_flavour_from_recipe(_recipe: Array[TileCard]) -> int:
@@ -10,7 +10,7 @@ func _plated_flavour_from_recipe(_recipe: Array[TileCard]) -> int:
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	if _is_beverage_card(_get_following_neighbouring_card(tile)):
-		_empower()
+		add_garnish()
 	super._on_activate_tile_card(tile)
 
 

@@ -10,6 +10,6 @@ support_role = 1
 id = "kitchen_timer"
 name = "Kitchen Timer"
 icon = ExtResource("1_huu5b")
-description = "On the final hour, {double} the {following} 3 Ingredients in this {station}."
+description = "On the final hour, {garnish} the {following} 3 Ingredients in this {station}."
 rarity = 1
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

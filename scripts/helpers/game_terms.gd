@@ -25,7 +25,7 @@ const MEAL := "Meal"
 const DISH := "Dish"
 const PASS := "Pass"
 const HYBRID := "Hybrid"
-const DOUBLE := "Double"
+const GARNISH := "Garnish"
 const FOLLOWING := "Following"
 const SPOIL := "Spoil"
 const TRIGGER := "Trigger"
@@ -105,8 +105,8 @@ static func get_role_label(
 
 static func _get_support_role_label(support_role: TileCard.SupportRole) -> String:
 	match support_role:
-		TileCard.SupportRole.DOUBLE:
-			return DOUBLE
+		TileCard.SupportRole.GARNISH:
+			return GARNISH
 		TileCard.SupportRole.FIRE:
 			return TRIGGER
 		_:

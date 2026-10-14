@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://co10h7muq0fvk"]
 
-[ext_resource type="Script" uid="uid://bugtoqa36dxo1" path="res://scenes/animations/empower_strike_burst.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bugtoqa36dxo1" path="res://scenes/animations/garnish_strike_burst.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://b5pj2jfa03bqt" path="res://assets/particles/spark/spark_01.png" id="2_spark"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
@@ -72,7 +72,7 @@ scale_max = 0.12
 color = Color(1.3, 1.12, 0.48, 1)
 color_ramp = SubResource("GradientTexture1D_impact")
 
-[node name="EmpowerStrikeBurst" type="Node2D" unique_id=1443077596]
+[node name="GarnishStrikeBurst" type="Node2D" unique_id=1443077596]
 script = ExtResource("1_script")
 travel_duration = 0.18
 fall_x_jitter = 12.0

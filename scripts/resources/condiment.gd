@@ -9,7 +9,7 @@ enum EffectType {
 	REWRITE_OMEN,
 	FREE_REROLL,
 	CONDIMENT_PACK,
-	EMPOWER,
+	GARNISH,
 	ECHO,
 	WARD,
 	NEXT_TRIGGER_ENERGY,
@@ -74,8 +74,8 @@ func get_fuse_summary() -> String:
 
 func _get_fuse_summary_source() -> String:
 	match effect_type:
-		EffectType.EMPOWER:
-			return "{double} (condiment)"
+		EffectType.GARNISH:
+			return "{garnish} (condiment)"
 		EffectType.ECHO:
 			return "Echo · next {trigger}"
 		EffectType.WARD:

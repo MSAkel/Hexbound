@@ -1,4 +1,4 @@
-class_name EmpowerStrikeBurst
+class_name GarnishStrikeBurst
 extends Node2D
 
 ## Bolt, Trail, and Impact are GPUParticles2D on this scene. This only aims the carrier and plays them.

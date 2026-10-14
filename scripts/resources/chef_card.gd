@@ -56,18 +56,18 @@ func on_card_activated(_ctx: ChefContext, _tile: Hex, _card: TileCard) -> void:
 	pass
 
 
-## After a seated card gains a Double stack.
-func on_card_doubled(_ctx: ChefContext, _tile: Hex, _card: TileCard) -> void:
+## After a seated card gains a Garnish stack.
+func on_card_garnished(_ctx: ChefContext, _tile: Hex, _card: TileCard) -> void:
 	pass
 
 
-## Extra Double stacks this card may hold on top of TileCard.MAX_EMPOWER_STACKS.
-func bonus_max_double_stacks(_ctx: ChefContext, _tile: Hex, _card: TileCard) -> int:
+## Extra Garnish stacks this card may hold on top of TileCard.MAX_GARNISH_STACKS.
+func bonus_max_garnish_stacks(_ctx: ChefContext, _tile: Hex, _card: TileCard) -> int:
 	return 0
 
 
-## Extra Double stacks applied when a Kitchenware doubles target.
-func extra_double_applications(
+## Extra Garnish stacks applied when a Kitchenware garnishes target.
+func extra_garnish_applications(
 	_ctx: ChefContext,
 	_source_tile: Hex,
 	_source_card: TileCard,

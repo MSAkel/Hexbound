@@ -19,7 +19,7 @@ const REST_COLOR := Color(1.0, 0.86, 0.42, 0.95)
 const ACTIVATION_GLOW_COLOR := Color(0.42, 0.95, 1.0, 1.0)
 const ACTIVATION_GLOW_WIDTH := 5.0
 const ACTIVATION_GLOW_PEAK_WIDTH := 7.0
-# Retrigger orange. Distinct from cyan self-fire and gold empower.
+# Retrigger orange. Distinct from cyan self-fire and gold garnish.
 const TRIGGER_LINK_RING_COLOR := Color(1.0, 0.58, 0.12, 0.92)
 const TRIGGER_LINK_RING_WIDTH := 4.0
 const TRIGGER_LINK_RING_PEAK_WIDTH := 6.0

@@ -10,5 +10,5 @@ support_role = 1
 id = "whisk"
 name = "Whisk"
 icon = ExtResource("1_4lioc")
-description = "{double} the {following} ingredient"
+description = "{garnish} the {following} ingredient"
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

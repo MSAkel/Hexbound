@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "pastry_chef"
 name = "Pastry Chef"
-description = "Cards on this {station} can hold one more {double}"
+description = "Cards on this {station} can hold one more {garnish}"
 rarity = 2

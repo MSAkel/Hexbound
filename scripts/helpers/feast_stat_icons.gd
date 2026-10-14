@@ -7,7 +7,7 @@ const FLAVOUR := preload("res://assets/icons/stats/flavour.png")
 const MULT := preload("res://assets/icons/stats/mult.png")
 const GOLD := preload("res://assets/icons/stats/gold.png")
 
-const DOUBLE := preload("res://assets/icons/stats/double.png")
+const GARNISH := preload("res://assets/icons/stats/garnish.png")
 const FIRE := preload("res://assets/icons/stats/fire.png")
 const PASS := preload("res://assets/icons/stats/pass.png")
 
@@ -19,7 +19,7 @@ const LOADING_SPLASH: Array[Texture2D] = [
 	FLAVOUR,
 	MULT,
 	GOLD,
-	DOUBLE,
+	GARNISH,
 	FIRE,
 	PASS,
 	preload("uid://c803xrilhj251"),
@@ -49,8 +49,8 @@ static func get_relay_icon() -> Texture2D:
 
 static func get_support_icon(role: TileCard.SupportRole) -> Texture2D:
 	match role:
-		TileCard.SupportRole.DOUBLE:
-			return DOUBLE
+		TileCard.SupportRole.GARNISH:
+			return GARNISH
 		TileCard.SupportRole.FIRE:
 			return FIRE
 		_:

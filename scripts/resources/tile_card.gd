@@ -70,7 +70,7 @@ enum RelayMode {
 # Kitchenware ability with no pile output. Composes with relay on pass cards.
 enum SupportRole {
 	NONE,
-	DOUBLE,
+	GARNISH,
 	FIRE,
 }
 
@@ -96,17 +96,17 @@ enum QueryScope {
 	PLACED,
 }
 
-const EMPOWER_OUTPUT_SCALE := 2.0
-## Each Double stack multiplies output by EMPOWER_OUTPUT_SCALE. Two stacks cap at x4.
-## Chefs can raise the cap. Read ChefManager.max_double_stacks_for() for a seated card.
-const MAX_EMPOWER_STACKS := 2
+const GARNISH_OUTPUT_SCALE := 2.0
+## Each Garnish stack multiplies output by GARNISH_OUTPUT_SCALE. Two stacks cap at x4.
+## Chefs can raise the cap. Read ChefManager.max_garnish_stacks_for() for a seated card.
+const MAX_GARNISH_STACKS := 2
 ## Shared chip fill. White numbers stay readable on this purple.
 const CHIP_PANEL_COLOR := Color(0.22, 0.16, 0.28)
 ## Pile icons for floating text and Ingredient output chips.
 const ICON_FLAVOUR := FeastStatIcons.FLAVOUR
 const ICON_GOLD := FeastStatIcons.GOLD
 const ICON_MULT := FeastStatIcons.MULT
-const ICON_DOUBLE := FeastStatIcons.DOUBLE
+const ICON_GARNISH := FeastStatIcons.GARNISH
 const ICON_FIRE := FeastStatIcons.FIRE
 const ICON_PASS := FeastStatIcons.PASS
 
@@ -123,24 +123,24 @@ var is_active: bool = true
 var bonus_production_amount: float = 0.0
 # Activations of this instance during the current run.
 var run_trigger_count: int = 0
-# Double stacks persist for the rest of the Hour and multiply every fire.
-var empower_stacks: int = 0
-var is_empowered: bool:
+# Garnish stacks persist for the rest of the Hour and multiply every fire.
+var garnish_stacks: int = 0
+var is_garnished: bool:
 	get:
-		return empower_stacks > 0
+		return garnish_stacks > 0
 	set(value):
 		if value:
-			empower_stacks = maxi(empower_stacks, 1)
+			garnish_stacks = maxi(garnish_stacks, 1)
 		else:
-			empower_stacks = 0
+			garnish_stacks = 0
 ## Short-lived condiment fuses sitting on this placed instance.
 var condiment_fuses: Array[Dictionary] = []
 # Scales all card output during this activation (Flavour, Gold, and Mult).
 var _activation_output_scale: float = 1.0
 # Cards currently being replayed by Imprint or Mirror Copy. Prevents a nested copy from looping.
 static var _copied_activation_stack: Array[TileCard] = []
-# True when this activation had at least one Double stack. Checked by cards that pay extra on Double.
-var _activation_was_empowered: bool = false
+# True when this activation had at least one Garnish stack. Checked by cards that pay extra on Garnish.
+var _activation_was_garnished: bool = false
 # Flavour this instance paid with add_flavour this Hour. Dishes read the prefix snapshot.
 var hour_flavour_produced: int = 0
 # Additive Mult this instance paid this Hour, including relays.
@@ -451,9 +451,9 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	EventBus.tile_card_activated.emit(self)
 
 	var output_scale := activation_scale
-	_activation_was_empowered = empower_stacks > 0
-	if empower_stacks > 0 and not EventManager.are_empowers_blocked():
-		output_scale *= pow(EMPOWER_OUTPUT_SCALE, empower_stacks)
+	_activation_was_garnished = garnish_stacks > 0
+	if garnish_stacks > 0 and not EventManager.are_garnishes_blocked():
+		output_scale *= pow(GARNISH_OUTPUT_SCALE, garnish_stacks)
 	if tile.map != null:
 		output_scale *= GameManager.specialty_passives.beverage_output_scale(self)
 
@@ -466,7 +466,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	CondimentManager.after_card_activated(tile, _activation_host_card(tile))
 	ChefManager.after_card_activated(tile, _activation_host_card(tile))
 	_activation_output_scale = 1.0
-	_activation_was_empowered = false
+	_activation_was_garnished = false
 
 # Queue extra spot card activations to resolve before fire flow continues.
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
@@ -601,7 +601,7 @@ func add_flavour(tile: Hex, base_points: Variant) -> void:
 	var points := int(round(float(base_points) * _activation_output_scale))
 	hour_flavour_produced += points
 	tile.map.add_turn_flavour_for_tile(tile, points)
-	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR, null, _payout_float_is_doubled())
+	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR, null, _payout_float_is_garnished())
 	CondimentManager.relay_product_if_needed(tile, Product.FLAVOUR, points)
 
 func add_gold(tile: Hex, base_amount: Variant) -> void:
@@ -609,7 +609,7 @@ func add_gold(tile: Hex, base_amount: Variant) -> void:
 		return
 	var amount := int(round(float(base_amount) * _activation_output_scale))
 	tile.map.add_turn_gold_for_tile(tile, amount)
-	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD, null, _payout_float_is_doubled())
+	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD, null, _payout_float_is_garnished())
 	CondimentManager.relay_product_if_needed(tile, Product.GOLD, amount)
 
 func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
@@ -624,7 +624,7 @@ func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> 
 		Color.PLUM,
 		ICON_MULT,
 		null,
-		_payout_float_is_doubled(scaled)
+		_payout_float_is_garnished(scaled)
 	)
 	CondimentManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
 
@@ -640,7 +640,7 @@ func multiply_multiplicative_mult(tile: Hex, factor: Variant, scaled: bool = tru
 		Color.PLUM,
 		ICON_MULT,
 		null,
-		_payout_float_is_doubled(scaled)
+		_payout_float_is_garnished(scaled)
 	)
 
 
@@ -659,7 +659,7 @@ func add_additive_mult_to_segment(tile: Hex, segment_index: int, base_amount: Va
 		Color.PLUM,
 		ICON_PASS,
 		ICON_MULT,
-		_payout_float_is_doubled()
+		_payout_float_is_garnished()
 	)
 
 
@@ -672,7 +672,7 @@ func add_flavour_to_segment(tile: Hex, segment_index: int, base_points: Variant)
 	hour_flavour_produced += points
 	tile.map.add_turn_flavour_for_segment(segment_index, points)
 	tile.map.mark_segment_received_relay(segment_index)
-	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_PASS, ICON_FLAVOUR, _payout_float_is_doubled())
+	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_PASS, ICON_FLAVOUR, _payout_float_is_garnished())
 
 
 func failed_tile_card_text(tile: Hex) -> void:
@@ -692,16 +692,16 @@ func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
 	return board.card_on_hex(board.get_hex_for_card(tile_card)) != null
 
 
-## Adds one Double stack to a triggerable spot card, up to its stack cap.
-func _try_empower_tile_card(source_tile: Hex, target: TileCard) -> bool:
+## Adds one Garnish stack to a triggerable spot card, up to its stack cap.
+func _try_garnish_tile_card(source_tile: Hex, target: TileCard) -> bool:
 	if not _is_triggerable_tile_card(source_tile, target):
 		return false
-	if not target._empower():
+	if not target.add_garnish():
 		return false
-	# Chefs can make a Kitchenware Double land more than once.
+	# Chefs can make a Kitchenware Garnish land more than once.
 	if type == TileCardType.KITCHENWARE:
-		for _i in ChefManager.extra_double_applications(source_tile, self, target):
-			target._empower()
+		for _i in ChefManager.extra_garnish_applications(source_tile, self, target):
+			target.add_garnish()
 	return true
 
 
@@ -716,16 +716,16 @@ func _create_floating_text(
 	color: Color = Color.WHITE,
 	text_icon: Texture2D = null,
 	target_icon: Texture2D = null,
-	doubled: bool = false
+	garnished: bool = false
 ) -> void:
 	var tile_pos := tile.map.floating_text_position_for_hex(tile.coordinates)
-	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon, doubled)
+	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon, garnished)
 
 
-# True when this fire had Double stacks and the payout was actually scaled.
+# True when this fire had Garnish stacks and the payout was actually scaled.
 # Null Charge blocks the scale, but those floats stay normal.
-func _payout_float_is_doubled(scaled: bool = true) -> bool:
-	return scaled and _activation_was_empowered and not EventManager.are_empowers_blocked()
+func _payout_float_is_garnished(scaled: bool = true) -> bool:
+	return scaled and _activation_was_garnished and not EventManager.are_garnishes_blocked()
 
 
 ## Kitchenware target feedback as [ability icon] [target card icon].
@@ -739,9 +739,9 @@ func _create_targeted_ability_floating_text(
 	_create_floating_text(tile, "", Color.WHITE, ability_icon, target.icon)
 
 
-## Kitchenware double feedback.
-func _create_doubled_floating_text(tile: Hex, target: TileCard) -> void:
-	_create_targeted_ability_floating_text(tile, ICON_DOUBLE, target)
+## Kitchenware garnish feedback.
+func _create_garnish_floating_text(tile: Hex, target: TileCard) -> void:
+	_create_targeted_ability_floating_text(tile, ICON_GARNISH, target)
 
 
 ## Kitchenware fire feedback.
@@ -795,24 +795,24 @@ func _pay_effect_amount(tile: Hex, fail_if_empty: bool = false) -> bool:
 	return paid
 
 
-## Adds one Double stack. Returns false when already at the stack cap.
-func _empower() -> bool:
-	if empower_stacks >= ChefManager.max_double_stacks_for(self):
+## Adds one Garnish stack. Returns false when already at the stack cap.
+func add_garnish() -> bool:
+	if garnish_stacks >= ChefManager.max_garnish_stacks_for(self):
 		return false
 
-	empower_stacks += 1
-	EventBus.tile_card_empowered.emit(self)
-	ChefManager.after_card_doubled(self)
+	garnish_stacks += 1
+	EventBus.tile_card_garnished.emit(self)
+	ChefManager.after_card_garnished(self)
 	return true
 
 
-## Clears all Double stacks at Hour end.
-func clear_empower() -> void:
-	if empower_stacks <= 0:
+## Clears all Garnish stacks at Hour end.
+func clear_garnish() -> void:
+	if garnish_stacks <= 0:
 		return
 
-	empower_stacks = 0
-	EventBus.tile_card_empower_consumed.emit(self)
+	garnish_stacks = 0
+	EventBus.tile_card_garnish_cleared.emit(self)
 
 ## Default fire. Override when the card does more than pay its product.
 func _on_activate_tile_card(tile: Hex) -> void:
