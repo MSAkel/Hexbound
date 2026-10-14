@@ -8,7 +8,7 @@ extends Node
 ## godot --headless --path "E:/Godot/game++" res://scenes/debug/loot_sim_runner.tscn -- --all-layouts
 
 const REPORT_PATH := "user://loot_sim_report.json"
-const SPECIALTY_IDS: Array[String] = [
+const CHEF_IDS: Array[String] = [
 	"sous_chef",
 	"sommelier",
 	"gourmet_restaurant",
@@ -30,9 +30,9 @@ func _ready() -> void:
 	_parse_args()
 	await get_tree().process_frame
 	var reports: Array[Dictionary] = []
-	var layouts := SPECIALTY_IDS.duplicate() if _all_layouts or _layout_filter.is_empty() else _layout_filter
+	var layouts := CHEF_IDS.duplicate() if _all_layouts or _layout_filter.is_empty() else _layout_filter
 	for layout_id: String in layouts:
-		if layout_id not in SPECIALTY_IDS:
+		if layout_id not in CHEF_IDS:
 			push_error("LootSimRunner: unknown layout %s" % layout_id)
 			continue
 		reports.append(_simulate_layout(layout_id))
@@ -55,7 +55,7 @@ func _parse_args() -> void:
 
 
 func _simulate_layout(layout_id: String) -> Dictionary:
-	GameManager.selected_specialty = SpecialtyRegistry.get_specialty_by_id(layout_id)
+	GameManager.selected_chef = ChefRegistry.get_chef_by_id(layout_id)
 	RunRng.begin_new_run("%s:%s" % [_seed_text, layout_id])
 
 	var legal_pool := GameManager.tile_cards_pool

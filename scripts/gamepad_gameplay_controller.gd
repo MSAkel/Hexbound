@@ -1,18 +1,18 @@
 extends Node
 
-## Routes in-run controller input across hand, map, condiments, and chefs.
+## Routes in-run controller input across hand, map, condiments, and staff.
 
 enum Context {
 	HAND,
 	MAP,
 	CONDIMENTS,
-	CHEFS,
+	STAFF,
 }
 
 @onready var hand: Hand = $"../MainUI/CardsHand/Hand"
 @onready var tile_map: HexTileMap = $"../HexTileMap"
 @onready var condiment_belt: CondimentBelt = $"../MainUI/CondimentBelt"
-@onready var chef_rail: ChefRail = $"../MainUI/ChefRail"
+@onready var staff_rail: StaffRail = $"../MainUI/StaffRail"
 @onready var pause_menu: Control = $"../MainUI/PauseMenu"
 @onready var game_over_screen: Control = $"../MainUI/GameOverScreen"
 @onready var victory_screen: Control = $"../MainUI/VictoryScreen"
@@ -64,8 +64,8 @@ func _process(_delta: float) -> void:
 		Context.CONDIMENTS:
 			# Belt is vertical, but left/right still steps between slots.
 			_step_controller_focus(condiment_belt, _any_axis_step(nav))
-		Context.CHEFS:
-			_step_controller_focus(chef_rail, _any_axis_step(nav))
+		Context.STAFF:
+			_step_controller_focus(staff_rail, _any_axis_step(nav))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -109,9 +109,9 @@ func _handle_confirm() -> void:
 			tile_map.inspect_gamepad_focus_tile()
 		Context.CONDIMENTS:
 			condiment_belt.activate_controller_focused_slot()
-		Context.CHEFS:
-			# First press picks the chef up. Second press drops it on the focused hex or Sell.
-			chef_rail.activate_controller_focus()
+		Context.STAFF:
+			# First press picks the staff member up. Second press drops it on the focused hex or Sell.
+			staff_rail.activate_controller_focus()
 
 
 func _handle_back() -> void:
@@ -123,7 +123,7 @@ func _handle_back() -> void:
 		if _placement_handler != null:
 			_placement_handler.cancel_gamepad_placement()
 		return
-	if _context == Context.CHEFS and chef_rail.cancel_controller_hold():
+	if _context == Context.STAFF and staff_rail.cancel_controller_hold():
 		return
 	_set_context(Context.HAND)
 
@@ -148,7 +148,7 @@ func _move_map_focus(direction: Vector2) -> void:
 func _cycle_ui_context() -> void:
 	if _is_card_selected() or CondimentManager.is_targeting():
 		return
-	if chef_rail.is_controller_holding():
+	if staff_rail.is_controller_holding():
 		return
 	var next := (_context + 1) % Context.size()
 	_set_context(next)
@@ -172,8 +172,8 @@ func _apply_active_context() -> void:
 			tile_map.ensure_gamepad_focus()
 		Context.CONDIMENTS:
 			condiment_belt.ensure_controller_focus()
-		Context.CHEFS:
-			chef_rail.ensure_controller_focus()
+		Context.STAFF:
+			staff_rail.ensure_controller_focus()
 
 
 func _clear_context_highlights(keep_map: bool) -> void:
@@ -181,7 +181,7 @@ func _clear_context_highlights(keep_map: bool) -> void:
 	if not keep_map:
 		tile_map.clear_gamepad_focus()
 	condiment_belt.clear_controller_focus()
-	chef_rail.clear_controller_focus()
+	staff_rail.clear_controller_focus()
 
 
 func _on_condiment_targeting_changed(_slot_index: int) -> void:

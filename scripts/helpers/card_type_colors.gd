@@ -17,7 +17,7 @@ static func for_card(card: Card) -> Color:
 				return MEAL
 			TileCard.TileCardType.KITCHENWARE:
 				return KITCHENWARE
-	# Chef cards borrow the Kitchenware accent until they get their own.
-	if card is ChefCard:
+	# Staff cards borrow the Kitchenware accent until they get their own.
+	if card is StaffCard:
 		return KITCHENWARE
 	return INGREDIENT

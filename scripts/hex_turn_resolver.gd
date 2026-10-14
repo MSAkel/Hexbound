@@ -33,8 +33,8 @@ var _skip_presentation_steps := 0
 var _storm_resolved := 0
 var _storm_counts: Dictionary = {}
 var _storm_edges: Dictionary = {}
-# True while a fire queued by a chef is resolving. Reaction chefs read this to avoid loops.
-var _resolving_chef_trigger := false
+# True while a fire queued by a staff member is resolving. Reaction staff read this to avoid loops.
+var _resolving_staff_trigger := false
 
 
 func setup(tile_map: HexTileMap) -> void:
@@ -52,7 +52,7 @@ func resolve_turn() -> void:
 	AudioManager.reset_card_trigger_chops()
 
 	TileCard.clear_copied_activation_stack()
-	_resolving_chef_trigger = false
+	_resolving_staff_trigger = false
 	pending_trigger_queue.clear()
 	_clear_trigger_link_sessions()
 	_skip_presentation_steps = 0
@@ -68,7 +68,7 @@ func resolve_turn() -> void:
 		var segment_index := map.get_segment_index(tile.coordinates)
 		if segment_index != active_segment:
 			active_segment = segment_index
-			await _start_station_chef(segment_index)
+			await _start_station_staff(segment_index)
 
 		if _should_bypass_primary_trigger_order_activation(tile):
 			await _mark_segment_resolved_if_natural_pass_done(tile)
@@ -86,15 +86,15 @@ func resolve_turn() -> void:
 		await _wait_for_turn_total_count_finished()
 	map._apply_segment_turn_totals_to_game_manager()
 	_clear_hour_garnish()
-	ChefManager.end_hour()
+	StaffManager.end_hour()
 	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
 	map._emit_segment_turn_completed_snapshot()
 	await GameManager.finish_turn_processing()
 
 
-## The chef linked to this station acts before its first spot fires.
-func _start_station_chef(segment_index: int) -> void:
-	if not ChefManager.station_started(map, segment_index):
+## The staff member linked to this station acts before its first spot fires.
+func _start_station_staff(segment_index: int) -> void:
+	if not StaffManager.station_started(map, segment_index):
 		return
 	await _wait_for_activation_animation()
 	await _wait_between_tile_activations()
@@ -121,7 +121,7 @@ func _resolve_rune_activation(tile: Hex) -> void:
 			entry["activation_scale"],
 			true,
 			source_hex,
-			int(entry.get("chef_slot", -1)),
+			int(entry.get("staff_slot", -1)),
 		)
 		_resolve_trigger_link_entry(entry)
 		if _note_storm_activation(source_hex, target_hex):
@@ -232,16 +232,16 @@ func _activate_tile_card_on_tile(
 	activation_scale: float = 1.0,
 	from_trigger: bool = false,
 	trigger_source_hex: Hex = null,
-	chef_slot: int = -1,
+	staff_slot: int = -1,
 ) -> void:
 	if not _would_activate_tile_card_on_tile(tile, from_trigger):
 		return
 
 	activation_scale *= EventManager.get_producer_output_multiplier(tile)
 
-	if from_trigger and chef_slot >= 0:
+	if from_trigger and staff_slot >= 0:
 		if not GameManager.skip_presentation:
-			map.play_chef_bolt(chef_slot, tile)
+			map.play_staff_bolt(staff_slot, tile)
 			tile.play_chained_tile_card_activation_animation()
 	elif from_trigger and trigger_source_hex != null:
 		if not GameManager.skip_presentation:
@@ -251,13 +251,13 @@ func _activate_tile_card_on_tile(
 		tile.play_tile_card_activation_animation()
 	await _wait_for_activation_animation()
 
-	_resolving_chef_trigger = chef_slot >= 0
+	_resolving_staff_trigger = staff_slot >= 0
 	tile.apply_tile_card_activation(activation_scale)
-	_resolving_chef_trigger = false
+	_resolving_staff_trigger = false
 
 
-func is_resolving_chef_trigger() -> bool:
-	return _resolving_chef_trigger
+func is_resolving_staff_trigger() -> bool:
+	return _resolving_staff_trigger
 
 
 func _should_bypass_primary_trigger_order_activation(tile: Hex) -> bool:
@@ -421,13 +421,13 @@ func destroy_placed_tile_card(rune: TileCard) -> void:
 
 
 ## Queues extra rune activations to resolve before the current tile flow continues.
-## chef_slot is set when a chef, not a seated card, asked for the fire.
+## staff_slot is set when a staff member, not a seated card, asked for the fire.
 ## Returns how many activations were actually queued.
 func queue_tile_card_triggers(
 	runes: Array[TileCard],
 	activation_scales: Array[float] = [],
 	source_hex: Hex = null,
-	chef_slot: int = -1,
+	staff_slot: int = -1,
 ) -> int:
 	var queued := 0
 	for i in range(runes.size()):
@@ -445,7 +445,7 @@ func queue_tile_card_triggers(
 			"rune": runes[i],
 			"activation_scale": scale_rune,
 			"source_hex": source_hex,
-			"chef_slot": chef_slot,
+			"staff_slot": staff_slot,
 		}
 		pending_trigger_queue.append(entry)
 		queued += 1
@@ -454,9 +454,9 @@ func queue_tile_card_triggers(
 	return queued
 
 
-## Extra fires requested by the chef in chef_slot. The bolt starts at that chef's hex.
-func queue_chef_triggers(runes: Array[TileCard], chef_slot: int) -> int:
-	return queue_tile_card_triggers(runes, [], null, chef_slot)
+## Extra fires requested by the staff member in staff_slot. The bolt starts at that staff member's hex.
+func queue_staff_triggers(runes: Array[TileCard], staff_slot: int) -> int:
+	return queue_tile_card_triggers(runes, [], null, staff_slot)
 
 
 ## Removes tile_card from the map after every trigger queued from source_hex resolves.

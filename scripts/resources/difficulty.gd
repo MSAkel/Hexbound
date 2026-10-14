@@ -1,7 +1,7 @@
 extends Resource
 class_name Difficulty
 
-# Static difficulty definitions and helpers, mirroring the SpecialtyRegistry pattern.
+# Static difficulty definitions and helpers, mirroring the ChefRegistry pattern.
 
 enum Level {
 	LEVEL_0,

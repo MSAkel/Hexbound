@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/garde_manger/garde_manger.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "garde_manger"
+name = "Garde Manger"
+description = "Every Dish requires one less Ingredient"
+rarity = 2

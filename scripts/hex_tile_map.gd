@@ -77,8 +77,8 @@ var _flashed_segment_coords: Array[Vector2i] = []
 var _flash_segment_generation: int = 0
 ## Occupied tiles lit while aiming a tile-target condiment.
 var _condiment_target_coords: Array[Vector2i] = []
-## Screen-space centers of the chef hexes, one per station. See set_chef_screen_centers().
-var _chef_screen_centers: Array[Vector2] = []
+## Screen-space centers of the staff hexes, one per station. See set_staff_screen_centers().
+var _staff_screen_centers: Array[Vector2] = []
 ## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
 var _round_turn_snapshots: Array = []
 
@@ -117,9 +117,9 @@ func _ready() -> void:
 	EventBus.turn_ended.connect(on_turn_ended)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.condiment_fuses_changed.connect(_refresh_condiment_fuse_badges)
-	# Dish chips read the chef recipe discount, so a roster change can move them.
-	EventBus.chef_roster_changed.connect(refresh_board_output_chips)
-	ChefManager.bind_board(self)
+	# Dish chips read the staff recipe discount, so a roster change can move them.
+	EventBus.staff_roster_changed.connect(refresh_board_output_chips)
+	StaffManager.bind_board(self)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
@@ -148,7 +148,7 @@ func _refresh_condiment_fuse_badges() -> void:
 
 
 func _exit_tree() -> void:
-	ChefManager.unbind_board(self)
+	StaffManager.unbind_board(self)
 	_free_map_hexes()
 
 
@@ -938,7 +938,7 @@ func notify_card_broke(tile_card: TileCard) -> void:
 			continue
 		card.on_other_segment_card_broke(tile_card, other)
 
-## Number of specialty-specific segments on the current map.
+## Number of chef-specific segments on the current map.
 func get_segment_count() -> int:
 	return _layout.build_segments().size()
 
@@ -1345,37 +1345,37 @@ func schedule_destroy_after_trigger_link(
 	turn_resolver.schedule_destroy_after_trigger_link(source_hex, tile_card, on_destroy)
 
 
-#region Chef column anchors
+#region Staff column anchors
 
-## Screen positions of the chef hexes, pushed by the chef column UI. Empty on headless boards.
-func set_chef_screen_centers(centers: Array[Vector2]) -> void:
-	_chef_screen_centers = centers
+## Screen positions of the staff hexes, pushed by the staff column UI. Empty on headless boards.
+func set_staff_screen_centers(centers: Array[Vector2]) -> void:
+	_staff_screen_centers = centers
 
 
-## Map-local center of the chef hex linked to a station. The column is fixed on screen,
+## Map-local center of the staff hex linked to a station. The column is fixed on screen,
 ## so its position is converted back through the camera. Headless boards have no column
 ## and fall back to the row's first spot.
-func get_chef_anchor_local(segment_index: int) -> Vector2:
-	if segment_index >= 0 and segment_index < _chef_screen_centers.size() and is_inside_tree():
+func get_staff_anchor_local(segment_index: int) -> Vector2:
+	if segment_index >= 0 and segment_index < _staff_screen_centers.size() and is_inside_tree():
 		var canvas_xform: Transform2D = base_layer.get_global_transform_with_canvas()
-		return canvas_xform.affine_inverse() * _chef_screen_centers[segment_index]
+		return canvas_xform.affine_inverse() * _staff_screen_centers[segment_index]
 	var rows: Array = _layout.get_spatial_rows()
 	if segment_index < 0 or segment_index >= rows.size() or rows[segment_index].is_empty():
 		return Vector2.ZERO
 	return base_layer.map_to_local(rows[segment_index][0])
 
 
-## Scene-global center of a chef hex, for floating text.
-func get_chef_anchor_global(segment_index: int) -> Vector2:
-	return to_global(get_chef_anchor_local(segment_index))
+## Scene-global center of a staff hex, for floating text.
+func get_staff_anchor_global(segment_index: int) -> Vector2:
+	return to_global(get_staff_anchor_local(segment_index))
 
 
-## Bolt from a chef hex to the spot its effect just reached.
-func play_chef_bolt(segment_index: int, target: Hex) -> void:
+## Bolt from a staff hex to the spot its effect just reached.
+func play_staff_bolt(segment_index: int, target: Hex) -> void:
 	if target == null or GameManager.skip_presentation:
 		return
 	trigger_link_overlay.play_bolt_between(
-		get_chef_anchor_local(segment_index),
+		get_staff_anchor_local(segment_index),
 		base_layer.map_to_local(target.coordinates)
 	)
 

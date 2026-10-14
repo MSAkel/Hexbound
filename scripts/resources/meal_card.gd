@@ -103,9 +103,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 	RunLedger.record_dish_plated()
-	# Plated short of the full recipe, so a chef waived the missing ingredient.
+	# Plated short of the full recipe, so a staff member waived the missing ingredient.
 	if recipe.size() < get_recipe_prefix_size():
-		ChefManager.notify_dish_discount_used(tile)
+		StaffManager.notify_dish_discount_used(tile)
 
 
 ## Empty when the prefix recipe is incomplete.
@@ -154,7 +154,7 @@ func _preview_plated_multiplicative_mult(tile: Hex) -> float:
 	return _plated_multiplicative_mult_from_recipe(recipe)
 
 
-## Slots in the full recipe bag, before any chef discount.
+## Slots in the full recipe bag, before any staff discount.
 func get_recipe_prefix_size() -> int:
 	return (
 		recipe_vegetable_count
@@ -166,13 +166,13 @@ func get_recipe_prefix_size() -> int:
 	)
 
 
-## Ingredient slots chefs let this dish leave empty. Kitchenware slots are never waived,
+## Ingredient slots staff let this dish leave empty. Kitchenware slots are never waived,
 ## and at least one seat always has to be filled.
 func get_waived_ingredient_slots() -> int:
 	var prefix_size := get_recipe_prefix_size()
 	var ingredient_slots := prefix_size - recipe_kitchenware_count
 	var max_waived := maxi(mini(ingredient_slots, prefix_size - 1), 0)
-	return clampi(ChefManager.dish_ingredient_discount(), 0, max_waived)
+	return clampi(StaffManager.dish_ingredient_discount(), 0, max_waived)
 
 
 ## How many fire-order seats this dish reads immediately before itself right now.
@@ -292,7 +292,7 @@ func _prefix_recipe_cards(tile: Hex) -> Array[TileCard]:
 
 
 ## Each prefix card claims at most one bag slot. Dual-tagged cards take the scarcest remaining slot.
-## Empty dictionary means the bag cannot be filled. Chefs may waive leftover ingredient slots.
+## Empty dictionary means the bag cannot be filled. Staff may waive leftover ingredient slots.
 func _assign_recipe_slots(cards: Array[TileCard]) -> Dictionary:
 	var remaining := {}
 	var slot_counts := _recipe_slot_counts()

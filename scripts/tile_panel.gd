@@ -55,7 +55,7 @@ func set_hex(h: Hex, spot_rect: Rect2 = Rect2()) -> void:
 	call_deferred("_fit_and_position")
 
 
-## Inspection for Chef cards.
+## Inspection for Staff cards.
 func show_card(card: Card, anchor_rect: Rect2) -> void:
 	if card == null:
 		return

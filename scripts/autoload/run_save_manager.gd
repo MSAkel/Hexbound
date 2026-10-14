@@ -69,14 +69,14 @@ func request_continue_run() -> void:
 		push_warning("Continue requested but no run save exists.")
 		return
 
-	var specialty := SpecialtyRegistry.get_specialty_by_id(payload.get("specialty_id", ""))
-	if specialty == null:
-		push_error("RunSaveManager: cannot continue — unknown specialty in save.")
+	var chef := ChefRegistry.get_chef_by_id(payload.get("chef_id", ""))
+	if chef == null:
+		push_error("RunSaveManager: cannot continue — unknown chef in save.")
 		delete_save()
 		return
 
-	# Map generation reads specialty layout rules during _ready, before main.gd restores state.
-	GameManager.selected_specialty = specialty
+	# Map generation reads chef layout rules during _ready, before main.gd restores state.
+	GameManager.selected_chef = chef
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	continue_run_pending = true
 	request_scene_enter_transition()
@@ -152,7 +152,7 @@ func _record_abandoned_run_from_save(payload: Dictionary) -> void:
 	var current_round := int(game_state.get("current_round", 1))
 	var snapshot := {
 		"is_win": false,
-		"specialty_id": String(payload.get("specialty_id", "")),
+		"chef_id": String(payload.get("chef_id", "")),
 		"difficulty": int(payload.get("difficulty", 0)),
 		"rounds_completed": maxi(0, current_round - 1),
 		"peak_gold_held": int(game_state.get("peak_gold_held", 0)),
@@ -186,13 +186,13 @@ func save_current_run() -> void:
 	var payload := {
 		"version": SAVE_VERSION,
 		"saved_at_unix": Time.get_unix_time_from_system(),
-		"specialty_id": GameManager.selected_specialty.id if GameManager.selected_specialty else "",
+		"chef_id": GameManager.selected_chef.id if GameManager.selected_chef else "",
 		"difficulty": GameManager.selected_difficulty,
 		"game_manager": GameManager.capture_run_state(),
 		"gold": GoldManager.capture_run_state(),
 		"rerolls": RerollManager.capture_run_state(),
 		"condiments": CondimentManager.capture_run_state(),
-		"chefs": ChefManager.capture_run_state(),
+		"staff": StaffManager.capture_run_state(),
 		"run_ledger": RunLedger.capture_run_state(),
 		"events": EventManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
@@ -227,16 +227,16 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 		delete_save()
 		return false
 
-	var specialty_id: String = payload.get("specialty_id", "")
-	var specialty := SpecialtyRegistry.get_specialty_by_id(specialty_id)
-	if specialty == null:
-		push_error("RunSaveManager: unknown specialty id '%s'." % specialty_id)
+	var chef_id: String = payload.get("chef_id", "")
+	var chef := ChefRegistry.get_chef_by_id(chef_id)
+	if chef == null:
+		push_error("RunSaveManager: unknown chef id '%s'." % chef_id)
 		delete_save()
 		return false
 
 	_is_restoring = true
 	_pending_turn_resume = false
-	GameManager.selected_specialty = specialty
+	GameManager.selected_chef = chef
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	GameManager.apply_run_state(payload.get("game_manager", {}))
 	GoldManager.apply_run_state(payload.get("gold", {}))
@@ -244,8 +244,8 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	EventManager.apply_run_state(payload.get("events", {}))
 	RoundFlow.apply_run_state(payload.get("round_flow", {}))
 	RunRng.apply_run_state(payload.get("run_rng", {}))
-	# Chefs first. Dish chips read the recipe discount while the map restores.
-	ChefManager.apply_run_state(payload.get("chefs", {}))
+	# Staff first. Dish chips read the recipe discount while the map restores.
+	StaffManager.apply_run_state(payload.get("staff", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	CondimentManager.apply_run_state(payload.get("condiments", {}))
 	RunLedger.apply_run_state(payload.get("run_ledger", {}))
@@ -419,7 +419,7 @@ func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:
 	var hand_state: Dictionary = payload.get("hand", {})
 	var saved_count: int = hand_state.get("cards", []).size()
 	var difficulty := int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
-	var expected := SpecialtyRegistry.get_expected_opening_hand_size(difficulty)
+	var expected := ChefRegistry.get_expected_opening_hand_size(difficulty)
 	var map_state: Dictionary = payload.get("map", {})
 	var placed_count: int = map_state.get("placed_spot_cards", []).size()
 	var round_num := int(payload.get("game_manager", {}).get("current_round", 1))

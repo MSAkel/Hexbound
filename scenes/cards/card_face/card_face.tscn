@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dm7uebeoitmvj"]
 
 [ext_resource type="Script" uid="uid://cya1lmn5g3ovh" path="res://scenes/cards/card_face/card_face.gd" id="1_face"]
 [ext_resource type="Texture2D" uid="uid://c1iwjaikk22iy" path="res://assets/card/card_bg.png" id="2_bg"]
@@ -11,9 +11,6 @@
 [ext_resource type="Script" uid="uid://djlmbkcnx2l0l" path="res://scenes/cards/card_face/ribbon_text_effect.gd" id="9_ribbon"]
 [ext_resource type="StyleBox" uid="uid://bv2du6uv7wusn" path="res://themes/card_selection_glow_stylebox.tres" id="10_glow"]
 
-[sub_resource type="SystemFont" id="SystemFont_face"]
-subpixel_positioning = 0
-
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_name_banner"]
 content_margin_left = 8.0
 content_margin_top = 1.0
@@ -22,6 +19,9 @@ content_margin_bottom = 1.0
 texture = ExtResource("5_namebg")
 texture_margin_left = 4.0
 texture_margin_right = 4.0
+
+[sub_resource type="SystemFont" id="SystemFont_face"]
+subpixel_positioning = 0
 
 [sub_resource type="Curve" id="Curve_ribbon"]
 _limits = [-1.0, 1.0, 0.0, 1.0]
@@ -156,6 +156,8 @@ offset_left = 35.0
 offset_top = 27.0
 offset_right = 87.0
 offset_bottom = 79.0
+grow_horizontal = 1
+grow_vertical = 1
 show_hex = false
 
 [node name="IconFrame" type="TextureRect" parent="IconDisplay" unique_id=2036677826]

@@ -11,7 +11,7 @@ const GARNISH := preload("res://assets/icons/stats/garnish.png")
 const FIRE := preload("res://assets/icons/stats/fire.png")
 const PASS := preload("res://assets/icons/stats/pass.png")
 
-## Fallback for cards and chefs that have no icon yet.
+## Fallback for cards and staff that have no icon yet.
 const PLACEHOLDER := preload("res://assets/icons/placeholder.png")
 
 ## Random pool for the scene-enter loading splash. Stats, ingredients, and kitchenware.

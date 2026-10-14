@@ -8,7 +8,7 @@ const DRIFT_SHADER := preload("res://scenes/ui/menu_background/menu_background_d
 const MENU_FLOW_SCENES: Array[String] = [
 	ScenePaths.MAIN_MENU,
 	ScenePaths.DEVELOPER_MENU,
-	ScenePaths.SPECIALTY_SELECTION,
+	ScenePaths.CHEF_SELECTION,
 ]
 
 var _view: Control

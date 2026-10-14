@@ -16,8 +16,8 @@ const ACTION_NAV_LEFT := "nav_left"
 const ACTION_NAV_RIGHT := "nav_right"
 const ACTION_NAV_UP := "nav_up"
 const ACTION_NAV_DOWN := "nav_down"
-const ACTION_SPECIALTY_LAYOUT_PREV := "specialty_layout_prev"
-const ACTION_SPECIALTY_LAYOUT_NEXT := "specialty_layout_next"
+const ACTION_CHEF_LAYOUT_PREV := "chef_layout_prev"
+const ACTION_CHEF_LAYOUT_NEXT := "chef_layout_next"
 const ACTION_UI_CYCLE := "gamepad_ui_cycle"
 
 var input_mode: InputMode = InputMode.KEYBOARD_MOUSE
@@ -110,12 +110,12 @@ func _register_controller_actions() -> void:
 	# Pause from the Start button on common controllers.
 	_add_joy_button("pause_game", JOY_BUTTON_START)
 
-	# Specialty selection layout paging. LB goes back, RB goes forward.
-	_ensure_action(ACTION_SPECIALTY_LAYOUT_PREV, 0.5)
-	_add_joy_button(ACTION_SPECIALTY_LAYOUT_PREV, JOY_BUTTON_LEFT_SHOULDER)
+	# Chef selection layout paging. LB goes back, RB goes forward.
+	_ensure_action(ACTION_CHEF_LAYOUT_PREV, 0.5)
+	_add_joy_button(ACTION_CHEF_LAYOUT_PREV, JOY_BUTTON_LEFT_SHOULDER)
 
-	_ensure_action(ACTION_SPECIALTY_LAYOUT_NEXT, 0.5)
-	_add_joy_button(ACTION_SPECIALTY_LAYOUT_NEXT, JOY_BUTTON_RIGHT_SHOULDER)
+	_ensure_action(ACTION_CHEF_LAYOUT_NEXT, 0.5)
+	_add_joy_button(ACTION_CHEF_LAYOUT_NEXT, JOY_BUTTON_RIGHT_SHOULDER)
 
 	_ensure_action(ACTION_UI_CYCLE)
 	_add_key(ACTION_UI_CYCLE, KEY_TAB)

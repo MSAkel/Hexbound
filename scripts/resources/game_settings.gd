@@ -31,8 +31,8 @@ static var music_volume: float = 0.20
 static var sfx_volume: float = 0.35
 static var display_mode: int = DISPLAY_MODE_BORDERLESS
 static var resolution: Vector2i = Vector2i(1920, 1080)
-## Last specialty shown on the specialty selection screen, even if no run was started.
-static var last_specialty_selection_id: String = ""
+## Last chef shown on the chef selection screen, even if no run was started.
+static var last_chef_selection_id: String = ""
 static var _loaded: bool = false
 
 
@@ -96,7 +96,7 @@ static func ensure_loaded() -> void:
 			loaded_resolution = Vector2i(saved_resolution)
 		var snapped_resolution := snap_resolution_to_preset(loaded_resolution)
 		resolution = snapped_resolution
-		last_specialty_selection_id = String(settings.get("last_specialty_selection_id", ""))
+		last_chef_selection_id = String(settings.get("last_chef_selection_id", ""))
 		_apply_display_settings()
 		_apply_vsync()
 		if snapped_resolution != loaded_resolution:
@@ -275,15 +275,15 @@ static func _center_window_in_usable_rect(usable: Rect2i) -> void:
 static func reset_progression_preferences() -> void:
 	ensure_loaded()
 	tutorial_enabled = true
-	last_specialty_selection_id = ""
+	last_chef_selection_id = ""
 	_save()
 
 
-static func set_last_specialty_selection_id(specialty_id: String) -> void:
+static func set_last_chef_selection_id(chef_id: String) -> void:
 	ensure_loaded()
-	if last_specialty_selection_id == specialty_id:
+	if last_chef_selection_id == chef_id:
 		return
-	last_specialty_selection_id = specialty_id
+	last_chef_selection_id = chef_id
 	_save()
 
 
@@ -315,7 +315,7 @@ static func _save() -> void:
 		"sfx_volume": sfx_volume,
 		"display_mode": display_mode,
 		"resolution": resolution,
-		"last_specialty_selection_id": last_specialty_selection_id,
+		"last_chef_selection_id": last_chef_selection_id,
 	}
 	var save_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if save_file == null:

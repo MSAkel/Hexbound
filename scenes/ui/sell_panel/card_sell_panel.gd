@@ -1,7 +1,7 @@
 class_name CardSellPanel
 extends PanelContainer
 
-## Drop zone in the bottom-left corner. Drag a hand card or a chef here and release to sell it.
+## Drop zone in the bottom-left corner. Drag a hand card or a staff member here and release to sell it.
 
 const SELL_VALUE := 2
 
@@ -28,8 +28,8 @@ var _panel_style_armed: StyleBoxFlat
 var _panel_style_hover: StyleBoxFlat
 ## True while a hand card is picked up.
 var _card_dragged := false
-## Chef slot being dragged, or -1. Chefs sell for their own value, not SELL_VALUE.
-var _drag_chef_slot := -1
+## Staff slot being dragged, or -1. Staff sell for their own value, not SELL_VALUE.
+var _drag_staff_slot := -1
 var _pulse_tween: Tween
 
 
@@ -38,8 +38,8 @@ func _ready() -> void:
 	_cache_panel_styles()
 	EventBus.card_drag_started.connect(_on_card_drag_started)
 	EventBus.card_drag_ended.connect(_on_card_drag_ended)
-	EventBus.chef_drag_started.connect(_on_chef_drag_started)
-	EventBus.chef_drag_ended.connect(_on_chef_drag_ended)
+	EventBus.staff_drag_started.connect(_on_staff_drag_started)
+	EventBus.staff_drag_ended.connect(_on_staff_drag_ended)
 	_refresh_state()
 
 
@@ -70,42 +70,42 @@ func _on_card_drag_ended(_card: CardUI, _outcome: int) -> void:
 	_refresh_state()
 
 
-func _on_chef_drag_started(slot: int) -> void:
-	_drag_chef_slot = slot
+func _on_staff_drag_started(slot: int) -> void:
+	_drag_staff_slot = slot
 	_refresh_state()
 
 
-func _on_chef_drag_ended() -> void:
-	_drag_chef_slot = -1
+func _on_staff_drag_ended() -> void:
+	_drag_staff_slot = -1
 	_refresh_state()
 
 
-## Used by ChefRail when the player releases a dragged chef. True when it was sold.
-func try_sell_chef(slot: int) -> bool:
+## Used by StaffRail when the player releases a dragged staff member. True when it was sold.
+func try_sell_staff(slot: int) -> bool:
 	if not is_cursor_over():
 		return false
-	if ChefManager.sell_chef(slot) < 0:
+	if StaffManager.sell_staff(slot) < 0:
 		return false
 	AudioManager.play_sfx(UISounds.GOLD_GAINED)
 	return true
 
 
 ## Sells without a pointer check. Controller players pick Sell as a drop target instead.
-func sell_chef_from_controller(slot: int) -> bool:
-	if ChefManager.sell_chef(slot) < 0:
+func sell_staff_from_controller(slot: int) -> bool:
+	if StaffManager.sell_staff(slot) < 0:
 		return false
 	AudioManager.play_sfx(UISounds.GOLD_GAINED)
 	return true
 
 
 func _is_armed() -> bool:
-	return _card_dragged or _drag_chef_slot >= 0
+	return _card_dragged or _drag_staff_slot >= 0
 
 
 func _current_sell_value() -> int:
-	var chef := ChefManager.get_chef(_drag_chef_slot)
-	if chef != null:
-		return chef.get_sell_value()
+	var staff := StaffManager.get_staff(_drag_staff_slot)
+	if staff != null:
+		return staff.get_sell_value()
 	return SELL_VALUE
 
 
@@ -132,7 +132,7 @@ func play_sell_pulse() -> void:
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
-## True when a card or chef released now would land on the panel.
+## True when a card or staff released now would land on the panel.
 func is_cursor_over() -> bool:
 	return get_global_rect().has_point(get_global_mouse_position())
 

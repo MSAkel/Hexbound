@@ -98,7 +98,7 @@ enum QueryScope {
 
 const GARNISH_OUTPUT_SCALE := 2.0
 ## Each Garnish stack multiplies output by GARNISH_OUTPUT_SCALE. Two stacks cap at x4.
-## Chefs can raise the cap. Read ChefManager.max_garnish_stacks_for() for a seated card.
+## Staff can raise the cap. Read StaffManager.max_garnish_stacks_for() for a seated card.
 const MAX_GARNISH_STACKS := 2
 ## Shared chip fill. White numbers stay readable on this purple.
 const CHIP_PANEL_COLOR := Color(0.22, 0.16, 0.28)
@@ -455,16 +455,16 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	if garnish_stacks > 0 and not EventManager.are_garnishes_blocked():
 		output_scale *= pow(GARNISH_OUTPUT_SCALE, garnish_stacks)
 	if tile.map != null:
-		output_scale *= GameManager.specialty_passives.beverage_output_scale(self)
+		output_scale *= GameManager.chef_speciality.beverage_output_scale(self)
 
 	_activation_output_scale = output_scale
 	# Count this activation before the card resolves so "triggers so far" includes the current one.
 	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
 	_play_trigger_sound()
-	GameManager.specialty_passives.maybe_repeat_kitchenware(tile, self)
+	GameManager.chef_speciality.maybe_repeat_kitchenware(tile, self)
 	CondimentManager.after_card_activated(tile, _activation_host_card(tile))
-	ChefManager.after_card_activated(tile, _activation_host_card(tile))
+	StaffManager.after_card_activated(tile, _activation_host_card(tile))
 	_activation_output_scale = 1.0
 	_activation_was_garnished = false
 
@@ -698,9 +698,9 @@ func _try_garnish_tile_card(source_tile: Hex, target: TileCard) -> bool:
 		return false
 	if not target.add_garnish():
 		return false
-	# Chefs can make a Kitchenware Garnish land more than once.
+	# Staff can make a Kitchenware Garnish land more than once.
 	if type == TileCardType.KITCHENWARE:
-		for _i in ChefManager.extra_garnish_applications(source_tile, self, target):
+		for _i in StaffManager.extra_garnish_applications(source_tile, self, target):
 			target.add_garnish()
 	return true
 
@@ -797,12 +797,12 @@ func _pay_effect_amount(tile: Hex, fail_if_empty: bool = false) -> bool:
 
 ## Adds one Garnish stack. Returns false when already at the stack cap.
 func add_garnish() -> bool:
-	if garnish_stacks >= ChefManager.max_garnish_stacks_for(self):
+	if garnish_stacks >= StaffManager.max_garnish_stacks_for(self):
 		return false
 
 	garnish_stacks += 1
 	EventBus.tile_card_garnished.emit(self)
-	ChefManager.after_card_garnished(self)
+	StaffManager.after_card_garnished(self)
 	return true
 
 

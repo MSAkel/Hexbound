@@ -57,7 +57,7 @@ func _ready() -> void:
 			AudioManager.play_music(music)
 
 
-## Specialty-select Play, hold-R, and a failed Continue all share this path.
+## Chef-select Play, hold-R, and a failed Continue all share this path.
 func _begin_fresh_run() -> void:
 	var pending_run := RunSaveManager.consume_pending_run_seed()
 	if pending_run["requested"]:
@@ -69,7 +69,7 @@ func _begin_fresh_run() -> void:
 		RunRng.restart_same_seed()
 	GameManager.reset_for_new_run()
 	RunHistoryManager.notify_run_started()
-	# Set starting gold after specialty selection has chosen the run difficulty.
+	# Set starting gold after chef selection has chosen the run difficulty.
 	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
 	RerollManager.reset_for_new_run()
 	EventManager.init_run()
@@ -77,7 +77,7 @@ func _begin_fresh_run() -> void:
 	hand.build_starting_hand()
 	if debug_starting_round > 1:
 		GameManager.set_starting_round_for_debug(debug_starting_round)
-	var expected_hand_size := SpecialtyRegistry.get_expected_opening_hand_size(GameManager.selected_difficulty)
+	var expected_hand_size := ChefRegistry.get_expected_opening_hand_size(GameManager.selected_difficulty)
 	if hand.get_hand_card_count() < expected_hand_size:
 		push_error(
 			"Starting hand only dealt %d/%d cards. Delete the run save and start a new run."
@@ -146,7 +146,7 @@ func _cancel_restart_hold() -> void:
 func _commit_restart() -> void:
 	_restart_hold_active = false
 	_is_restarting = true
-	# A restarted run is a new session. Drop any in-progress save for this specialty.
+	# A restarted run is a new session. Drop any in-progress save for this chef.
 	RunSaveManager.delete_save()
 	# Hold-R is a fresh run, not a seed replay. Generate a new display seed.
 	RunRng.begin_new_run()

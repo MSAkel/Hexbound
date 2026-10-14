@@ -4,8 +4,8 @@ extends Control
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CONDIMENT_ITEM_SCENE := preload("res://scenes/ui/condiments/condiment_shop_item.tscn")
 const MERCHANT_TILE_CARD_COUNT := 3
-## Extra shelf slot that always offers a chef the player does not own.
-const MERCHANT_CHEF_COUNT := 1
+## Extra shelf slot that always offers a staff member the player does not own.
+const MERCHANT_STAFF_COUNT := 1
 const BASE_REROLL_COST := 5
 
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/CardsGridContainer
@@ -28,10 +28,10 @@ var _reroll_cost := BASE_REROLL_COST
 var _restore_state: Dictionary = {}
 ## True from open() until Leave. Independent of board-peek visibility.
 var _session_open := false
-## Chef ids the player owned when the current stock was rolled.
-var _owned_chef_ids_at_stock: Array[String] = []
-var _restored_owned_chef_ids: Array[String] = []
-var _has_restored_owned_chefs := false
+## Staff ids the player owned when the current stock was rolled.
+var _owned_staff_ids_at_stock: Array[String] = []
+var _restored_owned_staff_ids: Array[String] = []
+var _has_restored_owned_staff := false
 
 
 func _ready() -> void:
@@ -44,8 +44,8 @@ func _ready() -> void:
 	EventBus.gold_changed.connect(_on_currency_changed)
 	EventBus.rerolls_changed.connect(_on_currency_changed)
 	EventBus.condiment_belt_changed.connect(_on_currency_changed)
-	# A freed chef slot re-enables Buy on the chef shelf card.
-	EventBus.chef_roster_changed.connect(_on_currency_changed)
+	# A freed staff slot re-enables Buy on the staff shelf card.
+	EventBus.staff_roster_changed.connect(_on_currency_changed)
 	EventBus.condiment_targeting_changed.connect(_on_condiment_targeting_changed)
 	UiManager.show_merchant_panel.connect(open)
 	# Picking up a controller mid-shop should place a focus ring without a re-open.
@@ -66,8 +66,8 @@ func open() -> void:
 		_reroll_cost = int(_restore_state.get("reroll_cost", BASE_REROLL_COST))
 		sold_card_indices = _restore_state.get("sold_indices", [])
 		sold_condiment_indices = _restore_state.get("sold_condiment_indices", [])
-		_restored_owned_chef_ids.assign(_restore_state.get("owned_chef_ids_at_stock", []))
-		_has_restored_owned_chefs = true
+		_restored_owned_staff_ids.assign(_restore_state.get("owned_staff_ids_at_stock", []))
+		_has_restored_owned_staff = true
 		_restore_state.clear()
 	else:
 		_stock_reroll_count = 0
@@ -164,7 +164,7 @@ func _on_condiment_targeting_changed(slot_index: int) -> void:
 
 func _refresh_merchant_stock() -> void:
 	_clear_selection()
-	_capture_owned_chefs_for_stock()
+	_capture_owned_staff_for_stock()
 	await _refresh_merchant_cards()
 	await _refresh_merchant_condiments()
 
@@ -184,25 +184,25 @@ func _refresh_merchant_cards() -> void:
 	var inventory: Array[Card] = []
 	for rune in drafted_runes:
 		inventory.append(rune)
-	for chef in _draw_merchant_chefs():
-		inventory.append(chef)
+	for staff in _draw_merchant_staff():
+		inventory.append(staff)
 	await _display_merchant_cards(inventory)
 
 
-## Chefs already owned when the stock is rolled stay off the shelf.
-func _draw_merchant_chefs() -> Array[ChefCard]:
-	var stream_name := "merchant_chefs:r%d:e%d" % [GameManager.current_round, _stock_reroll_count]
-	return ChefCatalog.draw(MERCHANT_CHEF_COUNT, RunRng.create_rng(stream_name), _owned_chef_ids_at_stock)
+## Staff already owned when the stock is rolled stay off the shelf.
+func _draw_merchant_staff() -> Array[StaffCard]:
+	var stream_name := "merchant_staff:r%d:e%d" % [GameManager.current_round, _stock_reroll_count]
+	return StaffCatalog.draw(MERCHANT_STAFF_COUNT, RunRng.create_rng(stream_name), _owned_staff_ids_at_stock)
 
 
-## A restored shop must roll the same chef it showed before, so the owned list is part of the save.
-func _capture_owned_chefs_for_stock() -> void:
-	if not _restored_owned_chef_ids.is_empty() or _has_restored_owned_chefs:
-		_owned_chef_ids_at_stock = _restored_owned_chef_ids.duplicate()
-		_restored_owned_chef_ids.clear()
-		_has_restored_owned_chefs = false
+## A restored shop must roll the same staff it showed before, so the owned list is part of the save.
+func _capture_owned_staff_for_stock() -> void:
+	if not _restored_owned_staff_ids.is_empty() or _has_restored_owned_staff:
+		_owned_staff_ids_at_stock = _restored_owned_staff_ids.duplicate()
+		_restored_owned_staff_ids.clear()
+		_has_restored_owned_staff = false
 		return
-	_owned_chef_ids_at_stock = ChefManager.owned_ids()
+	_owned_staff_ids_at_stock = StaffManager.owned_ids()
 
 
 func _refresh_merchant_condiments() -> void:
@@ -304,8 +304,8 @@ func _complete_purchase() -> void:
 
 	if card is TileCard:
 		EventBus.tile_card_selected.emit(card as TileCard)
-	elif card is ChefCard:
-		_seat_purchased_chef(card as ChefCard, shelf_rect)
+	elif card is StaffCard:
+		_seat_purchased_staff(card as StaffCard, shelf_rect)
 
 	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
 	_clear_selection()
@@ -314,12 +314,12 @@ func _complete_purchase() -> void:
 	_queue_focus()
 
 
-## The chef takes the first empty slot and flies there from its shelf card.
-func _seat_purchased_chef(chef: ChefCard, shelf_rect: Rect2) -> void:
-	var rail := get_tree().get_first_node_in_group("chef_rail")
+## The staff member takes the first empty slot and flies there from its shelf card.
+func _seat_purchased_staff(staff: StaffCard, shelf_rect: Rect2) -> void:
+	var rail := get_tree().get_first_node_in_group("staff_rail")
 	if rail != null:
 		rail.set_next_arrival_origin(shelf_rect)
-	ChefManager.add_chef(chef)
+	StaffManager.add_staff(staff)
 
 
 func _complete_condiment_purchase() -> void:
@@ -421,7 +421,7 @@ func capture_shop_state() -> Dictionary:
 		"reroll_cost": _reroll_cost,
 		"sold_indices": sold_indices,
 		"sold_condiment_indices": sold_condiment_indices,
-		"owned_chef_ids_at_stock": _owned_chef_ids_at_stock.duplicate(),
+		"owned_staff_ids_at_stock": _owned_staff_ids_at_stock.duplicate(),
 	}
 
 

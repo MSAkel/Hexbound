@@ -25,7 +25,7 @@ func _on_game_ended() -> void:
 	var xp_gain := MetaProgressionManager.get_layout_xp_gain_from_snapshot(snapshot)
 	MetaProgressionManager.record_run_snapshot(snapshot)
 	RunHistoryManager.archive_finished_run(false)
-	played_as_label.text = GameManager.selected_specialty.display_name if GameManager.selected_specialty else "Unknown"
+	played_as_label.text = GameManager.selected_chef.display_name if GameManager.selected_chef else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
 	round_value.text = str(GameManager.current_round)
 	gold_earned_value.text = CountingNumber.format_int(GoldManager.total_earned_this_run)
@@ -46,9 +46,9 @@ func _focus_main_menu() -> void:
 
 
 func _current_layout_xp() -> int:
-	if GameManager.selected_specialty == null:
+	if GameManager.selected_chef == null:
 		return 0
-	return MetaProgressionManager.get_layout_xp(GameManager.selected_specialty.id)
+	return MetaProgressionManager.get_layout_xp(GameManager.selected_chef.id)
 
 
 func _on_copy_seed_button_pressed() -> void:
@@ -65,4 +65,4 @@ func _on_main_menu_button_pressed() -> void:
 func _on_new_run_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	RunSaveManager.request_scene_enter_transition()
-	get_tree().change_scene_to_file(ScenePaths.SPECIALTY_SELECTION)
+	get_tree().change_scene_to_file(ScenePaths.CHEF_SELECTION)

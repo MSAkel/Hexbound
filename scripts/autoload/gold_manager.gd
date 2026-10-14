@@ -48,8 +48,8 @@ var last_speed_reward: Dictionary:
 ## Set starting gold for a new run based on difficulty and notify UI listeners.
 func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	_amount = Difficulty.get_starting_gold(difficulty)
-	if GameManager.specialty_passives != null:
-		_amount += int(GameManager.specialty_passives.extra_starting_gold())
+	if GameManager.chef_speciality != null:
+		_amount += int(GameManager.chef_speciality.extra_starting_gold())
 	_total_earned_this_run = 0
 	_earned_this_turn = 0
 	_spent_this_round = 0
@@ -89,8 +89,8 @@ func can_afford(cost: int) -> bool:
 ## Pays round completion gold and early-finish bonus when the goal is met.
 func apply_round_speed_rewards(skipped_turns: int) -> void:
 	var gourmet_bonus := 0
-	if GameManager.specialty_passives != null:
-		gourmet_bonus = int(GameManager.specialty_passives.extra_day_completion_gold())
+	if GameManager.chef_speciality != null:
+		gourmet_bonus = int(GameManager.chef_speciality.extra_day_completion_gold())
 	var base_gold := ROUND_COMPLETION_GOLD + gourmet_bonus
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns
 	var total_gold := base_gold + early_gold

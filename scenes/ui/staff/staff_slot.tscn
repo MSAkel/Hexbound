@@ -1,0 +1,131 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/staff/staff_slot.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="2_well"]
+[ext_resource type="Texture2D" uid="uid://bjnxu3p56m13h" path="res://assets/icons/icon_background/utility.png" id="3_back"]
+[ext_resource type="Texture2D" uid="uid://u433044huqg5" path="res://assets/tilesets/tile_hover_highlight.png" id="4_rim"]
+
+[node name="StaffSlot" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 130.0
+offset_bottom = 151.0
+script = ExtResource("1_script")
+
+[node name="Well" type="TextureRect" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.6)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_well")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DropGlow" type="TextureRect" parent="."]
+unique_name_in_owner = true
+visible = false
+modulate = Color(0.45, 0.88, 1.15, 0.72)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_rim")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Token" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Back" type="TextureRect" parent="Token"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_back")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="Token"]
+unique_name_in_owner = true
+texture_filter = 2
+layout_mode = 1
+anchor_left = 0.2
+anchor_top = 0.2
+anchor_right = 0.8
+anchor_bottom = 0.8
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CopyGhost" type="TextureRect" parent="Token"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+texture_filter = 2
+layout_mode = 1
+anchor_left = 0.2
+anchor_top = 0.2
+anchor_right = 0.8
+anchor_bottom = 0.8
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Rim" type="TextureRect" parent="Token"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_rim")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameTag" type="Label" parent="Token"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -44.0
+offset_right = 20.0
+offset_bottom = -22.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.97, 0.88, 1)
+theme_override_colors/font_outline_color = Color(0.1, 0.07, 0.14, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3

@@ -24,7 +24,7 @@ enum InteractionMode {
 # Typed payload. TileCard occupies hexes on the board.
 var card: Card = null
 var interaction_mode: InteractionMode = InteractionMode.HAND
-# Preview cards (e.g. specialty select) should not play hover elevation.
+# Preview cards (e.g. chef select) should not play hover elevation.
 var hover_enabled := true
 var price: int = 0
 

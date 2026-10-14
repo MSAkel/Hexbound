@@ -5,8 +5,9 @@
 
 [resource]
 script = ExtResource("2_script")
+recipe_fruit_count = 2
+recipe_kitchenware_count = 1
 base_production_amount = 1
-rarity = 1
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
@@ -14,4 +15,5 @@ id = "fruit_salad"
 name = "Fruit Salad"
 icon = ExtResource("1_k6e86")
 description = "Gains x0.5 for every adjacent fruit. Starts at x1 {mult} "
+rarity = 1
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

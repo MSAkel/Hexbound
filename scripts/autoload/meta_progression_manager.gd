@@ -147,7 +147,7 @@ func record_run_snapshot(snapshot: Dictionary) -> void:
 		_lifetime_stats["losses"] = int(_lifetime_stats.get("losses", 0)) + 1
 	_lifetime_stats["runs_completed"] = int(_lifetime_stats.get("runs_completed", 0)) + 1
 
-	var layout_id := String(snapshot.get("specialty_id", ""))
+	var layout_id := String(snapshot.get("chef_id", ""))
 	if not layout_id.is_empty():
 		_layout_xp[layout_id] = get_layout_xp(layout_id) + _compute_layout_xp_gain(snapshot)
 

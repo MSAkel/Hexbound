@@ -26,7 +26,7 @@ const MERCHANT_STOCK_COUNT := 3
 const BOT_IDS: Array[String] = ["fill", "stack", "spread", "player"]
 ## Places randomly, prefers retrigger and utility cards, and keeps filling after a missed goal.
 const CHAOS_BOT_ID := "chaos"
-const SPECIALTY_IDS: Array[String] = [
+const CHEF_IDS: Array[String] = [
 	"sous_chef",
 	"sommelier",
 	"gourmet_restaurant",
@@ -135,24 +135,24 @@ func _parse_layout_filter() -> Array[String]:
 		elif arg == "--fuzz":
 			_fuzz_only = true
 	var layouts: Array[String] = []
-	for specialty_id: String in SPECIALTY_IDS:
-		if requested.is_empty() or specialty_id in requested:
-			layouts.append(specialty_id)
+	for chef_id: String in CHEF_IDS:
+		if requested.is_empty() or chef_id in requested:
+			layouts.append(chef_id)
 	if layouts.is_empty():
 		push_error("PlaytestRunner: no matching layout in %s" % str(requested))
-		return SPECIALTY_IDS.duplicate()
+		return CHEF_IDS.duplicate()
 	return layouts
 
 
 func _run_all() -> void:
 	if not _only_seed.is_empty():
-		var specialty_id := _layouts[0]
+		var chef_id := _layouts[0]
 		var bots: Array[String] = BOT_IDS.duplicate()
 		if not _only_bot.is_empty():
 			bots = [_only_bot]
 		print("[playtest] focused seed=%s layout=%s bots=%s condiments=%s repeat=%d" % [
 			_only_seed,
-			specialty_id,
+			chef_id,
 			",".join(bots),
 			"on" if _use_condiments else "off",
 			_focused_repeat_count,
@@ -160,9 +160,9 @@ func _run_all() -> void:
 		for repeat_index in _focused_repeat_count:
 			for bot_id: String in bots:
 				if bot_id == CHAOS_BOT_ID:
-					await _run_one_fuzz(specialty_id, _only_seed, repeat_index)
+					await _run_one_fuzz(chef_id, _only_seed, repeat_index)
 				else:
-					await _run_one_full_nine(specialty_id, _only_seed, bot_id, repeat_index)
+					await _run_one_full_nine(chef_id, _only_seed, bot_id, repeat_index)
 		if CHAOS_BOT_ID in bots:
 			_print_fuzz_summary()
 		if bots != [CHAOS_BOT_ID]:
@@ -197,13 +197,13 @@ func _starter_filler_pool_ids() -> Array[String]:
 
 
 func _run_starter_fairness() -> void:
-	for specialty_id: String in _layouts:
-		GameManager.selected_specialty = SpecialtyRegistry.get_specialty_by_id(specialty_id)
+	for chef_id: String in _layouts:
+		GameManager.selected_chef = ChefRegistry.get_chef_by_id(chef_id)
 		GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
 		for index in STARTER_SEED_COUNT:
-			var seed_text := _seed_for("ST", specialty_id, index)
+			var seed_text := _seed_for("ST", chef_id, index)
 			RunRng.begin_new_run(seed_text)
-			var hand := SpecialtyRegistry.get_starting_hand_cards(GameManager.selected_specialty)
+			var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
 			var ids: Array[String] = []
 			for card: TileCard in hand:
 				ids.append(card.id)
@@ -236,7 +236,7 @@ func _run_starter_fairness() -> void:
 
 			_record(
 				"starter_fairness",
-				specialty_id,
+				chef_id,
 				seed_text,
 				reasons.is_empty(),
 				reasons,
@@ -355,15 +355,15 @@ func _lucky_draw_peeks_gold(hex: Hex, lucky: TileCard) -> bool:
 
 
 func _run_two_segment_r1() -> void:
-	for specialty_id: String in _layouts:
+	for chef_id: String in _layouts:
 		for index in R1_BOT_SEED_COUNT:
-			var seed_text := _seed_for("R1", specialty_id, index)
-			await _run_one_two_segment_r1(specialty_id, seed_text)
+			var seed_text := _seed_for("R1", chef_id, index)
+			await _run_one_two_segment_r1(chef_id, seed_text)
 
 
-func _run_one_two_segment_r1(specialty_id: String, seed_text: String) -> void:
-	_begin_run(specialty_id, seed_text)
-	var hand := SpecialtyRegistry.get_starting_hand_cards(GameManager.selected_specialty)
+func _run_one_two_segment_r1(chef_id: String, seed_text: String) -> void:
+	_begin_run(chef_id, seed_text)
+	var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
 	var hand_ids: Array[String] = []
 	for card: TileCard in hand:
 		hand_ids.append(card.id)
@@ -372,13 +372,13 @@ func _run_one_two_segment_r1(specialty_id: String, seed_text: String) -> void:
 	var reasons: Array[String] = []
 	if segment_pair.is_empty():
 		reasons.append("no two segments large enough for the opening hand")
-		_record("two_segment_r1", specialty_id, seed_text, false, reasons, {"hand": hand_ids})
+		_record("two_segment_r1", chef_id, seed_text, false, reasons, {"hand": hand_ids})
 		return
 
 	var placed := _place_hand_on_two_segments(hand, segment_pair)
 	if not placed:
 		reasons.append("could not place the opening hand on segments %s" % str(segment_pair))
-		_record("two_segment_r1", specialty_id, seed_text, false, reasons, {"hand": hand_ids, "segments": segment_pair})
+		_record("two_segment_r1", chef_id, seed_text, false, reasons, {"hand": hand_ids, "segments": segment_pair})
 		return
 
 	if _cards_on_one_segment_only():
@@ -409,7 +409,7 @@ func _run_one_two_segment_r1(specialty_id: String, seed_text: String) -> void:
 
 	_record(
 		"two_segment_r1",
-		specialty_id,
+		chef_id,
 		seed_text,
 		reasons.is_empty(),
 		reasons,
@@ -434,30 +434,30 @@ func _run_full_nines() -> void:
 	print("[playtest] full 1-9 bots=%s seeds=%d" % [",".join(bots), _full_run_seed_count])
 	for bot_id: String in bots:
 		_active_bot = bot_id
-		for specialty_id: String in _layouts:
+		for chef_id: String in _layouts:
 			for index in _full_run_seed_count:
-				var seed_text := _seed_for("F9", specialty_id, index)
-				await _run_one_full_nine(specialty_id, seed_text, bot_id)
+				var seed_text := _seed_for("F9", chef_id, index)
+				await _run_one_full_nine(chef_id, seed_text, bot_id)
 	_print_full_nine_summary()
 
 
 func _run_fuzz_suite() -> void:
 	print("[playtest] fuzz chaos layouts=%s seeds=%d" % [",".join(_layouts), _full_run_seed_count])
-	for specialty_id: String in _layouts:
+	for chef_id: String in _layouts:
 		for index in _full_run_seed_count:
-			var seed_text := _seed_for("FZ", specialty_id, index)
-			await _run_one_fuzz(specialty_id, seed_text)
+			var seed_text := _seed_for("FZ", chef_id, index)
+			await _run_one_fuzz(chef_id, seed_text)
 	_print_fuzz_summary()
 
 
 ## Chaos bot keeps placing through R9 even after a missed goal. Fail only on invariants.
-func _run_one_fuzz(specialty_id: String, seed_text: String, repeat_index: int = 0) -> void:
+func _run_one_fuzz(chef_id: String, seed_text: String, repeat_index: int = 0) -> void:
 	_active_bot = CHAOS_BOT_ID
 	_chaos_step = 0
 	var repeat_tag := "" if repeat_index <= 0 else " #%d" % (repeat_index + 1)
-	print("[playtest] start fuzz/chaos %s %s%s" % [specialty_id, seed_text, repeat_tag])
-	_begin_run(specialty_id, seed_text)
-	var hand := SpecialtyRegistry.get_starting_hand_cards(GameManager.selected_specialty)
+	print("[playtest] start fuzz/chaos %s %s%s" % [chef_id, seed_text, repeat_tag])
+	_begin_run(chef_id, seed_text)
+	var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
 	_place_opening_hand(hand)
 
 	var round_log: Array[Dictionary] = []
@@ -538,7 +538,7 @@ func _run_one_fuzz(specialty_id: String, seed_text: String, repeat_index: int = 
 	var reasons: Array[String] = invariant_hits.duplicate()
 	_record(
 		"fuzz",
-		specialty_id,
+		chef_id,
 		seed_text,
 		reasons.is_empty(),
 		reasons,
@@ -568,12 +568,12 @@ func _full_nine_bots() -> Array[String]:
 	return [_only_bot]
 
 
-func _run_one_full_nine(specialty_id: String, seed_text: String, bot_id: String, repeat_index: int = 0) -> void:
+func _run_one_full_nine(chef_id: String, seed_text: String, bot_id: String, repeat_index: int = 0) -> void:
 	_active_bot = bot_id
 	var repeat_tag := "" if repeat_index <= 0 else " #%d" % (repeat_index + 1)
-	print("[playtest] start full_nine/%s %s %s%s" % [bot_id, specialty_id, seed_text, repeat_tag])
-	_begin_run(specialty_id, seed_text)
-	var hand := SpecialtyRegistry.get_starting_hand_cards(GameManager.selected_specialty)
+	print("[playtest] start full_nine/%s %s %s%s" % [bot_id, chef_id, seed_text, repeat_tag])
+	_begin_run(chef_id, seed_text)
+	var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
 	_place_opening_hand(hand)
 
 	var round_log: Array[Dictionary] = []
@@ -656,7 +656,7 @@ func _run_one_full_nine(specialty_id: String, seed_text: String, bot_id: String,
 		])
 	_record(
 		"full_nine",
-		specialty_id,
+		chef_id,
 		seed_text,
 		won,
 		reasons,
@@ -1092,10 +1092,10 @@ func _chip_numeric_value(chip: Dictionary) -> float:
 
 
 func _layout_segment_priority(segment_index: int) -> float:
-	if GameManager.selected_specialty == null:
+	if GameManager.selected_chef == null:
 		return float(_map.get_segment_size(segment_index)) / 20.0
 	var priorities: Array = LAYOUT_ENGINE_SIZE_PRIORITY.get(
-		GameManager.selected_specialty.id,
+		GameManager.selected_chef.id,
 		[]
 	)
 	var size := _map.get_segment_size(segment_index)
@@ -1172,13 +1172,13 @@ func _player_spill_segment_rank(primary: int) -> Array[int]:
 
 
 func _uses_engine_lock() -> bool:
-	if _active_bot != "player" or GameManager.selected_specialty == null:
+	if _active_bot != "player" or GameManager.selected_chef == null:
 		return false
 	return true
 
 
 func _engine_lock_unlock_round() -> int:
-	if GameManager.selected_specialty == null:
+	if GameManager.selected_chef == null:
 		return 999
 	return ENGINE_LOCK_ROUND
 
@@ -1193,7 +1193,7 @@ func _engine_lock_active() -> bool:
 
 func _candidate_engine_segments() -> Array[int]:
 	var candidates: Array[int] = []
-	if _map == null or GameManager.selected_specialty == null:
+	if _map == null or GameManager.selected_chef == null:
 		return candidates
 	for index in _map.get_segment_count():
 		var size := _map.get_segment_size(index)
@@ -1796,12 +1796,12 @@ func _can_place_on_segment(card: TileCard, segment_index: int) -> bool:
 	return false
 
 
-func _begin_run(specialty_id: String, seed_text: String) -> void:
+func _begin_run(chef_id: String, seed_text: String) -> void:
 	_run_script_errors.clear()
 	_pending_turn_script_errors.clear()
 	SCRIPT_ERROR_TRACKER.mark()
 	GameManager.skip_presentation = true
-	GameManager.selected_specialty = SpecialtyRegistry.get_specialty_by_id(specialty_id)
+	GameManager.selected_chef = ChefRegistry.get_chef_by_id(chef_id)
 	GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
 	RunRng.begin_new_run(seed_text)
 	GameManager.reset_for_new_run()
@@ -2130,14 +2130,14 @@ func _collect_invariant_failures(score_before: int) -> Array[String]:
 
 func _print_fuzz_summary() -> void:
 	print("[playtest] --- fuzz by layout ---")
-	for specialty_id: String in _layouts:
+	for chef_id: String in _layouts:
 		var runs := 0
 		var fails := 0
 		var storms := 0
 		for case_data: Dictionary in _cases:
 			if str(case_data.get("suite", "")) != "fuzz":
 				continue
-			if str(case_data.get("specialty", "")) != specialty_id:
+			if str(case_data.get("chef", "")) != chef_id:
 				continue
 			runs += 1
 			if not bool(case_data.get("passed", false)):
@@ -2148,7 +2148,7 @@ func _print_fuzz_summary() -> void:
 			continue
 		print(
 			"[playtest]   %s  %d/%d clean  storms=%d  invariant-fails=%d"
-			% [specialty_id, runs - fails, runs, storms, fails]
+			% [chef_id, runs - fails, runs, storms, fails]
 		)
 
 
@@ -2162,8 +2162,8 @@ func _resolve_turn() -> void:
 		print("[playtest]   SCRIPT %s" % script_err)
 
 
-func _seed_for(prefix: String, specialty_id: String, index: int) -> String:
-	var tag := specialty_id.substr(0, 3).to_upper()
+func _seed_for(prefix: String, chef_id: String, index: int) -> String:
+	var tag := chef_id.substr(0, 3).to_upper()
 	return "%s%s%03d" % [prefix, tag, index]
 
 
@@ -2184,7 +2184,7 @@ func _print_full_nine_summary() -> void:
 	print("[playtest] --- full 1-9 by bot and layout ---")
 	for bot_id: String in _full_nine_bots():
 		print("[playtest] bot=%s" % bot_id)
-		for specialty_id: String in _layouts:
+		for chef_id: String in _layouts:
 			var wins := 0
 			var runs := 0
 			var round_sum := 0.0
@@ -2193,7 +2193,7 @@ func _print_full_nine_summary() -> void:
 			for case_data: Dictionary in _cases:
 				if str(case_data.get("suite", "")) != "full_nine":
 					continue
-				if str(case_data.get("specialty", "")) != specialty_id:
+				if str(case_data.get("chef", "")) != chef_id:
 					continue
 				var details: Dictionary = case_data.get("details", {})
 				if str(details.get("bot", "fill")) != bot_id:
@@ -2213,13 +2213,13 @@ func _print_full_nine_summary() -> void:
 			var avg_round := round_sum / float(runs)
 			print(
 				"[playtest]   %s sizes=%s  %d/%d wins (%.0f%%)  avg round %.1f  loss-by-round %s"
-				% [specialty_id, str(sizes), wins, runs, 100.0 * float(wins) / float(runs), avg_round, str(loss_rounds)]
+				% [chef_id, str(sizes), wins, runs, 100.0 * float(wins) / float(runs), avg_round, str(loss_rounds)]
 			)
 
 
 func _record(
 	suite: String,
-	specialty_id: String,
+	chef_id: String,
 	seed_text: String,
 	passed: bool,
 	reasons: Array[String],
@@ -2236,7 +2236,7 @@ func _record(
 		_failed += 1
 	_cases.append({
 		"suite": suite,
-		"specialty": specialty_id,
+		"chef": chef_id,
 		"seed": seed_text,
 		"passed": passed,
 		"reasons": reasons,
@@ -2245,7 +2245,7 @@ func _record(
 	var mark := "PASS" if passed else "FAIL"
 	var extra := "" if reasons.is_empty() else " — %s" % ", ".join(reasons)
 	if not passed or suite != "starter_fairness":
-		print("[playtest] %s %s/%s %s %s%s" % [mark, suite, details.get("bot", "-"), specialty_id, seed_text, extra])
+		print("[playtest] %s %s/%s %s %s%s" % [mark, suite, details.get("bot", "-"), chef_id, seed_text, extra])
 
 
 func _write_report() -> void:

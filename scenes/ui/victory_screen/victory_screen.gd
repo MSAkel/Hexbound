@@ -22,7 +22,7 @@ func _ready() -> void:
 
 
 func _on_all_events_completed() -> void:
-	played_as_label.text = GameManager.selected_specialty.display_name if GameManager.selected_specialty else "Unknown"
+	played_as_label.text = GameManager.selected_chef.display_name if GameManager.selected_chef else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
 	round_value.text = str(GameManager.current_round)
 	gold_earned_value.text = CountingNumber.format_int(GoldManager.total_earned_this_run)
@@ -34,8 +34,8 @@ func _on_all_events_completed() -> void:
 	RunHistoryManager.archive_finished_run(true)
 	# Victory XP is committed when leaving to the menu. Preview the grant here.
 	var from_xp := 0
-	if GameManager.selected_specialty != null:
-		from_xp = MetaProgressionManager.get_layout_xp(GameManager.selected_specialty.id)
+	if GameManager.selected_chef != null:
+		from_xp = MetaProgressionManager.get_layout_xp(GameManager.selected_chef.id)
 	var xp_gain := MetaProgressionManager.get_layout_xp_gain_from_snapshot(
 		GameManager.build_run_snapshot(true)
 	)

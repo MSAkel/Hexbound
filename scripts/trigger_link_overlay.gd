@@ -20,7 +20,7 @@ func play_bolt(from_hex: Hex, to_hex: Hex) -> void:
 	play_bolt_between(_hex_center_local(from_hex), _hex_center_local(to_hex))
 
 
-## Bolt between two map-local points. Chef slots sit off the grid and use this directly.
+## Bolt between two map-local points. Staff slots sit off the grid and use this directly.
 func play_bolt_between(from_pos: Vector2, to_pos: Vector2) -> void:
 	if _map == null or from_pos.is_equal_approx(to_pos):
 		return

@@ -1,6 +1,6 @@
 extends Panel
 
-## Collection screen for browsing card categories, specialties, and events.
+## Collection screen for browsing card categories, chefs, and events.
 
 signal closed
 
@@ -20,7 +20,7 @@ const ITEM_BORDER := Color("617575")
 enum CollectionTab {
 	CARDS,
 	CONDIMENTS,
-	SPECIALTIES,
+	CHEFS,
 	EVENTS,
 }
 
@@ -50,7 +50,7 @@ func _configure_tabs() -> void:
 	var titles := PackedStringArray([
 		"Cards",
 		GameTerms.CONDIMENTS,
-		"Specialties",
+		"Chefs",
 		"Events",
 	])
 	tab_bar.tab_count = titles.size()
@@ -65,8 +65,8 @@ func _show_tab(tab: int) -> void:
 			_show_cards()
 		CollectionTab.CONDIMENTS:
 			_show_condiments()
-		CollectionTab.SPECIALTIES:
-			_show_specialties()
+		CollectionTab.CHEFS:
+			_show_chefs()
 		CollectionTab.EVENTS:
 			_show_events()
 
@@ -133,10 +133,10 @@ func _show_condiment_tooltip(panel: Control, condiment: Condiment) -> void:
 	EventBus.toggle_tooltip.emit(true, condiment.get_tooltip_text(), panel.get_global_rect())
 
 
-func _show_specialties() -> void:
+func _show_chefs() -> void:
 	collection_grid_container.columns = 3
-	for specialty: SpecialtyDefinition in SpecialtyRegistry.get_all_specialties():
-		collection_grid_container.add_child(_create_specialty_entry(specialty))
+	for chef: ChefDefinition in ChefRegistry.get_all_chefs():
+		collection_grid_container.add_child(_create_chef_entry(chef))
 
 
 func _show_events() -> void:
@@ -149,7 +149,7 @@ func _hide_tooltip() -> void:
 	EventBus.toggle_tooltip.emit(false, "")
 
 
-func _create_specialty_entry(specialty: SpecialtyDefinition) -> PanelContainer:
+func _create_chef_entry(chef: ChefDefinition) -> PanelContainer:
 	var panel := _create_item_panel(Vector2(500, 270))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 18)
@@ -157,7 +157,7 @@ func _create_specialty_entry(specialty: SpecialtyDefinition) -> PanelContainer:
 
 	var portrait := TextureRect.new()
 	portrait.custom_minimum_size = Vector2(170, 230)
-	portrait.texture = specialty.icon
+	portrait.texture = chef.icon
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	row.add_child(portrait)
@@ -167,15 +167,15 @@ func _create_specialty_entry(specialty: SpecialtyDefinition) -> PanelContainer:
 	details.add_theme_constant_override("separation", 8)
 	row.add_child(details)
 
-	details.add_child(_create_label(specialty.display_name.to_upper(), 27, TEXT_PRIMARY))
+	details.add_child(_create_label(chef.display_name.to_upper(), 27, TEXT_PRIMARY))
 	details.add_child(_create_separator())
-	details.add_child(_create_label("PASSIVE", 14, ACCENT))
-	var passive_label := _create_label(
-		CardKeywordGlossary.to_plain(specialty.passive_description), 20, TEXT_PRIMARY
+	details.add_child(_create_label("SPECIALITY", 14, ACCENT))
+	var speciality_label := _create_label(
+		CardKeywordGlossary.to_plain(chef.speciality_description), 20, TEXT_PRIMARY
 	)
-	passive_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	passive_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	details.add_child(passive_label)
+	speciality_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	speciality_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.add_child(speciality_label)
 
 	var station_text := CardKeywordGlossary.to_plain("%d {stations}") % HexMapLayout.BOARD_ROW_LENGTHS.size()
 	details.add_child(_create_label(station_text.to_upper(), 14, ACCENT))

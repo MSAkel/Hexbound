@@ -1,7 +1,7 @@
 class_name Card
 extends Resource
 
-# Shared hand and shop payload for TileCard and ChefCard. CardUI binds to this type.
+# Shared hand and shop payload for TileCard and StaffCard. CardUI binds to this type.
 
 enum Rarity {
 	COMMON,

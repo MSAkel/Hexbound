@@ -88,17 +88,17 @@ signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect
 ## Re-evaluate the control beneath a stationary cursor after a covering UI closes.
 signal tooltip_hover_refresh_requested
 
-## Chef column contents or order changed.
-signal chef_roster_changed
-## A chef was seated in this slot.
-signal chef_added(slot: int)
-## A chef moved from one slot to another. An occupied target means the two swapped.
-signal chef_moved(from_slot: int, to_slot: int)
-signal chef_sold(slot: int)
-## The chef in this slot applied its effect.
-signal chef_effect_triggered(slot: int)
-signal chef_drag_started(slot: int)
-signal chef_drag_ended
+## Staff column contents or order changed.
+signal staff_roster_changed
+## A staff member was seated in this slot.
+signal staff_added(slot: int)
+## A staff member moved from one slot to another. An occupied target means the two swapped.
+signal staff_moved(from_slot: int, to_slot: int)
+signal staff_sold(slot: int)
+## The staff member in this slot applied its effect.
+signal staff_effect_triggered(slot: int)
+signal staff_drag_started(slot: int)
+signal staff_drag_ended
 
 ## Condiment belt contents changed.
 signal condiment_belt_changed

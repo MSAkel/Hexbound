@@ -11,7 +11,7 @@ static func get_music_for_scene(scene_path: String) -> AudioStream:
 			return MAIN_THEME
 		"res://scenes/ui/boons_selection/boons_selection.tscn":
 			return MAIN_THEME
-		"res://scenes/ui/specialty_selection_screen/specialty_selection_screen.tscn":
+		"res://scenes/ui/chef_selection_screen/chef_selection_screen.tscn":
 			return MAIN_THEME
 		"res://scenes/main.tscn":
 			return MAIN_THEME

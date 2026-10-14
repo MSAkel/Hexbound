@@ -31,8 +31,8 @@ func _ready() -> void:
 	_center_burst()
 
 
-## Static readout for specialty selection and other menus.
-func show_xp_total(xp: int, caption: String = "Specialty Level") -> void:
+## Static readout for chef selection and other menus.
+func show_xp_total(xp: int, caption: String = "Chef Level") -> void:
 	_play_id += 1
 	_kill_tweens()
 	%CaptionLabel.text = caption
