@@ -33,32 +33,20 @@ signal gold_changed(new_amount: int)  # Emitted when gold amount changes
 signal rerolls_changed(remaining: int)
 
 signal total_round_score_changed()
-## Per-segment flavour, additive mult, multiplicative mult, rating, and gold during turn resolution.
-signal segment_turn_results_changed(
-	segment_index: int,
-	flavour: int,
-	additive_mult: float,
-	multiplicative_mult: float,
-	total_score: int,
-	gold: int
-)
-signal segment_turn_results_reset()
-## Product unlocked for one segment after its Score lands in the output panel.
-signal segment_score_revealed(segment_index: int, total_score: int)
-## Segment row counter and punch finished for one reveal beat.
-signal segment_score_count_finished(segment_index: int)
+## Hour Flavour, combined Mult, and Gold changed during turn resolution.
+## segment_index is the station whose card produced the change.
+signal hour_results_changed(segment_index: int, flavour: int, mult: float, gold: int)
+## Hour totals were cleared at the start of turn resolution.
+signal hour_results_reset()
 ## Natural pass finished for this segment. Retriggers into it are now blocked.
 signal segment_resolved(segment_index: int)
-## Map glow and output-row highlight for the segment currently revealing.
-signal segment_reveal_started(segment_index: int)
-signal segment_reveal_ended()
-## All segment score rows have finished resolving for this turn.
-signal segment_reveals_finished(turn_total_score: int)
-## Turn-total footer counter and punch finished for the current resolve.
-signal turn_total_count_finished()
-## Drain the turn total into the round score after the turn-total punch lands.
+## Every trigger fired. The Hour readout merges Flavour x Mult into its score.
+signal hour_score_presentation_requested(flavour: int, mult: float, score: int)
+## The Hour readout finished showing its merged score.
+signal hour_score_presentation_finished()
+## Send the Hour score into the Day Rating once it commits.
 signal round_score_commit_animation_requested(transfer_amount: int, round_score_before: int)
-## Top-panel round score counter finished after a turn commits.
+## Day Rating finished counting after a turn commits.
 signal round_score_count_finished()
 ## Fired once per resolved turn with a full per-segment snapshot for the run-info history UI.
 signal segment_turn_completed(turn_number: int, snapshot: Dictionary)

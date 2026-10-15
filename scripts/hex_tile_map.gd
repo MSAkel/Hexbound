@@ -972,9 +972,9 @@ func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 
 
 ## Clears per-segment turn totals at the start of turn resolution.
-func reset_segment_turn_results() -> void:
+func reset_hour_results() -> void:
 	_layout.reset_turn_results()
-	EventBus.segment_turn_results_reset.emit()
+	EventBus.hour_results_reset.emit()
 
 
 ## Records Flavour produced by a card on its spot's segment.
@@ -988,7 +988,7 @@ func add_turn_flavour_for_segment(segment_index: int, amount: int) -> void:
 		return
 
 	_layout.add_segment_turn_flavour(segment_index, amount)
-	_emit_segment_turn_results_changed(segment_index)
+	_emit_hour_results_changed(segment_index)
 
 
 ## Records additive mult produced by a rune on its tile's segment.
@@ -1002,7 +1002,7 @@ func add_turn_additive_mult_for_segment(segment_index: int, amount: float) -> vo
 		return
 
 	_layout.add_segment_additive_mult(segment_index, amount)
-	_emit_segment_turn_results_changed(segment_index)
+	_emit_hour_results_changed(segment_index)
 
 
 ## Records multiplicative mult produced by a rune on its tile's segment.
@@ -1016,7 +1016,7 @@ func multiply_turn_multiplicative_mult_for_segment(segment_index: int, factor: f
 		return
 
 	_layout.multiply_segment_multiplicative_mult(segment_index, factor)
-	_emit_segment_turn_results_changed(segment_index)
+	_emit_hour_results_changed(segment_index)
 
 
 ## Records gold produced by a rune on its tile's segment and updates the gold pool.
@@ -1030,7 +1030,7 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
 	GoldManager.add(amount)
-	_emit_segment_turn_results_changed(segment_index)
+	_emit_hour_results_changed(segment_index)
 
 
 ## Records gold on a segment by index. Used when a drink relays gold to the next segment.
@@ -1041,23 +1041,16 @@ func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 		return
 	_layout.add_segment_turn_gold(segment_index, amount)
 	GoldManager.add(amount)
-	_emit_segment_turn_results_changed(segment_index)
+	_emit_hour_results_changed(segment_index)
 
 
-## Notifies UI of the latest hour Flavour, Additive, and scored contribution.
-func _emit_segment_turn_results_changed(segment_index: int) -> void:
-	var flavour := _layout.get_hour_flavour()
-	var additive_mult := _layout.get_hour_additive_mult()
-	var gold := _layout.get_hour_gold()
-	var contribution := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
-	# Keep the segment_index so station-row hover still knows which station just changed.
-	EventBus.segment_turn_results_changed.emit(
+## Notifies UI of the latest hour Flavour, Mult, and Gold.
+func _emit_hour_results_changed(segment_index: int) -> void:
+	EventBus.hour_results_changed.emit(
 		segment_index,
-		flavour,
-		additive_mult,
-		1.0,
-		contribution,
-		gold
+		_layout.get_hour_flavour(),
+		_layout.get_hour_additive_mult(),
+		_layout.get_hour_gold()
 	)
 
 
@@ -1520,11 +1513,11 @@ func get_round_turn_snapshots() -> Array:
 	return _round_turn_snapshots.duplicate(true)
 
 
-func refresh_segment_turn_results_ui() -> void:
-	_emit_segment_turn_results_changed(0)
+func refresh_hour_results_ui() -> void:
+	_emit_hour_results_changed(0)
 
 
-## Packages hour totals for the rating breakdown panel.
+## Packages hour totals for the per-round turn history (kept in saves).
 func capture_segment_turn_snapshot() -> Dictionary:
 	var flavour := get_hour_flavour()
 	var additive_mult := get_hour_additive_mult()

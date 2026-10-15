@@ -258,9 +258,8 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	_apply_offer_ui_state(payload)
 	EventManager.refresh_event_visuals()
 	EventManager.restore_banner_after_load()
-	# Segment rows are built deferred, refresh them once the layout data is restored.
-	tile_map.call_deferred("refresh_segment_turn_results_ui")
-	call_deferred("_restore_rating_breakdown_history", tile_map)
+	# Hour readouts are built deferred, refresh them once the layout data is restored.
+	tile_map.call_deferred("refresh_hour_results_ui")
 	_notify_ui_restored()
 	_queue_interrupted_turn_resume(hand)
 	# Re-show the panel the run was sitting on, after the HUD has caught up.
@@ -398,15 +397,6 @@ func _is_game_over_visible() -> bool:
 		if overlay != null and overlay.is_visible_in_tree():
 			return true
 	return false
-
-
-func _restore_rating_breakdown_history(tile_map: HexTileMap) -> void:
-	if tile_map == null:
-		return
-	var panel := get_tree().get_first_node_in_group("rating_breakdown_panel")
-	if panel == null or not panel.has_method("restore_turn_history"):
-		return
-	panel.restore_turn_history(tile_map.get_round_turn_snapshots())
 
 
 func _notify_ui_restored() -> void:

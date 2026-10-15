@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://clbo25fmtd5ba"]
 
 [ext_resource type="Script" uid="uid://b27sdnvvugrt8" path="res://scripts/autoload/ui_manager.gd" id="1_l8t6x"]
-[ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/RunInfoDisplay/run_info_display.tscn" id="2_8s2gp"]
+[ext_resource type="PackedScene" uid="uid://dute0qsphespe" path="res://scenes/ui/run_info_display/run_info_display.tscn" id="2_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://bif4cx5edh2ng" path="res://scenes/ui/tile_panel.tscn" id="2_l8t6x"]
 [ext_resource type="PackedScene" uid="uid://dme0eav2550e7" path="res://scenes/cards/card_icon_ui/card_selection_ui.tscn" id="6_aa6wj"]
 [ext_resource type="PackedScene" uid="uid://br3dhulnhrxyl" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="7_oxwcw"]
@@ -48,7 +48,7 @@ rotation = 0.0016232448
 [node name="CardSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
 
-[node name="StationUpgradeChoice" parent="." instance=ExtResource("25_station_choice")]
+[node name="StationUpgradeChoice" parent="." unique_id=1256361101 instance=ExtResource("25_station_choice")]
 visible = false
 
 [node name="TerrainTileUI" parent="." unique_id=289089864 instance=ExtResource("2_l8t6x")]
@@ -71,7 +71,7 @@ z_index = 90
 visible = false
 rotation = -0.00022035485
 
-[node name="StaffRail" parent="." instance=ExtResource("24_staff_rail")]
+[node name="StaffRail" parent="." unique_id=511277284 instance=ExtResource("24_staff_rail")]
 
 [node name="RoundEventNameDisplay" parent="." unique_id=956026347 instance=ExtResource("12_m82f4")]
 visible = false

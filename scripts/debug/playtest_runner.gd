@@ -1791,7 +1791,7 @@ func _clear_board() -> void:
 	for hex: Hex in _map.map_data.values():
 		if hex.active_tile_card != null:
 			hex.remove_tile_card()
-	_map.reset_segment_turn_results()
+	_map.reset_hour_results()
 
 
 func _place_by_id(hex: Hex, card_id: String) -> void:

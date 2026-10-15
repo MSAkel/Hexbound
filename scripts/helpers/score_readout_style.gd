@@ -40,6 +40,24 @@ static func color_for_score(score: int) -> Color:
 	return stops[index].lerp(stops[index + 1], local)
 
 
+## Dark parchment ink for HUD panels: brown to teal to amber to red as intensity climbs.
+static func ink_color_for_intensity(intensity: float) -> Color:
+	var stops: Array[Color] = [
+		Color(0.2745, 0.2275, 0.1137),
+		Color(0.0549, 0.3569, 0.3686),
+		Color(0.72, 0.34, 0.08),
+		Color(0.72, 0.16, 0.1),
+	]
+	var scaled := clampf(intensity, 0.0, 1.0) * float(stops.size() - 1)
+	var index := mini(int(scaled), stops.size() - 2)
+	return stops[index].lerp(stops[index + 1], scaled - float(index))
+
+
+## Font size between min_size and max_size on the shared log curve. Never exceeds max_size.
+static func readout_font_size(score: int, min_size: int, max_size: int) -> int:
+	return int(round(lerpf(float(min_size), float(max_size), intensity_for_score(score))))
+
+
 ## Pulls the first integer out of floating text such as "+120" or "1,250".
 static func parse_amount(text: String) -> int:
 	var regex := RegEx.new()

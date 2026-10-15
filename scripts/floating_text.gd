@@ -9,6 +9,13 @@ const CHAR_POP_DURATION := 0.12
 const CHAR_STAGGER := 0.018
 const HOLD_AFTER_POP := 0.85
 const SHRINK_DURATION := 0.14
+## Score floats hold briefly, then fly into the Hour readout instead of shrinking away.
+const ABSORB_HOLD := 0.4
+const ABSORB_FLIGHT_DURATION := 0.42
+const ABSORB_END_SCALE := 0.55
+## Raised arc control point, as a fraction of flight distance.
+const ABSORB_ARC_LIFT := 0.35
+const ABSORB_FADE_FROM := 0.85
 const CARD_FONT_SIZE := 26
 const CARD_LONG_TEXT_START := 12
 const CARD_MIN_FONT_SIZE := 18
@@ -39,6 +46,10 @@ var _text_root: Node2D
 var _target_icon: Texture2D
 var _garnished: bool = false
 var _garnish_bang_tween: Tween
+## Hour readout waiting on this float. Cleared once it lands.
+var _absorb_readout: HourScoreReadout
+var _absorb_product: int = -1
+var _absorb_ticket: int = -1
 
 
 func _ready() -> void:
@@ -98,17 +109,7 @@ func _card_font_size_for_text(text: String) -> float:
 
 ## Pops each character in from a tiny scale, holds, then shrinks the whole line away.
 func play_float_and_free() -> void:
-	_apply_card_stack_offset()
-	if not await _play_character_pop():
-		queue_free()
-		return
-
-	# Bang overlaps the hold so resolve pace does not stretch.
-	if _garnished:
-		_play_garnish_bang()
-
-	await GameManager.create_pauseable_timer(HOLD_AFTER_POP / GameManager.game_speed).timeout
-	if not is_instance_valid(self):
+	if not await _pop_and_hold(HOLD_AFTER_POP):
 		return
 
 	var shrink_tween := create_tween()
@@ -119,6 +120,71 @@ func play_float_and_free() -> void:
 	await shrink_tween.finished
 	if is_instance_valid(self):
 		queue_free()
+
+
+## Pops in like a card float, then arcs into the Hour readout and hands its ticket over on arrival.
+func play_float_and_absorb(readout: HourScoreReadout, product: int, ticket: int) -> void:
+	_absorb_readout = readout
+	_absorb_product = product
+	_absorb_ticket = ticket
+	if not await _pop_and_hold(ABSORB_HOLD):
+		return
+	if not is_instance_valid(_absorb_readout):
+		queue_free()
+		return
+
+	var start := global_position
+	var target := _absorb_readout.get_absorb_point(product)
+	var lift := maxf(start.distance_to(target) * ABSORB_ARC_LIFT, 40.0)
+	var control := (start + target) * 0.5 + Vector2(0.0, -lift)
+	if target.y < start.y:
+		# Bow sideways when flying upward so the path reads as a curve, not a straight line.
+		control.x += signf(start.x - target.x) * lift * 0.5
+	var rest_scale := _text_root.scale
+	var flight := ABSORB_FLIGHT_DURATION / GameManager.game_speed
+
+	var fly_tween := create_tween()
+	fly_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	fly_tween.tween_method(
+		func(t: float) -> void:
+			global_position = _quadratic_bezier(start, control, target, t)
+			_text_root.scale = rest_scale.lerp(rest_scale * ABSORB_END_SCALE, t)
+			var fade := clampf((t - ABSORB_FADE_FROM) / (1.0 - ABSORB_FADE_FROM), 0.0, 1.0)
+			_text_root.modulate = Color(1.0 + t * 0.4, 1.0 + t * 0.3, 1.0 + t * 0.1, 1.0 - fade),
+		0.0,
+		1.0,
+		flight
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await fly_tween.finished
+	if not is_instance_valid(self):
+		return
+	_land_absorb()
+	queue_free()
+
+
+## Shared pop and hold. Returns false if the float was freed or had nothing to show.
+func _pop_and_hold(hold: float) -> bool:
+	_apply_card_stack_offset()
+	if not await _play_character_pop():
+		queue_free()
+		return false
+
+	# Bang overlaps the hold so resolve pace does not stretch.
+	if _garnished:
+		_play_garnish_bang()
+
+	await GameManager.create_pauseable_timer(hold / GameManager.game_speed).timeout
+	return is_instance_valid(self)
+
+
+func _land_absorb() -> void:
+	if is_instance_valid(_absorb_readout):
+		_absorb_readout.absorb(_absorb_product, _absorb_ticket)
+	_absorb_readout = null
+
+
+static func _quadratic_bezier(a: Vector2, b: Vector2, c: Vector2, t: float) -> Vector2:
+	return a.lerp(b, t).lerp(b.lerp(c, t), t)
 
 
 ## Later floats at the same tile sit above earlier ones instead of overlapping.
@@ -143,6 +209,10 @@ func _apply_card_stack_offset() -> void:
 
 func _exit_tree() -> void:
 	_active_card_floats.erase(self)
+	# Freed before landing. Release the ticket so the readout never waits on this float.
+	if is_instance_valid(_absorb_readout):
+		_absorb_readout.cancel(_absorb_product, _absorb_ticket)
+	_absorb_readout = null
 
 
 ## Builds a per-character row and pops each glyph in. Returns false if there is nothing to show.

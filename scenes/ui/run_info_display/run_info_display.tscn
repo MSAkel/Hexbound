@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://dute0qsphespe"]
 
-[ext_resource type="PackedScene" uid="uid://bj0bkesq2wj5x" path="res://scenes/ui/RunInfoDisplay/run_status/run_status.tscn" id="1_run_status"]
+[ext_resource type="PackedScene" uid="uid://bj0bkesq2wj5x" path="res://scenes/ui/run_info_display/run_status/run_status.tscn" id="1_run_status"]
 [ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_status_panel"]
-[ext_resource type="PackedScene" uid="uid://crffik30sf5rg" path="res://scenes/ui/RunInfoDisplay/segments_container/segments_container.tscn" id="3_segments"]
+[ext_resource type="PackedScene" path="res://scenes/ui/run_info_display/day_score/day_rating_panel.tscn" id="3_day_rating"]
+[ext_resource type="PackedScene" path="res://scenes/ui/run_info_display/day_score/day_target_panel.tscn" id="5_day_target"]
+[ext_resource type="PackedScene" path="res://scenes/ui/run_info_display/hour_score_readout/hour_score_readout.tscn" id="6_hour_readout"]
 [ext_resource type="PackedScene" uid="uid://dh8s60bf3jvak" path="res://scenes/ui/challenge_container/challenge_container.tscn" id="4_challenge"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_run_status"]
@@ -44,13 +46,13 @@ theme_override_styles/panel = SubResource("StyleBoxTexture_run_status")
 layout_mode = 2
 size_flags_vertical = 4
 
-[node name="SegmentsColumn" type="MarginContainer" parent="." unique_id=1184620937]
+[node name="DayScoreColumn" type="MarginContainer" parent="." unique_id=1184620937]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -494.0
-offset_bottom = 390.0
+offset_left = -464.0
+offset_bottom = 200.0
 grow_horizontal = 0
 mouse_filter = 0
 theme_override_constants/margin_left = 32
@@ -58,5 +60,18 @@ theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 32
 
-[node name="SegmentsContainer" parent="SegmentsColumn" unique_id=1933303425 instance=ExtResource("3_segments")]
+[node name="DayScoreStack" type="VBoxContainer" parent="DayScoreColumn"]
+custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 6
+
+[node name="DayRatingPanel" parent="DayScoreColumn/DayScoreStack" instance=ExtResource("3_day_rating")]
+layout_mode = 2
+
+[node name="DayTargetPanel" parent="DayScoreColumn/DayScoreStack" instance=ExtResource("5_day_target")]
+layout_mode = 2
+
+[node name="HourScoreReadout" parent="." node_paths=PackedStringArray("day_rating_panel") instance=ExtResource("6_hour_readout")]
+layout_mode = 1
+day_rating_panel = NodePath("../DayScoreColumn/DayScoreStack/DayRatingPanel")

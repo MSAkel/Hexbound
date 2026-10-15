@@ -54,7 +54,9 @@ var _pickup_tween: Tween
 var _ghost_exit_tween: Tween
 
 const NO_CELL := Vector2i(-1, -1)
-const CARD_ICON_UI: PackedScene = preload("res://scenes/cards/card_icon_ui/card_icon_ui.tscn")
+# Loaded at runtime, not preloaded. card_icon_ui.gd types its map as HexTileMap, which owns this
+# handler, so a preload forms a cycle and comes back empty when hex_tile_map.tscn loads first.
+const CARD_ICON_UI_PATH := "res://scenes/cards/card_icon_ui/card_icon_ui.tscn"
 # Ghost tint over a spot the card cannot be dropped on.
 const INVALID_GHOST_TINT := Color(1.0, 0.45, 0.45, 0.75)
 # How fast the tint blends. Higher is snappier.
@@ -96,12 +98,13 @@ func is_placement_in_progress() -> bool:
 func _ready() -> void:
 	EventBus.card_drag_requested.connect(_on_card_drag_requested)
 	EventBus.turn_ended.connect(_on_turn_ended)
-	_rune_preview = _make_ghost_rune(DRAGGED_RUNE_Z_INDEX)
-	_tile_landing_preview = _make_ghost_rune(TILE_LANDING_PREVIEW_Z_INDEX)
+	var card_icon_scene := load(CARD_ICON_UI_PATH) as PackedScene
+	_rune_preview = _make_ghost_rune(card_icon_scene, DRAGGED_RUNE_Z_INDEX)
+	_tile_landing_preview = _make_ghost_rune(card_icon_scene, TILE_LANDING_PREVIEW_Z_INDEX)
 
 
-func _make_ghost_rune(z: int) -> CardIconUI:
-	var ghost := CARD_ICON_UI.instantiate() as CardIconUI
+func _make_ghost_rune(scene: PackedScene, z: int) -> CardIconUI:
+	var ghost := scene.instantiate() as CardIconUI
 	ghost.visible = false
 	ghost.z_index = z
 	ghost.custom_minimum_size = HexTileMap.HEX_RUNE_SIZE

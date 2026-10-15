@@ -6,12 +6,10 @@ extends Node
 const FLOATING_TEXT_SCENE: PackedScene = preload("res://scenes/animations/floating_text.tscn")
 # Pause between tile card activations during turn resolution.
 const TILE_ACTIVATION_PACE_DELAY := 0.2
-const SEGMENT_REVEAL_PAUSE := 0.35
-## Fallback if the score-breakdown row never emits count-finished (killed or already-done tween).
-const SEGMENT_SCORE_COUNT_TIMEOUT := 2.0
-## Fallback if the turn-total footer never emits count-finished.
-const TURN_TOTAL_COUNT_TIMEOUT := 2.0
-## Extra hold on the first scoring row during the tutorial.
+## Fallback if the Hour readout never reports its score presentation finished.
+## Covers in-flight floats landing, the Flavour x Mult merge, and the score hold.
+const HOUR_SCORE_PRESENTATION_TIMEOUT := 5.0
+## Extra hold on the first Hour score during the tutorial.
 const TUTORIAL_SCORE_LINGER := 0.55
 ## Headless resolves skip animation awaits. Yield every so often so a retrigger storm cannot freeze the process.
 const SKIP_PRESENTATION_YIELD_EVERY := 64
@@ -47,7 +45,7 @@ func setup(tile_map: HexTileMap) -> void:
 ## Resolves every placed rune in trigger order when the player ends the turn.
 func resolve_turn() -> void:
 	map.dismiss_hover_feedback()
-	map.reset_segment_turn_results()
+	map.reset_hour_results()
 	aborted_retrigger_storm = false
 	AudioManager.reset_card_trigger_chops()
 
@@ -70,19 +68,16 @@ func resolve_turn() -> void:
 			await _start_station_staff(segment_index)
 
 		if _should_bypass_primary_trigger_order_activation(tile):
-			await _mark_segment_resolved_if_natural_pass_done(tile)
+			_mark_segment_resolved_if_natural_pass_done(tile)
 			continue
 
 		await _resolve_rune_activation(tile)
 		await _wait_for_station_choices()
 		await _wait_between_tile_activations()
-		await _mark_segment_resolved_if_natural_pass_done(tile)
+		_mark_segment_resolved_if_natural_pass_done(tile)
 
-	if GameManager.skip_presentation:
-		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
-	else:
-		_play_segment_turn_result_reveals()
-		await _wait_for_turn_total_count_finished()
+	if not GameManager.skip_presentation:
+		await _present_hour_score()
 	map._apply_segment_turn_totals_to_game_manager()
 	_clear_hour_garnish()
 	StaffManager.end_hour()
@@ -283,9 +278,7 @@ func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> void:
 			continue
 		if map.is_tile_card_active(hex):
 			return
-	if not map.mark_segment_resolved(segment_index):
-		return
-	await _reveal_hour_score_after_last_station(segment_index)
+	map.mark_segment_resolved(segment_index)
 
 
 func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
@@ -318,81 +311,32 @@ func _wait_pace(duration: float) -> void:
 		await get_tree().process_frame
 
 
-## Flavour x Additive for the whole hour. xMult is already folded into Additive.
-func _sum_segment_contributions() -> int:
-	return GameManager.compute_hour_turn_contribution(
-		map.get_hour_flavour(),
-		map.get_hour_additive_mult()
-	)
-
-
-## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
-func _play_segment_turn_result_reveals() -> void:
-	EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
-
-
-## Updates the hour Rating row after the last station finishes firing.
-func _reveal_hour_score_after_last_station(segment_index: int) -> void:
-	if GameManager.skip_presentation:
-		return
-	if segment_index != map.get_segment_count() - 1:
-		return
-
+## Hands the Hour's Flavour x Mult to the readout, then waits for its merge and hold.
+## Times out so a missed UI signal cannot stall the turn.
+func _present_hour_score() -> void:
 	var flavour := map.get_hour_flavour()
-	var additive_mult := map.get_hour_additive_mult()
-	var gold := map.get_hour_gold()
-	var contribution := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
-	if flavour == 0 and gold == 0:
-		return
+	var mult := map.get_hour_additive_mult()
+	var score := GameManager.compute_hour_turn_contribution(flavour, mult)
 
-	EventBus.segment_reveal_started.emit(0)
-
-	if contribution > 0:
-		AudioManager.play_sfx(UISounds.STATION_RESULT)
-		map._emit_segment_turn_results_changed(0)
-		EventBus.segment_score_revealed.emit(0, contribution)
-		await _wait_for_segment_score_count_finished(0)
-		if _should_linger_on_product():
-			await _wait_pace(TUTORIAL_SCORE_LINGER)
-
-	await _wait_pace(SEGMENT_REVEAL_PAUSE)
-	EventBus.segment_reveal_ended.emit()
-
-
-## Waits for this segment's Score count. Times out so a missed UI signal cannot stall the turn.
-func _wait_for_segment_score_count_finished(segment_index: int) -> void:
-	var state := {"done": false}
-	var on_finished := func(finished_index: int) -> void:
-		if finished_index == segment_index:
-			state.done = true
-	EventBus.segment_score_count_finished.connect(on_finished)
-	var timer := GameManager.create_pauseable_timer(
-		SEGMENT_SCORE_COUNT_TIMEOUT / GameManager.game_speed
-	)
-	timer.timeout.connect(func() -> void: state.done = true)
-	while not state.done and is_inside_tree():
-		await get_tree().process_frame
-	if EventBus.segment_score_count_finished.is_connected(on_finished):
-		EventBus.segment_score_count_finished.disconnect(on_finished)
-
-
-## Waits for the turn-total footer count. Times out so a missed UI signal cannot stall the turn.
-func _wait_for_turn_total_count_finished() -> void:
 	var state := {"done": false}
 	var on_finished := func() -> void:
 		state.done = true
-	EventBus.turn_total_count_finished.connect(on_finished)
+	EventBus.hour_score_presentation_finished.connect(on_finished)
 	var timer := GameManager.create_pauseable_timer(
-		TURN_TOTAL_COUNT_TIMEOUT / GameManager.game_speed
+		HOUR_SCORE_PRESENTATION_TIMEOUT / GameManager.game_speed
 	)
 	timer.timeout.connect(func() -> void: state.done = true)
+	EventBus.hour_score_presentation_requested.emit(flavour, mult, score)
 	while not state.done and is_inside_tree():
 		await get_tree().process_frame
-	if EventBus.turn_total_count_finished.is_connected(on_finished):
-		EventBus.turn_total_count_finished.disconnect(on_finished)
+	if EventBus.hour_score_presentation_finished.is_connected(on_finished):
+		EventBus.hour_score_presentation_finished.disconnect(on_finished)
+
+	if score > 0 and _should_linger_on_product():
+		await _wait_pace(TUTORIAL_SCORE_LINGER)
 
 
-## First scoring beat in an active tutorial holds longer so the output row can be read.
+## First scoring beat in an active tutorial holds longer so the Hour score can be read.
 func _should_linger_on_product() -> bool:
 	if _did_tutorial_product_linger:
 		return false
@@ -545,7 +489,12 @@ func create_floating_text(
 	if GameManager.skip_presentation:
 		return
 	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon, garnished)
-	floating_text.play_float_and_free()
+	var readout := HourScoreReadout.find_accepting(get_tree())
+	var product := HourScoreReadout.product_for_float(icon, target_icon)
+	if readout != null and product != HourScoreReadout.Product.NONE:
+		floating_text.play_float_and_absorb(readout, product, readout.reserve(product))
+	else:
+		floating_text.play_float_and_free()
 
 
 func _spawn_floating_text(

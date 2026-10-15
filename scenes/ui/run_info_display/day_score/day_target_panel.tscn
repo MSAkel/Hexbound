@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/run_info_display/day_score/day_target_panel.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="TargetPanelStyle"]
+content_margin_left = 14.0
+content_margin_top = 5.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.94, 0.885, 0.73, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.545, 0.431, 0.243, 0.48)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="DayTargetPanel" type="PanelContainer"]
+texture_filter = 1
+theme_override_styles/panel = SubResource("TargetPanelStyle")
+script = ExtResource("1_script")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CaptionLabel" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 1)
+theme_override_font_sizes/font_size = 16
+text = "DAY TARGET"
+vertical_alignment = 1
+
+[node name="TargetLabel" type="Label" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 1
