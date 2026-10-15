@@ -133,7 +133,11 @@ static func replace_placed_at(tile: Hex, replacement_template: TileCard) -> void
 	var retained_bonus := old_card.bonus_production_amount
 
 	destroy_placed_at(tile, old_card, false)
-	tile.place_tile_card(replacement_template)
+	# A locked second Meal slot refuses new cards. Seat the replacement directly so it keeps the seat.
+	if StationManager.is_meal_slot_locked(tile.coordinates):
+		tile.restore_placed_tile_card(replacement_template.duplicate(true))
+	else:
+		tile.place_tile_card(replacement_template)
 
 	var new_card := tile.active_tile_card
 	if new_card == null:

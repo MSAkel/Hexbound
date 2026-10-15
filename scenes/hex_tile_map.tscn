@@ -14,8 +14,8 @@ texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_ekk8a"]
-tile_shape = 3
-tile_size = Vector2i(104, 120)
+tile_shape = 0
+tile_size = Vector2i(112, 112)
 sources/0 = SubResource("TileSetAtlasSource_4rcl8")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hover"]
@@ -24,8 +24,8 @@ texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_3rbfx"]
-tile_shape = 3
-tile_size = Vector2i(104, 120)
+tile_shape = 0
+tile_size = Vector2i(112, 112)
 sources/0 = SubResource("TileSetAtlasSource_hover")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_lm00d"]
@@ -35,8 +35,8 @@ texture_region_size = Vector2i(96, 112)
 0:0/0/z_index = 3
 
 [sub_resource type="TileSet" id="TileSet_047vf"]
-tile_shape = 3
-tile_size = Vector2i(104, 120)
+tile_shape = 0
+tile_size = Vector2i(112, 112)
 sources/0 = SubResource("TileSetAtlasSource_lm00d")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_047vf"]
@@ -45,8 +45,8 @@ texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_r6dd1"]
-tile_shape = 3
-tile_size = Vector2i(104, 120)
+tile_shape = 0
+tile_size = Vector2i(112, 112)
 sources/0 = SubResource("TileSetAtlasSource_047vf")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xmj4m"]
@@ -55,8 +55,8 @@ texture_region_size = Vector2i(96, 112)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_7pmlo"]
-tile_shape = 3
-tile_size = Vector2i(104, 120)
+tile_shape = 0
+tile_size = Vector2i(112, 112)
 sources/0 = SubResource("TileSetAtlasSource_xmj4m")
 
 [node name="HexTileMap" type="Node2D" unique_id=1387675484]

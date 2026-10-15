@@ -703,6 +703,9 @@ func _is_valid_tile_target(hex: Hex) -> bool:
 	var tile_map := hex.map
 	if tile_map == null:
 		return false
+	# A Meal idling in a locked second slot can still be removed, moved, or changed.
+	if StationManager.is_meal_slot_locked(hex.coordinates) and not EventManager.is_hex_sealed(hex.coordinates):
+		return true
 	return tile_map.is_tile_interactable(hex.coordinates)
 
 

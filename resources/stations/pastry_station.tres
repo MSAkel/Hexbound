@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="StationType" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/station_type.gd" id="1_type"]
+[ext_resource type="Script" path="res://scripts/resources/station_perk.gd" id="2_perk"]
+[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="3_icon"]
+
+[sub_resource type="Resource" id="perk_l1"]
+script = ExtResource("2_perk")
+description = "Sweets on this station gain +10 {flavour}"
+target_tags = Array[StringName]([&"sweet"])
+flat_flavour = 10
+
+[sub_resource type="Resource" id="perk_l2"]
+script = ExtResource("2_perk")
+description = "Sweets on this station gain +15 {flavour}"
+target_tags = Array[StringName]([&"sweet"])
+flat_flavour = 15
+
+[sub_resource type="Resource" id="perk_l4"]
+script = ExtResource("2_perk")
+description = "Sweets on this station gain +20 {flavour}"
+target_tags = Array[StringName]([&"sweet"])
+flat_flavour = 20
+
+[sub_resource type="Resource" id="choice_card"]
+script = ExtResource("2_perk")
+description = "Chocolate output on this station is doubled"
+target_card_ids = Array[String](["chocolate"])
+output_scale = 2.0
+
+[sub_resource type="Resource" id="choice_kinds"]
+script = ExtResource("2_perk")
+description = "Sweets and Dairy on this station gain +10 {flavour}"
+target_tags = Array[StringName]([&"sweet", &"dairy"])
+flat_flavour = 10
+
+[resource]
+script = ExtResource("1_type")
+id = "pastry_station"
+display_name = "Pastry Station"
+icon = ExtResource("3_icon")
+color = Color(1, 0.55, 0.78, 1)
+required_counts = {
+&"sweet": 2,
+&"dairy": 1,
+&"kitchenware": 1
+}
+distinct_tags = Array[StringName]([&"sweet"])
+level_perks = Array[ExtResource("2_perk")]([SubResource("perk_l1"), SubResource("perk_l2"), SubResource("perk_l2"), SubResource("perk_l4")])
+choice_options = Array[ExtResource("2_perk")]([SubResource("choice_card"), SubResource("choice_kinds")])

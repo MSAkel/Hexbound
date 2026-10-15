@@ -22,7 +22,6 @@ var _rarity_badge_styles: Dictionary = {}
 
 # Gap between the hovered spot and the panel edge.
 const OFFSET := Vector2(12, 12)
-const EMPTY_SPOT_ICON := preload("res://assets/tilesets/tile_dashed.png")
 
 var hex: Hex = null
 # Card shown through show_card. Null while the panel inspects a spot.
@@ -105,7 +104,7 @@ func _refresh_spot_card() -> void:
 		_set_bonus_line(card)
 		_set_condiment_fuse_line(card)
 	else:
-		card_icon.show_empty(EMPTY_SPOT_ICON)
+		card_icon.show_empty(SquareTileTexture.get_texture(SquareTileTexture.BASE, HexTileMap.HEX_TEXTURE_SIZE))
 		card_name_label.text = "Empty %s" % GameTerms.SPOT
 		_hide_rarity_badge()
 		card_subtitle.text = ""

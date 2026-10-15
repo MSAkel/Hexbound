@@ -12,13 +12,12 @@ const MEAL_SLOTS_PER_STATION := 2
 # Offset origin so every generated cell stays in non-negative tile coords.
 const BOARD_ORIGIN := Vector2i(2, 0)
 
+# Square grid, orthogonal adjacency only. Diagonals are not neighbors.
 const NEIGHBORS: Array[TileSet.CellNeighbor] = [
 	TileSet.CELL_NEIGHBOR_RIGHT_SIDE,
 	TileSet.CELL_NEIGHBOR_LEFT_SIDE,
-	TileSet.CELL_NEIGHBOR_TOP_RIGHT_SIDE,
-	TileSet.CELL_NEIGHBOR_TOP_LEFT_SIDE,
-	TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE,
-	TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE,
+	TileSet.CELL_NEIGHBOR_TOP_SIDE,
+	TileSet.CELL_NEIGHBOR_BOTTOM_SIDE,
 ]
 
 var _map: Node
@@ -58,7 +57,7 @@ func setup(map: Node) -> void:
 	_map = map
 
 
-## Walks Godot hex neighbors to build the shared 8-wide block. Equal rows zigzag so they stay stacked.
+## Walks square grid neighbors to build the shared 8-wide block. Rows stack straight down.
 static func compute_board_cells(base_layer: TileMapLayer, origin: Vector2i = BOARD_ORIGIN) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	var row_start := origin
@@ -69,15 +68,7 @@ static func compute_board_cells(base_layer: TileMapLayer, origin: Vector2i = BOA
 			cells.append(cell)
 			if col < length - 1:
 				cell = base_layer.get_neighbor_cell(cell, TileSet.CELL_NEIGHBOR_RIGHT_SIDE)
-		if row_i >= BOARD_ROW_LENGTHS.size() - 1:
-			continue
-		var next_length: int = BOARD_ROW_LENGTHS[row_i + 1]
-		# Longer rows start one hex left-down so they pick up an extra seat.
-		# Equal rows alternate down-right and down-left so the block does not drift sideways.
-		if next_length > length or (next_length == length and row_i % 2 == 1):
-			row_start = base_layer.get_neighbor_cell(row_start, TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)
-		else:
-			row_start = base_layer.get_neighbor_cell(row_start, TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)
+		row_start = base_layer.get_neighbor_cell(row_start, TileSet.CELL_NEIGHBOR_BOTTOM_SIDE)
 	return cells
 
 
@@ -530,10 +521,17 @@ func _compute_opposites() -> void:
 	_opposite_by_coords.clear()
 	if _map == null or _map.map_data.is_empty():
 		return
-	var center_pos: Vector2 = _get_screen_position(_hex_center)
 	var positions: Dictionary = {}
+	var min_pos := Vector2(INF, INF)
+	var max_pos := Vector2(-INF, -INF)
 	for map_coords: Vector2i in _map.map_data.keys():
-		positions[map_coords] = _get_screen_position(map_coords)
+		var pos := _get_screen_position(map_coords)
+		positions[map_coords] = pos
+		min_pos = min_pos.min(pos)
+		max_pos = max_pos.max(pos)
+	# Reflect through the middle of the board, not a seat. An even-sized board has no center seat,
+	# so reflecting through one would land past the far edge and snap to the wrong neighbor.
+	var center_pos := (min_pos + max_pos) * 0.5
 	for coords: Vector2i in _map.map_data.keys():
 		var reflected_pos: Vector2 = center_pos * 2.0 - positions[coords]
 		var best: Vector2i = coords

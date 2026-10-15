@@ -64,6 +64,8 @@ func _kill_crossfade_tween() -> void:
 
 # Play music with optional crossfade
 func play_music(music: AudioStream, fade: bool = true) -> void:
+	if GameManager.skip_presentation:
+		return
 	if current_music == music and music_player.playing:
 		return
 
@@ -97,6 +99,10 @@ func play_sfx(
 	fade_out_duration: float = 0.0,
 	volume_scale: float = 1.0
 ) -> void:
+	# Headless playtests fire SFX in bursts that recycle busy players. A recycled playback is only
+	# freed on a later mix step, so quitting right after one leaks it at exit.
+	if GameManager.skip_presentation:
+		return
 	var player := get_available_sfx_player()
 	if player == null:
 		return

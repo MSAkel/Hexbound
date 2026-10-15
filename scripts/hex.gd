@@ -137,7 +137,7 @@ func refresh_own_visuals() -> void:
 		return
 
 	var target_modulate := Color.WHITE
-	if not active_tile_card.is_active:
+	if not active_tile_card.is_active or StationManager.is_meal_slot_locked(coordinates):
 		target_modulate = RUNE_INACTIVE_MODULATE
 	elif _event_rune_modulate != Color.WHITE:
 		target_modulate = _event_rune_modulate

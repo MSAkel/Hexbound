@@ -12,5 +12,5 @@ starting_hand_eligible = true
 id = "grape"
 name = "Grape"
 icon = ExtResource("1_icon")
-description = "+15 {flavour}. Beverages on this {station} gain x1.25 output."
+description = "+15 {flavour}. Beverages on this Station gain x1.25 output."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

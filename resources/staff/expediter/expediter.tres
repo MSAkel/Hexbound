@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "expediter"
 name = "Expediter"
-description = "{trigger} the first Kitchenware on this {station} two more times"
+description = "{trigger} the first Kitchenware on this Station two more times"
 rarity = 2

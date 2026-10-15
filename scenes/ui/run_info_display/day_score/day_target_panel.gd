@@ -12,8 +12,14 @@ var _counter: CountingNumber
 func _ready() -> void:
 	caption_label.text = "%s TARGET" % GameTerms.DAY.to_upper()
 	_counter = CountingNumber.for_label(self, target_label, true)
-	_counter.snap_to(GameManager.required_score)
+	_snap()
 	EventBus.required_score_changed.connect(_on_required_score_changed)
+	# This node readies before the run resets, so the first target can be last run's.
+	EventBus.run_state_loaded.connect(_snap)
+
+
+func _snap() -> void:
+	_counter.snap_to(GameManager.required_score)
 
 
 func _on_required_score_changed() -> void:

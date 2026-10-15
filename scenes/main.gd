@@ -73,6 +73,12 @@ func _begin_fresh_run() -> void:
 	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
 	RerollManager.reset_for_new_run()
 	EventManager.init_run()
+	# HUD nodes read the autoloads in their own _ready, before this reset, so they still show last run.
+	EventBus.turn_changed.emit()
+	EventBus.round_changed.emit(GameManager.current_round)
+	EventBus.required_score_changed.emit()
+	EventBus.total_round_score_changed.emit()
+	EventBus.run_state_loaded.emit()
 	tile_map.apply_run_start_randomization()
 	hand.build_starting_hand()
 	if debug_starting_round > 1:

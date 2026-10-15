@@ -16,5 +16,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "hamburger"
 name = "Hamburger"
 icon = ExtResource("1_icon")
-description = "+10 {mult}. Gains x0.1 {mult} for every 10 {triggers} on its {station} this Hour."
+description = "+10 {mult}. Gains x0.1 {mult} for every 10 {triggers} on its Station this Hour."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

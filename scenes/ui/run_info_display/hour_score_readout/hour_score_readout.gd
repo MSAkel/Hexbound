@@ -21,9 +21,9 @@ const GAIN_REBOUND := 0.07
 const GAIN_SETTLE := 0.38
 const GAIN_TILT_MIN_DEG := 3.0
 const GAIN_TILT_MAX_DEG := 9.0
-const GAIN_FLASH := Color(1.9, 1.9, 1.9, 1.0)
-const ECHO_SCALE := 1.9
-const ECHO_DURATION := 0.36
+## Small bump on the total once it finishes counting.
+const NUDGE_SCALE := 1.08
+const NUDGE_DURATION := 0.22
 
 const MERGE_ANTICIPATION := 0.12
 const MERGE_DURATION := 0.26
@@ -35,10 +35,8 @@ const TOTAL_MAX_FONT_SIZE := 124
 ## Hold on the merged score before the turn moves on to commit it.
 const TOTAL_HOLD := 0.55
 
-const FLY_WINDUP_DURATION := 0.14
 const FLY_DURATION := 0.46
 const FLY_END_SCALE := 0.4
-const FLY_ARC_LIFT := 0.22
 
 const CAMERA_SHAKE_MIN := 4.0
 const CAMERA_SHAKE_MAX := 20.0
@@ -52,7 +50,6 @@ const SHAKE_DURATION := 0.42
 @onready var times_label: Label = $Formula/TimesLabel
 @onready var mult_label: Label = $Formula/MultLabel
 @onready var total_label: Label = $TotalLabel
-@onready var fx_layer: Control = $FxLayer
 
 var _accepting := false
 ## Latest Hour values from the tile map. Floats reserve these as they spawn.
@@ -249,12 +246,11 @@ func _show_value(product: int, value: int) -> void:
 	var label := flavour_label if product == Product.FLAVOUR else mult_label
 	counter.play(value)
 	var strength := clampf(0.4 + log(1.0 + absf(value - previous)) / log(1000.0) * 0.6, 0.4, 1.0)
-	var echo_text := _format_flavour(value) if product == Product.FLAVOUR else CountingNumber.format_int(maxi(1, value))
-	_play_gain_fx(label, strength, echo_text)
+	_play_gain_fx(label, strength)
 
 
-## Squash, stretch, tilt, flash, and a fading echo of echo_text. strength is 0 to 1.
-func _play_gain_fx(control: Control, strength: float, echo_text: String = "") -> void:
+## Squash, stretch, and tilt. strength is 0 to 1.
+func _play_gain_fx(control: Control, strength: float) -> void:
 	var speed := GameManager.game_speed
 	var squash := Vector2.ONE.lerp(GAIN_SQUASH, strength)
 	var stretch := Vector2.ONE.lerp(GAIN_STRETCH, strength)
@@ -268,7 +264,6 @@ func _play_gain_fx(control: Control, strength: float, echo_text: String = "") ->
 		Tween.EASE_OUT
 	)
 	tween.tween_property(control, "rotation_degrees", tilt, GAIN_HIT / speed)
-	tween.tween_property(control, "modulate", GAIN_FLASH, GAIN_HIT / speed)
 	tween.chain()
 	tween.set_parallel(true)
 	tween.tween_property(control, "scale", stretch, GAIN_REBOUND / speed).set_trans(Tween.TRANS_QUAD).set_ease(
@@ -282,33 +277,7 @@ func _play_gain_fx(control: Control, strength: float, echo_text: String = "") ->
 	tween.tween_property(control, "rotation_degrees", 0.0, GAIN_SETTLE / speed).set_trans(
 		Tween.TRANS_ELASTIC
 	).set_ease(Tween.EASE_OUT)
-	tween.tween_property(control, "modulate", Color.WHITE, GAIN_SETTLE * 0.6 / speed)
 
-	if not echo_text.is_empty() and control is Label:
-		_spawn_echo(control as Label, lerpf(1.4, ECHO_SCALE, strength), echo_text)
-
-
-## Ghost copy of the label that swells and fades, like a shockwave off the number.
-func _spawn_echo(source: Label, end_scale: float, text: String = "") -> void:
-	var echo := source.duplicate(0) as Label
-	echo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if not text.is_empty():
-		echo.text = text
-	fx_layer.add_child(echo)
-	echo.size = echo.get_combined_minimum_size()
-	echo.global_position = source.get_global_rect().get_center() - echo.size * 0.5
-	echo.pivot_offset = echo.size * 0.5
-	echo.scale = Vector2.ONE
-	echo.rotation_degrees = 0.0
-	echo.modulate = Color(1.0, 1.0, 1.0, 0.7)
-	var duration := ECHO_DURATION / GameManager.game_speed
-	var tween := echo.create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(echo, "scale", Vector2(end_scale, end_scale), duration).set_trans(
-		Tween.TRANS_CUBIC
-	).set_ease(Tween.EASE_OUT)
-	tween.tween_property(echo, "modulate:a", 0.0, duration).set_ease(Tween.EASE_IN)
-	tween.chain().tween_callback(echo.queue_free)
 
 #endregion
 
@@ -386,7 +355,7 @@ func _play_merge() -> void:
 		merge.tween_property(control, "scale", Vector2(0.3, 0.3), MERGE_DURATION / speed).set_trans(
 			Tween.TRANS_QUAD
 		).set_ease(Tween.EASE_IN)
-		merge.tween_property(control, "modulate", Color(2.0, 1.8, 1.4, 0.0), MERGE_DURATION / speed).set_ease(
+		merge.tween_property(control, "modulate", Color(1.0, 1.0, 1.0, 0.0), MERGE_DURATION / speed).set_ease(
 			Tween.EASE_IN
 		)
 	merge.tween_property(times_label, "scale", Vector2(1.6, 1.6), MERGE_DURATION * 0.5 / speed)
@@ -411,7 +380,7 @@ func _play_total_pop(score: int) -> void:
 	total_label.visible = true
 	total_label.scale = Vector2(0.2, 0.2)
 	total_label.rotation_degrees = 0.0
-	total_label.modulate = GAIN_FLASH
+	total_label.modulate = Color.WHITE
 
 	AudioManager.play_sfx(UISounds.STATION_RESULT)
 	_shake_screen(intensity)
@@ -422,15 +391,25 @@ func _play_total_pop(score: int) -> void:
 	pop.tween_property(total_label, "scale", Vector2(pop_scale, pop_scale), TOTAL_POP_DURATION / speed).set_trans(
 		Tween.TRANS_BACK
 	).set_ease(Tween.EASE_OUT)
-	pop.parallel().tween_property(total_label, "modulate", Color.WHITE, TOTAL_POP_DURATION / speed)
 	pop.tween_property(total_label, "scale", Vector2.ONE, TOTAL_SETTLE_DURATION / speed).set_trans(
 		Tween.TRANS_ELASTIC
 	).set_ease(Tween.EASE_OUT)
 	_fx_tweens[total_label] = pop
 
 	await TweenWait.finished(self, count_tween)
-	_spawn_echo(total_label, lerpf(1.3, ECHO_SCALE, intensity))
 	await TweenWait.finished(self, pop)
+	await TweenWait.finished(self, _nudge(total_label))
+
+
+## Quick, gentle scale bump.
+func _nudge(control: Control) -> Tween:
+	var half := NUDGE_DURATION * 0.5 / GameManager.game_speed
+	var tween := _replace_fx_tween(control)
+	tween.tween_property(control, "scale", Vector2(NUDGE_SCALE, NUDGE_SCALE), half).set_trans(
+		Tween.TRANS_SINE
+	).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, half).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	return tween
 
 
 func _center_total_label() -> void:
@@ -464,25 +443,13 @@ func _fly_into_day_rating(amount: int, before: int) -> void:
 	_center_total_label()
 	total_label.scale = Vector2.ONE
 
-	# Small crouch before launch.
-	var windup := create_tween()
-	windup.set_parallel(true)
-	windup.tween_property(total_label, "scale", Vector2(1.18, 0.86), FLY_WINDUP_DURATION / speed).set_trans(
-		Tween.TRANS_QUAD
-	).set_ease(Tween.EASE_OUT)
-	windup.tween_property(total_label, "position:y", total_label.position.y + 10.0, FLY_WINDUP_DURATION / speed)
-	await TweenWait.finished(self, windup)
-
 	var start := total_label.get_global_rect().get_center()
 	var target := day_rating_panel.get_landing_point()
-	var lift := maxf(start.distance_to(target) * FLY_ARC_LIFT, 30.0)
-	var control := (start + target) * 0.5 + Vector2(0.0, -lift)
 	var half_size := total_label.size * 0.5
 	var fly := create_tween()
 	fly.tween_method(
 		func(t: float) -> void:
-			var point := start.lerp(control, t).lerp(control.lerp(target, t), t)
-			total_label.global_position = point - half_size
+			total_label.global_position = start.lerp(target, t) - half_size
 			var s := lerpf(1.0, FLY_END_SCALE, t)
 			total_label.scale = Vector2(s, s),
 		0.0,
@@ -518,8 +485,6 @@ func _kill_fx() -> void:
 		if tween is Tween and (tween as Tween).is_valid():
 			(tween as Tween).kill()
 	_fx_tweens.clear()
-	for child in fx_layer.get_children():
-		child.queue_free()
 
 
 func _keep_pivot_centered(control: Control) -> void:

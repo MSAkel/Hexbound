@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "prep_cook"
 name = "Prep Cook"
-description = "+2 {mult} for every Ingredient on this {station}"
+description = "+2 {mult} for every Ingredient on this Station"
 rarity = 1

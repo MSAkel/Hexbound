@@ -56,8 +56,8 @@ const EVENT_INFO := {
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.FADING_SECTOR: {
-		"name": "Fading {station}",
-		"description": "Every hour, a random {station} has its Ingredient output halved.",
+		"name": "Fading Station",
+		"description": "Every hour, a random Station has its Ingredient output halved.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.DRY_WIRE: {
@@ -72,7 +72,7 @@ const EVENT_INFO := {
 	},
 	Type.LOCAL_CURRENT: {
 		"name": "Local Current",
-		"description": "Products cannot be Passed to another {station}.",
+		"description": "Products cannot be Passed to another Station.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.AUSTERITY: {

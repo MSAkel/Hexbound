@@ -177,7 +177,7 @@ func _create_chef_entry(chef: ChefDefinition) -> PanelContainer:
 	speciality_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	details.add_child(speciality_label)
 
-	var station_text := CardKeywordGlossary.to_plain("%d {stations}") % HexMapLayout.BOARD_ROW_LENGTHS.size()
+	var station_text := "%d Stations" %HexMapLayout.BOARD_ROW_LENGTHS.size()
 	details.add_child(_create_label(station_text.to_upper(), 14, ACCENT))
 	return panel
 

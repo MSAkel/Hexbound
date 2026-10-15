@@ -169,16 +169,21 @@ func _on_station_state_changed(index: int) -> void:
 		refresh()
 
 
-func _on_station_type_changed(index: int, _type_id: String) -> void:
+func _on_station_type_changed(index: int, type_id: String) -> void:
 	if index != segment_index or GameManager.skip_presentation:
 		return
-	AudioManager.play_sfx(UISounds.STATION_TYPE_GAINED)
+	var gained := not type_id.is_empty()
+	if gained:
+		AudioManager.play_sfx(UISounds.STATION_TYPE_GAINED)
 	# Flip on the X axis, swapping to the new type at the edge, then punch.
 	pivot_offset = size * 0.5
 	var tween := create_tween()
 	tween.tween_property(self, "scale", Vector2(0.0, 1.0), 0.14 / _speed()).set_trans(Tween.TRANS_SINE)
 	tween.tween_callback(refresh.bind(false))
 	_append_punch(tween, self, PUNCH_SCALE)
+	# Losing a type flips back to the base badge without the celebration.
+	if not gained:
+		return
 	_float_text("%s!" % StationManager.get_station_name(segment_index), _station_color())
 	_map.flash_segment_highlight(segment_index)
 

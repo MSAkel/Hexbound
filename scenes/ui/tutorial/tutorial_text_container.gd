@@ -5,7 +5,7 @@ extends PanelContainer
 
 const STEP_TEXTS: PackedStringArray = [
 	"Select a card to place it on an empty spot.\nReach the day's Rating target before you run out of hours.",
-	"Hover over a spot to view its stats.\nTool cards aren't always limited to their own {station}.",
+	"Hover over a spot to view its stats.\nTool cards aren't always limited to their own Station.",
 	"The hour ends when only two cards remain in your hand.\nComplete %d days to win." % ScoreProgression.RUN_LENGTH_ROUNDS,
 	"{flavour} and Additive {mult} are shared across the whole kitchen. {flavour} × Additive becomes the hour's Rating. Multiplicative {mult} immediately multiplies the current Additive.\n",
 ]

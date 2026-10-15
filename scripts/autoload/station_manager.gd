@@ -5,14 +5,18 @@ const _StationTypeScript := preload("res://scripts/resources/station_type.gd")
 const _StationPerkScript := preload("res://scripts/resources/station_perk.gd")
 
 ## Run-long station state: type, Meals served, level, and the level 3 pick.
-## Stations start at level 1. A base station turns into a type the first time its regular spots
-## hold that type's cards. Only typed stations count served Meals and level up.
+## Stations start at level 1. A base station turns into a type when its regular spots hold that
+## type's cards. A typed station that loses those cards resets to level 1 and becomes the first
+## type it still satisfies, or a base station. Only typed stations count served Meals and level up.
 ## Level 3 unlocks the second Meal slot and offers a perk choice.
 ## Every change emits EventBus.station_state_changed. The board, badges and chips redraw from it.
 
 const STATION_TYPE_PATHS: Array[String] = [
 	"res://resources/stations/grill.tres",
 	"res://resources/stations/cold_station.tres",
+	"res://resources/stations/raw_bar.tres",
+	"res://resources/stations/pastry_station.tres",
+	"res://resources/stations/sauce_station.tres",
 ]
 ## Total Meals served (after gaining a type) to reach levels 2, 3 and 4.
 const LEVEL_THRESHOLDS: Array[int] = [3, 7, 12]
@@ -22,7 +26,8 @@ const CHOICE_LEVEL := 3
 const MEAL_SLOT_UNLOCK_LEVEL := 3
 const BASE_STATION_NAME := "Station"
 
-## Fired when the pending level 3 pick is made. HexTurnResolver waits on this mid-Hour.
+## Fired when the pending level 3 pick is made, or dropped because the station lost its type.
+## HexTurnResolver waits on this mid-Hour.
 signal choice_resolved(segment_index: int)
 
 
@@ -49,6 +54,8 @@ var _stations: Array[Station] = []
 var _pending_choices: Array[int] = []
 ## Live board. HexTileMap registers itself, so headless boards work without the main scene.
 var _board: HexTileMap = null
+## True while a deferred evaluate_station_types is waiting for the end of the frame.
+var _evaluation_queued := false
 
 
 func _ready() -> void:
@@ -227,21 +234,58 @@ func _on_card_played(_card_ui: CardUI) -> void:
 	evaluate_station_types()
 
 
-## Base stations whose regular spots hold a type's cards become that type for the rest of the run.
+## Runs evaluate_station_types once at the end of the frame. Board edits call this, so a swap
+## (remove both, then reseat) is judged on the final board, not the half-swapped one.
+func queue_type_evaluation() -> void:
+	if _evaluation_queued:
+		return
+	_evaluation_queued = true
+	_run_queued_evaluation.call_deferred()
+
+
+func _run_queued_evaluation() -> void:
+	_evaluation_queued = false
+	evaluate_station_types()
+
+
+## Base stations take the first type their regular spots satisfy. A typed station keeps its type
+## while it stays satisfied. Once it is not, its progress resets and it takes the first type it
+## still satisfies, or turns back into a base station.
 func evaluate_station_types() -> void:
 	if _board == null:
 		return
 	for segment_index in _stations.size():
 		var station := _stations[segment_index]
-		if station.type != null:
-			continue
 		var cards := _board.get_regular_spot_cards(segment_index)
+		if station.type != null and station.type.is_satisfied_by(cards):
+			continue
+		var new_type: StationType = null
 		for station_type: StationType in _types:
 			if station_type.is_satisfied_by(cards):
-				station.type = station_type
-				EventBus.station_type_changed.emit(segment_index, station_type.id)
-				EventBus.station_state_changed.emit(segment_index)
+				new_type = station_type
 				break
+		if new_type == station.type:
+			continue
+		if station.type != null:
+			_reset_progress(segment_index)
+		station.type = new_type
+		EventBus.station_type_changed.emit(segment_index, new_type.id if new_type != null else "")
+		EventBus.station_state_changed.emit(segment_index)
+
+
+## Back to level 1 with no Meals served and no level 3 pick. Drops a pick still waiting.
+func _reset_progress(segment_index: int) -> void:
+	var station := _stations[segment_index]
+	station.served = 0
+	station.level = START_LEVEL
+	station.choice = -1
+	var was_showing := get_pending_choice_segment() == segment_index
+	_pending_choices.erase(segment_index)
+	if not was_showing:
+		return
+	choice_resolved.emit(segment_index)
+	if has_pending_choice():
+		EventBus.station_choice_requested.emit(get_pending_choice_segment())
 
 
 ## One served Meal. Levels the station when it crosses a threshold. Base stations do not progress.

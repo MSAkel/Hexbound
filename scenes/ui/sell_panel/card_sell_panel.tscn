@@ -1,98 +1,29 @@
 [gd_scene format=3 uid="uid://c8sellpanel01"]
 
 [ext_resource type="Script" uid="uid://bq8sellpanel1" path="res://scenes/ui/sell_panel/card_sell_panel.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="2_gold"]
-[ext_resource type="StyleBox" path="res://themes/hud_panel_stylebox.tres" id="3_panel"]
+[ext_resource type="Texture2D" uid="uid://blx67yh02regg" path="res://assets/test/test-image 1.png" id="2_art"]
 
-[sub_resource type="FontVariation" id="CaptionFont"]
-variation_embolden = 0.4
-spacing_glyph = 1
-
-[sub_resource type="FontVariation" id="ValueFont"]
-variation_embolden = 0.2
-
-[sub_resource type="StyleBoxFlat" id="PriceChip"]
-content_margin_left = 7.0
-content_margin_top = 3.0
-content_margin_right = 11.0
-content_margin_bottom = 3.0
-bg_color = Color(0.925, 0.86, 0.72, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.545, 0.431, 0.243, 0.6)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
+[sub_resource type="StyleBoxEmpty" id="EmptyPanel"]
 
 [node name="CardSellPanel" type="PanelContainer"]
 z_index = 6
-custom_minimum_size = Vector2(236, 76)
+custom_minimum_size = Vector2(254, 272)
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 28.0
-offset_top = -104.0
-offset_right = 264.0
+offset_top = -300.0
+offset_right = 282.0
 offset_bottom = -28.0
 grow_vertical = 0
 mouse_filter = 2
-theme_override_styles/panel = ExtResource("3_panel")
+theme_override_styles/panel = SubResource("EmptyPanel")
 script = ExtResource("1_script")
 
-[node name="Row" type="HBoxContainer" parent="."]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 12
-
-[node name="Copy" type="VBoxContainer" parent="Row"]
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
-theme_override_constants/separation = -2
-alignment = 1
-
-[node name="TitleLabel" type="Label" parent="Row/Copy"]
+[node name="Art" type="TextureRect" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
-theme_override_fonts/font = SubResource("ValueFont")
-theme_override_font_sizes/font_size = 20
-text = "Sell"
-
-[node name="HintLabel" type="Label" parent="Row/Copy"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.431, 0.243, 1)
-theme_override_fonts/font = SubResource("CaptionFont")
-theme_override_font_sizes/font_size = 12
-text = "DRAG A CARD HERE"
-
-[node name="PriceChip" type="PanelContainer" parent="Row"]
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-theme_override_styles/panel = SubResource("PriceChip")
-
-[node name="PriceRow" type="HBoxContainer" parent="Row/PriceChip"]
+texture_filter = 1
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 4
-
-[node name="GoldIcon" type="TextureRect" parent="Row/PriceChip/PriceRow"]
-custom_minimum_size = Vector2(26, 26)
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("2_gold")
-expand_mode = 1
+texture = ExtResource("2_art")
 stretch_mode = 5
-
-[node name="PriceLabel" type="Label" parent="Row/PriceChip/PriceRow"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2745, 0.2275, 0.1137, 1)
-theme_override_fonts/font = SubResource("ValueFont")
-theme_override_font_sizes/font_size = 20
-text = "+2"

@@ -12,7 +12,7 @@ const STATION_TINT_ALPHA := 0.13
 const FLASH_ALPHA := 0.35
 const LOCK_COLOR := Color(1.0, 0.82, 0.55, 0.9)
 const LOCK_SHADOW := Color(0, 0, 0, 0.45)
-## Pointy-top hex outline matching the 96x112 base art, inset so the dashed edge stays visible.
+## Rounded square matching the base tile, inset so the tile border stays visible.
 const HEX_INSET := 0.9
 
 var _map: HexTileMap
@@ -28,15 +28,8 @@ var _lock_break := {}
 
 func setup(map: HexTileMap) -> void:
 	_map = map
-	var half := Vector2(HexTileMap.HEX_TEXTURE_SIZE) * 0.5 * HEX_INSET
-	_hex_points = PackedVector2Array([
-		Vector2(0, -half.y),
-		Vector2(half.x, -half.y * 0.5),
-		Vector2(half.x, half.y * 0.5),
-		Vector2(0, half.y),
-		Vector2(-half.x, half.y * 0.5),
-		Vector2(-half.x, -half.y * 0.5),
-	])
+	var half := float(HexTileMap.HEX_TEXTURE_SIZE.x) * 0.5 * HEX_INSET
+	_hex_points = HexShape.rounded_square(Vector2.ZERO, half)
 	EventBus.station_type_changed.connect(_on_station_type_changed)
 	EventBus.station_leveled_up.connect(_on_station_leveled_up)
 	EventBus.meal_slot_unlocked.connect(_on_meal_slot_unlocked)

@@ -1,7 +1,7 @@
 class_name CardIcon
 extends Control
 
-## Reusable card picture. Flat hex in the card type accent plus the subject icon, not a baked composite.
+## Reusable card picture. Flat rounded square in the card type accent plus the subject icon, not a baked composite.
 ## Use this wherever you only need the picture, hand cards, inspect panels, lists.
 ## Board tokens that sit on hexes use CardIconUI, which embeds this scene.
 
@@ -13,6 +13,8 @@ const SUBJECT_HEX_INSET := 16.0 / 112.0
 ## Hex outline thickness as a fraction of the hex radius. 3.5px on a 112px board token.
 const HEX_OUTLINE_RATIO := 3.5 / 56.0
 const HEX_OUTLINE_COLOR := Color(0, 0, 0, 1)
+## Square token half side as a fraction of the control radius. 46px of 56 sits inside the 104px board tile.
+const TOKEN_HALF_RATIO := 46.0 / 56.0
 
 ## Off for hosts that draw their own backdrop, such as the card face frame.
 @export var show_hex := true
@@ -57,7 +59,7 @@ func _set_drawn_hex(enabled: bool, color: Color = Color.WHITE) -> void:
 	queue_redraw()
 
 
-## Pointy-top hex centered in the control. Drawn behind the child TextureRects.
+## Rounded square centered in the control. Drawn behind the child TextureRects.
 func _draw() -> void:
 	if not _draws_hex:
 		return
@@ -65,15 +67,18 @@ func _draw() -> void:
 	var radius := minf(center.x, center.y)
 	var outline_width := radius * HEX_OUTLINE_RATIO
 	# The outline is stroked along its own center line, so pull the ring in by half its width.
-	var corners := HexShape.corners(center, radius - outline_width * 0.5)
+	var corners := HexShape.rounded_square(center, token_half_extent(radius) - outline_width * 0.5)
 	draw_colored_polygon(corners, _hex_color)
 
-	# Start and end mid-edge so the stroke has no open notch at a corner.
-	var seam := corners[HexShape.SIDES - 1].lerp(corners[0], 0.5)
-	var ring := PackedVector2Array([seam])
-	ring.append_array(corners)
-	ring.append(seam)
+	# rounded_square starts mid-edge, so closing on the first point leaves no notch at a corner.
+	var ring := corners.duplicate()
+	ring.append(corners[0])
 	draw_polyline(ring, HEX_OUTLINE_COLOR, outline_width, true)
+
+
+## Half side of the square token for a control of this radius. Shared with HexStroke so the glow traces the token.
+static func token_half_extent(radius: float) -> float:
+	return radius * TOKEN_HALF_RATIO
 
 
 func _apply_subject_layout(fits_in_hex: bool) -> void:

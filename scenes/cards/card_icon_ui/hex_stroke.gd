@@ -1,14 +1,13 @@
 class_name HexStroke
 extends Line2D
 
-## Draws a hex outline from the top, clockwise, as progress goes from 0 to 1.
+## Draws the token's rounded-square outline from the top, clockwise, as progress goes from 0 to 1.
 
 @export_range(0.0, 1.0, 0.01) var progress: float = 0.0:
 	set(value):
 		progress = clampf(value, 0.0, 1.0)
 		_rebuild()
 
-const SIDES := HexShape.SIDES
 const DRAW_DURATION := 0.38
 const FADE_DURATION := 0.22
 # Inset from the token control so the stroke sits on the hex edge.
@@ -150,32 +149,42 @@ func _restore_rest_stroke() -> void:
 	modulate = Color.WHITE
 
 
+## Walks the outline by arc length so the rounded corners do not speed up the stroke.
 func _rebuild() -> void:
 	clear_points()
 	if progress <= 0.0:
 		return
 
-	var vertices := _hex_vertices()
-	var edges_covered := progress * float(SIDES)
-	var full_edges := int(edges_covered)
-	var edge_frac := edges_covered - float(full_edges)
+	var vertices := _outline_vertices()
+	# A full ring closes itself. Repeating the first point would double-paint the seam as a bright dot.
+	closed = progress >= 1.0
+	if closed:
+		for vertex: Vector2 in vertices:
+			add_point(vertex)
+		return
+	vertices.append(vertices[0])
+	var perimeter := 0.0
+	for i in vertices.size() - 1:
+		perimeter += vertices[i].distance_to(vertices[i + 1])
+	var remaining := perimeter * progress
 
-	for i in range(full_edges + 1):
-		add_point(vertices[i % SIDES])
+	add_point(vertices[0])
+	for i in vertices.size() - 1:
+		var edge := vertices[i].distance_to(vertices[i + 1])
+		if remaining >= edge:
+			add_point(vertices[i + 1])
+			remaining -= edge
+			continue
+		if edge > 0.0:
+			add_point(vertices[i].lerp(vertices[i + 1], remaining / edge))
+		return
 
-	if full_edges < SIDES:
-		var from_i := full_edges % SIDES
-		var to_i := (full_edges + 1) % SIDES
-		add_point(vertices[from_i].lerp(vertices[to_i], edge_frac))
-	elif get_point_count() > 0:
-		# Close the loop once the stroke has traveled the full perimeter.
-		add_point(vertices[0])
 
-
-func _hex_vertices() -> PackedVector2Array:
+## Rounded square that traces the CardIcon token edge, starting top-center and going clockwise.
+func _outline_vertices() -> PackedVector2Array:
 	var parent_control := get_parent() as Control
 	var center := Vector2.ZERO
 	if parent_control != null and parent_control.size != Vector2.ZERO:
 		center = parent_control.size * 0.5
-	var radius := minf(center.x, center.y) - RADIUS_INSET
-	return HexShape.corners(center, radius)
+	var radius := minf(center.x, center.y)
+	return HexShape.rounded_square(center, CardIcon.token_half_extent(radius) - RADIUS_INSET)

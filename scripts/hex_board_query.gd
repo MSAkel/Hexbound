@@ -22,7 +22,7 @@ var _hex_by_card: Dictionary = {}
 var _trigger_index_by_coords: Dictionary = {}
 ## Every live hex in fire order. Stable until the board is regenerated.
 var _hexes_in_order: Array[Hex] = []
-## Vector2i to the up-to-six neighbor hexes that exist on this board.
+## Vector2i to the up-to-four orthogonal neighbor tiles that exist on this board.
 var _neighbors_by_coords: Dictionary = {}
 ## Vector2i to true when at least one neighbor direction leaves the board.
 var _edge_by_coords: Dictionary = {}

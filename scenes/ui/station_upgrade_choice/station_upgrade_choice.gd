@@ -28,6 +28,7 @@ func _ready() -> void:
 	_build()
 	hide()
 	EventBus.station_choice_requested.connect(_on_station_choice_requested)
+	StationManager.choice_resolved.connect(_on_choice_resolved)
 
 
 func _build() -> void:
@@ -91,6 +92,15 @@ func _on_station_choice_requested(segment_index: int) -> void:
 	if not GameManager.skip_presentation:
 		AudioManager.play_sfx(UISounds.CARD_REVEAL)
 	_play_intro()
+
+
+## The station lost its type while its pick was open. Close without picking.
+func _on_choice_resolved(segment_index: int) -> void:
+	if segment_index != _segment_index or _picking:
+		return
+	_segment_index = -1
+	AudioManager.stop_ui_hover()
+	hide()
 
 
 func _populate(station_type: StationType) -> void:

@@ -4,7 +4,7 @@ extends Control
 ## Visual representation of a [TileCard] on the hex map.
 ##
 ## This scene wraps [CardIcon] with board-only presentation: the output chip,
-## condiment fuse badges, a hex outline, particle effects, and placement/resolution
+## condiment fuse badges, a token outline, particle effects, and placement/resolution
 ## animations. Both placed cards and card-placement ghosts instantiate this class;
 ## call [method prepare_placement_ghost] to make a copy display-only.
 ##
@@ -90,7 +90,7 @@ const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
 const INSPECT_HOVER_SCALE := Vector2(1.08, 1.08)
 const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
 const INSPECT_HOVER_DURATION := 0.12
-# Keep the chip seated above the hex bottom while its width follows the numbers.
+# Keep the chip seated above the token bottom while its width follows the numbers.
 const OUTPUT_CHIP_BOTTOM_INSET := 12.0
 
 #endregion
@@ -829,7 +829,7 @@ func refresh_condiment_badges(card: TileCard, coords: Vector2i) -> void:
 
 
 func _make_fuse_badge(condiment: Condiment, turns: int) -> PanelContainer:
-	# Olive well on the hex face so the flask reads against grass and chip art.
+	# Olive well on the token face so the flask reads against grass and chip art.
 	var well := PanelContainer.new()
 	well.custom_minimum_size = Vector2(22, 22)
 	well.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -898,7 +898,7 @@ func _ensure_fuse_ui() -> void:
 	_fuse_bar.z_index = 3
 	_fuse_bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	_fuse_bar.add_theme_constant_override("separation", 4)
-	# Sit on the hex face, below the top vertex and above the center art.
+	# Sit on the token face, just below the top edge and above the center art.
 	_fuse_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_fuse_bar.offset_left = -32.0
 	_fuse_bar.offset_top = 19.0

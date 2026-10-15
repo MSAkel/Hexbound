@@ -28,6 +28,12 @@ func _ready() -> void:
 	_register_controller_actions()
 
 
+# Input holds the project's custom cursor texture until after the renderer shuts down,
+# which leaks it at exit. Release it while the scene tree is still being torn down.
+func _exit_tree() -> void:
+	Input.set_custom_mouse_cursor(null)
+
+
 func _input(event: InputEvent) -> void:
 	if _is_gamepad_event(event):
 		_set_input_mode(InputMode.GAMEPAD)

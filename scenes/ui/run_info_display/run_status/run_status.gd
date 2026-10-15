@@ -29,14 +29,24 @@ func _ready() -> void:
 	)
 	_turn_counter = CountingNumber.for_label(self, turn_counter_label)
 
-	_gold_counter.snap_to(GoldManager.amount)
-	_round_counter.snap_to(GameManager.current_round)
-	_turn_counter.snap_to(GameManager.remaining_turns)
+	_snap_all()
 
 	EventBus.gold_changed.connect(_on_gold_changed)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.turn_changed.connect(_on_turn_changed)
+	EventBus.run_state_loaded.connect(_snap_all)
 	_bind_status_tooltips()
+
+
+## This node readies before the run resets, so the first values can be last run's.
+func _snap_all() -> void:
+	for control: Control in _punch_tweens:
+		(_punch_tweens[control] as Tween).kill()
+		control.scale = Vector2.ONE
+	_punch_tweens.clear()
+	_gold_counter.snap_to(GoldManager.amount)
+	_round_counter.snap_to(GameManager.current_round)
+	_turn_counter.snap_to(GameManager.remaining_turns)
 
 
 func _bind_status_tooltips() -> void:

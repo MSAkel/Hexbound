@@ -13,8 +13,6 @@ const SHRINK_DURATION := 0.14
 const ABSORB_HOLD := 0.4
 const ABSORB_FLIGHT_DURATION := 0.42
 const ABSORB_END_SCALE := 0.55
-## Raised arc control point, as a fraction of flight distance.
-const ABSORB_ARC_LIFT := 0.35
 const ABSORB_FADE_FROM := 0.85
 const CARD_FONT_SIZE := 26
 const CARD_LONG_TEXT_START := 12
@@ -122,7 +120,7 @@ func play_float_and_free() -> void:
 		queue_free()
 
 
-## Pops in like a card float, then arcs into the Hour readout and hands its ticket over on arrival.
+## Pops in like a card float, then flies straight into the Hour readout and hands its ticket over on arrival.
 func play_float_and_absorb(readout: HourScoreReadout, product: int, ticket: int) -> void:
 	_absorb_readout = readout
 	_absorb_product = product
@@ -135,11 +133,6 @@ func play_float_and_absorb(readout: HourScoreReadout, product: int, ticket: int)
 
 	var start := global_position
 	var target := _absorb_readout.get_absorb_point(product)
-	var lift := maxf(start.distance_to(target) * ABSORB_ARC_LIFT, 40.0)
-	var control := (start + target) * 0.5 + Vector2(0.0, -lift)
-	if target.y < start.y:
-		# Bow sideways when flying upward so the path reads as a curve, not a straight line.
-		control.x += signf(start.x - target.x) * lift * 0.5
 	var rest_scale := _text_root.scale
 	var flight := ABSORB_FLIGHT_DURATION / GameManager.game_speed
 
@@ -147,10 +140,10 @@ func play_float_and_absorb(readout: HourScoreReadout, product: int, ticket: int)
 	fly_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	fly_tween.tween_method(
 		func(t: float) -> void:
-			global_position = _quadratic_bezier(start, control, target, t)
+			global_position = start.lerp(target, t)
 			_text_root.scale = rest_scale.lerp(rest_scale * ABSORB_END_SCALE, t)
 			var fade := clampf((t - ABSORB_FADE_FROM) / (1.0 - ABSORB_FADE_FROM), 0.0, 1.0)
-			_text_root.modulate = Color(1.0 + t * 0.4, 1.0 + t * 0.3, 1.0 + t * 0.1, 1.0 - fade),
+			_text_root.modulate = Color(1.0, 1.0, 1.0, 1.0 - fade),
 		0.0,
 		1.0,
 		flight
@@ -182,9 +175,6 @@ func _land_absorb() -> void:
 		_absorb_readout.absorb(_absorb_product, _absorb_ticket)
 	_absorb_readout = null
 
-
-static func _quadratic_bezier(a: Vector2, b: Vector2, c: Vector2, t: float) -> Vector2:
-	return a.lerp(b, t).lerp(b.lerp(c, t), t)
 
 
 ## Later floats at the same tile sit above earlier ones instead of overlapping.

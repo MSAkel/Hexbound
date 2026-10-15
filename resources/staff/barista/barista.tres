@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "barista"
 name = "Barista"
-description = "Beverages on this {station} have a 1 in 5 chance to {trigger} again"
+description = "Beverages on this Station have a 1 in 5 chance to {trigger} again"
 rarity = 0

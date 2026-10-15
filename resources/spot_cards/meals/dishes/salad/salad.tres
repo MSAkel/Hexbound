@@ -14,5 +14,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "salad"
 name = "Salad"
 icon = ExtResource("1_icon")
-description = "+15 {mult}. Gains the {flavour} of the Vegetables on its {station} x1.5."
+description = "+15 {mult}. Gains the {flavour} of the Vegetables on its Station x1.5."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

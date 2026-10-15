@@ -7,6 +7,8 @@ const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const STATE_PATH := "user://run_sandbox_overlay.cfg"
 const STATE_SECTION := "overlay"
 const STATE_KEY_COLLAPSED := "collapsed"
+const STATE_KEY_HIDDEN := "hidden"
+const ACTION_TOGGLE := "toggle_run_sandbox"
 ## Original panel was 596px. Cap the tool list at ~70% of that and scroll the rest.
 const MAX_BODY_HEIGHT := 350.0
 
@@ -33,6 +35,7 @@ const MAX_BODY_HEIGHT := 350.0
 @onready var _card_grid: GridContainer = $CardPicker/Panel/MarginContainer/VBoxContainer/ScrollContainer/CardGrid
 
 var _collapsed := false
+var _hidden := false
 
 
 func _ready() -> void:
@@ -51,10 +54,18 @@ func _ready() -> void:
 	_refresh_seed_label()
 	_collapsed = _load_collapsed_state()
 	_apply_collapsed()
+	_hidden = _load_hidden_state()
+	_tools_panel.visible = not _hidden
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(ACTION_TOGGLE):
+		get_viewport().set_input_as_handled()
+		_toggle_hidden()
 
 
 func _process(_delta: float) -> void:
-	if _collapsed:
+	if _collapsed or _hidden:
 		return
 	_refresh_action_buttons()
 	_refresh_seed_label()
@@ -121,6 +132,24 @@ func _fit_scroll_height() -> void:
 	_tools_scroll.custom_minimum_size.y = minf(content_height, MAX_BODY_HEIGHT)
 
 
+## Show or hide the whole tools panel. Closes the card picker when hiding.
+func _toggle_hidden() -> void:
+	_hidden = not _hidden
+	_tools_panel.visible = not _hidden
+	if _hidden:
+		_close_card_picker()
+	else:
+		_apply_collapsed()
+	_save_state(STATE_KEY_HIDDEN, _hidden)
+
+
+func _load_hidden_state() -> bool:
+	var cfg := ConfigFile.new()
+	if cfg.load(STATE_PATH) != OK:
+		return false
+	return bool(cfg.get_value(STATE_SECTION, STATE_KEY_HIDDEN, false))
+
+
 func _load_collapsed_state() -> bool:
 	var cfg := ConfigFile.new()
 	if cfg.load(STATE_PATH) != OK:
@@ -129,9 +158,13 @@ func _load_collapsed_state() -> bool:
 
 
 func _save_collapsed_state() -> void:
+	_save_state(STATE_KEY_COLLAPSED, _collapsed)
+
+
+func _save_state(key: String, value: Variant) -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(STATE_PATH)
-	cfg.set_value(STATE_SECTION, STATE_KEY_COLLAPSED, _collapsed)
+	cfg.set_value(STATE_SECTION, key, value)
 	cfg.save(STATE_PATH)
 
 

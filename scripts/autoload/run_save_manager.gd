@@ -408,6 +408,7 @@ func _notify_ui_restored() -> void:
 	EventBus.required_score_changed.emit()
 	EventBus.event_schedule_changed.emit()
 	EventBus.event_changed.emit()
+	EventBus.run_state_loaded.emit()
 
 
 func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:

@@ -86,6 +86,9 @@ func _add_quiet_gold(tile: Hex, amount: int) -> void:
 func get_board_chip(tile: Hex = null) -> Dictionary:
 	if tile != null and tile.map != null and not is_recipe_ready(tile):
 		return _hidden_board_chip()
+	# Idle in a locked second slot. It pays nothing until the station is level 3 again.
+	if tile != null and StationManager.is_meal_slot_locked(tile.coordinates):
+		return _hidden_board_chip()
 	var output := _read_output(tile, true, StationManager.output_scale_for(tile, self))
 	var chip: Dictionary
 	if output.flavour > 0:

@@ -36,17 +36,16 @@ const TILE_OVERLAY_LAYER_Z_INDEX := 0
 # Disabled and fading-sector layers each expose a single tile on source 0.
 const OVERLAY_TILE_SOURCE_ID := 0
 
-# Extra pixels added to tile_size so adjacent hex visuals do not touch.
-# Use a smaller X gap if rows look too far apart compared to the diagonal edges.
-@export_range(0, 64, 1) var hex_tile_gap_x: int = 8
+# Extra pixels added to tile_size so adjacent tile visuals do not touch. Negative overlaps neighbouring borders.
+@export_range(-16, 64, 1) var hex_tile_gap_x: int = -2
 @export_range(0, 64, 1) var hex_tile_gap_y: int = 8
 
-# Pointy-top hex art size. tile_size = this + the X/Y gaps for spacing on the grid.
-const HEX_TEXTURE_SIZE := Vector2i(96, 112)
-# Placed rune UI. Icons are still square with side padding and must stay centered on the cell.
+# Square tile art size, drawn by SquareTileTexture. tile_size = this + the X/Y gaps.
+const HEX_TEXTURE_SIZE := Vector2i(104, 104)
+# Placed rune UI. Square token centered on the cell.
 const HEX_RUNE_SIZE := Vector2(112, 112)
 
-# Atlas coords for the single dashed hex tile on BaseLayer (source 0)
+# Atlas coords for the single base tile on BaseLayer (source 0)
 const BASE_TILE_ATLAS_COORDS := Vector2i(0, 0)
 
 var hovered_cell: Vector2i = Vector2i(-1, -1)
@@ -113,6 +112,7 @@ func _ready() -> void:
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
 	_setup_dish_recipe_gold_layer()
 	_setup_station_overlay()
+	_apply_square_tile_textures()
 	_apply_tile_spacing()
 	trigger_link_overlay.setup(self)
 	generate_terrain()
@@ -157,8 +157,25 @@ func _exit_tree() -> void:
 	_free_map_hexes()
 
 
-# Widen the hex grid cells while keeping the authored hex textures, creating visible gaps.
-# Atlas region follows the PNG so a single hex still slices as one tile.
+## Swap each layer's authored hex PNG for a generated square tile in the same colours.
+func _apply_square_tile_textures() -> void:
+	var styles := {
+		base_layer: SquareTileTexture.BASE,
+		selection_overlay_layer: SquareTileTexture.HOVER,
+		card_highlight_overlay_layer: SquareTileTexture.CARD_HIGHLIGHT,
+		disabled_tile_overlay_layer: SquareTileTexture.DISABLED,
+		fading_sector_overlay_layer: SquareTileTexture.FADING_SECTOR,
+	}
+	for layer: TileMapLayer in styles:
+		if layer == null or layer.tile_set == null:
+			continue
+		var atlas := layer.tile_set.get_source(OVERLAY_TILE_SOURCE_ID) as TileSetAtlasSource
+		if atlas != null:
+			atlas.texture = SquareTileTexture.get_texture(styles[layer], HEX_TEXTURE_SIZE)
+
+
+# Widen the grid cells past the tile texture, creating visible gaps.
+# Atlas region follows the texture so a single tile still slices as one tile.
 func _apply_tile_spacing() -> void:
 	var spaced_tile_size := Vector2i(
 		HEX_TEXTURE_SIZE.x + hex_tile_gap_x,
@@ -179,7 +196,7 @@ func _apply_tile_spacing() -> void:
 		_sync_tileset_atlas_regions(layer.tile_set)
 
 
-## Slice each atlas as a single hex. Use the texture size when present so mismatched art still works.
+## Slice each atlas as a single tile. Use the texture size when present so mismatched art still works.
 func _sync_tileset_atlas_regions(tile_set: TileSet) -> void:
 	for i in tile_set.get_source_count():
 		var source := tile_set.get_source(tile_set.get_source_id(i))
@@ -301,12 +318,15 @@ func refresh_station_visuals() -> void:
 	_ensure_station_badges()
 
 
-func _on_station_state_changed(_segment_index: int) -> void:
+func _on_station_state_changed(segment_index: int) -> void:
 	refresh_station_visuals()
+	# A Meal slot can lock or unlock under a seated Meal. Re-dim it.
+	for hex: Hex in get_hexes_in_segment(segment_index):
+		hex.refresh_own_visuals()
 	refresh_board_output_chips()
 
 
-## Badges sit in one column left of the board so they line up across the zigzag rows.
+## Badges sit in one column left of the board, centered on each station row.
 func _ensure_station_badges() -> void:
 	var segment_count := get_segment_count()
 	if segment_count <= 0:
@@ -582,7 +602,7 @@ func is_tile_interactable(coords: Vector2i) -> bool:
 	return not map_data[coords].is_placement_blocked()
 
 
-## Returns map-adjacent hex tiles that exist on this map (up to six neighbors).
+## Returns map-adjacent tiles that exist on this map (up to four orthogonal neighbors).
 func get_all_adjacent_hexes(coords: Vector2i) -> Array[Hex]:
 	if query == null:
 		return []
@@ -605,10 +625,13 @@ func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
 
 
 ## True when a placed rune can fire during its own trigger-order slot this turn.
+## A Meal left in a station's second slot after the station drops below level 3 sits idle.
 func is_tile_card_active(hex: Hex) -> bool:
 	if hex == null or hex.active_tile_card == null:
 		return false
 	if hex.is_disabled_by_difficulty:
+		return false
+	if StationManager.is_meal_slot_locked(hex.coordinates):
 		return false
 	return hex.active_tile_card.is_active
 
@@ -725,10 +748,12 @@ func _free_map_hexes() -> void:
 		_layout.invalidate_caches()
 
 
-## Occupancy changed on a live hex. Keeps HexBoardQuery's card-to-hex index current.
+## Occupancy changed on a live hex. Keeps HexBoardQuery's card-to-hex index current and
+## re-checks station types once the edit settles (a card leaving can cost a station its type).
 func notify_tile_card_occupancy_changed(hex: Hex, previous: TileCard, current: TileCard) -> void:
 	if query != null:
 		query.set_occupancy(hex, previous, current)
+	StationManager.queue_type_evaluation()
 
 
 ## Apply difficulty-driven map randomization after run RNG setup rolls.
@@ -1360,8 +1385,8 @@ func schedule_destroy_after_trigger_link(
 
 #region Staff column anchors
 
-## Screen rect of the staff hex for a station: same size as a spot, on the station's row.
-## Follows the row stagger so the column reads as part of the pass. Empty when the row is missing.
+## Screen rect of the staff slot for a station: same size as a spot, on the station's row.
+## Empty when the row is missing.
 func get_staff_slot_screen_rect(segment_index: int) -> Rect2:
 	var first := _layout.get_first_tile_coords_in_segment(segment_index)
 	if first == Vector2i(-1, -1) or not is_inside_tree():

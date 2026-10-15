@@ -15,5 +15,5 @@ starting_hand_eligible = true
 id = "steak"
 name = "Steak"
 icon = ExtResource("1_icon")
-description = "+20 {flavour}. +10 {flavour} per Seasoning on this {station}."
+description = "+20 {flavour}. +10 {flavour} per Seasoning on this Station."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

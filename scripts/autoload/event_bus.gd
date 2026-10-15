@@ -10,6 +10,9 @@ signal turn_started
 signal turn_changed
 ## Emitted when the round changes
 signal round_changed(new_round: int)
+## Emitted once a fresh or restored run has replaced last run's autoload state.
+## HUD readouts snap to the new values instead of counting from the old ones.
+signal run_state_loaded
 
 ## Event signals
 signal event_schedule_changed

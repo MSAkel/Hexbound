@@ -12,5 +12,5 @@ starting_hand_eligible = true
 id = "fire_extinguisher"
 name = "Fire Extinguisher"
 icon = ExtResource("1_icon")
-description = "{triggers} every card on this and the next {station}. {spoils} immediately."
+description = "{triggers} every card on this and the next Station. {spoils} immediately."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

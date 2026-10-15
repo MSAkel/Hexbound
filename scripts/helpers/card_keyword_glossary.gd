@@ -37,7 +37,7 @@ static var _warned_tokens: Dictionary = {}
 ## Every keyword is drawn in this one colour.
 const COLOR := Color("#2e855c")
 
-# Every form is a whole written-out word (no STATION + "s"), so each one can
+# Every form is a whole written-out word (no SPOIL + "s"), so each one can
 # become its own translation key later.
 static func _static_init() -> void:
 	register(
@@ -48,7 +48,7 @@ static func _static_init() -> void:
 	register(
 		"mult",
 		{"mult": GameTerms.MULT},
-		"Multiplies {flavour} in the same {station}."
+		"Multiplies {flavour} in the same Station."
 	)
 	register(
 		"garnish",
@@ -61,7 +61,7 @@ static func _static_init() -> void:
 	register(
 		"following",
 		{"following": GameTerms.FOLLOWING},
-		"Later in this {station}'s {trigger} order."
+		"Later in this Station's {trigger} order."
 	)
 	register(
 		"spoil",
@@ -78,11 +78,6 @@ static func _static_init() -> void:
 			"retriggers": "Retriggers",
 		},
 		"Activate the card."
-	)
-	register(
-		"station",
-		{"station": GameTerms.STATION, "stations": "Stations"},
-		"A row of 8 spots. The last 2 are reserved for Meals."
 	)
 	register(
 		"liquefy",

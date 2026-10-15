@@ -1,25 +1,27 @@
 class_name StaffRail
 extends Control
 
-## Staff column left of the pass. One hex per station, sized like a spot and seated on its
-## station's row, staggered like the rows of the pass.
-## Drag a staff member onto another hex to move or swap it, or onto the Sell panel to sell it.
+## Staff column left of the pass. One square per station, sized like a spot and seated on its
+## station's row.
+## Drag a staff member onto another slot to move or swap it, or onto the Sell panel to sell it.
 ## Sits above the merchant in the tree so staff stay usable while the shop is open.
+## The slots and the drag ghost live in staff_rail.tscn. Their positions there are the layout
+## used when there is no board. With a board, each slot moves onto its station's row.
 
-const SLOT_SCENE := preload("res://scenes/ui/staff/staff_slot.tscn")
-# Fallback size when no board is present. With a board, slots copy the on-screen spot size.
-const SLOT_SIZE := Vector2(130, 151)
-const SLOT_GAP := 10.0
-# Gap between the column and the left edge of the screen.
-const EDGE_MARGIN := 12.0
-const FADE_DURATION := 0.3
 const LOCKED_MESSAGE := "Staff are busy"
+
+## Minimum gap between the column and the left edge of the screen.
+@export var edge_margin := 24.0
+@export var fade_duration := 0.3
 
 @onready var _tile_panel: TilePanel = get_node_or_null("../TerrainTileUI")
 @onready var _merchant: Control = get_node_or_null("../Merchant")
+@onready var _slot_column: Control = %Slots
+@onready var _ghost: StaffSlot = %Ghost
 
 var _slots: Array[StaffSlot] = []
-var _ghost: StaffSlot
+# Positions from the scene, restored when there is no board to follow.
+var _authored_rects: Array[Rect2] = []
 var _tile_map: HexTileMap
 # False while a full-screen overlay such as the card pick or Day summary covers the run.
 var _shown := true
@@ -39,18 +41,18 @@ var _controller_held := -1
 func _ready() -> void:
 	add_to_group("staff_rail")
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for i in StaffManager.SLOT_COUNT:
-		var slot: StaffSlot = SLOT_SCENE.instantiate()
-		slot.slot_index = i
+	for child in _slot_column.get_children():
+		var slot := child as StaffSlot
+		if slot == null:
+			continue
+		assert(slot.slot_index == _slots.size(), "Staff slots must be in slot_index order")
 		slot.drag_started.connect(_on_slot_drag_started)
 		slot.hover_changed.connect(_on_slot_hover_changed)
-		add_child(slot)
 		_slots.append(slot)
-	_ghost = SLOT_SCENE.instantiate()
-	add_child(_ghost)
+		_authored_rects.append(Rect2(slot.position, slot.size))
+	if _slots.size() != StaffManager.SLOT_COUNT:
+		push_error("StaffRail has %d slots, StaffManager expects %d" % [_slots.size(), StaffManager.SLOT_COUNT])
 	_ghost.configure_as_ghost()
-	_ghost.z_index = 30
-	_ghost.hide()
 
 	EventBus.staff_roster_changed.connect(_refresh)
 	EventBus.staff_added.connect(_on_staff_added)
@@ -79,7 +81,7 @@ func _input(event: InputEvent) -> void:
 		return
 	if not event is InputEventMouseButton:
 		return
-	# Right click puts the staff member back in its hex.
+	# Right click puts the staff member back in its slot.
 	if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		_cancel_drag()
 		get_viewport().set_input_as_handled()
@@ -104,44 +106,41 @@ func _refresh() -> void:
 
 #region --- Layout ---
 
-## One rect per station from the board. Without a board, a honeycomb column against the left edge.
-func _slot_rects() -> Array[Rect2]:
-	if _tile_map != null:
-		var board_rects: Array[Rect2] = []
-		for i in _slots.size():
-			board_rects.append(_tile_map.get_staff_slot_screen_rect(i))
-		if not board_rects.is_empty() and board_rects[0].has_area():
-			return board_rects
-	var viewport_size := get_viewport_rect().size
-	var pitch := SLOT_SIZE.y * 0.75 + SLOT_GAP
-	var stagger := (SLOT_SIZE.x + SLOT_GAP) * 0.5
-	var column_height := pitch * float(_slots.size() - 1) + SLOT_SIZE.y
-	var top := _board_center_y(viewport_size) - column_height * 0.5
+## One rect per station from the board, in rail space. Empty when there is no board.
+## The column is pushed right if it would come closer than edge_margin to the screen edge.
+func _board_slot_rects() -> Array[Rect2]:
 	var rects: Array[Rect2] = []
-	for i in _slots.size():
-		var x := EDGE_MARGIN + (stagger if i % 2 == 1 else 0.0)
-		rects.append(Rect2(Vector2(x, top + pitch * float(i)), SLOT_SIZE))
-	return rects
-
-
-## Screen Y of the middle of the pass, so the column follows the board when it is moved.
-## Falls back to the middle of the screen when there is no board.
-func _board_center_y(viewport_size: Vector2) -> float:
 	if _tile_map == null:
-		return viewport_size.y * 0.5
-	return _tile_map.get_map_screen_center().y
+		return rects
+	var left := INF
+	for i in _slots.size():
+		var rect := _tile_map.get_staff_slot_screen_rect(i)
+		if not rect.has_area():
+			rects.clear()
+			return rects
+		rects.append(rect)
+		left = minf(left, rect.position.x)
+	var push := maxf(0.0, edge_margin - left)
+	for i in rects.size():
+		rects[i].position.x += push
+	return rects
 
 
 func _layout() -> void:
 	if not is_instance_valid(_tile_map):
 		_tile_map = _find_tile_map()
-	var rects := _slot_rects()
+	var board_rects := _board_slot_rects()
 	var centers: Array[Vector2] = []
 	for i in _slots.size():
-		_slots[i].position = rects[i].position
-		_slots[i].size = rects[i].size
-		centers.append(rects[i].get_center())
-	_ghost.size = rects[0].size if not rects.is_empty() else SLOT_SIZE
+		if board_rects.is_empty():
+			_slots[i].position = _authored_rects[i].position
+			_slots[i].size = _authored_rects[i].size
+		else:
+			_slots[i].position = board_rects[i].position
+			_slots[i].size = board_rects[i].size
+		centers.append(Rect2(_slots[i].position, _slots[i].size).get_center())
+	if not _slots.is_empty():
+		_ghost.size = _slots[0].size
 	# Bolts and payout text start at the staff member, so the board needs to know where each one is.
 	if _tile_map != null:
 		_tile_map.set_staff_screen_centers(centers)
@@ -165,7 +164,7 @@ func _on_active_panel_changed(panel: Control) -> void:
 		modulate.a = target_alpha
 		return
 	_fade_tween = create_tween()
-	_fade_tween.tween_property(self, "modulate:a", target_alpha, FADE_DURATION)
+	_fade_tween.tween_property(self, "modulate:a", target_alpha, fade_duration)
 
 #endregion --- Layout ---
 
