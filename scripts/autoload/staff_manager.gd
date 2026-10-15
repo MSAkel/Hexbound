@@ -8,7 +8,7 @@ const _StaffCatalogScript := preload("res://scripts/helpers/staff_catalog.gd")
 ## Run-long staff column. Owns the seated staff and fans engine events out to their hooks.
 
 ## One slot per station on the shared board.
-const SLOT_COUNT := 5
+const SLOT_COUNT := 4
 
 ## Seated staff by slot. Null means empty. Slot index equals the linked station index.
 var slots: Array[StaffCard] = []

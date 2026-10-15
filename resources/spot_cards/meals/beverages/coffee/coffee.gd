@@ -1,46 +1,27 @@
 extends MealCard
 
-## +1 Gold after 10 run-wide card fires. When Coffee pays, any fires beyond the
-## threshold are discarded instead of being carried into the next payout.
+## +5 Mult. Every 5th time it is served, +1 extra Gold.
 
-const FIRES_PER_GOLD := 10
-const GOLD_PER_PAYOUT := 1
+const SERVES_PER_GOLD := 5
+const BONUS_GOLD := 1
 
-var last_payout_fire_total: int = 0
+var serve_count: int = 0
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	if _fires_since_last_payout() < FIRES_PER_GOLD:
-		failed_tile_card_text(tile)
-		return
-
-	add_gold(tile, GOLD_PER_PAYOUT)
-	# Anchor the next threshold to this fire. This is what prevents excess
-	# accumulated fires from stacking or carrying over.
-	last_payout_fire_total = RunLedger.total_fires
-	RunLedger.record_dish_plated()
+	super._on_activate_tile_card(tile)
+	serve_count += 1
+	if serve_count % SERVES_PER_GOLD == 0:
+		_add_quiet_gold(tile, BONUS_GOLD)
 
 
-func get_board_chip(_tile: Hex = null) -> Dictionary:
-	var progress := mini(_fires_since_last_payout(), FIRES_PER_GOLD)
-	var chip := _make_board_chip(
-		BoardChipMode.PROGRESS,
-		"%d/%d" % [progress, FIRES_PER_GOLD],
-		ICON_FIRE,
-		get_chip_panel_color(),
-		CardKeywordGlossary.to_plain("{triggers} until +%d Gold") % GOLD_PER_PAYOUT
-	)
-	chip["extra_icon"] = ICON_GOLD
-	return chip
+func _meal_outputs(_tile: Hex, _preview: bool) -> Dictionary:
+	return {"additive_mult": _get_production_amount()}
 
 
 func capture_placed_save_state() -> Dictionary:
-	return {"last_payout_fire_total": last_payout_fire_total}
+	return {"serve_count": serve_count}
 
 
 func apply_placed_save_state(data: Dictionary) -> void:
-	last_payout_fire_total = int(data.get("last_payout_fire_total", 0))
-
-
-func _fires_since_last_payout() -> int:
-	return maxi(RunLedger.total_fires - last_payout_fire_total, 0)
+	serve_count = int(data.get("serve_count", 0))

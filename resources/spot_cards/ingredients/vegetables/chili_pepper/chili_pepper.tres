@@ -1,15 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://diwpqbjvytjp7"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://diwpqbjvytjp7"]
 
-[ext_resource type="Script" uid="uid://bj0hsbabor08m" path="res://resources/spot_cards/ingredients/vegetables/chili_pepper/chili_pepper.gd" id="1_0i25s"]
-[ext_resource type="Texture2D" uid="uid://cwbrpl43pp4o8" path="res://assets/icons/food/ingredients/vegetables/chili_pepper.png" id="1_kcgyd"]
+[ext_resource type="Texture2D" uid="uid://cwbrpl43pp4o8" path="res://assets/icons/food/ingredients/vegetables/chili_pepper.png" id="1_icon"]
+[ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
-script = ExtResource("1_0i25s")
-base_production_amount = 1
-product = 2
+script = ExtResource("2_script")
+base_production_amount = 20
+product = 1
 ingredient_tags = Array[StringName]([&"vegetable"])
+starting_hand_eligible = true
 id = "chili_pepper"
-name = "Chili Pepper"
-icon = ExtResource("1_kcgyd")
-description = "+1 {mult} until the end of the day for every {garnish} on this {station}"
+name = "Chili"
+icon = ExtResource("1_icon")
+description = "+20 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

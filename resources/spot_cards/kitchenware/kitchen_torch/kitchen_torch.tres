@@ -1,17 +1,17 @@
-[gd_resource type="Resource" format=3 uid="uid://hhv7idvwhuq0"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://hhv7idvwhuq0"]
 
 [ext_resource type="Texture2D" uid="uid://1b3wsb4qotum" path="res://assets/icons/kitchenware/kitchen_torch.png" id="1_icon"]
-[ext_resource type="Script" uid="uid://dq2evct4g8j2t" path="res://resources/spot_cards/kitchenware/kitchen_torch/kitchen_torch.gd" id="2_script"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_audio"]
+[ext_resource type="Script" path="res://resources/spot_cards/kitchenware/kitchen_torch/kitchen_torch.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-rarity = 2
+support_role = 1
+base_production_amount = 4
 type = 1
-placement_restriction = 3
-support_role = 2
+product = 2
+starting_hand_eligible = true
 id = "kitchen_torch"
 name = "Kitchen Torch"
 icon = ExtResource("1_icon")
-description = "{triggers} the last card of each {following} {station}. Must be placed on a last {station} spot"
+description = "+4 {mult}. {garnishes} adjacent Ingredients and Meals."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

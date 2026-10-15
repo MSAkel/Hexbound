@@ -94,7 +94,8 @@ func _refresh_spot_card() -> void:
 		var card := hex.active_tile_card
 		card_icon.setup(card)
 		card_name_label.text = card.name
-		_set_rarity_badge(card)
+		# Spot cards have no rarity. Only staff show the badge.
+		_hide_rarity_badge()
 		card_subtitle.text = card.get_inspect_subtitle()
 		card_subtitle.visible = not card_subtitle.text.is_empty()
 		_set_chip_line(card)

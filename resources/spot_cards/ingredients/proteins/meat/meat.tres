@@ -1,14 +1,17 @@
-[gd_resource type="Resource" format=3 uid="uid://bffu5k1xj6gm7"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://bffu5k1xj6gm7"]
 
-[ext_resource type="Texture2D" uid="uid://c4xuydytx3y35" path="res://assets/icons/food/ingredients/proteins/meat.png" id="1_vrxjw"]
-[ext_resource type="Script" uid="uid://c1va0412tpilk" path="res://resources/spot_cards/ingredients/proteins/meat/meat.gd" id="2_vrxjw"]
+[ext_resource type="Texture2D" uid="uid://c4xuydytx3y35" path="res://assets/icons/food/ingredients/proteins/meat.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/shared/garnished_when_adjacent.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_vrxjw")
-product = 2
+script = ExtResource("2_script")
+neighbour_kind = &"seasoning"
+base_production_amount = 10
+product = 1
 ingredient_tags = Array[StringName]([&"protein"])
+starting_hand_eligible = true
 id = "meat"
 name = "Meat"
-icon = ExtResource("1_vrxjw")
-description = "×2 {mult} if preceded by a Seasoning"
+icon = ExtResource("1_icon")
+description = "+10 {flavour}. {garnished} if next to a Seasoning."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

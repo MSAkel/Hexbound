@@ -1,14 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://tw8bqkd3qe16"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://tw8bqkd3qe16"]
 
-[ext_resource type="Texture2D" uid="uid://lq841w3i0chu" path="res://assets/icons/kitchenware/mortar_and_pestle.png" id="1_tgc7i"]
-[ext_resource type="Script" uid="uid://b0sa63u3re8ah" path="res://resources/spot_cards/kitchenware/mortar_and_pestle/mortar_and_pestle.gd" id="2_4glin"]
+[ext_resource type="Texture2D" uid="uid://lq841w3i0chu" path="res://assets/icons/kitchenware/mortar_and_pestle.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/kitchenware/mortar_and_pestle/mortar_and_pestle.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_4glin")
-rarity = 1
+script = ExtResource("2_script")
+base_production_amount = 3
 type = 1
+product = 2
+starting_hand_eligible = true
 id = "mortar_and_pestle"
 name = "Mortar & Pestle"
-icon = ExtResource("1_tgc7i")
-description = "Copy the two cards directly before it"
+icon = ExtResource("1_icon")
+description = "+3 {mult}. Copies the base {flavour} of the 2 Ingredients directly before it."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

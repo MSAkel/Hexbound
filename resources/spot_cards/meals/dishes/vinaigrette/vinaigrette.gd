@@ -1,26 +1,24 @@
 extends MealCard
 
-## Locked to the card text. Plates prefix vegetable Flavour and seasoning Mult, each ×1.5.
-## That is a local meal pile, not station-wide ×Mult.
+## A random 10 to 20 Mult each time it is served.
 
-const LOCAL_MULT := 1.5
-
-
-func _plated_flavour_from_recipe(recipe: Array[TileCard]) -> int:
-	return _scale_flavour(_sum_hour_flavour_for_kind(recipe, TAG_VEGETABLE))
+const MIN_MULT := 10
+const MAX_MULT := 20
 
 
-func _plated_additive_mult_from_recipe(recipe: Array[TileCard]) -> float:
-	return _sum_hour_additive_mult_for_kind(recipe, TAG_SEASONING) * LOCAL_MULT
+func _meal_outputs(tile: Hex, preview: bool) -> Dictionary:
+	if preview:
+		return {}
+	return {"additive_mult": float(_effect_rng(tile, "vinaigrette").randi_range(MIN_MULT, MAX_MULT))}
 
 
-func _preview_plated_flavour(tile: Hex) -> int:
-	return _scale_flavour(_sum_expected_flavour_for_kind(tile, TAG_VEGETABLE))
-
-
-func _preview_plated_additive_mult(tile: Hex) -> float:
-	return _sum_expected_additive_mult_for_kind(tile, TAG_SEASONING) * LOCAL_MULT
-
-
-func _scale_flavour(meal_flavour: int) -> int:
-	return int(round(float(meal_flavour) * LOCAL_MULT))
+func get_board_chip(tile: Hex = null) -> Dictionary:
+	if tile != null and tile.map != null and not is_recipe_ready(tile):
+		return super.get_board_chip(tile)
+	return _make_board_chip(
+		BoardChipMode.CHANCE,
+		"%d-%d" % [MIN_MULT, MAX_MULT],
+		ICON_MULT,
+		get_chip_panel_color(),
+		"Random %d to %d Mult" % [MIN_MULT, MAX_MULT]
+	)

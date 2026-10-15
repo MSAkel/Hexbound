@@ -88,7 +88,7 @@ func _setup_reset_confirm_dialog() -> void:
 	_reset_confirm_dialog = ConfirmationDialog.new()
 	_reset_confirm_dialog.title = "Reset progression?"
 	_reset_confirm_dialog.dialog_text = (
-		"This resets layout XP, lifetime stats, and run history. "
+		"This resets lifetime stats and run history. "
 		+ "Your in-progress run save is also deleted. This cannot be undone."
 	)
 	_reset_confirm_dialog.ok_button_text = "Reset"

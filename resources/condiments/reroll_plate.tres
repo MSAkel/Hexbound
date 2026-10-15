@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "reroll_plate"
 display_name = "Reroll Plate"
-description = "Transform seated card into random same-rarity card"
+description = "Transform seated card into a random card of the same type"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.55, 0.82, 0.95, 1)
 base_price = 5

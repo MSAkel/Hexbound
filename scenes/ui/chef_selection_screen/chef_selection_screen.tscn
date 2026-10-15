@@ -129,7 +129,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.42745098, 0.23529412, 0.06666667, 1)
 theme_override_font_sizes/font_size = 42
-text = "Chef"
+text = "Chef Selection"
 horizontal_alignment = 1
 vertical_alignment = 1
 

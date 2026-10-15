@@ -1,15 +1,17 @@
-[gd_resource type="Resource" format=3 uid="uid://1yngk6bgvs8i"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://1yngk6bgvs8i"]
 
-[ext_resource type="Texture2D" uid="uid://b6mir3nxl7wph" path="res://assets/icons/food/ingredients/seasonings/salt.png" id="1_boeif"]
-[ext_resource type="Script" uid="uid://xas6lx7nsi1d" path="res://resources/spot_cards/ingredients/seasonings/salt/salt.gd" id="2_xbp6g"]
+[ext_resource type="Texture2D" uid="uid://b6mir3nxl7wph" path="res://assets/icons/food/ingredients/seasonings/salt.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/shared/adjacent_partner_bonus.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_xbp6g")
-base_production_amount = 2
-product = 2
+script = ExtResource("2_script")
+partner_id = "black_pepper"
+base_production_amount = 10
+product = 1
 ingredient_tags = Array[StringName]([&"seasoning"])
+starting_hand_eligible = true
 id = "salt"
 name = "Salt"
-icon = ExtResource("1_boeif")
-description = "+2 {mult}"
+icon = ExtResource("1_icon")
+description = "+10 {flavour}. +10 {flavour} if next to Black Pepper."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

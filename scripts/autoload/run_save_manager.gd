@@ -5,8 +5,9 @@ extends Node
 
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://run_save.json"
-const SAVE_VERSION := 5
-const MIN_SUPPORTED_SAVE_VERSION := 5
+# 6: 8-spot stations with Meal slots, station types and levels, new card pool.
+const SAVE_VERSION := 6
+const MIN_SUPPORTED_SAVE_VERSION := 6
 const HAND_GROUP := "run_hand"
 const MERCHANT_GROUP := "run_merchant"
 const CARD_SELECTION_GROUP := "run_card_selection"
@@ -193,6 +194,7 @@ func save_current_run() -> void:
 		"rerolls": RerollManager.capture_run_state(),
 		"condiments": CondimentManager.capture_run_state(),
 		"staff": StaffManager.capture_run_state(),
+		"stations": StationManager.capture_run_state(),
 		"run_ledger": RunLedger.capture_run_state(),
 		"events": EventManager.capture_run_state(),
 		"round_flow": RoundFlow.capture_run_state(),
@@ -246,6 +248,8 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	RunRng.apply_run_state(payload.get("run_rng", {}))
 	# Staff first. Dish chips read the recipe discount while the map restores.
 	StaffManager.apply_run_state(payload.get("staff", {}))
+	# Stations before the map. Meal slot locks and station perks read them while cards restore.
+	StationManager.apply_run_state(payload.get("stations", {}))
 	tile_map.restore_map_state(payload.get("map", {}))
 	CondimentManager.apply_run_state(payload.get("condiments", {}))
 	RunLedger.apply_run_state(payload.get("run_ledger", {}))
@@ -261,6 +265,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	_queue_interrupted_turn_resume(hand)
 	# Re-show the panel the run was sitting on, after the HUD has caught up.
 	RoundFlow.restore_after_load()
+	StationManager.restore_pending_choice_after_load()
 	if not _pending_turn_resume:
 		_restore_idle_card_pick()
 	_is_restoring = false

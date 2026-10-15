@@ -1,15 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://cfrc7a8fh5yor"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://cfrc7a8fh5yor"]
 
-[ext_resource type="Texture2D" uid="uid://bt8vbmxevwq3o" path="res://assets/icons/food/ingredients/proteins/chicken.png" id="1_omyth"]
-[ext_resource type="Script" uid="uid://cxk4wilpio178" path="res://resources/spot_cards/ingredients/proteins/chicken/chicken.gd" id="2_fr205"]
+[ext_resource type="Texture2D" uid="uid://bt8vbmxevwq3o" path="res://assets/icons/food/ingredients/proteins/chicken.png" id="1_icon"]
+[ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_fr205")
-rarity = 1
+script = ExtResource("2_script")
+base_production_amount = 10
 product = 1
 ingredient_tags = Array[StringName]([&"protein"])
+starting_hand_eligible = true
 id = "chicken"
 name = "Chicken"
-icon = ExtResource("1_omyth")
-description = "+24 {flavour} if first Ingredient in its {station}. Otherwise +8"
+icon = ExtResource("1_icon")
+description = "+10 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -82,7 +82,12 @@ static func _static_init() -> void:
 	register(
 		"station",
 		{"station": GameTerms.STATION, "stations": "Stations"},
-		"A section consisting of one or more spots"
+		"A row of 8 spots. The last 2 are reserved for Meals."
+	)
+	register(
+		"liquefy",
+		{"liquefy": GameTerms.LIQUEFY, "liquefies": "Liquefies"},
+		"Coming soon."
 	)
 
 static func register(

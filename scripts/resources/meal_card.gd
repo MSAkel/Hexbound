@@ -1,463 +1,252 @@
 class_name MealCard
 extends TileCard
 
-## Seated plate. Reads the N spots immediately before it in fire order, never the whole station.
-## Those seats are a bag of tags. Empty or wrong cards break the dish. No skipping gaps.
-## On a match, this card plates a local meal pile. Some dishes also write station ×Mult.
+## Seated in a Meal slot at the end of a station. Its requirements count the cards on that
+## station's regular spots. A served Meal pays its own output, adds SERVING_GOLD to the total,
+## and counts toward the station's level. A Meal whose requirements are missing shows Failed.
+## Subclasses describe their output in _meal_outputs so the chip and the payout share one formula.
 
-## Dish recipe bag. Prefix length is the sum of these counts.
+const SERVING_GOLD := 1
+
+## Station requirements, counted across the station's regular spots.
 @export var recipe_vegetable_count: int = 0
 @export var recipe_fruit_count: int = 0
-@export var recipe_grain_count: int = 0
 @export var recipe_protein_count: int = 0
+@export var recipe_seafood_count: int = 0
+@export var recipe_dairy_count: int = 0
+@export var recipe_sweet_count: int = 0
 @export var recipe_seasoning_count: int = 0
 @export var recipe_kitchenware_count: int = 0
-
-## A Kitchenware recipe slot is matched by card type, not by an authored ingredient tag.
-
-## Last prefix resolve for this instance. Cleared at each public chip, inspect, or fire.
-var _prefix_memo_tile: Hex = null
-var _prefix_memo: Dictionary = {}
+## Specific cards that must sit on the station, by id. Wine needs Grape.
+@export var recipe_required_card_ids: Array[String] = []
 
 
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_immediately_previous_hexes(hover_tile, get_effective_prefix_size())
+## What one fire of this Meal produces. multiplicative_mult of 1.0 means none.
+class Output:
+	var flavour := 0
+	var additive_mult := 0.0
+	var multiplicative_mult := 1.0
 
+	func has_additive_mult() -> bool:
+		return not is_zero_approx(additive_mult)
 
-## Prefix seats holding a card whose tag this dish can use. Gold even if the bag is incomplete.
-func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _prefix_preview_coords(hover_tile, true)
-
-
-## Occupied prefix seats whose tags cannot fill this dish's recipe.
-func get_trigger_preview_invalid_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _prefix_preview_coords(hover_tile, false)
-
-
-func _prefix_preview_coords(hover_tile: Hex, matching: bool) -> Array[Vector2i]:
-	var coords: Array[Vector2i] = []
-	for hex: Hex in _get_immediately_previous_hexes(hover_tile, get_effective_prefix_size()):
-		if hex.active_tile_card == null:
-			continue
-		if card_matches_needed_tag(hex.active_tile_card) == matching:
-			coords.append(hex.coordinates)
-	return coords
-
-
-## True when this card's tag could fill at least one slot in the recipe bag.
-func card_matches_needed_tag(card: TileCard) -> bool:
-	if card == null or get_recipe_prefix_size() <= 0:
-		return false
-	if recipe_kitchenware_count > 0 and card.type == TileCardType.KITCHENWARE:
-		return true
-	var remaining := _recipe_slot_counts()
-	return not _compatible_recipe_slots(card, remaining).is_empty()
-
-
-func get_board_chip(tile: Hex = null) -> Dictionary:
-	_clear_prefix_memo()
-	if tile == null:
-		return _stat_board_chip()
-	var plated := _compute_plated_outputs(tile)
-	if plated.is_empty():
-		return _stat_board_chip()
-	var flavour := int(plated.get("flavour", 0))
-	var additive_mult := float(plated.get("additive_mult", 0.0))
-	var multiplicative_mult := float(plated.get("multiplicative_mult", 0.0))
-	var has_flavour := flavour > 0
-	var has_mult := not is_zero_approx(additive_mult)
-	var has_xmult := not is_zero_approx(multiplicative_mult)
-	if not has_flavour and not has_mult and not has_xmult:
-		return _stat_board_chip()
-	if has_flavour and has_mult:
-		return _dual_amount_board_chip(flavour, additive_mult)
-	if has_flavour and has_xmult:
-		var chip := _amount_board_chip(flavour, ICON_FLAVOUR)
-		chip["extra_text"] = CountingNumber.format_multiplicative_mult(multiplicative_mult)
-		chip["extra_icon"] = ICON_MULT
-		chip["extra_amount"] = multiplicative_mult
-		return chip
-	if has_mult:
-		return _amount_board_chip_float(additive_mult, ICON_MULT)
-	if has_xmult:
-		return _multiplicative_mult_board_chip(multiplicative_mult)
-	return _amount_board_chip(flavour, ICON_FLAVOUR)
+	func has_multiplicative_mult() -> bool:
+		return not is_equal_approx(multiplicative_mult, 1.0) and not is_zero_approx(multiplicative_mult)
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	_clear_prefix_memo()
-	var recipe := get_matched_prefix_recipe(tile)
-	if get_recipe_prefix_size() > 0 and recipe.is_empty():
+	if not is_recipe_ready(tile):
 		failed_tile_card_text(tile)
 		return
-	var flavour := _plated_flavour_from_recipe(recipe)
-	var additive_mult := _plated_additive_mult_from_recipe(recipe)
-	var multiplicative_mult := _plated_multiplicative_mult_from_recipe(recipe)
-	if flavour > 0:
-		add_flavour(tile, flavour)
-	if not is_zero_approx(additive_mult):
-		add_additive_mult(tile, additive_mult)
-	if not is_zero_approx(multiplicative_mult):
-		multiply_multiplicative_mult(tile, multiplicative_mult)
-	if flavour <= 0 and is_zero_approx(additive_mult) and is_zero_approx(multiplicative_mult):
-		failed_tile_card_text(tile)
-		return
+	# activate_tile_card already folded station perks into this fire's output scale.
+	var output := _read_output(tile, false, 1.0)
+	if output.flavour > 0:
+		add_flavour(tile, output.flavour)
+	if output.has_additive_mult():
+		add_additive_mult(tile, output.additive_mult)
+	if output.has_multiplicative_mult():
+		multiply_multiplicative_mult(tile, output.multiplicative_mult)
+	_serve(tile)
+
+
+## Meal output for this fire. preview is true for chips, false when paying.
+## Keys: flavour (int), additive_mult (float), multiplicative_mult (float, 1.0 = none).
+func _meal_outputs(_tile: Hex, _preview: bool) -> Dictionary:
+	return {}
+
+
+## _meal_outputs as an Output. scale multiplies every present part, the way an activation scale does.
+func _read_output(tile: Hex, preview: bool, scale: float) -> Output:
+	var raw := _meal_outputs(tile, preview)
+	var output := Output.new()
+	output.flavour = int(round(float(raw.get("flavour", 0)) * scale))
+	output.additive_mult = float(raw.get("additive_mult", 0.0)) * scale
+	output.multiplicative_mult = float(raw.get("multiplicative_mult", 1.0))
+	if output.has_multiplicative_mult():
+		output.multiplicative_mult *= scale
+	return output
+
+
+## Every served Meal adds Gold and a serving for its station.
+func _serve(tile: Hex) -> void:
+	_add_quiet_gold(tile, SERVING_GOLD)
 	RunLedger.record_dish_plated()
-	# Plated short of the full recipe, so a staff member waived the missing ingredient.
-	if recipe.size() < get_recipe_prefix_size():
+	if _missing_ingredient_count(tile) > 0:
 		StaffManager.notify_dish_discount_used(tile)
+	StationManager.record_serving(_get_segment_index(tile))
 
 
-## Empty when the prefix recipe is incomplete.
-func _compute_plated_outputs(tile: Hex) -> Dictionary:
-	if get_recipe_prefix_size() > 0 and _resolved_prefix(tile).is_empty():
-		return {}
-	return {
-		"flavour": _preview_plated_flavour(tile),
-		"additive_mult": _preview_plated_additive_mult(tile),
-		"multiplicative_mult": _preview_plated_multiplicative_mult(tile),
-	}
+## Meal Gold goes straight to the total. No float or sound on the Meal itself.
+func _add_quiet_gold(tile: Hex, amount: int) -> void:
+	if tile != null and tile.map != null:
+		tile.map.add_turn_gold_for_tile(tile, amount)
 
 
-## Snapshot pay. Prefix cards have already fired when the dish activates.
-func _plated_flavour_from_recipe(_recipe: Array[TileCard]) -> int:
-	return 0
+## Primary number is Flavour, else Mult. One extra slot shows Mult or xMult beside it.
+func get_board_chip(tile: Hex = null) -> Dictionary:
+	if tile != null and tile.map != null and not is_recipe_ready(tile):
+		return _hidden_board_chip()
+	var output := _read_output(tile, true, StationManager.output_scale_for(tile, self))
+	var chip: Dictionary
+	if output.flavour > 0:
+		chip = _amount_board_chip(output.flavour, ICON_FLAVOUR)
+		if output.has_additive_mult():
+			return _with_mult_extra(chip, CountingNumber.format_additive_mult(output.additive_mult), output.additive_mult)
+	elif output.has_additive_mult():
+		chip = _amount_board_chip_float(output.additive_mult, ICON_MULT)
+	elif output.has_multiplicative_mult():
+		return _multiplicative_mult_board_chip(output.multiplicative_mult)
+	else:
+		return _hidden_board_chip()
+	if output.has_multiplicative_mult():
+		var xmult_text := CountingNumber.format_multiplicative_mult(output.multiplicative_mult)
+		return _with_mult_extra(chip, xmult_text, output.multiplicative_mult)
+	return chip
 
 
-func _plated_additive_mult_from_recipe(_recipe: Array[TileCard]) -> float:
-	return 0.0
+func _with_mult_extra(chip: Dictionary, text: String, amount: float) -> Dictionary:
+	chip["extra_text"] = text
+	chip["extra_icon"] = ICON_MULT
+	chip["extra_amount"] = amount
+	return chip
 
 
-func _plated_multiplicative_mult_from_recipe(_recipe: Array[TileCard]) -> float:
-	return 0.0
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return get_trigger_preview_gold_coords(hover_tile)
 
 
-## Chip estimate. Uses Hour snapshots after those cards fire, otherwise their board chips.
-func _preview_plated_flavour(tile: Hex) -> int:
-	var recipe := get_matched_prefix_recipe(tile)
-	if get_recipe_prefix_size() > 0 and recipe.is_empty():
-		return 0
-	return _plated_flavour_from_recipe(recipe)
+## Station cards this Meal's requirements can use.
+func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(hover_tile, _matching_station_cards(hover_tile))
 
 
-func _preview_plated_additive_mult(tile: Hex) -> float:
-	var recipe := get_matched_prefix_recipe(tile)
-	if get_recipe_prefix_size() > 0 and recipe.is_empty():
-		return 0.0
-	return _plated_additive_mult_from_recipe(recipe)
+#region --- Requirements ---
+## Number of cards the requirements ask for, before any staff discount.
+func get_recipe_size() -> int:
+	var total := recipe_required_card_ids.size()
+	for count: int in _recipe_slot_counts().values():
+		total += count
+	return total
 
 
-func _preview_plated_multiplicative_mult(tile: Hex) -> float:
-	var recipe := get_matched_prefix_recipe(tile)
-	if get_recipe_prefix_size() > 0 and recipe.is_empty():
-		return 0.0
-	return _plated_multiplicative_mult_from_recipe(recipe)
-
-
-## Slots in the full recipe bag, before any staff discount.
-func get_recipe_prefix_size() -> int:
-	return (
-		recipe_vegetable_count
-		+ recipe_fruit_count
-		+ recipe_grain_count
-		+ recipe_protein_count
-		+ recipe_seasoning_count
-		+ recipe_kitchenware_count
-	)
-
-
-## Ingredient slots staff let this dish leave empty. Kitchenware slots are never waived,
-## and at least one seat always has to be filled.
+## Ingredient requirements staff let this Meal skip. Kitchenware and named cards are never waived.
 func get_waived_ingredient_slots() -> int:
-	var prefix_size := get_recipe_prefix_size()
-	var ingredient_slots := prefix_size - recipe_kitchenware_count
-	var max_waived := maxi(mini(ingredient_slots, prefix_size - 1), 0)
-	return clampi(StaffManager.dish_ingredient_discount(), 0, max_waived)
+	var ingredient_slots := get_recipe_size() - recipe_kitchenware_count - recipe_required_card_ids.size()
+	return clampi(StaffManager.dish_ingredient_discount(), 0, maxi(ingredient_slots, 0))
 
 
-## How many fire-order seats this dish reads immediately before itself right now.
-func get_effective_prefix_size() -> int:
-	return get_recipe_prefix_size() - get_waived_ingredient_slots()
-
-
-## True when this dish has no prefix bag, or the fire-order prefix currently matches.
+## True when the station holds everything this Meal asks for.
 func is_recipe_ready(tile: Hex) -> bool:
-	if get_recipe_prefix_size() <= 0:
+	if get_recipe_size() <= 0:
 		return true
-	return not get_matched_prefix_recipe(tile).is_empty()
+	if tile == null or tile.map == null:
+		return false
+	var cards := _station_cards(tile)
+	for card_id: String in recipe_required_card_ids:
+		if not cards.any(func(card: TileCard) -> bool: return card.id == card_id):
+			return false
+	if _missing_for_tag(cards, TAG_KITCHENWARE) > 0:
+		return false
+	return _missing_ingredient_count(tile) <= get_waived_ingredient_slots()
 
 
-## Inspect copy for the hover panel. Bag first, then whether this seat's prefix matches.
-func get_inspect_recipe_text(tile: Hex = null) -> String:
-	_clear_prefix_memo()
+## Inspect copy for the hover panel. Lists the requirements only.
+func get_inspect_recipe_text(_tile: Hex = null) -> String:
 	var bag := _recipe_bag_text()
 	if bag.is_empty():
 		return ""
 	var waived := get_waived_ingredient_slots()
 	if waived > 0:
 		bag = "%s (any %d Ingredient optional)" % [bag, waived]
+	return "Requires: %s" % bag
+
+
+## Cards on this Meal's station regular spots. Meals never fill requirements.
+func _station_cards(tile: Hex) -> Array[TileCard]:
 	if tile == null or tile.map == null:
-		return "Recipe: %s" % bag
-	if not is_recipe_ready(tile):
-		return "Recipe: %s\nPrefix incomplete" % bag
-	return "Recipe: %s\nPrefix ready" % bag
+		return []
+	return tile.map.get_regular_spot_cards(_get_segment_index(tile))
 
 
-func _recipe_bag_text() -> String:
-	var parts: PackedStringArray = []
-	_append_recipe_part(parts, recipe_vegetable_count, GameTerms.VEGETABLE)
-	_append_recipe_part(parts, recipe_fruit_count, GameTerms.FRUIT)
-	_append_recipe_part(parts, recipe_grain_count, GameTerms.GRAIN)
-	_append_recipe_part(parts, recipe_protein_count, GameTerms.PROTEIN)
-	_append_recipe_part(parts, recipe_seasoning_count, GameTerms.SEASONING)
-	_append_recipe_part(parts, recipe_kitchenware_count, GameTerms.KITCHENWARE)
-	return ", ".join(parts)
-
-
-func _append_recipe_part(parts: PackedStringArray, count: int, tag: String) -> void:
-	if count <= 0:
-		return
-	if count == 1:
-		parts.append("1 %s" % tag)
-		return
-	var plural := tag
-	if tag != GameTerms.KITCHENWARE:
-		plural = "%ss" % tag
-	parts.append("%d %s" % [count, plural])
-
-
-## Prefix cards when every required seat is filled and the tag bag matches. Empty on fail.
-func get_matched_prefix_recipe(tile: Hex) -> Array[TileCard]:
-	var resolved := _resolved_prefix(tile)
-	if resolved.is_empty():
-		var empty: Array[TileCard] = []
-		return empty
-	var cards: Array[TileCard] = resolved["cards"]
-	return cards
-
-
-func _clear_prefix_memo() -> void:
-	_prefix_memo_tile = null
-	_prefix_memo = {}
-
-
-## Occupied prefix plus slot assignment. Memoized for one chip, inspect, or fire call.
-func _resolved_prefix(tile: Hex) -> Dictionary:
-	if tile == _prefix_memo_tile:
-		return _prefix_memo
-	_prefix_memo_tile = tile
-	_prefix_memo = _compute_resolved_prefix(tile)
-	return _prefix_memo
-
-
-func _compute_resolved_prefix(tile: Hex) -> Dictionary:
-	var cards := _prefix_recipe_cards(tile)
-	if cards.is_empty():
-		return {}
-	var assigned := _assign_recipe_slots(cards)
-	if assigned.is_empty():
-		return {}
-	return {
-		"cards": cards,
-		"assigned": assigned,
-		"hexes": _get_immediately_previous_hexes(tile, cards.size()),
-	}
+func _matching_station_cards(tile: Hex) -> Array[TileCard]:
+	var matching: Array[TileCard] = []
+	var counts := _recipe_slot_counts()
+	for card: TileCard in _station_cards(tile):
+		if card.id in recipe_required_card_ids:
+			matching.append(card)
+			continue
+		for tag: StringName in counts:
+			if int(counts[tag]) > 0 and matches_kind_filter(card, tag):
+				matching.append(card)
+				break
+	return matching
 
 
 func _recipe_slot_counts() -> Dictionary:
 	return {
 		TAG_VEGETABLE: recipe_vegetable_count,
 		TAG_FRUIT: recipe_fruit_count,
-		TAG_GRAIN: recipe_grain_count,
 		TAG_PROTEIN: recipe_protein_count,
+		TAG_SEAFOOD: recipe_seafood_count,
+		TAG_DAIRY: recipe_dairy_count,
+		TAG_SWEET: recipe_sweet_count,
 		TAG_SEASONING: recipe_seasoning_count,
 		TAG_KITCHENWARE: recipe_kitchenware_count,
 	}
 
 
-## Occupied prefix cards in fire-order seats. Empty when a seat is missing or unoccupied.
-func _prefix_recipe_cards(tile: Hex) -> Array[TileCard]:
-	var prefix_size := get_effective_prefix_size()
-	var cards: Array[TileCard] = []
-	if tile == null or tile.map == null or prefix_size <= 0:
-		return cards
-	var hexes := _get_immediately_previous_hexes(tile, prefix_size)
-	if hexes.size() != prefix_size:
-		return cards
-	for hex: Hex in hexes:
-		if hex.active_tile_card == null:
-			return []
-		cards.append(hex.active_tile_card)
-	return cards
+func _missing_for_tag(cards: Array[TileCard], tag: StringName) -> int:
+	var needed := int(_recipe_slot_counts().get(tag, 0))
+	if needed <= 0:
+		return 0
+	return maxi(needed - _filter_tile_cards_by_kind(cards, tag).size(), 0)
 
 
-## Each prefix card claims at most one bag slot. Dual-tagged cards take the scarcest remaining slot.
-## Empty dictionary means the bag cannot be filled. Staff may waive leftover ingredient slots.
-func _assign_recipe_slots(cards: Array[TileCard]) -> Dictionary:
-	var remaining := {}
-	var slot_counts := _recipe_slot_counts()
-	for tag: StringName in slot_counts:
-		var count := int(slot_counts[tag])
-		if count > 0:
-			remaining[tag] = count
-	var assigned := {}
-	var pending: Array[TileCard] = cards.duplicate()
-	while not pending.is_empty():
-		var best_index := -1
-		var best_slots: Array[StringName] = []
-		for i in range(pending.size()):
-			var slots := _compatible_recipe_slots(pending[i], remaining)
-			if slots.is_empty():
-				return {}
-			if best_index < 0 or slots.size() < best_slots.size():
-				best_index = i
-				best_slots = slots
-		var chosen := _rarest_remaining_slot(best_slots, remaining)
-		if chosen == &"":
-			return {}
-		assigned[pending[best_index]] = chosen
-		remaining[chosen] = int(remaining[chosen]) - 1
-		if int(remaining[chosen]) <= 0:
-			remaining.erase(chosen)
-		pending.remove_at(best_index)
-	if not _unfilled_slots_are_waived(remaining):
-		return {}
-	return assigned
-
-
-func _unfilled_slots_are_waived(remaining: Dictionary) -> bool:
-	if remaining.is_empty():
-		return true
-	if remaining.has(TAG_KITCHENWARE):
-		return false
-	var unfilled := 0
-	for tag: StringName in remaining:
-		unfilled += int(remaining[tag])
-	return unfilled <= get_waived_ingredient_slots()
-
-
-func _compatible_recipe_slots(card: TileCard, remaining: Dictionary) -> Array[StringName]:
-	var slots: Array[StringName] = []
-	if card == null:
-		return slots
-	if card.type == TileCardType.KITCHENWARE:
-		if int(remaining.get(TAG_KITCHENWARE, 0)) > 0:
-			slots.append(TAG_KITCHENWARE)
-		return slots
+## Ingredient requirements the station does not cover. Staff discounts can waive these.
+func _missing_ingredient_count(tile: Hex) -> int:
+	var cards := _station_cards(tile)
+	var missing := 0
 	for tag: StringName in RECIPE_INGREDIENT_TAGS:
-		if int(remaining.get(tag, 0)) <= 0:
+		missing += _missing_for_tag(cards, tag)
+	return missing
+
+
+func _recipe_bag_text() -> String:
+	var parts: PackedStringArray = []
+	for card_id: String in recipe_required_card_ids:
+		var template := GameManager.get_tile_card_by_id(card_id)
+		parts.append(template.name if template != null else card_id.capitalize())
+	var counts := _recipe_slot_counts()
+	for tag: StringName in counts:
+		var count := int(counts[tag])
+		if count <= 0:
 			continue
-		if card.has_ingredient_tag(tag):
-			slots.append(tag)
-	return slots
+		var label := GameTerms.get_ingredient_kind_label(tag)
+		# Kitchenware and Seafood read the same singular and plural.
+		if count > 1 and tag != TAG_KITCHENWARE and tag != TAG_SEAFOOD:
+			label += "s"
+		parts.append("%d %s" % [count, label])
+	return ", ".join(parts)
+#endregion --- Requirements ---
 
 
-func _rarest_remaining_slot(slots: Array[StringName], remaining: Dictionary) -> StringName:
-	var chosen := &""
-	var chosen_left := 0
-	for tag: StringName in slots:
-		var left := int(remaining.get(tag, 0))
-		if left <= 0:
-			continue
-		if chosen == &"" or left < chosen_left:
-			chosen = tag
-			chosen_left = left
-	return chosen
+#region --- Station reads for dish formulas ---
+## Station cards with a kind tag, Meals included. Used by "per Fruit on the station" style effects.
+func _count_station_cards_by_kind(tile: Hex, kind: StringName) -> int:
+	return _cards_by_kind(tile, kind, QueryScope.SAME_SEGMENT).size()
 
 
-func _recipe_bag_matches(cards: Array[TileCard]) -> bool:
-	return not _assign_recipe_slots(cards).is_empty()
-
-
-func _sum_hour_flavour_for_kind(cards: Array[TileCard], kind: StringName) -> int:
+## Flavour paid this Hour by station cards of a kind. Before they fire, their chips stand in.
+func _station_flavour_for_kind(tile: Hex, kind: StringName, preview: bool) -> int:
 	var total := 0
-	for card: TileCard in _cards_assigned_to_kind(cards, kind):
-		total += card.hour_flavour_produced
-	return total
-
-
-func _sum_hour_additive_mult_for_kind(cards: Array[TileCard], kind: StringName) -> float:
-	var total := 0.0
-	for card: TileCard in _cards_assigned_to_kind(cards, kind):
-		total += card.hour_additive_mult_produced
-	return total
-
-
-func _cards_assigned_to_kind(cards: Array[TileCard], kind: StringName) -> Array[TileCard]:
-	var matched: Array[TileCard] = []
-	var assigned := _assignment_for_cards(cards)
-	if assigned.is_empty():
-		return matched
-	for card: TileCard in cards:
-		if assigned.get(card, &"") != kind:
+	for card: TileCard in _station_cards(tile):
+		if not matches_kind_filter(card, kind):
 			continue
-		matched.append(card)
-	return matched
-
-
-## Reuses the memo assignment when these are the same prefix cards just resolved.
-func _assignment_for_cards(cards: Array[TileCard]) -> Dictionary:
-	if _prefix_memo.has("cards") and _prefix_memo["cards"] == cards:
-		return _prefix_memo.get("assigned", {})
-	return _assign_recipe_slots(cards)
-
-
-## Flavour this prefix card will pay. Hour snapshot after it fires, otherwise its chip.
-func _expected_flavour_from_card(card: TileCard, hex: Hex) -> int:
-	if card == null:
-		return 0
-	if card.hour_flavour_produced != 0:
-		return card.hour_flavour_produced
-	if card.product != Product.FLAVOUR:
-		return 0
-	return int(round(_chip_amount(card, hex, card._get_production_amount())))
-
-
-func _expected_additive_mult_from_card(card: TileCard, hex: Hex) -> float:
-	if card == null:
-		return 0.0
-	if not is_zero_approx(card.hour_additive_mult_produced):
-		return card.hour_additive_mult_produced
-	if card.product != Product.MULTIPLIER:
-		return 0.0
-	return _chip_amount(card, hex, card._get_production_amount())
-
-
-func _chip_amount(card: TileCard, hex: Hex, fallback: float) -> float:
-	var chip: Dictionary = card.get_board_chip(hex)
-	if int(chip.get("mode", BoardChipMode.HIDDEN)) == BoardChipMode.HIDDEN:
-		return fallback
-	var amount := float(chip.get("amount", 0.0))
-	if amount != 0.0:
-		return amount
-	return fallback
-
-
-func _sum_expected_flavour_for_kind(tile: Hex, kind: StringName) -> int:
-	var resolved := _resolved_prefix(tile)
-	if resolved.is_empty():
-		return 0
-	var cards: Array[TileCard] = resolved["cards"]
-	var assigned: Dictionary = resolved["assigned"]
-	var hexes: Array = resolved["hexes"]
-	var total := 0
-	for i in range(cards.size()):
-		if assigned.get(cards[i], &"") != kind:
+		if card.hour_flavour_produced != 0 or not preview:
+			total += card.hour_flavour_produced
 			continue
-		total += _expected_flavour_from_card(cards[i], hexes[i])
+		var chip: Dictionary = card.get_board_chip(_hex_for(tile, card))
+		if int(chip.get("mode", BoardChipMode.HIDDEN)) == BoardChipMode.AMOUNT and card.product == Product.FLAVOUR:
+			total += int(round(float(chip.get("amount", 0.0))))
 	return total
-
-
-func _sum_expected_additive_mult_for_kind(tile: Hex, kind: StringName) -> float:
-	var resolved := _resolved_prefix(tile)
-	if resolved.is_empty():
-		return 0.0
-	var cards: Array[TileCard] = resolved["cards"]
-	var assigned: Dictionary = resolved["assigned"]
-	var hexes: Array = resolved["hexes"]
-	var total := 0.0
-	for i in range(cards.size()):
-		if assigned.get(cards[i], &"") != kind:
-			continue
-		total += _expected_additive_mult_from_card(cards[i], hexes[i])
-	return total
+#endregion --- Station reads for dish formulas ---

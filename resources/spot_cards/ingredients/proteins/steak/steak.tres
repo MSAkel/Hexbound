@@ -1,16 +1,19 @@
-[gd_resource type="Resource" format=3 uid="uid://dklwprbruhqgo"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://dklwprbruhqgo"]
 
-[ext_resource type="Texture2D" uid="uid://bcq5x3x5nr1ro" path="res://assets/icons/food/ingredients/proteins/steak.png" id="1_yg0m3"]
-[ext_resource type="Script" uid="uid://bgog0qghmjhgd" path="res://resources/spot_cards/ingredients/proteins/steak/steak.gd" id="2_o0xgm"]
+[ext_resource type="Texture2D" uid="uid://bcq5x3x5nr1ro" path="res://assets/icons/food/ingredients/proteins/steak.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/shared/bonus_per_nearby_kind.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_o0xgm")
-base_production_amount = 10
-rarity = 1
+script = ExtResource("2_script")
+bonus_kind = &"seasoning"
+bonus_scope = 3
+bonus_per_card = 10.0
+base_production_amount = 20
 product = 1
 ingredient_tags = Array[StringName]([&"protein"])
+starting_hand_eligible = true
 id = "steak"
 name = "Steak"
-icon = ExtResource("1_yg0m3")
-description = "+10 {flavour} per Seasoning on this {station}."
+icon = ExtResource("1_icon")
+description = "+20 {flavour}. +10 {flavour} per Seasoning on this {station}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

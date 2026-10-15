@@ -45,19 +45,10 @@ var center_coordinates: Vector2i
 # to be cancelled. A transient tween owns the animated properties until it finishes.
 var _activation_tween: Tween
 var _trigger_link_flash_tween: Tween
-var _seal_tween: Tween
 var _inspect_hover_tween: Tween
 var _inspect_hover_active := false
-# Color is composed in layers: Hex state -> sealed tint -> recipe-preview dim.
-# Transient animation colors temporarily override that composed resting color.
-var _base_resting_modulate := Color.WHITE
+# Resting color supplied by the Hex. Transient animation colors temporarily override it.
 var _resting_modulate := Color.WHITE
-var _is_segment_sealed := false
-# A seal may arrive during an activation. Delay its persistent rim so the two effects
-# remain legible instead of fighting over the icon at the same time.
-var _pending_sealed_rim := false
-var _seal_shine: SealHexShine
-var _recipe_preview_dimmed := false
 # Condiment UI is created lazily because placement ghosts and most cards never use it.
 var _fuse_bar: HBoxContainer
 var _condiment_splash: GPUParticles2D
@@ -95,23 +86,12 @@ const TRIGGER_LINK_FLASH_HIGHLIGHT := Color(1.35, 0.72, 0.22, 1.0)
 const TRIGGER_LINK_FLASH_DURATION := 0.42
 const CHAINED_ACTIVATION_PEAK_SCALE := Vector2(1.06, 1.06)
 const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
-# Mid-turn segment close. Smaller than placement slam, big enough to read over activations.
-const SEAL_LIFT_OFFSET := -11.0
-const SEAL_PEAK_SCALE := Vector2(1.1, 1.1)
-const SEAL_SQUASH_SCALE := Vector2(1.08, 0.8)
-const SEAL_LIFT_DURATION := 0.07
-const SEAL_SLAM_DURATION := 0.09
-const SEAL_SETTLE_DURATION := 0.12
-const SEAL_HIGHLIGHT := Color(1.55, 1.28, 0.55, 1.0)
-const SEALED_REST_TINT := Color(1.08, 0.96, 0.7, 1.0)
 # Map inspect hover. Subtler than placement ghost and activation pop.
 const INSPECT_HOVER_SCALE := Vector2(1.08, 1.08)
 const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
 const INSPECT_HOVER_DURATION := 0.12
 # Keep the chip seated above the hex bottom while its width follows the numbers.
 const OUTPUT_CHIP_BOTTOM_INSET := 12.0
-# Dim placed cards whose tags cannot fill the hovered dish recipe.
-const RECIPE_INVALID_DIM := Color(0.42, 0.42, 0.48, 1.0)
 
 #endregion
 
@@ -122,12 +102,6 @@ func _ready() -> void:
 	for emitter in [placement_smoke, placement_dust, placement_slash, garnish_sparks]:
 		if emitter != null:
 			emitter.position = center
-
-
-## Returns the unscaled duration of the complete segment-seal slam.
-## Keep this in sync with [method HexTileMap.wait_for_segment_seal].
-static func get_segment_seal_duration() -> float:
-	return SEAL_LIFT_DURATION + SEAL_SLAM_DURATION + SEAL_SETTLE_DURATION
 
 
 ## Binds [param rune] to the embedded icon and builds its board-specific overlays.
@@ -419,8 +393,8 @@ func _on_placement_impact() -> void:
 ## Plays the impact burst on the real card after a drag ghost has landed.
 ##
 ## The drag workflow hides its ghost before committing the card, so particles are
-## emitted by the newly placed instance instead. Smoke is reserved for segment seals;
-## placement uses dust and radial slashes plus the clockwise outline draw.
+## emitted by the newly placed instance instead. Placement uses dust and radial slashes
+## plus the clockwise outline draw.
 func play_placement_land_particles() -> void:
 	_play_placement_dust()
 	if hex_stroke != null:
@@ -430,10 +404,6 @@ func play_placement_land_particles() -> void:
 func _play_placement_dust() -> void:
 	_burst_emitter(placement_dust)
 	_burst_emitter(placement_slash)
-
-
-func _play_placement_smoke() -> void:
-	_burst_emitter(placement_smoke)
 
 
 func _burst_emitter(emitter: GPUParticles2D) -> void:
@@ -451,38 +421,12 @@ func _burst_emitter(emitter: GPUParticles2D) -> void:
 
 ## Sets the base tint supplied by the owning [Hex].
 ##
-## The sealed-state tint is recomputed from this color, then recipe-preview dimming is
-## applied when displayed. If a transient animation currently owns [member modulate],
-## the new resting color is stored and applied when that animation ends.
+## If a transient animation currently owns [member modulate], the new resting color is
+## stored and applied when that animation ends.
 func apply_resting_modulate(color: Color) -> void:
-	_base_resting_modulate = color
-	_resting_modulate = _compute_resting_modulate()
+	_resting_modulate = color
 	if _can_apply_resting_modulate():
-		_anim_target.modulate = _visible_resting_modulate()
-
-
-## Dims cards that cannot contribute to the recipe currently being previewed.
-## Transient activation, trigger-link, and seal effects keep visual priority and restore
-## the requested dim state when they finish.
-func set_recipe_preview_dimmed(dimmed: bool) -> void:
-	_recipe_preview_dimmed = dimmed
-	if _anim_target == null:
-		return
-	if not _can_apply_resting_modulate():
-		return
-	_anim_target.modulate = _visible_resting_modulate()
-
-
-func _visible_resting_modulate() -> Color:
-	if _recipe_preview_dimmed:
-		return _resting_modulate * RECIPE_INVALID_DIM
-	return _resting_modulate
-
-
-func _compute_resting_modulate() -> Color:
-	if not _is_segment_sealed:
-		return _base_resting_modulate
-	return _base_resting_modulate.lerp(SEALED_REST_TINT, 0.55)
+		_anim_target.modulate = _resting_modulate
 
 
 func _can_apply_resting_modulate() -> bool:
@@ -491,8 +435,6 @@ func _can_apply_resting_modulate() -> bool:
 		return false
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
 		return false
-	if _seal_tween != null and _seal_tween.is_valid():
-		return false
 	if _inspect_hover_active:
 		return false
 	return true
@@ -500,16 +442,12 @@ func _can_apply_resting_modulate() -> bool:
 
 func _apply_resting_modulate() -> void:
 	if _can_apply_resting_modulate():
-		_anim_target.modulate = _visible_resting_modulate()
+		_anim_target.modulate = _resting_modulate
 
 
 ## Lifts and brightens this placed card while the player inspects it on the map.
-## Hover is suppressed when a recipe preview has dimmed the card or a higher-priority
-## resolution animation is active.
+## Hover is suppressed while a higher-priority resolution animation is active.
 func play_inspect_hover_in() -> void:
-	# Recipe-invalid dim is the preview. Do not brighten over it.
-	if _recipe_preview_dimmed:
-		return
 	if not _can_start_inspect_hover():
 		return
 	_stop_inspect_hover_tween()
@@ -527,7 +465,7 @@ func play_inspect_hover_in() -> void:
 
 
 ## Returns the card to its resting pose when map inspection ends.
-## Any sealed tint or recipe-preview dimming is restored as part of the tween.
+## The resting tint is restored as part of the tween.
 func play_inspect_hover_out() -> void:
 	if not _inspect_hover_active and (_inspect_hover_tween == null or not _inspect_hover_tween.is_valid()):
 		return
@@ -544,16 +482,13 @@ func play_inspect_hover_out() -> void:
 	_inspect_hover_tween.set_trans(Tween.TRANS_QUAD)
 	_inspect_hover_tween.set_parallel(true)
 	_inspect_hover_tween.tween_property(_anim_target, "scale", Vector2.ONE, duration)
-	# Restore recipe-invalid dim if that preview is still active.
-	_inspect_hover_tween.tween_property(_anim_target, "modulate", _visible_resting_modulate(), duration)
+	_inspect_hover_tween.tween_property(_anim_target, "modulate", _resting_modulate, duration)
 
 
 func _can_start_inspect_hover() -> bool:
 	if _activation_tween != null and _activation_tween.is_valid():
 		return false
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
-		return false
-	if _seal_tween != null and _seal_tween.is_valid():
 		return false
 	return true
 
@@ -641,7 +576,6 @@ func play_activation_animation() -> void:
 		z_index = original_z_index
 		_activation_tween = null
 		_apply_resting_modulate()
-		_try_apply_pending_sealed_rim()
 	)
 
 
@@ -710,7 +644,6 @@ func play_chained_activation_animation() -> void:
 		z_index = original_z_index
 		_activation_tween = null
 		_apply_resting_modulate()
-		_try_apply_pending_sealed_rim()
 	)
 
 
@@ -743,162 +676,6 @@ func _is_trigger_link_flashing() -> bool:
 
 #region Segment presentation
 
-## Marks the card's segment sealed with a lift, gold flash, slam, smoke, and gold rim.
-##
-## If the card is still activating, the scale motion is skipped to preserve the firing
-## animation. The seal still flashes immediately and queues its persistent rim until
-## activation/trigger feedback no longer needs the same visual space.
-func play_segment_seal_animation() -> void:
-	_clear_inspect_hover_state()
-	_is_segment_sealed = true
-	_resting_modulate = _compute_resting_modulate()
-
-	var skip_motion := _is_activation_animating()
-	if skip_motion:
-		_pending_sealed_rim = true
-	else:
-		_pending_sealed_rim = false
-		_start_seal_shine()
-
-	# Seal keeps the original short flame puff. Dirt burst is placement-only.
-	_play_placement_smoke()
-
-	if skip_motion:
-		# Keep the pop intact. Still flash gold so the close reads on the last card.
-		var flash := create_tween()
-		flash.tween_property(
-			_anim_target,
-			"modulate",
-			SEAL_HIGHLIGHT,
-			0.06 / GameManager.game_speed
-		)
-		flash.tween_property(
-			_anim_target,
-			"modulate",
-			_resting_modulate,
-			0.14 / GameManager.game_speed
-		)
-		flash.tween_callback(func() -> void:
-			_pending_sealed_rim = false
-			_start_seal_shine()
-		)
-		return
-
-	if _seal_tween != null and _seal_tween.is_valid():
-		_seal_tween.kill()
-
-	_anim_target.pivot_offset = _anim_target.size / 2
-	if _anim_target.pivot_offset == Vector2.ZERO:
-		_anim_target.pivot_offset = size / 2
-
-	var lift_duration := SEAL_LIFT_DURATION / GameManager.game_speed
-	var slam_duration := SEAL_SLAM_DURATION / GameManager.game_speed
-	var settle_duration := SEAL_SETTLE_DURATION / GameManager.game_speed
-	z_index = 12
-
-	_seal_tween = create_tween()
-	_seal_tween.set_parallel(true)
-	_seal_tween.tween_property(
-		_anim_target,
-		"position:y",
-		SEAL_LIFT_OFFSET,
-		lift_duration
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_seal_tween.tween_property(
-		_anim_target,
-		"scale",
-		SEAL_PEAK_SCALE,
-		lift_duration
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_seal_tween.tween_property(
-		_anim_target,
-		"modulate",
-		SEAL_HIGHLIGHT,
-		lift_duration
-	)
-
-	_seal_tween.chain()
-	_seal_tween.set_parallel(true)
-	_seal_tween.tween_property(
-		_anim_target,
-		"position:y",
-		0.0,
-		slam_duration
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	_seal_tween.tween_property(
-		_anim_target,
-		"scale",
-		SEAL_SQUASH_SCALE,
-		slam_duration
-	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-
-	_seal_tween.chain()
-	_seal_tween.set_parallel(true)
-	_seal_tween.tween_property(
-		_anim_target,
-		"scale",
-		Vector2.ONE,
-		settle_duration
-	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_seal_tween.tween_property(
-		_anim_target,
-		"modulate",
-		_resting_modulate,
-		settle_duration
-	)
-	_seal_tween.chain().tween_callback(func() -> void:
-		z_index = 0
-		_anim_target.scale = Vector2.ONE
-		_anim_target.position = Vector2.ZERO
-		_seal_tween = null
-		_apply_resting_modulate()
-	)
-
-
-## Removes the persistent sealed presentation and restores the normal resting state.
-## Called when the map clears its segment results for the next resolution cycle.
-func clear_segment_sealed() -> void:
-	_is_segment_sealed = false
-	_pending_sealed_rim = false
-	if _seal_tween != null and _seal_tween.is_valid():
-		_seal_tween.kill()
-	_seal_tween = null
-	_anim_target.scale = Vector2.ONE
-	_anim_target.position = Vector2.ZERO
-	if not _is_activation_animating():
-		z_index = 0
-	_stop_seal_shine()
-	_resting_modulate = _compute_resting_modulate()
-	_apply_resting_modulate()
-
-
-func _ensure_seal_shine() -> void:
-	if _seal_shine != null and is_instance_valid(_seal_shine):
-		return
-	_seal_shine = SealHexShine.new()
-	_seal_shine.name = "SealHexShine"
-	add_child(_seal_shine)
-
-
-func _start_seal_shine() -> void:
-	_ensure_seal_shine()
-	_seal_shine.start_shine()
-
-
-func _stop_seal_shine() -> void:
-	if _seal_shine != null and is_instance_valid(_seal_shine):
-		_seal_shine.stop_shine()
-
-
-func _try_apply_pending_sealed_rim() -> void:
-	if not _pending_sealed_rim or not _is_segment_sealed:
-		return
-	if _is_trigger_link_flashing():
-		return
-	_pending_sealed_rim = false
-	_start_seal_shine()
-
-
 ## Flashes gold when this card's segment totals are revealed after turn resolution.
 ## This reuses the activation tween slot so activation and result feedback cannot
 ## compete for the icon's color.
@@ -929,7 +706,6 @@ func play_segment_result_animation() -> void:
 		z_index = original_z_index
 		_activation_tween = null
 		_apply_resting_modulate()
-		_try_apply_pending_sealed_rim()
 	)
 
 
@@ -1020,7 +796,6 @@ func start_trigger_link_flash() -> void:
 
 
 ## Stops source-card trigger feedback and restores the latest resting presentation.
-## A segment-seal rim that was deferred during the flash is applied here.
 func stop_trigger_link_flash() -> void:
 	if _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid():
 		_trigger_link_flash_tween.kill()
@@ -1030,7 +805,6 @@ func stop_trigger_link_flash() -> void:
 		hex_stroke.stop_trigger_link_ring()
 
 	_apply_resting_modulate()
-	_try_apply_pending_sealed_rim()
 
 
 #endregion

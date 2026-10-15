@@ -1,15 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://b3ensx75nxb7r"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://b3ensx75nxb7r"]
 
-[ext_resource type="Texture2D" uid="uid://l756rdfhyak8" path="res://assets/icons/food/ingredients/vegetables/lettuce.png" id="1_4wvmx"]
-[ext_resource type="Script" uid="uid://b2a718wylkmrb" path="res://resources/spot_cards/ingredients/vegetables/lettuce/lettuce.gd" id="2_wcl2x"]
+[ext_resource type="Texture2D" uid="uid://l756rdfhyak8" path="res://assets/icons/food/ingredients/vegetables/lettuce.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/shared/garnished_when_adjacent.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_wcl2x")
-base_production_amount = 1
-product = 2
+script = ExtResource("2_script")
+base_production_amount = 10
+product = 1
 ingredient_tags = Array[StringName]([&"vegetable"])
+starting_hand_eligible = true
 id = "lettuce"
 name = "Lettuce"
-icon = ExtResource("1_4wvmx")
-description = "+1 {mult} for every passed hour this run"
+icon = ExtResource("1_icon")
+description = "+10 {flavour}. {garnished} if next to another Ingredient."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

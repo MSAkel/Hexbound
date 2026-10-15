@@ -19,6 +19,7 @@ enum Context {
 @onready var settings_container: Control = $"../MainUI/SettingsContainer"
 @onready var merchant: Control = $"../MainUI/Merchant"
 @onready var card_selection_ui: Control = $"../MainUI/CardSelectionUI"
+@onready var station_upgrade_choice: Control = $"../MainUI/StationUpgradeChoice"
 @onready var round_complete_screen: Control = $"../MainUI/RoundCompleteScreen"
 
 var _context := Context.HAND
@@ -34,6 +35,7 @@ func _ready() -> void:
 		victory_screen,
 		merchant,
 		card_selection_ui,
+		station_upgrade_choice,
 		round_complete_screen,
 	]
 	call_deferred("_bind_placement_handler")

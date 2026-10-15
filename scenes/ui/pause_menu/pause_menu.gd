@@ -9,6 +9,7 @@ extends Control
 @onready var settings_container: PanelContainer = $"../SettingsContainer"
 @onready var collection_screen: Panel = $"../Collection"
 @onready var card_selection_ui: Control = $"../CardSelectionUI"
+@onready var station_upgrade_choice: Control = $"../StationUpgradeChoice"
 @onready var merchant: Control = $"../Merchant"
 @onready var round_complete_screen: Control = $"../RoundCompleteScreen"
 @onready var tile_map: HexTileMap = $"../../HexTileMap"
@@ -137,6 +138,7 @@ func _handle_pause_back() -> void:
 func _is_pause_blocked() -> bool:
 	return (
 		_is_control_visible(card_selection_ui)
+		or _is_control_visible(station_upgrade_choice)
 		or _is_control_visible(merchant)
 		or _is_control_visible(round_complete_screen)
 	)

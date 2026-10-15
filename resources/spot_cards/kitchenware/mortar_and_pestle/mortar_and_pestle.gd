@@ -1,24 +1,28 @@
 extends TileCard
 
-## Copies the effects of the two spots directly before this one. Empty spots are skipped, not walked past.
+## +3 Mult. Pays the base output of the 2 Ingredients directly before it. Empty spots count as nothing.
+
+const COPY_COUNT := 2
+
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	var prior_hexes := _get_immediately_previous_hexes(tile, 2)
-	var copied_any := false
-	for prior_hex: Hex in prior_hexes:
-		var prior_rune := prior_hex.active_tile_card
-		if prior_rune == null:
-			continue
-		copied_any = true
-		# Replay those effects from this hex. The source tiles are not retriggered.
-		# Copied retriggers skip this host, so a prior Break Glass cannot loop Imprint.
-		if not prior_rune.can_be_triggered_by_other_card(prior_hex):
-			continue
-		_run_copied_activation(prior_rune, tile)
-
-	if not copied_any:
+	_pay_kitchenware_mult(tile)
+	var copied := _effect_preview_cards(tile)
+	if copied.is_empty():
 		failed_tile_card_text(tile)
+		return
+	for card: TileCard in copied:
+		_create_targeted_ability_floating_text(tile, ICON_FLAVOUR, card)
+		add_flavour(tile, card._get_production_amount())
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_immediately_previous_hexes(hover_tile, 2)
+	return _coords_for_placed_tile_cards(hover_tile, _effect_preview_cards(hover_tile))
+
+
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	var cards: Array[TileCard] = []
+	for card: TileCard in _get_tile_cards_on_immediately_previous_hexes(tile, COPY_COUNT):
+		if card.type == TileCardType.INGREDIENT and card.product == Product.FLAVOUR:
+			cards.append(card)
+	return cards

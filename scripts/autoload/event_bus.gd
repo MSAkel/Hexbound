@@ -88,6 +88,16 @@ signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect
 ## Re-evaluate the control beneath a stationary cursor after a covering UI closes.
 signal tooltip_hover_refresh_requested
 
+## Station type, Meals served, level, or level 3 pick changed. Badges redraw from StationManager.
+signal station_state_changed(segment_index: int)
+## A base station became a type for the rest of the run.
+signal station_type_changed(segment_index: int, type_id: String)
+signal station_leveled_up(segment_index: int, level: int)
+## Level 3 opened the station's second Meal slot.
+signal meal_slot_unlocked(segment_index: int)
+## A typed station reached level 3 and waits on a perk pick.
+signal station_choice_requested(segment_index: int)
+
 ## Staff column contents or order changed.
 signal staff_roster_changed
 ## A staff member was seated in this slot.

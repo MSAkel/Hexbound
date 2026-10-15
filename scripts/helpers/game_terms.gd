@@ -11,8 +11,11 @@ const INGREDIENT := "Ingredient"
 const KITCHENWARE := "Kitchenware"
 const VEGETABLE := "Vegetable"
 const FRUIT := "Fruit"
-const GRAIN := "Grain"
-const PROTEIN := "Protein"
+# The protein tag reads as Meat on cards. Seafood is its own kind.
+const PROTEIN := "Meat"
+const SEAFOOD := "Seafood"
+const DAIRY := "Dairy"
+const SWEET := "Sweet"
 const SEASONING := "Seasoning"
 const BEVERAGE := "Beverage"
 const GOLD := "Gold"
@@ -24,6 +27,8 @@ const CONDIMENTS := "Condiments"
 const MEAL := "Meal"
 const DISH := "Dish"
 const PASS := "Pass"
+const MEAL_SLOT := "Meal Slot"
+const LIQUEFY := "Liquefy"
 const HYBRID := "Hybrid"
 const GARNISH := "Garnish"
 const FOLLOWING := "Following"
@@ -58,10 +63,14 @@ static func get_ingredient_kind_label(kind: StringName) -> String:
 			return VEGETABLE
 		TileCard.TAG_FRUIT:
 			return FRUIT
-		TileCard.TAG_GRAIN:
-			return GRAIN
 		TileCard.TAG_PROTEIN:
 			return PROTEIN
+		TileCard.TAG_SEAFOOD:
+			return SEAFOOD
+		TileCard.TAG_DAIRY:
+			return DAIRY
+		TileCard.TAG_SWEET:
+			return SWEET
 		TileCard.TAG_SEASONING:
 			return SEASONING
 		TileCard.TAG_BEVERAGE:
@@ -88,12 +97,9 @@ static func format_ingredient_tags_label(tags: Array[StringName]) -> String:
 
 static func get_role_label(
 	product: TileCard.Product,
-	relay_mode: TileCard.RelayMode,
 	support_role: TileCard.SupportRole
 ) -> String:
 	var parts: Array[String] = []
-	if relay_mode == TileCard.RelayMode.NEXT_SEGMENT:
-		parts.append(PASS)
 	var support_label := _get_support_role_label(support_role)
 	if not support_label.is_empty():
 		parts.append(support_label)

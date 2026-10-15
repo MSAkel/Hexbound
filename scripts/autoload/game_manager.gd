@@ -468,6 +468,7 @@ func reset_for_new_run() -> void:
 		bind_chef_speciality()
 	CondimentManager.reset_for_new_run()
 	StaffManager.reset_for_new_run()
+	StationManager.reset_for_new_run()
 	RunLedger.reset_for_new_run()
 
 

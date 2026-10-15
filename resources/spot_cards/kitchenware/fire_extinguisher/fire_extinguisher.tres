@@ -1,16 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://y3m3p4rtvqcl"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://y3m3p4rtvqcl"]
 
-[ext_resource type="Texture2D" uid="uid://bjw4jkr4vq8h3" path="res://assets/icons/kitchenware/fire_extinguisher.png" id="1_86g7x"]
-[ext_resource type="Script" uid="uid://vqq17aw8ueom" path="res://resources/spot_cards/kitchenware/fire_extinguisher/fire_extinguisher.gd" id="2_7k1bx"]
-[ext_resource type="AudioStream" uid="uid://veyaql1wkwai" path="res://assets/audio/coin-pickup.wav" id="3_rmnft"]
+[ext_resource type="Texture2D" uid="uid://bjw4jkr4vq8h3" path="res://assets/icons/kitchenware/fire_extinguisher.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/kitchenware/fire_extinguisher/fire_extinguisher.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_7k1bx")
-rarity = 1
-type = 1
+script = ExtResource("2_script")
 support_role = 2
+type = 1
+product = 4
+starting_hand_eligible = true
 id = "fire_extinguisher"
 name = "Fire Extinguisher"
-icon = ExtResource("1_86g7x")
-description = "{triggers} every card on this {station}. {spoils} immediately"
+icon = ExtResource("1_icon")
+description = "{triggers} every card on this and the next {station}. {spoils} immediately."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

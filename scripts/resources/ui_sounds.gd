@@ -20,6 +20,10 @@ const EVENT_START = preload("res://assets/audio/sfx/Challenge_start.mp3")
 const STATION_RESULT = preload("uid://dpmtpk2jh6urk")
 ## Legacy alias. Prefer STATION_RESULT for new code.
 const SEGMENT_RESULT = STATION_RESULT
+## Station feedback reuses existing cues until dedicated sounds exist.
+const STATION_TYPE_GAINED = CARD_REVEAL
+const STATION_LEVEL_UP = MERCHANT_BELL
+const MEAL_SLOT_UNLOCKED = SPOIL_BREAK
 const CONDIMENT_HOVER_A = preload("res://assets/audio/sfx/condiments/condiment_hover_a.mp3")
 const CONDIMENT_HOVER_B = preload("res://assets/audio/sfx/condiments/condiment_hover_b.mp3")
 const CONDIMENT_GRAB = preload("res://assets/audio/sfx/condiments/condiment_grab.mp3")

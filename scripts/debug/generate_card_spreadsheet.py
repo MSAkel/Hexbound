@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate spot card master spreadsheet from resources/spot_cards plus design suggestions."""
+"""Generate the spot card master spreadsheet from resources/spot_cards."""
 
 from __future__ import annotations
 
@@ -14,428 +14,137 @@ OUT_CSV = ROOT / "docs" / "spot_cards_master_spreadsheet.csv"
 OUT_XLSX = ROOT / "docs" / "spot_cards_master_spreadsheet.xlsx"
 
 HEADERS = [
-    "Status",
     "Shelf",
-    "Rarity",
+    "Kind",
     "Name",
     "Id",
-    "Product_Or_Stat",
-    "Restriction",
+    "Product",
+    "Base",
+    "Requirements",
     "Effect",
-    "Primary_Identity",
-    "Secondary_Identities",
     "Starter_Eligible",
-    "Layout_Gate",
-    "In_First_Cut",
-    "Notes",
+    "Path",
 ]
 
-RARITY_NAMES = {0: "Common", 1: "Uncommon", 2: "Rare"}
-SHELF_BY_FOLDER = {
-    "ingredients": "Ingredients",
+# Mirrors TileCard.TileCardType and TileCard.Product. A missing field is the enum's first value
+# for type (Ingredient) and NONE for product.
+SHELVES = {0: "Ingredients", 1: "Kitchenware", 2: "Meals"}
+SHELF_ORDER = {"Ingredients": 0, "Kitchenware": 1, "Meals": 2}
+PRODUCTS = {0: "Gold", 1: "Flavour", 2: "Mult", 3: "Hybrid", 4: ""}
+# Player-facing kind names. Mirrors GameTerms.get_ingredient_kind_label.
+KIND_LABELS = {
+    "vegetable": "Vegetable",
+    "fruit": "Fruit",
+    "protein": "Meat",
+    "seafood": "Seafood",
+    "dairy": "Dairy",
+    "sweet": "Sweet",
+    "seasoning": "Seasoning",
     "kitchenware": "Kitchenware",
-    "utilities": "Utility",
+    "dish": "Dish",
+    "beverage": "Beverage",
 }
-SHELF_ORDER = {"Ingredients": 0, "Kitchenware": 1, "Utility": 2}
-RARITY_ORDER = {"Common": 0, "Uncommon": 1, "Rare": 2}
-STATUS_ORDER = {"Existing": 0, "Suggested": 1, "Removed": 2}
-
-STARTER_IDS = {"tomato", "salt"}
-
-# Design backlog. Feast copy only. Not in spot_cards until implemented.
-SUGGESTED = [
-    (
-        "Suggested",
-        "Ingredients",
-        "Common",
-        "Capacitor",
-        "capacitor",
-        "Flavour",
-        "",
-        "+16 Flavour. Store 10 charge on this card.",
-        "Charge",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Tomato is +20. Capacitor banks charge for Release / Overfill.",
-    ),
-    (
-        "Suggested",
-        "Kitchenware",
-        "Common",
-        "Trickle Charge",
-        "trickle_charge",
-        "Charge",
-        "",
-        "Add 12 charge to the next Ingredient on this station.",
-        "Charge",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Feeds the Charge line without being a weak Ingredient.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Uncommon",
-        "Release",
-        "release",
-        "Flavour",
-        "",
-        "Gain Flavour equal to this card's charge, then clear charge. If you dumped 20 or more, also +2 Mult.",
-        "Charge",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Empty brick. Charged it can beat Tomato.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Rare",
-        "Overfill",
-        "overfill",
-        "Flavour",
-        "",
-        "When charge reaches 30, dump all charge as Flavour and Garnish this card.",
-        "Charge",
-        "Garnish",
-        "No",
-        "",
-        "Yes",
-        "Rare Charge spike.",
-    ),
-    (
-        "Suggested",
-        "Kitchenware",
-        "Common",
-        "Mint Cell",
-        "mint_cell",
-        "Gold",
-        "",
-        "+2 Gold.",
-        "Gold Ledger",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Vending Machine is +1. Common gold producer gap.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Uncommon",
-        "Vault Mult",
-        "vault_mult",
-        "Mult",
-        "",
-        "+2 Mult, plus +1 Mult per 8 Gold you hold.",
-        "Gold Ledger",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Cover Charge already converts Gold to Flavour.",
-    ),
-    (
-        "Suggested",
-        "Kitchenware",
-        "Uncommon",
-        "Reserve Garnish",
-        "reserve_garnish",
-        "Garnish",
-        "",
-        "If you hold at least 8 Gold, Garnish the next Ingredient. Does not spend Gold.",
-        "Gold Ledger",
-        "Garnish",
-        "No",
-        "",
-        "Yes",
-        "Replaces spend-on-board garnish tools.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Rare",
-        "Peak Hit",
-        "peak_hit",
-        "Flavour",
-        "",
-        "+24 Flavour. If Garnished, also +6 Mult.",
-        "Garnish",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Lemonade is the small Garnished payoff.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Rare",
-        "Last Claim",
-        "last_claim",
-        "Flavour",
-        "",
-        "+55 Flavour if a card already spoiled on this station this hour, else +16.",
-        "Spoil (tool)",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Miss below Tomato on purpose. Hit is huge.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Uncommon",
-        "Opening Ratio",
-        "opening_ratio",
-        "Mult",
-        "",
-        "+6 Mult if first Ingredient in station, else +2.",
-        "Bookend",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Bookend Mult pair with Last Ratio.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Uncommon",
-        "Last Ratio",
-        "last_ratio",
-        "Mult",
-        "",
-        "+6 Mult if last Ingredient in station, else +2.",
-        "Bookend",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Bookend Mult pair with Opening Ratio.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Rare",
-        "Lone Ratio",
-        "lone_ratio",
-        "Mult",
-        "One-spot station",
-        "+8 Mult. 1-spot station only.",
-        "Solo Cell",
-        "",
-        "No",
-        "Size-1 station",
-        "Yes",
-        "Steak is +80 Flavour on the same seat.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Uncommon",
-        "Mult Sink",
-        "mult_sink",
-        "Mult",
-        "",
-        "+3 Mult per station that already received a Pass this hour.",
-        "Station Pass",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Cumin is flat +5 Mult to the next station.",
-    ),
-    (
-        "Suggested",
-        "Ingredients",
-        "Uncommon",
-        "Pair Mult",
-        "pair_mult",
-        "Mult",
-        "",
-        "+3 Mult per adjacent Next Seasoning.",
-        "Next cluster",
-        "",
-        "No",
-        "",
-        "Yes",
-        "Corn is the Flavour adjacency card.",
-    ),
-]
-
-REMOVED = [
-    (
-        "Removed",
-        "Ingredients",
-        "Uncommon",
-        "Golden Ratio",
-        "golden_ratio",
-        "Mult",
-        "",
-        "+3 Mult. Gain +1 Mult for each Gold spent this day.",
-        "Gold Ledger",
-        "",
-        "No",
-        "",
-        "No",
-        "Removed from resources. Do not restore.",
-    ),
+RECIPE_FIELDS = [
+    ("recipe_vegetable_count", "vegetable"),
+    ("recipe_fruit_count", "fruit"),
+    ("recipe_protein_count", "protein"),
+    ("recipe_seafood_count", "seafood"),
+    ("recipe_dairy_count", "dairy"),
+    ("recipe_sweet_count", "sweet"),
+    ("recipe_seasoning_count", "seasoning"),
+    ("recipe_kitchenware_count", "kitchenware"),
 ]
 
 
 def _read_field(text: str, field: str) -> str:
-    match = re.search(rf'^{re.escape(field)} = (?:"([^"]*)"|(\d+))', text, flags=re.MULTILINE)
-    if not match:
-        return ""
-    return match.group(1) if match.group(1) is not None else match.group(2)
+    match = re.search(rf'^{field} = "?(.*?)"?$', text, re.MULTILINE)
+    return match.group(1) if match else ""
 
 
-def _shelf_from_path(path: Path) -> str:
-    for part in path.parts:
-        if part in SHELF_BY_FOLDER:
-            return SHELF_BY_FOLDER[part]
-    return "Ingredients"
+def _read_int(text: str, field: str, default: int = 0) -> int:
+    raw = _read_field(text, field)
+    return int(raw) if raw.lstrip("-").isdigit() else default
 
 
-def _product_label(raw_type: str, description: str) -> str:
-    mapping = {
-        "0": "Flavour",
-        "1": "Mult",
-        "2": "Gold",
-        "3": "Hybrid",
-    }
-    if raw_type in mapping:
-        return mapping[raw_type]
-    desc = description.lower()
-    if "garnish" in desc:
-        return "Garnish"
-    if "fire again" in desc or "fires again" in desc:
-        return "Again"
-    if "pass " in desc or "passes" in desc:
-        return "Pass"
-    if "gold" in desc and "flavour" not in desc and "mult" not in desc:
-        return "Gold"
-    if "mult" in desc and "flavour" not in desc:
-        return "Mult"
-    if "flavour" in desc:
-        return "Flavour"
-    return ""
+def _tags(text: str) -> list[str]:
+    return re.findall(r'&"([a-z_]+)"', _read_field(text, "ingredient_tags"))
 
 
-def scan_spot_cards() -> list[tuple]:
-    rows: list[tuple] = []
+def _requirements(text: str) -> str:
+    parts = []
+    for card_id in re.findall(r'"([a-z_]+)"', _read_field(text, "recipe_required_card_ids")):
+        parts.append(card_id.replace("_", " ").title())
+    for field, kind in RECIPE_FIELDS:
+        count = _read_int(text, field)
+        if count > 0:
+            parts.append(f"{count} {KIND_LABELS[kind]}")
+    return ", ".join(parts)
+
+
+def scan_spot_cards() -> list[list]:
+    rows: list[list] = []
     for path in sorted(SPOT_CARDS.rglob("*.tres")):
         text = path.read_text(encoding="utf-8")
         card_id = _read_field(text, "id")
         if not card_id:
             continue
-        name = _read_field(text, "name")
-        description = _read_field(text, "description")
-        rarity_raw = _read_field(text, "rarity")
-        rarity = RARITY_NAMES.get(int(rarity_raw), "Common") if rarity_raw.isdigit() else "Common"
-        product_type = _read_field(text, "type")
-        shelf = _shelf_from_path(path)
-        product = _product_label(product_type, description)
-        starter = "Yes" if card_id in STARTER_IDS else "No"
-        rows.append(
-            (
-                "Existing",
-                shelf,
-                rarity,
-                name,
-                card_id,
-                product,
-                "",
-                description,
-                "",
-                "",
-                starter,
-                "",
-                "No",
-                f"Loaded from {path.relative_to(ROOT).as_posix()}",
-            )
-        )
+        shelf = SHELVES.get(_read_int(text, "type"), "Ingredients")
+        kinds = " · ".join(KIND_LABELS.get(tag, tag) for tag in _tags(text))
+        rows.append([
+            shelf,
+            kinds,
+            _read_field(text, "name"),
+            card_id,
+            PRODUCTS.get(_read_int(text, "product", 4), ""),
+            _read_int(text, "base_production_amount"),
+            _requirements(text),
+            _read_field(text, "description"),
+            "Yes" if _read_field(text, "starting_hand_eligible") == "true" else "No",
+            path.relative_to(ROOT).as_posix(),
+        ])
+    rows.sort(key=lambda row: (SHELF_ORDER.get(row[0], 9), row[1], row[2].lower()))
     return rows
 
 
-def sort_key(row: tuple) -> tuple:
-    return (
-        SHELF_ORDER.get(row[1], 9),
-        RARITY_ORDER.get(row[2], 9),
-        STATUS_ORDER.get(row[0], 9),
-        row[3].lower(),
-    )
-
-
-def build_summary_rows(rows: list[tuple]) -> list[list]:
-    summary: list[list] = []
-    existing = [r for r in rows if r[0] == "Existing"]
-    suggested = [r for r in rows if r[0] == "Suggested"]
-    removed = [r for r in rows if r[0] == "Removed"]
-    first_cut = [r for r in rows if r[12] == "Yes"]
-
-    summary.append(["=== SUMMARY ==="])
-    summary.append([])
-    summary.append(["Metric", "Count"])
-    summary.append(["Total cards in spreadsheet", len(rows)])
-    summary.append(["Existing (in spot_cards)", len(existing)])
-    summary.append(["Suggested (design backlog)", len(suggested)])
-    summary.append(["Removed from repo", len(removed)])
-    summary.append(["Suggested first-cut bundle", len(first_cut)])
-    summary.append([])
-
-    summary.append(["By shelf (Existing)"])
-    shelf_counts = Counter(r[1] for r in existing)
-    for shelf, count in sorted(shelf_counts.items(), key=lambda item: SHELF_ORDER.get(item[0], 9)):
+def build_summary_rows(rows: list[list]) -> list[list]:
+    summary: list[list] = [["=== SUMMARY ==="], [], ["Metric", "Count"], ["Total cards", len(rows)], []]
+    summary.append(["By shelf"])
+    for shelf, count in sorted(Counter(r[0] for r in rows).items(), key=lambda item: SHELF_ORDER.get(item[0], 9)):
         summary.append([shelf, count])
     summary.append([])
-
-    summary.append(["By rarity (Existing)"])
-    for rarity in ("Common", "Uncommon", "Rare"):
-        count = sum(1 for r in existing if r[2] == rarity)
-        summary.append([rarity, count])
+    summary.append(["By kind"])
+    for kind, count in sorted(Counter(r[1] for r in rows if r[1]).items()):
+        summary.append([kind, count])
     summary.append([])
-
     summary.append(["Terminology"])
     summary.append(["Player formula", "Flavour x Mult = Rating"])
     summary.append(["Day / Hour", "round / turn in code"])
     summary.append(["Station / Spot", "segment / tile in code"])
-    summary.append(["Events catalog", "docs/events_catalog.csv"])
     summary.append(["Glossary", "docs/feast_glossary.md"])
     return summary
 
 
-def write_csv(rows: list[tuple], path: Path) -> None:
+def write_csv(rows: list[list], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
         writer.writerow(HEADERS)
         writer.writerows(rows)
         writer.writerow([])
-        for row in build_summary_rows(rows):
-            writer.writerow(row)
+        writer.writerows(build_summary_rows(rows))
 
 
-def write_xlsx(rows: list[tuple], path: Path) -> None:
+def write_xlsx(rows: list[list], path: Path) -> None:
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill
 
     header_font = Font(bold=True)
     header_fill = PatternFill(fill_type="solid", fgColor="D9E1F2")
-    suggested_fill = PatternFill(fill_type="solid", fgColor="FFF9C4")
-    removed_fill = PatternFill(fill_type="solid", fgColor="E0E0E0")
 
     wb = Workbook()
     wb.remove(wb.active)
 
-    def write_sheet(title: str, sheet_rows: list[tuple]) -> None:
+    def write_sheet(title: str, sheet_rows: list[list]) -> None:
         ws = wb.create_sheet(title)
         for col_idx, header in enumerate(HEADERS, start=1):
             cell = ws.cell(row=1, column=col_idx, value=header)
@@ -445,18 +154,10 @@ def write_xlsx(rows: list[tuple], path: Path) -> None:
         for row_idx, row_data in enumerate(sheet_rows, start=2):
             for col_idx, value in enumerate(row_data, start=1):
                 ws.cell(row=row_idx, column=col_idx, value=value)
-            fill = None
-            if row_data[0] == "Suggested":
-                fill = suggested_fill
-            elif row_data[0] == "Removed":
-                fill = removed_fill
-            if fill:
-                for col_idx in range(1, len(HEADERS) + 1):
-                    ws.cell(row=row_idx, column=col_idx).fill = fill
 
     write_sheet("All Cards", rows)
-    for shelf in ("Ingredients", "Kitchenware", "Utility"):
-        write_sheet(shelf, [r for r in rows if r[1] == shelf])
+    for shelf in SHELF_ORDER:
+        write_sheet(shelf, [r for r in rows if r[0] == shelf])
 
     summary_sheet = wb.create_sheet("Summary")
     for row_idx, row_data in enumerate(build_summary_rows(rows), start=1):
@@ -470,7 +171,7 @@ def write_xlsx(rows: list[tuple], path: Path) -> None:
 
 
 def main() -> None:
-    rows = sorted(scan_spot_cards() + SUGGESTED + REMOVED, key=sort_key)
+    rows = scan_spot_cards()
     write_csv(rows, OUT_CSV)
     print(f"Wrote {len(rows)} rows to {OUT_CSV}")
     try:

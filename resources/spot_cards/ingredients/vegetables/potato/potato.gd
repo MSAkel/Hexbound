@@ -1,24 +1,24 @@
 extends TileCard
-## +3 Flavour per empty spot in this station, capped at 30.
 
-const ENERGY_PER_EMPTY := 3
-const ENERGY_CAP := 30
+## +5 Flavour for each different kind of Ingredient next to it (Vegetable, Fruit, Meat...).
 
-
-func _on_activate_tile_card(tile: Hex) -> void:
-	var amount := _get_open_circuit_amount(tile)
-	if amount <= 0:
-		failed_tile_card_text(tile)
-		return
-	add_flavour(tile, amount)
+const PER_KIND := 5.0
 
 
-func get_board_chip(tile: Hex = null) -> Dictionary:
+func _effect_amount(tile: Hex) -> float:
 	if tile == null:
-		return _amount_board_chip(ENERGY_PER_EMPTY)
-	return _amount_board_chip(_get_open_circuit_amount(tile))
+		return _get_production_amount()
+	return _get_production_amount() + PER_KIND * float(_adjacent_kinds(tile).size())
 
 
-func _get_open_circuit_amount(tile: Hex) -> int:
-	var empty := tile.map.get_empty_tile_count_in_segment(_get_segment_index(tile))
-	return mini(ENERGY_CAP, ENERGY_PER_EMPTY * empty)
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	return _get_all_adjacent_tile_cards(tile, TileCardType.INGREDIENT)
+
+
+func _adjacent_kinds(tile: Hex) -> Dictionary:
+	var kinds := {}
+	for card: TileCard in _effect_preview_cards(tile):
+		for tag: StringName in card.ingredient_tags:
+			if tag in RECIPE_INGREDIENT_TAGS:
+				kinds[tag] = true
+	return kinds

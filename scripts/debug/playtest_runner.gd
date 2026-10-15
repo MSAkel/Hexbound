@@ -31,8 +31,6 @@ const CHEF_IDS: Array[String] = [
 	"sommelier",
 	"gourmet_restaurant",
 ]
-const BANNED_FILLER_IDS: Array[String] = ["compact_power", "edge_card", "treasury"]
-const LOCKED_STARTER_IDS: Array[String] = ["tomato", "salt"]
 const SEGMENT_SNAPSHOT_ROUNDS: Array[int] = [3, 6, 9]
 const MERCHANT_BASE_REROLL_COST := 5
 const MAX_MERCHANT_GOLD_REROLLS := 2
@@ -181,21 +179,7 @@ func _run_all() -> void:
 	await _run_full_nines()
 
 
-func _starter_filler_pool_ids() -> Array[String]:
-	var ids: Array[String] = []
-	for card: TileCard in GameManager.tile_cards_pool:
-		if not card.starting_hand_eligible:
-			continue
-		if card.id in LOCKED_STARTER_IDS:
-			continue
-		if card.type != TileCard.TileCardType.INGREDIENT:
-			continue
-		if card.product != TileCard.Product.FLAVOUR:
-			continue
-		ids.append(card.id)
-	return ids
-
-
+## Opening hand is 3 Ingredients and 2 Kitchenware, all tagged starting_hand_eligible.
 func _run_starter_fairness() -> void:
 	for chef_id: String in _layouts:
 		GameManager.selected_chef = ChefRegistry.get_chef_by_id(chef_id)
@@ -205,34 +189,24 @@ func _run_starter_fairness() -> void:
 			RunRng.begin_new_run(seed_text)
 			var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
 			var ids: Array[String] = []
+			var ingredients := 0
+			var kitchenware := 0
+			var reasons: Array[String] = []
 			for card: TileCard in hand:
 				ids.append(card.id)
-
-			var reasons: Array[String] = []
-			for locked_id: String in LOCKED_STARTER_IDS:
-				if locked_id not in ids:
-					reasons.append("missing locked starter %s" % locked_id)
-
-			var filler_ids: Array[String] = []
-			for card_id: String in ids:
-				if card_id in LOCKED_STARTER_IDS:
-					continue
-				var template := GameManager.get_tile_card_by_id(card_id)
-				if template != null and TileCard.is_producer_type(template.type):
-					filler_ids.append(card_id)
-
-			if filler_ids.size() != 1:
-				reasons.append("expected 1 filler producer, got %s" % str(filler_ids))
-			else:
-				var filler_id := filler_ids[0]
-				var allowed_fillers := _starter_filler_pool_ids()
-				if filler_id not in allowed_fillers:
-					reasons.append(
-						"filler %s is not in the flat-Flavour starter pool %s"
-						% [filler_id, str(allowed_fillers)]
-					)
-				if filler_id in BANNED_FILLER_IDS:
-					reasons.append("banned filler %s" % filler_id)
+				if not card.starting_hand_eligible:
+					reasons.append("%s is not starting_hand_eligible" % card.id)
+				match card.type:
+					TileCard.TileCardType.INGREDIENT:
+						ingredients += 1
+					TileCard.TileCardType.KITCHENWARE:
+						kitchenware += 1
+					_:
+						reasons.append("unexpected Meal %s" % card.id)
+			if ingredients != ChefRegistry.STARTING_INGREDIENT_COUNT:
+				reasons.append("expected %d Ingredients, got %d" % [ChefRegistry.STARTING_INGREDIENT_COUNT, ingredients])
+			if kitchenware != ChefRegistry.STARTING_KITCHENWARE_COUNT:
+				reasons.append("expected %d Kitchenware, got %d" % [ChefRegistry.STARTING_KITCHENWARE_COUNT, kitchenware])
 
 			_record(
 				"starter_fairness",
@@ -240,7 +214,7 @@ func _run_starter_fairness() -> void:
 				seed_text,
 				reasons.is_empty(),
 				reasons,
-				{"hand": ids, "filler": filler_ids}
+				{"hand": ids}
 			)
 
 
@@ -1027,10 +1001,6 @@ func _card_player_value(card: TileCard) -> float:
 				value = 28.0 + float(card.base_production_amount)
 				if energy + mult >= 2:
 					value += 10.0
-	if card.rarity == Card.Rarity.RARE:
-		value += 12.0
-	elif card.rarity == Card.Rarity.UNCOMMON:
-		value += 6.0
 	value += _best_engine_preview_value(card) * 0.35
 	return value
 
@@ -1539,9 +1509,8 @@ func _place_one_card(card: TileCard) -> bool:
 		"player":
 			if _place_player_card(card):
 				return true
-			if card.has_placement_restriction():
-				return _place_first_legal_empty(card)
-			return false
+			# Meals only fit Meal slots, which the player heuristics never pick.
+			return _place_first_legal_empty(card)
 		"stack":
 			if _place_on_preferred_segments(card, _stack_segment_rank()):
 				return true

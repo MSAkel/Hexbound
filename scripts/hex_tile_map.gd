@@ -17,6 +17,10 @@ var turn_resolver: HexTurnResolver
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
 # Counted dish-recipe seats. Own layer so gold modulate cannot leak onto other overlays.
 var dish_recipe_gold_layer: TileMapLayer
+# Meal slot fills, the level 3 padlock, and station type tints. Sits just above BaseLayer.
+var station_overlay: StationBoardOverlay
+# One badge per station at the right end of its row.
+var _station_badges: Array[StationBadge] = []
 
 # Selection and placement-valid overlays share one hover tile on source 0 in hex_tile_map.tscn.
 const HOVER_OVERLAY_NORMAL := 0
@@ -69,7 +73,6 @@ var _event_highlighted_coords: Array[Vector2i] = []
 var _disabled_tile_coords: Array[Vector2i] = []
 # Empty tiles locked by the Sealed Hexes event. Shares the disabled overlay layer.
 var _event_sealed_coords: Array[Vector2i] = []
-var _segment_seal_tweens: Array[Tween] = []
 # Valid placement target while a hand card is selected.
 var _placement_preview_cell: Vector2i = Vector2i(-1, -1)
 # Tiles lit when a card credits another segment's turn total.
@@ -84,11 +87,12 @@ var _round_turn_snapshots: Array = []
 
 ## Gold wash on a dedicated layer so dish recipe seats do not recolor other rune highlights.
 const DISH_RECIPE_GOLD_MODULATE := Color(1.35, 1.05, 0.25, 1.0)
-# Occupied-card zip budget. Stagger shrinks on long rings so this never grows.
-const SEGMENT_SEAL_BUDGET := 0.28
-const SEGMENT_SEAL_MAX_STAGGER := 0.045
 # How long a destination-segment flash stays visible during card activation.
 const SEGMENT_CREDIT_FLASH_DURATION := 0.5
+## Gap between a station's first spot and its badge, in map pixels.
+const STATION_BADGE_GAP := 18.0
+## Staff hexes sit this many board columns left of their station's first spot, clear of the badges.
+const STAFF_COLUMN_OFFSET := 3.5
 
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
@@ -96,9 +100,6 @@ var _inspect_highlight_coords: Array[Vector2i] = []
 var _inspect_gold_highlight_coords: Array[Vector2i] = []
 # Placement and inspect seats currently stamped on dish_recipe_gold_layer.
 var _dish_recipe_gold_coords: Array[Vector2i] = []
-# Prefix seats darkened because they hold a card whose tag is not in the recipe.
-var _dish_recipe_invalid_coords: Array[Vector2i] = []
-var _inspect_invalid_highlight_coords: Array[Vector2i] = []
 
 
 func _ready() -> void:
@@ -111,6 +112,7 @@ func _ready() -> void:
 	placement_valid_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
 	_setup_dish_recipe_gold_layer()
+	_setup_station_overlay()
 	_apply_tile_spacing()
 	trigger_link_overlay.setup(self)
 	generate_terrain()
@@ -120,6 +122,8 @@ func _ready() -> void:
 	# Dish chips read the staff recipe discount, so a roster change can move them.
 	EventBus.staff_roster_changed.connect(refresh_board_output_chips)
 	StaffManager.bind_board(self)
+	StationManager.bind_board(self)
+	EventBus.station_state_changed.connect(_on_station_state_changed)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
@@ -149,6 +153,7 @@ func _refresh_condiment_fuse_badges() -> void:
 
 func _exit_tree() -> void:
 	StaffManager.unbind_board(self)
+	StationManager.unbind_board(self)
 	_free_map_hexes()
 
 
@@ -279,6 +284,53 @@ func clear_placement_valid_highlights() -> void:
 	placement_valid_overlay_layer.clear()
 
 
+func _setup_station_overlay() -> void:
+	station_overlay = StationBoardOverlay.new()
+	station_overlay.name = "StationOverlay"
+	station_overlay.z_index = TILE_OVERLAY_LAYER_Z_INDEX
+	add_child(station_overlay)
+	# Draw over the dashed base hexes and under every overlay layer and seated card.
+	move_child(station_overlay, base_layer.get_index() + 1)
+	station_overlay.setup(self)
+
+
+## Redraws Meal slot locks, station tints and badges after a station change.
+func refresh_station_visuals() -> void:
+	if station_overlay != null:
+		station_overlay.refresh()
+	_ensure_station_badges()
+
+
+func _on_station_state_changed(_segment_index: int) -> void:
+	refresh_station_visuals()
+	refresh_board_output_chips()
+
+
+## Badges sit in one column left of the board so they line up across the zigzag rows.
+func _ensure_station_badges() -> void:
+	var segment_count := get_segment_count()
+	if segment_count <= 0:
+		return
+	while _station_badges.size() < segment_count:
+		var badge := StationBadge.new()
+		badge.name = "StationBadge%d" % _station_badges.size()
+		add_child(badge)
+		badge.setup(self, _station_badges.size())
+		_station_badges.append(badge)
+	var left_edge := INF
+	for segment_index in segment_count:
+		var first := _layout.get_first_tile_coords_in_segment(segment_index)
+		left_edge = minf(left_edge, base_layer.map_to_local(first).x)
+	for segment_index in segment_count:
+		var badge := _station_badges[segment_index]
+		var first := _layout.get_first_tile_coords_in_segment(segment_index)
+		var center_y := base_layer.position.y + base_layer.map_to_local(first).y
+		badge.reset_size()
+		var badge_size := badge.get_combined_minimum_size()
+		var x := base_layer.position.x + left_edge - HEX_TEXTURE_SIZE.x * 0.5 - STATION_BADGE_GAP - badge_size.x
+		badge.position = Vector2(x, center_y - badge_size.y * 0.5)
+
+
 func _setup_dish_recipe_gold_layer() -> void:
 	dish_recipe_gold_layer = TileMapLayer.new()
 	dish_recipe_gold_layer.name = "DishRecipeGoldOverlayLayer"
@@ -306,42 +358,8 @@ func clear_dish_recipe_gold_highlights_at(coords_list: Array[Vector2i]) -> void:
 		dish_recipe_gold_layer.set_cell(coords, -1)
 
 
-## Dark wash on a prefix seat whose card cannot fill the dish recipe.
-func stamp_dish_recipe_invalid_highlight(coords: Vector2i) -> void:
-	if coords in _dish_recipe_invalid_coords:
-		return
-	_dish_recipe_invalid_coords.append(coords)
-	disabled_tile_overlay_layer.set_cell(
-		coords,
-		OVERLAY_TILE_SOURCE_ID,
-		OVERLAY_TILE_ATLAS_COORDS
-	)
-	_set_dish_recipe_card_dimmed(coords, true)
-
-
-func clear_dish_recipe_invalid_highlights_at(coords_list: Array[Vector2i]) -> void:
-	for coords: Vector2i in coords_list:
-		_dish_recipe_invalid_coords.erase(coords)
-		_set_dish_recipe_card_dimmed(coords, false)
-		if coords in _disabled_tile_coords or coords in _event_sealed_coords:
-			continue
-		if map_data.has(coords) and map_data[coords].is_placement_blocked():
-			continue
-		disabled_tile_overlay_layer.set_cell(coords, -1)
-
-
-func _set_dish_recipe_card_dimmed(coords: Vector2i, dimmed: bool) -> void:
-	if not map_data.has(coords):
-		return
-	var hex: Hex = map_data[coords]
-	if hex.card_icon_ui == null:
-		return
-	hex.card_icon_ui.set_recipe_preview_dimmed(dimmed)
-
-
 func clear_dish_recipe_highlights() -> void:
 	clear_dish_recipe_gold_highlights_at(_dish_recipe_gold_coords.duplicate())
-	clear_dish_recipe_invalid_highlights_at(_dish_recipe_invalid_coords.duplicate())
 
 
 func _refresh_rune_highlight_modulate() -> void:
@@ -660,7 +678,7 @@ func _place_hex_tile(offset: Vector2i) -> void:
 	base_layer.set_cell(offset, 0, BASE_TILE_ATLAS_COORDS)
 
 
-## Builds the shared 32-hex kitchen board as five offset rows.
+## Builds the shared kitchen board: four stations of eight hexes.
 func generate_terrain() -> void:
 	_free_map_hexes()
 	base_layer.clear()
@@ -674,8 +692,6 @@ func generate_terrain() -> void:
 		dish_recipe_gold_layer.clear()
 	_dish_recipe_gold_coords.clear()
 	_inspect_gold_highlight_coords.clear()
-	_dish_recipe_invalid_coords.clear()
-	_inspect_invalid_highlight_coords.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
 	_disabled_tile_coords.clear()
@@ -693,6 +709,7 @@ func generate_terrain() -> void:
 		push_warning("HexTileMap: expected %d kitchen tiles, got %d." % [HexMapLayout.BOARD_TILE_COUNT, map_data.size()])
 	_layout.reset_turn_results()
 	_center_map_on_origin()
+	refresh_station_visuals()
 
 
 ## Frees Hex UI Controls and drops dict refs so Nodes/RefCounted tiles cannot pile up.
@@ -721,7 +738,7 @@ func apply_run_start_randomization() -> void:
 	_apply_difficulty_disabled_tiles()
 
 
-# Randomly disable tiles for difficulty level 5.
+# Randomly disable tiles for higher difficulty. Meal slots are never disabled.
 func _apply_difficulty_disabled_tiles() -> void:
 	var disable_count := Difficulty.get_disabled_tile_count(GameManager.selected_difficulty)
 	if disable_count <= 0:
@@ -729,6 +746,8 @@ func _apply_difficulty_disabled_tiles() -> void:
 
 	var candidates: Array[Vector2i] = []
 	for coords: Vector2i in map_data:
+		if is_meal_slot(coords):
+			continue
 		candidates.append(coords)
 
 	# Sort first so dictionary iteration order cannot change which tiles are disabled.
@@ -832,6 +851,29 @@ func get_last_tile_coords_in_segment(segment_index: int) -> Vector2i:
 	return _layout.get_last_tile_coords_in_segment(segment_index)
 
 
+## Cards on a station's regular (non-Meal) spots. Station types and Meal requirements read these.
+func get_regular_spot_cards(segment_index: int) -> Array[TileCard]:
+	var cards: Array[TileCard] = []
+	for hex: Hex in get_hexes_in_segment(segment_index):
+		if hex.active_tile_card != null and not is_meal_slot(hex.coordinates):
+			cards.append(hex.active_tile_card)
+	return cards
+
+
+## True for the Meal-only seats at the end of each station.
+func is_meal_slot(coords: Vector2i) -> bool:
+	return _layout.is_meal_slot(coords)
+
+
+## 0 or 1 for Meal slots, -1 for regular seats.
+func get_meal_slot_index(coords: Vector2i) -> int:
+	return _layout.get_meal_slot_index(coords)
+
+
+func get_meal_slot_coords(segment_index: int) -> Array[Vector2i]:
+	return _layout.get_meal_slot_coords(segment_index)
+
+
 ## Tile count for a segment index, or 0 when the index is invalid.
 func get_segment_size(segment_index: int) -> int:
 	return _layout.get_segment_size(segment_index)
@@ -887,23 +929,7 @@ func mark_segment_resolved(segment_index: int) -> bool:
 	if not _layout.mark_segment_resolved(segment_index):
 		return false
 	EventBus.segment_resolved.emit(segment_index)
-	_play_segment_seal(segment_index)
 	return true
-
-
-## Waits until the last card on this segment finishes its seal slam.
-func wait_for_segment_seal(segment_index: int) -> void:
-	if GameManager.skip_presentation:
-		return
-	var occupied := _get_occupied_hexes_in_segment(segment_index)
-	if occupied.is_empty():
-		return
-	var stagger_steps := maxi(occupied.size() - 1, 1)
-	var stagger := minf(SEGMENT_SEAL_MAX_STAGGER, SEGMENT_SEAL_BUDGET / float(stagger_steps))
-	stagger /= GameManager.game_speed
-	var seal_duration := CardIconUI.get_segment_seal_duration() / GameManager.game_speed
-	var total_wait := stagger * float(occupied.size() - 1) + seal_duration
-	await GameManager.create_pauseable_timer(total_wait).timeout
 
 
 func is_segment_resolved(segment_index: int) -> bool:
@@ -925,18 +951,13 @@ func get_segment_breaks(segment_index: int) -> int:
 	return _layout.get_segment_breaks(segment_index)
 
 
-## Records a break on the card's segment and notifies remaining cards on that line.
+## Records a break on the card's segment for the Hour results.
 func notify_card_broke(tile_card: TileCard) -> void:
 	var hex := get_hex_for_tile_card(tile_card)
 	if hex == null:
 		return
-	var segment_index := get_segment_index(hex.coordinates)
-	_layout.add_segment_break(segment_index)
-	for other: Hex in get_hexes_in_segment(segment_index):
-		var card := other.active_tile_card
-		if card == null or card == tile_card:
-			continue
-		card.on_other_segment_card_broke(tile_card, other)
+	_layout.add_segment_break(get_segment_index(hex.coordinates))
+
 
 ## Number of chef-specific segments on the current map.
 func get_segment_count() -> int:
@@ -952,7 +973,6 @@ func get_hexes_in_segment(segment_index: int) -> Array[Hex]:
 
 ## Clears per-segment turn totals at the start of turn resolution.
 func reset_segment_turn_results() -> void:
-	_clear_segment_sealed_look()
 	_layout.reset_turn_results()
 	EventBus.segment_turn_results_reset.emit()
 
@@ -1347,6 +1367,19 @@ func schedule_destroy_after_trigger_link(
 
 #region Staff column anchors
 
+## Screen rect of the staff hex for a station: same size as a spot, on the station's row.
+## Follows the row stagger so the column reads as part of the pass. Empty when the row is missing.
+func get_staff_slot_screen_rect(segment_index: int) -> Rect2:
+	var first := _layout.get_first_tile_coords_in_segment(segment_index)
+	if first == Vector2i(-1, -1) or not is_inside_tree():
+		return Rect2()
+	var column_width := float(base_layer.tile_set.tile_size.x)
+	var center_local := base_layer.map_to_local(first) - Vector2(column_width * STAFF_COLUMN_OFFSET, 0.0)
+	var canvas_xform: Transform2D = base_layer.get_global_transform_with_canvas()
+	var screen_size: Vector2 = canvas_xform.basis_xform(Vector2(HEX_TEXTURE_SIZE)).abs()
+	return Rect2(canvas_xform * center_local - screen_size * 0.5, screen_size)
+
+
 ## Screen positions of the staff hexes, pushed by the staff column UI. Empty on headless boards.
 func set_staff_screen_centers(centers: Array[Vector2]) -> void:
 	_staff_screen_centers = centers
@@ -1437,44 +1470,6 @@ func is_card_placement_in_progress() -> bool:
 ## Resolves every placed rune in trigger order when the player ends the turn.
 func on_turn_ended() -> void:
 	await turn_resolver.resolve_turn()
-
-
-## Occupied cards zip in trigger order. Never awaited.
-func _play_segment_seal(segment_index: int) -> void:
-	if GameManager.skip_presentation:
-		return
-
-	var occupied := _get_occupied_hexes_in_segment(segment_index)
-	if occupied.is_empty():
-		return
-
-	var stagger_steps := maxi(occupied.size() - 1, 1)
-	var stagger := minf(SEGMENT_SEAL_MAX_STAGGER, SEGMENT_SEAL_BUDGET / float(stagger_steps))
-	stagger /= GameManager.game_speed
-
-	var seal_tween := create_tween()
-	_segment_seal_tweens.append(seal_tween)
-	seal_tween.set_parallel(true)
-	for i in occupied.size():
-		var delay := stagger * float(i)
-		seal_tween.tween_callback(occupied[i].play_segment_seal_animation).set_delay(delay)
-
-
-func _get_occupied_hexes_in_segment(segment_index: int) -> Array[Hex]:
-	var occupied: Array[Hex] = []
-	for hex: Hex in get_hexes_in_segment(segment_index):
-		if hex.active_tile_card != null and hex.card_icon_ui != null:
-			occupied.append(hex)
-	return occupied
-
-
-func _clear_segment_sealed_look() -> void:
-	for seal_tween: Tween in _segment_seal_tweens:
-		if seal_tween != null and seal_tween.is_valid():
-			seal_tween.kill()
-	_segment_seal_tweens.clear()
-	for hex: Hex in get_all_hexes_with_runes():
-		hex.clear_segment_sealed()
 
 
 #region Run save / load
@@ -1597,7 +1592,7 @@ func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 	var data := {
 		"card_id": tile_card.id,
 		"activation_count": tile_card.activation_count,
-		"is_active": tile_card.is_active,
+		"is_active": EventManager.get_saved_is_active(tile_card),
 		"bonus_production_amount": tile_card.bonus_production_amount,
 		"run_trigger_count": tile_card.run_trigger_count,
 		"garnish_stacks": tile_card.garnish_stacks,

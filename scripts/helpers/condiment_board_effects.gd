@@ -27,12 +27,8 @@ static func upgrade_plate(tile: Hex, rng: RandomNumberGenerator) -> bool:
 	var target := tile.active_tile_card
 	if target == null:
 		return false
-	if target.rarity >= Card.Rarity.RARE:
-		_show_failure(tile)
-		return false
-
-	var higher_rarity := (target.rarity + 1) as Card.Rarity
-	var replacement := pick_random_placeable(higher_rarity, "", rng)
+	# Upgrades to a card of the same type with a higher printed output, so it stays legal on its spot.
+	var replacement := pick_random_placeable(target.type, target.id, rng, target.base_production_amount)
 	if replacement == null:
 		_show_failure(tile)
 		return false
@@ -47,7 +43,7 @@ static func reroll_plate(tile: Hex, rng: RandomNumberGenerator) -> bool:
 	if target == null:
 		return false
 
-	var replacement := pick_random_placeable(target.rarity, target.id, rng)
+	var replacement := pick_random_placeable(target.type, target.id, rng)
 	if replacement == null:
 		_show_failure(tile)
 		return false
@@ -81,6 +77,10 @@ static func swap_spots(hex_a: Hex, hex_b: Hex) -> bool:
 		return false
 	if hex_a.active_tile_card == null or hex_b.active_tile_card == null:
 		return false
+	# Meals and Meal slots stay paired.
+	if not hex_a.active_tile_card.can_place_on_tile(hex_b) or not hex_b.active_tile_card.can_place_on_tile(hex_a):
+		_show_failure(hex_a)
+		return false
 	hex_a.map.swap_placed_tile_cards(hex_a, hex_b)
 	_show_text(hex_a, "Swapped")
 	_show_text(hex_b, "Swapped")
@@ -95,14 +95,18 @@ static func copy_placed_to_hand(source_card: TileCard) -> void:
 	EventBus.tile_card_selected.emit(hand_copy)
 
 
+## Random template of card_type, excluding exclude_id. min_output keeps only cards printing more.
 static func pick_random_placeable(
-	filter_rarity: Variant = null,
+	card_type: TileCard.TileCardType,
 	exclude_id: String = "",
-	rng: RandomNumberGenerator = null
+	rng: RandomNumberGenerator = null,
+	min_output: int = -1
 ) -> TileCard:
 	var candidates: Array[TileCard] = []
 	for template: TileCard in GameManager.tile_cards_pool:
-		if filter_rarity != null and template.rarity != filter_rarity:
+		if template.type != card_type:
+			continue
+		if template.base_production_amount <= min_output:
 			continue
 		if not exclude_id.is_empty() and template.id == exclude_id:
 			continue

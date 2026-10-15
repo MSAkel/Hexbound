@@ -67,9 +67,12 @@ func _fit_rune_ui(rune_ui_node: CardIconUI) -> void:
 	rune_ui_node.position = (HEX_TILE_SIZE - HEX_RUNE_SIZE) * 0.5
 
 
-## True when this hex cannot receive a new card. Difficulty locks and Sealed Hexes both count.
+## True when this hex cannot receive a new card. Difficulty locks, Sealed Hexes, and a station's
+## second Meal slot before level 3 all count.
 func is_placement_blocked() -> bool:
 	if is_disabled_by_difficulty:
+		return true
+	if StationManager.is_meal_slot_locked(coordinates):
 		return true
 	return EventManager.is_hex_sealed(coordinates)
 
@@ -209,19 +212,6 @@ func play_segment_result_animation() -> void:
 	if card_icon_ui == null:
 		return
 	card_icon_ui.play_segment_result_animation()
-
-
-## Tiny forward-order slam used when this tile's segment closes mid-turn.
-func play_segment_seal_animation() -> void:
-	if card_icon_ui == null:
-		return
-	card_icon_ui.play_segment_seal_animation()
-
-
-func clear_segment_sealed() -> void:
-	if card_icon_ui == null:
-		return
-	card_icon_ui.clear_segment_sealed()
 
 
 ## Keeps HexBoardQuery's card-to-hex index aligned with this seat.

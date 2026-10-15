@@ -109,6 +109,8 @@ var _sealed_coords: Array[Vector2i] = []
 
 ## Saved is_active values so player toggles are restored after each turn's blackout.
 var _disabled_prior_states: Dictionary = {}
+## Blackout spots read from a save. Re-applied once the map has restored its cards.
+var _pending_blackout_coords: Array[Vector2i] = []
 var _tile_map: HexTileMap = null
 
 
@@ -123,6 +125,7 @@ func init_run() -> void:
 	_halved_segment_index = -1
 	_clear_sealed_hexes()
 	_disabled_prior_states.clear()
+	_pending_blackout_coords.clear()
 	_clear_fading_sector_visuals()
 
 	var used: Array[Type] = []
@@ -417,6 +420,14 @@ func _apply_blackout() -> void:
 	tile_map.refresh_board_output_chips()
 
 
+## is_active as it was before Blackout touched the card. Saves write this, so a load never
+## inherits a Blackout that would otherwise never be lifted.
+func get_saved_is_active(card: TileCard) -> bool:
+	if _disabled_prior_states.has(card):
+		return bool(_disabled_prior_states[card])
+	return card.is_active
+
+
 func _restore_event_disabled_runes() -> void:
 	var tile_map := _get_tile_map()
 	for rune: TileCard in _disabled_prior_states:
@@ -429,6 +440,28 @@ func _restore_event_disabled_runes() -> void:
 	_disabled_prior_states.clear()
 	if tile_map != null:
 		tile_map.refresh_board_output_chips()
+
+
+## Darkens the cards a save recorded as blacked out, remembering their real state.
+func _reapply_saved_blackout() -> void:
+	if _pending_blackout_coords.is_empty():
+		return
+	var tile_map := _get_tile_map()
+	if tile_map == null:
+		return
+	if active_event == Type.BLACKOUT:
+		for coords: Vector2i in _pending_blackout_coords:
+			if not tile_map.map_data.has(coords):
+				continue
+			var hex: Hex = tile_map.map_data[coords]
+			var rune := hex.active_tile_card
+			if rune == null:
+				continue
+			_disabled_prior_states[rune] = rune.is_active
+			rune.is_active = false
+			hex.refresh_own_visuals()
+		tile_map.refresh_board_output_chips()
+	_pending_blackout_coords.clear()
 
 
 func _pick_halved_segment() -> void:
@@ -487,7 +520,7 @@ func _pick_sealed_hexes() -> void:
 	var candidates: Array[Vector2i] = []
 	for coords: Vector2i in tile_map.map_data:
 		var hex: Hex = tile_map.map_data[coords]
-		if hex.is_disabled_by_difficulty:
+		if hex.is_disabled_by_difficulty or tile_map.is_meal_slot(coords):
 			continue
 		if hex.active_tile_card != null:
 			continue
@@ -611,7 +644,15 @@ func capture_run_state() -> Dictionary:
 	var sealed: Array = []
 	for coords in _sealed_coords:
 		sealed.append([coords.x, coords.y])
+	var blackout: Array = []
+	var tile_map := _get_tile_map()
+	if tile_map != null:
+		for rune: TileCard in _disabled_prior_states:
+			var hex := tile_map.get_hex_for_tile_card(rune) if is_instance_valid(rune) else null
+			if hex != null:
+				blackout.append([hex.coordinates.x, hex.coordinates.y])
 	return {
+		"blackout_coords": blackout,
 		"scheduled_events": scheduled_events.duplicate(),
 		"active_event": active_event,
 		"halved_segment_index": _halved_segment_index,
@@ -635,6 +676,10 @@ func apply_run_state(state: Dictionary) -> void:
 			continue
 		_sealed_coords.append(Vector2i(int(coords_data[0]), int(coords_data[1])))
 	_disabled_prior_states.clear()
+	_pending_blackout_coords.clear()
+	for coords_data: Variant in state.get("blackout_coords", []):
+		if coords_data is Array and coords_data.size() >= 2:
+			_pending_blackout_coords.append(Vector2i(int(coords_data[0]), int(coords_data[1])))
 	_tile_map = null
 
 
@@ -648,6 +693,7 @@ func restore_banner_after_load() -> void:
 
 
 func refresh_event_visuals() -> void:
+	_reapply_saved_blackout()
 	if active_event == Type.FADING_SECTOR and _halved_segment_index >= 0:
 		_apply_fading_sector_visuals()
 	else:

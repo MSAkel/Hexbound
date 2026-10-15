@@ -1,7 +1,6 @@
 extends Control
 
 @onready var played_as_label: Label = $RunStatsPanel/VBoxContainer/PlayedAsLabel
-@onready var layout_xp_bar: LayoutXpBar = %LayoutXpBar
 @onready var highest_score_value: Label = $RunStatsPanel/VBoxContainer/HighestScoreValue
 @onready var round_value: Label = $RunStatsPanel/VBoxContainer/RoundValue
 @onready var gold_earned_value: Label = $RunStatsPanel/VBoxContainer/GoldEarnedValue
@@ -19,11 +18,7 @@ func _ready() -> void:
 
 func _on_game_ended() -> void:
 	RunSaveManager.delete_save()
-	# Capture XP before the snapshot writes so the bar can animate from the old total.
-	var from_xp := _current_layout_xp()
-	var snapshot := GameManager.build_run_snapshot(false)
-	var xp_gain := MetaProgressionManager.get_layout_xp_gain_from_snapshot(snapshot)
-	MetaProgressionManager.record_run_snapshot(snapshot)
+	MetaProgressionManager.record_run_snapshot(GameManager.build_run_snapshot(false))
 	RunHistoryManager.archive_finished_run(false)
 	played_as_label.text = GameManager.selected_chef.display_name if GameManager.selected_chef else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
@@ -33,7 +28,6 @@ func _on_game_ended() -> void:
 	seed_value.text = RunRng.get_display_seed()
 	UiManager.show_panel(self)
 	AudioManager.play_sfx(UISounds.GAME_OVER)
-	layout_xp_bar.play_gain(from_xp, xp_gain, 0.45)
 	# Deferred so the panel is laid out and visible before the button takes focus.
 	call_deferred("_focus_main_menu")
 
@@ -43,12 +37,6 @@ func _focus_main_menu() -> void:
 	if not visible:
 		return
 	MenuFocus.grab_named(self, "MainMenuButton")
-
-
-func _current_layout_xp() -> int:
-	if GameManager.selected_chef == null:
-		return 0
-	return MetaProgressionManager.get_layout_xp(GameManager.selected_chef.id)
 
 
 func _on_copy_seed_button_pressed() -> void:

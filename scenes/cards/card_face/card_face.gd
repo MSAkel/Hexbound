@@ -6,7 +6,7 @@ extends Control
 ## and the layered art never distorts.
 ## Presentation only. Input, hover, and shop behavior live in CardUI.
 
-# Name text carries rarity, since the banner fill shows the card type.
+# Name text carries rarity for staff, since the banner fill shows the card type. Spot cards have none.
 const RARITY_NAME_COLORS := {
 	Card.Rarity.COMMON: Color(1, 1, 1, 1),
 	Card.Rarity.UNCOMMON: Color(0.62, 0.84, 1, 1),
@@ -83,7 +83,7 @@ func _apply_name(card: Card) -> void:
 	))
 	_name_label.add_theme_color_override(
 		"font_color",
-		RARITY_NAME_COLORS.get(card.rarity, Color.WHITE)
+		Color.WHITE if card is TileCard else RARITY_NAME_COLORS.get(card.rarity, Color.WHITE)
 	)
 
 

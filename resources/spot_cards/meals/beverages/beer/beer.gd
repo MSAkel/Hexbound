@@ -1,39 +1,40 @@
 extends MealCard
 
-## Starts at x1 Mult and gains x0.25 for every neighbouring Dish-tagged Meal.
-## base_production_amount is the starting xMult so production bonuses scale it consistently.
+## +5 Mult, then x1 Mult that gains x0.25 for every earlier trigger this Day. Resets each Day.
 
-const MULT_PER_DISH := 0.25
+const XMULT_PER_TRIGGER := 0.25
+
+var day_trigger_count: int = 0
+var trigger_day: int = -1
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	var factor := _adjacent_dish_xmult(tile)
-	if is_zero_approx(factor):
-		failed_tile_card_text(tile)
+	_sync_day()
+	super._on_activate_tile_card(tile)
+	day_trigger_count += 1
+
+
+func _meal_outputs(_tile: Hex, _preview: bool) -> Dictionary:
+	_sync_day()
+	return {
+		"additive_mult": _get_production_amount(),
+		"multiplicative_mult": 1.0 + XMULT_PER_TRIGGER * float(day_trigger_count),
+	}
+
+
+func capture_placed_save_state() -> Dictionary:
+	_sync_day()
+	return {"day_trigger_count": day_trigger_count, "trigger_day": trigger_day}
+
+
+func apply_placed_save_state(data: Dictionary) -> void:
+	day_trigger_count = int(data.get("day_trigger_count", 0))
+	trigger_day = int(data.get("trigger_day", GameManager.current_round))
+	_sync_day()
+
+
+func _sync_day() -> void:
+	if trigger_day == GameManager.current_round:
 		return
-	multiply_multiplicative_mult(tile, factor)
-	RunLedger.record_dish_plated()
-
-
-func get_board_chip(tile: Hex = null) -> Dictionary:
-	if tile == null:
-		return _multiplicative_mult_board_chip(float(_get_production_amount()) + MULT_PER_DISH)
-	var factor := _adjacent_dish_xmult(tile)
-	if is_zero_approx(factor):
-		return _stat_board_chip()
-	return _multiplicative_mult_board_chip(factor)
-
-
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_cards_by_kind(hover_tile, TAG_DISH, QueryScope.ADJACENT)
-
-
-func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return get_trigger_preview_coords(hover_tile)
-
-
-func _adjacent_dish_xmult(tile: Hex) -> float:
-	var dish_count := _cards_by_kind(tile, TAG_DISH, QueryScope.ADJACENT).size()
-	if dish_count <= 0:
-		return 0.0
-	return float(_get_production_amount()) + MULT_PER_DISH * float(dish_count)
+	trigger_day = GameManager.current_round
+	day_trigger_count = 0

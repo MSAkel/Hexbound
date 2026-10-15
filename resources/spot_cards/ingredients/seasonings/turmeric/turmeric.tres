@@ -1,15 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://6vhls8qf0vdi"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://6vhls8qf0vdi"]
 
-[ext_resource type="Texture2D" uid="uid://m6ty3kui7xmg" path="res://assets/icons/food/ingredients/seasonings/turmeric.png" id="1_63li6"]
-[ext_resource type="Script" uid="uid://lu1p74t5mvpf" path="res://resources/spot_cards/ingredients/seasonings/turmeric/turmeric.gd" id="1_gr7nr"]
+[ext_resource type="Texture2D" uid="uid://m6ty3kui7xmg" path="res://assets/icons/food/ingredients/seasonings/turmeric.png" id="1_icon"]
+[ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
-script = ExtResource("1_gr7nr")
-base_production_amount = 1
-product = 2
+script = ExtResource("2_script")
+base_production_amount = 15
+product = 1
 ingredient_tags = Array[StringName]([&"seasoning"])
+starting_hand_eligible = true
 id = "turmeric"
 name = "Turmeric"
-icon = ExtResource("1_63li6")
-description = "+1 {mult} for every used Condiment this run"
+icon = ExtResource("1_icon")
+description = "+15 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

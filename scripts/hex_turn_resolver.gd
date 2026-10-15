@@ -51,7 +51,6 @@ func resolve_turn() -> void:
 	aborted_retrigger_storm = false
 	AudioManager.reset_card_trigger_chops()
 
-	TileCard.clear_copied_activation_stack()
 	_resolving_staff_trigger = false
 	pending_trigger_queue.clear()
 	_clear_trigger_link_sessions()
@@ -75,11 +74,11 @@ func resolve_turn() -> void:
 			continue
 
 		await _resolve_rune_activation(tile)
+		await _wait_for_station_choices()
 		await _wait_between_tile_activations()
 		await _mark_segment_resolved_if_natural_pass_done(tile)
 
 	if GameManager.skip_presentation:
-		map._clear_segment_sealed_look()
 		EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 	else:
 		_play_segment_turn_result_reveals()
@@ -90,6 +89,12 @@ func resolve_turn() -> void:
 	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
 	map._emit_segment_turn_completed_snapshot()
 	await GameManager.finish_turn_processing()
+
+
+## A served Meal can push a station to level 3. The Hour pauses until every pick is made.
+func _wait_for_station_choices() -> void:
+	while StationManager.has_pending_choice():
+		await StationManager.choice_resolved
 
 
 ## The staff member linked to this station acts before its first spot fires.
@@ -280,8 +285,7 @@ func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> void:
 			return
 	if not map.mark_segment_resolved(segment_index):
 		return
-	await map.wait_for_segment_seal(segment_index)
-	await _reveal_segment_score_after_seal(segment_index)
+	await _reveal_hour_score_after_last_station(segment_index)
 
 
 func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
@@ -324,12 +328,11 @@ func _sum_segment_contributions() -> int:
 
 ## Plays the end-of-turn reveal for each segment that produced score, multiplier, or gold this turn.
 func _play_segment_turn_result_reveals() -> void:
-	map._clear_segment_sealed_look()
 	EventBus.segment_reveals_finished.emit(_sum_segment_contributions())
 
 
 ## Updates the hour Rating row after the last station finishes firing.
-func _reveal_segment_score_after_seal(segment_index: int) -> void:
+func _reveal_hour_score_after_last_station(segment_index: int) -> void:
 	if GameManager.skip_presentation:
 		return
 	if segment_index != map.get_segment_count() - 1:

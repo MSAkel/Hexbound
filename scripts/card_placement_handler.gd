@@ -28,15 +28,13 @@ var _is_placing := false
 var _rune_preview: CardIconUI
 # Faded copy snapped to the hex the dragged rune would land on.
 var _tile_landing_preview: CardIconUI
-# Tiles temporarily marked invalid while placing a restricted rune card.
+# Tiles temporarily marked invalid while a card is held.
 var _restricted_invalid_coords: Array[Vector2i] = []
 # Tiles currently showing trigger-effect preview highlights.
 var _effect_preview_coords: Array[Vector2i] = []
-# Prefix seats whose cards will count toward a dish's plated output.
+# Station seats whose cards count toward a Meal's requirements or output.
 var _effect_preview_gold_coords: Array[Vector2i] = []
-# Occupied prefix seats dimmed because their tags are not in the hovered dish recipe.
-var _effect_preview_invalid_coords: Array[Vector2i] = []
-# Valid placement tiles highlighted for first, last, or edge restrictions.
+# Valid placement tiles highlighted while a card is held. Meals light Meal slots, others the rest.
 var _valid_restriction_coords: Array[Vector2i] = []
 # Legal hex whose landing preview and effect highlights are showing, or NO_CELL.
 var _previewed_cell := NO_CELL
@@ -354,6 +352,8 @@ func _animate_ghost_snap_into_hex(hex: Hex) -> void:
 
 
 func _placement_failure_message(hex: Hex) -> String:
+	if StationManager.is_meal_slot_locked(hex.coordinates):
+		return "Unlocks at %s Lv %d" % [GameTerms.STATION, StationManager.MEAL_SLOT_UNLOCK_LEVEL]
 	if hex.is_placement_blocked():
 		return "%s locked" % GameTerms.SPOT
 	var tile_card := _get_selected_tile_card()
@@ -362,20 +362,14 @@ func _placement_failure_message(hex: Hex) -> String:
 	if hex.active_tile_card != null:
 		return ""
 	if not tile_card.can_place_on_tile(hex):
-		return _placement_restriction_message(tile_card)
+		return _meal_slot_rule_message(tile_card)
 	return "Can't place here"
 
 
-func _placement_restriction_message(tile_card: TileCard) -> String:
-	match tile_card.placement_restriction:
-		TileCard.PlacementRestriction.EDGE_TILE:
-			return "Must be an edge %s" % GameTerms.SPOT.to_lower()
-		TileCard.PlacementRestriction.SEGMENT_FIRST_TILE:
-			return "Must be the first %s in the %s" % [GameTerms.SPOT.to_lower(), GameTerms.STATION.to_lower()]
-		TileCard.PlacementRestriction.SEGMENT_LAST_TILE:
-			return "Must be the last %s in the %s" % [GameTerms.SPOT.to_lower(), GameTerms.STATION.to_lower()]
-		_:
-			return "Can't place here"
+func _meal_slot_rule_message(tile_card: TileCard) -> String:
+	if tile_card.type == TileCard.TileCardType.MEAL:
+		return "%ss go in the last two %ss" % [GameTerms.MEAL, GameTerms.SPOT.to_lower()]
+	return "%ss only" % GameTerms.MEAL_SLOT
 
 
 func _show_placement_failed_feedback(hex: Hex, message: String) -> void:
@@ -387,6 +381,8 @@ func _show_placement_failed_feedback(hex: Hex, message: String) -> void:
 	else:
 		world_pos = tile_map.get_global_mouse_position()
 	tile_map.create_floating_text(world_pos, message, Color(1.0, 0.45, 0.45, 1.0))
+	if not GameManager.skip_presentation:
+		AudioManager.play_sfx(UISounds.CLICK)
 
 #endregion
 
@@ -647,13 +643,10 @@ func _clear_valid_restriction_highlights() -> void:
 
 func _clear_hover_highlights() -> void:
 	var gold := _effect_preview_gold_coords.duplicate()
-	var invalid := _effect_preview_invalid_coords.duplicate()
 	_clear_rune_highlights_at(_effect_preview_coords)
 	_effect_preview_coords.clear()
 	_effect_preview_gold_coords.clear()
-	_effect_preview_invalid_coords.clear()
 	tile_map.clear_dish_recipe_gold_highlights_at(gold)
-	tile_map.clear_dish_recipe_invalid_highlights_at(invalid)
 
 
 func _clear_rune_highlights_at(coords_list: Array[Vector2i]) -> void:
@@ -685,12 +678,12 @@ func _stamp_effect_preview_highlight(coords: Vector2i) -> void:
 	)
 
 
-# Disables invalid tiles and highlights valid ones for runes with placement restrictions.
+# Disables invalid tiles and highlights valid ones. Meals only fit Meal slots, everything else the rest.
 func _update_placement_overlays() -> void:
 	_clear_placement_overlays()
 	
 	var tile_card := _get_selected_tile_card()
-	if tile_card == null or not tile_card.has_placement_restriction():
+	if tile_card == null:
 		return
 	
 	for coords: Vector2i in tile_map.map_data:
@@ -722,7 +715,6 @@ func _update_hover_highlights(hover_hex: Hex) -> void:
 	
 	var placement_coords := hover_hex.coordinates
 	var counted_coords := tile_card.get_trigger_preview_gold_coords(hover_hex)
-	var invalid_coords := tile_card.get_trigger_preview_invalid_coords(hover_hex)
 	for coords: Vector2i in tile_card.get_trigger_preview_coords(hover_hex):
 		if not tile_map.is_in_map(coords):
 			continue
@@ -731,10 +723,6 @@ func _update_hover_highlights(hover_hex: Hex) -> void:
 		if coords in counted_coords:
 			tile_map.stamp_dish_recipe_gold_highlight(coords)
 			_effect_preview_gold_coords.append(coords)
-			continue
-		if coords in invalid_coords:
-			tile_map.stamp_dish_recipe_invalid_highlight(coords)
-			_effect_preview_invalid_coords.append(coords)
 			continue
 		_stamp_effect_preview_highlight(coords)
 		_effect_preview_coords.append(coords)

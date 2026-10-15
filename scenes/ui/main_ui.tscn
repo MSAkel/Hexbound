@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://c8sellpanel01" path="res://scenes/ui/sell_panel/card_sell_panel.tscn" id="22_sell_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/end_day_button/end_day_button.tscn" id="23_end_day"]
 [ext_resource type="PackedScene" path="res://scenes/ui/staff/staff_rail.tscn" id="24_staff_rail"]
+[ext_resource type="PackedScene" path="res://scenes/ui/station_upgrade_choice/station_upgrade_choice.tscn" id="25_station_choice"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")
@@ -45,6 +46,9 @@ rotation = 0.0016232448
 [node name="EndDayButton" parent="." unique_id=2011836714 instance=ExtResource("23_end_day")]
 
 [node name="CardSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
+visible = false
+
+[node name="StationUpgradeChoice" parent="." instance=ExtResource("25_station_choice")]
 visible = false
 
 [node name="TerrainTileUI" parent="." unique_id=289089864 instance=ExtResource("2_l8t6x")]

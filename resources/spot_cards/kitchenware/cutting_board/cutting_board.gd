@@ -1,12 +1,12 @@
 extends TileCard
-## Adds a random common card to your hand. Spoils after 3 fires
+## Adds a random Ingredient to your hand. Spoils after 3 triggers.
 
 const MAX_TRIGGERS := 3
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
 	activation_count += 1
-	_add_random_common_tile_card_to_hand(tile)
+	_add_random_ingredient_to_hand(tile)
 
 	if activation_count >= MAX_TRIGGERS:
 		_destroy_placed_tile_card(tile, self)
@@ -31,20 +31,13 @@ func apply_placed_save_state(data: Dictionary) -> void:
 	activation_count = int(data.get("activation_count", 0))
 
 
-func _add_random_common_tile_card_to_hand(tile: Hex) -> void:
-	# Omit this template so the board cannot replicate itself.
-	var pool: Array[TileCard] = []
-	for template: TileCard in GameManager.tile_cards_pool:
-		if template.id != id:
-			pool.append(template)
-
+func _add_random_ingredient_to_hand(tile: Hex) -> void:
 	var drafted := CardLoot.draw_filtered(
 		1,
-		pool,
-		Card.Rarity.COMMON,
+		GameManager.tile_cards_pool,
+		TileCardType.INGREDIENT,
 		null,
 		true,
-		null,
 		RunRng.create_card_effect_rng(tile, self, "replicate")
 	)
 	if drafted.is_empty():

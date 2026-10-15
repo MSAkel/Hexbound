@@ -4,11 +4,14 @@ extends Node
 ## Tile inspect panel, occupied-card overlay, and hover process gating for HexTileMap.
 
 const TILE_PANEL_HOVER_DELAY := 0.4
+const LOCKED_MEAL_SLOT_TOOLTIP := "Requires station level %d"
 
 var map: HexTileMap
 var _tile_panel_hover_coords: Vector2i = Vector2i(-1, -1)
 var _occupied_icon_hover_coords: Vector2i = Vector2i(-1, -1)
 var _tile_panel_timer: Timer
+# Locked Meal slot whose tooltip is showing, or (-1, -1).
+var _locked_tooltip_coords: Vector2i = Vector2i(-1, -1)
 
 
 func setup(tile_map: HexTileMap) -> void:
@@ -33,8 +36,13 @@ func _process(_delta: float) -> void:
 ## Start or refresh hover feedback for the tile under the cursor.
 ## immediate skips the hover delay. Placement drag uses this on occupied tiles.
 func update_tile_panel_hover(map_coords: Vector2i, immediate: bool = false) -> void:
+	if map.is_in_map(map_coords) and StationManager.is_meal_slot_locked(map_coords):
+		_hide_card_panel()
+		_show_locked_slot_tooltip(map_coords)
+		return
+	_hide_locked_slot_tooltip()
 	if not map.is_in_map(map_coords) or not map.is_tile_interactable(map_coords):
-		hide_tile_panel()
+		_hide_card_panel()
 		return
 
 	var hex: Hex = map.map_data[map_coords]
@@ -66,6 +74,11 @@ func update_tile_panel_hover(map_coords: Vector2i, immediate: bool = false) -> v
 
 
 func hide_tile_panel() -> void:
+	_hide_locked_slot_tooltip()
+	_hide_card_panel()
+
+
+func _hide_card_panel() -> void:
 	_tile_panel_hover_coords = Vector2i(-1, -1)
 	_clear_occupied_icon_hover()
 	_tile_panel_timer.stop()
@@ -87,6 +100,21 @@ func refresh_current_hover() -> void:
 	_update_occupied_inspect_overlay(hex)
 	if map.tile_panel.visible:
 		map.tile_panel.set_hex(hex, map._get_tile_screen_rect(_tile_panel_hover_coords))
+
+
+func _show_locked_slot_tooltip(coords: Vector2i) -> void:
+	if coords == _locked_tooltip_coords:
+		return
+	_locked_tooltip_coords = coords
+	var text := LOCKED_MEAL_SLOT_TOOLTIP % StationManager.MEAL_SLOT_UNLOCK_LEVEL
+	EventBus.toggle_tooltip.emit(true, text, map._get_tile_screen_rect(coords))
+
+
+func _hide_locked_slot_tooltip() -> void:
+	if _locked_tooltip_coords == Vector2i(-1, -1):
+		return
+	_locked_tooltip_coords = Vector2i(-1, -1)
+	EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 
 func _set_panel_process(enabled: bool) -> void:
@@ -124,7 +152,6 @@ func _update_occupied_inspect_overlay(hex: Hex) -> void:
 	var origin := hex.coordinates
 	var tile_card := hex.active_tile_card
 	var counted_coords := tile_card.get_trigger_preview_gold_coords(hex)
-	var invalid_coords := tile_card.get_trigger_preview_invalid_coords(hex)
 	for coords: Vector2i in tile_card.get_trigger_preview_coords(hex):
 		if not map.is_in_map(coords):
 			continue
@@ -133,10 +160,6 @@ func _update_occupied_inspect_overlay(hex: Hex) -> void:
 		if coords in counted_coords:
 			map.stamp_dish_recipe_gold_highlight(coords)
 			map._inspect_gold_highlight_coords.append(coords)
-			continue
-		if coords in invalid_coords:
-			map.stamp_dish_recipe_invalid_highlight(coords)
-			map._inspect_invalid_highlight_coords.append(coords)
 			continue
 		map.card_highlight_overlay_layer.set_cell(
 			coords,
@@ -154,8 +177,6 @@ func _clear_occupied_inspect_overlay() -> void:
 	map._inspect_highlight_coords.clear()
 	map.clear_dish_recipe_gold_highlights_at(map._inspect_gold_highlight_coords)
 	map._inspect_gold_highlight_coords.clear()
-	map.clear_dish_recipe_invalid_highlights_at(map._inspect_invalid_highlight_coords)
-	map._inspect_invalid_highlight_coords.clear()
 
 
 func _set_occupied_icon_hover(map_coords: Vector2i) -> void:

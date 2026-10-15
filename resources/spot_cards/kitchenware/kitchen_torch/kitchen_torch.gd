@@ -1,9 +1,12 @@
 extends TileCard
 
-## Fires the last card of each following station. Must sit on a last station spot.
+## +4 Mult. Garnishes every adjacent Ingredient and Meal.
+
+
 func _on_activate_tile_card(tile: Hex) -> void:
-	_try_queue_tile_card_triggers(tile, _cards_on_later_segment_ends(tile, false))
+	_pay_kitchenware_mult(tile)
+	_garnish_targets(tile, _effect_preview_cards(tile))
 
 
-func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_later_segment_anchors(hover_tile, false)
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	return _get_all_adjacent_tile_cards(tile, [TileCardType.INGREDIENT, TileCardType.MEAL])

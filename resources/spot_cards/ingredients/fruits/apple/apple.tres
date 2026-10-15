@@ -1,16 +1,17 @@
-[gd_resource type="Resource" format=3 uid="uid://cjjswhxmkwj7m"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://cjjswhxmkwj7m"]
 
-[ext_resource type="Texture2D" uid="uid://boieo3tlb502b" path="res://assets/icons/food/ingredients/fruits/apple.png" id="1_amro8"]
-[ext_resource type="Script" uid="uid://dw6yhek0amqm" path="res://resources/spot_cards/ingredients/fruits/apple/apple.gd" id="2_80ooo"]
+[ext_resource type="Texture2D" uid="uid://boieo3tlb502b" path="res://assets/icons/food/ingredients/fruits/apple.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/shared/garnished_when_adjacent.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_80ooo")
-base_production_amount = 16
+script = ExtResource("2_script")
+neighbour_kind = &"kitchenware"
+base_production_amount = 10
 product = 1
 ingredient_tags = Array[StringName]([&"fruit"])
 starting_hand_eligible = true
 id = "apple"
 name = "Apple"
-icon = ExtResource("1_amro8")
-description = "+26 {flavour} if a {following} adjacent spot is empty. Otherwise +16"
+icon = ExtResource("1_icon")
+description = "+10 {flavour}. {garnished} if next to a Kitchenware."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MealCard" format=3 uid="uid://dbrbhtm421ndy"]
+
+[ext_resource type="Texture2D" uid="uid://b3vj6x8ncfhlh" path="res://assets/icons/food/meals/dishes/steak_dinner.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/meals/dishes/grilled_steak/grilled_steak.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+recipe_protein_count = 1
+recipe_seasoning_count = 1
+base_production_amount = 80
+type = 2
+product = 1
+ingredient_tags = Array[StringName]([&"dish"])
+id = "grilled_steak"
+name = "Grilled Steak"
+icon = ExtResource("1_icon")
+description = "+80 {flavour}. Doubled if a Beverage is served on its {station}."
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

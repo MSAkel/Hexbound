@@ -1,16 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://bwdxe1r2whlf3"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://bwdxe1r2whlf3"]
 
-[ext_resource type="Texture2D" uid="uid://cpfwml48gl3bq" path="res://assets/icons/food/ingredients/fruits/olive.png" id="1_y3d8o"]
-[ext_resource type="Script" uid="uid://cybi4hdr06lkl" path="res://resources/spot_cards/ingredients/fruits/olive/olive.gd" id="2_jxmjy"]
+[ext_resource type="Texture2D" uid="uid://cpfwml48gl3bq" path="res://assets/icons/food/ingredients/fruits/olive.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/ingredients/fruits/olive/olive.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_jxmjy")
-base_production_amount = 10
-rarity = 1
+script = ExtResource("2_script")
+base_production_amount = 15
 product = 1
 ingredient_tags = Array[StringName]([&"fruit"])
+starting_hand_eligible = true
 id = "olive"
 name = "Olive"
-icon = ExtResource("1_y3d8o")
-description = "+10 {flavour} then +10 each time this card {triggers} this hour"
+icon = ExtResource("1_icon")
+description = "+15 {flavour}. +10 {flavour} for each time it already {triggered} this Hour."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

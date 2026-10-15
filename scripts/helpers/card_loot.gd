@@ -1,9 +1,10 @@
 class_name CardLoot
 extends RefCounted
 
-# Shared rarity-weighted rune drafting for merchant, selection packs, and future rewards.
+## Shared drafting for the card pick, merchant, events and card effects.
+## Spot cards have no rarity, so every draw is uniform. Staff still roll a rarity bucket first.
 
-# Chance to roll each rarity when drafting (must sum to 100).
+# Chance to roll each staff rarity (must sum to 100).
 const RARITY_WEIGHTS := {
 	Card.Rarity.COMMON: 55.0,
 	Card.Rarity.UNCOMMON: 35.0,
@@ -16,7 +17,7 @@ const RARITY_ROLL_ORDER: Array[Card.Rarity] = [
 ]
 
 
-# Roll one rarity using RARITY_WEIGHTS (or a custom weight table).
+## Roll one staff rarity using RARITY_WEIGHTS (or a custom weight table).
 static func roll_rarity(
 	weights: Dictionary = RARITY_WEIGHTS,
 	rng: RandomNumberGenerator = null
@@ -35,26 +36,57 @@ static func roll_rarity(
 		if roll <= cumulative:
 			return rarity
 
-	# Floating-point edge case: land on the last declared rarity.
+	# Floating-point edge case.
 	return Card.Rarity.COMMON
 
 
-# Keep runes that match optional rarity, type, and product filters.
-static func _filter_runes(
-	pool: Array[TileCard],
-	rarity: Variant,
-	rune_type: Variant,
-	product: Variant = null
+## Draw `count` spot cards uniformly from pool (the whole pool when empty).
+## Pass rng to isolate this draft from gameplay rolls. Same rng seed always yields the same ids.
+static func card_draw(
+	count: int,
+	pool: Array[TileCard] = [],
+	unique: bool = true,
+	rng: RandomNumberGenerator = null
 ) -> Array[TileCard]:
+	return draw_filtered(count, pool, null, null, unique, rng)
+
+
+## Uniform draw, optionally filtered by card type and/or product.
+static func draw_filtered(
+	count: int,
+	pool: Array[TileCard] = [],
+	card_type: Variant = null,
+	product: Variant = null,
+	unique: bool = true,
+	rng: RandomNumberGenerator = null
+) -> Array[TileCard]:
+	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
+	var available := _sorted_by_id(_filter_cards(source_pool, card_type, product))
+	var result: Array[TileCard] = []
+
+	if available.is_empty():
+		return result
+
+	if unique:
+		_shuffle_array(available, rng)
+		for i in mini(count, available.size()):
+			result.append(available[i].duplicate(true))
+		return result
+
+	# With replacement: each pick is independent.
+	for _i in count:
+		result.append(available[_randi_range(rng, 0, available.size() - 1)].duplicate(true))
+	return result
+
+
+static func _filter_cards(pool: Array[TileCard], card_type: Variant, product: Variant) -> Array[TileCard]:
 	var filtered: Array[TileCard] = []
-	for rune in pool:
-		if rarity != null and rune.rarity != rarity:
+	for card in pool:
+		if card_type != null and card.type != card_type:
 			continue
-		if rune_type != null and rune.type != rune_type:
+		if product != null and card.product != product:
 			continue
-		if product != null and rune.product != product:
-			continue
-		filtered.append(rune)
+		filtered.append(card)
 	return filtered
 
 
@@ -86,75 +118,3 @@ static func _shuffle_array(array: Array, rng: RandomNumberGenerator) -> void:
 		var temp: Variant = array[index]
 		array[index] = array[swap_index]
 		array[swap_index] = temp
-
-
-## Picks one rune from a pool that is already in a stable order. Callers sort first.
-static func _pick_from(pool: Array[TileCard], rng: RandomNumberGenerator) -> TileCard:
-	if pool.is_empty():
-		return null
-	return pool[_randi_range(rng, 0, pool.size() - 1)]
-
-
-# Draw `count` runes with rarity weights. Each slot rolls rarity, then picks from that bucket.
-# Falls back to any remaining rune when the rolled rarity has no candidates left.
-# Pass rng to isolate this draft from gameplay rolls. Same rng seed always yields the same ids.
-static func card_draw(
-	count: int,
-	pool: Array[TileCard] = [],
-	unique: bool = true,
-	rng: RandomNumberGenerator = null
-) -> Array[TileCard]:
-	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
-	var available := _sorted_by_id(source_pool)
-	var result: Array[TileCard] = []
-
-	for _i in count:
-		if available.is_empty():
-			break
-
-		var rarity := roll_rarity(RARITY_WEIGHTS, rng)
-		var candidates := _filter_runes(available, rarity, null)
-		var picked: TileCard = (
-			_pick_from(candidates, rng)
-			if not candidates.is_empty()
-			else _pick_from(available, rng)
-		)
-		if picked == null:
-			break
-
-		result.append(picked.duplicate(true))
-		if unique:
-			available.erase(picked)
-
-	return result
-
-
-# Draw without rarity weights, optionally filter by rarity, type, and/or product.
-static func draw_filtered(
-	count: int,
-	pool: Array[TileCard] = [],
-	rarity: Variant = null,
-	rune_type: Variant = null,
-	unique: bool = true,
-	product: Variant = null,
-	rng: RandomNumberGenerator = null
-) -> Array[TileCard]:
-	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
-	var available := _sorted_by_id(_filter_runes(source_pool, rarity, rune_type, product))
-	var result: Array[TileCard] = []
-
-	if available.is_empty():
-		return result
-
-	if unique:
-		_shuffle_array(available, rng)
-		for i in mini(count, available.size()):
-			result.append(available[i].duplicate(true))
-		return result
-
-	# With replacement: each pick is independent.
-	for _i in count:
-		var picked := _pick_from(available, rng)
-		if picked != null:
-			result.append(picked.duplicate(true))
-	return result

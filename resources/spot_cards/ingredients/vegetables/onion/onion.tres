@@ -1,16 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://dskdu8u1s1nwp"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://dskdu8u1s1nwp"]
 
-[ext_resource type="Texture2D" uid="uid://bsoo5xc63kl3k" path="res://assets/icons/food/ingredients/vegetables/onion.png" id="1_inhd7"]
-[ext_resource type="Script" uid="uid://yo6oprbyr4t" path="res://resources/spot_cards/ingredients/vegetables/onion/onion.gd" id="2_r6li0"]
+[ext_resource type="Texture2D" uid="uid://bsoo5xc63kl3k" path="res://assets/icons/food/ingredients/vegetables/onion.png" id="1_icon"]
+[ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_r6li0")
+script = ExtResource("2_script")
 base_production_amount = 10
 product = 1
 ingredient_tags = Array[StringName]([&"vegetable"])
+starting_hand_eligible = true
 id = "onion"
-name = "Onions"
-icon = ExtResource("1_inhd7")
-description = "+10 {flavour} per other {station} with no card"
-rarity = 2
+name = "Onion"
+icon = ExtResource("1_icon")
+description = "+10 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

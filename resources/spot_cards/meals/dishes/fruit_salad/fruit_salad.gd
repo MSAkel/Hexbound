@@ -1,39 +1,16 @@
 extends MealCard
 
-## Gains x0.5 Mult for every adjacent fruit. That x is multiplicative_mult, not additive +Mult.
-## base_production_amount is the starting xMult. Each adjacent fruit adds x0.5 on top.
+## Starts at x1 Mult and gains x0.5 for every Fruit on its station.
 
-const MULT_PER_FRUIT := 0.5
-
-
-func _on_activate_tile_card(tile: Hex) -> void:
-	var factor := _adjacent_fruit_xmult(tile)
-	if is_zero_approx(factor):
-		failed_tile_card_text(tile)
-		return
-	multiply_multiplicative_mult(tile, factor)
-	RunLedger.record_dish_plated()
+const XMULT_PER_FRUIT := 0.5
 
 
-func get_board_chip(tile: Hex = null) -> Dictionary:
+func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
+	var fruit_count := _count_station_cards_by_kind(tile, TAG_FRUIT)
 	if tile == null:
-		return _multiplicative_mult_board_chip(float(_get_production_amount()) + MULT_PER_FRUIT)
-	var factor := _adjacent_fruit_xmult(tile)
-	if is_zero_approx(factor):
-		return _stat_board_chip()
-	return _multiplicative_mult_board_chip(factor)
+		fruit_count = 1
+	return {"multiplicative_mult": 1.0 + XMULT_PER_FRUIT * float(fruit_count)}
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return _coords_for_cards_by_kind(hover_tile, TAG_FRUIT, QueryScope.ADJACENT)
-
-
-func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
-	return get_trigger_preview_coords(hover_tile)
-
-
-func _adjacent_fruit_xmult(tile: Hex) -> float:
-	var fruit_count := _cards_by_kind(tile, TAG_FRUIT, QueryScope.ADJACENT).size()
-	if fruit_count <= 0:
-		return 0.0
-	return float(_get_production_amount()) + MULT_PER_FRUIT * float(fruit_count)
+	return _coords_for_cards_by_kind(hover_tile, TAG_FRUIT, QueryScope.SAME_SEGMENT)

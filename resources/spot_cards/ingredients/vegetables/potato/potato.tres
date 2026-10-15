@@ -1,15 +1,16 @@
-[gd_resource type="Resource" format=3 uid="uid://brqdab64npg1y"]
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://brqdab64npg1y"]
 
-[ext_resource type="Texture2D" uid="uid://bkcow7w4587sb" path="res://assets/icons/food/ingredients/vegetables/potato.png" id="1_3okqf"]
-[ext_resource type="Script" uid="uid://bk3vdj2f2jrpd" path="res://resources/spot_cards/ingredients/vegetables/potato/potato.gd" id="2_tslg8"]
+[ext_resource type="Texture2D" uid="uid://bkcow7w4587sb" path="res://assets/icons/food/ingredients/vegetables/potato.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/spot_cards/ingredients/vegetables/potato/potato.gd" id="2_script"]
 
 [resource]
-script = ExtResource("2_tslg8")
+script = ExtResource("2_script")
+base_production_amount = 15
 product = 1
 ingredient_tags = Array[StringName]([&"vegetable"])
+starting_hand_eligible = true
 id = "potato"
 name = "Potato"
-icon = ExtResource("1_3okqf")
-description = "+3 {flavour} per empty spot in this {station}, up to 30"
-rarity = 1
+icon = ExtResource("1_icon")
+description = "+15 {flavour}. +5 {flavour} for each different kind of adjacent Ingredient."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

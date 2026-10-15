@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://cmhitn3d5i88l"]
 
 [ext_resource type="Script" uid="uid://puk4cteawq6c" path="res://scenes/ui/victory_screen/victory_screen.gd" id="1_victory"]
-[ext_resource type="PackedScene" uid="uid://8hhnfskxknfc" path="res://scenes/ui/layout_xp_bar/layout_xp_bar.tscn" id="2_xpbar"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_background"]
 bg_color = Color(0.13, 0.53, 0.44, 0.22)
@@ -80,13 +79,8 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.96, 0.91, 1)
 theme_override_font_sizes/font_size = 24
-text = "Layout"
+text = "Chef"
 horizontal_alignment = 1
-
-[node name="LayoutXpBar" parent="RunStatsPanel/VBoxContainer" unique_id=863797301 instance=ExtResource("2_xpbar")]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 0
 
 [node name="HighestScoreLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=638694898]
 layout_mode = 2

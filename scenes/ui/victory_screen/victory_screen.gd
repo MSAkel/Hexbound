@@ -2,7 +2,6 @@ extends Control
 
 @onready var run_stats_panel: PanelContainer = $RunStatsPanel
 @onready var played_as_label: Label = $RunStatsPanel/VBoxContainer/PlayedAsLabel
-@onready var layout_xp_bar: LayoutXpBar = %LayoutXpBar
 @onready var highest_score_value: Label = $RunStatsPanel/VBoxContainer/HighestScoreValue
 @onready var round_value: Label = $RunStatsPanel/VBoxContainer/RoundValue
 @onready var gold_earned_value: Label = $RunStatsPanel/VBoxContainer/GoldEarnedValue
@@ -32,14 +31,6 @@ func _on_all_events_completed() -> void:
 	_play_entrance_animation()
 	# Archive while the live board still exists. Idempotent if Main Menu also archives.
 	RunHistoryManager.archive_finished_run(true)
-	# Victory XP is committed when leaving to the menu. Preview the grant here.
-	var from_xp := 0
-	if GameManager.selected_chef != null:
-		from_xp = MetaProgressionManager.get_layout_xp(GameManager.selected_chef.id)
-	var xp_gain := MetaProgressionManager.get_layout_xp_gain_from_snapshot(
-		GameManager.build_run_snapshot(true)
-	)
-	layout_xp_bar.play_gain(from_xp, xp_gain, 0.65)
 	# Deferred so the entrance tween has claimed the panel before focus lands.
 	call_deferred("_focus_continue")
 

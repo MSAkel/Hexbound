@@ -1,13 +1,13 @@
 class_name StaffRail
 extends Control
 
-## Staff column fixed to the left edge of the screen. One hex per station, top to bottom,
-## staggered like the rows of the pass.
+## Staff column left of the pass. One hex per station, sized like a spot and seated on its
+## station's row, staggered like the rows of the pass.
 ## Drag a staff member onto another hex to move or swap it, or onto the Sell panel to sell it.
 ## Sits above the merchant in the tree so staff stay usable while the shop is open.
 
 const SLOT_SCENE := preload("res://scenes/ui/staff/staff_slot.tscn")
-# Same on-screen size and spacing as a spot on the pass.
+# Fallback size when no board is present. With a board, slots copy the on-screen spot size.
 const SLOT_SIZE := Vector2(130, 151)
 const SLOT_GAP := 10.0
 # Gap between the column and the left edge of the screen.
@@ -104,10 +104,14 @@ func _refresh() -> void:
 
 #region --- Layout ---
 
-## Honeycomb column against the left edge, centered vertically on the pass. Slot 0 is the top hex.
-## Pointy-top hexes interlock, so rows sit three quarters of a hex apart and every
-## other one shifts sideways by half a cell. Even slots sit inward, like the short rows of the pass.
+## One rect per station from the board. Without a board, a honeycomb column against the left edge.
 func _slot_rects() -> Array[Rect2]:
+	if _tile_map != null:
+		var board_rects: Array[Rect2] = []
+		for i in _slots.size():
+			board_rects.append(_tile_map.get_staff_slot_screen_rect(i))
+		if not board_rects.is_empty() and board_rects[0].has_area():
+			return board_rects
 	var viewport_size := get_viewport_rect().size
 	var pitch := SLOT_SIZE.y * 0.75 + SLOT_GAP
 	var stagger := (SLOT_SIZE.x + SLOT_GAP) * 0.5
@@ -137,7 +141,7 @@ func _layout() -> void:
 		_slots[i].position = rects[i].position
 		_slots[i].size = rects[i].size
 		centers.append(rects[i].get_center())
-	_ghost.size = SLOT_SIZE
+	_ghost.size = rects[0].size if not rects.is_empty() else SLOT_SIZE
 	# Bolts and payout text start at the staff member, so the board needs to know where each one is.
 	if _tile_map != null:
 		_tile_map.set_staff_screen_centers(centers)
@@ -354,7 +358,7 @@ func _show_message(index: int, text: String) -> void:
 
 #region --- Controller ---
 
-## Focus moves over the five hexes, plus a Sell target below them while carrying a staff member.
+## Focus moves over the staff hexes, plus a Sell target below them while carrying a staff member.
 func ensure_controller_focus() -> void:
 	_move_controller_focus_to(maxi(_controller_focus, 0))
 

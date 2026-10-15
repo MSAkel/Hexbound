@@ -1,15 +1,12 @@
 extends TileCard
-## +10 Flavour each time this card fires this hour.
+## +10 Flavour for each time this card already triggered this Hour.
 
-func _on_activate_tile_card(tile: Hex) -> void:
-	add_flavour(tile, _get_aftershock_amount())
-
-
-func get_board_chip(_tile: Hex = null) -> Dictionary:
-	return _amount_board_chip(_get_aftershock_amount())
+const PER_EARLIER_TRIGGER := 10.0
 
 
-func _get_aftershock_amount() -> float:
-	# register_tile_card_activation already counted this firing.
-	var activations := GameManager.get_tile_card_activation_count_this_turn(self)
-	return _get_production_amount() * float(maxi(activations, 1))
+func _effect_amount(_tile: Hex) -> float:
+	# register_tile_card_activation already counted the current fire.
+	var earlier := maxi(GameManager.get_tile_card_activation_count_this_turn(self) - 1, 0)
+	if not GameManager.is_processing_turn:
+		earlier = 0
+	return _get_production_amount() + PER_EARLIER_TRIGGER * float(earlier)

@@ -4,9 +4,11 @@ extends RefCounted
 # Shared kitchen board helpers. Ring distances, fire order, and station grouping.
 # Seated-card lookups live on HexBoardQuery. Hour piles live in the scoring region below.
 
-# Shared kitchen board. Five visual rows, 32 hexes, left-to-right fire order.
-const BOARD_ROW_LENGTHS: Array[int] = [6, 7, 6, 7, 6]
+# Shared kitchen board. Four stations of eight hexes, left-to-right fire order.
+const BOARD_ROW_LENGTHS: Array[int] = [8, 8, 8, 8]
 const BOARD_TILE_COUNT := 32
+# The last seats of every station are Meal slots. Slot 0 is open, slot 1 unlocks with station level.
+const MEAL_SLOTS_PER_STATION := 2
 # Offset origin so every generated cell stays in non-negative tile coords.
 const BOARD_ORIGIN := Vector2i(2, 0)
 
@@ -56,7 +58,7 @@ func setup(map: Node) -> void:
 	_map = map
 
 
-## Walks Godot hex neighbors to build the shared 6-7-6-7-6 rectangle.
+## Walks Godot hex neighbors to build the shared 8-wide block. Equal rows zigzag so they stay stacked.
 static func compute_board_cells(base_layer: TileMapLayer, origin: Vector2i = BOARD_ORIGIN) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	var row_start := origin
@@ -71,7 +73,8 @@ static func compute_board_cells(base_layer: TileMapLayer, origin: Vector2i = BOA
 			continue
 		var next_length: int = BOARD_ROW_LENGTHS[row_i + 1]
 		# Longer rows start one hex left-down so they pick up an extra seat.
-		if next_length > length:
+		# Equal rows alternate down-right and down-left so the block does not drift sideways.
+		if next_length > length or (next_length == length and row_i % 2 == 1):
 			row_start = base_layer.get_neighbor_cell(row_start, TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)
 		else:
 			row_start = base_layer.get_neighbor_cell(row_start, TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)
@@ -82,8 +85,13 @@ static func compute_board_cells(base_layer: TileMapLayer, origin: Vector2i = BOA
 static func board_hex_center(cells: Array[Vector2i]) -> Vector2i:
 	if cells.is_empty():
 		return BOARD_ORIGIN
-	# Middle of row 3 (0-based index 2). Rows 0-1 hold 13 tiles, then three more into the 6-wide row.
-	var center_index := mini(15, cells.size() - 1)
+	# Middle of the middle row.
+	var middle_row := BOARD_ROW_LENGTHS.size() / 2
+	var center_index := 0
+	for row_i in middle_row:
+		center_index += BOARD_ROW_LENGTHS[row_i]
+	center_index += (BOARD_ROW_LENGTHS[middle_row] - 1) / 2
+	center_index = mini(center_index, cells.size() - 1)
 	return cells[center_index]
 
 
@@ -184,6 +192,36 @@ func get_segment_size(segment_index: int) -> int:
 	if segment_index < 0 or segment_index >= segments.size():
 		return 0
 	return segments[segment_index].size()
+
+
+## Meal slot index (0 or 1) for coords, or -1 when the seat is a regular tile.
+func get_meal_slot_index(coords: Vector2i) -> int:
+	var segment_index := get_segment_index(coords)
+	if segment_index < 0:
+		return -1
+	var segment: Array = build_segments()[segment_index]
+	var first_meal := segment.size() - MEAL_SLOTS_PER_STATION
+	var index := segment.find(coords)
+	if index < first_meal:
+		return -1
+	return index - first_meal
+
+
+## True when coords is one of the Meal-only seats at the end of its station.
+func is_meal_slot(coords: Vector2i) -> bool:
+	return get_meal_slot_index(coords) >= 0
+
+
+## Meal slot coordinates of a station, in fire order.
+func get_meal_slot_coords(segment_index: int) -> Array[Vector2i]:
+	var coords: Array[Vector2i] = []
+	var segments := build_segments()
+	if segment_index < 0 or segment_index >= segments.size():
+		return coords
+	var segment: Array = segments[segment_index]
+	for i in range(maxi(segment.size() - MEAL_SLOTS_PER_STATION, 0), segment.size()):
+		coords.append(segment[i])
+	return coords
 
 
 ## Station groups. Each station is an ordered list of coordinates.
