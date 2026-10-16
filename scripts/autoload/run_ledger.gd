@@ -1,7 +1,7 @@
 extends Node
 
 ## Queryable tallies for payoff cards and end-of-run displays.
-## Fires by kind/type, dishes plated, card consumes, condiment uses, Pass relays,
+## Fires by kind/type, dishes plated, card consumes, condiment uses,
 ## and permanent growth are run-scoped.
 ## Only retriggers_this_hour resets each Hour. Day-scoped tallies are not stored here.
 ## Gold Day spend lives on EconomyManager. Day rating lives on GameManager round score.
@@ -13,12 +13,9 @@ var fires_by_type: Dictionary = {}
 var dishes_plated: int = 0
 var cards_consumed: int = 0
 var condiments_used: int = 0
-var pass_relays: int = 0
 var retriggers_this_hour: int = 0
 var retriggers_this_run: int = 0
 var permanent_growth_this_run: float = 0.0
-## Station indexes that received at least one Pass this run.
-var _relay_stations: Dictionary = {}
 
 
 func _ready() -> void:
@@ -32,10 +29,8 @@ func reset_for_new_run() -> void:
 	dishes_plated = 0
 	cards_consumed = 0
 	condiments_used = 0
-	pass_relays = 0
 	retriggers_this_run = 0
 	permanent_growth_this_run = 0.0
-	_relay_stations.clear()
 	_reset_hour_counters()
 
 
@@ -47,11 +42,9 @@ func capture_run_state() -> Dictionary:
 		"dishes_plated": dishes_plated,
 		"cards_consumed": cards_consumed,
 		"condiments_used": condiments_used,
-		"pass_relays": pass_relays,
 		"retriggers_this_hour": retriggers_this_hour,
 		"retriggers_this_run": retriggers_this_run,
 		"permanent_growth_this_run": permanent_growth_this_run,
-		"relay_stations": _relay_stations.keys(),
 	}
 
 
@@ -62,15 +55,9 @@ func apply_run_state(state: Dictionary) -> void:
 	dishes_plated = int(state.get("dishes_plated", 0))
 	cards_consumed = int(state.get("cards_consumed", 0))
 	condiments_used = int(state.get("condiments_used", 0))
-	pass_relays = int(state.get("pass_relays", 0))
 	retriggers_this_hour = int(state.get("retriggers_this_hour", 0))
 	retriggers_this_run = int(state.get("retriggers_this_run", 0))
 	permanent_growth_this_run = float(state.get("permanent_growth_this_run", 0.0))
-	_relay_stations.clear()
-	var stations: Variant = state.get("relay_stations", [])
-	if stations is Array:
-		for entry in stations:
-			_relay_stations[int(entry)] = true
 
 
 ## Called from GameManager.register_tile_card_activation after this Hour's count is updated.
@@ -99,13 +86,6 @@ func record_card_consumed(card: TileCard) -> void:
 
 func record_condiment_used() -> void:
 	condiments_used += 1
-
-
-func record_pass_relay(segment_index: int) -> void:
-	pass_relays += 1
-	if segment_index < 0:
-		return
-	_relay_stations[segment_index] = true
 
 
 func _on_turn_started() -> void:

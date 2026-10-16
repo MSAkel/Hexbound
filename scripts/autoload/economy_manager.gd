@@ -8,7 +8,7 @@ extends Node
 ## Starting gold amount is set in diffculty.gd
 const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
-const GOLD_PER_UNUSED_TURN := 1
+const GOLD_PER_UNUSED_TURN := 2
 const STARTING_REROLLS := 3
 
 var _amount: int = 0
@@ -55,9 +55,10 @@ var rerolls_remaining: int:
 
 ## Set starting gold for a new run based on difficulty and notify UI listeners.
 func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
-	_amount = Difficulty.get_starting_gold(difficulty)
+	var base_gold := Difficulty.BASE_STARTING_GOLD
 	if GameManager.chef_speciality != null:
-		_amount += int(GameManager.chef_speciality.extra_starting_gold())
+		base_gold = GameManager.chef_speciality.starting_gold()
+	_amount = maxi(0, base_gold - Difficulty.get_starting_gold_reduction(difficulty))
 	_total_earned_this_run = 0
 	_earned_this_turn = 0
 	_spent_this_round = 0
@@ -96,10 +97,7 @@ func can_afford(cost: int) -> bool:
 
 ## Pays round completion gold and early-finish bonus when the goal is met.
 func apply_round_speed_rewards(skipped_turns: int) -> void:
-	var gourmet_bonus := 0
-	if GameManager.chef_speciality != null:
-		gourmet_bonus = int(GameManager.chef_speciality.extra_day_completion_gold())
-	var base_gold := ROUND_COMPLETION_GOLD + gourmet_bonus
+	var base_gold := ROUND_COMPLETION_GOLD
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns
 	var total_gold := base_gold + early_gold
 	if not EventManager.can_gain_gold():
@@ -148,14 +146,6 @@ func use_reroll() -> bool:
 	_rerolls_remaining -= 1
 	EventBus.rerolls_changed.emit(_rerolls_remaining)
 	return true
-
-
-## Condiment and other bonuses can push the pool above the starting amount.
-func add_rerolls(amount_to_add: int) -> void:
-	if amount_to_add <= 0:
-		return
-	_rerolls_remaining += amount_to_add
-	EventBus.rerolls_changed.emit(_rerolls_remaining)
 
 #endregion
 

@@ -27,7 +27,7 @@ const DIFFICULTY_INFO = {
 	},
 	Level.LEVEL_2: {
 		"name": "Level 3",
-		"info": "start with 0 gold",
+		"info": "Start with 5 less gold",
 	},
 	Level.LEVEL_3: {
 		"name": "Level 4",
@@ -69,8 +69,12 @@ static func get_starting_hand_reduction(level: Level) -> int:
 		return 1
 	return 0
 
-static func get_starting_gold(level: Level) -> int:
-	return 0 if level >= Level.LEVEL_2 else 5
+const BASE_STARTING_GOLD := 5
+
+
+# Gold removed from the run's starting gold (base or chef) for the given difficulty.
+static func get_starting_gold_reduction(level: Level) -> int:
+	return 5 if level >= Level.LEVEL_2 else 0
 
 static func get_merchant_price_multiplier(level: Level) -> float:
 	return 1.2 if level >= Level.LEVEL_3 else 1.0

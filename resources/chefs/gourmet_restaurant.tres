@@ -9,4 +9,4 @@ id = "gourmet_restaurant"
 display_name = "Gourmet Restaurant"
 icon = ExtResource("1_icon")
 speciality_kind = 3
-speciality_description = "Start with +10 Gold. Earn an additional 2 Gold after each day."
+speciality_description = "Start with 20 Gold. Earn an additional 1 Gold per Meal."

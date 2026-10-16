@@ -7,9 +7,9 @@
 script = ExtResource("1_script")
 id = "send_back"
 display_name = "Send Back"
-description = "Return targeted card to hand"
+description = "Return targeted card to hand, one copy per star"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.48, 0.78, 0.62, 1)
-base_price = 5
-effect_type = 17
+base_price = 4
+effect_type = 10
 target_kind = 1

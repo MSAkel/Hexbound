@@ -101,11 +101,22 @@ const ICON_FIRE := FeastStatIcons.FIRE
 
 ## Spot cards have no rarity. Every one costs the same at the merchant.
 const SHOP_PRICE := 4
+## Playing a copy onto the same card merges it up one star. Each star past the first adds this much
+## Flavour, Gold and +Mult scale. xMult is never star-scaled, so starred Mult cards do not compound.
+const MAX_STAR_LEVEL := 5
+const STAR_SCALE_STEP := 0.25
+
+## What playing a hand card onto a hex would do.
+enum Overplay { NONE, PLACE, MERGE, REPLACE }
+## Debug A/B switch for the playtest runner. False keeps cards to empty spots.
+static var overplay_enabled := true
 
 var activation_count: int = 0
 var is_active: bool = true
 # Runtime buffs from other cards, added to the base production amount.
 var bonus_production_amount: float = 0.0
+# Merge level of this placed instance. Scales all output. Hand and shop cards are always 1.
+var star_level: int = 1
 # Activations of this instance during the current run.
 var run_trigger_count: int = 0
 # Garnish stacks persist for the rest of the Hour and multiply every fire.
@@ -124,6 +135,8 @@ var condiment_fuses: Array[Dictionary] = []
 var pending_output_scale: float = 1.0
 # Scales all card output during this activation (Flavour, Gold, and Mult).
 var _activation_output_scale: float = 1.0
+# Star part of _activation_output_scale. Taken back out for xMult.
+var _activation_star_scale: float = 1.0
 # True when this activation had at least one Garnish stack. Checked by cards that pay extra on Garnish.
 var _activation_was_garnished: bool = false
 # Flavour this instance paid with add_flavour this Hour. Dishes read the station snapshot.
@@ -255,7 +268,7 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 	if is_producer_type(type):
 		if product == Product.HYBRID or product == Product.NONE:
 			return _hidden_board_chip()
-		var amount := _effect_amount(tile) * StationManager.output_scale_for(tile, self)
+		var amount := _effect_amount(tile) * StationManager.output_scale_for(tile, self) * star_output_scale()
 		amount += StationManager.flat_flavour_bonus_for(tile, self)
 		if amount <= 0.0:
 			return _hidden_board_chip()
@@ -267,7 +280,7 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 
 func _stat_board_chip() -> Dictionary:
 	if type == TileCardType.KITCHENWARE and base_production_amount > 0:
-		var chip := _amount_board_chip_float(_get_production_amount(), ICON_MULT)
+		var chip := _amount_board_chip_float(_get_production_amount() * star_output_scale(), ICON_MULT)
 		var role_texture := FeastStatIcons.get_support_icon(support_role)
 		if role_texture != null:
 			chip = _compose_board_chip(chip, role_texture)
@@ -370,23 +383,50 @@ func get_shop_price(discount: float = 0.0) -> int:
 	return _apply_merchant_discount(SHOP_PRICE, discount)
 
 
-# Empty spot plus placement restrictions.
+# Empty spot, or an occupied spot to merge into or replace, plus placement restrictions.
 func can_play_on(hex: Hex) -> bool:
-	if hex.is_placement_blocked():
-		return false
-	if hex.active_tile_card != null:
-		return false
-	return can_place_on_tile(hex)
+	return get_overplay(hex) != Overplay.NONE
 
 
 func is_placement_candidate(hex: Hex) -> bool:
 	if hex.is_placement_blocked():
 		return false
-	return hex.active_tile_card == null
+	return overplay_enabled or hex.active_tile_card == null
 
 
+func get_overplay(hex: Hex) -> Overplay:
+	if hex == null or hex.is_placement_blocked() or not can_place_on_tile(hex):
+		return Overplay.NONE
+	var occupant := hex.active_tile_card
+	if occupant == null:
+		return Overplay.PLACE
+	if not overplay_enabled:
+		return Overplay.NONE
+	if occupant.id != id:
+		return Overplay.REPLACE
+	if occupant.star_level < MAX_STAR_LEVEL:
+		return Overplay.MERGE
+	return Overplay.NONE
+
+
+# Empty spot: place. Same card: merge up a star. Different card: destroy the occupant with no refund.
 func play_on(hex: Hex, animate: bool = true) -> void:
-	hex.place_tile_card(self, animate)
+	match get_overplay(hex):
+		Overplay.PLACE:
+			hex.place_tile_card(self, animate)
+		Overplay.MERGE:
+			CondimentBoardEffects.star_up_placed_at(hex)
+		Overplay.REPLACE:
+			CondimentBoardEffects.destroy_placed_at(hex, hex.active_tile_card, false)
+			hex.place_tile_card(self, animate)
+
+
+func star_output_scale() -> float:
+	return 1.0 + STAR_SCALE_STEP * float(star_level - 1)
+
+
+static func star_text(level: int) -> String:
+	return "★%d" % level
 
 
 # Entry point for spot card activation. Mainly called by Hex.apply_tile_card_activation()
@@ -405,6 +445,8 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	if tile.map != null:
 		output_scale *= GameManager.chef_speciality.beverage_output_scale(self)
 		output_scale *= StationManager.output_scale_for(tile, self)
+	_activation_star_scale = star_output_scale()
+	output_scale *= _activation_star_scale
 	if not is_equal_approx(pending_output_scale, 1.0):
 		output_scale *= pending_output_scale
 		pending_output_scale = 1.0
@@ -419,6 +461,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	CondimentManager.after_card_activated(tile, self)
 	StaffManager.after_card_activated(tile, self)
 	_activation_output_scale = 1.0
+	_activation_star_scale = 1.0
 	_activation_was_garnished = false
 
 # Queue extra spot card activations to resolve before fire flow continues.
@@ -487,7 +530,6 @@ func add_flavour(tile: Hex, base_points: Variant) -> void:
 	hour_flavour_produced += points
 	tile.map.add_turn_flavour_for_tile(tile, points)
 	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR, null, _payout_float_is_garnished())
-	CondimentManager.relay_product_if_needed(tile, Product.FLAVOUR, points)
 
 ## Flat station perk Flavour. Never scaled by Garnish. Floats in the station's colour.
 func add_station_bonus_flavour(tile: Hex, points: int, color: Color) -> void:
@@ -502,7 +544,6 @@ func add_gold(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
 	var amount := int(round(float(base_amount) * (_activation_output_scale if scaled else 1.0)))
 	tile.map.add_turn_gold_for_tile(tile, amount)
 	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD, null, _payout_float_is_garnished())
-	CondimentManager.relay_product_if_needed(tile, Product.GOLD, amount)
 
 func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
 	var amount := float(base_amount)
@@ -518,13 +559,12 @@ func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> 
 		null,
 		_payout_float_is_garnished(scaled)
 	)
-	CondimentManager.relay_product_if_needed(tile, Product.MULTIPLIER, amount)
 
 
 func multiply_multiplicative_mult(tile: Hex, factor: Variant, scaled: bool = true) -> void:
 	var amount := float(factor)
 	if scaled:
-		amount *= _activation_output_scale
+		amount *= _activation_output_scale / _activation_star_scale
 	tile.map.multiply_turn_multiplicative_mult_for_tile(tile, amount)
 	_create_floating_text(
 		tile,

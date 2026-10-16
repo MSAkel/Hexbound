@@ -5,11 +5,11 @@
 
 [resource]
 script = ExtResource("1_script")
-id = "upgrade_plate"
-display_name = "Upgrade Plate"
-description = "Transform seated card into a random card of the same type with a higher output"
+id = "gold_leaf"
+display_name = "Gold Leaf"
+description = "Seated card gains +1 star"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.92, 0.72, 0.22, 1)
-base_price = 8
-effect_type = 15
+base_price = 7
+effect_type = 9
 target_kind = 1

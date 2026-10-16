@@ -1,7 +1,7 @@
 class_name StationBadge
 extends PanelContainer
 
-## Station type, level and serving progress, seated in map space left of a station row.
+## Station type, level and serving progress, seated in map space right of a station row.
 ## Hover shows the station's meals served and its active perks.
 
 const BADGE_WIDTH := 132.0

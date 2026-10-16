@@ -170,29 +170,37 @@ func _refresh_merchant_stock() -> void:
 
 
 func _refresh_merchant_cards() -> void:
-	var stream_name: String = RunRng.build_merchant_stream_name(
-		GameManager.current_round,
-		_stock_reroll_count
-	)
-	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	var drafted_runes := CardLoot.card_draw(
-		MERCHANT_TILE_CARD_COUNT,
-		GameManager.tile_cards_pool,
-		true,
-		loot_rng
-	)
 	var inventory: Array[Card] = []
-	for rune in drafted_runes:
+	for rune in draw_tile_card_stock(_stock_reroll_count):
 		inventory.append(rune)
-	for staff in _draw_merchant_staff():
+	for staff in draw_staff_stock(_stock_reroll_count, _owned_staff_ids_at_stock):
 		inventory.append(staff)
 	await _display_merchant_cards(inventory)
 
 
+## Stock rolls are static so the headless playtest bot shops the same shelves.
+static func draw_tile_card_stock(stock_reroll_count: int) -> Array[TileCard]:
+	var stream_name: String = RunRng.build_merchant_stream_name(
+		GameManager.current_round,
+		stock_reroll_count
+	)
+	return CardLoot.card_draw(
+		MERCHANT_TILE_CARD_COUNT,
+		GameManager.tile_cards_pool,
+		true,
+		RunRng.create_rng(stream_name)
+	)
+
+
 ## Staff already owned when the stock is rolled stay off the shelf.
-func _draw_merchant_staff() -> Array[StaffCard]:
-	var stream_name := "merchant_staff:r%d:e%d" % [GameManager.current_round, _stock_reroll_count]
-	return StaffCatalog.draw(MERCHANT_STAFF_COUNT, RunRng.create_rng(stream_name), _owned_staff_ids_at_stock)
+static func draw_staff_stock(stock_reroll_count: int, owned_staff_ids: Array[String]) -> Array[StaffCard]:
+	var stream_name := "merchant_staff:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
+	return StaffCatalog.draw(MERCHANT_STAFF_COUNT, RunRng.create_rng(stream_name), owned_staff_ids)
+
+
+static func draw_condiment_stock(stock_reroll_count: int) -> Array[Condiment]:
+	var stream_name := "merchant_condiments:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
+	return CondimentCatalog.draw_unique(CondimentManager.SHOP_STOCK, RunRng.create_rng(stream_name))
 
 
 ## A restored shop must roll the same staff it showed before, so the owned list is part of the save.
@@ -206,10 +214,7 @@ func _capture_owned_staff_for_stock() -> void:
 
 
 func _refresh_merchant_condiments() -> void:
-	var stream_name := "merchant_condiments:r%d:e%d" % [GameManager.current_round, _stock_reroll_count]
-	var loot_rng := RunRng.create_rng(stream_name)
-	var drawn := CondimentCatalog.draw_unique(CondimentManager.SHOP_STOCK, loot_rng)
-	await _display_merchant_condiments(drawn)
+	await _display_merchant_condiments(draw_condiment_stock(_stock_reroll_count))
 
 
 func _display_merchant_cards(inventory: Array[Card]) -> void:

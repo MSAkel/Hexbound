@@ -23,41 +23,14 @@ static func throw_out(tile: Hex, rng: RandomNumberGenerator) -> bool:
 	return true
 
 
-static func upgrade_plate(tile: Hex, rng: RandomNumberGenerator) -> bool:
-	var target := tile.active_tile_card
-	if target == null:
-		return false
-	# Upgrades to a card of the same type with a higher printed output, so it stays legal on its spot.
-	var replacement := pick_random_placeable(target.type, target.id, rng, target.base_production_amount)
-	if replacement == null:
-		_show_failure(tile)
-		return false
-
-	replace_placed_at(tile, replacement)
-	_show_text(tile, "Upgraded!")
-	return true
-
-
-static func reroll_plate(tile: Hex, rng: RandomNumberGenerator) -> bool:
-	var target := tile.active_tile_card
-	if target == null:
-		return false
-
-	var replacement := pick_random_placeable(target.type, target.id, rng)
-	if replacement == null:
-		_show_failure(tile)
-		return false
-
-	replace_placed_at(tile, replacement)
-	_show_text(tile, "Transformed!")
-	return true
-
-
+## Returns one ★1 copy per star, so a ★3 card comes back as three copies.
 static func send_back(tile: Hex) -> bool:
-	if tile.active_tile_card == null:
+	var target := tile.active_tile_card
+	if target == null:
 		return false
 
-	copy_placed_to_hand(tile.active_tile_card)
+	for _copy in target.star_level:
+		copy_placed_to_hand(target)
 	tile.remove_tile_card()
 	_show_text(tile, "Returned!")
 	return true
@@ -92,58 +65,18 @@ static func copy_placed_to_hand(source_card: TileCard) -> void:
 	hand_copy.activation_count = 0
 	hand_copy.is_garnished = false
 	hand_copy.is_active = true
+	hand_copy.star_level = 1
 	EventBus.tile_card_selected.emit(hand_copy)
 
 
-## Random template of card_type, excluding exclude_id. min_output keeps only cards printing more.
-static func pick_random_placeable(
-	card_type: TileCard.TileCardType,
-	exclude_id: String = "",
-	rng: RandomNumberGenerator = null,
-	min_output: int = -1
-) -> TileCard:
-	var candidates: Array[TileCard] = []
-	for template: TileCard in GameManager.tile_cards_pool:
-		if template.type != card_type:
-			continue
-		if template.base_production_amount <= min_output:
-			continue
-		if not exclude_id.is_empty() and template.id == exclude_id:
-			continue
-		candidates.append(template)
-
-	if candidates.is_empty():
-		return null
-
-	if rng == null:
-		return RunRng.pick_random_tile_card(candidates)
-
-	var sorted := candidates.duplicate()
-	sorted.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-		return a.id < b.id
-	)
-	return RunRng.pick_random_with(rng, sorted) as TileCard
-
-
-static func replace_placed_at(tile: Hex, replacement_template: TileCard) -> void:
-	if tile.active_tile_card == null or replacement_template == null:
+## A duplicate played onto its own card, or Star Up. The seated instance keeps its state and gains a star.
+static func star_up_placed_at(tile: Hex) -> void:
+	var target := tile.active_tile_card
+	if target == null:
 		return
-
-	var old_card := tile.active_tile_card
-	var retained_bonus := old_card.bonus_production_amount
-
-	destroy_placed_at(tile, old_card, false)
-	# A locked second Meal slot refuses new cards. Seat the replacement directly so it keeps the seat.
-	if StationManager.is_meal_slot_locked(tile.coordinates):
-		tile.restore_placed_tile_card(replacement_template.duplicate(true))
-	else:
-		tile.place_tile_card(replacement_template)
-
-	var new_card := tile.active_tile_card
-	if new_card == null:
-		return
-
-	new_card.bonus_production_amount = retained_bonus
+	target.star_level = mini(target.star_level + 1, TileCard.MAX_STAR_LEVEL)
+	tile.refresh_tile_card_visual_state()
+	_show_text(tile, "%s!" % TileCard.star_text(target.star_level), Color(1.0, 0.85, 0.2, 1.0))
 
 
 static func destroy_placed_at(

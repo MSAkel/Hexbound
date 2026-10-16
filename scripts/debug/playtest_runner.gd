@@ -1,81 +1,139 @@
 extends Node
 
-## Headless balance playtest. Instantiates a live hex map, skips presentation,
-## and writes user://playtest_report.json (or playtest_report_<layout>.json).
+## Headless playtests. Plays seeded runs through the real day flow (Hours, leftover Hours,
+## End Day, reward pick, merchant, events) with a bot and writes user://playtest_report.json.
 ##
-## godot --headless --path "E:/Godot/game++" res://scenes/debug/playtest_runner.tscn
-## Restrict to one layout with `-- --layout=surveyor`.
-## Player-only batch: `-- --bot=player --full-count=8` (skips starter/R1 suites).
-## Bug hunt: `-- --bot=chaos` or `-- --fuzz`. Continues after missed goals. Fails on storms and invariants.
-## Human-like run: `-- --layout=surveyor --bot=player --seed=TJU27YGN --no-condiments --repeat=5`
-## Player bot uses condiments, chip placement, and layout plans.
-## Surveyor locks a 6–7 hex line through R5. Columnist locks a 7-hex column through R5.
-## Surveyor then stays on that 7-hex line until full. Columnist rerolls hard through R4.
+## godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
+##   --runs=N          Seeds per chef (default 8). Every chef plays the same seeds.
+##   --chef=<id>       One chef: sous_chef, sommelier or gourmet_restaurant.
+##   --seed=<text>     Play one seed. --repeat=N plays it N times to check determinism.
+##   --difficulty=N    Difficulty level index (default 0).
+##   --power           Days have no goal and always play every Hour. Reports raw score per day.
+##   --fuzz            Chaos bot: random legal actions. Fails on invariants and script errors.
+##   --no-condiments   The bot never buys or drinks condiments.
+##   --no-overplay     Cards only go on empty spots (no merging or replacing). A/B baseline.
+##   --check-sim       Compare full state before and after every what-if Hour.
+##   --verbose         One line per day.
+##   --out=<path>      Report path (default user://playtest_report.json).
+##
+## The human bot previews every option with a what-if Hour (PlaytestSim), so it plays each
+## chef's speciality through the real rules. Compare two reports with
+## scripts/debug/compare_playtest_reports.py and list picks with analyze_pick_report.py.
 
 const HEX_MAP_SCENE := preload("res://scenes/hex_tile_map.tscn")
 const SCRIPT_ERROR_TRACKER := preload("res://scripts/debug/playtest_script_error_tracker.gd")
+const PLAYTEST_SIM := preload("res://scripts/debug/playtest/playtest_sim.gd")
+const HUMAN_POLICY := preload("res://scripts/debug/playtest/human_policy.gd")
+const CHAOS_POLICY := preload("res://scripts/debug/playtest/chaos_policy.gd")
 const REPORT_PATH := "user://playtest_report.json"
 const STARTER_SEED_COUNT := 16
-const R1_BOT_SEED_COUNT := 4
-const FULL_RUN_SEED_COUNT := 4
-const FULL_RUN_TARGET_ROUND := 9
-const MERCHANT_STOCK_COUNT := 3
-## fill: next empty hex in trigger order. stack: pile Energy and Mult on one line.
-## spread: put each new card on the emptiest legal segment.
-## player: commit to the largest line, reroll junk, tokens, Transposition.
-const BOT_IDS: Array[String] = ["fill", "stack", "spread", "player"]
-## Places randomly, prefers retrigger and utility cards, and keeps filling after a missed goal.
-const CHAOS_BOT_ID := "chaos"
-const CHEF_IDS: Array[String] = [
-	"sous_chef",
-	"sommelier",
-	"gourmet_restaurant",
-]
-const SEGMENT_SNAPSHOT_ROUNDS: Array[int] = [3, 6, 9]
-const MERCHANT_BASE_REROLL_COST := 5
-const MAX_MERCHANT_GOLD_REROLLS := 2
-const PACK_KEEP_THRESHOLD := 32.0
-const SHOP_KEEP_THRESHOLD := 32.0
-## Player saves pack rerolls until this round unless the offer cannot be placed at all.
-const PLAYER_PACK_REROLL_ROUND := 4
-## Gold cards stop being worth an engine slot after this round.
-const PLAYER_GOLD_CUTOFF_ROUND := 4
-const SHOP_GOLD_RESERVE := 8
-const MAX_SHOP_BUYS_PER_VISIT := 2
-const CONDIMENT_SHOP_STOCK := 3
-## Cards that often belong off the main engine line.
-const OFF_ENGINE_CARD_IDS: Array[String] = [
-	"wide_ratio",
-	"census_cell",
-	"share_load",
-	"compact_power",
-]
-## Layout-specific segment size priorities for engine selection.
-const LAYOUT_ENGINE_SIZE_PRIORITY: Dictionary = {
-	"sous_chef": [7, 6],
-	"sommelier": [7, 6],
-	"gourmet_restaurant": [7, 6],
-}
-## Player bot keeps one opening engine line through early rounds.
-const ENGINE_LOCK_ROUND := 6
-const ENGINE_SEGMENT_MIN_SIZE := 6
-const ENGINE_SEGMENT_MAX_SIZE := 7
+const DEFAULT_RUN_COUNT := 8
+## Safety stops for a run or Hour that never finishes.
+const MAX_HOURS_PER_RUN := 120
+const MAX_ACTIONS_PER_HOUR := 30
 
-var _map: HexTileMap
+
+## One merchant visit with the same shelves, prices and reroll costs as the Merchant panel.
+class MerchantVisit:
+	extends RefCounted
+
+	var cards: Array[TileCard] = []
+	var staff: Array[StaffCard] = []
+	var condiments: Array[Condiment] = []
+	var reroll_cost := Merchant.BASE_REROLL_COST
+	var _runner: Node
+	var _reroll_count := 0
+
+	func _init(runner: Node) -> void:
+		_runner = runner
+		_roll_stock()
+
+	func _roll_stock() -> void:
+		cards = Merchant.draw_tile_card_stock(_reroll_count)
+		staff = Merchant.draw_staff_stock(_reroll_count, StaffManager.owned_ids())
+		condiments = Merchant.draw_condiment_stock(_reroll_count)
+
+	func price_of(item: Resource) -> int:
+		return item.get_shop_price()
+
+	func buy_card(index: int) -> bool:
+		var card := cards[index]
+		if card == null or not EconomyManager.can_afford(price_of(card)):
+			return false
+		var price := price_of(card)
+		EconomyManager.remove(price)
+		cards[index] = null
+		_runner.note_buy("", card.id, price)
+		EventBus.tile_card_selected.emit(card)
+		return true
+
+	## Seats the new staff member in the first free slot, as the shop does, then moves it.
+	func buy_staff(index: int, slot: int) -> bool:
+		var member := staff[index]
+		if member == null or not member.get_purchase_block_reason().is_empty():
+			return false
+		var price := price_of(member)
+		if not EconomyManager.can_afford(price):
+			return false
+		EconomyManager.remove(price)
+		staff[index] = null
+		var seated := StaffManager.add_staff(member)
+		if slot >= 0 and slot != seated:
+			StaffManager.move_staff(seated, slot)
+		_runner.note_buy("staff:", member.id, price)
+		return true
+
+	func buy_condiment(index: int) -> bool:
+		var condiment := condiments[index]
+		if condiment == null or not CondimentManager.can_add():
+			return false
+		var price := price_of(condiment)
+		if not EconomyManager.can_afford(price):
+			return false
+		EconomyManager.remove(price)
+		condiments[index] = null
+		CondimentManager.add_condiment(condiment)
+		_runner.note_buy("condiment:", condiment.id, price)
+		return true
+
+	func reroll() -> bool:
+		if not EconomyManager.can_afford(reroll_cost):
+			return false
+		EconomyManager.remove(reroll_cost)
+		reroll_cost += 1
+		_reroll_count += 1
+		_roll_stock()
+		_runner.note_merchant_reroll()
+		return true
+
+
+var map: HexTileMap
+var sim: RefCounted
+## The bot's hand. Every card the game hands out arrives through tile_card_selected.
+var hand: Array[TileCard] = []
+var power_mode := false
+var use_condiments := true
+var policy: RefCounted
+## Step-by-step log for hunting a stuck or runaway run.
+var trace_enabled := false
+
+var _chef_ids: Array[String] = []
+var _run_count := DEFAULT_RUN_COUNT
+var _only_seed := ""
+var _repeat := 1
+var _difficulty := 0
+var _fuzz := false
+var _check_sim := false
+var _verbose := false
+var _report_path := REPORT_PATH
 var _cases: Array[Dictionary] = []
 var _failed := 0
-var _active_bot: String = "fill"
-var _layouts: Array[String] = []
-var _report_path := REPORT_PATH
-var _only_bot := ""
-var _only_seed := ""
-var _full_run_seed_count := FULL_RUN_SEED_COUNT
-## Surveyor and Columnist opening engine line. -1 means no lock.
-var _locked_engine_segment := -1
-var _use_condiments := true
-var _focused_repeat_count := 1
-var _fuzz_only := false
-var _chaos_step := 0
+
+var _run_over := false
+var _won := false
+## Actions and day results for the run in progress. Becomes the report's details.
+var _log: Dictionary = {}
+var _day: Dictionary = {}
 var _run_script_errors: Array[String] = []
 var _pending_turn_script_errors: Array[String] = []
 
@@ -83,116 +141,113 @@ var _pending_turn_script_errors: Array[String] = []
 func _enter_tree() -> void:
 	SCRIPT_ERROR_TRACKER.ensure_logger()
 	GameManager.skip_presentation = true
+	GameManager.playtest_real_day_flow = true
 
 
 func _ready() -> void:
-	_layouts = _parse_layout_filter()
-	if _layouts.size() == 1:
-		_report_path = "user://playtest_report_%s.json" % _layouts[0]
-	print("[playtest] layouts=%s bot=%s seed=%s full_count=%d condiments=%s fuzz=%s" % [
-		",".join(_layouts),
-		_only_bot if not _only_bot.is_empty() else "all",
-		_only_seed if not _only_seed.is_empty() else "all",
-		_full_run_seed_count,
-		"on" if _use_condiments else "off",
-		"on" if _fuzz_only or _only_bot == CHAOS_BOT_ID else "off",
+	_parse_args()
+	GameManager.playtest_play_full_day = power_mode
+	print("[playtest] chefs=%s runs=%d seed=%s difficulty=%d mode=%s condiments=%s" % [
+		",".join(_chef_ids),
+		_run_count,
+		_only_seed if not _only_seed.is_empty() else "-",
+		_difficulty,
+		"fuzz" if _fuzz else ("power" if power_mode else "normal"),
+		"on" if use_condiments else "off",
 	])
-	_map = HEX_MAP_SCENE.instantiate() as HexTileMap
-	add_child(_map)
+	map = HEX_MAP_SCENE.instantiate() as HexTileMap
+	add_child(map)
+	sim = PLAYTEST_SIM.new(map)
+	sim.check_purity = _check_sim
+	if trace_enabled:
+		sim.trace = trace
+	EventBus.tile_card_selected.connect(_on_card_granted)
+	EventBus.game_ended.connect(_on_game_ended)
+	EventBus.station_choice_requested.connect(_on_station_choice_requested)
 	await get_tree().process_frame
 	await _run_all()
 	_write_report()
 	get_tree().quit(1 if _failed > 0 else 0)
 
 
-func _parse_layout_filter() -> Array[String]:
-	var requested: Array[String] = []
-	var env_layout := OS.get_environment("PLAYTEST_LAYOUT").strip_edges().to_lower()
-	if not env_layout.is_empty():
-		requested.append(env_layout)
-	for arg in OS.get_cmdline_user_args():
-		var value := ""
-		if arg.begins_with("--layout="):
-			value = arg.substr("--layout=".length())
-		elif arg.begins_with("layout="):
-			value = arg.substr("layout=".length())
-		else:
-			continue
-		requested.append(value.strip_edges().to_lower())
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--bot="):
-			_only_bot = arg.substr("--bot=".length()).strip_edges().to_lower()
+func _parse_args() -> void:
+	var requested_chef := ""
+	for arg: String in OS.get_cmdline_user_args():
+		var value := arg.get_slice("=", 1).strip_edges() if "=" in arg else ""
+		if arg.begins_with("--chef="):
+			requested_chef = value.to_lower()
+		elif arg.begins_with("--runs="):
+			_run_count = maxi(1, int(value))
 		elif arg.begins_with("--seed="):
-			_only_seed = arg.substr("--seed=".length()).strip_edges()
-		elif arg.begins_with("--full-count="):
-			_full_run_seed_count = maxi(1, int(arg.substr("--full-count=".length()).strip_edges()))
+			_only_seed = value
 		elif arg.begins_with("--repeat="):
-			_focused_repeat_count = maxi(1, int(arg.substr("--repeat=".length()).strip_edges()))
-		elif arg == "--no-condiments":
-			_use_condiments = false
+			_repeat = maxi(1, int(value))
+		elif arg.begins_with("--difficulty="):
+			_difficulty = clampi(int(value), 0, Difficulty.Level.size() - 1)
+		elif arg.begins_with("--out="):
+			_report_path = value
+		elif arg == "--power":
+			power_mode = true
 		elif arg == "--fuzz":
-			_fuzz_only = true
-	var layouts: Array[String] = []
-	for chef_id: String in CHEF_IDS:
-		if requested.is_empty() or chef_id in requested:
-			layouts.append(chef_id)
-	if layouts.is_empty():
-		push_error("PlaytestRunner: no matching layout in %s" % str(requested))
-		return CHEF_IDS.duplicate()
-	return layouts
+			_fuzz = true
+		elif arg == "--no-condiments":
+			use_condiments = false
+		elif arg == "--no-overplay":
+			TileCard.overplay_enabled = false
+		elif arg == "--check-sim":
+			_check_sim = true
+		elif arg == "--verbose":
+			_verbose = true
+		elif arg == "--trace":
+			trace_enabled = true
+			_verbose = true
+		else:
+			push_error("PlaytestRunner: unknown argument %s" % arg)
+	for chef: ChefDefinition in ChefRegistry.get_all_chefs():
+		if requested_chef.is_empty() or chef.id == requested_chef:
+			_chef_ids.append(chef.id)
+	if _chef_ids.is_empty():
+		push_error("PlaytestRunner: unknown chef %s" % requested_chef)
+		for chef: ChefDefinition in ChefRegistry.get_all_chefs():
+			_chef_ids.append(chef.id)
+	# Fuzz keeps playing through all nine days, so it never stops on a missed goal.
+	if _fuzz:
+		power_mode = true
 
 
 func _run_all() -> void:
+	var suite := "fuzz" if _fuzz else ("power" if power_mode else "run")
 	if not _only_seed.is_empty():
-		var chef_id := _layouts[0]
-		var bots: Array[String] = BOT_IDS.duplicate()
-		if not _only_bot.is_empty():
-			bots = [_only_bot]
-		print("[playtest] focused seed=%s layout=%s bots=%s condiments=%s repeat=%d" % [
-			_only_seed,
-			chef_id,
-			",".join(bots),
-			"on" if _use_condiments else "off",
-			_focused_repeat_count,
-		])
-		for repeat_index in _focused_repeat_count:
-			for bot_id: String in bots:
-				if bot_id == CHAOS_BOT_ID:
-					await _run_one_fuzz(chef_id, _only_seed, repeat_index)
-				else:
-					await _run_one_full_nine(chef_id, _only_seed, bot_id, repeat_index)
-		if CHAOS_BOT_ID in bots:
-			_print_fuzz_summary()
-		if bots != [CHAOS_BOT_ID]:
-			_print_full_nine_summary()
+		for chef_id: String in _chef_ids:
+			for repeat_index in _repeat:
+				await _run_one(suite, chef_id, _only_seed, repeat_index)
+		_print_summary(suite)
 		return
-	if _fuzz_only or _only_bot == CHAOS_BOT_ID:
-		await _run_fuzz_suite()
-		return
-	if not _only_bot.is_empty():
-		await _run_full_nines()
-		return
-	_run_starter_fairness()
-	if "sous_chef" in _layouts:
-		await _run_gold_engines()
-	await _run_two_segment_r1()
-	await _run_full_nines()
+	if suite == "run":
+		_run_starter_fairness()
+	for index in _run_count:
+		# Seeds are shared by every chef so chef results compare on the same offers.
+		var seed_text := "%s%03d" % ["FZ" if _fuzz else "RUN", index]
+		for chef_id: String in _chef_ids:
+			await _run_one(suite, chef_id, seed_text, 0)
+	_print_summary(suite)
 
+
+#region Starter hand
 
 ## Opening hand is 3 Ingredients and 2 Kitchenware, all tagged starting_hand_eligible.
 func _run_starter_fairness() -> void:
-	for chef_id: String in _layouts:
+	for chef_id: String in _chef_ids:
 		GameManager.selected_chef = ChefRegistry.get_chef_by_id(chef_id)
 		GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
 		for index in STARTER_SEED_COUNT:
-			var seed_text := _seed_for("ST", chef_id, index)
+			var seed_text := "ST%s%03d" % [chef_id.substr(0, 3).to_upper(), index]
 			RunRng.begin_new_run(seed_text)
-			var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
 			var ids: Array[String] = []
 			var ingredients := 0
 			var kitchenware := 0
 			var reasons: Array[String] = []
-			for card: TileCard in hand:
+			for card: TileCard in _deal_starting_hand():
 				ids.append(card.id)
 				if not card.starting_hand_eligible:
 					reasons.append("%s is not starting_hand_eligible" % card.id)
@@ -207,1892 +262,233 @@ func _run_starter_fairness() -> void:
 				reasons.append("expected %d Ingredients, got %d" % [ChefRegistry.STARTING_INGREDIENT_COUNT, ingredients])
 			if kitchenware != ChefRegistry.STARTING_KITCHENWARE_COUNT:
 				reasons.append("expected %d Kitchenware, got %d" % [ChefRegistry.STARTING_KITCHENWARE_COUNT, kitchenware])
-
-			_record(
-				"starter_fairness",
-				chef_id,
-				seed_text,
-				reasons.is_empty(),
-				reasons,
-				{"hand": ids}
-			)
+			_record("starter_fairness", chef_id, seed_text, reasons, {"hand": ids})
 
 
-func _run_gold_engines() -> void:
-	await _run_treasury_at_zero_gold()
-	await _run_prosperity_vs_allowance()
-	await _run_lucky_draw_gold_branch()
-
-
-func _run_treasury_at_zero_gold() -> void:
-	_begin_run("sous_chef", "TREASURY")
-	EconomyManager.set_amount(0)
-	var hex := _first_empty_hex()
-	_place_by_id(hex, "treasury")
-	await _resolve_turn()
-	var energy := _map.get_segment_turn_flavour(_map.get_segment_index(hex.coordinates))
-	var reasons: Array[String] = []
-	if energy != 6:
-		reasons.append("Treasury at 0 gold scored %d Energy, expected 6" % energy)
-	_record(
-		"gold_engine_treasury_zero",
-		"sous_chef",
-		"TREASURY",
-		reasons.is_empty(),
-		reasons,
-		{"energy": energy, "gold": EconomyManager.amount}
+## Same stream as Hand.build_starting_hand, so a seed deals the hand a player would see.
+func _deal_starting_hand() -> Array[TileCard]:
+	var dealt: Array[TileCard] = []
+	var stream_name := "starting_hand:%s:%d" % [GameManager.selected_chef.id, int(GameManager.selected_difficulty)]
+	RunRng.using_fresh_stream(stream_name, func() -> void:
+		dealt.append_array(ChefRegistry.get_starting_hand_cards(GameManager.selected_chef))
 	)
+	return dealt
 
+#endregion
 
-func _run_prosperity_vs_allowance() -> void:
-	await _run_prosperity_order(true)
-	await _run_prosperity_order(false)
+#region Run driver
 
-
-func _run_prosperity_order(allowance_first: bool) -> void:
-	var label := "gold_engine_prosperity_after_allowance" if allowance_first else "gold_engine_prosperity_before_allowance"
-	_begin_run("sous_chef", "PROSPER1" if allowance_first else "PROSPER0")
-	EconomyManager.set_amount(0)
-	var pair := _two_hexes_in_same_segment()
-	if pair.is_empty():
-		_record(label, "sous_chef", "", false, ["could not find two tiles in one segment"], {})
-		return
-
-	var first: Hex = pair[0]
-	var second: Hex = pair[1]
-	if allowance_first:
-		_place_by_id(first, "basic_allowance")
-		_place_by_id(second, "prosperity")
-	else:
-		_place_by_id(first, "prosperity")
-		_place_by_id(second, "basic_allowance")
-
-	await _resolve_turn()
-	var segment_index := _map.get_segment_index(first.coordinates)
-	var energy := _map.get_segment_turn_flavour(segment_index)
-	var expected := 12 if allowance_first else 8
-	var reasons: Array[String] = []
-	if energy != expected:
-		reasons.append("Prosperity Energy %d, expected %d" % [energy, expected])
-	if EconomyManager.amount != 1:
-		reasons.append("gold after turn is %d, expected 1 from Allowance" % EconomyManager.amount)
-
-	_record(
-		label,
-		"sous_chef",
-		RunRng.get_display_seed(),
-		reasons.is_empty(),
-		reasons,
-		{"energy": energy, "gold": EconomyManager.amount, "allowance_first": allowance_first}
-	)
-
-
-func _run_lucky_draw_gold_branch() -> void:
-	var found := false
-	var last_gold := 0
-	var last_energy := 0
-	var used_seed := ""
-	for index in 24:
-		used_seed = _seed_for("LD", "sous_chef", index)
-		_begin_run("sous_chef", used_seed)
-		EconomyManager.set_amount(0)
-		var hex := _first_empty_hex()
-		_place_by_id(hex, "fortune_cookie")
-		var lucky := hex.active_tile_card
-		lucky.current_chance = 1.0
-		if not _lucky_draw_peeks_gold(hex, lucky):
-			continue
-		await _resolve_turn()
-		found = EconomyManager.amount == 8
-		last_gold = EconomyManager.amount
-		last_energy = _map.get_segment_turn_flavour(_map.get_segment_index(hex.coordinates))
-		if found:
-			break
-
-	var reasons: Array[String] = []
-	if not found:
-		reasons.append("never hit Fortune Cookie 8-gold branch (last gold=%d energy=%d)" % [last_gold, last_energy])
-	_record(
-		"gold_engine_fortune_cookie_8_gold",
-		"sous_chef",
-		used_seed,
-		reasons.is_empty(),
-		reasons,
-		{"gold": last_gold, "energy": last_energy}
-	)
-
-
-func _lucky_draw_peeks_gold(hex: Hex, lucky: TileCard) -> bool:
-	var rng := RunRng.create_card_effect_rng(hex, lucky)
-	rng.randf()
-	return rng.randf() >= 0.5
-
-
-func _run_two_segment_r1() -> void:
-	for chef_id: String in _layouts:
-		for index in R1_BOT_SEED_COUNT:
-			var seed_text := _seed_for("R1", chef_id, index)
-			await _run_one_two_segment_r1(chef_id, seed_text)
-
-
-func _run_one_two_segment_r1(chef_id: String, seed_text: String) -> void:
+func _run_one(suite: String, chef_id: String, seed_text: String, repeat_index: int) -> void:
+	var started_msec := Time.get_ticks_msec()
+	var sims_before: int = sim.simulations_run
+	sim.resolve_msec = 0.0
+	sim.evaluate_msec = 0.0
+	sim.slowest_resolve_msec = 0.0
+	policy = (CHAOS_POLICY if _fuzz else HUMAN_POLICY).new()
+	policy.runner = self
 	_begin_run(chef_id, seed_text)
-	var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
-	var hand_ids: Array[String] = []
-	for card: TileCard in hand:
-		hand_ids.append(card.id)
+	policy.on_run_started()
 
-	var segment_pair := _pick_two_smallest_segments(hand.size())
-	var reasons: Array[String] = []
-	if segment_pair.is_empty():
-		reasons.append("no two segments large enough for the opening hand")
-		_record("two_segment_r1", chef_id, seed_text, false, reasons, {"hand": hand_ids})
-		return
-
-	var placed := _place_hand_on_two_segments(hand, segment_pair)
-	if not placed:
-		reasons.append("could not place the opening hand on segments %s" % str(segment_pair))
-		_record("two_segment_r1", chef_id, seed_text, false, reasons, {"hand": hand_ids, "segments": segment_pair})
-		return
-
-	if _cards_on_one_segment_only():
-		reasons.append("whole hand landed on one segment")
-
-	var turns_used := 0
-	var r1_goal := GameManager.required_score
-	while GameManager.remaining_turns > 0 and GameManager.total_round_score < r1_goal:
-		await _resolve_turn()
-		turns_used += 1
-
-	var r1_score := GameManager.total_round_score
-	var r1_cleared := r1_score >= r1_goal
-	if not r1_cleared:
-		reasons.append("R1 score %d / %d after %d turns" % [r1_score, r1_goal, turns_used])
-
-	var r2_score := -1
-	var r2_cleared := false
-	var r2_goal := -1
-	if r1_cleared:
-		GameManager.advance_round()
-		EventBus.turn_started.emit()
-		r2_goal = GameManager.required_score
-		while GameManager.remaining_turns > 0 and GameManager.total_round_score < r2_goal:
-			await _resolve_turn()
-		r2_score = GameManager.total_round_score
-		r2_cleared = r2_score >= r2_goal
-
-	_record(
-		"two_segment_r1",
-		chef_id,
-		seed_text,
-		reasons.is_empty(),
-		reasons,
-		{
-			"hand": hand_ids,
-			"segments": segment_pair,
-			"r1_score": r1_score,
-			"r1_goal": r1_goal,
-			"r1_cleared": r1_cleared,
-			"turns_used": turns_used,
-			"r2_same_board_score": r2_score,
-			"r2_same_board_goal": r2_goal,
-			"r2_same_board_cleared": r2_cleared,
-			"gold": EconomyManager.amount,
-			"note": "R2 is same-board with no shop or packs. Informational only.",
-		}
-	)
-
-
-func _run_full_nines() -> void:
-	var bots := _full_nine_bots()
-	print("[playtest] full 1-9 bots=%s seeds=%d" % [",".join(bots), _full_run_seed_count])
-	for bot_id: String in bots:
-		_active_bot = bot_id
-		for chef_id: String in _layouts:
-			for index in _full_run_seed_count:
-				var seed_text := _seed_for("F9", chef_id, index)
-				await _run_one_full_nine(chef_id, seed_text, bot_id)
-	_print_full_nine_summary()
-
-
-func _run_fuzz_suite() -> void:
-	print("[playtest] fuzz chaos layouts=%s seeds=%d" % [",".join(_layouts), _full_run_seed_count])
-	for chef_id: String in _layouts:
-		for index in _full_run_seed_count:
-			var seed_text := _seed_for("FZ", chef_id, index)
-			await _run_one_fuzz(chef_id, seed_text)
-	_print_fuzz_summary()
-
-
-## Chaos bot keeps placing through R9 even after a missed goal. Fail only on invariants.
-func _run_one_fuzz(chef_id: String, seed_text: String, repeat_index: int = 0) -> void:
-	_active_bot = CHAOS_BOT_ID
-	_chaos_step = 0
-	var repeat_tag := "" if repeat_index <= 0 else " #%d" % (repeat_index + 1)
-	print("[playtest] start fuzz/chaos %s %s%s" % [chef_id, seed_text, repeat_tag])
-	_begin_run(chef_id, seed_text)
-	var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
-	_place_opening_hand(hand)
-
-	var round_log: Array[Dictionary] = []
-	var picks: Array[String] = []
-	var buys: Array[String] = []
-	var invariant_hits: Array[String] = []
-	var storms := 0
-
-	while GameManager.current_round <= FULL_RUN_TARGET_ROUND:
-		var round_number := GameManager.current_round
-		var goal := GameManager.required_score
-		var turns_used := 0
-		while GameManager.remaining_turns > 0:
-			var score_before := GameManager.total_round_score
-			await _resolve_turn()
-			turns_used += 1
-			var turn_failures := _collect_invariant_failures(score_before)
-			if not turn_failures.is_empty():
-				invariant_hits.append_array(turn_failures)
-				for reason: String in turn_failures:
-					print("[playtest]   INVARIANT R%d T%d %s" % [round_number, turns_used, reason])
-			if _map.turn_resolver != null and _map.turn_resolver.aborted_retrigger_storm:
-				storms += 1
-			if GameManager.total_round_score >= goal:
-				break
-			if GameManager.remaining_turns <= 0:
-				break
-			var picked := _draft_and_pick_pack(false, round_number, GameManager.remaining_turns + 1)
-			if picked != null:
-				picks.append("%s:%s" % [round_number, picked.id])
-				_place_one_card(picked)
-
-		var score := GameManager.total_round_score
-		var cleared := score >= goal
-		var round_entry := {
-			"round": round_number,
-			"goal": goal,
-			"score": score,
-			"turns_used": turns_used,
-			"gold": EconomyManager.amount,
-			"cleared": cleared,
-			"invariants": invariant_hits.duplicate(),
-		}
-		if round_number in SEGMENT_SNAPSHOT_ROUNDS:
-			var snapshot := _segment_contribution_snapshot()
-			round_entry["segments"] = snapshot
-			_print_segment_snapshot(round_number, snapshot)
-		round_log.append(round_entry)
-		print(
-			"[playtest]   R%d %d/%d turns=%d gold=%d storms=%d invariants=%d %s"
-			% [
-				round_number,
-				score,
-				goal,
-				turns_used,
-				EconomyManager.amount,
-				storms,
-				invariant_hits.size(),
-				"clear" if cleared else "miss",
-			]
-		)
-		if not invariant_hits.is_empty():
-			break
-		if round_number >= FULL_RUN_TARGET_ROUND:
-			break
-
-		if cleared:
-			EconomyManager.apply_round_speed_rewards(GameManager.get_skipped_turns())
-		var completed_round := round_number
-		var reward := _draft_and_pick_pack(true, completed_round, 0)
-		GameManager.advance_round()
-		if reward != null:
-			picks.append("reward%s:%s" % [completed_round, reward.id])
-			_place_one_card(reward)
-		buys.append_array(_shop_current_round())
-		EventBus.turn_started.emit()
-
-	var reasons: Array[String] = invariant_hits.duplicate()
-	_record(
-		"fuzz",
-		chef_id,
-		seed_text,
-		reasons.is_empty(),
-		reasons,
-		{
-			"bot": CHAOS_BOT_ID,
-			"reached_round": GameManager.current_round,
-			"gold": EconomyManager.amount,
-			"picks": picks,
-			"buys": buys,
-			"rounds": round_log,
-			"storms": storms,
-			"segment_sizes": HexMapLayout.BOARD_ROW_LENGTHS.duplicate(),
-			"segments_count": HexMapLayout.BOARD_ROW_LENGTHS.size(),
-			"repeat_index": repeat_index,
-		}
-	)
-
-
-func _full_nine_bots() -> Array[String]:
-	if _only_bot.is_empty():
-		return BOT_IDS.duplicate()
-	if _only_bot == CHAOS_BOT_ID:
-		return []
-	if _only_bot not in BOT_IDS:
-		push_error("PlaytestRunner: unknown bot %s (expected one of %s or %s)" % [_only_bot, str(BOT_IDS), CHAOS_BOT_ID])
-		return BOT_IDS.duplicate()
-	return [_only_bot]
-
-
-func _run_one_full_nine(chef_id: String, seed_text: String, bot_id: String, repeat_index: int = 0) -> void:
-	_active_bot = bot_id
-	var repeat_tag := "" if repeat_index <= 0 else " #%d" % (repeat_index + 1)
-	print("[playtest] start full_nine/%s %s %s%s" % [bot_id, chef_id, seed_text, repeat_tag])
-	_begin_run(chef_id, seed_text)
-	var hand := ChefRegistry.get_starting_hand_cards(GameManager.selected_chef)
-	_place_opening_hand(hand)
-
-	var round_log: Array[Dictionary] = []
-	var picks: Array[String] = []
-	var buys: Array[String] = []
-	var lost_round := 0
-	var won := false
-
-	while GameManager.current_round <= FULL_RUN_TARGET_ROUND:
-		var round_number := GameManager.current_round
-		var goal := GameManager.required_score
-		var turns_used := 0
-		while GameManager.remaining_turns > 0 and GameManager.total_round_score < goal:
-			if bot_id == "player" and _use_condiments:
-				_player_use_belt_before_resolve()
-			await _resolve_turn()
-			turns_used += 1
-			if GameManager.total_round_score >= goal:
-				break
-			# Fail-turn packs roll remaining_turns before it is consumed. After resolve it is already -1.
-			if GameManager.remaining_turns <= 0:
-				break
-			var picked := _draft_and_pick_pack(false, round_number, GameManager.remaining_turns + 1)
-			if picked != null:
-				picks.append("%s:%s" % [round_number, picked.id])
-				_place_one_card(picked)
-
-		var score := GameManager.total_round_score
-		var cleared := score >= goal
-		var round_entry := {
-			"round": round_number,
-			"goal": goal,
-			"score": score,
-			"turns_used": turns_used,
-			"gold": EconomyManager.amount,
-			"cleared": cleared,
-			"event": EventManager.get_active_event_name(),
-		}
-		if round_number in SEGMENT_SNAPSHOT_ROUNDS:
-			var snapshot := _segment_contribution_snapshot()
-			round_entry["segments"] = snapshot
-			_print_segment_snapshot(round_number, snapshot)
-		round_log.append(round_entry)
-		if not _only_seed.is_empty():
-			print(
-				"[playtest]   R%d %d/%d turns=%d gold=%d %s"
-				% [
-					round_number,
-					score,
-					goal,
-					turns_used,
-					EconomyManager.amount,
-					"clear" if cleared else "fail",
-				]
-			)
-		if not cleared:
-			lost_round = round_number
-			break
-		if round_number >= FULL_RUN_TARGET_ROUND:
-			won = true
-			break
-
-		EconomyManager.apply_round_speed_rewards(GameManager.get_skipped_turns())
-		var completed_round := round_number
-		# Reward pack size still belongs to the round that just ended.
-		var reward := _draft_and_pick_pack(true, completed_round, 0)
-		GameManager.advance_round()
-		if reward != null:
-			picks.append("reward%s:%s" % [completed_round, reward.id])
-			_place_one_card(reward)
-		buys.append_array(_shop_current_round())
-		EventBus.turn_started.emit()
-
-	var reasons: Array[String] = []
-	if not won:
-		reasons.append("lost on round %d with score %d / %d" % [
-			lost_round,
+	var hours := 0
+	var day_round := -1
+	while not _run_over and hours < MAX_HOURS_PER_RUN:
+		# Lets queue_free'd card UI go. A headless Hour can finish without a frame passing.
+		await get_tree().process_frame
+		trace("day %d step %s remaining %d score %d/%d hand %d gold %d" % [
+			GameManager.current_round,
+			RoundFlow.Step.find_key(RoundFlow.get_step()),
+			GameManager.remaining_turns,
 			GameManager.total_round_score,
 			GameManager.required_score,
+			hand.size(),
+			EconomyManager.amount,
 		])
-	_record(
-		"full_nine",
-		chef_id,
-		seed_text,
-		won,
-		reasons,
-		{
-			"won": won,
-			"reached_round": GameManager.current_round,
-			"gold": EconomyManager.amount,
-			"picks": picks,
-			"buys": buys,
-			"rounds": round_log,
-			"bot": bot_id,
-			"segment_sizes": HexMapLayout.BOARD_ROW_LENGTHS.duplicate(),
-			"segments_count": HexMapLayout.BOARD_ROW_LENGTHS.size(),
-			"playtest_condiments": _use_condiments,
-			"repeat_index": repeat_index,
-		}
-	)
-
-
-func _draft_and_pick_pack(is_reward: bool, round_number: int, fail_remaining_turns: int) -> TileCard:
-	if EventManager.get_cards_pack_size(is_reward) <= 0:
-		return null
-	if _active_bot == CHAOS_BOT_ID:
-		return _draft_and_pick_pack_chaos(is_reward, round_number, fail_remaining_turns)
-	if _active_bot == "player":
-		return _draft_and_pick_pack_player(is_reward, round_number, fail_remaining_turns)
-	var stream_name := RunRng.build_card_offer_stream_name(
-		round_number,
-		fail_remaining_turns,
-		is_reward,
-		0
-	)
-	var pack := CardLoot.card_draw(
-		EventManager.get_cards_pack_size(is_reward),
-		GameManager.tile_cards_pool,
-		true,
-		RunRng.create_rng(stream_name)
-	)
-	if pack.is_empty():
-		return null
-	pack.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-		return _card_keep_value(a) > _card_keep_value(b)
-	)
-	for card: TileCard in pack:
-		if _can_bot_place_card(card):
-			return card
-	return null
-
-
-func _draft_and_pick_pack_chaos(
-	is_reward: bool,
-	round_number: int,
-	fail_remaining_turns: int
-) -> TileCard:
-	var stream_name := RunRng.build_card_offer_stream_name(
-		round_number,
-		fail_remaining_turns,
-		is_reward,
-		0
-	)
-	var pack := CardLoot.card_draw(
-		EventManager.get_cards_pack_size(is_reward),
-		GameManager.tile_cards_pool,
-		true,
-		RunRng.create_rng(stream_name)
-	)
-	var placeable: Array[TileCard] = []
-	for card: TileCard in pack:
-		if _can_bot_place_card(card):
-			placeable.append(card)
-	if placeable.is_empty():
-		return null
-	return _chaos_weighted_pick(placeable)
-
-
-func _draft_and_pick_pack_player(
-	is_reward: bool,
-	round_number: int,
-	fail_remaining_turns: int
-) -> TileCard:
-	var reroll_index := 0
-	while true:
-		var stream_name := RunRng.build_card_offer_stream_name(
-			round_number,
-			fail_remaining_turns,
-			is_reward,
-			reroll_index
-		)
-		var pack := CardLoot.card_draw(
-			EventManager.get_cards_pack_size(is_reward),
-			GameManager.tile_cards_pool,
-			true,
-			RunRng.create_rng(stream_name)
-		)
-		var best := _pick_best_player_card(pack)
-		if not _player_should_reroll_pack(best, is_reward, round_number):
-			return best
-		if not EconomyManager.can_reroll():
-			return best
-		EconomyManager.use_reroll()
-		reroll_index += 1
-	return null
-
-
-## Keep a card that belongs on the engine. Reroll more when behind on the round goal.
-func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: int) -> bool:
-	if not EconomyManager.can_reroll():
-		return false
-	if best == null:
-		return true
-	var keep_threshold := _player_pack_keep_threshold(round_number)
-	if _can_place_for_player(best) and _card_player_value(best) >= keep_threshold * 0.5:
-		return false
-	if is_reward and _can_place_for_player(best):
-		return false
-	if round_number < PLAYER_PACK_REROLL_ROUND and EconomyManager.rerolls_remaining <= 2:
-		var gap_ratio := _round_score_gap_ratio()
-		if gap_ratio < 0.35:
-			return false
-	return _card_player_value(best) < keep_threshold or not _can_place_for_player(best)
-
-
-func _player_pack_keep_threshold(round_number: int) -> float:
-	var threshold := PACK_KEEP_THRESHOLD
-	threshold -= _round_score_gap_ratio() * 24.0
-	if round_number >= 7:
-		threshold -= 4.0
-	if round_number < PLAYER_PACK_REROLL_ROUND:
-		threshold += 8.0
-	return maxf(12.0, threshold)
-
-
-func _round_score_gap_ratio() -> float:
-	var goal := maxi(1, GameManager.required_score)
-	var gap := maxi(0, goal - GameManager.total_round_score)
-	return float(gap) / float(goal)
-
-
-func _pick_best_player_card(pack: Array[TileCard]) -> TileCard:
-	var best: TileCard = null
-	var best_value := -1.0
-	for card: TileCard in pack:
-		if not _can_bot_place_card(card):
-			continue
-		var value := _card_player_value(card)
-		# Engine-legal cards beat off-engine filler even when the raw number is close.
-		if _can_place_for_player(card):
-			value += 25.0
-		if best == null or value > best_value:
-			best = card
-			best_value = value
-	return best
-
-
-func _shop_current_round() -> Array[String]:
-	if _active_bot == CHAOS_BOT_ID:
-		return _shop_chaos_round()
-	if _active_bot == "player":
-		return _shop_player_round()
-	var bought: Array[String] = []
-	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, 0)
-	var stock := CardLoot.card_draw(
-		MERCHANT_STOCK_COUNT,
-		GameManager.tile_cards_pool,
-		true,
-		RunRng.create_rng(stream_name)
-	)
-	stock.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-		return _card_keep_value(a) > _card_keep_value(b)
-	)
-	for card: TileCard in stock:
-		if not _can_bot_place_card(card):
-			continue
-		var price := card.get_shop_price()
-		if not EconomyManager.can_afford(price):
-			continue
-		EconomyManager.remove(price)
-		bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
-		_place_one_card(card)
-	return bought
-
-
-func _shop_player_round() -> Array[String]:
-	var bought: Array[String] = []
-	var stock_reroll_count := 0
-	var reroll_cost := MERCHANT_BASE_REROLL_COST
-	var gold_rerolls := 0
-	while true:
-		var stock := _draw_merchant_stock(stock_reroll_count)
-		var engine_stock := _player_engine_shop_cards(stock)
-		engine_stock.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-			return _shop_card_score(a) > _shop_card_score(b)
-		)
-		var buys_this_visit := 0
-		if _use_condiments:
-			var condiment_stock := _draw_merchant_condiments(stock_reroll_count)
-			var condiment_pick := _pick_best_shop_condiment(condiment_stock)
-			if condiment_pick != null and _buy_shop_condiment(condiment_pick, bought):
-				buys_this_visit += 1
-		for card: TileCard in engine_stock:
-			if buys_this_visit >= MAX_SHOP_BUYS_PER_VISIT:
-				break
-			if not _can_afford_shop_purchase(card):
-				continue
-			if _buy_shop_card(card, bought):
-				buys_this_visit += 1
-		if buys_this_visit > 0:
-			return bought
-		if (
-			gold_rerolls >= MAX_MERCHANT_GOLD_REROLLS
-			or not EconomyManager.can_afford(reroll_cost)
-		):
-			# Leave rather than stuffing a tiny segment with leftover shop junk.
-			return bought
-		EconomyManager.remove(reroll_cost)
-		stock_reroll_count += 1
-		reroll_cost += 1
-		gold_rerolls += 1
-	return bought
-
-
-func _shop_card_score(card: TileCard) -> float:
-	if card == null:
-		return 0.0
-	var price := maxf(1.0, float(card.get_shop_price()))
-	return _card_player_value(card) / price
-
-
-func _can_afford_shop_purchase(card: TileCard) -> bool:
-	var price := card.get_shop_price()
-	if not EconomyManager.can_afford(price):
-		return false
-	return EconomyManager.amount - price >= SHOP_GOLD_RESERVE or price <= 4
-
-
-func _draw_merchant_condiments(stock_reroll_count: int) -> Array[Condiment]:
-	var stream_name := "merchant_condiments:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
-	return CondimentCatalog.draw_unique(
-		CONDIMENT_SHOP_STOCK,
-		RunRng.create_rng(stream_name)
-	)
-
-
-func _pick_best_shop_condiment(stock: Array[Condiment]) -> Condiment:
-	var best: Condiment = null
-	var best_value := -1.0
-	for condiment: Condiment in stock:
-		if condiment == null:
-			continue
-		var value := _condiment_player_value(condiment)
-		var price := maxf(1.0, float(condiment.get_shop_price()))
-		value /= price
-		if best == null or value > best_value:
-			best = condiment
-			best_value = value
-	if best == null or best_value < 0.35:
-		return null
-	return best
-
-
-func _buy_shop_condiment(condiment: Condiment, bought: Array[String]) -> bool:
-	if condiment == null or not CondimentManager.can_add():
-		return false
-	var price := condiment.get_shop_price()
-	if not EconomyManager.can_afford(price):
-		return false
-	if EconomyManager.amount - price < SHOP_GOLD_RESERVE:
-		return false
-	EconomyManager.remove(price)
-	bought.append("%s:condiment:%s@%d" % [GameManager.current_round, condiment.id, price])
-	return CondimentManager.add_condiment(condiment)
-
-
-func _player_engine_shop_cards(stock: Array[TileCard]) -> Array[TileCard]:
-	var picks: Array[TileCard] = []
-	for card: TileCard in stock:
-		if not _can_bot_place_card(card):
-			continue
-		if not _can_place_for_player(card):
-			continue
-		if _card_player_value(card) < SHOP_KEEP_THRESHOLD:
-			continue
-		picks.append(card)
-	return picks
-
-
-func _draw_merchant_stock(stock_reroll_count: int) -> Array[TileCard]:
-	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, stock_reroll_count)
-	var stock := CardLoot.card_draw(
-		MERCHANT_STOCK_COUNT,
-		GameManager.tile_cards_pool,
-		true,
-		RunRng.create_rng(stream_name)
-	)
-	stock.sort_custom(func(a: TileCard, b: TileCard) -> bool:
-		return _card_keep_value(a) > _card_keep_value(b)
-	)
-	return stock
-
-
-func _buy_shop_card(card: TileCard, bought: Array[String]) -> bool:
-	if not _can_bot_place_card(card):
-		return false
-	var price := card.get_shop_price()
-	if not EconomyManager.can_afford(price):
-		return false
-	EconomyManager.remove(price)
-	bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
-	_place_one_card(card)
-	return true
-
-
-func _card_keep_value(card: TileCard) -> float:
-	if card.type == TileCard.TileCardType.MEAL:
-		return _meal_card_value(card)
-	match card.product:
-		TileCard.Product.MULTIPLIER:
-			return 40.0 + float(card.base_production_amount) * 20.0
-		TileCard.Product.FLAVOUR:
-			return 10.0 + float(card.base_production_amount)
-		TileCard.Product.GOLD:
-			return 12.0 + float(card.base_production_amount) * 8.0
-		_:
-			return 8.0
-
-
-## Score a card for packs and shop using chip previews and engine balance.
-func _card_player_value(card: TileCard) -> float:
-	if card == null:
-		return 0.0
-	if card.type == TileCard.TileCardType.MEAL:
-		return _meal_card_value(card)
-	if _prefers_off_engine(card):
-		return _best_off_engine_preview_value(card)
-	var engine := _player_engine_index()
-	var energy := _segment_product_count(engine, TileCard.Product.FLAVOUR)
-	var mult := _segment_product_count(engine, TileCard.Product.MULTIPLIER)
-	var value := 8.0
-	match card.product:
-		TileCard.Product.MULTIPLIER:
-			value = 45.0 + float(card.base_production_amount) * 20.0
-			if energy > 0 and mult <= energy:
-				value += 20.0
-		TileCard.Product.FLAVOUR:
-			value = 18.0 + float(card.base_production_amount)
-			if mult > 0 and energy <= mult:
-				value += 16.0
-		TileCard.Product.GOLD:
-			if GameManager.current_round >= PLAYER_GOLD_CUTOFF_ROUND:
-				value = 4.0
-			else:
-				value = 14.0 + float(card.base_production_amount) * 6.0
-		_:
-			if card.type == TileCard.TileCardType.KITCHENWARE:
-				value = 28.0 + float(card.base_production_amount)
-				if energy + mult >= 2:
-					value += 10.0
-	value += _best_engine_preview_value(card) * 0.35
-	return value
-
-
-func _prefers_off_engine(card: TileCard) -> bool:
-	return card != null and card.id in OFF_ENGINE_CARD_IDS
-
-
-func _best_engine_preview_value(card: TileCard) -> float:
-	var best := 0.0
-	var engine := _player_engine_index()
-	if engine < 0:
-		return best
-	for hex: Hex in _empty_hexes_in_segment(engine):
-		if not card.can_place_on_tile(hex):
-			continue
-		best = maxf(best, _chip_numeric_value(card.get_board_chip(hex)))
-	return best
-
-
-func _best_off_engine_preview_value(card: TileCard) -> float:
-	var best := 0.0
-	for segment_index: int in _off_engine_segment_rank(card):
-		for hex: Hex in _empty_hexes_in_segment(segment_index):
-			if not card.can_place_on_tile(hex):
-				continue
-			var value := _chip_numeric_value(card.get_board_chip(hex))
-			if card.id == "wide_ratio":
-				value += 18.0
-			elif card.id == "share_load" and segment_index + 1 == _player_engine_index():
-				value += 24.0
-			elif card.id == "compact_power" and _map.get_segment_size(segment_index) <= 7:
-				value += 16.0
-			elif card.id == "census_cell":
-				value += 10.0
-			best = maxf(best, value)
-	return best
-
-
-func _chip_numeric_value(chip: Dictionary) -> float:
-	if chip.is_empty():
-		return 0.0
-	if int(chip.get("mode", TileCard.BoardChipMode.HIDDEN)) == TileCard.BoardChipMode.HIDDEN:
-		return 0.0
-	var amount := float(chip.get("amount", 0.0))
-	if amount != 0.0:
-		return amount
-	var extra := float(chip.get("extra_amount", 0.0))
-	if extra != 0.0:
-		return extra
-	var text := str(chip.get("text", "0")).strip_edges()
-	if text.is_empty():
-		return 0.0
-	if text.begins_with("+") or text.begins_with("x"):
-		text = text.substr(1)
-	if text.is_valid_float():
-		return float(text)
-	return 0.0
-
-
-func _layout_segment_priority(segment_index: int) -> float:
-	if GameManager.selected_chef == null:
-		return float(_map.get_segment_size(segment_index)) / 20.0
-	var priorities: Array = LAYOUT_ENGINE_SIZE_PRIORITY.get(
-		GameManager.selected_chef.id,
-		[]
-	)
-	var size := _map.get_segment_size(segment_index)
-	for i in priorities.size():
-		if int(priorities[i]) == size:
-			return float(priorities.size() - i) * 2.0
-	return float(size) / 20.0
-
-
-func _segment_engine_rating(segment_index: int) -> float:
-	var energy := _map.get_segment_turn_flavour(segment_index)
-	var additive_mult := _map.get_segment_additive_mult(segment_index)
-	var multiplicative_mult := _map.get_segment_multiplicative_mult(segment_index)
-	var contribution := float(
-		GameManager.compute_segment_turn_contribution(
-			segment_index,
-			energy,
-			additive_mult,
-			multiplicative_mult
-		)
-	)
-	var cards := float(_segment_card_count(segment_index))
-	var producers := float(
-		_segment_product_count(segment_index, TileCard.Product.FLAVOUR)
-		+ _segment_product_count(segment_index, TileCard.Product.MULTIPLIER)
-	)
-	var commitment := float(maxi(0, _segment_card_count(segment_index) - 1)) * 35.0
-	var rating := (
-		contribution
-		+ cards * 8.0
-		+ producers * 12.0
-		+ commitment
-		+ _layout_segment_priority(segment_index) * 100.0
-	)
-	if _engine_lock_active():
-		if segment_index == _locked_engine_segment:
-			rating += 100000.0
-		elif segment_index in _candidate_engine_segments():
-			rating -= 1000.0
-		else:
-			rating -= 5000.0
-	elif _uses_engine_lock() and segment_index == _locked_engine_segment:
-		rating += 120.0
-	return rating
-
-
-## Locked opening line for the player bot.
-func _player_primary_segment() -> int:
-	if _uses_engine_lock() and _locked_engine_segment >= 0:
-		return _locked_engine_segment
-	var rank := _player_engine_rank()
-	return rank[0] if not rank.is_empty() else -1
-
-
-func _primary_segment_has_room() -> bool:
-	if not _uses_engine_lock() or _locked_engine_segment < 0:
-		return false
-	return not _empty_hexes_in_segment(_locked_engine_segment).is_empty()
-
-
-func _player_spill_segment_rank(primary: int) -> Array[int]:
-	if not _uses_engine_lock():
-		return _player_engine_rank()
-	var ranked: Array[int] = []
-	if primary >= 0:
-		ranked.append(primary)
-	for index: int in _candidate_engine_segments():
-		if index != primary:
-			ranked.append(index)
-	if ranked.is_empty():
-		return _player_engine_rank()
-	return ranked
-
-
-
-func _uses_engine_lock() -> bool:
-	if _active_bot != "player" or GameManager.selected_chef == null:
-		return false
-	return true
-
-
-func _engine_lock_unlock_round() -> int:
-	if GameManager.selected_chef == null:
-		return 999
-	return ENGINE_LOCK_ROUND
-
-
-func _engine_lock_active() -> bool:
-	return (
-		_uses_engine_lock()
-		and _locked_engine_segment >= 0
-		and GameManager.current_round < _engine_lock_unlock_round()
-	)
-
-
-func _candidate_engine_segments() -> Array[int]:
-	var candidates: Array[int] = []
-	if _map == null or GameManager.selected_chef == null:
-		return candidates
-	for index in _map.get_segment_count():
-		var size := _map.get_segment_size(index)
-		if size >= ENGINE_SEGMENT_MIN_SIZE and size <= ENGINE_SEGMENT_MAX_SIZE:
-			candidates.append(index)
-	return candidates
-
-
-## Pick the opening engine line before the first card lands.
-func _pick_layout_opening_engine() -> int:
-	var candidates := _candidate_engine_segments()
-	if candidates.is_empty():
-		return _largest_segment_index()
-	candidates.sort_custom(func(a: int, b: int) -> bool:
-		var cards_a := _segment_card_count(a)
-		var cards_b := _segment_card_count(b)
-		if cards_a != cards_b:
-			return cards_a > cards_b
-		var size_a := _map.get_segment_size(a)
-		var size_b := _map.get_segment_size(b)
-		if size_a != size_b:
-			return size_a > size_b
-		return a < b
-	)
-	return candidates[0]
-
-
-func _init_layout_engine_lock() -> void:
-	_locked_engine_segment = -1
-	if not _uses_engine_lock():
-		return
-	_locked_engine_segment = _pick_layout_opening_engine()
-
-
-func _maybe_relock_engine_from_board() -> void:
-	if not _uses_engine_lock():
-		return
-	var best := -1
-	var best_cards := 0
-	for index: int in _candidate_engine_segments():
-		var cards := _segment_card_count(index)
-		if cards <= 0:
-			continue
-		if cards > best_cards:
-			best_cards = cards
-			best = index
-		elif cards == best_cards and best >= 0:
-			if _map.get_segment_size(index) > _map.get_segment_size(best):
-				best = index
-			elif _map.get_segment_size(index) == _map.get_segment_size(best) and index < best:
-				best = index
-	if best >= 0 and _engine_lock_active():
-		_locked_engine_segment = best
-
-
-func _can_place_for_player(card: TileCard) -> bool:
-	if card == null:
-		return false
-	if _prefers_off_engine(card):
-		return _can_place_off_engine(card)
-	return _can_place_on_engine(card)
-
-
-func _can_place_off_engine(card: TileCard) -> bool:
-	for segment_index: int in _off_engine_segment_rank(card):
-		if _can_place_on_segment(card, segment_index):
-			return true
-	return false
-
-
-func _off_engine_segment_rank(card: TileCard) -> Array[int]:
-	var ranked: Array[int] = []
-	for index in _map.get_segment_count():
-		ranked.append(index)
-	var engine := _player_engine_index()
-	match card.id:
-		"compact_power":
-			ranked.sort_custom(func(a: int, b: int) -> bool:
-				var size_a := _map.get_segment_size(a)
-				var size_b := _map.get_segment_size(b)
-				if size_a <= 7 and size_b > 7:
-					return true
-				if size_b <= 7 and size_a > 7:
-					return false
-				if size_a != size_b:
-					return size_a < size_b
-				return a < b
-			)
-		"wide_ratio":
-			ranked.sort_custom(func(a: int, b: int) -> bool:
-				if a == engine:
-					return false
-				if b == engine:
-					return true
-				var count_a := _segment_card_count(a)
-				var count_b := _segment_card_count(b)
-				if count_a != count_b:
-					return count_a < count_b
-				return _map.get_segment_size(a) < _map.get_segment_size(b)
-			)
-		"share_load":
-			ranked.sort_custom(func(a: int, b: int) -> bool:
-				var feeds_engine_a := a + 1 == engine
-				var feeds_engine_b := b + 1 == engine
-				if feeds_engine_a != feeds_engine_b:
-					return feeds_engine_a
-				return _segment_engine_rating(a) > _segment_engine_rating(b)
-			)
-		_:
-			ranked.sort_custom(func(a: int, b: int) -> bool:
-				if a == engine:
-					return false
-				if b == engine:
-					return true
-				return _map.get_segment_size(a) < _map.get_segment_size(b)
-			)
-	return ranked
-
-
-func _placement_score(card: TileCard, hex: Hex, segment_index: int) -> float:
-	var score := _chip_numeric_value(card.get_board_chip(hex))
-	score += _placement_trigger_bonus(card, hex, segment_index)
-	var primary := _player_primary_segment()
-	if _uses_engine_lock() and primary >= 0 and segment_index != primary:
-		if _primary_segment_has_room():
-			score -= 800.0
-	if segment_index == primary or segment_index == _player_engine_index():
-		score += 20.0
-	elif _prefers_off_engine(card):
-		score += 12.0
-	return score
-
-
-func _placement_trigger_bonus(card: TileCard, hex: Hex, segment_index: int) -> float:
-	var hexes := _map.get_hexes_in_segment(segment_index)
-	var order_index := hexes.find(hex)
-	if order_index < 0:
-		return 0.0
-	var segment_len := maxi(1, hexes.size())
-	var early_bias := float(segment_len - order_index) / float(segment_len)
-	match card.product:
-		TileCard.Product.MULTIPLIER:
-			return early_bias * 18.0
-		TileCard.Product.FLAVOUR:
-			return float(order_index) / float(segment_len) * 12.0
-		_:
-			if card.type == TileCard.TileCardType.KITCHENWARE:
-				return early_bias * 10.0
-	return 0.0
-
-
-func _place_player_card(card: TileCard) -> bool:
-	if _prefers_off_engine(card):
-		return _place_best_on_segments(card, _off_engine_segment_rank(card))
-	var primary := _player_primary_segment()
-	var rank := _player_spill_segment_rank(primary)
-	if rank.is_empty():
-		return false
-	# Fill the primary line until it is full, then spill to layout-approved segments only.
-	if primary >= 0 and not _empty_hexes_in_segment(primary).is_empty():
-		if _place_best_on_segments(card, [primary]):
-			_maybe_relock_engine_from_board()
-			return true
-	var placed := _place_best_on_segments(card, rank)
-	if placed:
-		_maybe_relock_engine_from_board()
-	return placed
-
-
-func _place_best_on_segments(card: TileCard, ranked_segments: Array[int]) -> bool:
-	var best_hex: Hex = null
-	var best_score := -1.0
-	for segment_index: int in ranked_segments:
-		for hex: Hex in _empty_hexes_in_segment(segment_index):
-			if not card.can_place_on_tile(hex):
-				continue
-			var score := _placement_score(card, hex, segment_index)
-			if best_hex == null or score > best_score:
-				best_hex = hex
-				best_score = score
-	if best_hex == null:
-		return false
-	best_hex.place_tile_card(card)
-	return true
-
-
-func _condiment_player_value(condiment: Condiment) -> float:
-	if condiment == null:
-		return 0.0
-	var gap := maxi(0, GameManager.required_score - GameManager.total_round_score)
-	match condiment.effect_type:
-		Condiment.EffectType.BORROWED_TIME:
-			if gap > 0 and GameManager.remaining_turns <= 1:
-				return 90.0 + float(gap) / 500.0
-			return 4.0
-		Condiment.EffectType.GARNISH, Condiment.EffectType.ECHO:
-			return 48.0 if _engine_producer_hex() != null else 8.0
-		Condiment.EffectType.WARD:
-			return 24.0 if _engine_producer_hex() != null else 6.0
-		Condiment.EffectType.NEXT_TRIGGER_ENERGY, Condiment.EffectType.NEXT_TRIGGER_MULT:
-			return 40.0 if _engine_producer_hex() != null else 8.0
-		Condiment.EffectType.FORWARD_GIFT, Condiment.EffectType.MINT_SIP:
-			return 30.0 if _engine_producer_hex() != null else 5.0
-		Condiment.EffectType.FREE_REROLL:
-			return 28.0 if EconomyManager.rerolls_remaining <= 1 else 14.0
-		Condiment.EffectType.REWRITE_OMEN:
-			if EventManager.get_next_event_round() == -1:
-				return 0.0
-			return 26.0
-		Condiment.EffectType.OPENING_ROUND, Condiment.EffectType.CLOSING_ROUND:
-			return 36.0 if _engine_producer_hex() != null else 10.0
-		Condiment.EffectType.GOLD_DROP:
-			return 14.0 if GameManager.current_round <= 3 else 6.0
-		Condiment.EffectType.CONDIMENT_PACK:
-			return 18.0 if CondimentManager.empty_slot_count() >= 2 else 8.0
-		_:
-			return 6.0
-
-
-func _engine_producer_hex() -> Hex:
-	var engine := _player_engine_index()
-	if engine < 0:
-		return null
-	for hex: Hex in _map.get_hexes_in_segment(engine):
-		var card := hex.active_tile_card
-		if card != null and TileCard.is_producer_type(card.type):
-			return hex
-	return null
-
-
-func _player_use_belt_before_resolve() -> void:
-	if not CondimentManager.can_drink_now():
-		return
-	var gap := maxi(0, GameManager.required_score - GameManager.total_round_score)
-	for i in CondimentManager.BELT_SIZE:
-		var condiment := CondimentManager.belt[i]
-		if condiment == null:
-			continue
-		if condiment.effect_type in [
-			Condiment.EffectType.GARNISH,
-			Condiment.EffectType.ECHO,
-			Condiment.EffectType.NEXT_TRIGGER_ENERGY,
-			Condiment.EffectType.NEXT_TRIGGER_MULT,
-			Condiment.EffectType.FORWARD_GIFT,
-			Condiment.EffectType.MINT_SIP,
-			Condiment.EffectType.WARD,
-		]:
-			var target := _best_condiment_target_hex(condiment)
-			if target != null and gap > 0:
-				CondimentManager.headless_use_slot(i, target)
-				return
-
-
-func _best_condiment_target_hex(condiment: Condiment) -> Hex:
-	var engine_hex := _engine_producer_hex()
-	if engine_hex != null:
-		return engine_hex
-	var engine := _player_engine_index()
-	if engine < 0:
-		return null
-	for hex: Hex in _map.get_hexes_in_segment(engine):
-		if hex.active_tile_card != null:
-			return hex
-	return null
-
-
-func _can_bot_place_card(card: TileCard) -> bool:
-	if card == null:
-		return false
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_placement_blocked() or hex.active_tile_card != null:
-			continue
-		if card.can_place_on_tile(hex):
-			return true
-	return false
-
-
-func _place_opening_hand(hand: Array[TileCard]) -> void:
-	match _active_bot:
-		"chaos":
-			var shuffled: Array = hand.duplicate()
-			RunRng.shuffle_with(_next_chaos_rng(), shuffled)
-			for card: TileCard in shuffled:
-				_place_one_card(card)
-			return
-		"player":
-			_init_layout_engine_lock()
-			for card: TileCard in _order_hand_for_line(hand):
-				_place_one_card(card)
-			return
-		"stack":
-			if _place_hand_on_largest_segments(hand):
-				return
-		"spread":
-			for card: TileCard in _order_hand_for_line(hand):
-				_place_one_card(card)
-			return
-		_:
-			var opening := _pick_two_smallest_segments(hand.size())
-			if not opening.is_empty() and _place_hand_on_two_segments(hand, opening):
-				return
-	for card: TileCard in hand:
-		_place_one_card(card)
-
-
-func _place_hand_on_largest_segments(hand: Array[TileCard]) -> bool:
-	var ordered := _order_hand_for_line(hand)
-	var ranked: Array[int] = []
-	for index in _map.get_segment_count():
-		ranked.append(index)
-	ranked.sort_custom(func(a: int, b: int) -> bool:
-		var size_a := _map.get_segment_size(a)
-		var size_b := _map.get_segment_size(b)
-		if size_a != size_b:
-			return size_a > size_b
-		return a < b
-	)
-	var remaining := ordered.duplicate()
-	for segment_index: int in ranked:
-		if remaining.is_empty():
-			break
-		var slots := _empty_hexes_in_segment(segment_index)
-		var placed_here := 0
-		var still_pending: Array[TileCard] = []
-		for card: TileCard in remaining:
-			if placed_here >= slots.size():
-				still_pending.append(card)
-				continue
-			if _place_on_first_legal(card, slots):
-				placed_here += 1
-			else:
-				still_pending.append(card)
-		remaining = still_pending
-	return remaining.is_empty()
-
-
-func _place_one_card(card: TileCard) -> bool:
-	if not _can_bot_place_card(card):
-		return false
-	if _active_bot == CHAOS_BOT_ID:
-		return _place_chaos_card(card)
-	match _active_bot:
-		"player":
-			if _place_player_card(card):
-				return true
-			# Meals only fit Meal slots, which the player heuristics never pick.
-			return _place_first_legal_empty(card)
-		"stack":
-			if _place_on_preferred_segments(card, _stack_segment_rank()):
-				return true
-		"spread":
-			if _place_on_preferred_segments(card, _spread_segment_rank()):
-				return true
-	if _is_meal_card(card) and _place_meal_card(card):
-		return true
-	return _place_first_legal_empty(card)
-
-
-func _is_meal_card(card: TileCard) -> bool:
-	return card != null and card.type == TileCard.TileCardType.MEAL
-
-
-## Prefer a seat where the prefix recipe is already complete in fire order.
-func _place_meal_card(card: TileCard) -> bool:
-	var meal := card as MealCard
-	if meal == null:
-		return _place_first_legal_empty(card)
-	var best_hex: Hex = null
-	var best_score := -1.0
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_placement_blocked() or hex.active_tile_card != null:
-			continue
-		if not meal.can_place_on_tile(hex):
-			continue
-		var score := _meal_placement_score(meal, hex)
-		if score > best_score:
-			best_score = score
-			best_hex = hex
-	if best_hex == null or best_score <= 0.0:
-		return false
-	best_hex.place_tile_card(card)
-	return true
-
-
-func _meal_placement_score(meal: MealCard, hex: Hex) -> float:
-	if not meal.is_recipe_ready(hex):
-		return 0.0
-	return 1000.0 + _chip_numeric_value(meal.get_board_chip(hex))
-
-
-func _meal_card_value(card: TileCard) -> float:
-	var meal := card as MealCard
-	if meal == null:
-		return 8.0
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_placement_blocked() or hex.active_tile_card != null:
-			continue
-		if not meal.can_place_on_tile(hex):
-			continue
-		if not meal.is_recipe_ready(hex):
-			continue
-		return 70.0 + _chip_numeric_value(meal.get_board_chip(hex))
-	return 18.0
-
-
-func _place_first_legal_empty(card: TileCard) -> bool:
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_placement_blocked() or hex.active_tile_card != null:
-			continue
-		if not card.can_place_on_tile(hex):
-			continue
-		hex.place_tile_card(card)
-		return true
-	return false
-
-
-func _place_on_preferred_segments(card: TileCard, ranked_segments: Array[int]) -> bool:
-	for segment_index: int in ranked_segments:
-		var slots := _empty_hexes_in_segment(segment_index)
-		if _place_on_first_legal(card, slots):
-			return true
-	return false
-
-
-func _stack_segment_rank() -> Array[int]:
-	var ranked: Array[int] = []
-	for index in _map.get_segment_count():
-		ranked.append(index)
-	ranked.sort_custom(func(a: int, b: int) -> bool:
-		var flavour_a := _segment_product_count(a, TileCard.Product.FLAVOUR)
-		var flavour_b := _segment_product_count(b, TileCard.Product.FLAVOUR)
-		var mult_a := _segment_product_count(a, TileCard.Product.MULTIPLIER)
-		var mult_b := _segment_product_count(b, TileCard.Product.MULTIPLIER)
-		var combo_a := flavour_a + mult_a * 3 + _segment_card_count(a)
-		var combo_b := flavour_b + mult_b * 3 + _segment_card_count(b)
-		if combo_a != combo_b:
-			return combo_a > combo_b
-		var size_a := _map.get_segment_size(a)
-		var size_b := _map.get_segment_size(b)
-		if size_a != size_b:
-			return size_a > size_b
-		return a < b
-	)
-	return ranked
-
-
-func _spread_segment_rank() -> Array[int]:
-	var ranked: Array[int] = []
-	for index in _map.get_segment_count():
-		ranked.append(index)
-	ranked.sort_custom(func(a: int, b: int) -> bool:
-		var count_a := _segment_card_count(a)
-		var count_b := _segment_card_count(b)
-		if count_a == count_b:
-			return a < b
-		return count_a < count_b
-	)
-	return ranked
-
-
-func _segment_card_count(segment_index: int) -> int:
-	var count := 0
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if _map.get_segment_index(hex.coordinates) != segment_index:
-			continue
-		if hex.active_tile_card != null:
-			count += 1
-	return count
-
-
-func _segment_product_count(segment_index: int, product: TileCard.Product) -> int:
-	var count := 0
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if _map.get_segment_index(hex.coordinates) != segment_index:
-			continue
-		var card := hex.active_tile_card
-		if card != null and card.product == product:
-			count += 1
-	return count
-
-
-## Last turn's Energy, Mult, and E×M contribution per segment.
-func _segment_contribution_snapshot() -> Array[Dictionary]:
-	var rows: Array[Dictionary] = []
-	if _map == null:
-		return rows
-	for index in _map.get_segment_count():
-		var energy := _map.get_segment_turn_flavour(index)
-		var additive_mult := _map.get_segment_additive_mult(index)
-		var multiplicative_mult := _map.get_segment_multiplicative_mult(index)
-		rows.append({
-			"index": index,
-			"size": _map.get_segment_size(index),
-			"energy": energy,
-			"additive_mult": additive_mult,
-			"multiplicative_mult": multiplicative_mult,
-			"contribution": GameManager.compute_segment_turn_contribution(
-				index,
-				energy,
-				additive_mult,
-				multiplicative_mult
-			),
-		})
-	return rows
-
-
-func _print_segment_snapshot(round_number: int, snapshot: Array[Dictionary]) -> void:
-	var parts: PackedStringArray = []
-	for row: Dictionary in snapshot:
-		parts.append(
-			"s%d(n=%d E=%d A=%s X=%s C=%d)"
-			% [
-				int(row.get("index", 0)),
-				int(row.get("size", 0)),
-				int(row.get("energy", 0)),
-				CountingNumber.format_additive_mult(float(row.get("additive_mult", 1.0))),
-				CountingNumber.format_multiplicative_mult(float(row.get("multiplicative_mult", 1.0))),
-				int(row.get("contribution", 0)),
-			]
-		)
-	print("[playtest]   R%d segments %s" % [round_number, " ".join(parts)])
-
-
-func _largest_segment_index() -> int:
-	if _map == null:
-		return -1
-	var best := -1
-	var best_size := -1
-	for index in _map.get_segment_count():
-		var segment_size := _map.get_segment_size(index)
-		if segment_size > best_size:
-			best_size = segment_size
-			best = index
-	return best
-
-
-func _player_engine_index() -> int:
-	if _map == null:
-		return -1
-	if _uses_engine_lock() and _locked_engine_segment >= 0:
-		if _primary_segment_has_room():
-			return _locked_engine_segment
-		if _engine_lock_active():
-			return _locked_engine_segment
-	var best := -1
-	var best_rating := -1.0
-	for index in _map.get_segment_count():
-		var rating := _segment_engine_rating(index)
-		if rating > best_rating:
-			best_rating = rating
-			best = index
-	if best < 0:
-		return _largest_segment_index()
-	return best
-
-
-## Highest-rated line first. Tie-break with layout size priorities.
-func _player_engine_rank() -> Array[int]:
-	if _uses_engine_lock() and _locked_engine_segment >= 0:
-		var locked_rank: Array[int] = [_locked_engine_segment]
-		for index: int in _candidate_engine_segments():
-			if index != _locked_engine_segment:
-				locked_rank.append(index)
-		return locked_rank
-	var ranked: Array[int] = []
-	for index in _map.get_segment_count():
-		ranked.append(index)
-	ranked.sort_custom(func(a: int, b: int) -> bool:
-		var rating_a := _segment_engine_rating(a)
-		var rating_b := _segment_engine_rating(b)
-		if rating_a != rating_b:
-			return rating_a > rating_b
-		return a < b
-	)
-	return ranked
-
-
-func _can_place_on_engine(card: TileCard) -> bool:
-	if card == null:
-		return false
-	var engine := _player_engine_index()
-	if engine < 0:
-		return false
-	if not _empty_hexes_in_segment(engine).is_empty():
-		return _can_place_on_segment(card, engine)
-	var next_sizes := _player_spill_segment_rank(_player_primary_segment())
-	for segment_index: int in next_sizes:
-		if segment_index == engine:
-			continue
-		if _can_place_on_segment(card, segment_index):
-			return true
-	return false
-
-
-func _can_place_on_segment(card: TileCard, segment_index: int) -> bool:
-	for hex: Hex in _empty_hexes_in_segment(segment_index):
-		if card.can_place_on_tile(hex):
-			return true
-	return false
+		match RoundFlow.get_step():
+			RoundFlow.Step.IDLE:
+				if day_round != GameManager.current_round:
+					day_round = GameManager.current_round
+					await _start_day()
+				await _play_hour()
+				hours += 1
+			RoundFlow.Step.SUMMARY:
+				if trace_enabled:
+					_trace_node_owners()
+				_close_day()
+				RoundFlow.notify_summary_confirmed()
+			RoundFlow.Step.CARD_PICK:
+				await _draft(true, RoundFlow.get_transition_card_pick_round(), GameManager.remaining_turns)
+				RoundFlow.notify_card_picked()
+			RoundFlow.Step.MERCHANT:
+				await policy.shop(MerchantVisit.new(self))
+				EventBus.merchant_closed.emit()
+			RoundFlow.Step.EVENT_REVEAL:
+				EventBus.event_reveal_finished.emit()
+			RoundFlow.Step.VICTORY:
+				_close_day()
+				_won = true
+				_run_over = true
+
+	var reasons: Array[String] = []
+	reasons.append_array(_log["invariants"])
+	if not _run_over:
+		reasons.append("run did not finish within %d Hours" % MAX_HOURS_PER_RUN)
+	if _check_sim:
+		reasons.append_array(sim.purity_failures)
+		sim.purity_failures.clear()
+	var details := _log.duplicate()
+	details.erase("invariants")
+	details["bot"] = policy.id
+	details["won"] = _won
+	details["reached_round"] = ScoreProgression.RUN_LENGTH_ROUNDS if _won else GameManager.current_round
+	details["gold"] = EconomyManager.amount
+	details["staff"] = StaffManager.owned_ids()
+	details["difficulty"] = _difficulty
+	details["power"] = power_mode
+	details["playtest_condiments"] = use_condiments
+	details["overplay"] = TileCard.overplay_enabled
+	details["repeat_index"] = repeat_index
+	details["sims"] = sim.simulations_run - sims_before
+	details["sim_seconds"] = snappedf(sim.evaluate_msec / 1000.0, 0.1)
+	details["sim_resolve_seconds"] = snappedf(sim.resolve_msec / 1000.0, 0.1)
+	details["slowest_sim_ms"] = roundi(sim.slowest_resolve_msec)
+	details["seconds"] = snappedf((Time.get_ticks_msec() - started_msec) / 1000.0, 0.1)
+	_record(suite, chef_id, seed_text, reasons, details)
 
 
 func _begin_run(chef_id: String, seed_text: String) -> void:
 	_run_script_errors.clear()
 	_pending_turn_script_errors.clear()
 	SCRIPT_ERROR_TRACKER.mark()
-	GameManager.skip_presentation = true
 	GameManager.selected_chef = ChefRegistry.get_chef_by_id(chef_id)
-	GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
+	GameManager.selected_difficulty = _difficulty as Difficulty.Level
 	RunRng.begin_new_run(seed_text)
 	GameManager.reset_for_new_run()
 	_clear_board()
-	_map.generate_terrain()
-	_map.apply_run_start_randomization()
-	_locked_engine_segment = -1
-	_chaos_step = 0
+	map.generate_terrain()
+	map.apply_run_start_randomization()
+	_run_over = false
+	_won = false
+	_day = {}
+	_log = {
+		"picks": [],
+		"buys": [],
+		"sells": [],
+		"plays": 0,
+		"merges": [],
+		"replaces": [],
+		"rerolls": 0,
+		"merchant_rerolls": 0,
+		"drinks": [],
+		"perks": [],
+		"staff_moves": 0,
+		"days": [],
+		"invariants": [],
+	}
+	hand.clear()
 	EventBus.turn_started.emit()
+	hand.append_array(_deal_starting_hand())
 
 
 func _clear_board() -> void:
-	if _map == null:
-		return
-	for hex: Hex in _map.map_data.values():
+	for hex: Hex in map.map_data.values():
 		if hex.active_tile_card != null:
 			hex.remove_tile_card()
-	_map.reset_hour_results()
+	map.reset_hour_results()
 
 
-func _place_by_id(hex: Hex, card_id: String) -> void:
-	var template := GameManager.get_tile_card_by_id(card_id)
-	if hex == null or template == null:
-		return
-	hex.place_tile_card(template)
+func _start_day() -> void:
+	_day = {
+		"round": GameManager.current_round,
+		"goal": GameManager.required_score,
+		"event": EventManager.get_active_event_name(),
+		"hours": 0,
+		"leftover_hours": 0,
+	}
+	if power_mode:
+		# The goal above is kept for the report. Zero lets every Hour of the day play out.
+		GameManager.required_score = 0
+	await policy.on_day_started()
 
 
-func _first_empty_hex() -> Hex:
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.active_tile_card == null and not hex.is_placement_blocked():
-			return hex
-	return null
-
-
-func _two_hexes_in_same_segment() -> Array[Hex]:
-	var found: Array[Hex] = []
-	var segment_index := -1
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_placement_blocked():
-			continue
-		var index := _map.get_segment_index(hex.coordinates)
-		if found.is_empty():
-			segment_index = index
-			found.append(hex)
-			continue
-		if index == segment_index:
-			found.append(hex)
-			return found
-		found.clear()
-		segment_index = index
-		found.append(hex)
-	return []
-
-
-func _pick_two_smallest_segments(min_tiles: int) -> Array[int]:
-	var entries: Array[Dictionary] = []
-	for index in _map.get_segment_count():
-		entries.append({"index": index, "size": _map.get_segment_size(index)})
-	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		if int(a.size) == int(b.size):
-			return int(a.index) < int(b.index)
-		return int(a.size) < int(b.size)
-	)
-	for i in entries.size():
-		for j in range(i + 1, entries.size()):
-			var a: Dictionary = entries[i]
-			var b: Dictionary = entries[j]
-			if int(a.size) + int(b.size) >= min_tiles:
-				var pair: Array[int] = [int(a.index), int(b.index)]
-				pair.sort()
-				return pair
-	return []
-
-
-func _place_hand_on_two_segments(hand: Array[TileCard], segments: Array[int]) -> bool:
-	var ordered := _order_hand_for_line(hand)
-	var primary := segments[0]
-	var secondary := segments[1]
-	if _map.get_segment_size(primary) < _map.get_segment_size(secondary):
-		primary = segments[1]
-		secondary = segments[0]
-
-	# Keep Energy and Mult on the larger of the two lines. Spill the rest.
-	var primary_slots := _empty_hexes_in_segment(primary)
-	var secondary_slots := _empty_hexes_in_segment(secondary)
-	if primary_slots.size() + secondary_slots.size() < ordered.size():
-		return false
-
-	# Do not dump the whole hand on one line even when it fits.
-	var spill_count := 0
-	if ordered.size() >= 2 and not secondary_slots.is_empty():
-		spill_count = 1
-	var primary_count := mini(ordered.size() - spill_count, primary_slots.size())
-	spill_count = ordered.size() - primary_count
-	if spill_count > secondary_slots.size():
-		return false
-
-	for i in primary_count:
-		if not _place_on_first_legal(ordered[i], primary_slots):
-			return false
-	for i in spill_count:
-		if not _place_on_first_legal(ordered[primary_count + i], secondary_slots):
-			return false
-	return true
-
-
-func _place_on_first_legal(card: TileCard, slots: Array[Hex]) -> bool:
-	for index in slots.size():
-		var hex: Hex = slots[index]
-		if hex.active_tile_card != null:
-			continue
-		if not card.can_place_on_tile(hex):
-			continue
-		hex.place_tile_card(card)
-		slots.remove_at(index)
-		return true
-	return false
-
-
-func _order_hand_for_line(hand: Array[TileCard]) -> Array[TileCard]:
-	var flavour_cards: Array[TileCard] = []
-	var gold_cards: Array[TileCard] = []
-	var mult_cards: Array[TileCard] = []
-	var meal_cards: Array[TileCard] = []
-	var other_cards: Array[TileCard] = []
-	for card: TileCard in hand:
-		match card.product:
-			TileCard.Product.FLAVOUR:
-				flavour_cards.append(card)
-			TileCard.Product.GOLD:
-				gold_cards.append(card)
-			TileCard.Product.MULTIPLIER:
-				mult_cards.append(card)
-			_:
-				if card.type == TileCard.TileCardType.MEAL:
-					meal_cards.append(card)
-				else:
-					other_cards.append(card)
-	var ordered: Array[TileCard] = []
-	ordered.append_array(flavour_cards)
-	ordered.append_array(gold_cards)
-	ordered.append_array(mult_cards)
-	ordered.append_array(other_cards)
-	ordered.append_array(meal_cards)
-	return ordered
-
-
-func _empty_hexes_in_segment(segment_index: int) -> Array[Hex]:
-	var hexes: Array[Hex] = []
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if _map.get_segment_index(hex.coordinates) != segment_index:
-			continue
-		if hex.active_tile_card != null or hex.is_placement_blocked():
-			continue
-		hexes.append(hex)
-	return hexes
-
-
-func _cards_on_one_segment_only() -> bool:
-	var used: Dictionary = {}
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.active_tile_card == null:
-			continue
-		used[_map.get_segment_index(hex.coordinates)] = true
-	return used.size() <= 1
-
-
-func _next_chaos_rng() -> RandomNumberGenerator:
-	_chaos_step += 1
-	return RunRng.create_rng("chaos:%d" % _chaos_step)
-
-
-func _chaos_stress_value(card: TileCard) -> float:
-	if card == null:
-		return 0.0
-	match card.type:
-		TileCard.TileCardType.KITCHENWARE:
-			return 70.0
-		TileCard.TileCardType.MEAL:
-			return 55.0
-		_:
-			return 12.0
-
-
-func _chaos_weighted_pick(cards: Array[TileCard]) -> TileCard:
-	if cards.is_empty():
-		return null
-	var total := 0.0
-	var weights: Array[float] = []
-	for card: TileCard in cards:
-		var weight := _chaos_stress_value(card) + _next_chaos_rng().randf() * 8.0
-		weights.append(weight)
-		total += weight
-	var roll := _next_chaos_rng().randf() * total
-	var cursor := 0.0
-	for index in cards.size():
-		cursor += weights[index]
-		if roll <= cursor:
-			return cards[index]
-	return cards[cards.size() - 1]
-
-
-func _place_chaos_card(card: TileCard) -> bool:
-	var slots: Array[Hex] = []
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.is_placement_blocked() or hex.active_tile_card != null:
-			continue
-		if card.can_place_on_tile(hex):
-			slots.append(hex)
-	if slots.is_empty():
-		return false
-	var hex: Hex = slots[_next_chaos_rng().randi_range(0, slots.size() - 1)]
-	hex.place_tile_card(card)
-	return true
-
-
-
-func _shop_chaos_round() -> Array[String]:
-	var bought: Array[String] = []
-	var stream_name := RunRng.build_merchant_stream_name(GameManager.current_round, 0)
-	var stock := CardLoot.card_draw(
-		MERCHANT_STOCK_COUNT,
-		GameManager.tile_cards_pool,
-		true,
-		RunRng.create_rng(stream_name)
-	)
-	var placeable: Array[TileCard] = []
-	for card: TileCard in stock:
-		if _can_bot_place_card(card) and EconomyManager.can_afford(card.get_shop_price()):
-			placeable.append(card)
-	var mix: Array = []
-	for card: TileCard in placeable:
-		mix.append(card)
-	RunRng.shuffle_with(_next_chaos_rng(), mix)
-	for entry: Variant in mix:
-		var card: TileCard = entry
-		var price := card.get_shop_price()
-		if not EconomyManager.can_afford(price):
-			continue
-		EconomyManager.remove(price)
-		bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
-		_place_one_card(card)
-		if bought.size() >= 3:
+func _play_hour() -> void:
+	var goal_met_before := GameManager.total_round_score >= GameManager.required_score
+	if hand.is_empty():
+		_note_invariant("empty hand at the start of an Hour")
+	# The Hour ends once a play or sell leaves fewer than three cards in hand.
+	var removed := 0
+	while not hand.is_empty() and (hand.size() >= 3 or removed == 0):
+		if removed >= MAX_ACTIONS_PER_HOUR:
+			_note_invariant("Hour needed more than %d hand actions" % MAX_ACTIONS_PER_HOUR)
 			break
-	return bought
+		trace("choosing hand action")
+		var action: Dictionary = await policy.choose_hand_action(hand)
+		trace("hand action %s %s" % [action.get("card").id if action.get("card") else "?", "sell" if action.get("sell", false) else str(action.get("hex").coordinates if action.get("hex") else "")])
+		_apply_hand_action(action)
+		removed += 1
+
+	trace("before resolve")
+	await policy.before_resolve()
+	trace("resolving Hour")
+	_day["hours"] = int(_day["hours"]) + 1
+	if goal_met_before:
+		_day["leftover_hours"] = int(_day["leftover_hours"]) + 1
+	var score_before := GameManager.total_round_score
+	await _resolve_turn()
+	for reason: String in _collect_invariant_failures(score_before):
+		_note_invariant(reason)
+	if _run_over or RoundFlow.is_transitioning():
+		return
+
+	# The day goes on. Every new Hour brings a card pick, rolled before the Hour was used up.
+	if EventManager.should_auto_grant_card(false):
+		EventManager.grant_auto_card(false, GameManager.remaining_turns + 1)
+	elif EventManager.get_cards_pack_size(false) > 0:
+		await _draft(false, GameManager.current_round, GameManager.remaining_turns + 1)
 
 
-func _collect_invariant_failures(score_before: int) -> Array[String]:
-	var reasons: Array[String] = []
-	if _map == null:
-		reasons.append("map is null after resolve")
-		return reasons
-	if _map.turn_resolver != null and _map.turn_resolver.aborted_retrigger_storm:
-		reasons.append(
-			"retrigger storm aborted at %d activations"
-			% HexTurnResolver.SKIP_PRESENTATION_STORM_LIMIT
-		)
-	if EconomyManager.amount < 0:
-		reasons.append("gold went negative (%d)" % EconomyManager.amount)
-	if GameManager.remaining_turns < 0:
-		reasons.append("remaining_turns went negative (%d)" % GameManager.remaining_turns)
+func _apply_hand_action(action: Dictionary) -> void:
+	var card: TileCard = action.get("card")
+	if card == null or not hand.has(card):
+		_note_invariant("bot chose a card that is not in hand")
+		card = hand[0]
+		action = {"card": card, "sell": true}
+	var hex: Hex = action.get("hex")
+	if not bool(action.get("sell", false)) and (hex == null or not card.can_play_on(hex)):
+		_note_invariant("bot chose an illegal spot for %s" % card.id)
+		var legal := legal_hexes(card)
+		hex = legal[0] if not legal.is_empty() else null
+	hand.erase(card)
+	if bool(action.get("sell", false)) or hex == null:
+		EconomyManager.add(CardSellPanel.SELL_VALUE)
+		_log["sells"].append("%d:%s" % [GameManager.current_round, card.id])
+		return
+	match card.get_overplay(hex):
+		TileCard.Overplay.MERGE:
+			_log["merges"].append("%d:%s>%d" % [GameManager.current_round, card.id, hex.active_tile_card.star_level + 1])
+		TileCard.Overplay.REPLACE:
+			_log["replaces"].append("%d:%s>%s" % [GameManager.current_round, hex.active_tile_card.id, card.id])
+	card.play_on(hex)
+	StationManager.evaluate_station_types()
+	_log["plays"] = int(_log["plays"]) + 1
 
-	var seen_instances: Dictionary = {}
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		var card := hex.active_tile_card
-		if card == null:
+
+func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> void:
+	var reroll_index := 0
+	while true:
+		# The panel rolls its first offer before the Hour is used up and each reroll after.
+		var remaining := first_remaining_turns if reroll_index == 0 else GameManager.remaining_turns
+		var offer := CardSelectionUI.draw_offer(round_number, remaining, is_reward, reroll_index)
+		if offer.is_empty():
+			return
+		var choice: int = await policy.choose_offer(offer, is_reward)
+		if choice < 0 and EconomyManager.use_reroll():
+			reroll_index += 1
+			_log["rerolls"] = int(_log["rerolls"]) + 1
 			continue
-		if card.id.strip_edges().is_empty():
-			reasons.append("placed card with empty id at %s" % str(hex.coordinates))
-		var instance_id := card.get_instance_id()
-		if seen_instances.has(instance_id):
-			reasons.append(
-				"same card instance on %s and %s"
-				% [str(seen_instances[instance_id]), str(hex.coordinates)]
-			)
-		else:
-			seen_instances[instance_id] = hex.coordinates
-		var lookup := _map.get_hex_for_tile_card(card)
-		if lookup != hex:
-			reasons.append("get_hex_for_tile_card mismatch for %s" % card.id)
-		var segment_index := _map.get_segment_index(hex.coordinates)
-		if segment_index < 0 or segment_index >= _map.get_segment_count():
-			reasons.append("hex %s has segment_index %d" % [str(hex.coordinates), segment_index])
-
-	for index in _map.get_segment_count():
-		var occupied := _segment_card_count(index)
-		var size := _map.get_segment_size(index)
-		if occupied > size:
-			reasons.append("segment %d has %d cards on %d tiles" % [index, occupied, size])
-		var flavour := _map.get_segment_turn_flavour(index)
-		var additive := _map.get_segment_additive_mult(index)
-		var multiplicative := _map.get_segment_multiplicative_mult(index)
-		if flavour < 0:
-			reasons.append("segment %d flavour %d" % [index, flavour])
-		if is_nan(additive) or is_inf(additive) or additive < 0.0:
-			reasons.append("segment %d additive mult %s" % [index, str(additive)])
-		if is_nan(multiplicative) or is_inf(multiplicative) or multiplicative < 0.0:
-			reasons.append("segment %d multiplicative mult %s" % [index, str(multiplicative)])
-
-	var expected := GameManager.compute_hour_turn_contribution(
-		_map.get_hour_flavour(),
-		_map.get_hour_additive_mult()
-	)
-
-	var storm := _map.turn_resolver != null and _map.turn_resolver.aborted_retrigger_storm
-	var delta := GameManager.total_round_score - score_before
-	if not storm and delta != expected:
-		reasons.append("turn score delta %d != hour rating %d" % [delta, expected])
-	for script_err: String in _pending_turn_script_errors:
-		reasons.append("script error: %s" % script_err)
-	return reasons
-
-
-func _print_fuzz_summary() -> void:
-	print("[playtest] --- fuzz by layout ---")
-	for chef_id: String in _layouts:
-		var runs := 0
-		var fails := 0
-		var storms := 0
-		for case_data: Dictionary in _cases:
-			if str(case_data.get("suite", "")) != "fuzz":
-				continue
-			if str(case_data.get("chef", "")) != chef_id:
-				continue
-			runs += 1
-			if not bool(case_data.get("passed", false)):
-				fails += 1
-			var details: Dictionary = case_data.get("details", {})
-			storms += int(details.get("storms", 0))
-		if runs <= 0:
-			continue
-		print(
-			"[playtest]   %s  %d/%d clean  storms=%d  invariant-fails=%d"
-			% [chef_id, runs - fails, runs, storms, fails]
-		)
+		var card := offer[clampi(choice, 0, offer.size() - 1)]
+		_log["picks"].append("%s%d:%s" % ["reward" if is_reward else "", round_number, card.id])
+		EventBus.tile_card_selected.emit(card)
+		return
 
 
 func _resolve_turn() -> void:
@@ -2105,63 +501,201 @@ func _resolve_turn() -> void:
 		print("[playtest]   SCRIPT %s" % script_err)
 
 
-func _seed_for(prefix: String, chef_id: String, index: int) -> String:
-	var tag := chef_id.substr(0, 3).to_upper()
-	return "%s%s%03d" % [prefix, tag, index]
+func _close_day() -> void:
+	if _day.is_empty():
+		return
+	var score := GameManager.total_round_score
+	_day["score"] = score
+	_day["cleared"] = score >= int(_day["goal"])
+	_day["gold"] = EconomyManager.amount
+	var stations: Array = []
+	for segment_index in map.get_segment_count():
+		var station_type := StationManager.get_station_type(segment_index)
+		stations.append({
+			"type": station_type.id if station_type != null else "",
+			"level": StationManager.get_level(segment_index),
+		})
+	_day["stations"] = stations
+	_log["days"].append(_day)
+	if _verbose:
+		print("[playtest]   day %d %d/%d hours=%d leftover=%d gold=%d" % [
+			int(_day["round"]),
+			score,
+			int(_day["goal"]),
+			int(_day["hours"]),
+			int(_day["leftover_hours"]),
+			EconomyManager.amount,
+		])
+	_day = {}
 
 
-func _print_full_nine_summary() -> void:
-	print("[playtest] --- full 1-9 by bot and layout ---")
-	for bot_id: String in _full_nine_bots():
-		print("[playtest] bot=%s" % bot_id)
-		for chef_id: String in _layouts:
-			var wins := 0
-			var runs := 0
-			var round_sum := 0.0
-			var loss_rounds: Dictionary = {}
-			var sizes: Array = []
-			for case_data: Dictionary in _cases:
-				if str(case_data.get("suite", "")) != "full_nine":
-					continue
-				if str(case_data.get("chef", "")) != chef_id:
-					continue
-				var details: Dictionary = case_data.get("details", {})
-				if str(details.get("bot", "fill")) != bot_id:
-					continue
-				runs += 1
-				if sizes.is_empty():
-					sizes = details.get("segment_sizes", [])
-				if bool(case_data.get("passed", false)):
-					wins += 1
-					round_sum += float(FULL_RUN_TARGET_ROUND)
-				else:
-					var reached := int(details.get("reached_round", 0))
-					round_sum += float(reached)
-					loss_rounds[reached] = int(loss_rounds.get(reached, 0)) + 1
-			if runs <= 0:
-				continue
-			var avg_round := round_sum / float(runs)
-			print(
-				"[playtest]   %s sizes=%s  %d/%d wins (%.0f%%)  avg round %.1f  loss-by-round %s"
-				% [chef_id, str(sizes), wins, runs, 100.0 * float(wins) / float(runs), avg_round, str(loss_rounds)]
-			)
+func _on_card_granted(card: TileCard) -> void:
+	if sim.is_simulating or card == null:
+		return
+	hand.append(card)
 
 
-func _record(
-	suite: String,
-	chef_id: String,
-	seed_text: String,
-	passed: bool,
-	reasons: Array[String],
-	details: Dictionary
-) -> void:
-	var script_errors := SCRIPT_ERROR_TRACKER.collect_new()
-	for script_err: String in script_errors:
+func _on_game_ended() -> void:
+	if sim.is_simulating:
+		return
+	_close_day()
+	_run_over = true
+
+
+func _on_station_choice_requested(segment_index: int) -> void:
+	var choice: int = policy.choose_station_perk(segment_index) if policy != null else 0
+	StationManager.resolve_choice(segment_index, choice)
+	if not sim.is_simulating:
+		_log["perks"].append("%d:%d:%d" % [GameManager.current_round, segment_index, choice])
+
+#endregion
+
+## Largest groups of nodes by parent and class, to find nodes that pile up over a run.
+func _trace_node_owners() -> void:
+	var counts: Dictionary = {}
+	var stack: Array[Node] = [get_tree().root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		for child: Node in node.get_children():
+			stack.append(child)
+			var key := "%s > %s" % [node.name, child.get_class()]
+			counts[key] = int(counts.get(key, 0)) + 1
+	var keys := counts.keys()
+	keys.sort_custom(func(a: String, b: String) -> bool: return counts[a] > counts[b])
+	for key: String in keys.slice(0, 8):
+		print("[trace]   nodes %s x%d" % [key, counts[key]])
+
+#region Helpers for policies
+
+func trace(message: String) -> void:
+	if trace_enabled:
+		print("[trace] %s mem=%dMB objects=%d resources=%d nodes=%d orphans=%d" % [
+			message,
+			OS.get_static_memory_usage() / 1048576,
+			Performance.get_monitor(Performance.OBJECT_COUNT),
+			Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT),
+			Performance.get_monitor(Performance.OBJECT_NODE_COUNT),
+			Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT),
+		])
+
+
+func legal_hexes(card: TileCard) -> Array[Hex]:
+	var hexes: Array[Hex] = []
+	for hex: Hex in map.get_hexes_in_trigger_order():
+		if card.can_play_on(hex):
+			hexes.append(hex)
+	return hexes
+
+
+## True while a regular spot is open.
+func board_has_room() -> bool:
+	for hex: Hex in map.get_hexes_in_trigger_order():
+		if hex.active_tile_card == null and not hex.is_placement_blocked() and not map.is_meal_slot(hex.coordinates):
+			return true
+	return false
+
+
+func drink_condiment(slot: int, hex: Hex = null, hex_b: Hex = null) -> bool:
+	var condiment: Condiment = CondimentManager.belt[slot]
+	if condiment == null or not CondimentManager.headless_use_slot(slot, hex, hex_b):
+		return false
+	_log["drinks"].append("%d:%s" % [GameManager.current_round, condiment.id])
+	return true
+
+
+func move_staff(from_slot: int, to_slot: int) -> bool:
+	if not StaffManager.move_staff(from_slot, to_slot):
+		return false
+	_log["staff_moves"] = int(_log["staff_moves"]) + 1
+	return true
+
+
+func sell_staff(slot: int) -> bool:
+	var staff := StaffManager.get_staff(slot)
+	if staff == null or StaffManager.sell_staff(slot) < 0:
+		return false
+	_log["sells"].append("%d:staff:%s" % [GameManager.current_round, staff.id])
+	return true
+
+
+func note_buy(kind: String, item_id: String, price: int) -> void:
+	_log["buys"].append("%d:%s%s@%d" % [GameManager.current_round, kind, item_id, price])
+
+
+func note_merchant_reroll() -> void:
+	_log["merchant_rerolls"] = int(_log["merchant_rerolls"]) + 1
+
+#endregion
+
+#region Invariants
+
+func _note_invariant(reason: String) -> void:
+	_log["invariants"].append("day %d: %s" % [GameManager.current_round, reason])
+	print("[playtest]   INVARIANT day %d %s" % [GameManager.current_round, reason])
+
+
+func _collect_invariant_failures(score_before: int) -> Array[String]:
+	var reasons: Array[String] = []
+	var storm := map.turn_resolver != null and map.turn_resolver.aborted_retrigger_storm
+	if storm:
+		reasons.append("retrigger storm aborted at %d activations" % HexTurnResolver.SKIP_PRESENTATION_STORM_LIMIT)
+	if EconomyManager.amount < 0:
+		reasons.append("gold went negative (%d)" % EconomyManager.amount)
+	if GameManager.remaining_turns < 0:
+		reasons.append("remaining_turns went negative (%d)" % GameManager.remaining_turns)
+
+	var seen_instances: Dictionary = {}
+	var occupied_by_segment: Dictionary = {}
+	for hex: Hex in map.get_hexes_in_trigger_order():
+		var card := hex.active_tile_card
+		if card == null:
+			continue
+		if card.id.strip_edges().is_empty():
+			reasons.append("placed card with empty id at %s" % str(hex.coordinates))
+		var instance_id := card.get_instance_id()
+		if seen_instances.has(instance_id):
+			reasons.append("same card instance on %s and %s" % [str(seen_instances[instance_id]), str(hex.coordinates)])
+		else:
+			seen_instances[instance_id] = hex.coordinates
+		if map.get_hex_for_tile_card(card) != hex:
+			reasons.append("get_hex_for_tile_card mismatch for %s" % card.id)
+		var segment_index := map.get_segment_index(hex.coordinates)
+		if segment_index < 0 or segment_index >= map.get_segment_count():
+			reasons.append("hex %s has segment_index %d" % [str(hex.coordinates), segment_index])
+		occupied_by_segment[segment_index] = int(occupied_by_segment.get(segment_index, 0)) + 1
+
+	for index in map.get_segment_count():
+		if int(occupied_by_segment.get(index, 0)) > map.get_segment_size(index):
+			reasons.append("segment %d has more cards than tiles" % index)
+		var flavour := map.get_segment_turn_flavour(index)
+		var additive := map.get_segment_additive_mult(index)
+		var multiplicative := map.get_segment_multiplicative_mult(index)
+		if flavour < 0:
+			reasons.append("segment %d flavour %d" % [index, flavour])
+		if is_nan(additive) or is_inf(additive) or additive < 0.0:
+			reasons.append("segment %d additive mult %s" % [index, str(additive)])
+		if is_nan(multiplicative) or is_inf(multiplicative) or multiplicative < 0.0:
+			reasons.append("segment %d multiplicative mult %s" % [index, str(multiplicative)])
+
+	var expected := GameManager.compute_hour_turn_contribution(map.get_hour_flavour(), map.get_hour_additive_mult())
+	var delta := GameManager.total_round_score - score_before
+	# A day that just ended has already moved on, so only check Hours inside the day.
+	if not storm and not RoundFlow.is_transitioning() and not _run_over and delta != expected:
+		reasons.append("Hour score delta %d != Hour rating %d" % [delta, expected])
+	for script_err: String in _pending_turn_script_errors:
+		reasons.append("script error: %s" % script_err)
+	return reasons
+
+#endregion
+
+#region Report
+
+func _record(suite: String, chef_id: String, seed_text: String, reasons: Array[String], details: Dictionary) -> void:
+	for script_err: String in SCRIPT_ERROR_TRACKER.collect_new():
 		_run_script_errors.append(script_err)
 	for script_err: String in _run_script_errors:
 		reasons.append("script error: %s" % script_err)
-	if not _run_script_errors.is_empty():
-		passed = false
+	var passed := reasons.is_empty()
 	if not passed:
 		_failed += 1
 	_cases.append({
@@ -2172,10 +706,83 @@ func _record(
 		"reasons": reasons,
 		"details": details,
 	})
-	var mark := "PASS" if passed else "FAIL"
-	var extra := "" if reasons.is_empty() else " — %s" % ", ".join(reasons)
-	if not passed or suite != "starter_fairness":
-		print("[playtest] %s %s/%s %s %s%s" % [mark, suite, details.get("bot", "-"), chef_id, seed_text, extra])
+	if suite == "starter_fairness":
+		if not passed:
+			print("[playtest] FAIL starter_fairness %s %s — %s" % [chef_id, seed_text, ", ".join(reasons)])
+		return
+	var outcome := "won" if bool(details.get("won", false)) else "lost day %d" % int(details.get("reached_round", 0))
+	if suite != "run":
+		outcome = "reached day %d" % int(details.get("reached_round", 0))
+	print("[playtest] %s %s/%s %s %s: %s gold=%d %.1fs%s" % [
+		"PASS" if passed else "FAIL",
+		suite,
+		details.get("bot", "-"),
+		chef_id,
+		seed_text,
+		outcome,
+		int(details.get("gold", 0)),
+		float(details.get("seconds", 0.0)),
+		"" if passed else " — %s" % ", ".join(reasons),
+	])
+
+
+func _print_summary(suite: String) -> void:
+	print("[playtest] --- %s summary by chef ---" % suite)
+	for chef_id: String in _chef_ids:
+		var runs := 0
+		var wins := 0
+		var reached_sum := 0
+		var gold_sum := 0
+		var loss_days: Dictionary = {}
+		var day_ratio_sum: Dictionary = {}
+		var day_ratio_count: Dictionary = {}
+		var leftover_hours := 0
+		var day_count := 0
+		var seconds := 0.0
+		for case_data: Dictionary in _cases:
+			if case_data["suite"] != suite or case_data["chef"] != chef_id:
+				continue
+			var details: Dictionary = case_data["details"]
+			runs += 1
+			seconds += float(details.get("seconds", 0.0))
+			gold_sum += int(details.get("gold", 0))
+			var reached := int(details.get("reached_round", 0))
+			reached_sum += reached
+			if bool(details.get("won", false)):
+				wins += 1
+			else:
+				loss_days[reached] = int(loss_days.get(reached, 0)) + 1
+			for day: Dictionary in details.get("days", []):
+				var round_number := int(day["round"])
+				var goal := maxi(1, int(day["goal"]))
+				day_ratio_sum[round_number] = float(day_ratio_sum.get(round_number, 0.0)) + float(day["score"]) / float(goal)
+				day_ratio_count[round_number] = int(day_ratio_count.get(round_number, 0)) + 1
+				leftover_hours += int(day["leftover_hours"])
+				day_count += 1
+		if runs <= 0:
+			continue
+		var ratios: PackedStringArray = []
+		for round_number in range(1, ScoreProgression.RUN_LENGTH_ROUNDS + 1):
+			if day_ratio_count.has(round_number):
+				ratios.append("%.2f" % (float(day_ratio_sum[round_number]) / float(day_ratio_count[round_number])))
+			else:
+				ratios.append("-")
+		# Power and fuzz days have no goal, so a finished run is not a win.
+		print("[playtest]   %s  %d/%d %s (%.0f%%)  avg day %.1f  losses %s  gold %.1f  %.0fs/run" % [
+			chef_id,
+			wins,
+			runs,
+			"wins" if suite == "run" else "completed",
+			100.0 * float(wins) / float(runs),
+			float(reached_sum) / float(runs),
+			str(loss_days),
+			float(gold_sum) / float(runs),
+			seconds / float(runs),
+		])
+		print("[playtest]     score/goal by day [%s]  leftover Hours/day %.2f" % [
+			" ".join(ratios),
+			float(leftover_hours) / float(maxi(1, day_count)),
+		])
 
 
 func _write_report() -> void:
@@ -2190,5 +797,6 @@ func _write_report() -> void:
 		push_error("PlaytestRunner: could not write %s" % _report_path)
 		return
 	file.store_string(JSON.stringify(payload, "\t"))
-	print("[playtest] wrote %s (%d failed / %d total)" % [_report_path, _failed, _cases.size()])
-	print("[playtest] user data dir: %s" % OS.get_user_data_dir())
+	print("[playtest] wrote %s (%d failed / %d total)" % [ProjectSettings.globalize_path(_report_path), _failed, _cases.size()])
+
+#endregion

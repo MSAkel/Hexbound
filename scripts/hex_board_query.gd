@@ -248,26 +248,6 @@ func cards_relative_to_trigger_order(
 	return result
 
 
-## First or last matching occupied hex in a station.
-func first_or_last_hex_on_segment(
-	segment_index: int,
-	pick_first: bool,
-	filter_type: Variant = null
-) -> Hex:
-	var hexes := hexes_in_segment(segment_index)
-	if hexes.is_empty():
-		return null
-	if pick_first:
-		for hex: Hex in hexes:
-			if card_on_hex(hex, filter_type) != null:
-				return hex
-		return null
-	for i in range(hexes.size() - 1, -1, -1):
-		if card_on_hex(hexes[i], filter_type) != null:
-			return hexes[i]
-	return null
-
-
 func cards_in_scope(
 	tile: Hex,
 	scope: TileCard.QueryScope,

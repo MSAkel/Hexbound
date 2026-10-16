@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://cov60u5tscnao"]
+
+[ext_resource type="Texture2D" uid="uid://fwqg45q73w" path="res://assets/icons/condiments/mayonnaise.png" id="1_87rfw"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="2_c2ivn"]
+
+[resource]
+script = ExtResource("2_c2ivn")
+id = "cloche_dome"
+display_name = "Cloche Dome"
+description = "Ignore next {spoil}"
+icon = ExtResource("1_87rfw")
+liquid_color = Color(0.32, 0.82, 0.48, 1)
+effect_type = 4
+target_kind = 1

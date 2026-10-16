@@ -17,6 +17,8 @@ var turn_resolver: HexTurnResolver
 @onready var fading_sector_overlay_layer: TileMapLayer = $FadingSectorOverlayLayer
 # Counted dish-recipe seats. Own layer so gold modulate cannot leak onto other overlays.
 var dish_recipe_gold_layer: TileMapLayer
+# Seated cards the dragged copy would merge into. Own layer for the same reason.
+var placement_merge_overlay_layer: TileMapLayer
 # Meal slot fills, the level 3 padlock, and station type tints. Sits just above BaseLayer.
 var station_overlay: StationBoardOverlay
 # One badge per station at the right end of its row.
@@ -37,7 +39,7 @@ const TILE_OVERLAY_LAYER_Z_INDEX := 0
 const OVERLAY_TILE_SOURCE_ID := 0
 
 # Extra pixels added to tile_size so adjacent tile visuals do not touch. Negative overlaps neighbouring borders.
-@export_range(-16, 64, 1) var hex_tile_gap_x: int = -2
+@export_range(-16, 64, 1) var hex_tile_gap_x: int = 4
 @export_range(0, 64, 1) var hex_tile_gap_y: int = 8
 
 # Square tile art size, drawn by SquareTileTexture. tile_size = this + the X/Y gaps.
@@ -88,10 +90,10 @@ var _round_turn_snapshots: Array = []
 const DISH_RECIPE_GOLD_MODULATE := Color(1.35, 1.05, 0.25, 1.0)
 # How long a destination-segment flash stays visible during card activation.
 const SEGMENT_CREDIT_FLASH_DURATION := 0.5
-## Gap between a station's first spot and its badge, in map pixels.
+## Gap between a station's last spot and its badge, in map pixels.
 const STATION_BADGE_GAP := 18.0
-## Staff hexes sit this many board columns left of their station's first spot, clear of the badges.
-const STAFF_COLUMN_OFFSET := 3.5
+## Staff hexes sit this many board columns left of their station's first spot.
+const STAFF_COLUMN_OFFSET := 1.25
 
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
@@ -111,6 +113,7 @@ func _ready() -> void:
 	placement_valid_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	placement_valid_overlay_layer.modulate = PLACEMENT_VALID_OVERLAY_MODULATE
 	_setup_dish_recipe_gold_layer()
+	_setup_placement_merge_layer()
 	_setup_station_overlay()
 	_apply_square_tile_textures()
 	_apply_tile_spacing()
@@ -301,6 +304,28 @@ func clear_placement_valid_highlights() -> void:
 	placement_valid_overlay_layer.clear()
 
 
+func _setup_placement_merge_layer() -> void:
+	placement_merge_overlay_layer = TileMapLayer.new()
+	placement_merge_overlay_layer.name = "PlacementMergeOverlayLayer"
+	placement_merge_overlay_layer.tile_set = card_highlight_overlay_layer.tile_set
+	placement_merge_overlay_layer.z_index = TILE_OVERLAY_LAYER_Z_INDEX
+	placement_merge_overlay_layer.modulate = DISH_RECIPE_GOLD_MODULATE
+	add_child(placement_merge_overlay_layer)
+
+
+## Gold wash on seated cards the selected hand card would merge into.
+func stamp_placement_merge_highlight(coords: Vector2i) -> void:
+	placement_merge_overlay_layer.set_cell(
+		coords,
+		CARD_HIGHLIGHT_SOURCE_ID,
+		OVERLAY_TILE_ATLAS_COORDS
+	)
+
+
+func clear_placement_merge_highlights() -> void:
+	placement_merge_overlay_layer.clear()
+
+
 func _setup_station_overlay() -> void:
 	station_overlay = StationBoardOverlay.new()
 	station_overlay.name = "StationOverlay"
@@ -326,7 +351,7 @@ func _on_station_state_changed(segment_index: int) -> void:
 	refresh_board_output_chips()
 
 
-## Badges sit in one column left of the board, centered on each station row.
+## Badges sit in one column right of the board, centered on each station row.
 func _ensure_station_badges() -> void:
 	var segment_count := get_segment_count()
 	if segment_count <= 0:
@@ -337,17 +362,18 @@ func _ensure_station_badges() -> void:
 		add_child(badge)
 		badge.setup(self, _station_badges.size())
 		_station_badges.append(badge)
-	var left_edge := INF
+	var right_edge := -INF
 	for segment_index in segment_count:
 		var first := _layout.get_first_tile_coords_in_segment(segment_index)
-		left_edge = minf(left_edge, base_layer.map_to_local(first).x)
+		var last := _layout.get_last_tile_coords_in_segment(segment_index)
+		right_edge = maxf(right_edge, maxf(base_layer.map_to_local(first).x, base_layer.map_to_local(last).x))
 	for segment_index in segment_count:
 		var badge := _station_badges[segment_index]
 		var first := _layout.get_first_tile_coords_in_segment(segment_index)
 		var center_y := base_layer.position.y + base_layer.map_to_local(first).y
 		badge.reset_size()
 		var badge_size := badge.get_combined_minimum_size()
-		var x := base_layer.position.x + left_edge - HEX_TEXTURE_SIZE.x * 0.5 - STATION_BADGE_GAP - badge_size.x
+		var x := base_layer.position.x + right_edge + HEX_TEXTURE_SIZE.x * 0.5 + STATION_BADGE_GAP
 		badge.position = Vector2(x, center_y - badge_size.y * 0.5)
 
 
@@ -859,15 +885,6 @@ func is_segment_resolved(segment_index: int) -> bool:
 	return _layout.is_segment_resolved(segment_index)
 
 
-func mark_segment_received_relay(segment_index: int) -> void:
-	if segment_index < 0 or segment_index >= get_segment_count():
-		return
-	_layout.mark_segment_received_relay(segment_index)
-	RunLedger.record_pass_relay(segment_index)
-
-
-func count_segments_that_received_relay() -> int:
-	return _layout.count_segments_that_received_relay()
 
 
 func get_segment_breaks(segment_index: int) -> int:
@@ -1435,6 +1452,7 @@ func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 		"activation_count": tile_card.activation_count,
 		"is_active": EventManager.get_saved_is_active(tile_card),
 		"bonus_production_amount": tile_card.bonus_production_amount,
+		"star_level": tile_card.star_level,
 		"run_trigger_count": tile_card.run_trigger_count,
 		"garnish_stacks": tile_card.garnish_stacks,
 		"condiment_fuses": tile_card.condiment_fuses.duplicate(true),
@@ -1451,9 +1469,15 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 		return null
 
 	var tile_card := template.duplicate(true)
+	_apply_placed_tile_card_state(tile_card, data)
+	return tile_card
+
+
+func _apply_placed_tile_card_state(tile_card: TileCard, data: Dictionary) -> void:
 	tile_card.activation_count = int(data.get("activation_count", 0))
 	tile_card.is_active = bool(data.get("is_active", true))
 	tile_card.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
+	tile_card.star_level = int(data.get("star_level", 1))
 	tile_card.run_trigger_count = int(data.get("run_trigger_count", 0))
 	tile_card.garnish_stacks = int(data.get("garnish_stacks", 0))
 	tile_card.condiment_fuses.clear()
@@ -1463,6 +1487,53 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 	var card_state: Variant = data.get("card_state", {})
 	if card_state is Dictionary and not card_state.is_empty():
 		tile_card.apply_placed_save_state(card_state)
-	return tile_card
+
+#endregion
+
+#region Playtest lookahead
+
+## In-place board snapshot for the playtest bot's what-if Hours.
+## Keeps the placed instances so rolling back does not rebuild their card UI.
+func capture_playtest_snapshot() -> Dictionary:
+	var cards: Dictionary = {}
+	for coords: Vector2i in map_data:
+		var tile_card: TileCard = map_data[coords].active_tile_card
+		if tile_card == null:
+			continue
+		var state := _serialize_placed_tile_card(tile_card)
+		# Saves store the pre-event flag. A rollback needs the live one.
+		state["is_active"] = tile_card.is_active
+		cards[coords] = {
+			"card": tile_card,
+			"state": state,
+			"hour_flavour": tile_card.hour_flavour_produced,
+			"hour_additive_mult": tile_card.hour_additive_mult_produced,
+			"pending_output_scale": tile_card.pending_output_scale,
+		}
+	return {
+		"cards": cards,
+		"segment_turn_results": _layout.capture_turn_results(),
+		"turn_snapshots": _round_turn_snapshots.duplicate(true),
+	}
+
+
+func restore_playtest_snapshot(snapshot: Dictionary) -> void:
+	var cards: Dictionary = snapshot.get("cards", {})
+	for coords: Vector2i in map_data:
+		var hex: Hex = map_data[coords]
+		var entry: Dictionary = cards.get(coords, {})
+		var wanted: TileCard = entry.get("card")
+		if hex.active_tile_card != wanted:
+			hex.remove_tile_card()
+			if wanted != null:
+				hex.restore_placed_tile_card(wanted)
+		if wanted == null:
+			continue
+		_apply_placed_tile_card_state(wanted, entry["state"])
+		wanted.hour_flavour_produced = int(entry["hour_flavour"])
+		wanted.hour_additive_mult_produced = float(entry["hour_additive_mult"])
+		wanted.pending_output_scale = float(entry["pending_output_scale"])
+	_layout.apply_turn_results(snapshot.get("segment_turn_results", {}))
+	_restore_turn_snapshots(snapshot.get("turn_snapshots", []))
 
 #endregion

@@ -19,7 +19,6 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_belt.tscn" id="19_condiment_belt"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_edge_glow.tscn" id="21_condiment_glow"]
 [ext_resource type="PackedScene" uid="uid://c8sellpanel01" path="res://scenes/ui/sell_panel/card_sell_panel.tscn" id="22_sell_panel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/end_day_button/end_day_button.tscn" id="23_end_day"]
 [ext_resource type="PackedScene" path="res://scenes/ui/staff/staff_rail.tscn" id="24_staff_rail"]
 [ext_resource type="PackedScene" path="res://scenes/ui/station_upgrade_choice/station_upgrade_choice.tscn" id="25_station_choice"]
 
@@ -42,8 +41,6 @@ rotation = 0.0016232448
 [node name="CardSellPanel" parent="." unique_id=1404687552 instance=ExtResource("22_sell_panel")]
 
 [node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
-
-[node name="EndDayButton" parent="." unique_id=2011836714 instance=ExtResource("23_end_day")]
 
 [node name="CardSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://clv08h3dn4p2v"]
+
+[ext_resource type="Texture2D" uid="uid://dnvlw8e4oq8u3" path="res://assets/icons/condiments/bbg_sauce.png" id="1_iuc6m"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="2_m8d2f"]
+
+[resource]
+script = ExtResource("2_m8d2f")
+id = "gravy"
+display_name = "Gravy"
+description = "+50 {flavour} on next {trigger}"
+icon = ExtResource("1_iuc6m")
+liquid_color = Color(0.35, 0.88, 0.95, 1)
+base_price = 3
+effect_type = 5
+effect_value = 50.0
+target_kind = 1

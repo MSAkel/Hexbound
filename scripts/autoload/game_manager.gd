@@ -101,6 +101,13 @@ var _current_turn_trigger_count: int = 0
 
 ## Headless playtests skip UI awaits, rune-pick panels, and round-flow screens.
 var skip_presentation: bool = false
+## Headless playtest bot plays the real day: card picks, day end, and RoundFlow steps.
+## Without it, headless runs stop at the goal and the caller owns the round loop.
+var playtest_real_day_flow: bool = false
+## Playtest power mode plays every Hour even after the goal. The real game ends the day at the goal.
+var playtest_play_full_day: bool = false
+## Playtest bot lookahead. A what-if Hour resolves, then finish_turn_processing commits nothing.
+var playtest_simulating_hour: bool = false
 
 #region Game speed
 
@@ -140,6 +147,11 @@ func end_turn() -> void:
 
 
 func finish_turn_processing() -> void:
+	if playtest_simulating_hour:
+		# The bot reads the Hour totals and restores its snapshot. Nothing is committed.
+		_is_processing_turn = false
+		return
+
 	CondimentManager.on_turn_resolved()
 
 	var committed_turn_score := turn_score
@@ -152,18 +164,19 @@ func finish_turn_processing() -> void:
 		await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
 
 	var goal_met := _has_met_round_goal()
-	# Leftover hours stay playable after the goal. The End Day button closes the day early.
-	# Headless playtests own their round loop, so they still stop at the goal.
-	var keep_playing := goal_met and remaining_turns > 1 and not skip_presentation
+	# The day ends as soon as the goal is met. Unused hours pay early-finish gold.
+	# Headless playtests own their round loop and stop at the goal, unless the bot plays the real day.
+	var headless_round_loop := skip_presentation and not playtest_real_day_flow
+	var keep_playing := goal_met and remaining_turns > 1 and playtest_play_full_day and not headless_round_loop
 	var should_consume_turn := remaining_turns > 0 and (not goal_met or keep_playing)
 
 	if goal_met and not keep_playing:
-		if skip_presentation:
+		if headless_round_loop:
 			pass
 		else:
 			_complete_current_round()
 	else:
-		# Every new hour gets a card pick, including leftover hours after the goal.
+		# Every new hour gets a card pick.
 		if not skip_presentation:
 			if EventManager.should_auto_grant_card(false):
 				EventManager.grant_auto_card(false, remaining_turns)
@@ -188,6 +201,11 @@ func _wait_for_round_score_count_finished() -> void:
 
 func _on_turn_started() -> void:
 	turn_stamp += 1
+	reset_turn_counters()
+
+
+## Per-Hour counters. The playtest bot also clears them after rolling back a what-if Hour.
+func reset_turn_counters() -> void:
 	_activation_counts_this_turn.clear()
 	_current_turn_trigger_count = 0
 	EconomyManager.reset_turn_tracking()
@@ -218,27 +236,6 @@ func get_turn_number() -> int:
 ## Turns not used before the round goal was met. Rewards use this, not raw remaining_turns.
 func get_skipped_turns() -> int:
 	return maxi(0, remaining_turns - 1)
-
-
-## Borrowed Time and similar drinks add a turn without changing the event.
-func add_bonus_turn() -> void:
-	remaining_turns += 1
-	EventBus.turn_changed.emit()
-
-
-## True between hours once the day target is met, while the End Day button may be used.
-func can_end_day_early() -> bool:
-	if _is_processing_turn or RoundFlow.is_transitioning():
-		return false
-	return _has_met_round_goal() and remaining_turns > 0
-
-
-## End Day button. Closes the day at the start of an hour instead of playing it.
-func end_day_early() -> void:
-	if not can_end_day_early():
-		return
-	# The hour in progress was not played, so every remaining hour counts as unused.
-	_complete_current_round(remaining_turns)
 
 
 ## Debug helper. Sets the round score to the goal and starts the normal complete-round flow.

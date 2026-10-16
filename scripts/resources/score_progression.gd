@@ -9,15 +9,15 @@ const ENDLESS_MODE_START_ROUND := RUN_LENGTH_ROUNDS + 1
 const MAX_SCORE := 9223372036854775807
 ## One entry per round of a standard run, indexed as AUTHORED_ROUND_SCORES[round - 1].
 const AUTHORED_ROUND_SCORES: Array[int] = [
-	750,
+	650,
 	1800,
 	4800,
 	10000,
 	17000,
-	21500,
-	29000,
-	36000,
-	42000,
+	23500,
+	33000,
+	45000,
+	50000,
 ]
 ## Multiplier used by the endless curve. Values above 1 increase the target every round.
 const ENDLESS_GROWTH_FACTOR := 1.5

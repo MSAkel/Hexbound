@@ -10,7 +10,7 @@ enum Type {
 	FADING_SECTOR,
 	DRY_WIRE,
 	NULL_CHARGE,
-	LOCAL_CURRENT,
+	SHORT_STAFFED,
 	AUSTERITY,
 	SEALED_HEXES,
 	JAMMED_BELT,
@@ -32,7 +32,7 @@ const ALL_EVENTS: Array[Type] = [
 	Type.FADING_SECTOR,
 	Type.DRY_WIRE,
 	Type.NULL_CHARGE,
-	Type.LOCAL_CURRENT,
+	Type.SHORT_STAFFED,
 	Type.AUSTERITY,
 	Type.SEALED_HEXES,
 	Type.JAMMED_BELT,
@@ -70,9 +70,9 @@ const EVENT_INFO := {
 		"description": "{garnish} still stacks, but it does not double output.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
-	Type.LOCAL_CURRENT: {
-		"name": "Local Current",
-		"description": "Products cannot be Passed to another Station.",
+	Type.SHORT_STAFFED: {
+		"name": "Short Staffed",
+		"description": "Every hour, a random Staff member is off shift and has no effect.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.AUSTERITY: {
@@ -111,6 +111,10 @@ var _sealed_coords: Array[Vector2i] = []
 var _disabled_prior_states: Dictionary = {}
 ## Blackout spots read from a save. Re-applied once the map has restored its cards.
 var _pending_blackout_coords: Array[Vector2i] = []
+## Short Staffed. Tracks the staff member, not the slot, so moving them does not dodge it.
+var _off_shift_staff: StaffCard = null
+## Off-shift slot read from a save. Resolved once StaffManager has restored its roster.
+var _pending_off_shift_slot := -1
 var _tile_map: HexTileMap = null
 
 
@@ -127,6 +131,7 @@ func init_run() -> void:
 	_disabled_prior_states.clear()
 	_pending_blackout_coords.clear()
 	_clear_fading_sector_visuals()
+	clear_off_shift_staff()
 
 	var used: Array[Type] = []
 	var rng := RunRng.create_rng("events")
@@ -146,6 +151,7 @@ func init_run() -> void:
 func on_round_advanced(new_round: int) -> void:
 	_clear_fading_sector_visuals()
 	_clear_sealed_hexes()
+	clear_off_shift_staff()
 	active_event = get_event_for_round(new_round)
 	_restore_event_disabled_runes()
 
@@ -226,29 +232,6 @@ func get_allowed_rounds_label(event_type: int) -> String:
 	for allowed_round in allowed:
 		parts.append(str(int(allowed_round)))
 	return "Rounds %s" % ", ".join(parts)
-
-
-## Replaces the next unstarted event with a type not already on the calendar, legal for that round.
-func rewrite_upcoming_event(use_index: int) -> bool:
-	var next_round := get_next_event_round()
-	if next_round == -1:
-		return false
-	var slot := EVENT_ROUNDS.find(next_round)
-	if slot < 0 or slot >= scheduled_events.size():
-		return false
-
-	var unused := _unused_legal_types(next_round, scheduled_events)
-	if unused.is_empty():
-		return false
-
-	var rng := RunRng.create_rng("condiment:rewrite_omen:r%d:n%d" % [
-		GameManager.current_round,
-		use_index,
-	])
-	RunRng.shuffle_with(rng, unused)
-	scheduled_events[slot] = unused[0] as Type
-	EventBus.event_schedule_changed.emit()
-	return true
 
 
 func get_event_name(event_type: int) -> String:
@@ -350,9 +333,18 @@ func are_garnishes_blocked() -> bool:
 	return active_event == Type.NULL_CHARGE
 
 
-## Local Current. Forward Gift and card relays both check this.
-func are_relays_blocked() -> bool:
-	return active_event == Type.LOCAL_CURRENT
+## Short Staffed. StaffManager skips this staff member's effect, including through copy staff.
+func is_staff_off_shift(staff: StaffCard) -> bool:
+	return staff != null and staff == _off_shift_staff
+
+
+## Called when the Hour finishes firing, so day-end staff effects are never skipped.
+func clear_off_shift_staff() -> void:
+	_pending_off_shift_slot = -1
+	if _off_shift_staff == null:
+		return
+	_off_shift_staff = null
+	EventBus.staff_roster_changed.emit()
 
 
 ## Austerity. Spending gold is still allowed.
@@ -377,6 +369,10 @@ func _on_turn_started() -> void:
 	elif active_event == Type.FADING_SECTOR:
 		_restore_event_disabled_runes()
 		_pick_halved_segment()
+	elif active_event == Type.SHORT_STAFFED:
+		_restore_event_disabled_runes()
+		_clear_fading_sector_visuals()
+		_pick_off_shift_staff()
 	else:
 		_restore_event_disabled_runes()
 		_clear_fading_sector_visuals()
@@ -454,6 +450,23 @@ func _reapply_saved_blackout() -> void:
 			hex.refresh_own_visuals()
 		tile_map.refresh_board_output_chips()
 	_pending_blackout_coords.clear()
+
+
+func _pick_off_shift_staff() -> void:
+	var seated: Array[StaffCard] = []
+	for staff: StaffCard in StaffManager.slots:
+		if staff != null:
+			seated.append(staff)
+	_pending_off_shift_slot = -1
+	if seated.is_empty():
+		_off_shift_staff = null
+	else:
+		var rng := RunRng.create_rng("event:short_staffed:r%d:s%d" % [
+			GameManager.current_round,
+			GameManager.turn_stamp,
+		])
+		_off_shift_staff = seated[rng.randi() % seated.size()]
+	EventBus.staff_roster_changed.emit()
 
 
 func _pick_halved_segment() -> void:
@@ -588,6 +601,7 @@ func debug_activate_event(event_type: int) -> void:
 	_restore_event_disabled_runes()
 	_clear_fading_sector_visuals()
 	_clear_sealed_hexes()
+	clear_off_shift_staff()
 	active_event = event_type
 	_apply_rush_hour_turn_cap(previous_event)
 	_refresh_required_score()
@@ -599,6 +613,8 @@ func debug_activate_event(event_type: int) -> void:
 			_pick_halved_segment()
 		Type.SEALED_HEXES:
 			_pick_sealed_hexes()
+		Type.SHORT_STAFFED:
+			_pick_off_shift_staff()
 
 	EventBus.event_changed.emit()
 	play_reveal()
@@ -613,6 +629,7 @@ func debug_clear_event() -> void:
 	_restore_event_disabled_runes()
 	_clear_fading_sector_visuals()
 	_clear_sealed_hexes()
+	clear_off_shift_staff()
 	active_event = -1
 	_apply_rush_hour_turn_cap(previous_event)
 	_refresh_required_score()
@@ -652,6 +669,7 @@ func capture_run_state() -> Dictionary:
 		"active_event": active_event,
 		"halved_segment_index": _halved_segment_index,
 		"sealed_coords": sealed,
+		"off_shift_slot": StaffManager.slots.find(_off_shift_staff) if _off_shift_staff != null else -1,
 	}
 
 
@@ -675,6 +693,8 @@ func apply_run_state(state: Dictionary) -> void:
 	for coords_data: Variant in state.get("blackout_coords", []):
 		if coords_data is Array and coords_data.size() >= 2:
 			_pending_blackout_coords.append(Vector2i(int(coords_data[0]), int(coords_data[1])))
+	_off_shift_staff = null
+	_pending_off_shift_slot = int(state.get("off_shift_slot", -1))
 	_tile_map = null
 
 
@@ -689,6 +709,11 @@ func restore_banner_after_load() -> void:
 
 func refresh_event_visuals() -> void:
 	_reapply_saved_blackout()
+	if _pending_off_shift_slot >= 0:
+		if active_event == Type.SHORT_STAFFED:
+			_off_shift_staff = StaffManager.get_staff(_pending_off_shift_slot)
+		_pending_off_shift_slot = -1
+		EventBus.staff_roster_changed.emit()
 	if active_event == Type.FADING_SECTOR and _halved_segment_index >= 0:
 		_apply_fading_sector_visuals()
 	else:

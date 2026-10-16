@@ -46,8 +46,6 @@ var _hour_additive_mult: float = 1.0
 var _segment_turn_triggers: Array[int] = []
 # True after a segment's natural trigger pass has finished this turn.
 var _segment_resolved: Array[bool] = []
-# True when another segment relayed Energy or Mult into this one this turn.
-var _segment_received_relay: Array[bool] = []
 # Cards that actually broke on each segment this turn.
 var _segment_breaks: Array[int] = []
 
@@ -234,7 +232,6 @@ func reset_turn_results() -> void:
 	_segment_turn_gold.resize(segment_count)
 	_segment_turn_triggers.resize(segment_count)
 	_segment_resolved.resize(segment_count)
-	_segment_received_relay.resize(segment_count)
 	_segment_breaks.resize(segment_count)
 	_hour_flavour = 0
 	_hour_additive_mult = 1.0
@@ -247,7 +244,6 @@ func reset_turn_results() -> void:
 		_segment_turn_gold[i] = 0
 		_segment_turn_triggers[i] = 0
 		_segment_resolved[i] = false
-		_segment_received_relay[i] = false
 		_segment_breaks[i] = 0
 
 
@@ -346,20 +342,6 @@ func is_segment_resolved(segment_index: int) -> bool:
 	if segment_index < 0 or segment_index >= _segment_resolved.size():
 		return false
 	return _segment_resolved[segment_index]
-
-
-func mark_segment_received_relay(segment_index: int) -> void:
-	if segment_index < 0 or segment_index >= _segment_received_relay.size():
-		return
-	_segment_received_relay[segment_index] = true
-
-
-func count_segments_that_received_relay() -> int:
-	var count := 0
-	for received: bool in _segment_received_relay:
-		if received:
-			count += 1
-	return count
 
 
 func add_segment_break(segment_index: int) -> void:

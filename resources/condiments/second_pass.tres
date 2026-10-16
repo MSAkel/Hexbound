@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://dplrdc88gnk7h"]
+
+[ext_resource type="Texture2D" uid="uid://cj5nn71c0y4lp" path="res://assets/icons/condiments/relish.png" id="1_ucjx5"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="2_ptund"]
+
+[resource]
+script = ExtResource("2_ptund")
+id = "Second Pass"
+display_name = "Second Pass"
+description = "{trigger} again after next {trigger}"
+icon = ExtResource("1_ucjx5")
+liquid_color = Color(0.95, 0.82, 0.28, 1)
+base_price = 3
+effect_type = 3
+target_kind = 1

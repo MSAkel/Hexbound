@@ -5,7 +5,7 @@ extends Node
 
 const FLOATING_TEXT_SCENE: PackedScene = preload("res://scenes/animations/floating_text.tscn")
 # Pause between tile card activations during turn resolution.
-const TILE_ACTIVATION_PACE_DELAY := 0.2
+const TILE_ACTIVATION_PACE_DELAY := 0.1
 ## Fallback if the Hour readout never reports its score presentation finished.
 ## Covers in-flight floats landing, the Flavour x Mult merge, and the score hold.
 const HOUR_SCORE_PRESENTATION_TIMEOUT := 5.0

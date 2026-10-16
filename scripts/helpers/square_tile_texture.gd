@@ -11,6 +11,14 @@ const BASE := {
 	"border_width": 5,
 	"inner_rim": Color8(250, 220, 170),
 }
+## Staff slot. Same shape as BASE in a cooler, muted tan so the column reads apart from the board.
+const STAFF := {
+	"fill": Color8(240, 228, 200),
+	"fill_bottom": Color8(214, 184, 136),
+	"border": Color8(176, 146, 108),
+	"border_width": 5,
+	"inner_rim": Color8(236, 224, 196),
+}
 const HOVER := {
 	"fill": Color8(171, 195, 96, 128),
 	"border": Color8(140, 161, 80),

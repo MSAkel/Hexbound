@@ -5,22 +5,15 @@ extends Resource
 
 enum EffectType {
 	GOLD_DROP,
-	BORROWED_TIME,
-	REWRITE_OMEN,
-	FREE_REROLL,
 	CONDIMENT_PACK,
 	GARNISH,
 	ECHO,
 	WARD,
 	NEXT_TRIGGER_ENERGY,
-	FORWARD_GIFT,
 	MINT_SIP,
-	OPENING_ROUND,
-	CLOSING_ROUND,
 	NEXT_TRIGGER_MULT,
 	THROW_OUT,
-	UPGRADE_PLATE,
-	REROLL_PLATE,
+	STAR_UP,
 	SEND_BACK,
 	DUPLICATE_ORDER,
 	SWAP_SPOTS,
@@ -77,22 +70,14 @@ func _get_fuse_summary_source() -> String:
 			return "+%d {flavour} · next {trigger}" % int(effect_value)
 		EffectType.NEXT_TRIGGER_MULT:
 			return "+%d {mult} · next {trigger}" % int(round(effect_value))
-		EffectType.FORWARD_GIFT:
-			return "Forward Gift"
 		EffectType.MINT_SIP:
 			return "Mint Sip"
-		EffectType.OPENING_ROUND:
-			return "Opening Round · this hour"
-		EffectType.CLOSING_ROUND:
-			return "Closing Round · this hour"
 		EffectType.THROW_OUT:
 			return "{spoil} seated card, gain random card"
-		EffectType.UPGRADE_PLATE:
-			return "Upgrade seated card"
-		EffectType.REROLL_PLATE:
-			return "Reroll seated card"
+		EffectType.STAR_UP:
+			return "+1 star on seated card"
 		EffectType.SEND_BACK:
-			return "Return seated card to hand"
+			return "Return a copy per star to hand"
 		EffectType.DUPLICATE_ORDER:
 			return "Copy seated card to hand"
 		EffectType.SWAP_SPOTS:

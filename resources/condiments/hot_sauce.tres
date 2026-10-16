@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://cyapy2fkx1u6u"]
+
+[ext_resource type="Texture2D" uid="uid://d16jmrkc4c111" path="res://assets/icons/condiments/hot_sauce.png" id="1_wqpyb"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="2_iajoa"]
+
+[resource]
+script = ExtResource("2_iajoa")
+id = "hot_sauce"
+display_name = "Hot Sauce"
+description = "+4 {mult} on next {trigger}"
+icon = ExtResource("1_wqpyb")
+liquid_color = Color(0.72, 0.42, 0.92, 1)
+base_price = 3
+effect_type = 7
+effect_value = 4.0
+target_kind = 1

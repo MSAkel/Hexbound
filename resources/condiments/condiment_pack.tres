@@ -10,5 +10,5 @@ display_name = "Condiment Pack"
 description = "Gain 3 random condiments"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.86, 0.32, 0.62, 1)
-base_price = 10
-effect_type = 4
+base_price = 8
+effect_type = 1

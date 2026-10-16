@@ -56,11 +56,12 @@ func _meal_outputs(_tile: Hex, _preview: bool) -> Dictionary:
 
 
 ## _meal_outputs as an Output. scale multiplies every present part, the way an activation scale does.
-func _read_output(tile: Hex, preview: bool, scale: float) -> Output:
+## star_scale multiplies Flavour and +Mult only, matching multiply_multiplicative_mult.
+func _read_output(tile: Hex, preview: bool, scale: float, star_scale: float = 1.0) -> Output:
 	var raw := _meal_outputs(tile, preview)
 	var output := Output.new()
-	output.flavour = int(round(float(raw.get("flavour", 0)) * scale))
-	output.additive_mult = float(raw.get("additive_mult", 0.0)) * scale
+	output.flavour = int(round(float(raw.get("flavour", 0)) * scale * star_scale))
+	output.additive_mult = float(raw.get("additive_mult", 0.0)) * scale * star_scale
 	output.multiplicative_mult = float(raw.get("multiplicative_mult", 1.0))
 	if output.has_multiplicative_mult():
 		output.multiplicative_mult *= scale
@@ -69,7 +70,10 @@ func _read_output(tile: Hex, preview: bool, scale: float) -> Output:
 
 ## Every served Meal adds Gold and a serving for its station.
 func _serve(tile: Hex) -> void:
-	_add_quiet_gold(tile, SERVING_GOLD)
+	var gold := SERVING_GOLD
+	if GameManager.chef_speciality != null:
+		gold += GameManager.chef_speciality.extra_meal_gold()
+	_add_quiet_gold(tile, gold)
 	RunLedger.record_dish_plated()
 	if _missing_ingredient_count(tile) > 0:
 		StaffManager.notify_dish_discount_used(tile)
@@ -89,7 +93,7 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 	# Idle in a locked second slot. It pays nothing until the station is level 3 again.
 	if tile != null and StationManager.is_meal_slot_locked(tile.coordinates):
 		return _hidden_board_chip()
-	var output := _read_output(tile, true, StationManager.output_scale_for(tile, self))
+	var output := _read_output(tile, true, StationManager.output_scale_for(tile, self), star_output_scale())
 	var chip: Dictionary
 	if output.flavour > 0:
 		chip = _amount_board_chip(output.flavour, ICON_FLAVOUR)
@@ -151,6 +155,22 @@ func is_recipe_ready(tile: Hex) -> bool:
 	if _missing_for_tag(cards, TAG_KITCHENWARE) > 0:
 		return false
 	return _missing_ingredient_count(tile) <= get_waived_ingredient_slots()
+
+
+## Cards the station still needs before this Meal is ready. 0 means ready.
+func get_missing_card_count(tile: Hex) -> int:
+	if get_recipe_size() <= 0:
+		return 0
+	if tile == null or tile.map == null:
+		return get_recipe_size()
+	var cards := _station_cards(tile)
+	var missing := 0
+	for card_id: String in recipe_required_card_ids:
+		if not cards.any(func(card: TileCard) -> bool: return card.id == card_id):
+			missing += 1
+	missing += _missing_for_tag(cards, TAG_KITCHENWARE)
+	missing += maxi(0, _missing_ingredient_count(tile) - get_waived_ingredient_slots())
+	return missing
 
 
 ## Inspect copy for the hover panel. Lists the requirements only.

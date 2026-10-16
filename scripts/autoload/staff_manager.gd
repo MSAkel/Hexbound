@@ -134,9 +134,10 @@ func _notify_roster_changed() -> void:
 #region --- Effect resolution ---
 
 ## Staff whose effect applies at slot, following copy staff. depth guards copy chains.
+## An off-shift staff member has no effect, and copy staff pointing at them copy nothing.
 func resolve_effect_at(slot: int, depth: int = 0) -> StaffCard:
 	var staff := get_staff(slot)
-	if staff == null or depth > SLOT_COUNT:
+	if staff == null or depth > SLOT_COUNT or EventManager.is_staff_off_shift(staff):
 		return null
 	return staff.resolve_effect(self, slot, depth)
 
@@ -252,9 +253,10 @@ func on_day_ended() -> void:
 		ctx.effect.on_day_ended(ctx)
 
 
-## Hour finished firing. Drops per-Hour scratch state.
+## Hour finished firing. Drops per-Hour scratch state and brings Short Staffed's pick back.
 func end_hour() -> void:
 	_reset_hour_state()
+	EventManager.clear_off_shift_staff()
 
 #endregion --- Engine hooks ---
 

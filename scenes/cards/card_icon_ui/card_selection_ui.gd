@@ -224,16 +224,31 @@ func create_cards_pack() -> void:
 		push_error("Cannot create cards pack: card pool is empty")
 		return
 
-	# Isolated loot RNG. Combat rolls cannot advance this sequence.
-	var pack_size := EventManager.get_cards_pack_size(_is_round_reward_offer())
-	var stream_name: String = RunRng.build_card_offer_stream_name(
+	cards_pack = draw_offer(
 		_get_offer_round_number(),
 		GameManager.remaining_turns,
 		_is_round_reward_offer(),
 		_offer_reroll_count
 	)
+
+
+## Static so the headless playtest bot sees the same offers as this panel.
+static func draw_offer(
+	round_number: int,
+	remaining_turns: int,
+	is_round_reward: bool,
+	reroll_index: int
+) -> Array[TileCard]:
+	# Isolated loot RNG. Combat rolls cannot advance this sequence.
+	var pack_size := EventManager.get_cards_pack_size(is_round_reward)
+	var stream_name: String = RunRng.build_card_offer_stream_name(
+		round_number,
+		remaining_turns,
+		is_round_reward,
+		reroll_index
+	)
 	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	cards_pack = CardLoot.card_draw(pack_size, GameManager.tile_cards_pool, true, loot_rng)
+	return CardLoot.card_draw(pack_size, GameManager.tile_cards_pool, true, loot_rng)
 
 
 func _get_offer_round_number() -> int:

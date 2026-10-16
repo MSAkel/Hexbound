@@ -23,6 +23,7 @@ extends Control
 @onready var garnish_sparks: GPUParticles2D = $GarnishSparks
 
 var _garnish_stack_label: Label = null
+var _star_label: Label = null
 @onready var hex_stroke: HexStroke = $HexStroke
 @onready var output_chip: PanelContainer = $Container/OutputChip
 @onready var output_chip_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipIcon
@@ -189,6 +190,7 @@ func refresh_output_chip(rune: TileCard) -> void:
 	if not is_node_ready() or rune == null:
 		return
 	_show_output_chip(rune)
+	_refresh_star_label(rune.star_level)
 
 
 func _show_output_chip(rune: TileCard) -> void:
@@ -759,6 +761,31 @@ func _ensure_garnish_stack_label() -> void:
 	_garnish_stack_label.position = Vector2(38, 8)
 	_garnish_stack_label.size = Vector2(35, 12)
 	add_child(_garnish_stack_label)
+
+
+# Merged cards show their star level in the top-left corner, opposite the Garnish label.
+func _refresh_star_label(star_level: int) -> void:
+	if star_level <= 1:
+		if _star_label != null:
+			_star_label.hide()
+		return
+
+	if _star_label == null:
+		_star_label = Label.new()
+		_star_label.name = "StarLabel"
+		_star_label.z_index = 5
+		_star_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_star_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_star_label.add_theme_font_size_override("font_size", 10)
+		_star_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+		_star_label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.04, 1.0))
+		_star_label.add_theme_constant_override("outline_size", 3)
+		_star_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_star_label.position = Vector2(0, 8)
+		_star_label.size = Vector2(35, 12)
+		add_child(_star_label)
+	_star_label.text = TileCard.star_text(star_level)
+	_star_label.show()
 
 
 ## Starts a looping orange pulse and outline on a source card while its triggers resolve.

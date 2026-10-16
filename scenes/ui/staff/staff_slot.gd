@@ -69,7 +69,8 @@ var _dust: CPUParticles2D
 
 func _ready() -> void:
 	# Square board tiles, so the well and rims use the same generated squares as the spots.
-	_well.texture = SquareTileTexture.get_texture(SquareTileTexture.BASE, HexTileMap.HEX_TEXTURE_SIZE)
+	# The well gets its own tint so the staff column reads apart from the board.
+	_well.texture = SquareTileTexture.get_texture(SquareTileTexture.STAFF, HexTileMap.HEX_TEXTURE_SIZE)
 	var rim_texture := SquareTileTexture.get_texture(SquareTileTexture.HOVER, HexTileMap.HEX_TEXTURE_SIZE)
 	_drop_glow.texture = rim_texture
 	_rim.texture = rim_texture
@@ -356,6 +357,10 @@ func _refresh() -> void:
 		return
 	_icon.texture = _icon_for(staff)
 	_name_tag.text = staff.name
+	# Short Staffed dims the off-shift member like a blacked-out spot card.
+	var tint := Hex.RUNE_INACTIVE_MODULATE if EventManager.is_staff_off_shift(staff) else Color.WHITE
+	_icon.modulate = tint
+	_name_tag.modulate = tint
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 

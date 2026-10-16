@@ -125,50 +125,20 @@ POTIONS: dict[str, dict[str, str]] = {
         "description": "Fire again after next fire",
         "icon": "res://assets/icons/condiments/relish.png",
     },
-    "forward_gift": {
-        "display_name": "Runner's Ramekin",
-        "description": "For 2 hours, Pass this card's product to the next station",
-        "icon": "res://assets/icons/condiments/ranch.png",
-    },
     "mint_sip": {
         "display_name": "Mint Drizzle",
         "description": "For 2 hours, also +1 Gold when fired",
         "icon": "res://assets/icons/condiments/chipotle_mayo.png",
-    },
-    "opening_round": {
-        "display_name": "Opening Splash",
-        "description": "First Ingredient in every station is Doubled this hour",
-        "icon": "res://assets/icons/condiments/secret_sauce_11.png",
-    },
-    "closing_round": {
-        "display_name": "Closing Glaze",
-        "description": "Last Ingredient in every station is Doubled this hour",
-        "icon": "res://assets/icons/condiments/secret_sauce_13.png",
     },
     "gold_drop": {
         "display_name": "Petty Cash",
         "description": "+15 Gold",
         "icon": "res://assets/icons/condiments/olive_oil.png",
     },
-    "borrowed_time": {
-        "display_name": "Extra Covers",
-        "description": "+1 hour this day",
-        "icon": "res://assets/icons/condiments/honey.png",
-    },
     "condiment_pack": {
         "display_name": "Condiment Flight",
         "description": "Gain 3 random condiments",
         "icon": "res://assets/icons/condiments/secret_sauce_12.png",
-    },
-    "rewrite_event": {
-        "display_name": "Rewrite Event",
-        "description": "Change the upcoming event",
-        "icon": "res://assets/icons/condiments/soy_sauce.png",
-    },
-    "free_reroll": {
-        "display_name": "Fresh Menu",
-        "description": "+1 free reroll",
-        "icon": "res://assets/icons/condiments/ketchup.png",
     },
 }
 

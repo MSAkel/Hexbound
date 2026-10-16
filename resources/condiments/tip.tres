@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Condiment" format=3 uid="uid://ciepbqcj2cg1"]
+
+[ext_resource type="Texture2D" uid="uid://dxv1b8svr5fdx" path="res://assets/icons/condiments/olive_oil.png" id="1_032u1"]
+[ext_resource type="Script" uid="uid://bisvdvpoqbek3" path="res://scripts/resources/condiment.gd" id="2_n35xu"]
+
+[resource]
+script = ExtResource("2_n35xu")
+id = "tip"
+display_name = "Tip"
+description = "+15 Gold"
+icon = ExtResource("1_032u1")
+liquid_color = Color(0.95, 0.78, 0.22, 1)
+base_price = 3
+effect_value = 15.0

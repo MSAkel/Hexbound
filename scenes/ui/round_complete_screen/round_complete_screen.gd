@@ -6,6 +6,7 @@ extends Panel
 @onready var base_gold_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/BaseGoldRow/BaseGoldValue
 @onready var early_gold_row: HBoxContainer = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow
 @onready var early_gold_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow/EarlyGoldValue
+@onready var early_gold_title: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow/EarlyGoldTitle
 
 
 func _ready() -> void:
@@ -30,6 +31,7 @@ func _on_show_panel() -> void:
 	early_gold_row.visible = has_early_bonus
 
 	if has_early_bonus:
+		early_gold_title.text = "Early finish (x%d per turn)" % EconomyManager.GOLD_PER_UNUSED_TURN
 		early_gold_label.text = "+%d" % reward.get("early_gold", 0)
 
 	# Deferred so the panel is laid out and visible before the button takes focus.

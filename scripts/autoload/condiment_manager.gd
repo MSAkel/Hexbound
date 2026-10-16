@@ -16,10 +16,6 @@ const HEX_MAP_GROUP := "hex_map_group"
 var belt: Array[Condiment] = []
 ## Slot being aimed at the map. -1 when idle.
 var targeting_slot: int = -1
-## Opening Round / Closing Round badges for this turn, keyed by Vector2i.
-var _opening_coords: Array[Vector2i] = []
-var _closing_coords: Array[Vector2i] = []
-var _rewrite_use_count := 0
 var _pack_use_count := 0
 var _consuming := false
 ## First hex chosen for a two-tile condiment such as Swap Spots.
@@ -36,9 +32,6 @@ func reset_for_new_run() -> void:
 	cancel_targeting()
 	for i in BELT_SIZE:
 		belt[i] = null
-	_opening_coords.clear()
-	_closing_coords.clear()
-	_rewrite_use_count = 0
 	_pack_use_count = 0
 	_consuming = false
 	_pending_target_hex = null
@@ -129,13 +122,13 @@ func headless_use_slot(index: int, hex: Hex = null, hex_b: Hex = null) -> bool:
 			return false
 		if hex.active_tile_card == null or hex_b.active_tile_card == null:
 			return false
-		if not _is_valid_tile_target(hex) or not _is_valid_tile_target(hex_b):
+		if not _is_valid_tile_target(hex, condiment) or not _is_valid_tile_target(hex_b, condiment):
 			return false
 		belt[index] = null
 		cancel_targeting()
 		_apply_board_effect(condiment, hex, hex_b)
 	elif condiment.needs_tile_target():
-		if hex == null or hex.active_tile_card == null or not _is_valid_tile_target(hex):
+		if hex == null or hex.active_tile_card == null or not _is_valid_tile_target(hex, condiment):
 			return false
 		belt[index] = null
 		cancel_targeting()
@@ -254,6 +247,9 @@ func _tile_drop_failure_message_at_coords(tile_map: HexTileMap, coords: Vector2i
 		return "Needs an occupied spot"
 	if _pending_target_hex != null and hex == _pending_target_hex:
 		return "Pick a different spot"
+	var condiment := get_targeting_condiment()
+	if condiment != null and condiment.effect_type == Condiment.EffectType.STAR_UP 			and hex.active_tile_card.star_level >= TileCard.MAX_STAR_LEVEL:
+		return "Already %s" % TileCard.star_text(TileCard.MAX_STAR_LEVEL)
 	return "Can't use here"
 
 
@@ -286,33 +282,6 @@ func try_prevent_break(card: TileCard) -> bool:
 	return true
 
 
-func relay_product_if_needed(tile: Hex, product: TileCard.Product, amount: Variant) -> void:
-	if EventManager.are_relays_blocked():
-		return
-	if tile == null or tile.map == null or tile.active_tile_card == null:
-		return
-	if not _card_has_fuse(tile.active_tile_card, Condiment.EffectType.FORWARD_GIFT):
-		return
-	var next_index := _next_segment_index(tile)
-	if next_index < 0:
-		return
-	match product:
-		TileCard.Product.FLAVOUR:
-			tile.map.add_turn_flavour_for_segment(next_index, int(round(float(amount))))
-			tile.map.mark_segment_received_relay(next_index)
-			tile.map.flash_segment_highlight(next_index)
-		TileCard.Product.MULTIPLIER:
-			tile.map.add_turn_additive_mult_for_segment(next_index, float(amount))
-			tile.map.mark_segment_received_relay(next_index)
-			tile.map.flash_segment_highlight(next_index)
-		TileCard.Product.GOLD:
-			tile.map.add_turn_gold_for_segment(next_index, int(round(float(amount))))
-			tile.map.mark_segment_received_relay(next_index)
-			tile.map.flash_segment_highlight(next_index)
-		_:
-			pass
-
-
 func after_card_activated(tile: Hex, card: TileCard) -> void:
 	if tile == null or card == null:
 		return
@@ -332,8 +301,6 @@ func after_card_activated(tile: Hex, card: TileCard) -> void:
 
 func on_turn_resolved() -> void:
 	_tick_two_turn_fuses()
-	_opening_coords.clear()
-	_closing_coords.clear()
 	EventBus.condiment_fuses_changed.emit()
 
 
@@ -345,14 +312,6 @@ func get_inspect_lines(card: TileCard, coords: Vector2i) -> Array[String]:
 			if condiment == null:
 				continue
 			lines.append(_fuse_inspect_text(condiment, fuse))
-	if coords in _opening_coords:
-		var opening := CondimentCatalog.get_by_id("opening_round")
-		if opening != null:
-			lines.append(opening.get_fuse_summary())
-	if coords in _closing_coords:
-		var closing := CondimentCatalog.get_by_id("closing_round")
-		if closing != null:
-			lines.append(closing.get_fuse_summary())
 	return lines
 
 
@@ -361,10 +320,6 @@ func get_badge_fuses(card: TileCard, coords: Vector2i) -> Array[Dictionary]:
 	if card != null:
 		for fuse in card.condiment_fuses:
 			badges.append(fuse)
-	if coords in _opening_coords:
-		badges.append({"condiment_id": "opening_round", "remaining_turns": 1, "remaining_activations": 0})
-	if coords in _closing_coords:
-		badges.append({"condiment_id": "closing_round", "remaining_turns": 1, "remaining_activations": 0})
 	return badges
 
 
@@ -374,9 +329,6 @@ func capture_run_state() -> Dictionary:
 		slot_ids.append(condiment.id if condiment != null else "")
 	return {
 		"belt": slot_ids,
-		"opening_coords": _serialize_coords(_opening_coords),
-		"closing_coords": _serialize_coords(_closing_coords),
-		"rewrite_use_count": _rewrite_use_count,
 		"pack_use_count": _pack_use_count,
 	}
 
@@ -391,9 +343,6 @@ func apply_run_state(state: Dictionary) -> void:
 		if condiment_id.is_empty():
 			continue
 		belt[i] = CondimentCatalog.get_by_id(condiment_id)
-	_opening_coords = _deserialize_coords(state.get("opening_coords", []))
-	_closing_coords = _deserialize_coords(state.get("closing_coords", []))
-	_rewrite_use_count = int(state.get("rewrite_use_count", 0))
 	_pack_use_count = int(state.get("pack_use_count", 0))
 	EventBus.condiment_belt_changed.emit()
 	EventBus.condiment_fuses_changed.emit()
@@ -471,19 +420,8 @@ func _apply_instant(condiment: Condiment) -> void:
 		Condiment.EffectType.GOLD_DROP:
 			EconomyManager.add(int(condiment.effect_value))
 			AudioManager.play_sfx(UISounds.GOLD_GAINED)
-		Condiment.EffectType.BORROWED_TIME:
-			GameManager.add_bonus_turn()
-		Condiment.EffectType.REWRITE_OMEN:
-			EventManager.rewrite_upcoming_event(_rewrite_use_count)
-			_rewrite_use_count += 1
-		Condiment.EffectType.FREE_REROLL:
-			EconomyManager.add_rerolls(1)
 		Condiment.EffectType.CONDIMENT_PACK:
 			_grant_pack()
-		Condiment.EffectType.OPENING_ROUND:
-			_garnish_first_producers()
-		Condiment.EffectType.CLOSING_ROUND:
-			_garnish_last_producers()
 		_:
 			pass
 
@@ -498,7 +436,7 @@ func _apply_to_card(condiment: Condiment, hex: Hex) -> void:
 			_add_fuse(card, condiment, 0, 1)
 		Condiment.EffectType.ECHO, Condiment.EffectType.WARD, Condiment.EffectType.NEXT_TRIGGER_ENERGY, Condiment.EffectType.NEXT_TRIGGER_MULT:
 			_add_fuse(card, condiment, 0, 1)
-		Condiment.EffectType.FORWARD_GIFT, Condiment.EffectType.MINT_SIP:
+		Condiment.EffectType.MINT_SIP:
 			_add_fuse(card, condiment, TWO_TURN_FUSE, 0)
 		_:
 			pass
@@ -510,10 +448,8 @@ func _apply_board_effect(condiment: Condiment, hex: Hex, hex_b: Hex = null) -> v
 	match condiment.effect_type:
 		Condiment.EffectType.THROW_OUT:
 			CondimentBoardEffects.throw_out(hex, _board_effect_rng(condiment, hex))
-		Condiment.EffectType.UPGRADE_PLATE:
-			CondimentBoardEffects.upgrade_plate(hex, _board_effect_rng(condiment, hex))
-		Condiment.EffectType.REROLL_PLATE:
-			CondimentBoardEffects.reroll_plate(hex, _board_effect_rng(condiment, hex))
+		Condiment.EffectType.STAR_UP:
+			CondimentBoardEffects.star_up_placed_at(hex)
 		Condiment.EffectType.SEND_BACK:
 			CondimentBoardEffects.send_back(hex)
 		Condiment.EffectType.DUPLICATE_ORDER:
@@ -545,7 +481,6 @@ func _fuse_effect_types() -> Array:
 		Condiment.EffectType.WARD,
 		Condiment.EffectType.NEXT_TRIGGER_ENERGY,
 		Condiment.EffectType.NEXT_TRIGGER_MULT,
-		Condiment.EffectType.FORWARD_GIFT,
 		Condiment.EffectType.MINT_SIP,
 	]
 
@@ -557,48 +492,6 @@ func _grant_pack() -> void:
 	for condiment in drawn:
 		if not add_condiment(condiment):
 			break
-
-
-func _garnish_first_producers() -> void:
-	_opening_coords.clear()
-	for hex in _first_or_last_producers(true):
-		hex.active_tile_card.add_garnish()
-		_opening_coords.append(hex.coordinates)
-		hex.refresh_own_visuals()
-		if hex.card_icon_ui != null:
-			hex.card_icon_ui.play_condiment_splash(Color(1.0, 0.72, 0.28, 1.0))
-	EventBus.condiment_fuses_changed.emit()
-	var tile_map := _tile_map()
-	if tile_map != null:
-		tile_map.refresh_board_output_chips()
-
-
-func _garnish_last_producers() -> void:
-	_closing_coords.clear()
-	for hex in _first_or_last_producers(false):
-		hex.active_tile_card.add_garnish()
-		_closing_coords.append(hex.coordinates)
-		hex.refresh_own_visuals()
-		if hex.card_icon_ui != null:
-			hex.card_icon_ui.play_condiment_splash(Color(0.86, 0.38, 0.18, 1.0))
-	EventBus.condiment_fuses_changed.emit()
-	var tile_map := _tile_map()
-	if tile_map != null:
-		tile_map.refresh_board_output_chips()
-
-
-func _first_or_last_producers(want_first: bool) -> Array[Hex]:
-	var result: Array[Hex] = []
-	var tile_map := _tile_map()
-	if tile_map == null or tile_map.query == null:
-		return result
-	for segment_index in tile_map.get_segment_count():
-		var hex := tile_map.query.first_or_last_hex_on_segment(
-			segment_index, want_first, TileCard.PRODUCER_TYPE_FILTER
-		)
-		if hex != null:
-			result.append(hex)
-	return result
 
 
 func _apply_next_trigger_energy_fuse(tile: Hex, card: TileCard) -> void:
@@ -697,8 +590,13 @@ func _tick_two_turn_fuses() -> void:
 		tile_map.refresh_board_output_chips()
 
 
-func _is_valid_tile_target(hex: Hex) -> bool:
+## condiment defaults to the one being aimed. Star Up skips cards already at max stars.
+func _is_valid_tile_target(hex: Hex, condiment: Condiment = null) -> bool:
 	if hex == null or hex.active_tile_card == null:
+		return false
+	if condiment == null:
+		condiment = get_targeting_condiment()
+	if condiment != null and condiment.effect_type == Condiment.EffectType.STAR_UP 			and hex.active_tile_card.star_level >= TileCard.MAX_STAR_LEVEL:
 		return false
 	var tile_map := hex.map
 	if tile_map == null:
@@ -726,36 +624,12 @@ func _clear_map_target_highlights() -> void:
 		tile_map.clear_condiment_target_highlights()
 
 
-func _next_segment_index(tile: Hex) -> int:
-	var next_index := tile.map.get_segment_index(tile.coordinates) + 1
-	if next_index < 0 or next_index >= tile.map.get_segment_count():
-		return -1
-	return next_index
-
-
 func _fuse_inspect_text(condiment: Condiment, fuse: Dictionary) -> String:
 	var turns := int(fuse.get("remaining_turns", 0))
 	if turns > 0:
 		var hour_word := "hour" if turns == 1 else "hours"
 		return "%s · %d %s left" % [condiment.display_name, turns, hour_word]
 	return condiment.get_fuse_summary()
-
-
-func _serialize_coords(coords: Array[Vector2i]) -> Array:
-	var packed: Array = []
-	for cell in coords:
-		packed.append([cell.x, cell.y])
-	return packed
-
-
-func _deserialize_coords(raw: Variant) -> Array[Vector2i]:
-	var coords: Array[Vector2i] = []
-	if raw is not Array:
-		return coords
-	for entry in raw:
-		if entry is Array and entry.size() >= 2:
-			coords.append(Vector2i(int(entry[0]), int(entry[1])))
-	return coords
 
 
 func _tile_map() -> HexTileMap:

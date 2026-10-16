@@ -23,7 +23,7 @@ var _slots: Array[StaffSlot] = []
 # Positions from the scene, restored when there is no board to follow.
 var _authored_rects: Array[Rect2] = []
 var _tile_map: HexTileMap
-# False while a full-screen overlay such as the card pick or Day summary covers the run.
+# False while a full-screen overlay such as the Day summary covers the run.
 var _shown := true
 var _fade_tween: Tween
 var _drag_slot := -1
@@ -146,9 +146,9 @@ func _layout() -> void:
 		_tile_map.set_staff_screen_centers(centers)
 
 
-## Staff stay up for the run and the merchant. Every other overlay hides them.
+## Staff stay up for the run, the merchant and the card pick. Every other overlay hides them.
 func _on_active_panel_changed(panel: Control) -> void:
-	var shown := panel == null or not is_instance_valid(panel) or panel == _merchant
+	var shown := panel == null or not is_instance_valid(panel) or panel == _merchant or panel is CardSelectionUI
 	if shown == _shown:
 		return
 	_shown = shown

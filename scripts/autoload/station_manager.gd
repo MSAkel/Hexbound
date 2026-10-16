@@ -144,6 +144,11 @@ func get_chosen_perk(segment_index: int) -> StationPerk:
 	return options[choice]
 
 
+## Every station type, in the order evaluate_station_types tries them.
+func get_station_types() -> Array[StationType]:
+	return _types
+
+
 func get_choice_options(segment_index: int) -> Array[StationPerk]:
 	var station_type := get_station_type(segment_index)
 	if station_type == null:
@@ -331,8 +336,9 @@ func _queue_choice(segment_index: int) -> void:
 	if get_choice_options(segment_index).is_empty():
 		return
 	_pending_choices.append(segment_index)
-	# Bots and skipped presentation take the first option instead of waiting on a popup.
-	if GameManager.skip_presentation:
+	# Skipped presentation takes the first option instead of waiting on a popup.
+	# The playtest bot answers station_choice_requested itself.
+	if GameManager.skip_presentation and not GameManager.playtest_real_day_flow:
 		resolve_choice(segment_index, 0)
 		return
 	if _pending_choices.size() == 1:

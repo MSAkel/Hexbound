@@ -21,19 +21,16 @@ const GAIN_REBOUND := 0.07
 const GAIN_SETTLE := 0.38
 const GAIN_TILT_MIN_DEG := 3.0
 const GAIN_TILT_MAX_DEG := 9.0
-## Small bump on the total once it finishes counting.
-const NUDGE_SCALE := 1.08
-const NUDGE_DURATION := 0.22
 
 const MERGE_ANTICIPATION := 0.12
 const MERGE_DURATION := 0.26
 const TOTAL_POP_DURATION := 0.2
-const TOTAL_SETTLE_DURATION := 0.45
+const TOTAL_SETTLE_DURATION := 0.35
 const TOTAL_POP_SCALE := 1.28
 const TOTAL_MIN_FONT_SIZE := 52
 const TOTAL_MAX_FONT_SIZE := 124
 ## Hold on the merged score before the turn moves on to commit it.
-const TOTAL_HOLD := 0.55
+const TOTAL_HOLD := 0.25
 
 const FLY_DURATION := 0.46
 const FLY_END_SCALE := 0.4
@@ -398,18 +395,6 @@ func _play_total_pop(score: int) -> void:
 
 	await TweenWait.finished(self, count_tween)
 	await TweenWait.finished(self, pop)
-	await TweenWait.finished(self, _nudge(total_label))
-
-
-## Quick, gentle scale bump.
-func _nudge(control: Control) -> Tween:
-	var half := NUDGE_DURATION * 0.5 / GameManager.game_speed
-	var tween := _replace_fx_tween(control)
-	tween.tween_property(control, "scale", Vector2(NUDGE_SCALE, NUDGE_SCALE), half).set_trans(
-		Tween.TRANS_SINE
-	).set_ease(Tween.EASE_OUT)
-	tween.tween_property(control, "scale", Vector2.ONE, half).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	return tween
 
 
 func _center_total_label() -> void:

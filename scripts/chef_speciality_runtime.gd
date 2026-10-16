@@ -5,8 +5,8 @@ extends RefCounted
 
 const SOUS_CHEF_REPEAT_EVERY := 3
 const SOMMELIER_BEVERAGE_SCALE := 2.0
-const GOURMET_STARTING_GOLD := 10
-const GOURMET_DAY_GOLD := 2
+const GOURMET_STARTING_GOLD := 20
+const GOURMET_MEAL_GOLD := 1
 
 var _chef: ChefDefinition = null
 # Kitchenware activations this hour, excluding Sous Chef's own bonus repeats.
@@ -44,14 +44,14 @@ func is_gourmet() -> bool:
 	return get_kind() == ChefDefinition.SpecialityKind.GOURMET_RESTAURANT
 
 
-## Extra starting gold on top of difficulty. Gourmet only.
-func extra_starting_gold() -> int:
-	return GOURMET_STARTING_GOLD if is_gourmet() else 0
+## Starting gold before the difficulty reduction. Gourmet replaces the base amount.
+func starting_gold() -> int:
+	return GOURMET_STARTING_GOLD if is_gourmet() else Difficulty.BASE_STARTING_GOLD
 
 
-## Extra gold paid when a day completes. Gourmet only.
-func extra_day_completion_gold() -> int:
-	return GOURMET_DAY_GOLD if is_gourmet() else 0
+## Extra gold paid each time a Meal is served. Gourmet only.
+func extra_meal_gold() -> int:
+	return GOURMET_MEAL_GOLD if is_gourmet() else 0
 
 
 ## Sommelier doubles Beverage card output. Same output scale path as Garnish.

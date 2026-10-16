@@ -189,12 +189,26 @@ func _get_rarity_display_name(rarity: int) -> String:
 			return "Common"
 
 
-# Extra Flavour or Mult from other cards and passives. Hidden when there is none.
+# Star level plus extra Flavour or Mult from other cards and passives. Hidden when there is neither.
 func _set_bonus_line(card: TileCard) -> void:
-	var bonus := card.bonus_production_amount
-	if is_zero_approx(bonus):
+	var lines: Array[String] = []
+	if card.star_level > 1:
+		lines.append("%s: x%s Flavour, Gold, +Mult" % [TileCard.star_text(card.star_level), String.num(card.star_output_scale(), 2)])
+	var bonus_text := _bonus_text(card)
+	if not bonus_text.is_empty():
+		lines.append(bonus_text)
+	if lines.is_empty():
 		card_bonus_line.hide()
 		return
+	card_bonus_line.text = "
+".join(lines)
+	card_bonus_line.show()
+
+
+func _bonus_text(card: TileCard) -> String:
+	var bonus := card.bonus_production_amount
+	if is_zero_approx(bonus):
+		return ""
 	var stat_label := GameTerms.MULT if card.product == TileCard.Product.MULTIPLIER else GameTerms.FLAVOUR
 	var amount_text: String
 	if card.product == TileCard.Product.MULTIPLIER:
@@ -202,10 +216,8 @@ func _set_bonus_line(card: TileCard) -> void:
 	else:
 		amount_text = str(int(round(bonus)))
 	if bonus > 0.0:
-		card_bonus_line.text = "+%s %s" % [amount_text, stat_label]
-	else:
-		card_bonus_line.text = "%s %s" % [amount_text, stat_label]
-	card_bonus_line.show()
+		return "+%s %s" % [amount_text, stat_label]
+	return "%s %s" % [amount_text, stat_label]
 
 
 func _set_condiment_fuse_line(card: TileCard) -> void:
