@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://cfrc7a8fh5yor"]
 
-[ext_resource type="Texture2D" uid="uid://bt8vbmxevwq3o" path="res://assets/icons/food/ingredients/proteins/chicken.png" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://bt8vbmxevwq3o" path="res://assets/icons/food/ingredients/meats/chicken.png" id="1_icon"]
 [ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]

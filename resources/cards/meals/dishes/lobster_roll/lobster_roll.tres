@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://dgnkqpwnentve"]
 
 [ext_resource type="Texture2D" uid="uid://4gunyt03wv7y" path="res://assets/icons/food/meals/dishes/lobster_roll.png" id="1_biois"]
-[ext_resource type="Script" uid="uid://dc78qdbe00bou" path="res://resources/spot_cards/meals/dishes/lobster_roll/lobster_roll.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://dc78qdbe00bou" path="res://resources/cards/meals/dishes/lobster_roll/lobster_roll.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

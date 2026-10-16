@@ -44,7 +44,7 @@ func _snap_all() -> void:
 		(_punch_tweens[control] as Tween).kill()
 		control.scale = Vector2.ONE
 	_punch_tweens.clear()
-	_gold_counter.snap_to(GoldManager.amount)
+	_gold_counter.snap_to(EconomyManager.amount)
 	_round_counter.snap_to(GameManager.current_round)
 	_turn_counter.snap_to(GameManager.remaining_turns)
 

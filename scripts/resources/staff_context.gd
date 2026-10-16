@@ -75,7 +75,7 @@ func add_mult(amount: float) -> void:
 func add_gold(amount: int) -> void:
 	if amount <= 0 or not EventManager.can_gain_gold():
 		return
-	GoldManager.add(amount)
+	EconomyManager.add(amount)
 	if not GameManager.skip_presentation:
 		AudioManager.play_sfx(UISounds.GOLD_GAINED)
 	_float("+%d" % amount, GOLD_COLOR, TileCard.ICON_GOLD)

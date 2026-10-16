@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://bffu5k1xj6gm7"]
 
-[ext_resource type="Texture2D" uid="uid://c4xuydytx3y35" path="res://assets/icons/food/ingredients/proteins/meat.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/shared/garnished_when_adjacent.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://c4xuydytx3y35" path="res://assets/icons/food/ingredients/meats/meat.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/cards/shared/garnished_when_adjacent.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

@@ -251,7 +251,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 func _run_state_owners_before_map() -> Array:
 	return [
 		["game_manager", GameManager],
-		["gold", GoldManager],
+		["economy", EconomyManager],
 		["events", EventManager],
 		["round_flow", RoundFlow],
 		["run_rng", RunRng],
@@ -404,8 +404,8 @@ func _is_game_over_visible() -> bool:
 
 
 func _notify_ui_restored() -> void:
-	EventBus.gold_changed.emit(GoldManager.amount)
-	EventBus.rerolls_changed.emit(GoldManager.rerolls_remaining)
+	EventBus.gold_changed.emit(EconomyManager.amount)
+	EventBus.rerolls_changed.emit(EconomyManager.rerolls_remaining)
 	EventBus.total_round_score_changed.emit()
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(GameManager.current_round)
@@ -421,7 +421,7 @@ func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:
 	var difficulty := int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	var expected := ChefRegistry.get_expected_opening_hand_size(difficulty)
 	var map_state: Dictionary = payload.get("map", {})
-	var placed_count: int = map_state.get("placed_spot_cards", []).size()
+	var placed_count: int = map_state.get("placed_cards", []).size()
 	var round_num := int(payload.get("game_manager", {}).get("current_round", 1))
 	if round_num > 1 or placed_count > 0:
 		return

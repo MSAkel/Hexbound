@@ -1,6 +1,6 @@
 extends TileCard
 
-## +3 Mult. The Following 2 Ingredients gain x1.5 output on their next fire, x2 when they are Meat.
+## +1 Mult. The Following 2 Ingredients gain x1.5 output on their next fire, x2 when they are Meat.
 
 const TARGET_COUNT := 2
 const SCALE := 1.5

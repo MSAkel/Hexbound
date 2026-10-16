@@ -1,6 +1,6 @@
 extends MealCard
 
-## +10 Mult, then x0.1 Mult on top of x1 for every 10 triggers on its station this Hour.
+## +4 Mult, then x0.1 Mult on top of x1 for every 10 triggers on its station this Hour.
 
 const TRIGGERS_PER_STEP := 10
 const XMULT_PER_STEP := 0.1

@@ -183,7 +183,7 @@ func get_requirement_icons() -> Array[Dictionary]:
 func _station_cards(tile: Hex) -> Array[TileCard]:
 	if tile == null or tile.map == null:
 		return []
-	return tile.map.get_regular_spot_cards(_get_segment_index(tile))
+	return tile.map.get_regular_tile_cards(_get_segment_index(tile))
 
 
 func _matching_station_cards(tile: Hex) -> Array[TileCard]:

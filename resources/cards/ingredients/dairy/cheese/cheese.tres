@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://cdr6jp1cayaal"]
 
-[ext_resource type="Texture2D" uid="uid://u6s5mjab2017" path="res://assets/icons/food/ingredients/proteins/cheese_wedge.png" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://cejtjoqwpd6jf" path="res://assets/icons/food/ingredients/dairy/cheese.png" id="1_icon"]
 [ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]

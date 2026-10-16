@@ -18,9 +18,9 @@ func _on_show_panel() -> void:
 	# Read while round advance and turn_started are still deferred so gold earned this turn
 	# still reflects the completed round.
 	round_score.text = str(GameManager.total_round_score)
-	gold_earned.text = str(GoldManager.earned_this_turn)
+	gold_earned.text = str(EconomyManager.earned_this_turn)
 
-	var reward: Dictionary = GoldManager.last_speed_reward
+	var reward: Dictionary = EconomyManager.last_speed_reward
 	var skipped_turns: int = reward.get("skipped_turns", 0)
 
 	remaining_turns_rewards_container.visible = true

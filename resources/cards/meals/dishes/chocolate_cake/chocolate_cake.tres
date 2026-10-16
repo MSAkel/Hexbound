@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://c1gotisug0thp"]
 
 [ext_resource type="Texture2D" uid="uid://bnoo2clovtw5" path="res://assets/icons/food/meals/dishes/chocolate_cake.png" id="1_hptpl"]
-[ext_resource type="Script" uid="uid://c8rlqxw0cjv01" path="res://resources/spot_cards/meals/dishes/chocolate_cake/chocolate_cake.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://c8rlqxw0cjv01" path="res://resources/cards/meals/dishes/chocolate_cake/chocolate_cake.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -14,5 +14,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "chocolate_cake"
 name = "Chocolate Cake"
 icon = ExtResource("1_hptpl")
-description = "Starts at x1 {mult}. Gains x0.5 {mult} for each different Sweet on its Station."
+description = "Starts at x1 {mult}. Gains x0.25 {mult} for each different Sweet on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

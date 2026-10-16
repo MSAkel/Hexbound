@@ -252,7 +252,7 @@ func evaluate_station_types() -> void:
 		return
 	for segment_index in _stations.size():
 		var station := _stations[segment_index]
-		var cards := _board.get_regular_spot_cards(segment_index)
+		var cards := _board.get_regular_tile_cards(segment_index)
 		if station.type != null and station.type.is_satisfied_by(cards):
 			continue
 		var new_type: StationType = null

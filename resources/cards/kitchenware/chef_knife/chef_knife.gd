@@ -1,6 +1,6 @@
 extends TileCard
 
-## +3 Mult. Triggers the Following Ingredient twice.
+## +1 Mult. Triggers the Following Ingredient twice.
 
 
 func _init() -> void:

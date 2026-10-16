@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Lemon. +10 Mult, plus the Flavour of the Seafood on its station x1.5.
+## Needs Lemon. +3 Mult, plus the Flavour of the Seafood on its station x1.5.
 
 const SEAFOOD_SCALE := 1.5
 

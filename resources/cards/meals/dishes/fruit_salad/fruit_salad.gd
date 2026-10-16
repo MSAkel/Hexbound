@@ -1,8 +1,8 @@
 extends MealCard
 
-## Starts at x1 Mult and gains x0.5 for every Fruit on its station.
+## Starts at x1 Mult and gains x0.25 for every Fruit on its station.
 
-const XMULT_PER_FRUIT := 0.5
+const XMULT_PER_FRUIT := 0.25
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://br1ko57ws82uu"]
 
 [ext_resource type="Texture2D" uid="uid://cnkl42ht7pysx" path="res://assets/icons/kitchenware/cutting_board.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/kitchenware/cutting_board/cutting_board.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/kitchenware/cutting_board/cutting_board.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

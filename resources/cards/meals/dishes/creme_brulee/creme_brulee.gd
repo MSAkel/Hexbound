@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Cream, Sugar and a Kitchen Torch. +20 Mult.
+## Needs Cream, Sugar and a Kitchen Torch. +6 Mult.
 
 
 func _meal_outputs(_tile: Hex, _preview: bool) -> Dictionary:

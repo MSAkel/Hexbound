@@ -1,8 +1,8 @@
 extends MealCard
 
-## Needs Chocolate. Starts at x1 Mult and gains x0.5 for each different Sweet on its station.
+## Needs Chocolate. Starts at x1 Mult and gains x0.25 for each different Sweet on its station.
 
-const XMULT_PER_SWEET := 0.5
+const XMULT_PER_SWEET := 0.25
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:

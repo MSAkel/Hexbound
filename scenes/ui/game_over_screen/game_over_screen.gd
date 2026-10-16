@@ -23,7 +23,7 @@ func _on_game_ended() -> void:
 	played_as_label.text = GameManager.selected_chef.display_name if GameManager.selected_chef else "Unknown"
 	highest_score_value.text = CountingNumber.format_int(GameManager.highest_round_score)
 	round_value.text = str(GameManager.current_round)
-	gold_earned_value.text = CountingNumber.format_int(GoldManager.total_earned_this_run)
+	gold_earned_value.text = CountingNumber.format_int(EconomyManager.total_earned_this_run)
 	card_triggers_value.text = CountingNumber.format_int(GameManager.total_rune_activations)
 	seed_value.text = RunRng.get_display_seed()
 	UiManager.show_panel(self)

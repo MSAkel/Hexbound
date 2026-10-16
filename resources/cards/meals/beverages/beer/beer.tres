@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="MealCard" format=3 uid="uid://dmgsxsfmxqsx1"]
 
 [ext_resource type="Texture2D" uid="uid://bwgnhij5vn6w5" path="res://assets/icons/food/meals/beverage/beer.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/meals/beverages/beer/beer.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/meals/beverages/beer/beer.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 5
+base_production_amount = 2
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"beverage"])
 id = "beer"
 name = "Beer"
 icon = ExtResource("1_icon")
-description = "+5 {mult}. Gains x0.25 {mult} each time it {triggers}. Resets at the end of the Day."
+description = "+2 {mult}. Gains x0.1 {mult} each time it {triggers}. Resets at the end of the Day."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -1,17 +1,17 @@
 [gd_resource type="Resource" format=3 uid="uid://cacdwhf6tqda7"]
 
 [ext_resource type="Texture2D" uid="uid://p4i8llue7jlc" path="res://assets/icons/food/meals/dishes/apple_pie.png" id="1_81ddt"]
-[ext_resource type="Script" uid="uid://bmbtwdtsgrs2i" path="res://resources/spot_cards/meals/dishes/apple_pie/apple_pie.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bmbtwdtsgrs2i" path="res://resources/cards/meals/dishes/apple_pie/apple_pie.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 recipe_required_card_ids = Array[String](["apple", "butter", "sugar"])
-base_production_amount = 15
+base_production_amount = 5
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "apple_pie"
 name = "Apple Pie"
 icon = ExtResource("1_81ddt")
-description = "+15 {mult}. +1 Gold when served if Coffee is on its Station."
+description = "+5 {mult}. +1 Gold when served if Coffee is on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -469,7 +469,7 @@ func _apply_instant(condiment: Condiment) -> void:
 	_record_condiment_used()
 	match condiment.effect_type:
 		Condiment.EffectType.GOLD_DROP:
-			GoldManager.add(int(condiment.effect_value))
+			EconomyManager.add(int(condiment.effect_value))
 			AudioManager.play_sfx(UISounds.GOLD_GAINED)
 		Condiment.EffectType.BORROWED_TIME:
 			GameManager.add_bonus_turn()
@@ -477,7 +477,7 @@ func _apply_instant(condiment: Condiment) -> void:
 			EventManager.rewrite_upcoming_event(_rewrite_use_count)
 			_rewrite_use_count += 1
 		Condiment.EffectType.FREE_REROLL:
-			GoldManager.add_rerolls(1)
+			EconomyManager.add_rerolls(1)
 		Condiment.EffectType.CONDIMENT_PACK:
 			_grant_pack()
 		Condiment.EffectType.OPENING_ROUND:

@@ -27,7 +27,7 @@ func _bootstrap_run_state() -> void:
 		"total_fires": 42,
 	})
 
-	GoldManager.apply_run_state({
+	EconomyManager.apply_run_state({
 		"amount": 120,
 		"total_earned_this_run": 340,
 		"earned_this_turn": 18,
@@ -80,7 +80,7 @@ func _show_merchant() -> void:
 
 func _show_round_complete() -> void:
 	_hide_active_panel()
-	GoldManager.apply_round_speed_rewards(2)
+	EconomyManager.apply_round_speed_rewards(2)
 	GameManager.total_round_score = 1850
 	UiManager.show_round_complete_panel.emit()
 

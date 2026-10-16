@@ -1,6 +1,6 @@
 extends TileCard
 
-## +4 Mult. Garnishes every adjacent Ingredient and Meal.
+## +2 Mult. Garnishes every adjacent Ingredient and Meal.
 
 
 func _on_activate_tile_card(tile: Hex) -> void:

@@ -121,10 +121,10 @@ func _ready() -> void:
 	if selected_chef == null:
 		selected_chef = ChefRegistry.get_default_chef()
 
-	_load_tile_cards_from_directory("res://resources/spot_cards/")
+	_load_tile_cards_from_directory("res://resources/cards/")
 
 	if tile_cards_pool.is_empty():
-		push_error("No tile cards loaded into pool from res://resources/spot_cards/")
+		push_error("No tile cards loaded into pool from res://resources/cards/")
 
 	_sort_tile_cards_pool()
 
@@ -190,7 +190,7 @@ func _on_turn_started() -> void:
 	turn_stamp += 1
 	_activation_counts_this_turn.clear()
 	_current_turn_trigger_count = 0
-	GoldManager.reset_turn_tracking()
+	EconomyManager.reset_turn_tracking()
 	chef_speciality.reset_turn()
 
 
@@ -254,7 +254,7 @@ func debug_meet_round_goal_and_complete() -> void:
 ## Hands the completed round to RoundFlow, which owns every step up to the next turn.
 ## The summary screen reads remaining turns and gold earned, so nothing advances until Continue.
 func _complete_current_round(skipped_turns: int = get_skipped_turns()) -> void:
-	GoldManager.apply_round_speed_rewards(skipped_turns)
+	EconomyManager.apply_round_speed_rewards(skipped_turns)
 	StaffManager.on_day_ended()
 	if EventManager.is_completing_final_event_round():
 		RoundFlow.begin_victory_transition()
@@ -266,15 +266,15 @@ func _complete_current_round(skipped_turns: int = get_skipped_turns()) -> void:
 func advance_round() -> void:
 	current_round += 1
 	# Round-spend counters reset before the round bonus so cards start fresh.
-	GoldManager.reset_round_tracking()
-	GoldManager.reset_rerolls()
+	EconomyManager.reset_round_tracking()
+	EconomyManager.reset_rerolls()
 	total_round_score = 0
 	_apply_round_state()
 
 
 ## Round-dependent state and HUD refresh, shared by the round advance and the debug start.
 func _apply_round_state() -> void:
-	required_score = ScoreProgression.get_required_score(current_round)
+	required_score = ScoreProgression.get_required_score(current_round, selected_difficulty)
 	# Apply the event first so Rush Hour's reduced max is reflected in remaining turns.
 	EventManager.on_round_advanced(current_round)
 	required_score = EventManager.apply_score_modifier(required_score)
@@ -374,7 +374,7 @@ func build_run_snapshot(is_win: bool) -> Dictionary:
 		"difficulty": int(selected_difficulty),
 		"rounds_completed": current_round if is_win else maxi(0, current_round - 1),
 		"peak_gold_held": _run_peak_gold_held,
-		"gold_earned": GoldManager.total_earned_this_run,
+		"gold_earned": EconomyManager.total_earned_this_run,
 		"peak_segment_score_single_turn": _run_peak_segment_score_single_turn,
 		"peak_triggers_single_turn": _run_peak_triggers_single_turn,
 	}
@@ -400,7 +400,7 @@ func create_pauseable_timer(duration: float) -> SceneTreeTimer:
 
 #region tile card pool loading
 
-## Recursively load every .tres TileCard under resources/spot_cards, skipping duplicate ids.
+## Recursively load every .tres TileCard under resources/cards, skipping duplicate ids.
 ## ResourceLoader.list_directory works in exported builds. DirAccess only sees .gd files in PCK.
 func _load_tile_cards_from_directory(dir_path: String) -> void:
 	var normalized_path := dir_path
@@ -450,7 +450,7 @@ func reset_for_new_run() -> void:
 	highest_round_score = 0
 	_remaining_turns = MAX_TURNS_PER_ROUND
 	_is_processing_turn = false
-	required_score = ScoreProgression.get_required_score(current_round)
+	required_score = ScoreProgression.get_required_score(current_round, selected_difficulty)
 	_total_round_score = 0
 	_turn_score = 0
 	_activation_counts_this_turn.clear()
@@ -463,8 +463,8 @@ func reset_for_new_run() -> void:
 	StaffManager.reset_for_new_run()
 	StationManager.reset_for_new_run()
 	RunLedger.reset_for_new_run()
-	GoldManager.set_run_starting_gold(selected_difficulty)
-	GoldManager.reset_rerolls()
+	EconomyManager.set_run_starting_gold(selected_difficulty)
+	EconomyManager.reset_rerolls()
 	EventManager.init_run()
 
 
@@ -486,7 +486,7 @@ func _debug_apply_round_jump(target_round: int) -> void:
 	_is_processing_turn = false
 	_turn_score = 0
 	total_round_score = 0
-	GoldManager.reset_round_tracking()
+	EconomyManager.reset_round_tracking()
 	current_round = target_round
 	_apply_round_state()
 	EventBus.turn_started.emit()
@@ -518,7 +518,7 @@ func apply_run_state(state: Dictionary) -> void:
 	highest_round_score = int(state.get("highest_round_score", state.get("total_round_score", 0)))
 	_remaining_turns = int(state.get("remaining_turns", MAX_TURNS_PER_ROUND))
 	_is_processing_turn = false
-	required_score = int(state.get("required_score", ScoreProgression.get_required_score(current_round)))
+	required_score = int(state.get("required_score", ScoreProgression.get_required_score(current_round, selected_difficulty)))
 	_total_round_score = int(state.get("total_round_score", 0))
 	_turn_score = int(state.get("turn_score", 0))
 	turn_stamp = int(state.get("turn_stamp", 0))

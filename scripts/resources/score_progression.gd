@@ -9,15 +9,15 @@ const ENDLESS_MODE_START_ROUND := RUN_LENGTH_ROUNDS + 1
 const MAX_SCORE := 9223372036854775807
 ## One entry per round of a standard run, indexed as AUTHORED_ROUND_SCORES[round - 1].
 const AUTHORED_ROUND_SCORES: Array[int] = [
-	450,
-	2750,
-	8000,
-	16000,
-	26500,
-	32000,
-	43000,
-	58000,
-	80000,
+	750,
+	1800,
+	4800,
+	10000,
+	17000,
+	21500,
+	29000,
+	36000,
+	42000,
 ]
 ## Multiplier used by the endless curve. Values above 1 increase the target every round.
 const ENDLESS_GROWTH_FACTOR := 1.5
@@ -25,7 +25,22 @@ const ENDLESS_GROWTH_FACTOR := 1.5
 const ENDLESS_GROWTH_POWER := 1.15
 
 
-static func get_required_score(round_number: int) -> int:
+## Day target for round_number, scaled by the difficulty's target multiplier.
+static func get_required_score(
+	round_number: int,
+	difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
+) -> int:
+	var base_score := _get_base_required_score(round_number)
+	var scale := Difficulty.get_score_target_multiplier(difficulty)
+	if is_equal_approx(scale, 1.0) or base_score >= MAX_SCORE:
+		return base_score
+	var scaled_score := float(base_score) * scale
+	if scaled_score >= MAX_SCORE:
+		return MAX_SCORE
+	return roundi(scaled_score)
+
+
+static func _get_base_required_score(round_number: int) -> int:
 	if round_number >= 1 and round_number <= AUTHORED_ROUND_SCORES.size():
 		return AUTHORED_ROUND_SCORES[round_number - 1]
 

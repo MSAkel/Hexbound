@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://cp6mynwhmpm7r"]
 
 [ext_resource type="Texture2D" uid="uid://drtn4ni6jbmpm" path="res://assets/icons/food/meals/dishes/beurre_blanc_scallops.png" id="1_v8apg"]
-[ext_resource type="Script" uid="uid://bx4tdjsa8atm5" path="res://resources/spot_cards/meals/dishes/beurre_blanc_scallops/beurre_blanc_scallops.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bx4tdjsa8atm5" path="res://resources/cards/meals/dishes/beurre_blanc_scallops/beurre_blanc_scallops.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

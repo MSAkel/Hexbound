@@ -5,12 +5,12 @@
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 4
+base_production_amount = 2
 type = 1
 product = 2
 starting_hand_eligible = true
 id = "blender"
 name = "Blender"
 icon = ExtResource("1_icon")
-description = "+4 {mult}. {liquefies} the next Ingredient, if applicable."
+description = "+2 {mult}. {liquefies} the next Ingredient, if applicable."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

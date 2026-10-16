@@ -39,7 +39,7 @@ var _hidden := false
 
 
 func _ready() -> void:
-	_gold_spin.value = GoldManager.amount
+	_gold_spin.value = EconomyManager.amount
 	EventBus.gold_changed.connect(_on_gold_changed)
 	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.event_changed.connect(_sync_event_option)
@@ -231,7 +231,7 @@ func _on_card_picker_dim_gui_input(event: InputEvent) -> void:
 
 func _on_set_gold_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	GoldManager.set_amount(int(_gold_spin.value))
+	EconomyManager.set_amount(int(_gold_spin.value))
 
 
 func _on_open_merchant_pressed() -> void:

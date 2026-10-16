@@ -1,9 +1,9 @@
 extends MealCard
 
-## A random 10 to 20 Mult each time it is served.
+## A random 3 to 8 Mult each time it is served.
 
-const MIN_MULT := 10
-const MAX_MULT := 20
+const MIN_MULT := 3
+const MAX_MULT := 8
 
 
 func _meal_outputs(tile: Hex, preview: bool) -> Dictionary:

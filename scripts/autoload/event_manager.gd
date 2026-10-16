@@ -568,7 +568,10 @@ func _get_tile_map() -> HexTileMap:
 
 
 func _refresh_required_score() -> void:
-	var base_score := ScoreProgression.get_required_score(GameManager.current_round)
+	var base_score := ScoreProgression.get_required_score(
+		GameManager.current_round,
+		GameManager.selected_difficulty
+	)
 	GameManager.required_score = apply_score_modifier(base_score)
 	EventBus.required_score_changed.emit()
 

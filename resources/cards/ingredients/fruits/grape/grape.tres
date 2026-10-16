@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="TileCard" format=3]
 
 [ext_resource type="Texture2D" uid="uid://co6pj15btleiw" path="res://assets/icons/food/ingredients/fruits/grape.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/ingredients/fruits/grape/grape.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/ingredients/fruits/grape/grape.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

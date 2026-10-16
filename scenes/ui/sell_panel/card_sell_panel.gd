@@ -83,7 +83,7 @@ func _is_armed() -> bool:
 
 ## Pays out for a hand card dropped on the panel. CardPlacementHandler removes the card.
 func sell_card() -> void:
-	GoldManager.add(SELL_VALUE)
+	EconomyManager.add(SELL_VALUE)
 	AudioManager.play_sfx(UISounds.GOLD_GAINED)
 
 

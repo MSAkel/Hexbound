@@ -1,6 +1,6 @@
 extends TileCard
 
-## +4 Mult. Garnishes the Following 2 Ingredients.
+## +2 Mult. Garnishes the Following 2 Ingredients.
 
 const TARGET_COUNT := 2
 

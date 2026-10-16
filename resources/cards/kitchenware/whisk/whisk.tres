@@ -1,17 +1,17 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://tgx0mcgx7sat"]
 
 [ext_resource type="Texture2D" uid="uid://b4x64kr1bx2dl" path="res://assets/icons/kitchenware/whisk.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/kitchenware/whisk/whisk.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/kitchenware/whisk/whisk.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 support_role = 1
-base_production_amount = 4
+base_production_amount = 2
 type = 1
 product = 2
 starting_hand_eligible = true
 id = "whisk"
 name = "Whisk"
 icon = ExtResource("1_icon")
-description = "+4 {mult}. {garnishes} the {following} 2 Ingredients."
+description = "+2 {mult}. {garnishes} the {following} 2 Ingredients."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

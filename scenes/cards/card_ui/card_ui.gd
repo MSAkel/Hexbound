@@ -222,7 +222,7 @@ func _on_focus_exited() -> void:
 func _activate_focused_card() -> void:
 	if _is_sold:
 		return
-	if interaction_mode == InteractionMode.MERCHANT and not GoldManager.can_afford(price):
+	if interaction_mode == InteractionMode.MERCHANT and not EconomyManager.can_afford(price):
 		return
 	action_requested.emit(self)
 
@@ -559,7 +559,7 @@ func _handle_merchant_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton \
 			and event.pressed \
 			and event.button_index == MOUSE_BUTTON_LEFT:
-		if not GoldManager.can_afford(price):
+		if not EconomyManager.can_afford(price):
 			return
 		action_requested.emit(self)
 		accept_event()
@@ -710,7 +710,7 @@ func _refresh_merchant_price() -> void:
 
 
 func _refresh_price_chip_affordability() -> void:
-	var can_afford := GoldManager.can_afford(price)
+	var can_afford := EconomyManager.can_afford(price)
 	_price_chip_label.add_theme_color_override(
 		"font_color",
 		MerchantShopStyling.price_label_color(can_afford)
@@ -721,7 +721,7 @@ func _update_affordability() -> void:
 	_refresh_price_chip_affordability()
 	mouse_default_cursor_shape = (
 		Control.CURSOR_POINTING_HAND
-		if GoldManager.can_afford(price)
+		if EconomyManager.can_afford(price)
 		else Control.CURSOR_ARROW
 	)
 
@@ -735,7 +735,7 @@ func _update_stock_affordability() -> void:
 
 func refresh_purchase_tray() -> void:
 	var block_reason := card.get_purchase_block_reason() if card != null else ""
-	var gold_enabled := not _is_sold and block_reason.is_empty() and GoldManager.can_afford(price)
+	var gold_enabled := not _is_sold and block_reason.is_empty() and EconomyManager.can_afford(price)
 	_purchase_tray.set_gold_enabled(gold_enabled)
 	_purchase_tray.set_block_reason(block_reason)
 

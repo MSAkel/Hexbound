@@ -118,7 +118,7 @@ func sell_staff(slot: int) -> int:
 	var value := staff.get_sell_value()
 	slots[slot] = null
 	_hour_state[slot] = {}
-	GoldManager.add(value)
+	EconomyManager.add(value)
 	EventBus.staff_sold.emit(slot)
 	_notify_roster_changed()
 	return value

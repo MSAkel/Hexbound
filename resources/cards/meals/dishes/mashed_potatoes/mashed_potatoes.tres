@@ -1,18 +1,18 @@
 [gd_resource type="Resource" format=3 uid="uid://bdef2xwxi32uh"]
 
 [ext_resource type="Texture2D" uid="uid://dm6030kg6sjcq" path="res://assets/icons/food/meals/dishes/mashed_potatoes.png" id="1_qcg15"]
-[ext_resource type="Script" uid="uid://b63odm0cky68k" path="res://resources/spot_cards/meals/dishes/mashed_potatoes/mashed_potatoes.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://b63odm0cky68k" path="res://resources/cards/meals/dishes/mashed_potatoes/mashed_potatoes.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 recipe_seasoning_count = 1
 recipe_required_card_ids = Array[String](["potato", "butter"])
-base_production_amount = 10
+base_production_amount = 3
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "mashed_potatoes"
 name = "Mashed Potatoes"
 icon = ExtResource("1_qcg15")
-description = "+10 {mult}. +5 {mult} for each different kind of Ingredient on its Station."
+description = "+3 {mult}. +1 {mult} for each different kind of Ingredient on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -53,9 +53,9 @@ static func get_ingredient_kind_icon(kind: StringName) -> Texture2D:
 		TileCard.TAG_PROTEIN:
 			return preload("res://assets/icons/food/ingredients/meats/meat.png")
 		TileCard.TAG_SEAFOOD:
-			return preload("res://assets/icons/food/ingredients/meats/shrimp.png")
+			return preload("res://assets/icons/food/ingredients/seafood/shrimp.png")
 		TileCard.TAG_DAIRY:
-			return preload("res://assets/icons/food/ingredients/meats/cheese_wedge.png")
+			return preload("res://assets/icons/food/ingredients/dairy/cheese.png")
 		TileCard.TAG_SWEET:
 			return preload("res://assets/icons/condiments/honey.png")
 		TileCard.TAG_SEASONING:

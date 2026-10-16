@@ -1,7 +1,7 @@
 extends StaffCard
 
 ## Mult for each Ingredient seated on this station.
-const MULT_PER_INGREDIENT := 2.0
+const MULT_PER_INGREDIENT := 1.0
 
 
 func on_station_started(ctx: StaffContext) -> void:

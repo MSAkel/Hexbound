@@ -1,9 +1,9 @@
 extends MealCard
 
-## Needs Grape on its station. +10 Mult, then x1 Mult that gains x0.5 for each station
+## Needs Grape on its station. +4 Mult, then x1 Mult that gains x0.25 for each station
 ## serving a Meat dish.
 
-const XMULT_PER_MEAT_STATION := 0.5
+const XMULT_PER_MEAT_STATION := 0.25
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:

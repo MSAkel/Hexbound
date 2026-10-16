@@ -1,17 +1,17 @@
 [gd_resource type="Resource" format=3 uid="uid://dsnn56e8jx80q"]
 
 [ext_resource type="Texture2D" uid="uid://dixndnrn8anbn" path="res://assets/icons/food/meals/dishes/creme_brulee.png" id="1_76vw1"]
-[ext_resource type="Script" uid="uid://ll4l2w33eqau" path="res://resources/spot_cards/meals/dishes/creme_brulee/creme_brulee.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://ll4l2w33eqau" path="res://resources/cards/meals/dishes/creme_brulee/creme_brulee.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 recipe_required_card_ids = Array[String](["cream", "sugar", "kitchen_torch"])
-base_production_amount = 20
+base_production_amount = 6
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "creme_brulee"
 name = "Crème Brûlée"
 icon = ExtResource("1_76vw1")
-description = "+20 {mult}."
+description = "+6 {mult}."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -226,7 +226,7 @@ func _run_gold_engines() -> void:
 
 func _run_treasury_at_zero_gold() -> void:
 	_begin_run("sous_chef", "TREASURY")
-	GoldManager.set_amount(0)
+	EconomyManager.set_amount(0)
 	var hex := _first_empty_hex()
 	_place_by_id(hex, "treasury")
 	await _resolve_turn()
@@ -240,7 +240,7 @@ func _run_treasury_at_zero_gold() -> void:
 		"TREASURY",
 		reasons.is_empty(),
 		reasons,
-		{"energy": energy, "gold": GoldManager.amount}
+		{"energy": energy, "gold": EconomyManager.amount}
 	)
 
 
@@ -252,7 +252,7 @@ func _run_prosperity_vs_allowance() -> void:
 func _run_prosperity_order(allowance_first: bool) -> void:
 	var label := "gold_engine_prosperity_after_allowance" if allowance_first else "gold_engine_prosperity_before_allowance"
 	_begin_run("sous_chef", "PROSPER1" if allowance_first else "PROSPER0")
-	GoldManager.set_amount(0)
+	EconomyManager.set_amount(0)
 	var pair := _two_hexes_in_same_segment()
 	if pair.is_empty():
 		_record(label, "sous_chef", "", false, ["could not find two tiles in one segment"], {})
@@ -274,8 +274,8 @@ func _run_prosperity_order(allowance_first: bool) -> void:
 	var reasons: Array[String] = []
 	if energy != expected:
 		reasons.append("Prosperity Energy %d, expected %d" % [energy, expected])
-	if GoldManager.amount != 1:
-		reasons.append("gold after turn is %d, expected 1 from Allowance" % GoldManager.amount)
+	if EconomyManager.amount != 1:
+		reasons.append("gold after turn is %d, expected 1 from Allowance" % EconomyManager.amount)
 
 	_record(
 		label,
@@ -283,7 +283,7 @@ func _run_prosperity_order(allowance_first: bool) -> void:
 		RunRng.get_display_seed(),
 		reasons.is_empty(),
 		reasons,
-		{"energy": energy, "gold": GoldManager.amount, "allowance_first": allowance_first}
+		{"energy": energy, "gold": EconomyManager.amount, "allowance_first": allowance_first}
 	)
 
 
@@ -295,7 +295,7 @@ func _run_lucky_draw_gold_branch() -> void:
 	for index in 24:
 		used_seed = _seed_for("LD", "sous_chef", index)
 		_begin_run("sous_chef", used_seed)
-		GoldManager.set_amount(0)
+		EconomyManager.set_amount(0)
 		var hex := _first_empty_hex()
 		_place_by_id(hex, "fortune_cookie")
 		var lucky := hex.active_tile_card
@@ -303,8 +303,8 @@ func _run_lucky_draw_gold_branch() -> void:
 		if not _lucky_draw_peeks_gold(hex, lucky):
 			continue
 		await _resolve_turn()
-		found = GoldManager.amount == 8
-		last_gold = GoldManager.amount
+		found = EconomyManager.amount == 8
+		last_gold = EconomyManager.amount
 		last_energy = _map.get_segment_turn_flavour(_map.get_segment_index(hex.coordinates))
 		if found:
 			break
@@ -397,7 +397,7 @@ func _run_one_two_segment_r1(chef_id: String, seed_text: String) -> void:
 			"r2_same_board_score": r2_score,
 			"r2_same_board_goal": r2_goal,
 			"r2_same_board_cleared": r2_cleared,
-			"gold": GoldManager.amount,
+			"gold": EconomyManager.amount,
 			"note": "R2 is same-board with no shop or packs. Informational only.",
 		}
 	)
@@ -471,7 +471,7 @@ func _run_one_fuzz(chef_id: String, seed_text: String, repeat_index: int = 0) ->
 			"goal": goal,
 			"score": score,
 			"turns_used": turns_used,
-			"gold": GoldManager.amount,
+			"gold": EconomyManager.amount,
 			"cleared": cleared,
 			"invariants": invariant_hits.duplicate(),
 		}
@@ -487,7 +487,7 @@ func _run_one_fuzz(chef_id: String, seed_text: String, repeat_index: int = 0) ->
 				score,
 				goal,
 				turns_used,
-				GoldManager.amount,
+				EconomyManager.amount,
 				storms,
 				invariant_hits.size(),
 				"clear" if cleared else "miss",
@@ -499,7 +499,7 @@ func _run_one_fuzz(chef_id: String, seed_text: String, repeat_index: int = 0) ->
 			break
 
 		if cleared:
-			GoldManager.apply_round_speed_rewards(GameManager.get_skipped_turns())
+			EconomyManager.apply_round_speed_rewards(GameManager.get_skipped_turns())
 		var completed_round := round_number
 		var reward := _draft_and_pick_pack(true, completed_round, 0)
 		GameManager.advance_round()
@@ -519,7 +519,7 @@ func _run_one_fuzz(chef_id: String, seed_text: String, repeat_index: int = 0) ->
 		{
 			"bot": CHAOS_BOT_ID,
 			"reached_round": GameManager.current_round,
-			"gold": GoldManager.amount,
+			"gold": EconomyManager.amount,
 			"picks": picks,
 			"buys": buys,
 			"rounds": round_log,
@@ -582,7 +582,7 @@ func _run_one_full_nine(chef_id: String, seed_text: String, bot_id: String, repe
 			"goal": goal,
 			"score": score,
 			"turns_used": turns_used,
-			"gold": GoldManager.amount,
+			"gold": EconomyManager.amount,
 			"cleared": cleared,
 			"event": EventManager.get_active_event_name(),
 		}
@@ -599,7 +599,7 @@ func _run_one_full_nine(chef_id: String, seed_text: String, bot_id: String, repe
 					score,
 					goal,
 					turns_used,
-					GoldManager.amount,
+					EconomyManager.amount,
 					"clear" if cleared else "fail",
 				]
 			)
@@ -610,7 +610,7 @@ func _run_one_full_nine(chef_id: String, seed_text: String, bot_id: String, repe
 			won = true
 			break
 
-		GoldManager.apply_round_speed_rewards(GameManager.get_skipped_turns())
+		EconomyManager.apply_round_speed_rewards(GameManager.get_skipped_turns())
 		var completed_round := round_number
 		# Reward pack size still belongs to the round that just ended.
 		var reward := _draft_and_pick_pack(true, completed_round, 0)
@@ -637,7 +637,7 @@ func _run_one_full_nine(chef_id: String, seed_text: String, bot_id: String, repe
 		{
 			"won": won,
 			"reached_round": GameManager.current_round,
-			"gold": GoldManager.amount,
+			"gold": EconomyManager.amount,
 			"picks": picks,
 			"buys": buys,
 			"rounds": round_log,
@@ -728,16 +728,16 @@ func _draft_and_pick_pack_player(
 		var best := _pick_best_player_card(pack)
 		if not _player_should_reroll_pack(best, is_reward, round_number):
 			return best
-		if not GoldManager.can_reroll():
+		if not EconomyManager.can_reroll():
 			return best
-		GoldManager.use_reroll()
+		EconomyManager.use_reroll()
 		reroll_index += 1
 	return null
 
 
 ## Keep a card that belongs on the engine. Reroll more when behind on the round goal.
 func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: int) -> bool:
-	if not GoldManager.can_reroll():
+	if not EconomyManager.can_reroll():
 		return false
 	if best == null:
 		return true
@@ -746,7 +746,7 @@ func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: i
 		return false
 	if is_reward and _can_place_for_player(best):
 		return false
-	if round_number < PLAYER_PACK_REROLL_ROUND and GoldManager.rerolls_remaining <= 2:
+	if round_number < PLAYER_PACK_REROLL_ROUND and EconomyManager.rerolls_remaining <= 2:
 		var gap_ratio := _round_score_gap_ratio()
 		if gap_ratio < 0.35:
 			return false
@@ -805,9 +805,9 @@ func _shop_current_round() -> Array[String]:
 		if not _can_bot_place_card(card):
 			continue
 		var price := card.get_shop_price()
-		if not GoldManager.can_afford(price):
+		if not EconomyManager.can_afford(price):
 			continue
-		GoldManager.remove(price)
+		EconomyManager.remove(price)
 		bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
 		_place_one_card(card)
 	return bought
@@ -841,11 +841,11 @@ func _shop_player_round() -> Array[String]:
 			return bought
 		if (
 			gold_rerolls >= MAX_MERCHANT_GOLD_REROLLS
-			or not GoldManager.can_afford(reroll_cost)
+			or not EconomyManager.can_afford(reroll_cost)
 		):
 			# Leave rather than stuffing a tiny segment with leftover shop junk.
 			return bought
-		GoldManager.remove(reroll_cost)
+		EconomyManager.remove(reroll_cost)
 		stock_reroll_count += 1
 		reroll_cost += 1
 		gold_rerolls += 1
@@ -861,9 +861,9 @@ func _shop_card_score(card: TileCard) -> float:
 
 func _can_afford_shop_purchase(card: TileCard) -> bool:
 	var price := card.get_shop_price()
-	if not GoldManager.can_afford(price):
+	if not EconomyManager.can_afford(price):
 		return false
-	return GoldManager.amount - price >= SHOP_GOLD_RESERVE or price <= 4
+	return EconomyManager.amount - price >= SHOP_GOLD_RESERVE or price <= 4
 
 
 func _draw_merchant_condiments(stock_reroll_count: int) -> Array[Condiment]:
@@ -895,11 +895,11 @@ func _buy_shop_condiment(condiment: Condiment, bought: Array[String]) -> bool:
 	if condiment == null or not CondimentManager.can_add():
 		return false
 	var price := condiment.get_shop_price()
-	if not GoldManager.can_afford(price):
+	if not EconomyManager.can_afford(price):
 		return false
-	if GoldManager.amount - price < SHOP_GOLD_RESERVE:
+	if EconomyManager.amount - price < SHOP_GOLD_RESERVE:
 		return false
-	GoldManager.remove(price)
+	EconomyManager.remove(price)
 	bought.append("%s:condiment:%s@%d" % [GameManager.current_round, condiment.id, price])
 	return CondimentManager.add_condiment(condiment)
 
@@ -935,9 +935,9 @@ func _buy_shop_card(card: TileCard, bought: Array[String]) -> bool:
 	if not _can_bot_place_card(card):
 		return false
 	var price := card.get_shop_price()
-	if not GoldManager.can_afford(price):
+	if not EconomyManager.can_afford(price):
 		return false
-	GoldManager.remove(price)
+	EconomyManager.remove(price)
 	bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
 	_place_one_card(card)
 	return true
@@ -1355,7 +1355,7 @@ func _condiment_player_value(condiment: Condiment) -> float:
 		Condiment.EffectType.FORWARD_GIFT, Condiment.EffectType.MINT_SIP:
 			return 30.0 if _engine_producer_hex() != null else 5.0
 		Condiment.EffectType.FREE_REROLL:
-			return 28.0 if GoldManager.rerolls_remaining <= 1 else 14.0
+			return 28.0 if EconomyManager.rerolls_remaining <= 1 else 14.0
 		Condiment.EffectType.REWRITE_OMEN:
 			if EventManager.get_next_event_round() == -1:
 				return 0.0
@@ -1986,7 +1986,7 @@ func _shop_chaos_round() -> Array[String]:
 	)
 	var placeable: Array[TileCard] = []
 	for card: TileCard in stock:
-		if _can_bot_place_card(card) and GoldManager.can_afford(card.get_shop_price()):
+		if _can_bot_place_card(card) and EconomyManager.can_afford(card.get_shop_price()):
 			placeable.append(card)
 	var mix: Array = []
 	for card: TileCard in placeable:
@@ -1995,9 +1995,9 @@ func _shop_chaos_round() -> Array[String]:
 	for entry: Variant in mix:
 		var card: TileCard = entry
 		var price := card.get_shop_price()
-		if not GoldManager.can_afford(price):
+		if not EconomyManager.can_afford(price):
 			continue
-		GoldManager.remove(price)
+		EconomyManager.remove(price)
 		bought.append("%s:%s@%d" % [GameManager.current_round, card.id, price])
 		_place_one_card(card)
 		if bought.size() >= 3:
@@ -2015,8 +2015,8 @@ func _collect_invariant_failures(score_before: int) -> Array[String]:
 			"retrigger storm aborted at %d activations"
 			% HexTurnResolver.SKIP_PRESENTATION_STORM_LIMIT
 		)
-	if GoldManager.amount < 0:
-		reasons.append("gold went negative (%d)" % GoldManager.amount)
+	if EconomyManager.amount < 0:
+		reasons.append("gold went negative (%d)" % EconomyManager.amount)
 	if GameManager.remaining_turns < 0:
 		reasons.append("remaining_turns went negative (%d)" % GameManager.remaining_turns)
 

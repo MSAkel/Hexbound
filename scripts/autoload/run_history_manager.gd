@@ -68,7 +68,7 @@ func archive_finished_run(is_win: bool) -> void:
 		"seed": RunRng.get_display_seed(),
 		"is_seeded_run": RunRng.is_seeded_run(),
 		"highest_round_score": GameManager.highest_round_score,
-		"gold_earned": GoldManager.total_earned_this_run,
+		"gold_earned": EconomyManager.total_earned_this_run,
 		"card_triggers": GameManager.total_rune_activations,
 		"peak_gold_held": snapshot.get("peak_gold_held", 0),
 		"board": _capture_board_snapshot(),
@@ -123,7 +123,7 @@ func _capture_board_snapshot() -> Dictionary:
 
 func _board_snapshot_from_map_state(map_state: Dictionary) -> Dictionary:
 	var placed: Array = []
-	for entry: Variant in map_state.get("placed_spot_cards", []):
+	for entry: Variant in map_state.get("placed_cards", []):
 		if entry is not Dictionary:
 			continue
 		var card_id := String(entry.get("card_id", ""))

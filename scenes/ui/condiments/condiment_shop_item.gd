@@ -97,7 +97,7 @@ func _update_layout_height() -> void:
 
 func refresh_purchase_tray() -> void:
 	var belt_full := not CondimentManager.can_add()
-	var gold_enabled := not _sold and not belt_full and GoldManager.can_afford(price)
+	var gold_enabled := not _sold and not belt_full and EconomyManager.can_afford(price)
 	_purchase_tray.set_gold_enabled(gold_enabled)
 
 
@@ -118,7 +118,7 @@ func _refresh() -> void:
 	_icon.self_modulate = Color.WHITE
 	_price_label.text = MerchantShopStyling.format_price(price)
 	_well.add_theme_stylebox_override("panel", well_selected_style if _chosen else well_idle_style)
-	var can_afford := GoldManager.can_afford(price)
+	var can_afford := EconomyManager.can_afford(price)
 	_price_label.add_theme_color_override(
 		"font_color",
 		MerchantShopStyling.price_label_color(can_afford and not _sold)

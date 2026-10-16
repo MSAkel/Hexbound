@@ -4,7 +4,7 @@ extends Node
 ## Fires by kind/type, dishes plated, card consumes, condiment uses, Pass relays,
 ## and permanent growth are run-scoped.
 ## Only retriggers_this_hour resets each Hour. Day-scoped tallies are not stored here.
-## Gold Day spend lives on GoldManager. Day rating lives on GameManager round score.
+## Gold Day spend lives on EconomyManager. Day rating lives on GameManager round score.
 
 ## Total card fires this run. Game-over UI reads this through GameManager.total_rune_activations.
 var total_fires: int = 0

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://y4red7h47dee"]
 
 [ext_resource type="Texture2D" uid="uid://7ep0yxmlb8ph" path="res://assets/icons/food/ingredients/vegetables/corn.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/shared/bonus_per_nearby_kind.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/shared/bonus_per_nearby_kind.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

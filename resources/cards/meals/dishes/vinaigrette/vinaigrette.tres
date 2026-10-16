@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="MealCard" format=3 uid="uid://b7vinaigret01"]
 
 [ext_resource type="Texture2D" uid="uid://b1pg5hnvk6hu3" path="res://assets/icons/food/meals/dishes/vinaigrette.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/meals/dishes/vinaigrette/vinaigrette.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/meals/dishes/vinaigrette/vinaigrette.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -13,5 +13,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "vinaigrette"
 name = "Vinaigrette"
 icon = ExtResource("1_icon")
-description = "+10 to 20 {mult}."
+description = "+3 to 8 {mult}."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

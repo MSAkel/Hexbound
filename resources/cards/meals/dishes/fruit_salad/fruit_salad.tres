@@ -1,7 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://baprycqanrcnx"]
 
 [ext_resource type="Texture2D" uid="uid://cwsm8bmux1s0a" path="res://assets/icons/food/meals/dishes/fruit_salad.png" id="1_icon"]
-[ext_resource type="Script" uid="uid://b1rquafgvonjk" path="res://resources/spot_cards/meals/dishes/fruit_salad/fruit_salad.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://b1rquafgvonjk" path="res://resources/cards/meals/dishes/fruit_salad/fruit_salad.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -13,5 +13,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "fruit_salad"
 name = "Fruit Salad"
 icon = ExtResource("1_icon")
-description = "Starts at x1 {mult}. Gains x0.5 {mult} for every Fruit on its Station."
+description = "Starts at x1 {mult}. Gains x0.25 {mult} for every Fruit on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

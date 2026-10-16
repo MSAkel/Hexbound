@@ -1,6 +1,6 @@
 extends TileCard
 
-## +3 Mult. Pays the base output of the 2 Ingredients directly before it. Empty spots count as nothing.
+## +1 Mult. Pays the base output of the 2 Ingredients directly before it. Empty spots count as nothing.
 
 const COPY_COUNT := 2
 

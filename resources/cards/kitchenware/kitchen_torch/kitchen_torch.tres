@@ -1,17 +1,17 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://hhv7idvwhuq0"]
 
 [ext_resource type="Texture2D" uid="uid://1b3wsb4qotum" path="res://assets/icons/kitchenware/kitchen_torch.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/kitchenware/kitchen_torch/kitchen_torch.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/kitchenware/kitchen_torch/kitchen_torch.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 support_role = 1
-base_production_amount = 4
+base_production_amount = 2
 type = 1
 product = 2
 starting_hand_eligible = true
 id = "kitchen_torch"
 name = "Kitchen Torch"
 icon = ExtResource("1_icon")
-description = "+4 {mult}. {garnishes} adjacent Ingredients and Meals."
+description = "+2 {mult}. {garnishes} adjacent Ingredients and Meals."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

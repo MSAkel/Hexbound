@@ -1,8 +1,8 @@
 extends MealCard
 
-## Needs Shrimp. +5 Mult, plus +5 Mult for each Seafood on the stations either side of its own.
+## Needs Shrimp. +2 Mult, plus +2 Mult for each Seafood on the stations either side of its own.
 
-const MULT_PER_NEIGHBOUR_SEAFOOD := 5.0
+const MULT_PER_NEIGHBOUR_SEAFOOD := 2.0
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
@@ -25,5 +25,5 @@ func _neighbour_station_seafood(tile: Hex) -> Array[TileCard]:
 	for neighbour_index: int in [segment_index - 1, segment_index + 1]:
 		if neighbour_index < 0 or neighbour_index >= _get_segment_count(tile):
 			continue
-		seafood.append_array(_filter_tile_cards_by_kind(tile.map.get_regular_spot_cards(neighbour_index), TAG_SEAFOOD))
+		seafood.append_array(_filter_tile_cards_by_kind(tile.map.get_regular_tile_cards(neighbour_index), TAG_SEAFOOD))
 	return seafood

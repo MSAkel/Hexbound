@@ -7,10 +7,10 @@
 script = ExtResource("1_script")
 id = "mult_spike"
 display_name = "Hot Sauce"
-description = "+6 {mult} on next {trigger}"
+description = "+3 {mult} on next {trigger}"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.72, 0.42, 0.92, 1)
 base_price = 5
 effect_type = 13
-effect_value = 6.0
+effect_value = 3.0
 target_kind = 1

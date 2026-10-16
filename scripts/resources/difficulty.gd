@@ -9,6 +9,7 @@ enum Level {
 	LEVEL_2,
 	LEVEL_3,
 	LEVEL_4,
+	LEVEL_5,
 }
 
 # Other difficulty ideas:
@@ -36,6 +37,10 @@ const DIFFICULTY_INFO = {
 		"name": "Level 5",
 		"info": "Three random spots are disabled for the entire run.",
 	},
+	Level.LEVEL_5: {
+		"name": "Level 6",
+		"info": "Day targets are 15% higher",
+	},
 }
 
 
@@ -46,6 +51,7 @@ static func get_all_levels() -> Array[Level]:
 		Level.LEVEL_2,
 		Level.LEVEL_3,
 		Level.LEVEL_4,
+		Level.LEVEL_5,
 	]
 
 
@@ -73,3 +79,8 @@ static func get_merchant_price_multiplier(level: Level) -> float:
 # How many map tiles are permanently disabled for the entire run.
 static func get_disabled_tile_count(level: Level) -> int:
 	return 3 if level >= Level.LEVEL_4 else 0
+
+
+# Day target multiplier. Applied to authored and Endless targets alike.
+static func get_score_target_multiplier(level: Level) -> float:
+	return 1.15 if level >= Level.LEVEL_5 else 1.0

@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="MealCard" format=3 uid="uid://c1pr04kg1netg"]
 
 [ext_resource type="Texture2D" uid="uid://berds0aj0ward" path="res://assets/icons/food/meals/beverage/coffee.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/spot_cards/meals/beverages/coffee/coffee.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/meals/beverages/coffee/coffee.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 5
+base_production_amount = 3
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"beverage"])
 id = "coffee"
 name = "Coffee"
 icon = ExtResource("1_icon")
-description = "+5 {mult}. +1 Gold every 5th time it is served."
+description = "+3 {mult}. +1 Gold every 5th time it is served."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

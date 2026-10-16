@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SPOT_CARDS = ROOT / "resources" / "spot_cards"
+CARDS = ROOT / "resources" / "cards"
 CONDIMENTS_DIR = ROOT / "resources" / "condiments"
 PLACEHOLDER = "res://assets/icons/placeholder.png"
 
@@ -307,15 +307,15 @@ def restore_following_in_tree(root: Path) -> int:
 
 
 def main() -> None:
-    restore_following_in_tree(SPOT_CARDS)
+    restore_following_in_tree(CARDS)
     changed_cards = 0
-    for path in sorted(SPOT_CARDS.rglob("*.tres")):
+    for path in sorted(CARDS.rglob("*.tres")):
         if process_spot_card(path):
             changed_cards += 1
             print(f"card: {path.relative_to(ROOT)}")
 
     changed_scripts = 0
-    for path in sorted(SPOT_CARDS.rglob("*.gd")):
+    for path in sorted(CARDS.rglob("*.gd")):
         if process_spot_card_script(path):
             changed_scripts += 1
             print(f"script: {path.relative_to(ROOT)}")

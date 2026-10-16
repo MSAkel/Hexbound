@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://rpgwnpjas3xh" path="res://scripts/resources/station_type.gd" id="1_type"]
 [ext_resource type="Script" uid="uid://dsqcvvw2je1ns" path="res://scripts/resources/station_perk.gd" id="2_perk"]
-[ext_resource type="Texture2D" uid="uid://bcq5x3x5nr1ro" path="res://assets/icons/food/ingredients/proteins/steak.png" id="3_icon"]
+[ext_resource type="Texture2D" uid="uid://bcq5x3x5nr1ro" path="res://assets/icons/food/ingredients/meats/steak.png" id="3_icon"]
 
 [sub_resource type="Resource" id="choice_steak"]
 script = ExtResource("2_perk")

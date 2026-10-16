@@ -290,11 +290,11 @@ func _complete_purchase() -> void:
 
 	var card: Card = _selected_card_ui.card
 	var gold_price := _selected_card_ui.price
-	if not GoldManager.can_afford(gold_price):
+	if not EconomyManager.can_afford(gold_price):
 		return
 	if not card.get_purchase_block_reason().is_empty():
 		return
-	GoldManager.remove(gold_price)
+	EconomyManager.remove(gold_price)
 
 	var shelf_rect := _selected_card_ui.get_global_rect()
 	_selected_card_ui.mark_sold()
@@ -328,9 +328,9 @@ func _complete_condiment_purchase() -> void:
 	if not CondimentManager.can_add():
 		return
 	var gold_price := _selected_condiment_ui.price
-	if not GoldManager.can_afford(gold_price):
+	if not EconomyManager.can_afford(gold_price):
 		return
-	GoldManager.remove(gold_price)
+	EconomyManager.remove(gold_price)
 	if not CondimentManager.add_condiment(_selected_condiment_ui.condiment):
 		return
 	_selected_condiment_ui.mark_sold()
@@ -342,9 +342,9 @@ func _complete_condiment_purchase() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if not GoldManager.can_afford(_reroll_cost):
+	if not EconomyManager.can_afford(_reroll_cost):
 		return
-	GoldManager.remove(_reroll_cost)
+	EconomyManager.remove(_reroll_cost)
 	_reroll_cost += 1
 
 	AudioManager.play_sfx(UISounds.CLICK)
@@ -398,12 +398,12 @@ func _refresh_selected_purchase_tray() -> void:
 
 
 func _update_currency_display() -> void:
-	gold_amount_label.text = str(GoldManager.amount)
+	gold_amount_label.text = str(EconomyManager.amount)
 
 
 func _update_reroll_button() -> void:
 	reroll_button.text = "REROLL - %d" % _reroll_cost
-	reroll_button.disabled = not GoldManager.can_afford(_reroll_cost)
+	reroll_button.disabled = not EconomyManager.can_afford(_reroll_cost)
 
 
 func capture_shop_state() -> Dictionary:

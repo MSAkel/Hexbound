@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Cheese and Milk. +5 Mult, then x0.05 Mult on top of x1 for every trigger on its station this Hour.
+## Needs Cheese and Milk. +3 Mult, then x0.05 Mult on top of x1 for every trigger on its station this Hour.
 
 const XMULT_PER_TRIGGER := 0.05
 

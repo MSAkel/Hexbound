@@ -817,7 +817,7 @@ func get_last_tile_coords_in_segment(segment_index: int) -> Vector2i:
 
 
 ## Cards on a station's regular (non-Meal) spots. Station types and Meal requirements read these.
-func get_regular_spot_cards(segment_index: int) -> Array[TileCard]:
+func get_regular_tile_cards(segment_index: int) -> Array[TileCard]:
 	var cards: Array[TileCard] = []
 	for hex: Hex in get_hexes_in_segment(segment_index):
 		if hex.active_tile_card != null and not is_meal_slot(hex.coordinates):
@@ -952,7 +952,7 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
-	GoldManager.add(amount)
+	EconomyManager.add(amount)
 	_emit_hour_results_changed(segment_index)
 
 
@@ -963,7 +963,7 @@ func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 	if not EventManager.can_gain_gold():
 		return
 	_layout.add_segment_turn_gold(segment_index, amount)
-	GoldManager.add(amount)
+	EconomyManager.add(amount)
 	_emit_hour_results_changed(segment_index)
 
 
@@ -1324,18 +1324,18 @@ func capture_map_state() -> Dictionary:
 	for coords: Vector2i in _disabled_tile_coords:
 		disabled_coords.append([coords.x, coords.y])
 
-	var placed_spot_cards: Array = []
+	var placed_cards: Array = []
 	for coords: Vector2i in map_data:
 		var hex: Hex = map_data[coords]
 		if hex.active_tile_card == null:
 			continue
 		var entry := _serialize_placed_tile_card(hex.active_tile_card)
 		entry["coords"] = [coords.x, coords.y]
-		placed_spot_cards.append(entry)
+		placed_cards.append(entry)
 
 	return {
 		"disabled_coords": disabled_coords,
-		"placed_spot_cards": placed_spot_cards,
+		"placed_cards": placed_cards,
 		"segment_turn_results": _layout.capture_turn_results(),
 		"turn_snapshots": _round_turn_snapshots.duplicate(true),
 	}
@@ -1344,7 +1344,7 @@ func capture_map_state() -> Dictionary:
 func restore_map_state(state: Dictionary) -> void:
 	_restore_disabled_tiles(state.get("disabled_coords", []))
 
-	for entry: Dictionary in state.get("placed_spot_cards", []):
+	for entry: Dictionary in state.get("placed_cards", []):
 		var coords_data: Array = entry.get("coords", [])
 		if coords_data.size() < 2:
 			continue

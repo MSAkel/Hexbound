@@ -1,6 +1,6 @@
 extends MealCard
 
-## +5 Mult. Every 5th time it is served, +1 extra Gold.
+## +3 Mult. Every 5th time it is served, +1 extra Gold.
 
 const SERVES_PER_GOLD := 5
 const BONUS_GOLD := 1

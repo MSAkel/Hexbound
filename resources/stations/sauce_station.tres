@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/resources/station_type.gd" id="1_type"]
 [ext_resource type="Script" path="res://scripts/resources/station_perk.gd" id="2_perk"]
-[ext_resource type="Texture2D" uid="uid://u6s5mjab2017" path="res://assets/icons/food/ingredients/proteins/cheese_wedge.png" id="3_icon"]
+[ext_resource type="Texture2D" uid="uid://cejtjoqwpd6jf" path="res://assets/icons/food/ingredients/dairy/cheese.png" id="3_icon"]
 
 [sub_resource type="Resource" id="perk_l1"]
 script = ExtResource("2_perk")

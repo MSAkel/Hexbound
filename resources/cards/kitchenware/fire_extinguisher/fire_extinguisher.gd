@@ -1,17 +1,29 @@
 extends TileCard
-## Triggers every card on this station and the next one. Spoils immediately.
+## Triggers every card on this station and the next one. Fires once, then spoils.
+## Nothing can retrigger it: other cards, staff and chef repeats all skip it.
+
+var _has_fired := false
+
+
+func can_be_triggered_by_other_card(_tile: Hex = null) -> bool:
+	return false
+
 
 func _on_activate_tile_card(tile: Hex) -> void:
+	if _has_fired:
+		return
+	_has_fired = true
+
+	var on_destroy := func() -> void:
+		AudioManager.play_sfx(UISounds.SPOIL_BREAK)
 	if not _try_queue_tile_card_triggers(tile, _effect_preview_cards(tile)):
+		# Same as the after-triggers path: no Ward save, so it always spoils.
+		_destroy_placed_tile_card(tile, self, false)
+		on_destroy.call()
 		return
 
 	_create_floating_text(tile, "Whoosh!")
-	_destroy_placed_tile_card_after_queued_triggers(
-		tile,
-		self,
-		func() -> void:
-			AudioManager.play_sfx(UISounds.SPOIL_BREAK)
-	)
+	_destroy_placed_tile_card_after_queued_triggers(tile, self, on_destroy)
 
 
 ## Every other card on this station and the next. Never itself, or it would retrigger forever.

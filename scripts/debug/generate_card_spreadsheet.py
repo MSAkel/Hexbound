@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the spot card master spreadsheet from resources/spot_cards."""
+"""Generate the spot card master spreadsheet from resources/cards."""
 
 from __future__ import annotations
 
@@ -9,9 +9,9 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SPOT_CARDS = ROOT / "resources" / "spot_cards"
-OUT_CSV = ROOT / "docs" / "spot_cards_master_spreadsheet.csv"
-OUT_XLSX = ROOT / "docs" / "spot_cards_master_spreadsheet.xlsx"
+CARDS = ROOT / "resources" / "cards"
+OUT_CSV = ROOT / "docs" / "cards_master_spreadsheet.csv"
+OUT_XLSX = ROOT / "docs" / "cards_master_spreadsheet.xlsx"
 
 HEADERS = [
     "Shelf",
@@ -81,9 +81,9 @@ def _requirements(text: str) -> str:
     return ", ".join(parts)
 
 
-def scan_spot_cards() -> list[list]:
+def scan_cards() -> list[list]:
     rows: list[list] = []
-    for path in sorted(SPOT_CARDS.rglob("*.tres")):
+    for path in sorted(CARDS.rglob("*.tres")):
         text = path.read_text(encoding="utf-8")
         card_id = _read_field(text, "id")
         if not card_id:
@@ -171,7 +171,7 @@ def write_xlsx(rows: list[list], path: Path) -> None:
 
 
 def main() -> None:
-    rows = scan_spot_cards()
+    rows = scan_cards()
     write_csv(rows, OUT_CSV)
     print(f"Wrote {len(rows)} rows to {OUT_CSV}")
     try:
