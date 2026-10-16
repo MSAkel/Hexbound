@@ -33,16 +33,6 @@ func get_effective_seed_text() -> String:
 	return RunRng.normalize_seed_text(seed_input.text)
 
 
-## True only when the player entered a custom seed. Empty input still starts a normal run.
-func uses_custom_seed() -> bool:
-	return not get_effective_seed_text().is_empty()
-
-
-## Turns seeded mode on and fills the seed field. Paste uses this without extra click SFX.
-func prefill_seed(seed_text: String) -> void:
-	_apply_seed_text(seed_text, false)
-
-
 func _on_seed_input_focus_exited() -> void:
 	var normalized := RunRng.normalize_seed_text(seed_input.text)
 	if seed_input.text == normalized:

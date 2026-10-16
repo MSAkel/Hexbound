@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://b8qsg7wgeac0x"]
+
+[ext_resource type="Texture2D" uid="uid://ccbw075plwaqo" path="res://assets/icons/food/ingredients/sweets/vanilla.png" id="1_gufkr"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+base_production_amount = 25
+product = 1
+ingredient_tags = Array[StringName]([&"sweet"])
+starting_hand_eligible = true
+id = "vanilla"
+name = "Vanilla"
+icon = ExtResource("1_gufkr")
+description = "+25 {flavour}."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

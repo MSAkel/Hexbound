@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://oh58cs0xe1un"]
+
+[ext_resource type="Texture2D" uid="uid://di6ayhbj2783p" path="res://assets/icons/food/ingredients/seafood/salmon.png" id="1_2mstr"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+base_production_amount = 10
+product = 1
+ingredient_tags = Array[StringName]([&"seafood"])
+starting_hand_eligible = true
+id = "salmon"
+name = "Salmon"
+icon = ExtResource("1_2mstr")
+description = "+10 {flavour}."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

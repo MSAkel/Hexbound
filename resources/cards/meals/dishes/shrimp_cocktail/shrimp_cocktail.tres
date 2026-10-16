@@ -1,0 +1,18 @@
+[gd_resource type="Resource" format=3 uid="uid://d3d40sy012vcb"]
+
+[ext_resource type="Texture2D" uid="uid://4qlu1lu3r20g" path="res://assets/icons/food/meals/dishes/shrimp_cocktail.png" id="1_df800"]
+[ext_resource type="Script" uid="uid://bhmq1a34p8pes" path="res://resources/spot_cards/meals/dishes/shrimp_cocktail/shrimp_cocktail.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+recipe_fruit_count = 1
+recipe_required_card_ids = Array[String](["shrimp"])
+base_production_amount = 5
+type = 2
+product = 2
+ingredient_tags = Array[StringName]([&"dish"])
+id = "shrimp_cocktail"
+name = "Shrimp Cocktail"
+icon = ExtResource("1_df800")
+description = "+5 {mult}. +5 {mult} for each Seafood on the Station on either side."
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

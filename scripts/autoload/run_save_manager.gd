@@ -87,18 +87,10 @@ func request_scene_enter_transition() -> void:
 	scene_enter_transition_pending = true
 
 
-func request_main_scene_transition() -> void:
-	request_scene_enter_transition()
-
-
 func consume_scene_enter_transition_request() -> bool:
 	var was_requested := scene_enter_transition_pending
 	scene_enter_transition_pending = false
 	return was_requested
-
-
-func consume_main_scene_transition_request() -> bool:
-	return consume_scene_enter_transition_request()
 
 
 func set_pending_run_seed(seed_text: String) -> void:
@@ -189,19 +181,11 @@ func save_current_run() -> void:
 		"saved_at_unix": Time.get_unix_time_from_system(),
 		"chef_id": GameManager.selected_chef.id if GameManager.selected_chef else "",
 		"difficulty": GameManager.selected_difficulty,
-		"game_manager": GameManager.capture_run_state(),
-		"gold": GoldManager.capture_run_state(),
-		"rerolls": RerollManager.capture_run_state(),
-		"condiments": CondimentManager.capture_run_state(),
-		"staff": StaffManager.capture_run_state(),
-		"stations": StationManager.capture_run_state(),
-		"run_ledger": RunLedger.capture_run_state(),
-		"events": EventManager.capture_run_state(),
-		"round_flow": RoundFlow.capture_run_state(),
-		"run_rng": RunRng.capture_run_state(),
 		"map": tile_map.capture_map_state(),
 		"hand": hand.capture_hand_state(),
 	}
+	for entry: Array in _run_state_owners_before_map() + _run_state_owners_after_map():
+		payload[entry[0]] = entry[1].capture_run_state()
 
 	var merchant = _find_merchant()
 	if merchant != null:
@@ -240,19 +224,9 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	_pending_turn_resume = false
 	GameManager.selected_chef = chef
 	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
-	GameManager.apply_run_state(payload.get("game_manager", {}))
-	GoldManager.apply_run_state(payload.get("gold", {}))
-	RerollManager.apply_run_state(payload.get("rerolls", {}))
-	EventManager.apply_run_state(payload.get("events", {}))
-	RoundFlow.apply_run_state(payload.get("round_flow", {}))
-	RunRng.apply_run_state(payload.get("run_rng", {}))
-	# Staff first. Dish chips read the recipe discount while the map restores.
-	StaffManager.apply_run_state(payload.get("staff", {}))
-	# Stations before the map. Meal slot locks and station perks read them while cards restore.
-	StationManager.apply_run_state(payload.get("stations", {}))
+	_apply_run_state_owners(_run_state_owners_before_map(), payload)
 	tile_map.restore_map_state(payload.get("map", {}))
-	CondimentManager.apply_run_state(payload.get("condiments", {}))
-	RunLedger.apply_run_state(payload.get("run_ledger", {}))
+	_apply_run_state_owners(_run_state_owners_after_map(), payload)
 	hand.restore_hand_state(payload.get("hand", {}))
 	_warn_if_save_hand_is_incomplete(hand, payload)
 	_apply_offer_ui_state(payload)
@@ -269,6 +243,36 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 		_restore_idle_card_pick()
 	_is_restoring = false
 	return true
+
+
+## Run-scoped autoloads saved under [save key, owner]. Each owner exposes
+## capture_run_state() and apply_run_state(). Add new run-scoped managers here.
+## Apply order matters, so these restore before the map.
+func _run_state_owners_before_map() -> Array:
+	return [
+		["game_manager", GameManager],
+		["gold", GoldManager],
+		["events", EventManager],
+		["round_flow", RoundFlow],
+		["run_rng", RunRng],
+		# Staff first. Dish chips read the recipe discount while the map restores.
+		["staff", StaffManager],
+		# Stations before the map. Meal slot locks and station perks read them while cards restore.
+		["stations", StationManager],
+	]
+
+
+## Run-scoped autoloads that restore after the map is rebuilt.
+func _run_state_owners_after_map() -> Array:
+	return [
+		["condiments", CondimentManager],
+		["run_ledger", RunLedger],
+	]
+
+
+func _apply_run_state_owners(owners: Array, payload: Dictionary) -> void:
+	for entry: Array in owners:
+		entry[1].apply_run_state(payload.get(entry[0], {}))
 
 
 ## Call after the hand intro so a repaired turn does not fight the entrance tween.
@@ -401,7 +405,7 @@ func _is_game_over_visible() -> bool:
 
 func _notify_ui_restored() -> void:
 	EventBus.gold_changed.emit(GoldManager.amount)
-	EventBus.rerolls_changed.emit(RerollManager.remaining)
+	EventBus.rerolls_changed.emit(GoldManager.rerolls_remaining)
 	EventBus.total_round_score_changed.emit()
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(GameManager.current_round)

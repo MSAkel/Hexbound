@@ -25,6 +25,12 @@ const TYPE_LABEL_SIDE_PADDING := 2.0
 # The scene gives the type label a RibbonTextEffect that bends the text along the art.
 const TYPE_LABEL_BBCODE := "[ribbon]%s[/ribbon]"
 const DESCRIPTION_MIN_FONT_SIZE := 10
+# Meal requirement row above the rules text. Kind slots ("any Vegetable") sit on a round
+# backdrop so they read apart from named cards, which show their own icon bare.
+const REQUIREMENT_ICON_SIZE := 18.0
+const REQUIREMENT_ICON_PADDING := 1.0
+# Rules text starts this far lower while the requirement row shows.
+const REQUIREMENT_ROW_HEIGHT := 21.0
 
 # Paper background. The details and tinted border are its children, so they share the selection tint.
 @onready var _background: TextureRect = %Background
@@ -35,6 +41,7 @@ const DESCRIPTION_MIN_FONT_SIZE := 10
 @onready var _icon: CardIcon = %Icon
 @onready var _type_label: RichTextLabel = %TypeLabel
 @onready var _description: RichTextLabel = %Description
+@onready var _requirement_icons: HBoxContainer = %RequirementIcons
 @onready var _selection_glow: Panel = %SelectionGlow
 @onready var _sold_overlay: Panel = %SoldOverlay
 
@@ -42,6 +49,7 @@ const DESCRIPTION_MIN_FONT_SIZE := 10
 @onready var _name_font_size := _name_label.get_theme_font_size("font_size")
 @onready var _type_label_font_size := _type_label.get_theme_font_size("normal_font_size")
 @onready var _description_font_size := _description.get_theme_font_size("normal_font_size")
+@onready var _description_offset_top := _description.offset_top
 
 
 ## Binds every printed field from the shared Card resource.
@@ -51,6 +59,8 @@ func set_card(card: Card) -> void:
 	_icon.setup(card)
 	_apply_name(card)
 	_apply_type_label(card)
+	# Before the description, which fits its font to the space the row leaves.
+	_apply_requirement_icons(card)
 	_apply_description(card)
 	_apply_accent(CardTypeColors.for_card(card))
 
@@ -124,6 +134,41 @@ func _apply_description(card: Card) -> void:
 		"normal_font_size",
 		_fitted_description_font_size(CardKeywordGlossary.to_plain(card.description))
 	)
+
+
+## Small icons for each card a Meal needs on its station. Hidden for every other card.
+func _apply_requirement_icons(card: Card) -> void:
+	for child: Node in _requirement_icons.get_children():
+		child.queue_free()
+	var entries: Array[Dictionary] = []
+	if card is MealCard:
+		entries = (card as MealCard).get_requirement_icons()
+	_requirement_icons.visible = not entries.is_empty()
+	_description.offset_top = _description_offset_top + (REQUIREMENT_ROW_HEIGHT if _requirement_icons.visible else 0.0)
+	for entry: Dictionary in entries:
+		_requirement_icons.add_child(_make_requirement_icon(entry["icon"], entry["kind"]))
+
+
+func _make_requirement_icon(texture: Texture2D, kind: StringName) -> PanelContainer:
+	var slot := PanelContainer.new()
+	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var backdrop := StyleBoxFlat.new()
+	backdrop.set_content_margin_all(REQUIREMENT_ICON_PADDING)
+	if kind.is_empty():
+		backdrop.draw_center = false
+	else:
+		backdrop.bg_color = CardTypeColors.KITCHENWARE if kind == TileCard.TAG_KITCHENWARE else CardTypeColors.INGREDIENT
+		backdrop.set_corner_radius_all(int(REQUIREMENT_ICON_SIZE))
+	slot.add_theme_stylebox_override("panel", backdrop)
+	var icon := TextureRect.new()
+	icon.texture = texture
+	icon.custom_minimum_size = Vector2.ONE * REQUIREMENT_ICON_SIZE
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(icon)
+	return slot
 
 
 ## Tints the inner border, name banner, and icon backdrop with the card type accent.

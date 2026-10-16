@@ -164,6 +164,21 @@ func get_inspect_recipe_text(_tile: Hex = null) -> String:
 	return "Requires: %s" % bag
 
 
+## One entry per required card, in inspect text order. Keys: icon (Texture2D), kind (StringName,
+## empty for a named card). A count of 2 lists the kind twice.
+func get_requirement_icons() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for card_id: String in recipe_required_card_ids:
+		var template := GameManager.get_tile_card_by_id(card_id)
+		var icon_texture: Texture2D = template.icon if template != null and template.icon != null else FeastStatIcons.PLACEHOLDER
+		entries.append({"icon": icon_texture, "kind": &""})
+	var counts := _recipe_slot_counts()
+	for tag: StringName in counts:
+		for _i in int(counts[tag]):
+			entries.append({"icon": FeastStatIcons.get_ingredient_kind_icon(tag), "kind": tag})
+	return entries
+
+
 ## Cards on this Meal's station regular spots. Meals never fill requirements.
 func _station_cards(tile: Hex) -> Array[TileCard]:
 	if tile == null or tile.map == null:

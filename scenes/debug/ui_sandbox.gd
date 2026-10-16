@@ -15,9 +15,6 @@ func _ready() -> void:
 
 func _bootstrap_run_state() -> void:
 	GameManager.reset_for_new_run()
-	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
-	RerollManager.reset_for_new_run()
-	EventManager.init_run()
 
 	# Fake mid-run stats so victory and game-over labels show meaningful values.
 	GameManager.apply_run_state({

@@ -664,14 +664,6 @@ static func activation_animation_duration() -> float:
 	return ACTIVATION_POP_DURATION + ACTIVATION_SQUASH_DURATION + ACTIVATION_SETTLE_DURATION
 
 
-func _is_activation_animating() -> bool:
-	return _activation_tween != null and _activation_tween.is_valid()
-
-
-func _is_trigger_link_flashing() -> bool:
-	return _trigger_link_flash_tween != null and _trigger_link_flash_tween.is_valid()
-
-
 #endregion
 
 #region Segment presentation

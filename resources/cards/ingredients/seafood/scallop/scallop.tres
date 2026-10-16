@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://dprf0ouxjhjie"]
+
+[ext_resource type="Texture2D" uid="uid://ceg55ugbfi0kg" path="res://assets/icons/food/ingredients/seafood/scallop.png" id="1_2nmap"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+base_production_amount = 15
+product = 1
+ingredient_tags = Array[StringName]([&"seafood"])
+starting_hand_eligible = true
+id = "scallop"
+name = "Scallop"
+icon = ExtResource("1_2nmap")
+description = "+15 {flavour}."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

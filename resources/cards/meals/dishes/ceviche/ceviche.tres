@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3 uid="uid://c5xq7r2u1c7hc"]
+
+[ext_resource type="Texture2D" uid="uid://cr38pok7wkq05" path="res://assets/icons/food/meals/dishes/ceviche.png" id="1_thx6a"]
+[ext_resource type="Script" uid="uid://dbuusbdpip6t" path="res://resources/spot_cards/meals/dishes/ceviche/ceviche.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+recipe_seafood_count = 1
+recipe_seasoning_count = 1
+recipe_required_card_ids = Array[String](["lemon"])
+base_production_amount = 10
+type = 2
+product = 2
+ingredient_tags = Array[StringName]([&"dish"])
+id = "ceviche"
+name = "Ceviche"
+icon = ExtResource("1_thx6a")
+description = "+10 {mult}. Gains the {flavour} of the Seafood on its Station x1.5."
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

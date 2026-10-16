@@ -728,16 +728,16 @@ func _draft_and_pick_pack_player(
 		var best := _pick_best_player_card(pack)
 		if not _player_should_reroll_pack(best, is_reward, round_number):
 			return best
-		if not RerollManager.can_reroll():
+		if not GoldManager.can_reroll():
 			return best
-		RerollManager.use_reroll()
+		GoldManager.use_reroll()
 		reroll_index += 1
 	return null
 
 
 ## Keep a card that belongs on the engine. Reroll more when behind on the round goal.
 func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: int) -> bool:
-	if not RerollManager.can_reroll():
+	if not GoldManager.can_reroll():
 		return false
 	if best == null:
 		return true
@@ -746,7 +746,7 @@ func _player_should_reroll_pack(best: TileCard, is_reward: bool, round_number: i
 		return false
 	if is_reward and _can_place_for_player(best):
 		return false
-	if round_number < PLAYER_PACK_REROLL_ROUND and RerollManager.remaining <= 2:
+	if round_number < PLAYER_PACK_REROLL_ROUND and GoldManager.rerolls_remaining <= 2:
 		var gap_ratio := _round_score_gap_ratio()
 		if gap_ratio < 0.35:
 			return false
@@ -767,19 +767,6 @@ func _round_score_gap_ratio() -> float:
 	var goal := maxi(1, GameManager.required_score)
 	var gap := maxi(0, goal - GameManager.total_round_score)
 	return float(gap) / float(goal)
-
-
-func _pick_best_playable_card(pack: Array[TileCard]) -> TileCard:
-	var best: TileCard = null
-	var best_value := -1.0
-	for card: TileCard in pack:
-		if not _can_bot_place_card(card):
-			continue
-		var value := _card_keep_value(card)
-		if best == null or value > best_value:
-			best = card
-			best_value = value
-	return best
 
 
 func _pick_best_player_card(pack: Array[TileCard]) -> TileCard:
@@ -1368,7 +1355,7 @@ func _condiment_player_value(condiment: Condiment) -> float:
 		Condiment.EffectType.FORWARD_GIFT, Condiment.EffectType.MINT_SIP:
 			return 30.0 if _engine_producer_hex() != null else 5.0
 		Condiment.EffectType.FREE_REROLL:
-			return 28.0 if RerollManager.remaining <= 1 else 14.0
+			return 28.0 if GoldManager.rerolls_remaining <= 1 else 14.0
 		Condiment.EffectType.REWRITE_OMEN:
 			if EventManager.get_next_event_round() == -1:
 				return 0.0
@@ -1774,9 +1761,6 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 	GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
 	RunRng.begin_new_run(seed_text)
 	GameManager.reset_for_new_run()
-	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
-	RerollManager.reset_for_new_run()
-	EventManager.init_run()
 	_clear_board()
 	_map.generate_terrain()
 	_map.apply_run_start_randomization()
@@ -1976,16 +1960,6 @@ func _chaos_weighted_pick(cards: Array[TileCard]) -> TileCard:
 	return cards[cards.size() - 1]
 
 
-func _occupied_hexes() -> Array[Hex]:
-	var hexes: Array[Hex] = []
-	if _map == null:
-		return hexes
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.active_tile_card != null:
-			hexes.append(hex)
-	return hexes
-
-
 func _place_chaos_card(card: TileCard) -> bool:
 	var slots: Array[Hex] = []
 	for hex: Hex in _map.get_hexes_in_trigger_order():
@@ -2134,19 +2108,6 @@ func _resolve_turn() -> void:
 func _seed_for(prefix: String, chef_id: String, index: int) -> String:
 	var tag := chef_id.substr(0, 3).to_upper()
 	return "%s%s%03d" % [prefix, tag, index]
-
-
-func _print_board(label: String) -> void:
-	print("[playtest] board %s round=%d" % [label, GameManager.current_round])
-	if _map == null:
-		return
-	for hex: Hex in _map.get_hexes_in_trigger_order():
-		if hex.active_tile_card == null:
-			continue
-		print(
-			"[playtest]   seg=%d %s %s"
-			% [_map.get_segment_index(hex.coordinates), str(hex.coordinates), hex.active_tile_card.id]
-		)
 
 
 func _print_full_nine_summary() -> void:

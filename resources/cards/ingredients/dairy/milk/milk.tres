@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://bqyy6uept5bv0"]
+
+[ext_resource type="Texture2D" uid="uid://t7r5fgwebkef" path="res://assets/icons/food/ingredients/dairy/milk.png" id="1_2e2lr"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+base_production_amount = 10
+product = 1
+ingredient_tags = Array[StringName]([&"dairy"])
+starting_hand_eligible = true
+id = "milk"
+name = "Milk"
+icon = ExtResource("1_2e2lr")
+description = "+10 {flavour}."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

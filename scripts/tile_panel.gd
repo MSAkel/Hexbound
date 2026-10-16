@@ -286,20 +286,6 @@ func _clamp_to_viewport() -> void:
 	position.y = clampf(position.y, 0.0, maxf(viewport_size.y - size.y, 0.0))
 
 
-func _on_close_button_pressed() -> void:
-	hide()
-
-
-func _on_toggle_spot_card_button_pressed() -> void:
-	if hex == null or hex.active_tile_card == null:
-		return
-	if hex.active_tile_card.is_active:
-		hex.active_tile_card.is_active = false
-	else:
-		hex.active_tile_card.is_active = true
-	hex.refresh_tile_card_visual_state()
-
-
 func _on_turn_ended() -> void:
 	hide()
 

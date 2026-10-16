@@ -73,18 +73,6 @@ func apply_run_state(state: Dictionary) -> void:
 			_relay_stations[int(entry)] = true
 
 
-func get_fires_for_kind(tag: StringName) -> int:
-	return int(fires_by_kind.get(String(tag), 0))
-
-
-func get_fires_for_type(card_type: TileCard.TileCardType) -> int:
-	return int(fires_by_type.get(_type_key(card_type), 0))
-
-
-func get_distinct_relay_stations() -> int:
-	return _relay_stations.size()
-
-
 ## Called from GameManager.register_tile_card_activation after this Hour's count is updated.
 ## is_retrigger is computed once from the Hour identity map, not scanned again here.
 func record_card_fired(card: TileCard, is_retrigger: bool = false) -> void:
@@ -118,12 +106,6 @@ func record_pass_relay(segment_index: int) -> void:
 	if segment_index < 0:
 		return
 	_relay_stations[segment_index] = true
-
-
-func record_permanent_growth(amount: float) -> void:
-	if amount <= 0.0:
-		return
-	permanent_growth_this_run += amount
 
 
 func _on_turn_started() -> void:

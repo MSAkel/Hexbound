@@ -133,7 +133,7 @@ func _first_choice_card() -> CardUI:
 
 
 func _on_reroll_button_pressed() -> void:
-	if not RerollManager.use_reroll():
+	if not GoldManager.use_reroll():
 		_update_reroll_button()
 		return
 
@@ -153,12 +153,12 @@ func _on_rerolls_changed(_remaining: int) -> void:
 
 ## Keep reroll label and disabled state in sync with the shared run budget.
 func _update_reroll_button() -> void:
-	var remaining := RerollManager.remaining
+	var remaining := GoldManager.rerolls_remaining
 	if remaining <= 0:
 		reroll_button.text = "0 rerolls"
 	else:
 		reroll_button.text = "Reroll (%d left)" % remaining
-	reroll_button.disabled = not RerollManager.can_reroll()
+	reroll_button.disabled = not GoldManager.can_reroll()
 
 func instantiate_card_choices() -> void:
 	_pack_display_token += 1

@@ -69,10 +69,6 @@ func _begin_fresh_run() -> void:
 		RunRng.restart_same_seed()
 	GameManager.reset_for_new_run()
 	RunHistoryManager.notify_run_started()
-	# Set starting gold after chef selection has chosen the run difficulty.
-	GoldManager.set_run_starting_gold(GameManager.selected_difficulty)
-	RerollManager.reset_for_new_run()
-	EventManager.init_run()
 	# HUD nodes read the autoloads in their own _ready, before this reset, so they still show last run.
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(GameManager.current_round)

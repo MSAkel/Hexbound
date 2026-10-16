@@ -42,19 +42,6 @@ func perk_for_level(level: int) -> StationPerk:
 	return level_perks[mini(level, level_perks.size()) - 1]
 
 
-func requirements_text(counts: Dictionary = required_counts) -> String:
-	var parts: PackedStringArray = []
-	for tag: StringName in counts:
-		var count := int(counts[tag])
-		if count <= 0:
-			continue
-		var label := GameTerms.get_ingredient_kind_label(tag)
-		if tag in distinct_tags and count > 1:
-			label = "different %s" % label
-		parts.append("%d %s" % [count, label])
-	return ", ".join(parts)
-
-
 func _count_for_tag(cards: Array[TileCard], tag: StringName) -> int:
 	var ids := {}
 	var count := 0

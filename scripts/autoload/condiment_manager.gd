@@ -477,7 +477,7 @@ func _apply_instant(condiment: Condiment) -> void:
 			EventManager.rewrite_upcoming_event(_rewrite_use_count)
 			_rewrite_use_count += 1
 		Condiment.EffectType.FREE_REROLL:
-			RerollManager.add_rerolls(1)
+			GoldManager.add_rerolls(1)
 		Condiment.EffectType.CONDIMENT_PACK:
 			_grant_pack()
 		Condiment.EffectType.OPENING_ROUND:

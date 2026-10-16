@@ -98,7 +98,6 @@ const ICON_GOLD := FeastStatIcons.GOLD
 const ICON_MULT := FeastStatIcons.MULT
 const ICON_GARNISH := FeastStatIcons.GARNISH
 const ICON_FIRE := FeastStatIcons.FIRE
-const ICON_PASS := FeastStatIcons.PASS
 
 ## Spot cards have no rarity. Every one costs the same at the merchant.
 const SHOP_PRICE := 4
@@ -144,8 +143,6 @@ var hour_additive_mult_produced: float = 0.0
 @export var support_role: SupportRole = SupportRole.NONE
 ## When true, this card may be dealt in the opening hand.
 @export var starting_hand_eligible: bool = false
-## Plays once when this card resolves during fire order. Chance cards still fire on a miss.
-@export var trigger_sound: AudioStream
 
 
 ## Extra per-instance state for a placed card. Saved with the map between loads.

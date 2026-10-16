@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://cfkd0d652a2f3"]
+
+[ext_resource type="Texture2D" uid="uid://dtycafeq73841" path="res://assets/icons/food/ingredients/sweets/chocolate.png" id="1_88vp8"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+base_production_amount = 25
+product = 1
+ingredient_tags = Array[StringName]([&"sweet"])
+starting_hand_eligible = true
+id = "chocolate"
+name = "Chocolate"
+icon = ExtResource("1_88vp8")
+description = "+25 {flavour}."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"

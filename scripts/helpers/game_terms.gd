@@ -40,10 +40,6 @@ static func day_label(day_number: int) -> String:
 	return "%s %d/%d" % [DAY, day_number, ScoreProgression.RUN_LENGTH_ROUNDS]
 
 
-static func hour_label(hour_number: int) -> String:
-	return "%s %d" % [HOUR.to_upper(), hour_number]
-
-
 static func get_tile_card_type_label(card: TileCard) -> String:
 	if card == null:
 		return ""

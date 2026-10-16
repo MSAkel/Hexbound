@@ -43,12 +43,6 @@ func _focus_continue() -> void:
 	MenuFocus.grab_named(self, "ContinueButton")
 
 
-func _turns_remaining_phrase(turns_remaining: int) -> String:
-	if turns_remaining == 1:
-		return "1 turn remaining"
-	return "%d turns remaining" % turns_remaining
-
-
 func _on_continue_button_pressed() -> void:
 	hide()
 	# RoundFlow owns what comes next, this screen only reports that it was dismissed.

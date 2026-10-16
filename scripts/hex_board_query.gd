@@ -197,19 +197,6 @@ func following_adjacent_cards(tile: Hex, filter_type: Variant = null) -> Array[T
 	return cards_from_hexes(following_adjacent_hexes(tile), filter_type)
 
 
-func adjacent_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if tile == null:
-		return []
-	var neighbor_set: Dictionary = {}
-	for hex: Hex in adjacent_hexes(tile.coordinates):
-		neighbor_set[hex] = true
-	var ordered: Array[Hex] = []
-	for hex: Hex in _hexes_in_order:
-		if neighbor_set.has(hex):
-			ordered.append(hex)
-	return cards_from_hexes(ordered, filter_type)
-
-
 func cards_on_segment(segment_index: int, filter_type: Variant = null) -> Array[TileCard]:
 	return cards_from_hexes(hexes_in_segment(segment_index), filter_type)
 
@@ -218,47 +205,6 @@ func cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[Tile
 	if tile == null or _map == null:
 		return []
 	return cards_on_segment(_map.get_segment_index(tile.coordinates), filter_type)
-
-
-func cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if tile == null or _map == null:
-		return []
-	var self_index := _map.get_segment_index(tile.coordinates)
-	if self_index < 0:
-		return []
-	var result: Array[TileCard] = []
-	for segment_index in range(_map.get_segment_count()):
-		if segment_index == self_index:
-			continue
-		result.append_array(cards_on_segment(segment_index, filter_type))
-	return result
-
-
-func cards_on_later_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if tile == null or _map == null:
-		return []
-	var current_index := _map.get_segment_index(tile.coordinates)
-	if current_index < 0:
-		return []
-	var result: Array[TileCard] = []
-	for segment_index in range(current_index + 1, _map.get_segment_count()):
-		result.append_array(cards_on_segment(segment_index, filter_type))
-	return result
-
-
-## Occupied seats on this station that fire after tile, already in fire order.
-func later_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	var self_index := trigger_index(tile)
-	if self_index < 0 or tile == null or _map == null:
-		return result
-	for hex: Hex in hexes_in_segment(_map.get_segment_index(tile.coordinates)):
-		if trigger_index(hex) <= self_index:
-			continue
-		var card := card_on_hex(hex, filter_type)
-		if card != null:
-			result.append(card)
-	return result
 
 
 ## Contiguous previous seats, including empties. Gaps are not skipped.
@@ -275,13 +221,6 @@ func immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
 			break
 		result.append(_hexes_in_order[prev_index])
 	return result
-
-
-func next_card_in_trigger_order(tile: Hex) -> TileCard:
-	var cards := cards_relative_to_trigger_order(tile, 1, false)
-	if cards.is_empty():
-		return null
-	return cards[0]
 
 
 func cards_relative_to_trigger_order(
@@ -329,72 +268,6 @@ func first_or_last_hex_on_segment(
 	return null
 
 
-func first_or_last_card_on_segment(
-	segment_index: int,
-	pick_first: bool,
-	filter_type: Variant = null
-) -> TileCard:
-	var hex := first_or_last_hex_on_segment(segment_index, pick_first, filter_type)
-	if hex == null:
-		return null
-	return hex.active_tile_card
-
-
-## First or last matching card in a station relative to tile's station.
-func card_in_relative_segment(
-	tile: Hex,
-	segment_index_offset: int,
-	pick_first_in_segment: bool,
-	filter_type: Variant = null
-) -> TileCard:
-	if tile == null or _map == null:
-		return null
-	var segment_index := _map.get_segment_index(tile.coordinates) + segment_index_offset
-	return first_or_last_card_on_segment(segment_index, pick_first_in_segment, filter_type)
-
-
-## Occupied last-or-first seats on every station after tile.
-func cards_on_later_segment_ends(
-	tile: Hex,
-	pick_first: bool,
-	filter_type: Variant = null
-) -> Array[TileCard]:
-	var cards: Array[TileCard] = []
-	if tile == null or _map == null:
-		return cards
-	var current_index := _map.get_segment_index(tile.coordinates)
-	for later_index in range(current_index + 1, _map.get_segment_count()):
-		var card := first_or_last_card_on_segment(later_index, pick_first, filter_type)
-		if card != null:
-			cards.append(card)
-	return cards
-
-
-## Preview seats for later-station first or last cards. Empty end seats still highlight.
-func coords_for_later_segment_anchors(
-	tile: Hex,
-	pick_first: bool,
-	filter_type: Variant = null
-) -> Array[Vector2i]:
-	var coords: Array[Vector2i] = []
-	if tile == null or _map == null:
-		return coords
-	var current_index := _map.get_segment_index(tile.coordinates)
-	for later_index in range(current_index + 1, _map.get_segment_count()):
-		var hex := first_or_last_hex_on_segment(later_index, pick_first, filter_type)
-		if hex != null:
-			coords.append(hex.coordinates)
-			continue
-		var fallback := (
-			_map.get_first_tile_coords_in_segment(later_index)
-			if pick_first
-			else _map.get_last_tile_coords_in_segment(later_index)
-		)
-		if fallback != Vector2i(-1, -1):
-			coords.append(fallback)
-	return coords
-
-
 func cards_in_scope(
 	tile: Hex,
 	scope: TileCard.QueryScope,
@@ -417,18 +290,6 @@ func cards_in_scope(
 			return []
 
 
-func producers_by_product(
-	tile: Hex,
-	filter_product: TileCard.Product,
-	scope: TileCard.QueryScope
-) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	for card: TileCard in cards_in_scope(tile, scope, TileCard.PRODUCER_TYPE_FILTER):
-		if card.product == filter_product:
-			result.append(card)
-	return result
-
-
 func cards_by_kind(
 	tile: Hex,
 	filter_kind: Variant,
@@ -448,33 +309,6 @@ func coords_for_cards(cards: Array[TileCard]) -> Array[Vector2i]:
 		if hex != null:
 			coords.append(hex.coordinates)
 	return coords
-
-
-func coords_for_hexes(hexes: Array[Hex]) -> Array[Vector2i]:
-	var coords: Array[Vector2i] = []
-	for hex: Hex in hexes:
-		if hex != null:
-			coords.append(hex.coordinates)
-	return coords
-
-
-func coords_for_segment(segment_index: int) -> Array[Vector2i]:
-	return coords_for_hexes(hexes_in_segment(segment_index))
-
-
-## Other station indexes that either host an Ingredient or do not, depending on want_producer.
-func other_segment_indexes_matching_producer(tile: Hex, want_producer: bool) -> Array[int]:
-	var matches: Array[int] = []
-	if tile == null or _map == null:
-		return matches
-	var self_index := _map.get_segment_index(tile.coordinates)
-	for segment_index in range(_map.get_segment_count()):
-		if segment_index == self_index:
-			continue
-		var has_producer := not cards_on_segment(segment_index, TileCard.PRODUCER_TYPE_FILTER).is_empty()
-		if has_producer == want_producer:
-			matches.append(segment_index)
-	return matches
 
 
 func _cards_on_same_segment_as(cards: Array[TileCard], tile: Hex) -> Array[TileCard]:

@@ -228,14 +228,6 @@ func get_allowed_rounds_label(event_type: int) -> String:
 	return "Rounds %s" % ", ".join(parts)
 
 
-## True when Rewrite Omen has an unused type that is legal for the upcoming event round.
-func can_rewrite_upcoming() -> bool:
-	var next_round := get_next_event_round()
-	if next_round == -1:
-		return false
-	return not _unused_legal_types(next_round, scheduled_events).is_empty()
-
-
 ## Replaces the next unstarted event with a type not already on the calendar, legal for that round.
 func rewrite_upcoming_event(use_index: int) -> bool:
 	var next_round := get_next_event_round()

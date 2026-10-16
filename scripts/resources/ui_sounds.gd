@@ -6,8 +6,6 @@ const CLICK = preload("res://assets/audio/ui/click.mp3")
 const SELECT = preload("res://assets/audio/ui/select.mp3")
 const END_TURN = preload("res://assets/audio/sfx/call_bell.mp3")
 const SPOIL_BREAK = preload("res://assets/audio/sfx/rune_break.mp3")
-## Legacy alias. Prefer SPOIL_BREAK for new code.
-const RUNE_BREAK = SPOIL_BREAK
 const GROUND_IMPACT = preload("res://assets/audio/sfx/ground_impact.mp3")
 const GOLD_GAINED = preload("res://assets/audio/sfx/gold_gained.mp3")
 const GAME_OVER = preload("res://assets/audio/sfx/game_over.mp3")
@@ -18,8 +16,6 @@ const MERCHANT_ENTRY = preload("uid://bygd475r8s4vx")
 const MERCHANT_BELL = preload("res://assets/audio/sfx/merchant_bell.mp3")
 const EVENT_START = preload("res://assets/audio/sfx/Challenge_start.mp3")
 const STATION_RESULT = preload("uid://dpmtpk2jh6urk")
-## Legacy alias. Prefer STATION_RESULT for new code.
-const SEGMENT_RESULT = STATION_RESULT
 ## Station feedback reuses existing cues until dedicated sounds exist.
 const STATION_TYPE_GAINED = CARD_REVEAL
 const STATION_LEVEL_UP = MERCHANT_BELL

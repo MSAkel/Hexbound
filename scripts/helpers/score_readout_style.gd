@@ -8,8 +8,6 @@ const MAX_FONT_SIZE := 168
 ## Scores at or above this use max font size.
 const INTENSITY_SCORE_CAP := 1_000_000.0
 
-const SEGMENT_SCORE_COLOR := Color(1.0, 0.85, 0.2, 1.0)
-
 const COLOR_WHITE := Color(1.0, 1.0, 1.0, 1.0)
 const COLOR_TEAL := Color(0.18, 0.84, 0.78, 1.0)
 const COLOR_ORANGE := Color(1.0, 0.58, 0.22, 1.0)

@@ -215,11 +215,6 @@ func get_turn_number() -> int:
 	return get_max_turns_per_round() - remaining_turns + 1
 
 
-## Completed Hours in this run. turn_stamp includes the Hour currently in progress.
-func get_passed_hour_count() -> int:
-	return maxi(turn_stamp - 1, 0)
-
-
 ## Turns not used before the round goal was met. Rewards use this, not raw remaining_turns.
 func get_skipped_turns() -> int:
 	return maxi(0, remaining_turns - 1)
@@ -272,7 +267,7 @@ func advance_round() -> void:
 	current_round += 1
 	# Round-spend counters reset before the round bonus so cards start fresh.
 	GoldManager.reset_round_tracking()
-	RerollManager.reset_for_new_round()
+	GoldManager.reset_rerolls()
 	total_round_score = 0
 	_apply_round_state()
 
@@ -316,10 +311,6 @@ func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
 #endregion
 
 #region Chef speciality and turn scoring
-
-func get_current_turn_trigger_count() -> int:
-	return _current_turn_trigger_count
-
 
 func bind_chef_speciality() -> void:
 	chef_speciality.bind(selected_chef)
@@ -451,6 +442,8 @@ func _sort_tile_cards_pool() -> void:
 
 #region Run save / load
 
+## Single entry point for wiping every run-scoped autoload. Seed the RunRng first.
+## Starting gold reads selected_difficulty, so set chef and difficulty before calling.
 func reset_for_new_run() -> void:
 	RoundFlow.reset_for_new_run()
 	current_round = 1
@@ -470,6 +463,9 @@ func reset_for_new_run() -> void:
 	StaffManager.reset_for_new_run()
 	StationManager.reset_for_new_run()
 	RunLedger.reset_for_new_run()
+	GoldManager.set_run_starting_gold(selected_difficulty)
+	GoldManager.reset_rerolls()
+	EventManager.init_run()
 
 
 ## Moves a fresh run to a chosen round while keeping round-dependent state in sync.

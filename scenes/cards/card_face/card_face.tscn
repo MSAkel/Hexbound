@@ -191,6 +191,21 @@ horizontal_alignment = 1
 vertical_alignment = 1
 custom_effects = [SubResource("RichTextEffect_ribbon")]
 
+[node name="RequirementIcons" type="HBoxContainer" parent="." unique_id=1460338217]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 195.0
+offset_right = -30.0
+offset_bottom = 215.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 1
+
 [node name="Description" type="RichTextLabel" parent="." unique_id=2119088894]
 unique_name_in_owner = true
 layout_mode = 1

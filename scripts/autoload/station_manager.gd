@@ -94,10 +94,6 @@ func _reset_stations() -> void:
 
 #region --- Queries ---
 
-func get_station_count() -> int:
-	return _stations.size()
-
-
 func get_station_type(segment_index: int) -> StationType:
 	var station := _station(segment_index)
 	return station.type if station != null else null

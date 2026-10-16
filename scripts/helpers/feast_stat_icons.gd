@@ -43,8 +43,27 @@ static func get_product_icon(product: TileCard.Product) -> Texture2D:
 			return null
 
 
-static func get_relay_icon() -> Texture2D:
-	return PASS
+## Stand-in art for "any card of this kind" in Meal requirement rows. Borrowed from a typical card of the kind.
+static func get_ingredient_kind_icon(kind: StringName) -> Texture2D:
+	match kind:
+		TileCard.TAG_VEGETABLE:
+			return preload("res://assets/icons/food/ingredients/vegetables/lettuce.png")
+		TileCard.TAG_FRUIT:
+			return preload("res://assets/icons/food/ingredients/fruits/apple.png")
+		TileCard.TAG_PROTEIN:
+			return preload("res://assets/icons/food/ingredients/meats/meat.png")
+		TileCard.TAG_SEAFOOD:
+			return preload("res://assets/icons/food/ingredients/meats/shrimp.png")
+		TileCard.TAG_DAIRY:
+			return preload("res://assets/icons/food/ingredients/meats/cheese_wedge.png")
+		TileCard.TAG_SWEET:
+			return preload("res://assets/icons/condiments/honey.png")
+		TileCard.TAG_SEASONING:
+			return preload("res://assets/icons/food/ingredients/seasonings/salt.png")
+		TileCard.TAG_KITCHENWARE:
+			return preload("res://assets/icons/kitchenware/chef_knife.png")
+		_:
+			return PLACEHOLDER
 
 
 static func get_support_icon(role: TileCard.SupportRole) -> Texture2D:

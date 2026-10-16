@@ -378,10 +378,6 @@ func clear_dish_recipe_gold_highlights_at(coords_list: Array[Vector2i]) -> void:
 		dish_recipe_gold_layer.set_cell(coords, -1)
 
 
-func clear_dish_recipe_highlights() -> void:
-	clear_dish_recipe_gold_highlights_at(_dish_recipe_gold_coords.duplicate())
-
-
 func _refresh_rune_highlight_modulate() -> void:
 	if not _condiment_target_coords.is_empty():
 		card_highlight_overlay_layer.modulate = Color(0.55, 1.15, 0.85, 1.0)
@@ -602,13 +598,6 @@ func is_tile_interactable(coords: Vector2i) -> bool:
 	return not map_data[coords].is_placement_blocked()
 
 
-## Returns map-adjacent tiles that exist on this map (up to four orthogonal neighbors).
-func get_all_adjacent_hexes(coords: Vector2i) -> Array[Hex]:
-	if query == null:
-		return []
-	return query.adjacent_hexes(coords)
-
-
 ## Outer ring tiles have at least one hex neighbor direction that leaves the map.
 func is_edge_tile(coords: Vector2i) -> bool:
 	if query == null:
@@ -656,42 +645,6 @@ func get_all_hexes_with_runes() -> Array[Hex]:
 	if query == null:
 		return []
 	return query.occupied_hexes()
-
-
-## Counts all adjacent tiles occupied by a card. Pass rune_type to filter by type.
-func count_all_occupied_adjacent_tile_cards(coords: Vector2i, rune_type: Variant = null) -> int:
-	if query == null:
-		return 0
-	return query.cards_from_hexes(query.adjacent_hexes(coords), rune_type).size()
-
-
-## All cards on map-adjacent hexes around tile (unordered).
-func get_all_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.adjacent_cards(tile, filter_type)
-
-
-## Adjacent hexes that activate after this tile in trigger order, including empty tiles.
-## Returned earliest-first so the first adjacent Following card is always result[0].
-func get_following_adjacent_hexes(tile: Hex) -> Array[Hex]:
-	if query == null:
-		return []
-	return query.following_adjacent_hexes(tile)
-
-
-## Occupied adjacent Following hexes, optionally filtered by card type.
-func get_following_adjacent_tile_cards(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.following_adjacent_cards(tile, filter_type)
-
-
-## All adjacent cards sorted in the map's global trigger order.
-func get_all_adjacent_tile_cards_in_trigger_order(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.adjacent_cards_in_trigger_order(tile, filter_type)
 
 
 func _place_hex_tile(offset: Vector2i) -> void:
@@ -821,22 +774,9 @@ func clear_event_sealed_overlay() -> void:
 	_event_sealed_coords.clear()
 
 
-## True when the disabled overlay currently belongs to Sealed Hexes rather than difficulty.
-func has_event_sealed_overlay_at(coords: Vector2i) -> bool:
-	return coords in _event_sealed_coords
-
-
 ## Tile 180 degrees from coords around the map center.
 func get_opposite_coords(coords: Vector2i) -> Vector2i:
 	return _layout.get_opposite_coords(coords)
-
-
-## Hex on the opposite side of the map, or null when that cell is missing.
-func get_opposite_hex(coords: Vector2i) -> Hex:
-	var opposite_coords := get_opposite_coords(coords)
-	if not map_data.has(opposite_coords):
-		return null
-	return map_data[opposite_coords]
 
 
 ## All map coordinates sorted by the active trigger-order rule.
@@ -906,48 +846,6 @@ func get_segment_size(segment_index: int) -> int:
 
 func build_segments() -> Array[Array]:
 	return _layout.build_segments()
-
-
-## All placed cards on the same segment as tile, optionally filtered by card type.
-func get_all_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.cards_on_same_segment(tile, filter_type)
-
-
-## All placed cards on one segment by index, optionally filtered by card type.
-func get_all_tile_cards_on_segment(segment_index: int, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.cards_on_segment(segment_index, filter_type)
-
-
-## All placed cards on other segments, optionally filtered by card type.
-func get_all_tile_cards_on_other_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.cards_on_other_segments(tile, filter_type)
-
-
-## Cards on segments after this tile's segment.
-func get_all_tile_cards_on_later_segments(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.cards_on_later_segments(tile, filter_type)
-
-
-## Playable tiles in a segment that currently have no card.
-## A placement-preview cell counts as occupied so hover chips match the tile after you drop.
-func get_empty_tile_count_in_segment(segment_index: int) -> int:
-	var empty := 0
-	for hex: Hex in get_hexes_in_segment(segment_index):
-		if hex.is_disabled_by_difficulty:
-			continue
-		if hex.coordinates == _placement_preview_cell:
-			continue
-		if hex.active_tile_card == null:
-			empty += 1
-	return empty
 
 
 func mark_segment_resolved(segment_index: int) -> bool:
@@ -1104,10 +1002,6 @@ func get_segment_turn_gold(segment_index: int) -> int:
 	return _layout.get_segment_turn_gold(segment_index)
 
 
-func is_hour_scoring_ready() -> bool:
-	return _layout != null
-
-
 func get_hour_flavour() -> int:
 	if _layout == null:
 		return 0
@@ -1245,43 +1139,10 @@ func has_hovered_segment_highlight_at(coords: Vector2i) -> bool:
 	)
 
 
-## First or last placed card in a segment relative to tile's segment. See HexBoardQuery.card_in_relative_segment().
-func get_tile_card_in_relative_segment(
-	tile: Hex,
-	segment_index_offset: int,
-	pick_first_in_segment: bool,
-	filter_type: Variant = null
-) -> TileCard:
-	if query == null:
-		return null
-	return query.card_in_relative_segment(tile, segment_index_offset, pick_first_in_segment, filter_type)
-
-
 func _get_hex_trigger_order_index(current_tile: Hex) -> int:
 	if query == null:
 		return -1
 	return query.trigger_index(current_tile)
-
-
-## Contiguous previous seats in fire order, including empties. Gaps are not skipped.
-func get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
-	if query == null:
-		return []
-	return query.immediately_previous_hexes(tile, count)
-
-
-## Occupied cards on this station that fire after tile, in fire order.
-func get_later_tile_cards_on_same_segment(tile: Hex, filter_type: Variant = null) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.later_cards_on_same_segment(tile, filter_type)
-
-
-## TileCard on the next occupied hex in global trigger order (null when empty).
-func get_next_tile_card_in_trigger_order(current_tile: Hex) -> TileCard:
-	if query == null:
-		return null
-	return query.next_card_in_trigger_order(current_tile)
 
 
 ## True when the next rune in trigger order can be consumed in-sequence this turn.
@@ -1308,35 +1169,6 @@ func can_consume_next_tile_card_in_trigger_order(current_tile: Hex) -> bool:
 		return not GameManager.has_tile_card_activated_this_turn(next_rune)
 
 	return false
-
-
-## Up to count runes that activate after current_tile in trigger order.
-func get_next_tile_cards_in_trigger_order(
-	current_tile: Hex,
-	count: int = 1,
-	filter_type: Variant = null
-) -> Array[TileCard]:
-	return _get_tile_cards_relative_to_trigger_order(current_tile, count, false, filter_type)
-
-
-## Up to count runes that activated before current_tile in trigger order.
-func get_previous_tile_cards_in_trigger_order(
-	current_tile: Hex,
-	count: int = 1,
-	filter_type: Variant = null
-) -> Array[TileCard]:
-	return _get_tile_cards_relative_to_trigger_order(current_tile, count, true, filter_type)
-
-
-func _get_tile_cards_relative_to_trigger_order(
-	current_tile: Hex,
-	count: int,
-	previous: bool,
-	filter_type: Variant = null
-) -> Array[TileCard]:
-	if query == null:
-		return []
-	return query.cards_relative_to_trigger_order(current_tile, count, previous, filter_type)
 
 
 ## Returns the hex tile that currently holds the card, or null when it is not placed.
@@ -1452,11 +1284,6 @@ func get_map_world_center() -> Vector2:
 	return (min_p + max_p) * 0.5
 
 
-## Where the middle of the board lands on screen. Lets fixed UI line up with the board.
-func get_map_screen_center() -> Vector2:
-	return get_canvas_transform() * get_map_world_center()
-
-
 ## Keep the board centered on world origin so a camera at (0, 0) frames it.
 ## Extra shift comes from this node's scene position.
 func _center_map_on_origin() -> void:
@@ -1532,10 +1359,6 @@ func restore_map_state(state: Dictionary) -> void:
 
 	_layout.apply_turn_results(state.get("segment_turn_results", {}))
 	_restore_turn_snapshots(state.get("turn_snapshots", []))
-
-
-func get_round_turn_snapshots() -> Array:
-	return _round_turn_snapshots.duplicate(true)
 
 
 func refresh_hour_results_ui() -> void:

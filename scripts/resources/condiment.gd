@@ -56,13 +56,6 @@ func needs_two_tile_target() -> bool:
 	return target_kind == TargetKind.TWO_TILE
 
 
-func fuse_lasts_two_turns() -> bool:
-	return (
-		effect_type == EffectType.FORWARD_GIFT
-		or effect_type == EffectType.MINT_SIP
-	)
-
-
 ## Name and description for hover tooltips, with glossary tokens resolved.
 func get_tooltip_text() -> String:
 	return "%s\n%s" % [display_name, CardKeywordGlossary.to_plain(description)]

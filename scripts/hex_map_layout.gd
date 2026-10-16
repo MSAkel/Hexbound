@@ -106,11 +106,6 @@ func get_opposite_coords(coords: Vector2i) -> Vector2i:
 	return _opposite_by_coords.get(coords, coords)
 
 
-## Ring index from the map center (0 = center).
-func get_ring_distance(coords: Vector2i) -> int:
-	return _ring_distances.get(coords, -1)
-
-
 ## All map coordinates in fire order. Top-to-bottom rows, left to right within each row.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
 	if _trigger_order_cache_valid and _trigger_order_cache_matches_map():

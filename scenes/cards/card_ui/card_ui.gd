@@ -288,10 +288,6 @@ func _get_hover_elevation_offset() -> float:
 			return 0.0
 
 
-func is_hover_elevated() -> bool:
-	return _is_hover_elevated
-
-
 func is_held_for_placement() -> bool:
 	return _held_for_placement
 
@@ -701,20 +697,6 @@ func refresh_affordability() -> void:
 	if interaction_mode == InteractionMode.MERCHANT_STOCK:
 		_update_stock_affordability()
 	elif interaction_mode == InteractionMode.MERCHANT:
-		_update_affordability()
-
-
-func apply_discount(discount: float) -> void:
-	if not _is_merchant_mode():
-		return
-	if _is_sold:
-		return
-
-	_discount = discount
-	_refresh_merchant_price()
-	if interaction_mode == InteractionMode.MERCHANT_STOCK:
-		_update_stock_affordability()
-	else:
 		_update_affordability()
 
 

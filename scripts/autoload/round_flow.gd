@@ -61,11 +61,6 @@ func get_transition_card_pick_round() -> int:
 	return _transition_card_pick_round
 
 
-## True when the merchant step will advance the round after closing, as on the victory path.
-func will_advance_round_after_merchant() -> bool:
-	return _advance_round_after_merchant
-
-
 func get_step() -> Step:
 	return _step
 

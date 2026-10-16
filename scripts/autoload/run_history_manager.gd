@@ -40,16 +40,6 @@ func notify_run_started() -> void:
 	_archived_this_run = false
 
 
-func get_entries() -> Array:
-	ensure_loaded()
-	return _entries.duplicate(true)
-
-
-func get_entry_count() -> int:
-	ensure_loaded()
-	return _entries.size()
-
-
 func clear() -> void:
 	_entries = []
 	_archived_this_run = false

@@ -131,11 +131,6 @@ func play_condiment_hover() -> void:
 	_condiment_hover_player.play()
 
 
-func stop_condiment_hover() -> void:
-	if _condiment_hover_player != null:
-		_condiment_hover_player.stop()
-
-
 ## Plays the shared button hover clip on the SFX bus without stacking.
 func play_ui_hover() -> void:
 	if _ui_hover_player == null:
@@ -222,11 +217,6 @@ func set_sfx_volume(volume: float) -> void:
 	GameSettings.set_sfx_volume(sfx_volume)
 
 
-func save_volume_settings() -> void:
-	GameSettings.set_music_volume(music_volume)
-	GameSettings.set_sfx_volume(sfx_volume)
-
-
 func load_volume_settings() -> void:
 	GameSettings.ensure_loaded()
 	music_volume = GameSettings.music_volume
@@ -240,31 +230,3 @@ func load_volume_settings() -> void:
 	if _ui_hover_player != null:
 		_ui_hover_player.volume_db = linear_to_db(sfx_volume)
 	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
-
-# Stop all audio
-func stop_all() -> void:
-	music_player.stop()
-	for player in sfx_players:
-		player.stop()
-	stop_condiment_hover()
-	stop_ui_hover()
-
-# Pause all audio
-func pause_all() -> void:
-	music_player.stream_paused = true
-	for player in sfx_players:
-		player.stream_paused = true
-	if _condiment_hover_player != null:
-		_condiment_hover_player.stream_paused = true
-	if _ui_hover_player != null:
-		_ui_hover_player.stream_paused = true
-
-# Resume all audio
-func resume_all() -> void:
-	music_player.stream_paused = false
-	for player in sfx_players:
-		player.stream_paused = false
-	if _condiment_hover_player != null:
-		_condiment_hover_player.stream_paused = false
-	if _ui_hover_player != null:
-		_ui_hover_player.stream_paused = false
