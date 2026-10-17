@@ -99,8 +99,9 @@ const ICON_MULT := FeastStatIcons.MULT
 const ICON_GARNISH := FeastStatIcons.GARNISH
 const ICON_FIRE := FeastStatIcons.FIRE
 
-## Spot cards have no rarity. Every one costs the same at the merchant.
-const SHOP_PRICE := 4
+## Spot cards have no rarity. Ingredients and Kitchenware share one merchant price, Meals cost more.
+const SHOP_PRICE := 3
+const MEAL_SHOP_PRICE := 4
 ## Playing a copy onto the same card merges it up one star. Each star past the first adds this much
 ## Flavour, Gold and +Mult scale. xMult is never star-scaled, so starred Mult cards do not compound.
 const MAX_STAR_LEVEL := 5
@@ -380,7 +381,8 @@ func get_save_kind() -> String:
 
 
 func get_shop_price(discount: float = 0.0) -> int:
-	return _apply_merchant_discount(SHOP_PRICE, discount)
+	var base_price := MEAL_SHOP_PRICE if type == TileCardType.MEAL else SHOP_PRICE
+	return _apply_merchant_discount(base_price, discount)
 
 
 # Empty spot, or an occupied spot to merge into or replace, plus placement restrictions.
@@ -403,6 +405,9 @@ func get_overplay(hex: Hex) -> Overplay:
 	if not overplay_enabled:
 		return Overplay.NONE
 	if occupant.id != id:
+		# Replacing destroys the occupant, and a Ward forbids that.
+		if CondimentManager.is_warded(occupant):
+			return Overplay.NONE
 		return Overplay.REPLACE
 	if occupant.star_level < MAX_STAR_LEVEL:
 		return Overplay.MERGE
@@ -417,7 +422,7 @@ func play_on(hex: Hex, animate: bool = true) -> void:
 		Overplay.MERGE:
 			CondimentBoardEffects.star_up_placed_at(hex)
 		Overplay.REPLACE:
-			CondimentBoardEffects.destroy_placed_at(hex, hex.active_tile_card, false)
+			CondimentBoardEffects.destroy_placed_at(hex, hex.active_tile_card)
 			hex.place_tile_card(self, animate)
 
 
@@ -889,23 +894,21 @@ func _hex_for(tile: Hex, card: TileCard) -> Hex:
 #endregion --- Map query helpers ---
 
 
-## Remove a placed spot card instance from the map (clears its spot and cancels queued triggers).
-func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard, counts_as_break: bool = true) -> void:
-	if source_tile == null or source_tile.map == null or tile_card == null:
-		return
-	if counts_as_break:
-		if CondimentManager.try_prevent_break(tile_card):
-			_create_floating_text(source_tile, "Warded", Color(0.45, 0.88, 0.58, 1.0))
-			return
-		source_tile.map.notify_card_broke(tile_card)
-	source_tile.map.destroy_placed_tile_card(tile_card)
+## Destroy a placed card. Returns false when a Ward saved it.
+func _destroy_placed_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
+	return CondimentBoardEffects.destroy_placed_at(source_tile, tile_card)
 
 
-## Remove a placed spot card after its queued chained triggers finish resolving.
+## Destroy a placed card after its queued chained triggers finish resolving.
+## on_done receives false when a Ward saved the card.
 func _destroy_placed_tile_card_after_queued_triggers(
 	source_tile: Hex,
 	tile_card: TileCard,
-	on_destroy: Callable = Callable(),
+	on_done: Callable = Callable(),
 ) -> void:
-	source_tile.map.schedule_destroy_after_trigger_link(source_tile, tile_card, on_destroy)
+	var destroy := func() -> void:
+		var destroyed := _destroy_placed_tile_card(source_tile, tile_card)
+		if on_done.is_valid():
+			on_done.call(destroyed)
+	source_tile.map.run_after_trigger_link(source_tile, destroy)
 #endregion --- Spot card destruction helpers ---

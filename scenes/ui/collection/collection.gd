@@ -1,6 +1,6 @@
 extends Panel
 
-## Collection screen for browsing card categories, chefs, and events.
+## Collection screen for browsing cards, condiments, staff, stations, chefs, and events.
 
 signal closed
 
@@ -20,6 +20,8 @@ const ITEM_BORDER := Color("617575")
 enum CollectionTab {
 	CARDS,
 	CONDIMENTS,
+	STAFF,
+	STATIONS,
 	CHEFS,
 	EVENTS,
 }
@@ -50,6 +52,8 @@ func _configure_tabs() -> void:
 	var titles := PackedStringArray([
 		"Cards",
 		GameTerms.CONDIMENTS,
+		"Staff",
+		"Stations",
 		"Chefs",
 		"Events",
 	])
@@ -65,6 +69,10 @@ func _show_tab(tab: int) -> void:
 			_show_cards()
 		CollectionTab.CONDIMENTS:
 			_show_condiments()
+		CollectionTab.STAFF:
+			_show_staff()
+		CollectionTab.STATIONS:
+			_show_stations()
 		CollectionTab.CHEFS:
 			_show_chefs()
 		CollectionTab.EVENTS:
@@ -78,10 +86,10 @@ func _clear_collection() -> void:
 		child.queue_free()
 
 
-func _show_tile_cards(cards: Array) -> void:
+func _show_card_uis(cards: Array) -> void:
 	collection_grid_container.columns = 5
 	for card in cards:
-		if card is not TileCard:
+		if card is not Card:
 			continue
 		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
 		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW)
@@ -94,7 +102,17 @@ func _show_cards() -> void:
 	for card in GameManager.tile_cards_pool:
 		if card is TileCard:
 			cards.append(card)
-	_show_tile_cards(cards)
+	_show_card_uis(cards)
+
+
+func _show_staff() -> void:
+	_show_card_uis(StaffCatalog.get_all())
+
+
+func _show_stations() -> void:
+	collection_grid_container.columns = 3
+	for station_type: StationType in StationManager.get_station_types():
+		collection_grid_container.add_child(_create_station_entry(station_type))
 
 
 func _show_condiments() -> void:
@@ -209,6 +227,65 @@ func _create_event_entry(event_type: EventManager.Type) -> PanelContainer:
 	details.add_child(description)
 	details.add_child(_create_label(EventManager.get_allowed_rounds_label(event_type).to_upper(), 14, ACCENT))
 	return panel
+
+
+func _create_station_entry(station_type: StationType) -> PanelContainer:
+	var panel := _create_item_panel(Vector2(500, 300))
+	var details := VBoxContainer.new()
+	details.add_theme_constant_override("separation", 8)
+	panel.add_child(details)
+
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 14)
+	details.add_child(header)
+	if station_type.icon != null:
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(56, 56)
+		icon.texture = station_type.icon
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		header.add_child(icon)
+	var name_label := _create_label(station_type.display_name.to_upper(), 25, station_type.color)
+	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	header.add_child(name_label)
+
+	details.add_child(_create_separator())
+	details.add_child(_create_label("REQUIRES", 14, ACCENT))
+	var requirements := _create_label(_format_station_requirements(station_type), 18, TEXT_PRIMARY)
+	requirements.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	details.add_child(requirements)
+
+	if not station_type.choice_options.is_empty():
+		details.add_child(_create_label("LEVEL %d CHOICE" % StationManager.CHOICE_LEVEL, 14, ACCENT))
+		for perk: StationPerk in station_type.choice_options:
+			details.add_child(_create_rich_label("• %s" % CardKeywordGlossary.to_bbcode(perk.description), 17))
+	return panel
+
+
+func _format_station_requirements(station_type: StationType) -> String:
+	var parts: PackedStringArray = []
+	for tag: StringName in station_type.required_counts:
+		var count := int(station_type.required_counts[tag])
+		var label := GameTerms.get_ingredient_kind_label(tag)
+		if label.is_empty():
+			label = String(tag).capitalize()
+		if tag in station_type.distinct_tags and count > 1:
+			label = "different %s" % label
+		parts.append("%d %s" % [count, label])
+	return " · ".join(parts)
+
+
+func _create_rich_label(bbcode: String, font_size: int) -> RichTextLabel:
+	var label := RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.scroll_active = false
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.add_theme_font_size_override("normal_font_size", font_size)
+	label.add_theme_color_override("default_color", TEXT_PRIMARY)
+	label.text = bbcode
+	return label
 
 
 func _create_item_panel(minimum_size: Vector2) -> PanelContainer:

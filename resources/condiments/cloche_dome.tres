@@ -7,7 +7,7 @@
 script = ExtResource("2_c2ivn")
 id = "cloche_dome"
 display_name = "Cloche Dome"
-description = "Ignore next {spoil}"
+description = "Ignore next {destroy}"
 icon = ExtResource("1_87rfw")
 liquid_color = Color(0.32, 0.82, 0.48, 1)
 effect_type = 4

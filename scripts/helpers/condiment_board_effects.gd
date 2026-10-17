@@ -9,8 +9,7 @@ static func throw_out(tile: Hex, rng: RandomNumberGenerator) -> bool:
 	if target == null:
 		return false
 
-	destroy_placed_at(tile, target, true)
-	AudioManager.play_sfx(UISounds.SPOIL_BREAK)
+	destroy_placed_at(tile, target)
 
 	var drafted := CardLoot.card_draw(1, [], true, rng)
 	if drafted.is_empty():
@@ -79,21 +78,19 @@ static func star_up_placed_at(tile: Hex) -> void:
 	_show_text(tile, "%s!" % TileCard.star_text(target.star_level), Color(1.0, 0.85, 0.2, 1.0))
 
 
-static func destroy_placed_at(
-	source_tile: Hex,
-	placed_card: TileCard,
-	counts_as_break: bool = true
-) -> void:
+## The one Destroy rule: a Ward stops it, otherwise the card is counted and removed.
+## Returns false when a Ward saved the card.
+static func destroy_placed_at(source_tile: Hex, placed_card: TileCard) -> bool:
 	if source_tile == null or source_tile.map == null or placed_card == null:
-		return
-	if counts_as_break:
-		if CondimentManager.try_prevent_break(placed_card):
-			_show_text(source_tile, "Warded", Color(0.45, 0.88, 0.58, 1.0))
-			return
-		source_tile.map.notify_card_broke(placed_card)
-	if not counts_as_break:
-		RunLedger.record_card_consumed(placed_card)
+		return false
+	if CondimentManager.try_prevent_destroy(placed_card):
+		_show_text(source_tile, "Warded", Color(0.45, 0.88, 0.58, 1.0))
+		return false
+	source_tile.map.notify_card_destroyed(placed_card)
+	RunLedger.record_card_destroyed(placed_card)
 	source_tile.map.destroy_placed_tile_card(placed_card)
+	AudioManager.play_sfx(UISounds.DESTROY)
+	return true
 
 
 static func _show_text(tile: Hex, text: String, color: Color = Color.WHITE) -> void:

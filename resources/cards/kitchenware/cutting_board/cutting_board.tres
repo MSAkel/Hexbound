@@ -11,5 +11,5 @@ starting_hand_eligible = true
 id = "cutting_board"
 name = "Cutting Board"
 icon = ExtResource("1_icon")
-description = "Add a random Ingredient to your hand. {spoils} after 3 {triggers}."
+description = "Add a random Ingredient to your hand. {destroyed} after 3 {triggers}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

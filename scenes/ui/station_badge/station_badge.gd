@@ -5,19 +5,17 @@ extends PanelContainer
 ## Hover shows the station's meals served and its active perks.
 
 const BADGE_WIDTH := 132.0
-const PIP_SIZE := Vector2(16, 6)
 const BASE_COLOR := Color(0.78, 0.72, 0.66, 1)
 const PANEL_FILL := Color(0.13, 0.1, 0.12, 0.92)
-const PIP_EMPTY := Color(1, 1, 1, 0.16)
+const TRACK_COLOR := Color(1, 1, 1, 0.16)
 const PUNCH_SCALE := 1.16
-const PIP_PUNCH_SCALE := 1.8
+const LEVEL_PUNCH_SCALE := 1.4
 
 var segment_index := -1
 var _map: HexTileMap
 var _icon: TextureRect
 var _name_label: Label
 var _level_label: Label
-var _pips: Array[Panel] = []
 var _progress: ProgressBar
 var _progress_label: Label
 var _style: StyleBoxFlat
@@ -76,20 +74,6 @@ func _build() -> void:
 	_level_label = _make_label(13)
 	title_row.add_child(_level_label)
 
-	var pip_row := HBoxContainer.new()
-	pip_row.add_theme_constant_override("separation", 3)
-	pip_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(pip_row)
-	for _i in StationManager.MAX_LEVEL:
-		var pip := Panel.new()
-		pip.custom_minimum_size = PIP_SIZE
-		pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var pip_style := StyleBoxFlat.new()
-		pip_style.set_corner_radius_all(3)
-		pip.add_theme_stylebox_override("panel", pip_style)
-		pip_row.add_child(pip)
-		_pips.append(pip)
-
 	var progress_row := HBoxContainer.new()
 	progress_row.add_theme_constant_override("separation", 4)
 	progress_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -103,7 +87,7 @@ func _build() -> void:
 	_progress.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var track := StyleBoxFlat.new()
-	track.bg_color = PIP_EMPTY
+	track.bg_color = TRACK_COLOR
 	track.set_corner_radius_all(3)
 	_progress.add_theme_stylebox_override("background", track)
 	var fill := StyleBoxFlat.new()
@@ -132,9 +116,6 @@ func refresh(animate_progress: bool = true) -> void:
 	_name_label.add_theme_color_override("font_color", color)
 	_level_label.text = "Lv %d" % level
 	_style.border_color = color.darkened(0.15)
-	for i in _pips.size():
-		var pip_style := _pips[i].get_theme_stylebox("panel") as StyleBoxFlat
-		pip_style.bg_color = color if i < level else PIP_EMPTY
 
 	# Base stations do not progress, so they show no serving bar.
 	_progress.get_parent().visible = station_type != null
@@ -193,8 +174,7 @@ func _on_station_leveled_up(index: int, level: int) -> void:
 		return
 	AudioManager.play_sfx(UISounds.STATION_LEVEL_UP)
 	_append_punch(create_tween(), self, PUNCH_SCALE)
-	if level >= 1 and level <= _pips.size():
-		_append_punch(create_tween(), _pips[level - 1], PIP_PUNCH_SCALE)
+	_append_punch(create_tween(), _level_label, LEVEL_PUNCH_SCALE)
 	_float_text("Level %d" % level, _station_color())
 	if level == StationManager.MEAL_SLOT_UNLOCK_LEVEL:
 		AudioManager.play_sfx(UISounds.MEAL_SLOT_UNLOCKED)

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://5h4y0ta207qh" path="res://scenes/ui/merchant/merchant_purchase_tray.gd" id="1_tray"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="2_gold"]
+[ext_resource type="Texture2D" uid="uid://ciex4tt5xt0ji" path="res://assets/icons/others/lock.svg" id="3_lock"]
 
 [sub_resource type="StyleBoxFlat" id="TrayButtonNormal"]
 content_margin_left = 8.0
@@ -51,15 +52,63 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="StyleBoxFlat" id="LockButtonNormal"]
+content_margin_left = 6.0
+content_margin_top = 5.0
+content_margin_right = 6.0
+content_margin_bottom = 5.0
+bg_color = Color(0.45, 0.36, 0.24, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.27, 0.2, 0.12, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="LockButtonHover"]
+content_margin_left = 6.0
+content_margin_top = 5.0
+content_margin_right = 6.0
+content_margin_bottom = 5.0
+bg_color = Color(0.56, 0.45, 0.3, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.32, 0.24, 0.14, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="LockButtonLocked"]
+content_margin_left = 6.0
+content_margin_top = 5.0
+content_margin_right = 6.0
+content_margin_bottom = 5.0
+bg_color = Color(0.86, 0.66, 0.24, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.52, 0.36, 0.1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="MerchantPurchaseTray" type="HBoxContainer" unique_id=1155474741]
 custom_minimum_size = Vector2(0, 40)
 mouse_filter = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 alignment = 1
 script = ExtResource("1_tray")
 
 [node name="GoldButton" type="Button" parent="." unique_id=228641547]
-custom_minimum_size = Vector2(96, 0)
+custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -77,4 +126,20 @@ theme_override_styles/disabled = SubResource("TrayButtonDisabled")
 text = "Buy"
 icon = ExtResource("2_gold")
 
+[node name="LockButton" type="Button" parent="." unique_id=228641548]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+tooltip_text = "Lock: keep this item on the shelf through rerolls and into the next day"
+toggle_mode = true
+theme_override_constants/icon_max_width = 20
+theme_override_styles/normal = SubResource("LockButtonNormal")
+theme_override_styles/hover = SubResource("LockButtonHover")
+theme_override_styles/pressed = SubResource("LockButtonLocked")
+theme_override_styles/hover_pressed = SubResource("LockButtonLocked")
+icon = ExtResource("3_lock")
+icon_alignment = 1
+
 [connection signal="pressed" from="GoldButton" to="." method="_on_gold_button_pressed"]
+[connection signal="toggled" from="LockButton" to="." method="_on_lock_button_toggled"]

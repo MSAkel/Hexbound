@@ -28,10 +28,10 @@ var _reroll_cost := BASE_REROLL_COST
 var _restore_state: Dictionary = {}
 ## True from open() until Leave. Independent of board-peek visibility.
 var _session_open := false
-## Staff ids the player owned when the current stock was rolled.
-var _owned_staff_ids_at_stock: Array[String] = []
-var _restored_owned_staff_ids: Array[String] = []
-var _has_restored_owned_staff := false
+## Shelf slot -> locked Card. Locked items keep their slot through rerolls and later days.
+var _locked_cards: Dictionary = {}
+## Condiment shelf slot -> locked Condiment.
+var _locked_condiments: Dictionary = {}
 
 
 func _ready() -> void:
@@ -59,6 +59,8 @@ func open() -> void:
 	var restoring := not _restore_state.is_empty()
 	var sold_card_indices: Array = []
 	var sold_condiment_indices: Array = []
+	var restored_cards: Array[Card] = []
+	var restored_condiments: Array[Condiment] = []
 	_session_open = true
 	_set_board_view(false)
 	if restoring:
@@ -66,15 +68,21 @@ func open() -> void:
 		_reroll_cost = int(_restore_state.get("reroll_cost", BASE_REROLL_COST))
 		sold_card_indices = _restore_state.get("sold_indices", [])
 		sold_condiment_indices = _restore_state.get("sold_condiment_indices", [])
-		_restored_owned_staff_ids.assign(_restore_state.get("owned_staff_ids_at_stock", []))
-		_has_restored_owned_staff = true
+		for entry in _restore_state.get("stock_cards", []):
+			var card := _card_from_save(entry)
+			if card != null:
+				restored_cards.append(card)
+		for entry in _restore_state.get("stock_condiments", []):
+			var condiment := CondimentCatalog.get_by_id(str(entry))
+			if condiment != null:
+				restored_condiments.append(condiment)
 		_restore_state.clear()
 	else:
 		_stock_reroll_count = 0
 		_reroll_cost = BASE_REROLL_COST
 	_update_reroll_button()
 	UiManager.show_panel(self)
-	await _refresh_merchant_stock()
+	await _refresh_merchant_stock(restored_cards, restored_condiments)
 	_apply_sold_indices(sold_card_indices)
 	_apply_sold_condiment_indices(sold_condiment_indices)
 	_queue_focus()
@@ -152,6 +160,9 @@ func _set_board_view(active: bool) -> void:
 	_content_panel.visible = not active
 	_show_merchant_button.visible = active
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if active else Control.MOUSE_FILTER_STOP
+	var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+	if hand != null:
+		hand.set_peek(active)
 	_queue_focus()
 
 
@@ -162,34 +173,83 @@ func _on_condiment_targeting_changed(slot_index: int) -> void:
 		_set_board_view(true)
 
 
-func _refresh_merchant_stock() -> void:
+## Restored stock is shown as saved. Otherwise a fresh roll fills every unlocked slot.
+func _refresh_merchant_stock(
+	restored_cards: Array[Card] = [],
+	restored_condiments: Array[Condiment] = []
+) -> void:
 	_clear_selection()
-	_capture_owned_staff_for_stock()
-	await _refresh_merchant_cards()
-	await _refresh_merchant_condiments()
+	await _display_merchant_cards(
+		restored_cards if not restored_cards.is_empty() else _roll_card_stock()
+	)
+	await _display_merchant_condiments(
+		restored_condiments if not restored_condiments.is_empty() else _roll_condiment_stock()
+	)
 
 
-func _refresh_merchant_cards() -> void:
+func _roll_card_stock() -> Array[Card]:
+	var owned_staff_ids := StaffManager.owned_ids()
+	var locked_tile_ids: Array[String] = []
+	var excluded_staff_ids := owned_staff_ids.duplicate()
+	for slot in _locked_cards.keys():
+		var locked: Card = _locked_cards[slot]
+		# Staff hired some other way cannot be bought twice.
+		if locked is StaffCard and locked.id in owned_staff_ids:
+			_locked_cards.erase(slot)
+		elif locked is TileCard:
+			locked_tile_ids.append(locked.id)
+		else:
+			excluded_staff_ids.append(locked.id)
+
+	var tiles: Array = draw_tile_card_stock(_stock_reroll_count, locked_tile_ids)
+	var staff: Array = draw_staff_stock(_stock_reroll_count, excluded_staff_ids)
 	var inventory: Array[Card] = []
-	for rune in draw_tile_card_stock(_stock_reroll_count):
-		inventory.append(rune)
-	for staff in draw_staff_stock(_stock_reroll_count, _owned_staff_ids_at_stock):
-		inventory.append(staff)
-	await _display_merchant_cards(inventory)
+	for slot in MERCHANT_TILE_CARD_COUNT + MERCHANT_STAFF_COUNT:
+		var drawn := tiles if slot < MERCHANT_TILE_CARD_COUNT else staff
+		var item: Card = _locked_cards.get(slot, null)
+		if item == null and not drawn.is_empty():
+			item = drawn.pop_front()
+		if item != null:
+			inventory.append(item)
+	return inventory
+
+
+func _roll_condiment_stock() -> Array[Condiment]:
+	var locked_ids: Array[String] = []
+	for locked: Condiment in _locked_condiments.values():
+		locked_ids.append(locked.id)
+	var drawn: Array = draw_condiment_stock(_stock_reroll_count, locked_ids)
+	var stock: Array[Condiment] = []
+	for slot in CondimentManager.SHOP_STOCK:
+		var item: Condiment = _locked_condiments.get(slot, null)
+		if item == null and not drawn.is_empty():
+			item = drawn.pop_front()
+		if item != null:
+			stock.append(item)
+	return stock
 
 
 ## Stock rolls are static so the headless playtest bot shops the same shelves.
-static func draw_tile_card_stock(stock_reroll_count: int) -> Array[TileCard]:
+## exclude_ids are left off the roll so locked items never appear twice.
+static func draw_tile_card_stock(
+	stock_reroll_count: int,
+	exclude_ids: Array[String] = []
+) -> Array[TileCard]:
 	var stream_name: String = RunRng.build_merchant_stream_name(
 		GameManager.current_round,
 		stock_reroll_count
 	)
-	return CardLoot.card_draw(
-		MERCHANT_TILE_CARD_COUNT,
+	var drawn := CardLoot.card_draw(
+		MERCHANT_TILE_CARD_COUNT + exclude_ids.size(),
 		GameManager.tile_cards_pool,
 		true,
 		RunRng.create_rng(stream_name)
 	)
+	var stock: Array[TileCard] = []
+	for tile_card in drawn:
+		if stock.size() < MERCHANT_TILE_CARD_COUNT and tile_card.id not in exclude_ids:
+			stock.append(tile_card)
+	return stock
 
 
 ## Staff already owned when the stock is rolled stay off the shelf.
@@ -198,23 +258,20 @@ static func draw_staff_stock(stock_reroll_count: int, owned_staff_ids: Array[Str
 	return StaffCatalog.draw(MERCHANT_STAFF_COUNT, RunRng.create_rng(stream_name), owned_staff_ids)
 
 
-static func draw_condiment_stock(stock_reroll_count: int) -> Array[Condiment]:
+static func draw_condiment_stock(
+	stock_reroll_count: int,
+	exclude_ids: Array[String] = []
+) -> Array[Condiment]:
 	var stream_name := "merchant_condiments:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
-	return CondimentCatalog.draw_unique(CondimentManager.SHOP_STOCK, RunRng.create_rng(stream_name))
-
-
-## A restored shop must roll the same staff it showed before, so the owned list is part of the save.
-func _capture_owned_staff_for_stock() -> void:
-	if not _restored_owned_staff_ids.is_empty() or _has_restored_owned_staff:
-		_owned_staff_ids_at_stock = _restored_owned_staff_ids.duplicate()
-		_restored_owned_staff_ids.clear()
-		_has_restored_owned_staff = false
-		return
-	_owned_staff_ids_at_stock = StaffManager.owned_ids()
-
-
-func _refresh_merchant_condiments() -> void:
-	await _display_merchant_condiments(draw_condiment_stock(_stock_reroll_count))
+	var drawn := CondimentCatalog.draw_unique(
+		CondimentManager.SHOP_STOCK + exclude_ids.size(),
+		RunRng.create_rng(stream_name)
+	)
+	var stock: Array[Condiment] = []
+	for condiment in drawn:
+		if stock.size() < CondimentManager.SHOP_STOCK and condiment.id not in exclude_ids:
+			stock.append(condiment)
+	return stock
 
 
 func _display_merchant_cards(inventory: Array[Card]) -> void:
@@ -233,6 +290,8 @@ func _display_merchant_cards(inventory: Array[Card]) -> void:
 		card_ui.set_card(item)
 		card_ui.action_requested.connect(_on_stock_card_selected)
 		card_ui.gold_purchase_requested.connect(_on_stock_card_gold_purchase_requested)
+		card_ui.lock_toggle_requested.connect(_on_stock_card_lock_toggled)
+		card_ui.set_merchant_locked(_locked_cards.has(_displayed_cards.size()))
 		_displayed_cards.append(card_ui)
 
 
@@ -247,6 +306,8 @@ func _display_merchant_condiments(stock: Array[Condiment]) -> void:
 		item.configure(condiment)
 		item.selected.connect(_on_stock_condiment_selected)
 		item.gold_purchase_requested.connect(_on_stock_condiment_gold_purchase_requested)
+		item.lock_toggle_requested.connect(_on_stock_condiment_lock_toggled)
+		item.set_merchant_locked(_locked_condiments.has(_displayed_condiments.size()))
 		_displayed_condiments.append(item)
 
 
@@ -286,6 +347,32 @@ func _on_stock_condiment_gold_purchase_requested(item: CondimentShopItem) -> voi
 	_complete_purchase()
 
 
+func _on_stock_card_lock_toggled(card_ui: CardUI, locked: bool) -> void:
+	var slot := _displayed_cards.find(card_ui)
+	if slot < 0 or card_ui.is_sold():
+		return
+	if locked:
+		_locked_cards[slot] = card_ui.card
+	else:
+		_locked_cards.erase(slot)
+	card_ui.set_merchant_locked(locked)
+	AudioManager.play_sfx(UISounds.CLICK)
+	RunSaveManager.request_autosave()
+
+
+func _on_stock_condiment_lock_toggled(item: CondimentShopItem, locked: bool) -> void:
+	var slot := _displayed_condiments.find(item)
+	if slot < 0 or item.is_sold():
+		return
+	if locked:
+		_locked_condiments[slot] = item.condiment
+	else:
+		_locked_condiments.erase(slot)
+	item.set_merchant_locked(locked)
+	AudioManager.play_sfx(UISounds.CLICK)
+	RunSaveManager.request_autosave()
+
+
 func _complete_purchase() -> void:
 	if _selected_condiment_ui != null:
 		_complete_condiment_purchase()
@@ -302,6 +389,7 @@ func _complete_purchase() -> void:
 	EconomyManager.remove(gold_price)
 
 	var shelf_rect := _selected_card_ui.get_global_rect()
+	_locked_cards.erase(_displayed_cards.find(_selected_card_ui))
 	_selected_card_ui.mark_sold()
 	# Keep the control in the grid as an invisible, inert placeholder so the
 	# remaining stock never shifts when an item is purchased.
@@ -338,6 +426,7 @@ func _complete_condiment_purchase() -> void:
 	EconomyManager.remove(gold_price)
 	if not CondimentManager.add_condiment(_selected_condiment_ui.condiment):
 		return
+	_locked_condiments.erase(_displayed_condiments.find(_selected_condiment_ui))
 	_selected_condiment_ui.mark_sold()
 	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
 	_clear_selection()
@@ -420,21 +509,64 @@ func capture_shop_state() -> Dictionary:
 	for index in _displayed_condiments.size():
 		if _displayed_condiments[index].is_sold():
 			sold_condiment_indices.append(index)
+	var stock_cards: Array = []
+	for card_ui in _displayed_cards:
+		stock_cards.append(_card_to_save(card_ui.card))
+	var stock_condiments: Array = []
+	for item in _displayed_condiments:
+		stock_condiments.append(item.condiment.id)
+	var locked_cards: Array = []
+	for slot in _locked_cards:
+		var entry := _card_to_save(_locked_cards[slot])
+		entry["slot"] = slot
+		locked_cards.append(entry)
+	var locked_condiments: Array = []
+	for slot in _locked_condiments:
+		var condiment: Condiment = _locked_condiments[slot]
+		locked_condiments.append({"slot": slot, "id": condiment.id})
 	return {
 		"open": _session_open,
 		"stock_reroll_count": _stock_reroll_count,
 		"reroll_cost": _reroll_cost,
 		"sold_indices": sold_indices,
 		"sold_condiment_indices": sold_condiment_indices,
-		"owned_staff_ids_at_stock": _owned_staff_ids_at_stock.duplicate(),
+		"stock_cards": stock_cards,
+		"stock_condiments": stock_condiments,
+		"locked_cards": locked_cards,
+		"locked_condiments": locked_condiments,
 	}
 
 
+## Locks apply immediately because they outlive the shop visit that set them.
 func apply_shop_state(state: Dictionary) -> void:
+	_locked_cards.clear()
+	_locked_condiments.clear()
 	if state.is_empty():
 		_restore_state.clear()
 		return
+	for entry in state.get("locked_cards", []):
+		var card := _card_from_save(entry)
+		if card != null:
+			_locked_cards[int(entry.get("slot", -1))] = card
+	for entry in state.get("locked_condiments", []):
+		var condiment := CondimentCatalog.get_by_id(str(entry.get("id", "")))
+		if condiment != null:
+			_locked_condiments[int(entry.get("slot", -1))] = condiment
 	_restore_state = state.duplicate(true)
+
+
+static func _card_to_save(card: Card) -> Dictionary:
+	return {"kind": "staff" if card is StaffCard else "tile", "id": card.id}
+
+
+static func _card_from_save(entry: Dictionary) -> Card:
+	var card_id := str(entry.get("id", ""))
+	var source: Card = (
+		StaffCatalog.get_by_id(card_id)
+		if entry.get("kind", "") == "staff"
+		else GameManager.get_tile_card_by_id(card_id)
+	)
+	return source.duplicate(true) if source != null else null
 
 
 ## RoundFlow reopens the merchant. This covers a save where the shop was visible

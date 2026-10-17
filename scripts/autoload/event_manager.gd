@@ -77,7 +77,7 @@ const EVENT_INFO := {
 	},
 	Type.AUSTERITY: {
 		"name": "Austerity",
-		"description": "You cannot gain gold this day.",
+		"description": "You cannot gain gold during this day. Day completion rewards still pay out.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.SEALED_HEXES: {
@@ -699,7 +699,7 @@ func apply_run_state(state: Dictionary) -> void:
 
 
 func restore_banner_after_load() -> void:
-	# A queued reveal stays queued so the load does not spoil it before the merchant closes.
+	# A queued reveal stays queued so the load does not reveal it before the merchant closes.
 	if active_event == -1 or RoundFlow.has_armed_event_reveal():
 		EventBus.event_banner_hidden.emit()
 		return

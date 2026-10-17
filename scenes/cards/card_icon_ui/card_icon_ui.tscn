@@ -220,16 +220,13 @@ layout_mode = 1
 [node name="OutputChip" type="PanelContainer" parent="Container" unique_id=1294529278]
 z_index = 5
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
+anchors_preset = 2
 anchor_top = 1.0
-anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -24.0
+offset_left = 10.0
 offset_top = -28.0
-offset_right = 24.0
+offset_right = 58.0
 offset_bottom = -12.0
-grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_output_chip")
@@ -254,15 +251,37 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 12
 text = "0"
 
-[node name="OutputChipExtraIcon" type="TextureRect" parent="Container/OutputChip/OutputChipRow" unique_id=1633532851]
+[node name="OutputChipExtra" type="PanelContainer" parent="Container" unique_id=1748203517]
 visible = false
+z_index = 5
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -58.0
+offset_top = -28.0
+offset_right = -10.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_output_chip")
+
+[node name="OutputChipExtraRow" type="HBoxContainer" parent="Container/OutputChipExtra" unique_id=1846631022]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="OutputChipExtraIcon" type="TextureRect" parent="Container/OutputChipExtra/OutputChipExtraRow" unique_id=1633532851]
 custom_minimum_size = Vector2(15, 15)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="OutputChipExtraLabel" type="Label" parent="Container/OutputChip/OutputChipRow" unique_id=425675927]
-visible = false
+[node name="OutputChipExtraLabel" type="Label" parent="Container/OutputChipExtra/OutputChipExtraRow" unique_id=425675927]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)

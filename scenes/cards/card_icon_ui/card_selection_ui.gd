@@ -94,6 +94,9 @@ func _set_board_view(active: bool) -> void:
 	_content_panel.visible = not active
 	_show_options_button.visible = active
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if active else Control.MOUSE_FILTER_STOP
+	var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+	if hand != null:
+		hand.set_peek(active)
 	_queue_focus()
 
 

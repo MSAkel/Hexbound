@@ -75,9 +75,13 @@ func set_amount(new_amount: int) -> void:
 
 
 func add(amount_to_add: int) -> void:
-	# Austerity blocks every gold gain, including round-clear payouts still on that round.
+	# Austerity blocks gold gained during the day. Round-clear payouts go through _credit.
 	if amount_to_add > 0 and not EventManager.can_gain_gold():
 		return
+	_credit(amount_to_add)
+
+
+func _credit(amount_to_add: int) -> void:
 	_amount += amount_to_add
 	_earned_this_turn += amount_to_add
 	_total_earned_this_run += maxi(0, amount_to_add)
@@ -96,17 +100,14 @@ func can_afford(cost: int) -> bool:
 
 
 ## Pays round completion gold and early-finish bonus when the goal is met.
+## Austerity does not block these, it only stops gold gained during the day.
 func apply_round_speed_rewards(skipped_turns: int) -> void:
 	var base_gold := ROUND_COMPLETION_GOLD
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns
 	var total_gold := base_gold + early_gold
-	if not EventManager.can_gain_gold():
-		base_gold = 0
-		early_gold = 0
-		total_gold = 0
 
 	if total_gold > 0:
-		add(total_gold)
+		_credit(total_gold)
 		AudioManager.play_sfx(UISounds.GOLD_GAINED)
 
 	_last_speed_reward = {

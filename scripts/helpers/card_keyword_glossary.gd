@@ -37,7 +37,7 @@ static var _warned_tokens: Dictionary = {}
 ## Every keyword is drawn in this one colour.
 const COLOR := Color("#2e855c")
 
-# Every form is a whole written-out word (no SPOIL + "s"), so each one can
+# Every form is a whole written-out word (no DESTROY + "s"), so each one can
 # become its own translation key later.
 static func _static_init() -> void:
 	register(
@@ -64,8 +64,8 @@ static func _static_init() -> void:
 		"Later in this Station's {trigger} order."
 	)
 	register(
-		"spoil",
-		{"spoil": GameTerms.SPOIL, "spoils": "Spoils", "spoiled": "Spoiled"},
+		"destroy",
+		{"destroy": GameTerms.DESTROY, "destroys": "Destroys", "destroyed": "Destroyed"},
 		"Remove the card."
 	)
 	register(
@@ -78,11 +78,6 @@ static func _static_init() -> void:
 			"retriggers": "Retriggers",
 		},
 		"Activate the card."
-	)
-	register(
-		"liquefy",
-		{"liquefy": GameTerms.LIQUEFY, "liquefies": "Liquefies"},
-		"Coming soon."
 	)
 
 static func register(

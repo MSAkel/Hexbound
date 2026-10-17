@@ -65,7 +65,7 @@ func _get_fuse_summary_source() -> String:
 		EffectType.ECHO:
 			return "Echo · next {trigger}"
 		EffectType.WARD:
-			return "Ward · next break"
+			return "Ward · next {destroy}"
 		EffectType.NEXT_TRIGGER_ENERGY:
 			return "+%d {flavour} · next {trigger}" % int(effect_value)
 		EffectType.NEXT_TRIGGER_MULT:
@@ -73,7 +73,7 @@ func _get_fuse_summary_source() -> String:
 		EffectType.MINT_SIP:
 			return "Mint Sip"
 		EffectType.THROW_OUT:
-			return "{spoil} seated card, gain random card"
+			return "{destroy} seated card, gain random card"
 		EffectType.STAR_UP:
 			return "+1 star on seated card"
 		EffectType.SEND_BACK:

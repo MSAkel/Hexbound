@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://3b06xp4p5bgb" path="res://scenes/cards/card_ui/card_ui.gd" id="2_usd0r"]
 [ext_resource type="PackedScene" path="res://scenes/cards/card_face/card_face.tscn" id="3_face"]
 [ext_resource type="PackedScene" uid="uid://dwveidib2jxhc" path="res://scenes/ui/merchant/merchant_purchase_tray.tscn" id="9_tray"]
+[ext_resource type="Texture2D" uid="uid://ciex4tt5xt0ji" path="res://assets/icons/others/lock.svg" id="10_lock"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_price_chip"]
 content_margin_left = 12.0
@@ -57,7 +58,23 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_price_chip")
 
-[node name="PriceChipLabel" type="Label" parent="MerchantPriceRow/PriceCenter/PriceChip" unique_id=1732701792]
+[node name="PriceChipRow" type="HBoxContainer" parent="MerchantPriceRow/PriceCenter/PriceChip" unique_id=1847201005]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="LockIcon" type="TextureRect" parent="MerchantPriceRow/PriceCenter/PriceChip/PriceChipRow" unique_id=1847201006]
+visible = false
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("10_lock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PriceChipLabel" type="Label" parent="MerchantPriceRow/PriceCenter/PriceChip/PriceChipRow" unique_id=1732701792]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.58, 0.12, 1)
 theme_override_font_sizes/font_size = 16
@@ -77,3 +94,4 @@ grow_horizontal = 2
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
 [connection signal="gold_purchase_pressed" from="MerchantPurchaseTray" to="." method="_on_gold_purchase_pressed"]
+[connection signal="lock_toggled" from="MerchantPurchaseTray" to="." method="_on_lock_toggled"]

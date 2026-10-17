@@ -28,8 +28,9 @@ var _star_label: Label = null
 @onready var output_chip: PanelContainer = $Container/OutputChip
 @onready var output_chip_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipIcon
 @onready var output_chip_label: Label = $Container/OutputChip/OutputChipRow/OutputChipLabel
-@onready var output_chip_extra_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipExtraIcon
-@onready var output_chip_extra_label: Label = $Container/OutputChip/OutputChipRow/OutputChipExtraLabel
+@onready var output_chip_extra: PanelContainer = $Container/OutputChipExtra
+@onready var output_chip_extra_icon: TextureRect = $Container/OutputChipExtra/OutputChipExtraRow/OutputChipExtraIcon
+@onready var output_chip_extra_label: Label = $Container/OutputChipExtra/OutputChipExtraRow/OutputChipExtraLabel
 
 ## Map that owns this icon. Assigned by [Hex] for placed cards and landing previews.
 var map: HexTileMap
@@ -91,8 +92,14 @@ const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
 const INSPECT_HOVER_SCALE := Vector2(1.08, 1.08)
 const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
 const INSPECT_HOVER_DURATION := 0.12
-# Keep the chip seated above the token bottom while its width follows the numbers.
+# Keep the chips seated inside the token's bottom corners while their width follows the numbers.
 const OUTPUT_CHIP_BOTTOM_INSET := 12.0
+const OUTPUT_CHIP_SIDE_INSET := 15.0
+# Smallest gap kept between the two chips. Wide pairs spill past the side insets evenly instead.
+const OUTPUT_CHIP_GAP := 2.0
+# Star level sits inside the token's top-left corner, clear of its border.
+const STAR_LABEL_POSITION := Vector2(16, 12)
+const STAR_LABEL_FONT_SIZE := 15
 
 #endregion
 
@@ -176,7 +183,7 @@ func _silence_emitter(emitter: GPUParticles2D) -> void:
 	emitter.visible = false
 
 
-## Hides both rows of the output chip without changing their cached content.
+## Hides both output chips without changing their cached content.
 func hide_output_chip() -> void:
 	if output_chip != null:
 		output_chip.hide()
@@ -201,11 +208,13 @@ func _show_output_chip(rune: TileCard) -> void:
 	var mode: Variant = chip.get("mode", TileCard.BoardChipMode.HIDDEN)
 	if mode == TileCard.BoardChipMode.HIDDEN:
 		output_chip.hide()
+		_hide_extra_chip_row()
 		return
 
 	output_chip.show()
 	# Dark fill only. White numbers stay readable on top.
 	output_chip.self_modulate = chip.get("panel_color", rune.get_chip_panel_color())
+	output_chip_extra.self_modulate = output_chip.self_modulate
 	var chip_text := str(chip.get("text", ""))
 	if chip_text.is_empty():
 		output_chip_label.hide()
@@ -222,8 +231,9 @@ func _show_output_chip(rune: TileCard) -> void:
 	_fit_output_chip()
 
 
+## A second output or effect gets its own chip in the bottom-right corner.
 func _show_extra_chip_row(chip: Dictionary) -> void:
-	if output_chip_extra_icon == null or output_chip_extra_label == null:
+	if output_chip_extra == null:
 		return
 	var extra_text := str(chip.get("extra_text", ""))
 	var extra_icon := chip.get("extra_icon") as Texture2D
@@ -240,26 +250,47 @@ func _show_extra_chip_row(chip: Dictionary) -> void:
 	else:
 		output_chip_extra_label.text = extra_text
 		output_chip_extra_label.show()
+	output_chip_extra.show()
 
 
 func _hide_extra_chip_row() -> void:
-	if output_chip_extra_icon != null:
-		output_chip_extra_icon.hide()
-	if output_chip_extra_label != null:
-		output_chip_extra_label.hide()
+	if output_chip_extra != null:
+		output_chip_extra.hide()
 
 
-# Shrink the chip to the visible icons and numbers, then keep it centered.
+# Shrink each chip to its visible icons and numbers. The main chip sits bottom-left, the extra bottom-right.
 func _fit_output_chip() -> void:
 	if output_chip == null:
 		return
-	output_chip.reset_size()
-	var chip_size := output_chip.get_combined_minimum_size()
-	output_chip.size = chip_size
-	output_chip.offset_left = -chip_size.x * 0.5
-	output_chip.offset_right = chip_size.x * 0.5
-	output_chip.offset_bottom = -OUTPUT_CHIP_BOTTOM_INSET
-	output_chip.offset_top = -OUTPUT_CHIP_BOTTOM_INSET - chip_size.y
+	var main_size := _fit_chip_size(output_chip)
+	var has_extra := output_chip_extra != null and output_chip_extra.visible
+	var extra_size := _fit_chip_size(output_chip_extra) if has_extra else Vector2.ZERO
+	var side_inset := OUTPUT_CHIP_SIDE_INSET
+	if has_extra:
+		# The container may not be laid out yet on the first refresh.
+		var width := maxf(_anim_target.size.x, custom_minimum_size.x)
+		var room := width - 2.0 * side_inset - OUTPUT_CHIP_GAP
+		var overflow := main_size.x + extra_size.x - room
+		if overflow > 0.0:
+			side_inset -= overflow * 0.5
+	# Main chip is anchored to the left edge, the extra chip to the right edge.
+	_place_chip(output_chip, side_inset, side_inset + main_size.x, main_size.y)
+	if has_extra:
+		_place_chip(output_chip_extra, -side_inset - extra_size.x, -side_inset, extra_size.y)
+
+
+func _fit_chip_size(chip: PanelContainer) -> Vector2:
+	chip.reset_size()
+	var chip_size := chip.get_combined_minimum_size()
+	chip.size = chip_size
+	return chip_size
+
+
+func _place_chip(chip: PanelContainer, left: float, right: float, height: float) -> void:
+	chip.offset_left = left
+	chip.offset_right = right
+	chip.offset_bottom = -OUTPUT_CHIP_BOTTOM_INSET
+	chip.offset_top = -OUTPUT_CHIP_BOTTOM_INSET - height
 
 
 #endregion
@@ -774,15 +805,14 @@ func _refresh_star_label(star_level: int) -> void:
 		_star_label = Label.new()
 		_star_label.name = "StarLabel"
 		_star_label.z_index = 5
-		_star_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_star_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_star_label.add_theme_font_size_override("font_size", 10)
+		_star_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		_star_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		_star_label.add_theme_font_size_override("font_size", STAR_LABEL_FONT_SIZE)
 		_star_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
 		_star_label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.04, 1.0))
-		_star_label.add_theme_constant_override("outline_size", 3)
+		_star_label.add_theme_constant_override("outline_size", 4)
 		_star_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_star_label.position = Vector2(0, 8)
-		_star_label.size = Vector2(35, 12)
+		_star_label.position = STAR_LABEL_POSITION
 		add_child(_star_label)
 	_star_label.text = TileCard.star_text(star_level)
 	_star_label.show()

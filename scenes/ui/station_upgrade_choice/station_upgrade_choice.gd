@@ -15,6 +15,9 @@ var _dim: ColorRect
 var _title: Label
 var _subtitle: Label
 var _options_row: HBoxContainer
+var _board_view_button: Button
+## True while the options are hidden so the player can inspect the board.
+var _board_view := false
 var _option_panels: Array[PanelContainer] = []
 ## Option lifted by mouse hover or keyboard focus, -1 for none.
 var _focus_index := -1
@@ -66,12 +69,16 @@ func _build() -> void:
 	_options_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(_options_row)
 
-	var peek_button := Button.new()
-	peek_button.text = "Hold to view board"
-	peek_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	peek_button.button_down.connect(_set_board_view.bind(true))
-	peek_button.button_up.connect(_set_board_view.bind(false))
-	content.add_child(peek_button)
+	# Pinned top center, like the card pick, so it stays put and off the board when the options hide.
+	_board_view_button = Button.new()
+	_board_view_button.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_board_view_button.offset_left = -90.0
+	_board_view_button.offset_right = 90.0
+	_board_view_button.offset_top = 32.0
+	_board_view_button.offset_bottom = 72.0
+	_board_view_button.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_board_view_button.pressed.connect(func() -> void: _set_board_view(not _board_view))
+	add_child(_board_view_button)
 
 
 func _on_station_choice_requested(segment_index: int) -> void:
@@ -177,7 +184,7 @@ func _on_option_input(event: InputEvent, index: int) -> void:
 
 ## Keyboard and controller: left and right move focus, accept picks the focused option.
 func _unhandled_input(event: InputEvent) -> void:
-	if not visible or _picking or _option_panels.is_empty():
+	if not visible or _picking or _board_view or _option_panels.is_empty():
 		return
 	var last := _option_panels.size() - 1
 	# With nothing focused, each direction lands on the option on that side.
@@ -252,8 +259,11 @@ func _play_intro() -> void:
 		tween.tween_property(panel, "modulate:a", 1.0, 0.22)
 
 
-## Peek at the board while holding the button. Input passes through to the map.
+## Press to hide the options and inspect the board, press again to bring them back.
+## Input passes through to the map while hidden. Does not resolve the pick.
 func _set_board_view(active: bool) -> void:
+	_board_view = active
+	_board_view_button.text = "Show Options" if active else "Show Board"
 	_dim.visible = not active
 	_title.visible = not active
 	_subtitle.visible = not active

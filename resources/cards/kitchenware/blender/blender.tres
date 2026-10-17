@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://bx044y6n4wg4w"]
 
 [ext_resource type="Texture2D" uid="uid://cpekmt5vyao7l" path="res://assets/icons/kitchenware/blender.png" id="1_icon"]
-[ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
+[ext_resource type="Script" path="res://resources/cards/kitchenware/blender/blender.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 2
+base_production_amount = 1
 type = 1
 product = 2
 starting_hand_eligible = true
 id = "blender"
 name = "Blender"
 icon = ExtResource("1_icon")
-description = "+2 {mult}. {liquefies} the next Ingredient, if applicable."
+description = "+1 {mult}, plus +1 {mult} for each different kind of Ingredient on this Station."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

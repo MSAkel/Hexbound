@@ -23,8 +23,8 @@ var aborted_retrigger_storm := false
 var pending_trigger_queue: Array[Dictionary] = []
 # Remaining chained triggers keyed by the source hex that queued them.
 var _trigger_link_pending: Dictionary = {}
-# Tile cards that should be removed once their queued trigger link session finishes.
-var _deferred_destroy_after_triggers: Dictionary = {}
+# Callbacks to run once the trigger link session from their source hex finishes.
+var _after_trigger_link: Dictionary = {}
 # First scoring row in a tutorial run holds longer.
 var _did_tutorial_product_linger: bool = false
 var _skip_presentation_steps := 0
@@ -355,8 +355,8 @@ func destroy_placed_tile_card(rune: TileCard) -> void:
 
 	hex.remove_tile_card()
 
-	if _deferred_destroy_after_triggers.has(hex):
-		_deferred_destroy_after_triggers.erase(hex)
+	if _after_trigger_link.has(hex):
+		_after_trigger_link.erase(hex)
 
 	for i in range(pending_trigger_queue.size() - 1, -1, -1):
 		if pending_trigger_queue[i]["rune"] == rune:
@@ -406,18 +406,12 @@ func queue_staff_triggers(runes: Array[TileCard], staff_slot: int) -> int:
 	return queue_tile_card_triggers(runes, [], null, staff_slot)
 
 
-## Removes tile_card from the map after every trigger queued from source_hex resolves.
-func schedule_destroy_after_trigger_link(
-	source_hex: Hex,
-	tile_card: TileCard,
-	on_destroy: Callable = Callable(),
-) -> void:
-	if source_hex == null or tile_card == null:
+## Runs callback after every trigger queued from source_hex resolves.
+## Dropped if the card on source_hex is destroyed first.
+func run_after_trigger_link(source_hex: Hex, callback: Callable) -> void:
+	if source_hex == null or not callback.is_valid():
 		return
-	_deferred_destroy_after_triggers[source_hex] = {
-		"tile_card": tile_card,
-		"on_destroy": on_destroy,
-	}
+	_after_trigger_link[source_hex] = callback
 
 
 func _register_trigger_link_pending(source_hex: Hex) -> void:
@@ -450,23 +444,17 @@ func _clear_trigger_link_session(source_hex: Hex) -> void:
 	_trigger_link_pending.erase(source_hex)
 	if source_hex.is_on_map():
 		source_hex.stop_trigger_link_flash()
-	_run_deferred_destroy_after_trigger_link(source_hex)
+	_run_after_trigger_link(source_hex)
 
 
-func _run_deferred_destroy_after_trigger_link(source_hex: Hex) -> void:
-	if not _deferred_destroy_after_triggers.has(source_hex):
+func _run_after_trigger_link(source_hex: Hex) -> void:
+	if not _after_trigger_link.has(source_hex):
 		return
 
-	var pending: Dictionary = _deferred_destroy_after_triggers[source_hex]
-	_deferred_destroy_after_triggers.erase(source_hex)
-
-	var tile_card: TileCard = pending.get("tile_card")
-	if tile_card != null:
-		destroy_placed_tile_card(tile_card)
-
-	var on_destroy: Callable = pending.get("on_destroy", Callable())
-	if on_destroy.is_valid():
-		on_destroy.call()
+	var callback: Callable = _after_trigger_link[source_hex]
+	_after_trigger_link.erase(source_hex)
+	if callback.is_valid():
+		callback.call()
 
 
 func _clear_trigger_link_sessions() -> void:
@@ -474,7 +462,7 @@ func _clear_trigger_link_sessions() -> void:
 		if source_hex != null and source_hex.is_on_map():
 			source_hex.stop_trigger_link_flash()
 	_trigger_link_pending.clear()
-	_deferred_destroy_after_triggers.clear()
+	_after_trigger_link.clear()
 
 
 ## Show floating text at a world position, converted onto the screen-space float layer.

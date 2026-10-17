@@ -93,7 +93,7 @@ const SEGMENT_CREDIT_FLASH_DURATION := 0.5
 ## Gap between a station's last spot and its badge, in map pixels.
 const STATION_BADGE_GAP := 18.0
 ## Staff hexes sit this many board columns left of their station's first spot.
-const STAFF_COLUMN_OFFSET := 1.25
+const STAFF_COLUMN_OFFSET := 3.5
 
 # Occupied-tile inspect overlay from get_trigger_preview_coords.
 var _inspect_highlight_coords: Array[Vector2i] = []
@@ -887,16 +887,16 @@ func is_segment_resolved(segment_index: int) -> bool:
 
 
 
-func get_segment_breaks(segment_index: int) -> int:
-	return _layout.get_segment_breaks(segment_index)
+func get_segment_destroys(segment_index: int) -> int:
+	return _layout.get_segment_destroys(segment_index)
 
 
-## Records a break on the card's segment for the Hour results.
-func notify_card_broke(tile_card: TileCard) -> void:
+## Records a Destroy on the card's segment for the Hour results.
+func notify_card_destroyed(tile_card: TileCard) -> void:
 	var hex := get_hex_for_tile_card(tile_card)
 	if hex == null:
 		return
-	_layout.add_segment_break(get_segment_index(hex.coordinates))
+	_layout.add_segment_destroy(get_segment_index(hex.coordinates))
 
 
 ## Number of chef-specific segments on the current map.
@@ -1223,13 +1223,9 @@ func queue_tile_card_triggers(
 	turn_resolver.queue_tile_card_triggers(runes, activation_scales, source_hex)
 
 
-## Removes tile_card from the map after every trigger queued from source_hex resolves.
-func schedule_destroy_after_trigger_link(
-	source_hex: Hex,
-	tile_card: TileCard,
-	on_destroy: Callable = Callable(),
-) -> void:
-	turn_resolver.schedule_destroy_after_trigger_link(source_hex, tile_card, on_destroy)
+## Runs callback after every trigger queued from source_hex resolves.
+func run_after_trigger_link(source_hex: Hex, callback: Callable) -> void:
+	turn_resolver.run_after_trigger_link(source_hex, callback)
 
 
 #region Staff column anchors

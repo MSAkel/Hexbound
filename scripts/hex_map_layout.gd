@@ -47,7 +47,7 @@ var _segment_turn_triggers: Array[int] = []
 # True after a segment's natural trigger pass has finished this turn.
 var _segment_resolved: Array[bool] = []
 # Cards that actually broke on each segment this turn.
-var _segment_breaks: Array[int] = []
+var _segment_destroys: Array[int] = []
 
 
 ## Binds this layout helper to a live map instance.
@@ -232,7 +232,7 @@ func reset_turn_results() -> void:
 	_segment_turn_gold.resize(segment_count)
 	_segment_turn_triggers.resize(segment_count)
 	_segment_resolved.resize(segment_count)
-	_segment_breaks.resize(segment_count)
+	_segment_destroys.resize(segment_count)
 	_hour_flavour = 0
 	_hour_additive_mult = 1.0
 	for i in segment_count:
@@ -244,7 +244,7 @@ func reset_turn_results() -> void:
 		_segment_turn_gold[i] = 0
 		_segment_turn_triggers[i] = 0
 		_segment_resolved[i] = false
-		_segment_breaks[i] = 0
+		_segment_destroys[i] = 0
 
 
 # Adds Flavour produced by a card on the given segment index.
@@ -344,16 +344,16 @@ func is_segment_resolved(segment_index: int) -> bool:
 	return _segment_resolved[segment_index]
 
 
-func add_segment_break(segment_index: int) -> void:
-	if segment_index < 0 or segment_index >= _segment_breaks.size():
+func add_segment_destroy(segment_index: int) -> void:
+	if segment_index < 0 or segment_index >= _segment_destroys.size():
 		return
-	_segment_breaks[segment_index] += 1
+	_segment_destroys[segment_index] += 1
 
 
-func get_segment_breaks(segment_index: int) -> int:
-	if segment_index < 0 or segment_index >= _segment_breaks.size():
+func get_segment_destroys(segment_index: int) -> int:
+	if segment_index < 0 or segment_index >= _segment_destroys.size():
 		return 0
-	return _segment_breaks[segment_index]
+	return _segment_destroys[segment_index]
 
 
 func capture_turn_results() -> Dictionary:

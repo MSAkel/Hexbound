@@ -4,13 +4,15 @@ extends Control
 # Emitted in MERCHANT and CHOICE modes when the player clicks an actionable card.
 signal action_requested(card_ui: CardUI)
 signal gold_purchase_requested(card_ui: CardUI)
+signal lock_toggle_requested(card_ui: CardUI, locked: bool)
 
 # Printed side of the card. This script only positions it and forwards state to it.
 @onready var card_face: CardFace = $CardFace
 
 # Merchant chrome lives in the scene and is shown only in shop interaction modes.
 @onready var _price_chip_row: VBoxContainer = $MerchantPriceRow
-@onready var _price_chip_label: Label = $MerchantPriceRow/PriceCenter/PriceChip/PriceChipLabel
+@onready var _price_chip_label: Label = $MerchantPriceRow/PriceCenter/PriceChip/PriceChipRow/PriceChipLabel
+@onready var _price_chip_lock_icon: TextureRect = $MerchantPriceRow/PriceCenter/PriceChip/PriceChipRow/LockIcon
 @onready var _purchase_tray: MerchantPurchaseTray = $MerchantPurchaseTray
 
 enum InteractionMode {
@@ -107,6 +109,7 @@ var _fade_tween: Tween
 var _hand_spread_x := 0.0
 var _hand_spread_rotation := 0.0
 var _is_sold := false
+var _merchant_locked := false
 var _discount := 0.0
 var _merchant_selected := false
 ## True while the card is hidden in its hand slot and its ghost is aimed at the board.
@@ -276,6 +279,10 @@ func _card_frame_bottom_y() -> float:
 
 func _on_gold_purchase_pressed() -> void:
 	gold_purchase_requested.emit(self)
+
+
+func _on_lock_toggled(locked: bool) -> void:
+	lock_toggle_requested.emit(self, locked)
 
 
 func _get_hover_elevation_offset() -> float:
@@ -677,8 +684,20 @@ func is_sold() -> bool:
 	return _is_sold
 
 
+func is_merchant_locked() -> bool:
+	return _merchant_locked
+
+
+## Locked shelf cards survive rerolls and stay stocked into the next day.
+func set_merchant_locked(locked: bool) -> void:
+	_merchant_locked = locked
+	_price_chip_lock_icon.visible = locked
+	_purchase_tray.set_locked(locked)
+
+
 func mark_sold() -> void:
 	_is_sold = true
+	set_merchant_locked(false)
 	card_face.set_sold(true)
 	hide_selection_glow()
 	set_hover_elevated(false, false)
@@ -763,7 +782,7 @@ func set_merchant_selected(selected: bool) -> void:
 
 
 ## Move focus onto the buy row after this shelf card is selected.
-## False when the tray is hidden or every buy option is unaffordable.
+## False when the tray is hidden.
 func focus_purchase_tray() -> bool:
 	if not _purchase_tray.visible:
 		return false

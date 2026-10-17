@@ -34,6 +34,8 @@ const DEFAULT_CARD_WIDTH := 214.0
 var _awaiting_intro := true
 ## True while the hand is slid below the viewport (intro or turn resolution).
 var _hand_hidden := true
+## True while a hidden hand is slid up for a look from a between-turn panel. Cards stay unplayable.
+var _peeking := false
 var _hand_slide_tween: Tween = null
 ## Theme separation before overlap packing is applied.
 var _base_separation := 0
@@ -488,6 +490,7 @@ func _will_have_playable_hand_after_card_removed() -> bool:
 func _hide_hand() -> void:
 	_reset_placement_sibling_slide_state()
 	_hand_hidden = true
+	_peeking = false
 	_generated_reveal.interrupt()
 	_animate_hand_slide(true)
 
@@ -499,6 +502,7 @@ func _show_hand() -> void:
 	# cards_played only counts plays in the current turn.
 	cards_played = 0
 	_hand_hidden = false
+	_peeking = false
 	_siblings_hidden_for_placement = false
 	_animate_hand_slide(false)
 	if _hand_slide_tween != null and _hand_slide_tween.is_valid():
@@ -513,6 +517,15 @@ func is_awaiting_intro() -> bool:
 
 func is_hand_hidden() -> bool:
 	return _hand_hidden
+
+
+## Slides the hidden hand up so card pick and merchant board views can show it.
+## View only: the hand still counts as hidden, so cards can't be hovered, dragged or played.
+func set_peek(active: bool) -> void:
+	if _awaiting_intro or not _hand_hidden or _peeking == active:
+		return
+	_peeking = active
+	_animate_hand_slide(not active, false)
 
 
 func get_card_rest_offset() -> Vector2:
@@ -626,7 +639,7 @@ func _animate_siblings_slide(exclude_card: CardUI, should_hide: bool) -> void:
 		_sibling_slide_tween.finished.connect(_restore_card_interaction)
 
 
-func _animate_hand_slide(should_hide: bool) -> void:
+func _animate_hand_slide(should_hide: bool, restore_interaction: bool = true) -> void:
 	_kill_sibling_slide_tween()
 	_kill_hand_slide_tween()
 	_featured_card = null
@@ -653,7 +666,7 @@ func _animate_hand_slide(should_hide: bool) -> void:
 			card, "slot_offset", Vector2(0.0, target_y), HAND_SLIDE_DURATION
 		)
 
-	if not should_hide:
+	if not should_hide and restore_interaction:
 		_hand_slide_tween.finished.connect(_restore_card_interaction)
 
 

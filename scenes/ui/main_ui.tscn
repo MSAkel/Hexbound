@@ -44,9 +44,11 @@ rotation = 0.0016232448
 
 [node name="CardSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
+z_index = 60
 
 [node name="StationUpgradeChoice" parent="." unique_id=1256361101 instance=ExtResource("25_station_choice")]
 visible = false
+z_index = 60
 
 [node name="TerrainTileUI" parent="." unique_id=289089864 instance=ExtResource("2_l8t6x")]
 visible = false
@@ -66,6 +68,7 @@ z_index = 90
 
 [node name="Merchant" parent="." unique_id=613414351 instance=ExtResource("10_b65ll")]
 visible = false
+z_index = 60
 rotation = -0.00022035485
 
 [node name="StaffRail" parent="." unique_id=511277284 instance=ExtResource("24_staff_rail")]

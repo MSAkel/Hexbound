@@ -6,6 +6,7 @@ extends Control
 
 signal selected(item: CondimentShopItem)
 signal gold_purchase_requested(item: CondimentShopItem)
+signal lock_toggle_requested(item: CondimentShopItem, locked: bool)
 
 const SIZE := Vector2(108, 136)
 const MERCHANT_TRAY_HEIGHT := 44.0
@@ -15,6 +16,7 @@ const MERCHANT_TRAY_GAP := 10.0
 @export var well_selected_style: StyleBoxFlat
 
 @onready var _price_label: Label = %PriceLabel
+@onready var _lock_icon: TextureRect = %LockIcon
 @onready var _well: PanelContainer = %Well
 @onready var _icon: TextureRect = %Icon
 @onready var _tray_gap: Control = %TrayGap
@@ -23,6 +25,7 @@ const MERCHANT_TRAY_GAP := 10.0
 var condiment: Condiment
 var price: int = 0
 var _sold := false
+var _locked := false
 var _chosen := false
 
 
@@ -51,8 +54,20 @@ func is_sold() -> bool:
 	return _sold
 
 
+func is_merchant_locked() -> bool:
+	return _locked
+
+
+## Locked bottles survive rerolls and stay stocked into the next day.
+func set_merchant_locked(locked: bool) -> void:
+	_locked = locked
+	_lock_icon.visible = locked
+	_purchase_tray.set_locked(locked)
+
+
 func mark_sold() -> void:
 	_sold = true
+	set_merchant_locked(false)
 	_chosen = false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	modulate = Color(1, 1, 1, 0.0)
@@ -80,7 +95,7 @@ func set_merchant_selected(active: bool) -> void:
 
 
 ## Move focus onto the buy row after this bottle is selected.
-## False when the tray is hidden or every buy option is unaffordable.
+## False when the tray is hidden.
 func focus_purchase_tray() -> bool:
 	if not _purchase_tray.visible:
 		return false
@@ -108,6 +123,10 @@ func refresh_affordability() -> void:
 
 func _on_gold_purchase_pressed() -> void:
 	gold_purchase_requested.emit(self)
+
+
+func _on_lock_toggled(locked: bool) -> void:
+	lock_toggle_requested.emit(self, locked)
 
 
 func _refresh() -> void:

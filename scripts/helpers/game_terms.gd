@@ -28,11 +28,10 @@ const MEAL := "Meal"
 const DISH := "Dish"
 const PASS := "Pass"
 const MEAL_SLOT := "Meal Slot"
-const LIQUEFY := "Liquefy"
 const HYBRID := "Hybrid"
 const GARNISH := "Garnish"
 const FOLLOWING := "Following"
-const SPOIL := "Spoil"
+const DESTROY := "Destroy"
 const TRIGGER := "Trigger"
 
 

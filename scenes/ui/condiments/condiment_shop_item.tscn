@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cmph57pfgwcqe" path="res://scenes/ui/condiments/condiment_shop_item.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dwveidib2jxhc" path="res://scenes/ui/merchant/merchant_purchase_tray.tscn" id="2_tray"]
+[ext_resource type="Texture2D" uid="uid://ciex4tt5xt0ji" path="res://assets/icons/others/lock.svg" id="3_lock"]
 
 [sub_resource type="StyleBoxFlat" id="PriceChip"]
 content_margin_left = 12.0
@@ -84,7 +85,24 @@ size_flags_horizontal = 4
 mouse_filter = 2
 theme_override_styles/panel = SubResource("PriceChip")
 
-[node name="PriceLabel" type="Label" parent="Column/PriceChip"]
+[node name="PriceChipRow" type="HBoxContainer" parent="Column/PriceChip"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="LockIcon" type="TextureRect" parent="Column/PriceChip/PriceChipRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_lock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PriceLabel" type="Label" parent="Column/PriceChip/PriceChipRow"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
@@ -122,3 +140,4 @@ layout_mode = 2
 mouse_filter = 2
 
 [connection signal="gold_purchase_pressed" from="Column/PurchaseTray" to="." method="_on_gold_purchase_pressed"]
+[connection signal="lock_toggled" from="Column/PurchaseTray" to="." method="_on_lock_toggled"]

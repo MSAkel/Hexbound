@@ -5,7 +5,7 @@ extends Resource
 const CLICK = preload("res://assets/audio/ui/click.mp3")
 const SELECT = preload("res://assets/audio/ui/select.mp3")
 const END_TURN = preload("res://assets/audio/sfx/call_bell.mp3")
-const SPOIL_BREAK = preload("res://assets/audio/sfx/rune_break.mp3")
+const DESTROY = preload("res://assets/audio/sfx/rune_break.mp3")
 const GROUND_IMPACT = preload("res://assets/audio/sfx/ground_impact.mp3")
 const GOLD_GAINED = preload("res://assets/audio/sfx/gold_gained.mp3")
 const GAME_OVER = preload("res://assets/audio/sfx/game_over.mp3")
@@ -19,7 +19,7 @@ const STATION_RESULT = preload("uid://dpmtpk2jh6urk")
 ## Station feedback reuses existing cues until dedicated sounds exist.
 const STATION_TYPE_GAINED = CARD_REVEAL
 const STATION_LEVEL_UP = MERCHANT_BELL
-const MEAL_SLOT_UNLOCKED = SPOIL_BREAK
+const MEAL_SLOT_UNLOCKED = DESTROY
 const CONDIMENT_HOVER_A = preload("res://assets/audio/sfx/condiments/condiment_hover_a.mp3")
 const CONDIMENT_HOVER_B = preload("res://assets/audio/sfx/condiments/condiment_hover_b.mp3")
 const CONDIMENT_GRAB = preload("res://assets/audio/sfx/condiments/condiment_grab.mp3")

@@ -11,7 +11,7 @@ var total_fires: int = 0
 var fires_by_kind: Dictionary = {}
 var fires_by_type: Dictionary = {}
 var dishes_plated: int = 0
-var cards_consumed: int = 0
+var cards_destroyed: int = 0
 var condiments_used: int = 0
 var retriggers_this_hour: int = 0
 var retriggers_this_run: int = 0
@@ -27,7 +27,7 @@ func reset_for_new_run() -> void:
 	fires_by_kind.clear()
 	fires_by_type.clear()
 	dishes_plated = 0
-	cards_consumed = 0
+	cards_destroyed = 0
 	condiments_used = 0
 	retriggers_this_run = 0
 	permanent_growth_this_run = 0.0
@@ -40,7 +40,7 @@ func capture_run_state() -> Dictionary:
 		"fires_by_kind": fires_by_kind.duplicate(),
 		"fires_by_type": fires_by_type.duplicate(),
 		"dishes_plated": dishes_plated,
-		"cards_consumed": cards_consumed,
+		"cards_destroyed": cards_destroyed,
 		"condiments_used": condiments_used,
 		"retriggers_this_hour": retriggers_this_hour,
 		"retriggers_this_run": retriggers_this_run,
@@ -53,7 +53,7 @@ func apply_run_state(state: Dictionary) -> void:
 	fires_by_kind = _string_int_dict(state.get("fires_by_kind", {}))
 	fires_by_type = _string_int_dict(state.get("fires_by_type", {}))
 	dishes_plated = int(state.get("dishes_plated", 0))
-	cards_consumed = int(state.get("cards_consumed", 0))
+	cards_destroyed = int(state.get("cards_destroyed", 0))
 	condiments_used = int(state.get("condiments_used", 0))
 	retriggers_this_hour = int(state.get("retriggers_this_hour", 0))
 	retriggers_this_run = int(state.get("retriggers_this_run", 0))
@@ -78,10 +78,10 @@ func record_dish_plated() -> void:
 	dishes_plated += 1
 
 
-func record_card_consumed(card: TileCard) -> void:
+func record_card_destroyed(card: TileCard) -> void:
 	if card == null:
 		return
-	cards_consumed += 1
+	cards_destroyed += 1
 
 
 func record_condiment_used() -> void:

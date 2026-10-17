@@ -272,7 +272,17 @@ func is_mid_use() -> bool:
 	return _consuming or targeting_slot >= 0
 
 
-func try_prevent_break(card: TileCard) -> bool:
+## True when a Ward fuse would stop the next Destroy on card. Does not use it up.
+func is_warded(card: TileCard) -> bool:
+	if card == null:
+		return false
+	for fuse in card.condiment_fuses:
+		if int(fuse.get("effect_type", -1)) == Condiment.EffectType.WARD 				and int(fuse.get("remaining_activations", 0)) > 0:
+			return true
+	return false
+
+
+func try_prevent_destroy(card: TileCard) -> bool:
 	if card == null:
 		return false
 	var fuse := _take_activation_fuse(card, Condiment.EffectType.WARD)
