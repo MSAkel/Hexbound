@@ -129,10 +129,10 @@ func _apply_type_label(card: Card) -> void:
 
 func _apply_description(card: Card) -> void:
 	# Keywords such as Flavour, Mult, and Rating are colored in CardKeywordGlossary.
-	_description.text = CardKeywordGlossary.to_bbcode(card.description)
+	_description.text = CardKeywordGlossary.to_bbcode(card.get_description_text())
 	_description.add_theme_font_size_override(
 		"normal_font_size",
-		_fitted_description_font_size(CardKeywordGlossary.to_plain(card.description))
+		_fitted_description_font_size(CardKeywordGlossary.to_plain(card.get_description_text()))
 	)
 
 

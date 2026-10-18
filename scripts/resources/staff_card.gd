@@ -11,6 +11,9 @@ const BASE_PRICE_BY_RARITY := {
 	Rarity.RARE: 12,
 }
 
+## Run-long counters for staff that grow. Saved with the slot. Not exported, so a fresh seat starts empty.
+var run_state: Dictionary = {}
+
 
 func get_card_kind_label() -> String:
 	return "Staff"
@@ -18,6 +21,31 @@ func get_card_kind_label() -> String:
 
 func get_save_kind() -> String:
 	return "staff_card"
+
+
+## Scaling staff append their current total to the authored description.
+func get_description_text() -> String:
+	var progress := get_progress_text()
+	if progress.is_empty():
+		return description
+	return "%s (Currently %s)" % [description, progress]
+
+
+## Current total for staff that grow over the run. Empty for staff that do not.
+func get_progress_text() -> String:
+	return ""
+
+
+## Run-long counter added by StaffContext.grow.
+func run_total(key: String) -> float:
+	return float(run_state.get(key, 0.0))
+
+
+## "+1" for whole totals, "+1.5" otherwise.
+static func format_total(value: float) -> String:
+	if is_equal_approx(value, roundf(value)):
+		return "+%d" % roundi(value)
+	return "+%.1f" % value
 
 
 func get_base_price() -> int:
@@ -51,6 +79,11 @@ func on_station_started(_ctx: StaffContext) -> void:
 	pass
 
 
+## After the last spot of this staff member's station fires, queued retriggers included.
+func on_station_finished(_ctx: StaffContext) -> void:
+	pass
+
+
 ## After any spot card fires. card is the occupant of tile.
 func on_card_activated(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> void:
 	pass
@@ -74,6 +107,26 @@ func extra_garnish_applications(
 	_target: TileCard
 ) -> int:
 	return 0
+
+
+## Garnish stacks this card keeps when the Hour ends instead of clearing.
+func garnish_kept_after_hour(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> int:
+	return 0
+
+
+## A seated card is about to be destroyed. tile is still its spot.
+func on_card_destroyed(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> void:
+	pass
+
+
+## A Meal was just served. tile is its spot.
+func on_meal_served(_ctx: StaffContext, _tile: Hex, _meal: TileCard) -> void:
+	pass
+
+
+## A Condiment was just taken off the belt and used.
+func on_condiment_used(_ctx: StaffContext, _condiment: Condiment) -> void:
+	pass
 
 
 ## Ingredient slots every Dish may leave empty.

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/pickler/pickler.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "pickler"
+name = "Pickler"
+description = "Cards on this Station keep one {garnish} when the Hour ends"
+rarity = 2

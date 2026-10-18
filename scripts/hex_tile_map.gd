@@ -897,6 +897,7 @@ func notify_card_destroyed(tile_card: TileCard) -> void:
 	if hex == null:
 		return
 	_layout.add_segment_destroy(get_segment_index(hex.coordinates))
+	StaffManager.before_card_destroyed(hex, tile_card)
 
 
 ## Number of chef-specific segments on the current map.

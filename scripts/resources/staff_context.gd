@@ -72,6 +72,16 @@ func add_mult(amount: float) -> void:
 	pulse()
 
 
+## Multiplies the running Mult. It folds into the shared pile, so later stations see the boost too.
+func multiply_mult(factor: float) -> void:
+	if map == null or is_equal_approx(factor, 1.0) or is_zero_approx(factor):
+		return
+	map.multiply_turn_multiplicative_mult_for_segment(slot, factor)
+	_float(CountingNumber.format_multiplicative_mult(factor), MULT_COLOR, TileCard.ICON_MULT)
+	_flash_station()
+	pulse()
+
+
 func add_gold(amount: int) -> void:
 	if amount <= 0 or not EventManager.can_gain_gold():
 		return
@@ -80,6 +90,14 @@ func add_gold(amount: int) -> void:
 		AudioManager.play_sfx(UISounds.GOLD_GAINED)
 	_float("+%d" % amount, GOLD_COLOR, TileCard.ICON_GOLD)
 	pulse()
+
+
+## Adds to a run-long counter on the effect. A copy pays the counter out but never grows it.
+func grow(key: String, amount: float, target: Hex = null) -> void:
+	if effect == null or owner != effect:
+		return
+	effect.run_state[key] = float(effect.run_state.get(key, 0.0)) + amount
+	pulse(target)
 
 
 ## Queues extra fires that resolve before the fire order moves on. Returns how many were queued.

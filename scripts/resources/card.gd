@@ -18,6 +18,11 @@ enum Rarity {
 const DEFAULT_PRICE := 2
 
 
+## Description shown on faces and panels. Cards with live counters extend it.
+func get_description_text() -> String:
+	return description
+
+
 # Full placement validity, including tile occupancy and restrictions.
 func can_play_on(_hex: Hex) -> bool:
 	return false

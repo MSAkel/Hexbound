@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/steward/steward.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "steward"
+name = "Steward"
+description = "At the end of the Day, gain 1 Gold for every 5 Gold you have (max 5)"
+rarity = 1

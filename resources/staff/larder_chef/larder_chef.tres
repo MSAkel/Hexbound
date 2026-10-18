@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/larder_chef/larder_chef.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "larder_chef"
+name = "Larder Chef"
+description = "Gains +0.5 {mult} whenever you use a Condiment"
+rarity = 1

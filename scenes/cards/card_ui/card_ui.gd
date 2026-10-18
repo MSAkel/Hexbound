@@ -793,7 +793,7 @@ func _show_keyword_tooltips() -> void:
 	if card == null or _is_sold:
 		return
 	# Always emit a hover claim so an empty keyword list closes the previous card's tips.
-	var entries := CardKeywordGlossary.tooltip_entries(card.description)
+	var entries := CardKeywordGlossary.tooltip_entries(card.get_description_text())
 	EventBus.toggle_keyword_tooltips.emit(true, entries, get_keyword_tooltip_anchor_rect(), self)
 
 

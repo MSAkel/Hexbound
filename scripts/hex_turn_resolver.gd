@@ -68,13 +68,15 @@ func resolve_turn() -> void:
 			await _start_station_staff(segment_index)
 
 		if _should_bypass_primary_trigger_order_activation(tile):
-			_mark_segment_resolved_if_natural_pass_done(tile)
+			if _mark_segment_resolved_if_natural_pass_done(tile):
+				await _finish_station_staff(segment_index)
 			continue
 
 		await _resolve_rune_activation(tile)
 		await _wait_for_station_choices()
 		await _wait_between_tile_activations()
-		_mark_segment_resolved_if_natural_pass_done(tile)
+		if _mark_segment_resolved_if_natural_pass_done(tile):
+			await _finish_station_staff(segment_index)
 
 	if not GameManager.skip_presentation:
 		await _present_hour_score()
@@ -95,6 +97,14 @@ func _wait_for_station_choices() -> void:
 ## The staff member linked to this station acts before its first spot fires.
 func _start_station_staff(segment_index: int) -> void:
 	if not StaffManager.station_started(map, segment_index):
+		return
+	await _wait_for_activation_animation()
+	await _wait_between_tile_activations()
+
+
+## The staff member linked to this station acts once its last spot and retriggers are done.
+func _finish_station_staff(segment_index: int) -> void:
+	if not StaffManager.station_finished(map, segment_index):
 		return
 	await _wait_for_activation_animation()
 	await _wait_between_tile_activations()
@@ -265,10 +275,11 @@ func _should_bypass_primary_trigger_order_activation(tile: Hex) -> bool:
 
 
 ## Close the segment once no later tile in that line still has a primary activation waiting.
-func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> void:
+## Returns true when this call closed it.
+func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> bool:
 	var segment_index := map.get_segment_index(current.coordinates)
 	if segment_index < 0:
-		return
+		return false
 	var seen_current := false
 	for hex: Hex in map.get_hexes_in_segment(segment_index):
 		if hex == current:
@@ -277,8 +288,8 @@ func _mark_segment_resolved_if_natural_pass_done(current: Hex) -> void:
 		if not seen_current:
 			continue
 		if map.is_tile_card_active(hex):
-			return
-	map.mark_segment_resolved(segment_index)
+			return false
+	return map.mark_segment_resolved(segment_index)
 
 
 func _would_activate_tile_card_on_tile(tile: Hex, from_trigger: bool) -> bool:
@@ -539,10 +550,15 @@ func _on_tile_card_garnished(rune: TileCard) -> void:
 	hex.start_garnish_sparks(rune.garnish_stacks)
 
 
+## Staff such as the Pickler can let a card keep some stacks into the next Hour.
 func _clear_hour_garnish() -> void:
 	for tile: Hex in map.get_all_hexes_with_runes():
-		if tile.active_tile_card != null:
-			tile.active_tile_card.clear_garnish()
+		var card := tile.active_tile_card
+		if card == null:
+			continue
+		card.trim_garnish(StaffManager.garnish_kept_after_hour(card))
+		if card.is_garnished:
+			tile.start_garnish_sparks(card.garnish_stacks)
 
 
 func _on_tile_card_garnish_cleared(rune: TileCard) -> void:

@@ -720,6 +720,15 @@ func clear_garnish() -> void:
 	garnish_stacks = 0
 	EventBus.tile_card_garnish_cleared.emit(self)
 
+
+## Hour-end clear that leaves up to keep stacks behind. Unspent Skillet scale still goes.
+func trim_garnish(keep: int) -> void:
+	if keep <= 0 or garnish_stacks <= 0:
+		clear_garnish()
+		return
+	pending_output_scale = 1.0
+	garnish_stacks = mini(garnish_stacks, keep)
+
 ## Scale this seated card lends to another card on its station whenever that card fires.
 ## StationManager multiplies these into the activation scale and the board chip. Grape lifts Beverages.
 func station_output_scale_for(_card: TileCard) -> float:

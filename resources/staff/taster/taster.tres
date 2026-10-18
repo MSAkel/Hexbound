@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/taster/taster.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "taster"
+name = "Taster"
+description = "+15 {flavour} for each different kind of Ingredient on this Station"
+rarity = 0

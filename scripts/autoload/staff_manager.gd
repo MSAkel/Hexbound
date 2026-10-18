@@ -180,6 +180,16 @@ func station_started(map: HexTileMap, segment_index: int) -> bool:
 	return bool(ctx.hour_state.get("_acted", false))
 
 
+## Fire order left a station, retriggers included. Returns true when its staff member did something visible.
+func station_finished(map: HexTileMap, segment_index: int) -> bool:
+	var ctx := _context_for(segment_index, map)
+	if ctx == null:
+		return false
+	ctx.hour_state.erase("_acted")
+	ctx.effect.on_station_finished(ctx)
+	return bool(ctx.hour_state.get("_acted", false))
+
+
 func after_card_activated(tile: Hex, card: TileCard) -> void:
 	if tile == null or card == null:
 		return
@@ -227,6 +237,42 @@ func extra_garnish_applications(source_tile: Hex, source_card: TileCard, target:
 	return extra
 
 
+## Most Garnish stacks any staff member lets this card keep past the end of the Hour.
+func garnish_kept_after_hour(card: TileCard) -> int:
+	var map := _tile_map()
+	if map == null or card == null:
+		return 0
+	var tile := map.get_hex_for_tile_card(card)
+	if tile == null:
+		return 0
+	var kept := 0
+	for ctx: StaffContext in _contexts(map):
+		kept = maxi(kept, ctx.effect.garnish_kept_after_hour(ctx, tile, card))
+	return kept
+
+
+## Called while the card is still seated, so station checks still see it.
+func before_card_destroyed(tile: Hex, card: TileCard) -> void:
+	if tile == null or card == null:
+		return
+	for ctx: StaffContext in _contexts(tile.map):
+		ctx.effect.on_card_destroyed(ctx, tile, card)
+
+
+func after_meal_served(tile: Hex, meal: TileCard) -> void:
+	if tile == null or meal == null:
+		return
+	for ctx: StaffContext in _contexts(tile.map):
+		ctx.effect.on_meal_served(ctx, tile, meal)
+
+
+func after_condiment_used(condiment: Condiment) -> void:
+	if condiment == null:
+		return
+	for ctx: StaffContext in _contexts():
+		ctx.effect.on_condiment_used(ctx, condiment)
+
+
 func dish_ingredient_discount() -> int:
 	var discount := 0
 	for slot in SLOT_COUNT:
@@ -269,20 +315,27 @@ func _reset_hour_state() -> void:
 
 
 func capture_run_state() -> Dictionary:
-	var slot_ids: Array = []
+	var saved_slots: Array = []
 	for staff: StaffCard in slots:
-		slot_ids.append(staff.id if staff != null else "")
-	return {"slots": slot_ids}
+		if staff == null:
+			saved_slots.append({})
+		else:
+			saved_slots.append({"id": staff.id, "state": staff.run_state.duplicate(true)})
+	return {"slots": saved_slots}
 
 
 func apply_run_state(state: Dictionary) -> void:
 	for i in SLOT_COUNT:
 		slots[i] = null
-	var slot_ids: Array = state.get("slots", [])
-	for i in mini(SLOT_COUNT, slot_ids.size()):
-		var template := StaffCatalog.get_by_id(str(slot_ids[i]))
+	var saved_slots: Array = state.get("slots", [])
+	for i in mini(SLOT_COUNT, saved_slots.size()):
+		if not saved_slots[i] is Dictionary:
+			continue
+		var saved: Dictionary = saved_slots[i]
+		var template := StaffCatalog.get_by_id(str(saved.get("id", "")))
 		if template != null:
 			slots[i] = template.duplicate(true)
+			slots[i].run_state = (saved.get("state", {}) as Dictionary).duplicate(true)
 	_reset_hour_state()
 	EventBus.staff_roster_changed.emit()
 

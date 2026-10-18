@@ -194,9 +194,6 @@ func _create_chef_entry(chef: ChefDefinition) -> PanelContainer:
 	speciality_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	speciality_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	details.add_child(speciality_label)
-
-	var station_text := "%d Stations" %HexMapLayout.BOARD_ROW_LENGTHS.size()
-	details.add_child(_create_label(station_text.to_upper(), 14, ACCENT))
 	return panel
 
 
@@ -230,7 +227,7 @@ func _create_event_entry(event_type: EventManager.Type) -> PanelContainer:
 
 
 func _create_station_entry(station_type: StationType) -> PanelContainer:
-	var panel := _create_item_panel(Vector2(500, 300))
+	var panel := _create_item_panel(Vector2(500, 170))
 	var details := VBoxContainer.new()
 	details.add_theme_constant_override("separation", 8)
 	panel.add_child(details)
@@ -254,11 +251,6 @@ func _create_station_entry(station_type: StationType) -> PanelContainer:
 	var requirements := _create_label(_format_station_requirements(station_type), 18, TEXT_PRIMARY)
 	requirements.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_child(requirements)
-
-	if not station_type.choice_options.is_empty():
-		details.add_child(_create_label("LEVEL %d CHOICE" % StationManager.CHOICE_LEVEL, 14, ACCENT))
-		for perk: StationPerk in station_type.choice_options:
-			details.add_child(_create_rich_label("• %s" % CardKeywordGlossary.to_bbcode(perk.description), 17))
 	return panel
 
 
@@ -273,19 +265,6 @@ func _format_station_requirements(station_type: StationType) -> String:
 			label = "different %s" % label
 		parts.append("%d %s" % [count, label])
 	return " · ".join(parts)
-
-
-func _create_rich_label(bbcode: String, font_size: int) -> RichTextLabel:
-	var label := RichTextLabel.new()
-	label.bbcode_enabled = true
-	label.fit_content = true
-	label.scroll_active = false
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.add_theme_font_size_override("normal_font_size", font_size)
-	label.add_theme_color_override("default_color", TEXT_PRIMARY)
-	label.text = bbcode
-	return label
 
 
 func _create_item_panel(minimum_size: Vector2) -> PanelContainer:

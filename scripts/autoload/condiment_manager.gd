@@ -136,6 +136,7 @@ func headless_use_slot(index: int, hex: Hex = null, hex_b: Hex = null) -> bool:
 	else:
 		belt[index] = null
 		_apply_instant(condiment)
+	StaffManager.after_condiment_used(condiment)
 	EventBus.condiment_belt_changed.emit()
 	EventBus.condiment_fuses_changed.emit()
 	return true
@@ -378,6 +379,7 @@ func _consume_instant(index: int) -> void:
 		return
 	belt[index] = null
 	_apply_instant(condiment)
+	StaffManager.after_condiment_used(condiment)
 	EventBus.condiment_belt_changed.emit()
 	_consuming = false
 	RunSaveManager.request_autosave()
@@ -396,6 +398,7 @@ func _consume_targeted(index: int, condiment: Condiment, hex: Hex) -> void:
 		return
 	belt[index] = null
 	_apply_board_effect(condiment, hex)
+	StaffManager.after_condiment_used(condiment)
 	if hex.card_icon_ui != null and condiment.effect_type in _fuse_effect_types():
 		hex.card_icon_ui.play_condiment_splash(condiment.liquid_color)
 	EventBus.condiment_belt_changed.emit()
@@ -417,6 +420,7 @@ func _consume_two_tile(index: int, condiment: Condiment, hex_a: Hex, hex_b: Hex)
 		return
 	belt[index] = null
 	_apply_board_effect(condiment, hex_a, hex_b)
+	StaffManager.after_condiment_used(condiment)
 	EventBus.condiment_belt_changed.emit()
 	EventBus.condiment_fuses_changed.emit()
 	_consuming = false

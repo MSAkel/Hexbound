@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/pot_washer/pot_washer.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "pot_washer"
+name = "Pot Washer"
+description = "Gains +1 {mult} whenever a card on this Station is {destroyed}"
+rarity = 0

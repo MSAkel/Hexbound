@@ -85,6 +85,7 @@ run_card_selection="Card pick overlay used by checkpoints"
 
 theme/default_font_multichannel_signed_distance_field=true
 theme/custom="uid://d4kymlgb3fxc4"
+theme/custom_font="uid://pd08p0wxvy7d"
 
 [input]
 

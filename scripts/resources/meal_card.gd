@@ -78,6 +78,7 @@ func _serve(tile: Hex) -> void:
 	if _missing_ingredient_count(tile) > 0:
 		StaffManager.notify_dish_discount_used(tile)
 	StationManager.record_serving(_get_segment_index(tile))
+	StaffManager.after_meal_served(tile, self)
 
 
 ## Meal Gold goes straight to the total. No float or sound on the Meal itself.
