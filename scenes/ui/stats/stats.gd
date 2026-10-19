@@ -10,6 +10,7 @@ const TEXT_SECONDARY := Color("aeb9b3")
 
 
 func _ready() -> void:
+	add_to_group(InputManager.MENU_GROUP)
 	_populate_lifetime()
 	call_deferred("_focus_stats")
 

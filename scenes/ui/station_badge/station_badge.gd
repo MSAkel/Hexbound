@@ -26,8 +26,8 @@ func setup(map: HexTileMap, index: int) -> void:
 	_map = map
 	segment_index = index
 	_build()
-	mouse_entered.connect(_show_tooltip)
-	mouse_exited.connect(_hide_tooltip)
+	mouse_entered.connect(show_tooltip)
+	mouse_exited.connect(hide_tooltip)
 	EventBus.station_state_changed.connect(_on_station_state_changed)
 	EventBus.station_type_changed.connect(_on_station_type_changed)
 	EventBus.station_leveled_up.connect(_on_station_leveled_up)
@@ -207,12 +207,12 @@ func _float_text(text: String, color: Color) -> void:
 
 #region --- Tooltip ---
 
-func _show_tooltip() -> void:
+func show_tooltip() -> void:
 	var screen_rect := get_global_transform_with_canvas() * Rect2(Vector2.ZERO, size)
 	EventBus.toggle_tooltip.emit(true, get_tooltip_body(), screen_rect)
 
 
-func _hide_tooltip() -> void:
+func hide_tooltip() -> void:
 	EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 

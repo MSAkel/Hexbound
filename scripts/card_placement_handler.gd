@@ -297,6 +297,27 @@ func try_place_from_gamepad() -> void:
 		return
 	_try_place_card()
 
+
+## The controller's Sell button. Sells card, or the picked-up card when card is null.
+func sell_card_from_gamepad(card: CardUI = null) -> bool:
+	if _is_placing:
+		return false
+	var sell_panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
+	if card == null:
+		card = selected_card
+	if sell_panel == null or card == null:
+		return false
+	if selected_card != card:
+		_begin_selection(card, false)
+		_awaiting_pointer_release = false
+		# The cursor is hidden on a controller. Start the ghost on the hand card instead.
+		_kill_ghost_tweens()
+		_rune_preview.global_position = (
+			_control_center_in_world(card) - HexTileMap.HEX_RUNE_SIZE / 2.0
+		)
+	_sell_selected_card(sell_panel)
+	return true
+
 #endregion
 
 #region Dropping

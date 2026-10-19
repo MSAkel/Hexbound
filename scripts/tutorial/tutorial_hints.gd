@@ -98,7 +98,7 @@ static func _static_init() -> void:
 		"Drag a card from your hand onto an empty **spot**, like this one.",
 		Context.HOUR, [&"board_spot", &"hand"], PRIORITY_CHAIN, &"card_played")
 	_add(&"basics_stations", CATEGORY_BASICS, "Stations",
-		"Each row is a **Station**. Its first **6 spots** hold **%ss** and **%s**. The last **2** are **%ss**. Each Hour, cards trigger Station by Station." % [
+		"Each row is a **Station**. Its first **6 spots** hold **%ss** and **%s**. The last **2** are **%ss** for **%ss**. Each Hour, cards trigger Station by Station." % [
 			GameTerms.INGREDIENT, GameTerms.KITCHENWARE, GameTerms.MEAL_SLOT, GameTerms.MEAL,
 		],
 		Context.HOUR, [&"board_station"], PRIORITY_CHAIN)

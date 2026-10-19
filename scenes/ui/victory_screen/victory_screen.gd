@@ -17,6 +17,7 @@ var _entrance_tween: Tween
 func _ready() -> void:
 	card_triggers_label.text = CardKeywordGlossary.to_plain("Card {triggers}")
 	hide()
+	add_to_group(InputManager.MENU_GROUP)
 	EventBus.all_events_completed.connect(_on_all_events_completed)
 
 
@@ -33,6 +34,11 @@ func _on_all_events_completed() -> void:
 	RunHistoryManager.archive_finished_run(true)
 	# Deferred so the entrance tween has claimed the panel before focus lands.
 	call_deferred("_focus_continue")
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_continue()
 
 
 ## Seats keyboard and gamepad focus on Continue Run rather than the Copy Seed button.

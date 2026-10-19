@@ -12,6 +12,7 @@ extends Control
 func _ready() -> void:
 	card_triggers_label.text = CardKeywordGlossary.to_plain("Card {triggers}")
 	add_to_group("run_game_over")
+	add_to_group(InputManager.MENU_GROUP)
 	hide()
 	EventBus.game_ended.connect(_on_game_ended)
 
@@ -30,6 +31,11 @@ func _on_game_ended() -> void:
 	AudioManager.play_sfx(UISounds.GAME_OVER)
 	# Deferred so the panel is laid out and visible before the button takes focus.
 	call_deferred("_focus_main_menu")
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_main_menu()
 
 
 ## Seats keyboard and gamepad focus on Main Menu rather than the Copy Seed button.

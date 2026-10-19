@@ -357,7 +357,8 @@ func _show_message(index: int, text: String) -> void:
 
 #region --- Controller ---
 
-## Focus moves over the staff hexes, plus a Sell target below them while carrying a staff member.
+## Focus moves over the staff hexes. Confirm picks a staff member up, confirm again drops it.
+## The controller's Sell button sells the carried or focused staff member.
 func ensure_controller_focus() -> void:
 	_move_controller_focus_to(maxi(_controller_focus, 0))
 
@@ -370,27 +371,44 @@ func clear_controller_focus() -> void:
 
 
 func move_controller_focus(direction: int) -> void:
-	var next := 0 if _controller_focus < 0 else _controller_focus + direction
-	_move_controller_focus_to(next)
+	_move_controller_focus_to(0 if _controller_focus < 0 else _controller_focus + direction)
+
+
+## False while a full-screen overlay hides the column.
+func is_shown() -> bool:
+	return _shown
 
 
 func is_controller_holding() -> bool:
 	return _controller_held >= 0
 
 
-## Confirm picks a staff member up. Confirm again drops it on the focused hex or sells it.
+## Slot the Sell button acts on: the carried staff member, else the focused one. -1 when empty.
+func get_controller_sell_slot() -> int:
+	var slot := _controller_held if _controller_held >= 0 else _controller_focus
+	return slot if StaffManager.get_staff(slot) != null else -1
+
+
+func get_slot_global_rect(slot: int) -> Rect2:
+	if slot < 0 or slot >= _slots.size():
+		return Rect2()
+	return _slots[slot].get_global_rect()
+
+
 func activate_controller_focus() -> void:
-	if _controller_focus < 0:
+	if _controller_focus < 0 or not _shown:
 		return
 	if _controller_held < 0:
-		if _controller_focus >= _slots.size() or StaffManager.get_staff(_controller_focus) == null:
+		if StaffManager.get_staff(_controller_focus) == null:
 			return
 		if not StaffManager.can_rearrange():
 			_slots[_controller_focus].play_reject()
+			_show_message(_controller_focus, LOCKED_MESSAGE)
 			return
 		_controller_held = _controller_focus
 		AudioManager.play_sfx(UISounds.CONDIMENT_GRAB)
 		EventBus.staff_drag_started.emit(_controller_held)
+		_apply_controller_focus_visual()
 		_announce_controller_focus()
 		return
 
@@ -398,22 +416,41 @@ func activate_controller_focus() -> void:
 	var target := _controller_focus
 	_controller_held = -1
 	EventBus.staff_drag_ended.emit()
-	if target == _sell_index():
-		var sell_panel := _find_sell_panel()
-		if sell_panel != null:
-			sell_panel.sell_staff_from_controller(source)
-		_move_controller_focus_to(source)
-		return
 	if target != source:
 		StaffManager.move_staff(source, target)
+	_apply_controller_focus_visual()
 	_announce_controller_focus()
 
 
-## Back drops the carried staff member where it was. Returns true when there was one to drop.
+## Back puts the carried staff member down where it was. True when there was one to put down.
 func cancel_controller_hold() -> bool:
 	if _controller_held < 0:
 		return false
 	_cancel_controller_hold()
+	_announce_controller_focus()
+	return true
+
+
+## Sells the carried or focused staff member, and flies its ghost into the Sell panel.
+func sell_controller_target() -> bool:
+	var slot := get_controller_sell_slot()
+	var sell_panel := _find_sell_panel()
+	if slot < 0 or sell_panel == null:
+		return false
+	var staff := StaffManager.get_staff(slot)
+	_cancel_controller_hold()
+	if not sell_panel.sell_staff(slot):
+		_slots[slot].play_reject()
+		_show_message(slot, LOCKED_MESSAGE)
+		return false
+	_hide_inspect()
+	_ghost.set_staff(staff)
+	_ghost.modulate = Color.WHITE
+	_ghost.global_position = _slots[slot].global_position
+	_ghost.show()
+	_ghost.play_sell_into(sell_panel.get_global_rect().get_center(), func() -> void:
+		_ghost.hide()
+	)
 	_announce_controller_focus()
 	return true
 
@@ -423,48 +460,40 @@ func _cancel_controller_hold() -> void:
 		return
 	_controller_held = -1
 	EventBus.staff_drag_ended.emit()
+	_apply_controller_focus_visual()
 
 
 func _move_controller_focus_to(index: int) -> void:
-	# The Sell target only exists while a staff member is being carried.
-	var last := _sell_index() if _controller_held >= 0 else _slots.size() - 1
-	_controller_focus = clampi(index, 0, last)
+	if _slots.is_empty():
+		return
+	var previous := _controller_focus
+	_controller_focus = clampi(index, 0, _slots.size() - 1)
 	_apply_controller_focus_visual()
+	if _controller_focus != previous:
+		AudioManager.play_ui_hover()
 	_announce_controller_focus()
 
 
 func _apply_controller_focus_visual() -> void:
 	for i in _slots.size():
 		_slots[i].set_controller_focused(i == _controller_focus)
+		_slots[i].set_lifted(i == _drag_slot or i == _controller_held)
 		_slots[i].set_drop_target(_controller_held >= 0 and i == _controller_focus and i != _controller_held)
 
 
 func _announce_controller_focus() -> void:
 	_hide_inspect()
-	if _controller_focus < 0:
-		EventBus.toggle_tooltip.emit(false, "", Rect2())
-		return
-	AudioManager.play_ui_hover()
-	if _controller_focus == _sell_index():
-		var sell_panel := _find_sell_panel()
-		var held := StaffManager.get_staff(_controller_held)
-		if sell_panel != null and held != null:
-			EventBus.toggle_tooltip.emit(
-				true,
-				"Sell %s for %s" % [held.name, MerchantShopStyling.format_price(held.get_sell_value())],
-				sell_panel.get_global_rect()
-			)
-		return
 	EventBus.toggle_tooltip.emit(false, "", Rect2())
+	if _controller_focus < 0:
+		return
 	if _controller_held < 0:
 		_show_inspect(_controller_focus)
+		return
+	var held := StaffManager.get_staff(_controller_held)
+	if held != null and _controller_focus != _controller_held:
+		_show_message(_controller_focus, "Move %s here" % held.name)
 
 #endregion --- Controller ---
-
-
-## Controller focus index of the Sell target, one past the last hex.
-func _sell_index() -> int:
-	return _slots.size()
 
 
 func _find_sell_panel() -> CardSellPanel:

@@ -7,6 +7,7 @@ signal closed
 @onready var tab_bar: TabBar = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar
 @onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
 @onready var back_button: Button = $PanelContainer/VBoxContainer/BackButton
+@onready var collection_scroll: ScrollContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const EVENT_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
@@ -28,9 +29,18 @@ enum CollectionTab {
 
 
 func _ready() -> void:
+	add_to_group(InputManager.MENU_GROUP)
+	collection_scroll.follow_focus = true
+	PadPrompt.attach(tab_bar, InputManager.ACTION_PAGE_PREV, PadPrompt.Side.LEFT)
+	PadPrompt.attach(tab_bar, InputManager.ACTION_PAGE_NEXT, PadPrompt.Side.RIGHT)
 	_configure_tabs()
 	_show_tab(tab_bar.current_tab)
 	call_deferred("_focus_collection")
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_collection()
 
 
 func _focus_collection() -> void:
@@ -41,11 +51,37 @@ func _focus_collection() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not is_visible_in_tree():
+		return
+	if event.is_action_pressed(InputManager.ACTION_PAGE_PREV):
+		_page_tab(-1)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed(InputManager.ACTION_PAGE_NEXT):
+		_page_tab(1)
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("ui_cancel"):
 		var viewport := get_viewport()
 		if viewport != null:
 			viewport.set_input_as_handled()
 		_on_back_button_pressed()
+
+
+## Steps tabs with wrap-around. Focus inside the old grid moves to the new grid's first entry.
+func _page_tab(step: int) -> void:
+	var focus := get_viewport().gui_get_focus_owner()
+	var focus_in_grid := focus != null and collection_grid_container.is_ancestor_of(focus)
+	tab_bar.current_tab = posmod(tab_bar.current_tab + step, tab_bar.tab_count)
+	AudioManager.play_sfx(UISounds.SELECT)
+	if focus_in_grid:
+		_focus_first_entry.call_deferred()
+
+
+func _focus_first_entry() -> void:
+	collection_scroll.scroll_vertical = 0
+	if MenuFocus.grab_first(collection_grid_container) == null:
+		tab_bar.grab_focus()
 
 
 func _configure_tabs() -> void:
@@ -92,7 +128,8 @@ func _show_card_uis(cards: Array) -> void:
 		if card is not Card:
 			continue
 		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
-		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW)
+		# Focusable so a controller can walk the grid and read each card's keyword tips.
+		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW, {"focusable": true})
 		collection_grid_container.add_child(card_ui)
 		card_ui.set_card(card)
 
@@ -144,6 +181,8 @@ func _create_condiment_entry(condiment: Condiment) -> PanelContainer:
 
 	panel.mouse_entered.connect(_show_condiment_tooltip.bind(panel, condiment))
 	panel.mouse_exited.connect(_hide_tooltip)
+	panel.focus_entered.connect(_show_condiment_tooltip.bind(panel, condiment))
+	panel.focus_exited.connect(_hide_tooltip)
 	return panel
 
 
@@ -258,6 +297,8 @@ func _create_item_panel(minimum_size: Vector2) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = minimum_size
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Entries take focus so a controller can scroll through them.
+	panel.focus_mode = Control.FOCUS_ALL
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = ITEM_BACKGROUND

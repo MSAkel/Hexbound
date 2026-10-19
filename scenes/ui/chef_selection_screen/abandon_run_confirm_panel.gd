@@ -10,6 +10,8 @@ signal cancelled
 
 func _ready() -> void:
 	hide()
+	# Modal: directional focus must not wander to the chef screen behind the panel.
+	MenuFocus.trap_row([cancel_button, confirm_button])
 
 
 func show_panel() -> void:

@@ -112,6 +112,8 @@ var _is_sold := false
 var _merchant_locked := false
 var _discount := 0.0
 var _merchant_selected := false
+## Preview cards normally skip focus. Grids that a controller browses turn it on.
+var _preview_focusable := false
 ## True while the card is hidden in its hand slot and its ghost is aimed at the board.
 var _held_for_placement := false
 # The left button went down on this hand card and has not been released or dragged yet.
@@ -133,6 +135,7 @@ func _ready() -> void:
 func configure_interaction(mode: InteractionMode, options: Dictionary = {}) -> void:
 	interaction_mode = mode
 	_discount = options.get("discount", 0.0)
+	_preview_focusable = options.get("focusable", false)
 
 	if is_node_ready():
 		_apply_interaction_mode()
@@ -187,7 +190,7 @@ func _apply_interaction_mode() -> void:
 	_refresh_focus_mode()
 
 
-## Shop and choice cards are directional-navigation targets.
+## Shop and choice cards are directional-navigation targets, and preview cards when asked.
 ## Hand cards are excluded because Hand runs its own controller focus ring.
 func _supports_focus() -> bool:
 	if _is_sold:
@@ -195,6 +198,8 @@ func _supports_focus() -> bool:
 	match interaction_mode:
 		InteractionMode.MERCHANT, InteractionMode.MERCHANT_STOCK, InteractionMode.CHOICE:
 			return true
+		InteractionMode.PREVIEW:
+			return _preview_focusable
 		_:
 			return false
 
@@ -202,6 +207,8 @@ func _supports_focus() -> bool:
 func _refresh_focus_mode() -> void:
 	var wants_focus := _supports_focus()
 	focus_mode = Control.FOCUS_ALL if wants_focus else Control.FOCUS_NONE
+	# Shop and choice cards lift when focused. Preview cards stay still, so they get the focus ring.
+	set_meta(InputManager.OWN_FOCUS_VISUAL_META, interaction_mode != InteractionMode.PREVIEW)
 	if not wants_focus and has_focus():
 		release_focus()
 
@@ -814,13 +821,16 @@ func get_keyword_tooltip_anchor_rect() -> Rect2:
 
 func _visual_global_rect_for(pose_offset: Vector2, pose_scale: Vector2) -> Rect2:
 	var pivot := size * offset_transform_pivot_ratio
+	# Global transform carries the card's own scale, e.g. the 1.45x choice cards.
+	var xform := get_global_transform()
 	var min_p := Vector2(INF, INF)
 	var max_p := Vector2(-INF, -INF)
 	for corner in [Vector2.ZERO, Vector2(size.x, 0.0), Vector2(0.0, size.y), size]:
 		var local : Vector2 = pivot + (corner - pivot) * pose_scale + pose_offset
-		min_p = min_p.min(local)
-		max_p = max_p.max(local)
-	return Rect2(global_position + min_p, max_p - min_p)
+		var global : Vector2 = xform * local
+		min_p = min_p.min(global)
+		max_p = max_p.max(global)
+	return Rect2(min_p, max_p - min_p)
 
 
 func _hide_keyword_tooltips() -> void:

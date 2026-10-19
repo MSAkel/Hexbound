@@ -18,12 +18,15 @@ var _detail_body: RichTextLabel
 var _count_label: Label
 var _close_button: Button
 var _selected_id: StringName = &""
+## Row button per hint id from the last rebuild, so focus can follow the selection.
+var _row_buttons: Dictionary = {}
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_build_ui()
+	add_to_group(InputManager.MENU_GROUP)
 	visibility_changed.connect(_on_visibility_changed)
 	TutorialManager.progress_changed.connect(_on_progress_changed)
 
@@ -33,6 +36,15 @@ func _on_visibility_changed() -> void:
 		return
 	_rebuild_list()
 	_close_button.grab_focus.call_deferred()
+
+
+## InputManager menu hook. The selected row, else Close.
+func focus_default() -> void:
+	var row: Button = _row_buttons.get(_selected_id)
+	if row != null and is_instance_valid(row):
+		row.grab_focus()
+	else:
+		_close_button.grab_focus()
 
 
 func _on_progress_changed() -> void:
@@ -52,6 +64,10 @@ func _on_close_pressed() -> void:
 
 
 func _rebuild_list() -> void:
+	# Rebuilding frees the focused row. Put focus back on the same hint afterwards.
+	var focus := get_viewport().gui_get_focus_owner()
+	var refocus := focus != null and _list.is_ancestor_of(focus)
+	_row_buttons.clear()
 	for child in _list.get_children():
 		_list.remove_child(child)
 		child.queue_free()
@@ -85,7 +101,9 @@ func _rebuild_list() -> void:
 				button.add_theme_color_override("font_color", MUTED_COLOR)
 			button.pressed.connect(_select.bind(id))
 			button.mouse_entered.connect(AudioManager.play_ui_hover)
+			button.focus_entered.connect(AudioManager.play_ui_hover)
 			_list.add_child(button)
+			_row_buttons[id] = button
 	_count_label.text = "%d / %d found" % [seen_count, total]
 	if _selected_id == &"" or not TutorialHints.has(_selected_id):
 		_selected_id = first_seen
@@ -93,6 +111,8 @@ func _rebuild_list() -> void:
 			# Recolour the newly selected row.
 			_rebuild_list.call_deferred()
 	_show_detail(_selected_id)
+	if refocus:
+		focus_default()
 
 
 func _select(id: StringName) -> void:
@@ -164,6 +184,7 @@ func _build_ui() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(340, 0)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
 	body.add_child(scroll)
 	_list = VBoxContainer.new()
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL

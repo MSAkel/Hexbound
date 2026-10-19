@@ -22,6 +22,9 @@ const LAYOUT_NAV_COOLDOWN := 0.2
 
 func _ready() -> void:
 	get_tree().paused = false
+	add_to_group(InputManager.MENU_GROUP)
+	PadPrompt.attach(prev_selection_button, InputManager.ACTION_PAGE_PREV)
+	PadPrompt.attach(next_selection_button, InputManager.ACTION_PAGE_NEXT)
 
 	selections = ChefRegistry.get_all_chefs()
 
@@ -45,6 +48,14 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_layout_nav_cooldown = maxf(_layout_nav_cooldown - delta, 0.0)
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	if abandon_run_confirm_panel.visible:
+		abandon_run_confirm_panel.cancel_button.grab_focus()
+		return
+	_focus_chef_selection()
 
 
 func _focus_chef_selection() -> void:
@@ -131,6 +142,15 @@ func _on_back_button_pressed() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not abandon_run_confirm_panel.visible:
+		if event.is_action_pressed(InputManager.ACTION_PAGE_PREV):
+			_step_layout(-1)
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed(InputManager.ACTION_PAGE_NEXT):
+			_step_layout(1)
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("ui_cancel"):
 		var viewport := get_viewport()
 		if viewport != null:

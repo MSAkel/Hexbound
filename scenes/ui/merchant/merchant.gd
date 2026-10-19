@@ -36,6 +36,7 @@ var _locked_condiments: Dictionary = {}
 
 func _ready() -> void:
 	add_to_group("run_merchant")
+	add_to_group(InputManager.MENU_GROUP)
 	hide()
 	reroll_button.pressed.connect(_on_reroll_button_pressed)
 	leave_button.pressed.connect(_on_leave_button_pressed)
@@ -50,6 +51,8 @@ func _ready() -> void:
 	UiManager.show_merchant_panel.connect(open)
 	# Picking up a controller mid-shop should place a focus ring without a re-open.
 	InputManager.input_mode_changed.connect(_on_input_mode_changed)
+	PadPrompt.attach(_show_board_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
+	PadPrompt.attach(_show_merchant_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
 	_update_currency_display()
 	_update_reroll_button()
 	_clear_selection()
@@ -93,12 +96,16 @@ func open() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not visible or not _content_panel.visible:
+	if not visible or get_viewport().is_input_handled():
 		return
-	if get_viewport().is_input_handled():
+	if event.is_action_pressed(InputManager.ACTION_ALT):
+		set_board_view(_content_panel.visible)
+		get_viewport().set_input_as_handled()
+		return
+	if not _content_panel.visible:
 		return
 	# Back on a selected item drops the buy tray and returns focus to the shelf.
-	if _has_selection() and InputManager.is_back_pressed(event):
+	if _has_selection() and event.is_action_pressed(&"ui_cancel"):
 		_clear_selection()
 		_queue_focus()
 		get_viewport().set_input_as_handled()
@@ -115,6 +122,27 @@ func _on_input_mode_changed(using_gamepad: bool) -> void:
 		_queue_focus()
 
 
+## InputManager menu hook. The board view hands input to the in-run controller.
+func is_gamepad_menu_active() -> bool:
+	return _content_panel.visible
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_merchant()
+
+
+func is_board_view_active() -> bool:
+	return visible and not _content_panel.visible
+
+
+func set_board_view(active: bool) -> void:
+	if not visible or active == is_board_view_active():
+		return
+	AudioManager.play_sfx(UISounds.CLICK)
+	_set_board_view(active)
+
+
 func _has_selection() -> bool:
 	return _selected_card_ui != null or _selected_condiment_ui != null
 
@@ -129,7 +157,8 @@ func _focus_merchant() -> void:
 	if not visible or not InputManager.is_using_gamepad():
 		return
 	if not _content_panel.visible:
-		_show_merchant_button.grab_focus()
+		# The board view belongs to the in-run controller. A focused button would eat its presses.
+		get_viewport().gui_release_focus()
 		return
 	if _selected_card_ui != null and _selected_card_ui.focus_purchase_tray():
 		return

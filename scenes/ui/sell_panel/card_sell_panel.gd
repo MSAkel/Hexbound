@@ -75,8 +75,16 @@ func _on_condiment_drag_ended() -> void:
 
 ## Used by CondimentBelt when the player releases a dragged condiment. True when it was sold.
 func try_sell_condiment(slot: int) -> bool:
-	if not is_cursor_over():
-		return false
+	return is_cursor_over() and sell_condiment(slot)
+
+
+## Used by StaffRail when the player releases a dragged staff member. True when it was sold.
+func try_sell_staff(slot: int) -> bool:
+	return is_cursor_over() and sell_staff(slot)
+
+
+## Sells without a pointer check. The controller's Sell button uses this.
+func sell_condiment(slot: int) -> bool:
 	if CondimentManager.sell_slot(slot) < 0:
 		return false
 	AudioManager.play_sfx(UISounds.GOLD_GAINED)
@@ -84,18 +92,8 @@ func try_sell_condiment(slot: int) -> bool:
 	return true
 
 
-## Used by StaffRail when the player releases a dragged staff member. True when it was sold.
-func try_sell_staff(slot: int) -> bool:
-	if not is_cursor_over():
-		return false
-	if StaffManager.sell_staff(slot) < 0:
-		return false
-	AudioManager.play_sfx(UISounds.GOLD_GAINED)
-	return true
-
-
-## Sells without a pointer check. Controller players pick Sell as a drop target instead.
-func sell_staff_from_controller(slot: int) -> bool:
+## Sells without a pointer check. The controller's Sell button uses this.
+func sell_staff(slot: int) -> bool:
 	if StaffManager.sell_staff(slot) < 0:
 		return false
 	AudioManager.play_sfx(UISounds.GOLD_GAINED)

@@ -29,6 +29,9 @@ func _ready() -> void:
 	sfx_volume_slider.value = AudioManager.sfx_volume
 	_populate_resolution_options()
 	_sync_settings_controls()
+	add_to_group(InputManager.MENU_GROUP)
+	# Keeps the focused row on screen while a controller walks down the list.
+	($VBoxContainer/ScrollContainer as ScrollContainer).follow_focus = true
 	visibility_changed.connect(_on_visibility_changed)
 	
 	# Connect slider signals
@@ -41,6 +44,11 @@ func _on_visibility_changed() -> void:
 	if visible:
 		_sync_settings_controls()
 		call_deferred("_focus_settings")
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_settings()
 
 
 func _focus_settings() -> void:

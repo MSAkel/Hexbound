@@ -18,6 +18,21 @@ static func grab_named(root: Node, node_name: String) -> Control:
 	return grab_first(root)
 
 
+## Links a left-to-right row of controls so directional focus stays inside it.
+## For modal panels, where Godot would otherwise let focus wander to controls behind them.
+static func trap_row(row: Array[Control]) -> void:
+	for i in row.size():
+		var control := row[i]
+		var left := row[maxi(i - 1, 0)]
+		var right := row[mini(i + 1, row.size() - 1)]
+		control.focus_neighbor_left = control.get_path_to(left)
+		control.focus_neighbor_right = control.get_path_to(right)
+		control.focus_neighbor_top = control.get_path_to(control)
+		control.focus_neighbor_bottom = control.get_path_to(control)
+		control.focus_previous = control.get_path_to(left)
+		control.focus_next = control.get_path_to(right)
+
+
 static func _find_first(node: Node) -> Control:
 	if node is Control:
 		var control := node as Control

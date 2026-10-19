@@ -219,6 +219,27 @@ func activate_controller_focused_slot() -> void:
 	CondimentManager.request_use_slot(_controller_focus_index)
 
 
+func get_controller_focus_index() -> int:
+	return _controller_focus_index
+
+
+func get_slot_global_rect(index: int) -> Rect2:
+	if index < 0 or index >= _slots.size():
+		return Rect2()
+	return _slots[index].get_global_rect()
+
+
+## The controller's Sell button. True when the focused condiment was sold.
+func sell_controller_focused_slot() -> bool:
+	if _controller_focus_index < 0 or _controller_focus_index >= _slots.size():
+		return false
+	var sell_panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
+	if sell_panel == null or not sell_panel.sell_condiment(_controller_focus_index):
+		return false
+	_announce_controller_slot(_slots[_controller_focus_index])
+	return true
+
+
 func _move_controller_focus_to(index: int) -> void:
 	if _slots.is_empty():
 		return

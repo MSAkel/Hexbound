@@ -29,6 +29,7 @@ func _ready() -> void:
 	if not collection_screen.closed.is_connected(_on_collection_closed):
 		collection_screen.closed.connect(_on_collection_closed)
 	tips_archive.closed.connect(_on_tips_closed)
+	add_to_group(InputManager.MENU_GROUP)
 
 
 func _on_continue_pressed() -> void:
@@ -94,6 +95,16 @@ func _open_pause_menu() -> void:
 	pause_menu.show()
 	get_tree().paused = true
 	call_deferred("_focus_pause_menu")
+
+
+## InputManager menu hook. Settings, Collection and Tips are menus of their own while open.
+func is_gamepad_menu_active() -> bool:
+	return panel.visible
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_pause_menu()
 
 
 func _focus_pause_menu() -> void:

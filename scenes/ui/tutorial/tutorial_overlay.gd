@@ -110,6 +110,8 @@ func _ready() -> void:
 	EventBus.station_type_changed.connect(func(segment: int, _type: String) -> void: _last_typed_segment = segment)
 	EventBus.station_leveled_up.connect(func(segment: int, _level: int) -> void: _last_leveled_segment = segment)
 	EventBus.event_banner_shown.connect(func(_name: String, _dock: bool) -> void: _event_banner_animating = true)
+	InputManager.input_mode_changed.connect(_refresh_prompt.unbind(1))
+	InputManager.prompts_changed.connect(_refresh_prompt)
 	EventBus.event_reveal_finished.connect(func() -> void: _event_banner_animating = false)
 	EventBus.event_banner_hidden.connect(func() -> void: _event_banner_animating = false)
 	# Deferred so the board (a later sibling of MainUI) has finished _ready first.
@@ -197,6 +199,11 @@ func show_hint(id: StringName) -> void:
 		_start_button.grab_focus.call_deferred()
 
 
+## True while a click hint holds the screen. The in-run controller stays off meanwhile.
+func is_blocking_input() -> bool:
+	return _active_id != &"" and not _is_action and _root.visible
+
+
 ## Hide the active hint without marking it seen.
 func close_hint() -> void:
 	if _active_id == &"":
@@ -226,6 +233,12 @@ func _input(event: InputEvent) -> void:
 			_continue()
 			get_viewport().set_input_as_handled()
 		return
+	if _button_row.visible and _is_pad_event(event):
+		# The welcome buttons take pad input through GUI focus. Keep focus on them.
+		if not _skip_basics_button.has_focus() and not _start_button.has_focus():
+			_start_button.grab_focus()
+			get_viewport().set_input_as_handled()
+		return
 	if _is_click(event) or (event.is_action_pressed("ui_accept") and not _button_row.visible):
 		if not _button_row.visible:
 			_continue()
@@ -233,9 +246,13 @@ func _input(event: InputEvent) -> void:
 			_on_start_pressed()
 		get_viewport().set_input_as_handled()
 		return
-	# Everything else stays off the board while a click hint is up.
-	if event is InputEventMouseButton or event is InputEventMouseMotion or event is InputEventScreenTouch:
+	# Everything else stays off the board and any open panel while a click hint is up.
+	if event is InputEventMouseButton or event is InputEventMouseMotion or event is InputEventScreenTouch 			or _is_pad_event(event):
 		get_viewport().set_input_as_handled()
+
+
+func _is_pad_event(event: InputEvent) -> bool:
+	return event is InputEventJoypadButton or event is InputEventJoypadMotion
 
 
 func _is_click(event: InputEvent) -> bool:
@@ -598,8 +615,13 @@ func _prompt_text() -> String:
 	if _is_action:
 		return "Do it to continue"
 	if InputManager.is_using_gamepad():
-		return "Press confirm to continue"
+		return "Press %s to continue" % InputManager.get_button_name(&"ui_accept")
 	return "Click to continue"
+
+
+func _refresh_prompt() -> void:
+	if _active_id != &"" and _prompt_label.visible:
+		_prompt_label.text = _prompt_text()
 
 
 func _play_in(was_visible: bool) -> void:
@@ -750,6 +772,7 @@ func _build_ui() -> void:
 	_start_button.custom_minimum_size = Vector2(150, 44)
 	_start_button.pressed.connect(_on_start_pressed)
 	_button_row.add_child(_start_button)
+	MenuFocus.trap_row([_skip_basics_button, _start_button])
 
 	# Prompt text gently pulses so it reads as an instruction, not body copy.
 	var pulse := create_tween().set_loops()

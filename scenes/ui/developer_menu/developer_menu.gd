@@ -16,6 +16,7 @@ var _reset_confirm_dialog: ConfirmationDialog
 
 
 func _ready() -> void:
+	add_to_group(InputManager.MENU_GROUP)
 	_apply_debug_sandbox_buttons()
 
 	var music = SOUNDTRACK.get_music_for_scene(ScenePaths.MAIN_MENU)

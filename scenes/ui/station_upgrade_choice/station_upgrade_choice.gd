@@ -30,6 +30,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build()
 	hide()
+	add_to_group(InputManager.MENU_GROUP)
 	EventBus.station_choice_requested.connect(_on_station_choice_requested)
 	StationManager.choice_resolved.connect(_on_choice_resolved)
 
@@ -79,6 +80,7 @@ func _build() -> void:
 	_board_view_button.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_board_view_button.pressed.connect(func() -> void: _set_board_view(not _board_view))
 	add_child(_board_view_button)
+	PadPrompt.attach(_board_view_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
 
 
 func _on_station_choice_requested(segment_index: int) -> void:
@@ -95,6 +97,7 @@ func _on_station_choice_requested(segment_index: int) -> void:
 		show()
 	move_to_front()
 	_set_board_view(false)
+	focus_default.call_deferred()
 	EventBus.toggle_tooltip.emit(false, "", Rect2())
 	if not GameManager.skip_presentation:
 		AudioManager.play_sfx(UISounds.CARD_REVEAL)
@@ -128,6 +131,7 @@ func _make_option(perk: StationPerk, station_type: StationType, index: int) -> P
 	panel.custom_minimum_size = OPTION_SIZE
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	panel.focus_mode = Control.FOCUS_ALL
 	var style := StyleBoxFlat.new()
 	style.bg_color = OPTION_FILL
 	style.border_color = station_type.color
@@ -166,6 +170,7 @@ func _make_option(perk: StationPerk, station_type: StationType, index: int) -> P
 
 	panel.mouse_entered.connect(_set_focus.bind(index))
 	panel.mouse_exited.connect(_on_option_mouse_exited.bind(index))
+	panel.focus_entered.connect(_set_focus.bind(index))
 	panel.gui_input.connect(_on_option_input.bind(index))
 	return panel
 
@@ -175,28 +180,45 @@ func _on_option_mouse_exited(index: int) -> void:
 		_set_focus(-1)
 
 
+## Options are focusable, so keyboard and controller navigation is Godot's own. Accept picks.
 func _on_option_input(event: InputEvent, index: int) -> void:
 	var mouse_event := event as InputEventMouseButton
-	if mouse_event != null and mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT:
+	var clicked := mouse_event != null and mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT
+	if clicked or event.is_action_pressed(&"ui_accept"):
 		accept_event()
 		_pick(index)
 
 
-## Keyboard and controller: left and right move focus, accept picks the focused option.
-func _unhandled_input(event: InputEvent) -> void:
-	if not visible or _picking or _board_view or _option_panels.is_empty():
+## _input, not _unhandled_input: the in-run controller reads the same button for station info.
+func _input(event: InputEvent) -> void:
+	if not visible or _picking or get_viewport().is_input_handled():
 		return
-	var last := _option_panels.size() - 1
-	# With nothing focused, each direction lands on the option on that side.
-	if event.is_action_pressed("ui_left"):
-		_set_focus(0 if _focus_index < 0 else maxi(_focus_index - 1, 0))
-	elif event.is_action_pressed("ui_right"):
-		_set_focus(last if _focus_index < 0 else mini(_focus_index + 1, last))
-	elif event.is_action_pressed("ui_accept") and _focus_index >= 0:
-		_pick(_focus_index)
-	else:
+	if event.is_action_pressed(InputManager.ACTION_ALT):
+		set_board_view(not _board_view)
+		get_viewport().set_input_as_handled()
+
+
+## InputManager menu hook. The board view hands input to the in-run controller.
+func is_gamepad_menu_active() -> bool:
+	return not _board_view and not _picking
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	if not visible or _board_view or _picking or _option_panels.is_empty():
 		return
-	get_viewport().set_input_as_handled()
+	_option_panels[clampi(_focus_index, 0, _option_panels.size() - 1)].grab_focus()
+
+
+func is_board_view_active() -> bool:
+	return visible and _board_view
+
+
+func set_board_view(active: bool) -> void:
+	if not visible or active == _board_view:
+		return
+	AudioManager.play_sfx(UISounds.CLICK)
+	_set_board_view(active)
 
 
 ## Lifts the focused option and settles the rest. -1 clears focus.
@@ -269,3 +291,9 @@ func _set_board_view(active: bool) -> void:
 	_subtitle.visible = not active
 	_options_row.visible = not active
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if active else Control.MOUSE_FILTER_STOP
+	if active:
+		# The board view belongs to the in-run controller. A focused button would eat its presses.
+		if _board_view_button.has_focus() and InputManager.is_using_gamepad():
+			_board_view_button.release_focus()
+	else:
+		focus_default.call_deferred()

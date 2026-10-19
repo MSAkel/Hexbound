@@ -47,6 +47,8 @@ var _hovered_card: CardUI = null
 var _spread_clear_pending := false
 ## Index of the hand card highlighted by controller navigation.
 var _controller_focus_index := -1
+## Slot to return to when controller focus comes back, such as after a pick-up is cancelled.
+var _last_controller_focus_index := 0
 ## Hand card currently selected for map placement.
 var _placement_focus_card: CardUI = null
 ## True while non-selected siblings are slid off-screen for placement.
@@ -298,10 +300,13 @@ func move_controller_focus(direction: int) -> void:
 		_controller_focus_index = -1
 		_apply_controller_focus_visual()
 		return
+	var previous := _controller_focus_index
 	if _controller_focus_index < 0:
 		_controller_focus_index = 0 if direction >= 0 else cards.size() - 1
 	else:
 		_controller_focus_index = clampi(_controller_focus_index + direction, 0, cards.size() - 1)
+	if _controller_focus_index != previous:
+		AudioManager.play_ui_hover()
 	_apply_controller_focus_visual()
 
 
@@ -312,14 +317,16 @@ func ensure_controller_focus() -> void:
 		_apply_controller_focus_visual()
 		return
 	if _controller_focus_index < 0 or _controller_focus_index >= cards.size():
-		_controller_focus_index = 0
+		_controller_focus_index = clampi(_last_controller_focus_index, 0, cards.size() - 1)
 	_apply_controller_focus_visual()
 
 
 func clear_controller_focus() -> void:
+	if _controller_focus_index >= 0:
+		_last_controller_focus_index = _controller_focus_index
 	_controller_focus_index = -1
 	for card in _get_hand_cards():
-		card.set_hover_elevated(false, true)
+		card.set_hand_hovered(false)
 	# Close the fan now that nothing is focused.
 	_apply_hover_spread(true)
 
@@ -335,8 +342,12 @@ func _apply_controller_focus_visual() -> void:
 	if not InputManager.is_using_gamepad():
 		return
 	var focused := get_controller_focused_card()
+	# Lift and keyword tips follow the focus ring, the same as a mouse hover.
 	for card in _get_hand_cards():
-		card.set_hover_elevated(card == focused, true)
+		if card != focused:
+			card.set_hand_hovered(false)
+	if focused != null:
+		focused.set_hand_hovered(true)
 
 
 func _update_card_overlap() -> void:

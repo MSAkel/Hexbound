@@ -47,8 +47,20 @@ var _wave_amp := CENTER_WAVE_AMP
 func _ready() -> void:
 	hide()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_to_group(InputManager.MENU_GROUP)
 	EventBus.event_banner_shown.connect(_on_event_banner_shown)
 	EventBus.event_banner_hidden.connect(_on_event_banner_hidden)
+
+
+## InputManager menu hook. Gameplay input waits until the banner has docked.
+func is_gamepad_menu_active() -> bool:
+	return _phase == Phase.INTRO or _phase == Phase.DOCKING
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	if _phase == Phase.INTRO:
+		continue_button.grab_focus()
 
 
 func _on_continue_button_pressed() -> void:
@@ -91,6 +103,7 @@ func _play_intro() -> void:
 	_kill_tween()
 	_phase = Phase.INTRO
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	focus_default.call_deferred()
 
 	var intro_in := INTRO_IN_DURATION / GameManager.game_speed
 

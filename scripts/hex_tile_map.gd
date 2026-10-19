@@ -822,6 +822,15 @@ func get_segment_index(coords: Vector2i) -> int:
 	return _layout.get_segment_index(coords)
 
 
+## Shows the station badge tooltip for the station holding coords. False when coords is off the board.
+func show_station_info_at(coords: Vector2i) -> bool:
+	var segment := get_segment_index(coords)
+	if segment < 0 or segment >= _station_badges.size():
+		return false
+	_station_badges[segment].show_tooltip()
+	return true
+
+
 ## True when coords is the first tile in its segment (trigger-order start).
 func is_first_tile_in_segment(coords: Vector2i) -> bool:
 	return _layout.is_first_tile_in_segment(coords)

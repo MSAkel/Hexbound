@@ -32,6 +32,7 @@ var _awaiting_pick := false
 
 func _ready() -> void:
 	add_to_group("run_card_selection")
+	add_to_group(InputManager.MENU_GROUP)
 	hide()
 
 	_show_board_button.pressed.connect(_on_show_board_button_pressed)
@@ -39,6 +40,8 @@ func _ready() -> void:
 	UiManager.show_cards_choice_panel.connect(_on_show_panel)
 	# Picking up a controller mid-offer should place a focus ring without a re-open.
 	InputManager.input_mode_changed.connect(_on_input_mode_changed)
+	PadPrompt.attach(_show_board_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
+	PadPrompt.attach(_show_options_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
 	EventBus.rerolls_changed.connect(_on_rerolls_changed)
 	_update_reroll_button()
 	set_process(false)
@@ -100,6 +103,36 @@ func _set_board_view(active: bool) -> void:
 	_queue_focus()
 
 
+## _input, not _unhandled_input: the in-run controller reads the same button for station info.
+func _input(event: InputEvent) -> void:
+	if not visible or get_viewport().is_input_handled():
+		return
+	if event.is_action_pressed(InputManager.ACTION_ALT):
+		set_board_view(_content_panel.visible)
+		get_viewport().set_input_as_handled()
+
+
+## InputManager menu hook. The board view hands input to the in-run controller.
+func is_gamepad_menu_active() -> bool:
+	return _content_panel.visible
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_card_selection()
+
+
+func is_board_view_active() -> bool:
+	return visible and not _content_panel.visible
+
+
+func set_board_view(active: bool) -> void:
+	if not visible or active == is_board_view_active():
+		return
+	AudioManager.play_sfx(UISounds.CLICK)
+	_set_board_view(active)
+
+
 func _on_input_mode_changed(using_gamepad: bool) -> void:
 	if using_gamepad and visible:
 		_queue_focus()
@@ -115,7 +148,8 @@ func _focus_card_selection() -> void:
 	if not visible or not InputManager.is_using_gamepad():
 		return
 	if not _content_panel.visible:
-		_show_options_button.grab_focus()
+		# The board view belongs to the in-run controller. A focused button would eat its presses.
+		get_viewport().gui_release_focus()
 		return
 	var first_choice := _first_choice_card()
 	if first_choice != null:

@@ -11,6 +11,7 @@ extends Panel
 
 func _ready() -> void:
 	hide()
+	add_to_group(InputManager.MENU_GROUP)
 	UiManager.show_round_complete_panel.connect(_on_show_panel)
 
 
@@ -36,6 +37,11 @@ func _on_show_panel() -> void:
 
 	# Deferred so the panel is laid out and visible before the button takes focus.
 	call_deferred("_focus_continue")
+
+
+## InputManager menu hook.
+func focus_default() -> void:
+	_focus_continue()
 
 
 ## Seats keyboard and gamepad focus on the only action this summary offers.
