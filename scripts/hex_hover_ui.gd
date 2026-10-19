@@ -30,7 +30,7 @@ func setup(tile_map: HexTileMap) -> void:
 func _process(_delta: float) -> void:
 	# Re-anchor while visible so zoom or pan mid-hover stays lined up with the tile.
 	if map.tile_panel.visible and _tile_panel_hover_coords != Vector2i(-1, -1):
-		map.tile_panel.update_anchor(map._get_tile_screen_rect(_tile_panel_hover_coords))
+		map.tile_panel.update_anchor(map.get_tile_screen_rect(_tile_panel_hover_coords))
 
 
 ## Start or refresh hover feedback for the tile under the cursor.
@@ -54,7 +54,7 @@ func update_tile_panel_hover(map_coords: Vector2i, immediate: bool = false) -> v
 
 	if map_coords == _tile_panel_hover_coords:
 		if map.tile_panel.visible:
-			map.tile_panel.update_anchor(map._get_tile_screen_rect(map_coords))
+			map.tile_panel.update_anchor(map.get_tile_screen_rect(map_coords))
 		elif immediate:
 			_show_tile_panel_at_hover_coords()
 		return
@@ -99,7 +99,7 @@ func refresh_current_hover() -> void:
 		return
 	_update_occupied_inspect_overlay(hex)
 	if map.tile_panel.visible:
-		map.tile_panel.set_hex(hex, map._get_tile_screen_rect(_tile_panel_hover_coords))
+		map.tile_panel.set_hex(hex, map.get_tile_screen_rect(_tile_panel_hover_coords))
 
 
 func _show_locked_slot_tooltip(coords: Vector2i) -> void:
@@ -107,7 +107,7 @@ func _show_locked_slot_tooltip(coords: Vector2i) -> void:
 		return
 	_locked_tooltip_coords = coords
 	var text := LOCKED_MEAL_SLOT_TOOLTIP % StationManager.MEAL_SLOT_UNLOCK_LEVEL
-	EventBus.toggle_tooltip.emit(true, text, map._get_tile_screen_rect(coords))
+	EventBus.toggle_tooltip.emit(true, text, map.get_tile_screen_rect(coords))
 
 
 func _hide_locked_slot_tooltip() -> void:
@@ -133,7 +133,7 @@ func _show_tile_panel_at_hover_coords() -> void:
 	var hex: Hex = map.map_data[_tile_panel_hover_coords]
 	if hex.active_tile_card == null:
 		return
-	map.tile_panel.set_hex(hex, map._get_tile_screen_rect(_tile_panel_hover_coords))
+	map.tile_panel.set_hex(hex, map.get_tile_screen_rect(_tile_panel_hover_coords))
 	_set_panel_process(true)
 
 

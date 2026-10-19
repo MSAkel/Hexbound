@@ -41,6 +41,11 @@ func get_shop_price() -> int:
 	return maxi(1, int(round(float(base_price) * multiplier)))
 
 
+## Gold paid when dropped on the sell panel. Half the base price, like staff.
+func get_sell_value() -> int:
+	return maxi(1, floori(base_price / 2.0))
+
+
 func needs_tile_target() -> bool:
 	return target_kind == TargetKind.TILE or target_kind == TargetKind.TWO_TILE
 

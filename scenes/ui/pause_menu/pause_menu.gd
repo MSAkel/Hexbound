@@ -8,6 +8,7 @@ extends Control
 @onready var main_ui: CanvasLayer = get_parent() as CanvasLayer
 @onready var settings_container: PanelContainer = $"../SettingsContainer"
 @onready var collection_screen: Panel = $"../Collection"
+@onready var tips_archive: Control = $"../TipsArchive"
 @onready var card_selection_ui: Control = $"../CardSelectionUI"
 @onready var station_upgrade_choice: Control = $"../StationUpgradeChoice"
 @onready var merchant: Control = $"../Merchant"
@@ -22,10 +23,12 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_prepare_overlay_panel(settings_container)
 	_prepare_overlay_panel(collection_screen)
+	_prepare_overlay_panel(tips_archive)
 	# Restore pause buttons when settings Back is pressed
 	settings_container.closed.connect(_on_settings_closed)
 	if not collection_screen.closed.is_connected(_on_collection_closed):
 		collection_screen.closed.connect(_on_collection_closed)
+	tips_archive.closed.connect(_on_tips_closed)
 
 
 func _on_continue_pressed() -> void:
@@ -54,6 +57,16 @@ func _on_collection_closed() -> void:
 	call_deferred("_focus_pause_menu")
 
 
+func _on_tips_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	_show_pause_overlay(tips_archive)
+
+
+func _on_tips_closed() -> void:
+	_hide_pause_overlay(tips_archive)
+	call_deferred("_focus_pause_menu")
+
+
 func _on_main_menu_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	# Skips the write when the run is mid-action so the last stable file is kept.
@@ -75,6 +88,7 @@ func _open_pause_menu() -> void:
 	# Always reopen on the button list, not a leftover overlay.
 	_hide_pause_overlay(settings_container)
 	_hide_pause_overlay(collection_screen)
+	_hide_pause_overlay(tips_archive)
 	panel.show()
 	_set_pause_menu_blocks_gameplay(true)
 	pause_menu.show()
@@ -93,6 +107,8 @@ func _focus_pause_menu() -> void:
 	if collection_screen.visible:
 		MenuFocus.grab_first(collection_screen)
 		return
+	if tips_archive.visible:
+		return
 	MenuFocus.grab_first(menu_items_container)
 
 
@@ -100,6 +116,7 @@ func _close_pause_menu() -> void:
 	# Dismiss nested overlays so they cannot linger over gameplay.
 	_hide_pause_overlay(settings_container)
 	_hide_pause_overlay(collection_screen)
+	_hide_pause_overlay(tips_archive)
 	panel.show()
 	_set_pause_menu_blocks_gameplay(true)
 	pause_menu.hide()
@@ -128,8 +145,8 @@ func _handle_pause_back() -> void:
 	if collection_screen.visible:
 		_on_collection_closed()
 		return
-	# Settings handles its own ui_cancel while visible.
-	if settings_container.visible:
+	# Settings and Tips handle their own ui_cancel while visible.
+	if settings_container.visible or tips_archive.visible:
 		return
 	_close_pause_menu()
 

@@ -5,7 +5,6 @@ extends Control
 ## Layout lives in condiment_slot.tscn.
 
 signal drag_started(slot_index: int)
-signal remove_requested(slot_index: int)
 
 const SLOT_SIZE := Vector2(60, 60)
 const HOLD_SELECT_SEC := 0.18
@@ -21,7 +20,6 @@ const CONTROLLER_FOCUS_SCALE := Vector2(1.04, 1.04)
 @onready var _well: PanelContainer = %Well
 @onready var _empty_icon: TextureRect = %EmptyIcon
 @onready var _icon: TextureRect = %Icon
-@onready var _menu: PopupMenu = %ContextMenu
 
 var condiment: Condiment = null
 var targeting := false
@@ -114,12 +112,6 @@ func _on_gui_input(event: InputEvent) -> void:
 		else:
 			_press_held = false
 			_cancel_hold_drag()
-	elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and condiment != null and not _lifted:
-		_press_held = false
-		_cancel_hold_drag()
-		_menu.position = Vector2i(get_global_mouse_position())
-		_menu.popup()
-		get_viewport().set_input_as_handled()
 
 
 func _input(event: InputEvent) -> void:
@@ -149,11 +141,6 @@ func _begin_hold_drag() -> void:
 
 func _cancel_hold_drag() -> void:
 	_hold_token += 1
-
-
-func _on_menu_id_pressed(id: int) -> void:
-	if id == 0:
-		remove_requested.emit(slot_index)
 
 
 func _on_mouse_entered() -> void:

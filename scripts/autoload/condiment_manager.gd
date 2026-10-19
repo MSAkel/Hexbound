@@ -72,6 +72,27 @@ func remove_slot(index: int) -> void:
 	RunSaveManager.request_autosave()
 
 
+## Sells the condiment in this belt slot. Returns the gold paid, or -1 when nothing was sold.
+func sell_slot(index: int) -> int:
+	if index < 0 or index >= BELT_SIZE or not can_sell_now():
+		return -1
+	var condiment := belt[index]
+	if condiment == null:
+		return -1
+	var value := condiment.get_sell_value()
+	remove_slot(index)
+	EconomyManager.add(value)
+	return value
+
+
+## Selling follows the drink rules, except events that block drinking do not block selling.
+func can_sell_now() -> bool:
+	if _consuming or GameManager.is_processing_turn:
+		return false
+	var hand := get_tree().get_first_node_in_group("run_hand") as Hand
+	return hand == null or not hand.has_pending_auto_end()
+
+
 func get_targeting_condiment() -> Condiment:
 	if targeting_slot < 0 or targeting_slot >= BELT_SIZE:
 		return null

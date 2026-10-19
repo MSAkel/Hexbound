@@ -1,7 +1,7 @@
 class_name CondimentBelt
 extends Control
 
-## Three square slots on the right. Drag a condiment out to drink it.
+## Three square slots on the right. Drag a condiment out to drink it, or onto the sell panel to sell it.
 ## Slot cells come from condiment_slot.tscn. The drag ghost is authored in this scene.
 
 const SLOT_SCENE := preload("res://scenes/ui/condiments/condiment_slot.tscn")
@@ -21,7 +21,6 @@ func _ready() -> void:
 		var slot: CondimentSlot = SLOT_SCENE.instantiate()
 		slot.slot_index = i
 		slot.drag_started.connect(_on_slot_drag_started)
-		slot.remove_requested.connect(_on_slot_remove_requested)
 		_slots_column.add_child(slot)
 		_slots.append(slot)
 	_ghost.size = GHOST_SIZE
@@ -69,26 +68,19 @@ func _refresh() -> void:
 
 
 func _on_slot_drag_started(index: int) -> void:
-	if _drag_index >= 0 or not CondimentManager.can_drink_now():
+	# A condiment that can't be drunk right now (e.g. an event blocks it) can still be sold.
+	if _drag_index >= 0 or not CondimentManager.can_sell_now():
 		return
 	var condiment := CondimentManager.belt[index]
 	if condiment == null:
-		return
-	if not CondimentManager.can_use(condiment):
-		EventBus.condiment_use_failed.emit(condiment)
 		return
 	_drag_index = index
 	AudioManager.play_sfx(UISounds.CONDIMENT_GRAB)
 	_show_ghost(condiment)
 	_refresh()
-	if condiment.needs_tile_target():
+	EventBus.condiment_drag_started.emit(index)
+	if condiment.needs_tile_target() and CondimentManager.can_use(condiment):
 		CondimentManager.begin_targeting(index)
-
-
-func _on_slot_remove_requested(index: int) -> void:
-	if _drag_index >= 0:
-		return
-	CondimentManager.remove_slot(index)
 
 
 func _on_targeting_changed(_slot_index: int) -> void:
@@ -170,6 +162,7 @@ func _cancel_drag() -> void:
 	_drag_index = -1
 	_awaiting_consume = false
 	_refresh()
+	EventBus.condiment_drag_ended.emit()
 
 
 func _finish_drop() -> void:
@@ -184,6 +177,15 @@ func _finish_drop() -> void:
 	if condiment == null:
 		_cancel_drag()
 		return
+	var sell_panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
+	if sell_panel != null and sell_panel.try_sell_condiment(index):
+		_cancel_drag()
+		return
+	if not CondimentManager.can_use(condiment):
+		EventBus.condiment_use_failed.emit(condiment)
+		_cancel_drag()
+		return
+	EventBus.condiment_drag_ended.emit()
 	if condiment.needs_tile_target():
 		# Tile drinks only apply when the cursor is over a valid occupied hex.
 		if CondimentManager.try_apply_to_hex_under_mouse():

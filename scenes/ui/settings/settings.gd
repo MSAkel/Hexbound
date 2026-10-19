@@ -10,10 +10,17 @@ signal closed
 @onready var display_mode_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/DisplayModeContainer/DisplayModeOptionButton
 @onready var resolution_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/ResolutionContainer/ResolutionOptionButton
 @onready var v_sync_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox
-@onready var tutorial_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/TutorialCheckBox
+@onready var hints_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/HintsCheckBox
+@onready var reset_hints_button: Button = $VBoxContainer/ScrollContainer/SettingsContainer/ResetHintsContainer/ResetHintsButton
 @onready var back_button: Button = $VBoxContainer/BackButton
 
+const RESET_HINTS_TEXT := "Reset tips"
+const RESET_HINTS_CONFIRM_TEXT := "Are you sure?"
+const RESET_HINTS_DONE_TEXT := "Done!"
+
 var _resolution_options: Array[Vector2i] = []
+## Reset tips needs a second press so a stray click can't wipe progress.
+var _reset_hints_armed := false
 
 func _ready() -> void:
 	# Initialize sliders with current values
@@ -74,7 +81,9 @@ func _sync_settings_controls() -> void:
 	# Resolution only applies in windowed mode. Grey it out otherwise.
 	var resolution_enabled := GameSettings.display_mode == GameSettings.DISPLAY_MODE_WINDOWED
 	resolution_option_button.disabled = not resolution_enabled
-	tutorial_check_box.set_pressed_no_signal(GameSettings.tutorial_enabled)
+	hints_check_box.set_pressed_no_signal(TutorialManager.hints_enabled)
+	_reset_hints_armed = false
+	reset_hints_button.text = RESET_HINTS_TEXT
 
 func _on_master_volume_changed(value: float) -> void:
 	AudioServer.set_bus_volume_db(0, linear_to_db(value))
@@ -117,10 +126,17 @@ func _on_resolution_option_button_item_selected(index: int) -> void:
 		GameSettings.set_resolution(_resolution_options[index])
 
 
-func _on_tutorial_check_box_toggled(toggled_on: bool) -> void:
-	# Checked means the banner should appear on the next run, and immediately if a run is open.
-	GameSettings.set_tutorial_enabled(toggled_on)
-	# In-run banners listen on this group so the toggle can preview immediately.
-	for banner in get_tree().get_nodes_in_group("tutorial_banner"):
-		if banner.has_method("set_tutorial_visible_from_settings"):
-			banner.set_tutorial_visible_from_settings(toggled_on)
+func _on_hints_check_box_toggled(toggled_on: bool) -> void:
+	TutorialManager.set_enabled(toggled_on)
+
+
+func _on_reset_hints_button_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	if not _reset_hints_armed:
+		_reset_hints_armed = true
+		reset_hints_button.text = RESET_HINTS_CONFIRM_TEXT
+		return
+	_reset_hints_armed = false
+	TutorialManager.reset_all()
+	hints_check_box.set_pressed_no_signal(true)
+	reset_hints_button.text = RESET_HINTS_DONE_TEXT

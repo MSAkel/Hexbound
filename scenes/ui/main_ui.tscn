@@ -14,7 +14,8 @@
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="14_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
-[ext_resource type="PackedScene" uid="uid://casabnpm08k0k" path="res://scenes/ui/tutorial/tutorial_text_container.tscn" id="17_tutorial"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tutorial/tutorial_overlay.tscn" id="17_tutorial"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tutorial/tips_archive.tscn" id="26_tips_archive"]
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_belt.tscn" id="19_condiment_belt"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_edge_glow.tscn" id="21_condiment_glow"]
@@ -26,10 +27,6 @@
 script = ExtResource("1_l8t6x")
 
 [node name="RunInfoUI" parent="." unique_id=237509013 instance=ExtResource("2_8s2gp")]
-
-[node name="TutorialTextContainer" parent="." unique_id=1844229200 instance=ExtResource("17_tutorial")]
-visible = false
-offset_bottom = 110.0
 
 [node name="CardsHand" parent="." unique_id=72981252 instance=ExtResource("11_oi40j")]
 custom_minimum_size = Vector2(0, 0)
@@ -94,6 +91,12 @@ z_index = 120
 visible = false
 z_index = 120
 
+[node name="TipsArchive" parent="." unique_id=1844229210 instance=ExtResource("26_tips_archive")]
+visible = false
+z_index = 120
+
 [node name="PauseMenu" parent="." unique_id=1402050020 instance=ExtResource("7_oxwcw")]
 visible = false
 z_index = 90
+
+[node name="TutorialOverlay" parent="." unique_id=1844229200 instance=ExtResource("17_tutorial")]

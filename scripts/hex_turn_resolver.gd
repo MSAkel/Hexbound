@@ -347,10 +347,14 @@ func _present_hour_score() -> void:
 		await _wait_pace(TUTORIAL_SCORE_LINGER)
 
 
-## First scoring beat in an active tutorial holds longer so the Hour score can be read.
+## The player's first ever Hour score holds longer so it can be read before the card pick.
 func _should_linger_on_product() -> bool:
 	if _did_tutorial_product_linger:
 		return false
+	if not TutorialManager.is_live() or TutorialManager.is_seen(&"card_pick_choose"):
+		return false
+	_did_tutorial_product_linger = true
+	return true
 	for node in get_tree().get_nodes_in_group("tutorial_banner"):
 		if node.has_method("is_tutorial_active") and node.is_tutorial_active():
 			_did_tutorial_product_linger = true

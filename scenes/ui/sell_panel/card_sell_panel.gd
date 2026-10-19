@@ -1,7 +1,7 @@
 class_name CardSellPanel
 extends PanelContainer
 
-## Drop zone in the bottom-left corner. Drag a hand card or a staff member here and release to sell it.
+## Drop zone in the bottom-left corner. Drag a hand card, a staff member or a condiment here and release to sell it.
 
 const SELL_VALUE := 2
 
@@ -21,6 +21,8 @@ const SELL_PULSE_SETTLE := 0.22
 var _card_dragged := false
 ## Staff slot being dragged, or -1. Staff sell for their own value, not SELL_VALUE.
 var _drag_staff_slot := -1
+## True while a belt condiment is held. Condiments sell for their own value too.
+var _condiment_dragged := false
 var _pulse_tween: Tween
 
 
@@ -30,6 +32,8 @@ func _ready() -> void:
 	EventBus.card_drag_ended.connect(_on_card_drag_ended)
 	EventBus.staff_drag_started.connect(_on_staff_drag_started)
 	EventBus.staff_drag_ended.connect(_on_staff_drag_ended)
+	EventBus.condiment_drag_started.connect(_on_condiment_drag_started)
+	EventBus.condiment_drag_ended.connect(_on_condiment_drag_ended)
 	_refresh_state()
 
 
@@ -59,6 +63,27 @@ func _on_staff_drag_ended() -> void:
 	_refresh_state()
 
 
+func _on_condiment_drag_started(_slot: int) -> void:
+	_condiment_dragged = true
+	_refresh_state()
+
+
+func _on_condiment_drag_ended() -> void:
+	_condiment_dragged = false
+	_refresh_state()
+
+
+## Used by CondimentBelt when the player releases a dragged condiment. True when it was sold.
+func try_sell_condiment(slot: int) -> bool:
+	if not is_cursor_over():
+		return false
+	if CondimentManager.sell_slot(slot) < 0:
+		return false
+	AudioManager.play_sfx(UISounds.GOLD_GAINED)
+	play_sell_pulse()
+	return true
+
+
 ## Used by StaffRail when the player releases a dragged staff member. True when it was sold.
 func try_sell_staff(slot: int) -> bool:
 	if not is_cursor_over():
@@ -78,7 +103,7 @@ func sell_staff_from_controller(slot: int) -> bool:
 
 
 func _is_armed() -> bool:
-	return _card_dragged or _drag_staff_slot >= 0
+	return _card_dragged or _drag_staff_slot >= 0 or _condiment_dragged
 
 
 ## Pays out for a hand card dropped on the panel. CardPlacementHandler removes the card.

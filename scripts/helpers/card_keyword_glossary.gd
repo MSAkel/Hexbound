@@ -97,7 +97,8 @@ static func register(
 
 
 ## Tokens become their colored display word. For RichTextLabels.
-static func to_bbcode(source: String) -> String:
+## color overrides the keyword colour for panels where the default lacks contrast.
+static func to_bbcode(source: String, color: Color = COLOR) -> String:
 	var result := ""
 	var cursor := 0
 	for regex_match: RegExMatch in _find_tokens(source):
@@ -109,7 +110,7 @@ static func to_bbcode(source: String) -> String:
 			result += _escape_bbcode(regex_match.get_string())
 		else:
 			result += "[color=#%s]%s[/color]" % [
-				COLOR.to_html(false),
+				color.to_html(false),
 				_escape_bbcode(String(keyword.forms[token])),
 			]
 		cursor = regex_match.get_end()

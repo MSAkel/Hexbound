@@ -114,6 +114,7 @@ func _on_reset_progression_confirmed() -> void:
 	RunHistoryManager.clear()
 	RunSaveManager.delete_save()
 	GameSettings.reset_progression_preferences()
+	TutorialManager.reset_all()
 
 
 func _on_ui_sandbox_button_pressed() -> void:

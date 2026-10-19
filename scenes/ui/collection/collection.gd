@@ -248,23 +248,10 @@ func _create_station_entry(station_type: StationType) -> PanelContainer:
 
 	details.add_child(_create_separator())
 	details.add_child(_create_label("REQUIRES", 14, ACCENT))
-	var requirements := _create_label(_format_station_requirements(station_type), 18, TEXT_PRIMARY)
+	var requirements := _create_label(station_type.get_requirements_text(), 18, TEXT_PRIMARY)
 	requirements.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_child(requirements)
 	return panel
-
-
-func _format_station_requirements(station_type: StationType) -> String:
-	var parts: PackedStringArray = []
-	for tag: StringName in station_type.required_counts:
-		var count := int(station_type.required_counts[tag])
-		var label := GameTerms.get_ingredient_kind_label(tag)
-		if label.is_empty():
-			label = String(tag).capitalize()
-		if tag in station_type.distinct_tags and count > 1:
-			label = "different %s" % label
-		parts.append("%d %s" % [count, label])
-	return " · ".join(parts)
 
 
 func _create_item_panel(minimum_size: Vector2) -> PanelContainer:

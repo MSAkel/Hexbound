@@ -12,6 +12,7 @@ const HOVER_DURATION := 0.12
 @onready var menu_container: MarginContainer = $MenuContainer
 @onready var menu_items_container: VBoxContainer = $MenuContainer/MenuItemsContainer
 @onready var settings_container: PanelContainer = $SettingsContainer
+@onready var tips_archive: TipsArchive = $TipsArchive
 @onready var continue_button: Button = $MenuContainer/MenuItemsContainer/ContinueButton
 
 # Tracks in-flight hover tweens so rapid enter/exit does not stack.
@@ -48,6 +49,7 @@ func _ready() -> void:
 	developer_menu_button.focus_exited.connect(_on_button_focus.bind(developer_menu_button, false))
 	
 	settings_container.closed.connect(_on_settings_closed)
+	tips_archive.closed.connect(_on_tips_closed)
 
 
 func _focus_main_menu() -> void:
@@ -129,6 +131,18 @@ func _on_options_pressed() -> void:
 
 func _on_settings_closed() -> void:
 	settings_container.hide()
+	menu_container.show()
+	call_deferred("_focus_main_menu")
+
+
+func _on_tips_button_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	menu_container.hide()
+	tips_archive.show()
+
+
+func _on_tips_closed() -> void:
+	tips_archive.hide()
 	menu_container.show()
 	call_deferred("_focus_main_menu")
 

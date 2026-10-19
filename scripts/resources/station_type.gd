@@ -35,6 +35,26 @@ func missing_counts(cards: Array[TileCard]) -> Dictionary:
 	return missing
 
 
+## Kind labels that read the same in the plural ("2 Seafood").
+const UNCOUNTABLE_LABELS: Array[String] = [GameTerms.SEAFOOD, GameTerms.DAIRY, GameTerms.KITCHENWARE]
+
+
+## Player-facing requirements, e.g. "2 different Vegetables · 1 Fruit · 1 Kitchenware".
+func get_requirements_text(separator: String = " · ") -> String:
+	var parts: PackedStringArray = []
+	for tag: StringName in required_counts:
+		var count := int(required_counts[tag])
+		var label := GameTerms.get_ingredient_kind_label(tag)
+		if label.is_empty():
+			label = String(tag).capitalize()
+		if count > 1 and not label in UNCOUNTABLE_LABELS:
+			label += "s"
+		if tag in distinct_tags and count > 1:
+			label = "different %s" % label
+		parts.append("%d %s" % [count, label])
+	return separator.join(parts)
+
+
 ## Perk for a level, or null below level 1.
 func perk_for_level(level: int) -> StationPerk:
 	if level <= 0 or level_perks.is_empty():

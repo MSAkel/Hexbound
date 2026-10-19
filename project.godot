@@ -44,6 +44,7 @@ RunLedger="*res://scripts/autoload/run_ledger.gd"
 EventManager="*res://scripts/autoload/event_manager.gd"
 InputManager="*res://scripts/autoload/input_manager.gd"
 RunHistoryManager="*res://scripts/autoload/run_history_manager.gd"
+TutorialManager="*res://scripts/autoload/tutorial_manager.gd"
 
 [debug]
 

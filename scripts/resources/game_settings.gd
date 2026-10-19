@@ -22,8 +22,6 @@ const RESOLUTIONS := [
 	Vector2i(3840, 2160),
 ]
 
-## When true, the in-run tutorial banner appears the next time a run starts.
-static var tutorial_enabled: bool = true
 static var screen_shake_enabled: bool = true
 static var game_speed: float = 1.0
 static var vsync_enabled: bool = false
@@ -77,7 +75,6 @@ static func ensure_loaded() -> void:
 		return
 	var settings = save_file.get_var()
 	if settings is Dictionary:
-		tutorial_enabled = bool(settings.get("tutorial_enabled", true))
 		screen_shake_enabled = bool(settings.get("screen_shake_enabled", true))
 		game_speed = normalize_game_speed(float(settings.get("game_speed", 1.0)))
 		vsync_enabled = bool(settings.get("vsync_enabled", false))
@@ -272,9 +269,9 @@ static func _center_window_in_usable_rect(usable: Rect2i) -> void:
 
 
 ## Clears progression-related preferences while keeping audio, display, and control options.
+## Tutorial hint progress lives in TutorialManager and is reset there.
 static func reset_progression_preferences() -> void:
 	ensure_loaded()
-	tutorial_enabled = true
 	last_chef_selection_id = ""
 	_save()
 
@@ -287,27 +284,8 @@ static func set_last_chef_selection_id(chef_id: String) -> void:
 	_save()
 
 
-static func set_tutorial_enabled(value: bool) -> void:
-	ensure_loaded()
-	if tutorial_enabled == value:
-		return
-	tutorial_enabled = value
-	_save()
-
-
-## Consumes the one-shot so the tutorial does not appear on later runs.
-static func consume_tutorial_on_run_start() -> bool:
-	ensure_loaded()
-	if not tutorial_enabled:
-		return false
-	tutorial_enabled = false
-	_save()
-	return true
-
-
 static func _save() -> void:
 	var settings := {
-		"tutorial_enabled": tutorial_enabled,
 		"screen_shake_enabled": screen_shake_enabled,
 		"game_speed": game_speed,
 		"vsync_enabled": vsync_enabled,

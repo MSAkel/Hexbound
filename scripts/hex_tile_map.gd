@@ -601,7 +601,7 @@ func _should_hide_dashed_outline(coords: Vector2i) -> bool:
 
 
 # Convert a map cell into a viewport/CanvasLayer rect so the panel aligns with the camera.
-func _get_tile_screen_rect(coords: Vector2i) -> Rect2:
+func get_tile_screen_rect(coords: Vector2i) -> Rect2:
 	var tile_size := Vector2(HEX_TEXTURE_SIZE)
 	var center_local: Vector2 = base_layer.map_to_local(coords)
 	var top_left_local: Vector2 = center_local - tile_size * 0.5

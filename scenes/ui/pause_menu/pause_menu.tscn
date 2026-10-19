@@ -123,6 +123,16 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
 theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
 text = "Collection"
 
+[node name="Tips" type="Button" parent="Panel/MenuItemsContainer" unique_id=730216109]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+text = "Tips"
+
 [node name="MainMenu" type="Button" parent="Panel/MenuItemsContainer" unique_id=847775209]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
@@ -147,5 +157,6 @@ text = "New Run"
 [connection signal="pressed" from="Panel/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/Settings" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/Collection" to="." method="_on_collection_pressed"]
+[connection signal="pressed" from="Panel/MenuItemsContainer/Tips" to="." method="_on_tips_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="Panel/MenuItemsContainer/NewRun" to="." method="_on_new_run_pressed"]
