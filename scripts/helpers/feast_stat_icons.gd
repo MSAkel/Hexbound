@@ -50,7 +50,7 @@ static func get_ingredient_kind_icon(kind: StringName) -> Texture2D:
 			return preload("res://assets/icons/food/ingredients/vegetables/lettuce.png")
 		TileCard.TAG_FRUIT:
 			return preload("res://assets/icons/food/ingredients/fruits/apple.png")
-		TileCard.TAG_PROTEIN:
+		TileCard.TAG_MEAT:
 			return preload("res://assets/icons/food/ingredients/meats/meat.png")
 		TileCard.TAG_SEAFOOD:
 			return preload("res://assets/icons/food/ingredients/seafood/shrimp.png")

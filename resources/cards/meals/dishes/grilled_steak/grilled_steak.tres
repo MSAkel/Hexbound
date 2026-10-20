@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("2_script")
-recipe_protein_count = 1
+recipe_meat_count = 1
 recipe_seasoning_count = 1
 base_production_amount = 80
 type = 2

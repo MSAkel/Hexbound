@@ -1,8 +1,7 @@
 extends Node
 
 ## Queryable tallies for payoff cards and end-of-run displays.
-## Fires by kind/type, dishes plated, card consumes, condiment uses,
-## and permanent growth are run-scoped.
+## Fires by kind/type, dishes plated, card consumes, and condiment uses are run-scoped.
 ## Only retriggers_this_hour resets each Hour. Day-scoped tallies are not stored here.
 ## Gold Day spend lives on EconomyManager. Day rating lives on GameManager round score.
 
@@ -15,7 +14,6 @@ var cards_destroyed: int = 0
 var condiments_used: int = 0
 var retriggers_this_hour: int = 0
 var retriggers_this_run: int = 0
-var permanent_growth_this_run: float = 0.0
 
 
 func _ready() -> void:
@@ -30,7 +28,6 @@ func reset_for_new_run() -> void:
 	cards_destroyed = 0
 	condiments_used = 0
 	retriggers_this_run = 0
-	permanent_growth_this_run = 0.0
 	_reset_hour_counters()
 
 
@@ -44,7 +41,6 @@ func capture_run_state() -> Dictionary:
 		"condiments_used": condiments_used,
 		"retriggers_this_hour": retriggers_this_hour,
 		"retriggers_this_run": retriggers_this_run,
-		"permanent_growth_this_run": permanent_growth_this_run,
 	}
 
 
@@ -57,7 +53,6 @@ func apply_run_state(state: Dictionary) -> void:
 	condiments_used = int(state.get("condiments_used", 0))
 	retriggers_this_hour = int(state.get("retriggers_this_hour", 0))
 	retriggers_this_run = int(state.get("retriggers_this_run", 0))
-	permanent_growth_this_run = float(state.get("permanent_growth_this_run", 0.0))
 
 
 ## Called from GameManager.register_tile_card_activation after this Hour's count is updated.

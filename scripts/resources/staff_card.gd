@@ -129,6 +129,11 @@ func on_condiment_used(_ctx: StaffContext, _condiment: Condiment) -> void:
 	pass
 
 
+## Gold just left the wallet, at the merchant or on a reroll.
+func on_gold_spent(_ctx: StaffContext, _amount: int) -> void:
+	pass
+
+
 ## Ingredient slots every Dish may leave empty.
 func dish_ingredient_discount(_ctx: StaffContext) -> int:
 	return 0

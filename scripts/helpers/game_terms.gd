@@ -11,8 +11,8 @@ const INGREDIENT := "Ingredient"
 const KITCHENWARE := "Kitchenware"
 const VEGETABLE := "Vegetable"
 const FRUIT := "Fruit"
-# The protein tag reads as Meat on cards. Seafood is its own kind.
-const PROTEIN := "Meat"
+# Seafood does not count as Meat; it is its own kind.
+const MEAT := "Meat"
 const SEAFOOD := "Seafood"
 const DAIRY := "Dairy"
 const SWEET := "Sweet"
@@ -26,7 +26,6 @@ const HOUR := "Hour"
 const CONDIMENTS := "Condiments"
 const MEAL := "Meal"
 const DISH := "Dish"
-const PASS := "Pass"
 const MEAL_SLOT := "Meal Slot"
 const HYBRID := "Hybrid"
 const GARNISH := "Garnish"
@@ -58,8 +57,8 @@ static func get_ingredient_kind_label(kind: StringName) -> String:
 			return VEGETABLE
 		TileCard.TAG_FRUIT:
 			return FRUIT
-		TileCard.TAG_PROTEIN:
-			return PROTEIN
+		TileCard.TAG_MEAT:
+			return MEAT
 		TileCard.TAG_SEAFOOD:
 			return SEAFOOD
 		TileCard.TAG_DAIRY:

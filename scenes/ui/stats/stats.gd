@@ -6,7 +6,6 @@ const TEXT_PRIMARY := Color("e8dfc9")
 const TEXT_SECONDARY := Color("aeb9b3")
 
 @onready var lifetime_list: VBoxContainer = %LifetimeList
-@onready var back_button: Button = %BackButton
 
 
 func _ready() -> void:

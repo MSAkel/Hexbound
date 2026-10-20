@@ -9,7 +9,7 @@ const ENDLESS_MODE_START_ROUND := RUN_LENGTH_ROUNDS + 1
 const MAX_SCORE := 9223372036854775807
 ## One entry per round of a standard run, indexed as AUTHORED_ROUND_SCORES[round - 1].
 const AUTHORED_ROUND_SCORES: Array[int] = [
-	650,
+	500,
 	1800,
 	4800,
 	10000,

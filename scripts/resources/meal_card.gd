@@ -11,7 +11,7 @@ const SERVING_GOLD := 1
 ## Station requirements, counted across the station's regular spots.
 @export var recipe_vegetable_count: int = 0
 @export var recipe_fruit_count: int = 0
-@export var recipe_protein_count: int = 0
+@export var recipe_meat_count: int = 0
 @export var recipe_seafood_count: int = 0
 @export var recipe_dairy_count: int = 0
 @export var recipe_sweet_count: int = 0
@@ -225,7 +225,7 @@ func _recipe_slot_counts() -> Dictionary:
 	return {
 		TAG_VEGETABLE: recipe_vegetable_count,
 		TAG_FRUIT: recipe_fruit_count,
-		TAG_PROTEIN: recipe_protein_count,
+		TAG_MEAT: recipe_meat_count,
 		TAG_SEAFOOD: recipe_seafood_count,
 		TAG_DAIRY: recipe_dairy_count,
 		TAG_SWEET: recipe_sweet_count,

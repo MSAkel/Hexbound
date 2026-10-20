@@ -58,8 +58,13 @@ const SLOT_COST_SHARE := 0.25
 const DRINK_TARGETS := 5
 ## Cards considered for Swap Spots, all pairs among them.
 const SWAP_CANDIDATES := 6
-const MAX_MERCHANT_REROLLS := 3
+## Merchant rerolls per visit while gold is tight. Spare gold buys more looks at the shelf,
+## which is also how the bot finds copies of its board cards to merge.
+const MIN_MERCHANT_REROLLS := 3
+const MAX_MERCHANT_REROLLS := 12
 const GOLD_VALUE_SHARE := 0.5
+## Gold up to about two visits of buying. Past this, each coin is worth less.
+const GOLD_COMFORT := 12
 ## Buy a shelf item worth at least this share of a typical pick per merchant card price.
 const BUY_FLOOR_SHARE := 0.3
 ## Estimated activations of one card in an Hour, for Mint Sip gold.
@@ -94,11 +99,20 @@ func _merchants_left() -> int:
 
 
 ## Run-score value of one coin. Half of what a typical merchant card buys per coin,
-## because spare gold mostly waits for shelves that are not worth it.
+## less as gold piles up past what a visit can spend.
 func _gold_value() -> float:
+	return (
+		_market / float(TileCard.SHOP_PRICE) * GOLD_VALUE_SHARE
+		* float(_profile["gold_weight"]) * _gold_scarcity()
+	)
+
+
+## 1 while gold is tight, falling toward 0 as it piles up. Unspent gold at the end of the run
+## is worth nothing, so a rich bot should buy anything that helps.
+func _gold_scarcity() -> float:
 	if _merchants_left() <= 0:
 		return 0.0
-	return _market / float(TileCard.SHOP_PRICE) * GOLD_VALUE_SHARE * float(_profile["gold_weight"])
+	return clampf(float(GOLD_COMFORT) / float(maxi(1, EconomyManager.amount)), 0.0, 1.0)
 
 
 func _refresh_baseline() -> void:
@@ -440,7 +454,9 @@ func shop(visit: RefCounted) -> void:
 					bought = visit.buy_condiment(int(best["index"]))
 			if not bought:
 				break
-		if rerolls >= MAX_MERCHANT_REROLLS:
+		var spare: int = EconomyManager.amount - reserve - GOLD_COMFORT
+		var reroll_budget := clampi(MIN_MERCHANT_REROLLS + spare / 10, MIN_MERCHANT_REROLLS, MAX_MERCHANT_REROLLS)
+		if rerolls >= reroll_budget:
 			break
 		var after_reroll: int = EconomyManager.amount - visit.reroll_cost
 		if after_reroll < reserve + 2 * TileCard.SHOP_PRICE:
@@ -497,9 +513,12 @@ func _best_shop_item(visit: RefCounted, reserve: int, card_values: Dictionary) -
 
 
 ## Value per coin, or 0 when the item is below the buy floor for its price.
+## The floor drops as gold piles up, so a rich bot buys anything that helps.
 func _buy_ratio(value: float, price: int) -> float:
 	var cost := float(maxi(1, price))
-	if value < BUY_FLOOR_SHARE * _market * cost / float(TileCard.SHOP_PRICE):
+	if value <= 0.0:
+		return 0.0
+	if value < BUY_FLOOR_SHARE * _market * cost / float(TileCard.SHOP_PRICE) * _gold_scarcity():
 		return 0.0
 	return value / cost
 

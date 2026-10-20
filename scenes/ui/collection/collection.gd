@@ -6,7 +6,6 @@ signal closed
 
 @onready var tab_bar: TabBar = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar
 @onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
-@onready var back_button: Button = $PanelContainer/VBoxContainer/BackButton
 @onready var collection_scroll: ScrollContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")

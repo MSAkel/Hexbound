@@ -32,6 +32,8 @@ signal card_drag_ended(card: CardUI, outcome: int)
 
 ## Resource signals
 signal gold_changed(new_amount: int)  # Emitted when gold amount changes
+## Gold paid out of the wallet, at the merchant or on a reroll.
+signal gold_spent(amount: int)
 ## Emitted when the shared run reroll budget changes.
 signal rerolls_changed(remaining: int)
 
@@ -51,8 +53,6 @@ signal hour_score_presentation_finished()
 signal round_score_commit_animation_requested(transfer_amount: int, round_score_before: int)
 ## Day Rating finished counting after a turn commits.
 signal round_score_count_finished()
-## Fired once per resolved turn with a full per-segment snapshot for the run-info history UI.
-signal segment_turn_completed(turn_number: int, snapshot: Dictionary)
 
 signal required_score_changed()
 

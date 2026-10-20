@@ -314,43 +314,8 @@ func bind_chef_speciality() -> void:
 
 
 ## Rating is Flavour x Additive. xMult already folded into Additive when it fired.
-func get_segment_turn_contribution_breakdown(
-	_segment_index: int,
-	flavour: int,
-	additive_mult: float,
-	_multiplicative_mult: float = 1.0
-) -> Dictionary:
-	return get_hour_turn_contribution_breakdown(flavour, additive_mult)
-
-
-func get_hour_turn_contribution_breakdown(flavour: int, additive_mult: float) -> Dictionary:
-	var contribution := int(round(float(flavour) * additive_mult))
-	return {
-		"display_flavour": flavour,
-		"display_additive_mult": additive_mult,
-		"display_multiplicative_mult": 1.0,
-		"contribution": contribution,
-	}
-
-
 func compute_hour_turn_contribution(flavour: int, additive_mult: float) -> int:
-	return int(get_hour_turn_contribution_breakdown(flavour, additive_mult)["contribution"])
-
-
-func compute_segment_turn_contribution(
-	segment_index: int,
-	flavour: int,
-	additive_mult: float,
-	multiplicative_mult: float = 1.0
-) -> int:
-	return int(
-		get_segment_turn_contribution_breakdown(
-			segment_index,
-			flavour,
-			additive_mult,
-			multiplicative_mult
-		)["contribution"]
-	)
+	return int(round(float(flavour) * additive_mult))
 
 
 func record_turn_segment_peaks(segment_contributions: Array[int]) -> void:
@@ -497,8 +462,6 @@ func capture_run_state() -> Dictionary:
 		"highest_round_score": highest_round_score,
 		"current_round": current_round,
 		"remaining_turns": _remaining_turns,
-		# Always idle in a checkpoint. Restoring mid-resolve would freeze input.
-		"is_processing_turn": false,
 		"required_score": required_score,
 		"total_round_score": _total_round_score,
 		"turn_score": _turn_score,

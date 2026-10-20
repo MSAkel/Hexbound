@@ -63,7 +63,6 @@ var _mult_counter: CountingNumber
 var _total_counter: CountingNumber
 var _fade_tween: Tween
 var _fx_tweens: Dictionary = {}
-var _total_score := 0
 
 
 ## The readout currently taking score floats, or null outside a presented resolve.
@@ -195,7 +194,6 @@ func _reset_display() -> void:
 		ticket_values.clear()
 	_last_applied_ticket = [-1, -1]
 	_shown_values = [0, 1]
-	_total_score = 0
 	_flavour_counter.snap_to(0)
 	_mult_counter.snap_to(1)
 	_total_counter.snap_to(0)
@@ -295,7 +293,6 @@ func _present_score(flavour: int, mult: int, score: int) -> void:
 	# Catch payouts that changed the Hour without a float of their own.
 	_show_value(Product.FLAVOUR, flavour)
 	_show_value(Product.MULT, mult)
-	_total_score = score
 
 	if score <= 0 or flavour <= 0:
 		await _hold(TOTAL_HOLD * 0.5)

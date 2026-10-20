@@ -83,8 +83,6 @@ func resolve_turn() -> void:
 	map._apply_segment_turn_totals_to_game_manager()
 	_clear_hour_garnish()
 	StaffManager.end_hour()
-	# Snapshot before finish_turn_processing so history is ready when the next turn starts.
-	map._emit_segment_turn_completed_snapshot()
 	await GameManager.finish_turn_processing()
 
 

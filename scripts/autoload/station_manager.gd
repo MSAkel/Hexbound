@@ -12,7 +12,7 @@ const _StationPerkScript := preload("res://scripts/resources/station_perk.gd")
 ## Every change emits EventBus.station_state_changed. The board, badges and chips redraw from it.
 
 const STATION_TYPE_PATHS: Array[String] = [
-	"res://resources/stations/grill.tres",
+	"res://resources/stations/grilling_station.tres",
 	"res://resources/stations/cold_station.tres",
 	"res://resources/stations/raw_bar.tres",
 	"res://resources/stations/pastry_station.tres",

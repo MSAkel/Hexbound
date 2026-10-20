@@ -83,8 +83,6 @@ var _flash_segment_generation: int = 0
 var _condiment_target_coords: Array[Vector2i] = []
 ## Screen-space centers of the staff hexes, one per station. See set_staff_screen_centers().
 var _staff_screen_centers: Array[Vector2] = []
-## Completed turn snapshots for the current round. Each entry matches capture_segment_turn_snapshot().
-var _round_turn_snapshots: Array = []
 
 ## Gold wash on a dedicated layer so dish recipe seats do not recolor other rune highlights.
 const DISH_RECIPE_GOLD_MODULATE := Color(1.35, 1.05, 0.25, 1.0)
@@ -120,7 +118,6 @@ func _ready() -> void:
 	trigger_link_overlay.setup(self)
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
-	EventBus.round_changed.connect(_on_round_changed)
 	EventBus.condiment_fuses_changed.connect(_refresh_condiment_fuse_badges)
 	# Dish chips read the staff recipe discount, so a roster change can move them.
 	EventBus.staff_roster_changed.connect(refresh_board_output_chips)
@@ -1360,7 +1357,6 @@ func capture_map_state() -> Dictionary:
 		"disabled_coords": disabled_coords,
 		"placed_cards": placed_cards,
 		"segment_turn_results": _layout.capture_turn_results(),
-		"turn_snapshots": _round_turn_snapshots.duplicate(true),
 	}
 
 
@@ -1381,49 +1377,10 @@ func restore_map_state(state: Dictionary) -> void:
 		map_data[coords].restore_placed_tile_card(tile_card)
 
 	_layout.apply_turn_results(state.get("segment_turn_results", {}))
-	_restore_turn_snapshots(state.get("turn_snapshots", []))
 
 
 func refresh_hour_results_ui() -> void:
 	_emit_hour_results_changed(0)
-
-
-## Packages hour totals for the per-round turn history (kept in saves).
-func capture_segment_turn_snapshot() -> Dictionary:
-	var flavour := get_hour_flavour()
-	var additive_mult := get_hour_additive_mult()
-	var gold := get_hour_gold()
-	var rating := GameManager.compute_hour_turn_contribution(flavour, additive_mult)
-	return {
-		"segments": [{
-			"flavour": flavour,
-			"additive_mult": additive_mult,
-			"multiplicative_mult": 1.0,
-			"rating": rating,
-			"gold": gold,
-		}],
-		"total_rating": rating,
-		"total_gold": gold,
-	}
-
-
-func _emit_segment_turn_completed_snapshot() -> void:
-	var snapshot := capture_segment_turn_snapshot()
-	_round_turn_snapshots.append(snapshot)
-	EventBus.segment_turn_completed.emit(GameManager.get_turn_number(), snapshot)
-
-
-func _on_round_changed(_new_round: int) -> void:
-	if RunSaveManager.is_restoring():
-		return
-	_round_turn_snapshots.clear()
-
-
-func _restore_turn_snapshots(raw_snapshots: Array) -> void:
-	_round_turn_snapshots.clear()
-	for entry: Variant in raw_snapshots:
-		if entry is Dictionary:
-			_round_turn_snapshots.append(entry)
 
 
 func _restore_disabled_tiles(coords_list: Array) -> void:
@@ -1457,7 +1414,6 @@ func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 		"card_id": tile_card.id,
 		"activation_count": tile_card.activation_count,
 		"is_active": EventManager.get_saved_is_active(tile_card),
-		"bonus_production_amount": tile_card.bonus_production_amount,
 		"star_level": tile_card.star_level,
 		"run_trigger_count": tile_card.run_trigger_count,
 		"garnish_stacks": tile_card.garnish_stacks,
@@ -1482,7 +1438,6 @@ func _deserialize_placed_tile_card(data: Dictionary) -> TileCard:
 func _apply_placed_tile_card_state(tile_card: TileCard, data: Dictionary) -> void:
 	tile_card.activation_count = int(data.get("activation_count", 0))
 	tile_card.is_active = bool(data.get("is_active", true))
-	tile_card.bonus_production_amount = float(data.get("bonus_production_amount", 0.0))
 	tile_card.star_level = int(data.get("star_level", 1))
 	tile_card.run_trigger_count = int(data.get("run_trigger_count", 0))
 	tile_card.garnish_stacks = int(data.get("garnish_stacks", 0))
@@ -1519,7 +1474,6 @@ func capture_playtest_snapshot() -> Dictionary:
 	return {
 		"cards": cards,
 		"segment_turn_results": _layout.capture_turn_results(),
-		"turn_snapshots": _round_turn_snapshots.duplicate(true),
 	}
 
 
@@ -1540,6 +1494,5 @@ func restore_playtest_snapshot(snapshot: Dictionary) -> void:
 		wanted.hour_additive_mult_produced = float(entry["hour_additive_mult"])
 		wanted.pending_output_scale = float(entry["pending_output_scale"])
 	_layout.apply_turn_results(snapshot.get("segment_turn_results", {}))
-	_restore_turn_snapshots(snapshot.get("turn_snapshots", []))
 
 #endregion

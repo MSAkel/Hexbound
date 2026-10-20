@@ -189,35 +189,17 @@ func _get_rarity_display_name(rarity: int) -> String:
 			return "Common"
 
 
-# Star level plus extra Flavour or Mult from other cards and passives. Hidden when there is neither.
+# Star level output scale. Hidden for 1-star cards.
 func _set_bonus_line(card: TileCard) -> void:
 	var lines: Array[String] = []
 	if card.star_level > 1:
 		lines.append("%s: x%s Flavour, Gold, +Mult" % [TileCard.star_text(card.star_level), String.num(card.star_output_scale(), 2)])
-	var bonus_text := _bonus_text(card)
-	if not bonus_text.is_empty():
-		lines.append(bonus_text)
 	if lines.is_empty():
 		card_bonus_line.hide()
 		return
 	card_bonus_line.text = "
 ".join(lines)
 	card_bonus_line.show()
-
-
-func _bonus_text(card: TileCard) -> String:
-	var bonus := card.bonus_production_amount
-	if is_zero_approx(bonus):
-		return ""
-	var stat_label := GameTerms.MULT if card.product == TileCard.Product.MULTIPLIER else GameTerms.FLAVOUR
-	var amount_text: String
-	if card.product == TileCard.Product.MULTIPLIER:
-		amount_text = CountingNumber.format_additive_mult(bonus)
-	else:
-		amount_text = str(int(round(bonus)))
-	if bonus > 0.0:
-		return "+%s %s" % [amount_text, stat_label]
-	return "%s %s" % [amount_text, stat_label]
 
 
 func _set_condiment_fuse_line(card: TileCard) -> void:
@@ -244,7 +226,7 @@ func _pin_content_sized_layout() -> void:
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
 
-## CardIcon.tscn is authored at REFERENCE_SIZE and scales with its host.
+## CardIcon.tscn is authored at 256px and scales with its host.
 ## In this panel it must stay a 100px thumbnail, or the paper stretches with it.
 func _pin_rune_icon_size() -> void:
 	card_icon.set_anchors_preset(Control.PRESET_TOP_LEFT)

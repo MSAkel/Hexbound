@@ -36,7 +36,7 @@ enum Product {
 ## ingredient tag catalog.
 const TAG_VEGETABLE := &"vegetable"
 const TAG_FRUIT := &"fruit"
-const TAG_PROTEIN := &"protein"
+const TAG_MEAT := &"meat"
 const TAG_SEAFOOD := &"seafood"
 const TAG_DAIRY := &"dairy"
 const TAG_SWEET := &"sweet"
@@ -50,7 +50,7 @@ const TAG_DISH := &"dish"
 const RECIPE_INGREDIENT_TAGS: Array[StringName] = [
 	TAG_VEGETABLE,
 	TAG_FRUIT,
-	TAG_PROTEIN,
+	TAG_MEAT,
 	TAG_SEAFOOD,
 	TAG_DAIRY,
 	TAG_SWEET,
@@ -114,8 +114,6 @@ static var overplay_enabled := true
 
 var activation_count: int = 0
 var is_active: bool = true
-# Runtime buffs from other cards, added to the base production amount.
-var bonus_production_amount: float = 0.0
 # Merge level of this placed instance. Scales all output. Hand and shop cards are always 1.
 var star_level: int = 1
 # Activations of this instance during the current run.
@@ -160,7 +158,7 @@ var hour_additive_mult_produced: float = 0.0
 
 
 ## Extra per-instance state for a placed card. Saved with the map between loads.
-## Shared fields such as activation_count, bonus_production_amount, and run_trigger_count
+## Shared fields such as activation_count, star_level, and run_trigger_count
 ## are already written by hex_tile_map. Override this for card-specific progress.
 func capture_placed_save_state() -> Dictionary:
 	return {}
@@ -663,7 +661,7 @@ func _play_trigger_sound() -> void:
 #endregion --- Flavour, Gold, Mult, and floating text helpers ---
 
 func _get_production_amount() -> float:
-	return float(base_production_amount) + bonus_production_amount
+	return float(base_production_amount)
 
 
 ## Amount this card should pay and show. Override instead of duplicating chip and activate math.

@@ -14,7 +14,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 	for target: TileCard in targets:
-		var factor := MEAT_SCALE if target.has_ingredient_tag(TAG_PROTEIN) else SCALE
+		var factor := MEAT_SCALE if target.has_ingredient_tag(TAG_MEAT) else SCALE
 		if _try_scale_tile_card(tile, target, factor):
 			_create_fired_floating_text(tile, target)
 

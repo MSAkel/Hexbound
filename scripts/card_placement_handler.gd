@@ -824,11 +824,10 @@ func _get_overplay(hex: Hex) -> TileCard.Overplay:
 	return tile_card.get_overplay(hex)
 
 
-# Chip preview for a merge: the seated card one star higher, keeping its board buffs.
+# Chip preview for a merge: the seated card one star higher.
 func _merge_preview_card(tile_card: TileCard, seated: TileCard) -> TileCard:
 	var preview := tile_card.duplicate(true) as TileCard
 	preview.star_level = seated.star_level + 1
-	preview.bonus_production_amount = seated.bonus_production_amount
 	return preview
 
 

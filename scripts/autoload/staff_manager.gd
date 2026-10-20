@@ -24,6 +24,7 @@ func _ready() -> void:
 	slots.resize(SLOT_COUNT)
 	_reset_hour_state()
 	StaffCatalog.ensure_loaded()
+	EventBus.gold_spent.connect(_on_gold_spent)
 
 
 ## Called by HexTileMap when it enters the tree.
@@ -271,6 +272,11 @@ func after_condiment_used(condiment: Condiment) -> void:
 		return
 	for ctx: StaffContext in _contexts():
 		ctx.effect.on_condiment_used(ctx, condiment)
+
+
+func _on_gold_spent(amount: int) -> void:
+	for ctx: StaffContext in _contexts():
+		ctx.effect.on_gold_spent(ctx, amount)
 
 
 func dish_ingredient_discount() -> int:

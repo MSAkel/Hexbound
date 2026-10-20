@@ -8,7 +8,6 @@ const RESTART_HOLD_DURATION := 1.5
 ## Round used when starting a fresh run. Continued runs always use their saved round.
 @export_range(1, 100, 1, "or_greater") var debug_starting_round: int = 1
 
-@onready var camera: Camera2D = $Camera
 @onready var hand: Hand = $MainUI/CardsHand/Hand
 @onready var tile_map: HexTileMap = $HexTileMap
 @onready var scene_enter_transition: SceneEnterTransition = $SceneEnterTransition

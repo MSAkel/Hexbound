@@ -93,6 +93,8 @@ func remove(amount_to_remove: int) -> void:
 	_amount -= amount_to_remove
 	_spent_this_round += amount_to_remove
 	EventBus.gold_changed.emit(_amount)
+	if amount_to_remove > 0:
+		EventBus.gold_spent.emit(amount_to_remove)
 
 
 func can_afford(cost: int) -> bool:

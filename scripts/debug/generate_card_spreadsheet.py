@@ -35,7 +35,7 @@ PRODUCTS = {0: "Gold", 1: "Flavour", 2: "Mult", 3: "Hybrid", 4: ""}
 KIND_LABELS = {
     "vegetable": "Vegetable",
     "fruit": "Fruit",
-    "protein": "Meat",
+    "meat": "Meat",
     "seafood": "Seafood",
     "dairy": "Dairy",
     "sweet": "Sweet",
@@ -47,7 +47,7 @@ KIND_LABELS = {
 RECIPE_FIELDS = [
     ("recipe_vegetable_count", "vegetable"),
     ("recipe_fruit_count", "fruit"),
-    ("recipe_protein_count", "protein"),
+    ("recipe_meat_count", "meat"),
     ("recipe_seafood_count", "seafood"),
     ("recipe_dairy_count", "dairy"),
     ("recipe_sweet_count", "sweet"),

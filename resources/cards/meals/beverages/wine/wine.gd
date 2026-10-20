@@ -32,6 +32,6 @@ func _meat_dishes(tile: Hex) -> Array[TileCard]:
 	var dishes: Array[TileCard] = []
 	for card: TileCard in _get_all_placed_tile_cards(tile, TileCardType.MEAL):
 		var meal := card as MealCard
-		if meal != null and meal.recipe_protein_count > 0:
+		if meal != null and meal.recipe_meat_count > 0:
 			dishes.append(card)
 	return dishes
