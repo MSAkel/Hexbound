@@ -16,7 +16,7 @@ var run_state: Dictionary = {}
 
 
 func get_card_kind_label() -> String:
-	return "Staff"
+	return GameTerms.TECHNIQUE
 
 
 func get_save_kind() -> String:
@@ -64,7 +64,7 @@ func get_sell_value() -> int:
 func get_purchase_block_reason() -> String:
 	if StaffManager.has_free_slot():
 		return ""
-	return "No free Staff slot"
+	return "No free %s slot" % GameTerms.TECHNIQUE
 
 
 #region --- Hooks ---

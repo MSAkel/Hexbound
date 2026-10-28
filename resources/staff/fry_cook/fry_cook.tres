@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "fry_cook"
-name = "Fry Cook"
+name = "Double Fry"
 description = "Gains +5 {flavour} whenever a card on this Station {retriggers}"
 rarity = 0

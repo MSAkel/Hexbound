@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "commis"
-name = "Commis"
+name = "Foraging"
 description = "Gain two random Condiments at the start of each Day"
 rarity = 1

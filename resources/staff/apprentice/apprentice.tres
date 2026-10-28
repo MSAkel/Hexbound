@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "apprentice"
-name = "Apprentice"
+name = "Sourdough Starter"
 description = "Gains +0.5 {mult} whenever a Meal is served on this Station"
 rarity = 0

@@ -8,7 +8,7 @@ extends Control
 ## The slots and the drag ghost live in staff_rail.tscn. Their positions there are the layout
 ## used when there is no board. With a board, each slot moves onto its station's row.
 
-const LOCKED_MESSAGE := "Staff are busy"
+const LOCKED_MESSAGE := GameTerms.TECHNIQUES + " are locked"
 
 ## Minimum gap between the column and the left edge of the screen.
 @export var edge_margin := 24.0

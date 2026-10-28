@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "bookkeeper"
-name = "Bookkeeper"
+name = "Gold Leaf"
 description = "+3 {flavour} for every Gold you have"
 rarity = 0

@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "steward"
-name = "Steward"
+name = "Slow Cooking"
 description = "At the end of the Day, gain 1 Gold for every 5 Gold you have (max 5)"
 rarity = 1

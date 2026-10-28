@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "saucier"
-name = "Saucier"
+name = "Basting"
 description = "When an Ingredient on this Station has a {garnish}, add another {garnish} to it"
 rarity = 1

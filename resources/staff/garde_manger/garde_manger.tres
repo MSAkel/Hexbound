@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "garde_manger"
-name = "Garde Manger"
+name = "Mise en Place"
 description = "Every Dish requires one less Ingredient"
 rarity = 2

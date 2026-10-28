@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "pickler"
-name = "Pickler"
+name = "Preserving"
 description = "Cards on this Station keep one {garnish} when the Hour ends"
 rarity = 2

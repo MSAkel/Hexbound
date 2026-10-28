@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "buyer"
-name = "Buyer"
+name = "Market Run"
 description = "Gains +0.5 {mult} for every 5 Gold you spend"
 rarity = 1

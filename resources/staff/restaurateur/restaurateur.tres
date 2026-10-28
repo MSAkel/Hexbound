@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "restaurateur"
-name = "Restaurateur"
+name = "Truffle Shavings"
 description = "x0.1 {mult} for every 5 Gold you have"
 rarity = 2

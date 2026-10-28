@@ -470,7 +470,7 @@ func _area_name() -> String:
 		Area.CONDIMENTS:
 			return GameTerms.CONDIMENTS
 		_:
-			return "Staff"
+			return GameTerms.TECHNIQUES
 
 #endregion
 

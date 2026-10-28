@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "maitre_d"
-name = "Maître d'"
+name = "Prix Fixe"
 description = "Gain 5 Gold at the end of the Day"
 rarity = 0

@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "line_cook"
-name = "Line Cook"
+name = "Glazing"
 description = "Every Kitchenware with a {garnish} ability has a 1 in 4 chance to apply {garnish} twice"
 rarity = 1

@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "understudy"
-name = "Understudy"
-description = "Copies the effect of the Staff member below"
+name = "Copycat Recipe"
+description = "Copies the effect of the Technique below"
 rarity = 2

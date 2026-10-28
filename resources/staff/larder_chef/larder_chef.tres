@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "larder_chef"
-name = "Larder Chef"
+name = "Secret Sauce"
 description = "Gains +0.5 {mult} whenever you use a Condiment"
 rarity = 1

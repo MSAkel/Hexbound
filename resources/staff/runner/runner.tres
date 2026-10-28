@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "runner"
-name = "Runner"
+name = "Flambé"
 description = "After a Kitchenware {triggers} on this Station, {trigger} a Kitchenware on another Station (Once per Kitchenware)"
 rarity = 1

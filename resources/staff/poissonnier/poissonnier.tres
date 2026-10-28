@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "poissonnier"
-name = "Poissonnier"
+name = "Brine"
 description = "Seafood on this Station start the Hour {garnished}"
 rarity = 1

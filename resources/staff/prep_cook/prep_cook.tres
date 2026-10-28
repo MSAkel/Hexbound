@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "prep_cook"
-name = "Prep Cook"
+name = "Batch Prep"
 description = "+1 {mult} for every Ingredient on this Station"
 rarity = 1

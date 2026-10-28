@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "pot_washer"
-name = "Pot Washer"
+name = "Deglaze"
 description = "Gains +1 {mult} whenever a card on this Station is {destroyed}"
 rarity = 0

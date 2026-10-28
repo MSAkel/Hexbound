@@ -32,6 +32,8 @@ const GARNISH := "Garnish"
 const FOLLOWING := "Following"
 const DESTROY := "Destroy"
 const TRIGGER := "Trigger"
+const TECHNIQUE := "Technique"
+const TECHNIQUES := "Techniques"
 
 
 static func day_label(day_number: int) -> String:

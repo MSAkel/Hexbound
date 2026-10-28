@@ -71,8 +71,8 @@ const EVENT_INFO := {
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.SHORT_STAFFED: {
-		"name": "Short Staffed",
-		"description": "Every hour, a random Staff member is off shift and has no effect.",
+		"name": "Rusty Hands",
+		"description": "Every hour, a random Technique is forgotten and has no effect.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.AUSTERITY: {

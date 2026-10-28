@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "head_waiter"
-name = "Head Waiter"
+name = "Daily Special"
 description = "Gain 2 Gold when the first Meal is served on this Station each Hour"
 rarity = 0

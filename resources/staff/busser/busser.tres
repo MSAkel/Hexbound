@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "busser"
-name = "Busser"
+name = "Zero Waste"
 description = "Gain 2 Gold whenever a card on this Station is {destroyed}"
 rarity = 1

@@ -87,7 +87,7 @@ func _configure_tabs() -> void:
 	var titles := PackedStringArray([
 		"Cards",
 		GameTerms.CONDIMENTS,
-		"Staff",
+		GameTerms.TECHNIQUES,
 		"Stations",
 		"Chefs",
 		"Events",

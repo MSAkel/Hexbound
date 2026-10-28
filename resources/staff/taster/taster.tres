@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "taster"
-name = "Taster"
+name = "Fusion"
 description = "+15 {flavour} for each different kind of Ingredient on this Station"
 rarity = 0

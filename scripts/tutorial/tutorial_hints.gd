@@ -134,8 +134,8 @@ static func _static_init() -> void:
 		],
 		Context.ANY_CARD_SCREEN, [&"meal_card", &"meal_slot"], PRIORITY_NORMAL)
 	_add(&"sell", CATEGORY_CARDS, "Selling",
-		"Don't need a card? Drag it here to **sell** it for **%d %s**. Staff and %s can be sold here too. A sold card leaves your hand, so it can end the Hour." % [
-			_SellPanelScript.SELL_VALUE, GameTerms.GOLD, GameTerms.CONDIMENTS,
+		"Don't need a card? Drag it here to **sell** it for **%d %s**. %s and %s can be sold here too. A sold card leaves your hand, so it can end the Hour." % [
+			_SellPanelScript.SELL_VALUE, GameTerms.GOLD, GameTerms.TECHNIQUES, GameTerms.CONDIMENTS,
 		],
 		Context.HOUR, [&"sell_panel"], PRIORITY_LOW)
 
@@ -146,7 +146,7 @@ static func _static_init() -> void:
 
 	# Merchant.
 	_add(&"merchant_intro", CATEGORY_MERCHANT, "The Merchant",
-		"Between Days, spend **%s** on new cards and **Staff**. Bought cards go to your hand." % GameTerms.GOLD,
+		"Between Days, spend **%s** on new cards and **%s**. Bought cards go to your hand." % [GameTerms.GOLD, GameTerms.TECHNIQUES],
 		Context.MERCHANT, [&"merchant_cards"], PRIORITY_PANEL)
 	_add(&"merchant_condiments", CATEGORY_MERCHANT, GameTerms.CONDIMENTS,
 		"**%s** are one-use boosts. You can carry **%d** at a time." % [
@@ -162,8 +162,10 @@ static func _static_init() -> void:
 	_add(&"merchant_leave", CATEGORY_MERCHANT, "Next Day",
 		"Leave when you're ready to start the next Day.",
 		Context.MERCHANT, [&"merchant_leave"], PRIORITY_PANEL)
-	_add(&"staff", CATEGORY_MERCHANT, "Staff",
-		"**Staff** work beside a Station. Each one has its own condition for when it helps, so hover a Staff to see what it does. Drag Staff to swap Stations, or onto the sell spot to sell them.",
+	_add(&"staff", CATEGORY_MERCHANT, GameTerms.TECHNIQUES,
+		"**%s** sit beside a Station. Each one has its own condition for when it helps, so hover one to see what it does. Drag a %s to swap Stations, or onto the sell spot to sell it." % [
+			GameTerms.TECHNIQUES, GameTerms.TECHNIQUE,
+		],
 		Context.HOUR, [&"staff_slot"], PRIORITY_NORMAL)
 	_add(&"condiments", CATEGORY_MERCHANT, "Using %s" % GameTerms.CONDIMENTS,
 		"Your **%s** wait here. **Drag** one out to use it. Some need a target spot. Drag one onto the sell spot to **sell** it." % GameTerms.CONDIMENTS,

@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = "aboyeur"
-name = "Aboyeur"
+name = "Rolling Boil"
 description = "After this Station is done, x0.1 {mult} for every {trigger} on it this Hour"
 rarity = 2

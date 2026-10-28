@@ -170,7 +170,7 @@ theme_override_constants/separation = 8
 [node name="StaffOption" type="OptionButton" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/StaffRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-tooltip_text = "Seat the selected staff member in the first empty staff slot."
+tooltip_text = "Seat the selected Technique in the first empty Technique slot."
 
 [node name="AddStaffButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/StaffRow"]
 layout_mode = 2
