@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/double_shot/double_shot.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "double_shot"
+name = "Double Shot"
+description = "Beverages on this Station have a 1 in 5 chance to {trigger} again"
+rarity = 0

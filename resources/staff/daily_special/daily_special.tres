@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/daily_special/daily_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "daily_special"
+name = "Daily Special"
+description = "Gain 2 Gold when the first Meal is served on this Station each Hour"
+rarity = 0

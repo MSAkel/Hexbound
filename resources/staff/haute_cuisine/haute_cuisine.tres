@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/haute_cuisine/haute_cuisine.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "haute_cuisine"
+name = "Haute Cuisine"
+description = "+1 {mult} for every star above the first on cards on this Station"
+rarity = 1

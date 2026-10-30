@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/rolling_boil/rolling_boil.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "rolling_boil"
+name = "Rolling Boil"
+description = "After this Station is done, x0.1 {mult} for every {trigger} on it this Hour"
+rarity = 2

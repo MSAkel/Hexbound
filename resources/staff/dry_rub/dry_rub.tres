@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/dry_rub/dry_rub.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "dry_rub"
+name = "Dry Rub"
+description = "+0.5 {mult} for every Seasoning {triggered} before this Station"
+rarity = 1

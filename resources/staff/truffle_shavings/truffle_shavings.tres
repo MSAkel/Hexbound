@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/truffle_shavings/truffle_shavings.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "truffle_shavings"
+name = "Truffle Shavings"
+description = "x0.1 {mult} for every 5 Gold you have"
+rarity = 2

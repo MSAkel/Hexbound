@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/mise_en_place/mise_en_place.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "mise_en_place"
+name = "Mise en Place"
+description = "Every Dish requires one less Ingredient"
+rarity = 2

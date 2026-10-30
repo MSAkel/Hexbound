@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/double_fry/double_fry.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "double_fry"
+name = "Double Fry"
+description = "Gains +5 {flavour} whenever a card on this Station {retriggers}"
+rarity = 0

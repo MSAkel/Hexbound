@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/foraging/foraging.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "foraging"
+name = "Foraging"
+description = "Gain two random Condiments at the start of each Day"
+rarity = 1

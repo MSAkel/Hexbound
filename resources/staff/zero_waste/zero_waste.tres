@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/zero_waste/zero_waste.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "zero_waste"
+name = "Zero Waste"
+description = "Gain 2 Gold whenever a card on this Station is {destroyed}"
+rarity = 1

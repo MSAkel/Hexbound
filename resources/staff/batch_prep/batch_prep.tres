@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/batch_prep/batch_prep.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "batch_prep"
+name = "Batch Prep"
+description = "+1 {mult} for every Ingredient on this Station"
+rarity = 1
