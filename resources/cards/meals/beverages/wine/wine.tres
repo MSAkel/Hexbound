@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("2_script")
+meal_category = 8
 recipe_required_card_ids = Array[String](["grape"])
 base_production_amount = 4
 type = 2

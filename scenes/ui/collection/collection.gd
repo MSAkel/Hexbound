@@ -138,7 +138,30 @@ func _show_cards() -> void:
 	for card in GameManager.tile_cards_pool:
 		if card is TileCard:
 			cards.append(card)
-	_show_card_uis(cards)
+	_show_card_uis(_with_meals_grouped_by_category(cards))
+
+
+## Same cards in the same order, except the Meals are sorted by category and then by name.
+## Meals keep the spots they had, so Ingredients and Kitchenware do not move.
+func _with_meals_grouped_by_category(cards: Array) -> Array:
+	var meals: Array[MealCard] = []
+	for card in cards:
+		if card is MealCard:
+			meals.append(card as MealCard)
+	meals.sort_custom(func(a: MealCard, b: MealCard) -> bool:
+		if a.meal_category != b.meal_category:
+			return int(a.meal_category) < int(b.meal_category)
+		return a.name.naturalnocasecmp_to(b.name) < 0
+	)
+	var result: Array = []
+	var next_meal := 0
+	for card in cards:
+		if card is MealCard:
+			result.append(meals[next_meal])
+			next_meal += 1
+		else:
+			result.append(card)
+	return result
 
 
 func _show_staff() -> void:

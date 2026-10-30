@@ -170,7 +170,7 @@ const img = (path, cls = "ico") => path && ICONS[path] ? `<img class="${cls}" sr
 const statNum = (n, key) => `<span class="num">${STAT[key] ? `<img src="${STAT[key]}" alt="">` : ""}${n}</span>`;
 const matches = (item) => {
   if (!state.q) return true;
-  const hay = [item.name, item.id, item.type, (item.tags || []).join(" "), item.description?.plain, item.speciality?.plain,
+  const hay = [item.name, item.id, item.type, item.category, (item.tags || []).join(" "), item.description?.plain, item.speciality?.plain,
     item.effect, item.rarity, ...(item.level_perks || []).map((p) => p.plain), ...(item.choices || []).map((p) => p.plain)]
     .join(" ").toLowerCase();
   return state.q.toLowerCase().split(/\s+/).every((w) => hay.includes(w));
@@ -194,29 +194,41 @@ function sorted(items, getters) {
 }
 const uniq = (arr) => [...new Set(arr)].filter(Boolean).sort();
 const TYPE_ORDER = { Ingredient: 0, Kitchenware: 1, Meal: 2 };
+// Same order as MealCard.MealCategory, so the chips read like a menu.
+const MEAL_CATEGORY_ORDER = ["Meat", "Poultry", "Seafood", "Salad", "Dessert", "Side", "Sauce & Dip", "Beverage"];
+// Kind counts and named cards. Meals that only name cards, like Wine, still get a line.
+function recipeLine(c) {
+  const kinds = Object.entries(c.recipe || {}).map(([k, n]) => `${n} ${esc(k)}`);
+  const named = (c.recipe_cards || []).map(esc);
+  if (!kinds.length && !named.length) return "";
+  const parts = [kinds.join(", "), named.length ? `needs ${named.join(", ")}` : ""].filter(Boolean);
+  return `<div class="recipe">Recipe: ${parts.join(" · ")}</div>`;
+}
 
 function viewCards() {
   let items = DATA.cards.filter(matches);
   const f = state.f;
   if (f.type) items = items.filter((c) => c.type === f.type);
   if (f.tag) items = items.filter((c) => c.tags.includes(f.tag));
+  if (f.category) items = items.filter((c) => c.category === f.category);
   if (f.product) items = items.filter((c) => c.product === f.product);
   if (f.starter) items = items.filter((c) => (f.starter === "Starters") === c.starting_hand);
   items = sorted(items, { name: (c) => c.name, type: (c) => TYPE_ORDER[c.type] ?? 9, output: (c) => c.base_amount, price: (c) => c.price });
   const tags = uniq(DATA.cards.flatMap((c) => c.tags)).filter((t) => t !== "Kitchenware" && t !== "Dish");
   const products = uniq(DATA.cards.map((c) => c.product)).filter((p) => p !== "None");
+  const categories = MEAL_CATEGORY_ORDER.filter((cat) => DATA.cards.some((c) => c.category === cat));
   return `<div class="filters">${filterChips("type", "Type", ["Ingredient", "Kitchenware", "Meal"])}
-      ${filterChips("tag", "Kind", tags)}${filterChips("product", "Makes", products)}${filterChips("starter", "Hand", ["Starters", "Shop only"])}</div>
+      ${filterChips("tag", "Kind", tags)}${categories.length ? filterChips("category", "Category", categories) : ""}${filterChips("product", "Makes", products)}${filterChips("starter", "Hand", ["Starters", "Shop only"])}</div>
     <div class="resultline">${items.length} of ${DATA.cards.length} cards</div>
     <div class="list"><div class="head g-cards"><span></span>${sortHead("name", "Card")}${sortHead("output", "Output")}${sortHead("price", "Price")}<span>Effect</span></div>
     ${items.map((c) => `<div class="row g-cards">${img(c.icon)}
       <div><div class="name">${esc(c.name)}</div><div class="sub"><span class="badge t-${c.type}">${c.type}</span>
-        ${c.tags.filter((t) => t !== c.type && t !== "Dish").map((t) => `<span class="tag">${esc(t)}</span>`).join("")}
+        ${c.category ? `<span class="tag">${esc(c.category)}</span>` : c.tags.filter((t) => t !== c.type && t !== "Dish").map((t) => `<span class="tag">${esc(t)}</span>`).join("")}
         ${c.starting_hand ? `<span class="starter">Starter</span>` : ""}</div></div>
       <div class="cell-stats"><div>${c.base_amount ? statNum(c.base_amount, PRODUCT_ICON[c.product]) : `<span class="num dim">–</span>`}</div>
       <div>${statNum(c.price, "gold")}</div></div>
       <div class="desc">${rich(c.description.raw)}
-        ${c.recipe && Object.keys(c.recipe).length ? `<div class="recipe">Recipe: ${Object.entries(c.recipe).map(([k, n]) => `${n} ${esc(k)}`).join(", ")}${c.recipe_cards?.length ? ` · needs ${c.recipe_cards.map(esc).join(", ")}` : ""}</div>` : ""}
+        ${recipeLine(c)}
         ${c.once_per_hour ? `<div class="recipe">Once per Hour</div>` : ""}
         <div class="file">${esc(c.file.replace("res://", ""))}${c.script ? ` · ${esc(c.script)}` : ""}</div></div></div>`).join("") || `<div class="empty">No cards match. Clear a filter or the search.</div>`}</div>`;
 }

@@ -8,6 +8,24 @@ extends TileCard
 
 const SERVING_GOLD := 1
 
+## Menu category, named after the Meal's main ingredient or course. Separate from ingredient_tags
+## on purpose. Kind queries such as "per Meat on the station" read those tags and count Meals too,
+## so tagging a Meal as Meat would change balance. Values are saved in .tres files as ints, so
+## append new categories at the end and never reorder.
+enum MealCategory {
+	NONE = 0,
+	MEAT = 1,
+	POULTRY = 2,
+	SEAFOOD = 3,
+	SALAD = 4,
+	DESSERT = 5,
+	SIDE = 6,
+	SAUCE = 7,
+	BEVERAGE = 8,
+}
+
+@export var meal_category: MealCategory = MealCategory.NONE
+
 ## Station requirements, counted across the station's regular spots.
 @export var recipe_vegetable_count: int = 0
 @export var recipe_fruit_count: int = 0
@@ -19,6 +37,15 @@ const SERVING_GOLD := 1
 @export var recipe_kitchenware_count: int = 0
 ## Specific cards that must sit on the station, by id. Wine needs Grape.
 @export var recipe_required_card_ids: Array[String] = []
+
+
+## Card faces and the inspect panel show the category, such as Meal · Seafood, instead of the
+## Dish or Beverage tag. Falls back to the tags when no category is set.
+func get_distinct_recipe_tag_label() -> String:
+	var label := GameTerms.get_meal_category_label(meal_category)
+	if label.is_empty():
+		return super.get_distinct_recipe_tag_label()
+	return label
 
 
 ## What one fire of this Meal produces. multiplicative_mult of 1.0 means none.
@@ -129,6 +156,16 @@ func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 
 #region --- Requirements ---
+## True when this Meal would be served if it fired now. Its requirements are met and it is not
+## idle in a locked second Meal slot. A Failed or idle Meal does not count.
+func is_serving(tile: Hex) -> bool:
+	if tile == null or tile.map == null:
+		return false
+	if StationManager.is_meal_slot_locked(tile.coordinates):
+		return false
+	return is_recipe_ready(tile)
+
+
 ## Number of cards the requirements ask for, before any staff discount.
 func get_recipe_size() -> int:
 	var total := recipe_required_card_ids.size()

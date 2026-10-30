@@ -26,6 +26,12 @@ const HOUR := "Hour"
 const CONDIMENTS := "Condiments"
 const MEAL := "Meal"
 const DISH := "Dish"
+# Meal categories. Meat and Seafood reuse the ingredient kind names above.
+const POULTRY := "Poultry"
+const SALAD := "Salad"
+const DESSERT := "Dessert"
+const SIDE := "Side"
+const SAUCE := "Sauce & Dip"
 const MEAL_SLOT := "Meal Slot"
 const HYBRID := "Hybrid"
 const GARNISH := "Garnish"
@@ -75,6 +81,29 @@ static func get_ingredient_kind_label(kind: StringName) -> String:
 			return KITCHENWARE
 		TileCard.TAG_DISH:
 			return DISH
+		_:
+			return ""
+
+
+## Player-facing name of a Meal category. Empty for NONE.
+static func get_meal_category_label(category: MealCard.MealCategory) -> String:
+	match category:
+		MealCard.MealCategory.MEAT:
+			return MEAT
+		MealCard.MealCategory.POULTRY:
+			return POULTRY
+		MealCard.MealCategory.SEAFOOD:
+			return SEAFOOD
+		MealCard.MealCategory.SALAD:
+			return SALAD
+		MealCard.MealCategory.DESSERT:
+			return DESSERT
+		MealCard.MealCategory.SIDE:
+			return SIDE
+		MealCard.MealCategory.SAUCE:
+			return SAUCE
+		MealCard.MealCategory.BEVERAGE:
+			return BEVERAGE
 		_:
 			return ""
 
