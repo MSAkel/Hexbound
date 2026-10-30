@@ -20,7 +20,7 @@ const PROBE_TIME_SCALE := 6.0
 
 ## Regular spots per station, in fire order. Empty strings stay open for the clip.
 const BOARD := [
-	["meat", "salt", "onion", "skillet", "chicken", ""],
+	["steak", "salt", "black_pepper", "skillet", "chicken", ""],
 	["lobster", "butter", "whisk", "milk", "salmon", ""],
 	["chocolate", "cream", "sugar", "kitchen_torch", "lettuce", ""],
 	["olive", "apple", "chef_knife", "", "blender", "lemon"],

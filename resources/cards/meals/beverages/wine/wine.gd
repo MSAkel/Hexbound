@@ -1,7 +1,7 @@
 extends MealCard
 
 ## Needs Grape on its station. +4 Mult, then x1 Mult that gains x0.25 for each station
-## serving a Meat dish.
+## serving a Meat dish. A Meat dish is a Meal in the Meat category. Poultry does not count.
 
 const XMULT_PER_MEAT_STATION := 0.25
 
@@ -32,6 +32,6 @@ func _meat_dishes(tile: Hex) -> Array[TileCard]:
 	var dishes: Array[TileCard] = []
 	for card: TileCard in _get_all_placed_tile_cards(tile, TileCardType.MEAL):
 		var meal := card as MealCard
-		if meal != null and meal.recipe_meat_count > 0:
+		if meal != null and meal.meal_category == MealCategory.MEAT:
 			dishes.append(card)
 	return dishes

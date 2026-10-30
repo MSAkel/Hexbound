@@ -156,6 +156,16 @@ func get_trigger_preview_gold_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 
 #region --- Requirements ---
+## True when this Meal would be served if it fired now. Its requirements are met and it is not
+## idle in a locked second Meal slot. A Failed or idle Meal does not count.
+func is_serving(tile: Hex) -> bool:
+	if tile == null or tile.map == null:
+		return false
+	if StationManager.is_meal_slot_locked(tile.coordinates):
+		return false
+	return is_recipe_ready(tile)
+
+
 ## Number of cards the requirements ask for, before any staff discount.
 func get_recipe_size() -> int:
 	var total := recipe_required_card_ids.size()
