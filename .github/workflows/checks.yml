@@ -1,0 +1,67 @@
+name: Godot checks
+
+# Imports and boots the project headless, then runs the playtest bot and a fuzz pass.
+# Fails on script/parse errors (which Godot doesn't always turn into a non-zero exit)
+# and on any failed playtest case.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      playtest_runs:
+        description: Seeds per chef for the bot playtest
+        default: "1"
+      fuzz_runs:
+        description: Seeds per chef for the fuzz pass
+        default: "20"
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.7-stable
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+
+      - name: Download Godot ${{ env.GODOT_VERSION }}
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}_linux.x86_64 ~/godot/godot
+          chmod +x ~/godot/godot
+
+      - name: Run checks
+        env:
+          PLAYTEST_RUNS: ${{ github.event.inputs.playtest_runs || '1' }}
+          FUZZ_RUNS: ${{ github.event.inputs.fuzz_runs || '20' }}
+          LOG_DIR: ci-logs
+        run: |
+          export GODOT="$HOME/godot/godot"
+          "$GODOT" --version
+          .github/scripts/godot_checks.sh
+
+      - name: Upload logs and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-check-logs
+          path: ci-logs/
+          retention-days: 14
