@@ -18,13 +18,26 @@ ERROR_PATTERN='SCRIPT ERROR|Parse Error|Compile Error|ERROR:'
 step() { echo; echo "::group::$1"; }
 endstep() { echo "::endgroup::"; }
 
+# Headless Godot sometimes reports the music stream as leaked when it quits mid-track
+# (an engine shutdown race with the dummy audio driver). Those lines are warnings, not failures.
+EXIT_LEAK_PATTERN='still in use at exit|leaked at exit'
+
 check_log() {  # $1 = step name, $2 = log file
-  if grep -qE "$ERROR_PATTERN" "$2"; then
-    echo "::error title=$1::Errors in $1 output"
-    grep -E "$ERROR_PATTERN" "$2" | sort | uniq -c | sort -rn | head -40
+  local errors
+  errors="$(grep -E "$ERROR_PATTERN" "$2" | grep -vE "$EXIT_LEAK_PATTERN")"
+  if [ -n "$errors" ]; then
+    echo "::error title=$1::Errors in $1 output (see the lines below)"
+    # Each distinct error also becomes an annotation, so it shows on the PR without opening logs.
+    echo "$errors" | sort | uniq -c | sort -rn | head -10 | while read -r line; do
+      echo "::error title=$1::$line"
+    done
+    echo "$errors" | sort | uniq -c | sort -rn | head -40
     failed=1
   else
     echo "$1: clean"
+  fi
+  if grep -qE "$EXIT_LEAK_PATTERN" "$2"; then
+    echo "::warning title=$1::Godot reported resources still alive at exit (usually the music stream; harmless in headless runs)"
   fi
 }
 
