@@ -22,3 +22,6 @@ tools
 docs
 # Python bytecode
 __pycache__/
+
+# CI check logs (.github/scripts/godot_checks.sh)
+ci-logs/

@@ -32,6 +32,31 @@ and list picks with `scripts/debug/analyze_pick_report.py`.
 
 After gameplay or balance changes, run at least `--runs=2` and a `--fuzz` pass before calling it done.
 
+## Push checks (CI)
+
+`.github/workflows/checks.yml` runs on every push to `main` and every pull request:
+import, boot, 1 bot playtest per chef and 20 fuzz runs per chef (~4 min). It fails on any
+`SCRIPT ERROR` / `Parse Error` / `ERROR:` line, since Godot often exits 0 when scripts fail to
+compile. Run the same checks locally (Git Bash on Windows) with:
+
+```
+GODOT="/path/to/godot_console" .github/scripts/godot_checks.sh
+```
+
+Logs and playtest reports are uploaded as the `godot-check-logs` artifact on each run.
+Bigger runs: Actions → Godot checks → Run workflow, and set the seed counts.
+
+## Content catalog
+
+`scenes/debug/export_catalog.tscn` writes every card, Technique, condiment, station and chef to
+JSON using the game's own loaders. `scripts/debug/catalog/build_catalog_page.py` (needs Pillow)
+turns that JSON into a single self-contained HTML page with search, filters and the game's icons:
+
+```
+godot --headless --path . res://scenes/debug/export_catalog.tscn -- --out=catalog.json
+python scripts/debug/catalog/build_catalog_page.py catalog.json catalog.html --commit=<sha>
+```
+
 ## Design notes
 
 - Difficulty 0 is intentionally easy. Don't treat a 100% win rate there as a balance problem;

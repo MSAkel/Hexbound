@@ -1,0 +1,302 @@
+<title>Flavour Pass Catalog</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a kitchen pass. Sticky header with search and tabs; content as a scannable ticket list. */
+@font-face { font-family: "Gimbot"; src: url(data:font/otf;base64,/*__FONT__*/) format("opentype"); font-display: swap; }
+:root {
+  --bg: #eef2ef; --surface: #ffffff; --surface-2: #f6f8f6; --fg: #17211c; --muted: #5a6a62; --rule: #d6ded9;
+  --keyword: #2e855c; --keyword-bg: #e3f1ea;
+  --ingredient: #b0631a; --ingredient-bg: #fbeedd;
+  --kitchenware: #3e6b8a; --kitchenware-bg: #e2edf5;
+  --meal: #8a3e6e; --meal-bg: #f5e3ef;
+  --common: #5a6a62; --uncommon: #2e7a8a; --rare: #9a5b12;
+  --focus: #2e855c;
+  --display: "Gimbot", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121815; --surface: #1a221e; --surface-2: #202a25; --fg: #e6ede9; --muted: #98a8a0; --rule: #2e3a34;
+  --keyword: #6fcf9c; --keyword-bg: #1f3a2d;
+  --ingredient: #f0a35a; --ingredient-bg: #3a2814;
+  --kitchenware: #8bbbe0; --kitchenware-bg: #1c2e3c;
+  --meal: #e39ccb; --meal-bg: #3a2032;
+  --common: #98a8a0; --uncommon: #6cc6d6; --rare: #e8b060; --focus: #6fcf9c; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #121815; --surface: #1a221e; --surface-2: #202a25; --fg: #e6ede9; --muted: #98a8a0; --rule: #2e3a34;
+  --keyword: #6fcf9c; --keyword-bg: #1f3a2d;
+  --ingredient: #f0a35a; --ingredient-bg: #3a2814;
+  --kitchenware: #8bbbe0; --kitchenware-bg: #1c2e3c;
+  --meal: #e39ccb; --meal-bg: #3a2032;
+  --common: #98a8a0; --uncommon: #6cc6d6; --rare: #e8b060; --focus: #6fcf9c; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.top .wrap { display: flex; flex-direction: column; gap: 12px; padding-block: 16px 0; }
+.titlerow { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font: 400 clamp(26px, 4vw, 34px)/1.05 var(--display); letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.meta { font: 500 12px/1.4 var(--mono); color: var(--muted); }
+.searchrow { display: flex; gap: 8px; }
+#q { flex: 1; min-width: 0; font: 15px var(--body); color: var(--fg); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 12px; }
+#q:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; font: 700 14px var(--body); color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px 10px; cursor: pointer; }
+.tab .n { font: 500 12px var(--mono); margin-left: 6px; color: var(--muted); }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--keyword); }
+
+main .wrap { padding-block: 16px 48px; display: flex; flex-direction: column; gap: 14px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.fgroup { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.flabel { font: 700 11px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.chip { font: 13px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.resultline { font: 500 12px var(--mono); color: var(--muted); }
+
+.list { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.head, .row { display: grid; gap: 12px; align-items: start; padding: 10px 14px; }
+.head { background: var(--surface-2); border-bottom: 1px solid var(--rule); font: 700 11px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); align-items: center; }
+.head button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+.head button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+.head button[data-dir]::after { content: attr(data-dir); font-family: var(--mono); }
+.row + .row { border-top: 1px solid var(--rule); }
+.g-cards { grid-template-columns: 52px minmax(150px, 1.1fr) 92px 64px minmax(0, 2.4fr); }
+.g-tech { grid-template-columns: minmax(150px, 1fr) 96px 64px minmax(0, 3fr); }
+.g-cond { grid-template-columns: 52px minmax(150px, 1fr) 64px 96px minmax(0, 2.6fr); }
+.ico { width: 48px; height: 48px; object-fit: contain; image-rendering: auto; }
+.name { font-weight: 700; }
+.sub { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.badge { font: 700 11px var(--body); letter-spacing: 0.04em; border-radius: 4px; padding: 1px 6px; }
+.t-Ingredient { color: var(--ingredient); background: var(--ingredient-bg); }
+.t-Kitchenware { color: var(--kitchenware); background: var(--kitchenware-bg); }
+.t-Meal { color: var(--meal); background: var(--meal-bg); }
+.tag { font: 12px var(--body); color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 0 6px; }
+.starter { font: 12px var(--body); color: var(--keyword); }
+.num { font: 500 14px var(--mono); font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.num img { width: 18px; height: 18px; object-fit: contain; }
+.dim { color: var(--muted); }
+.desc { min-width: 0; }
+.recipe { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.kw { color: var(--keyword); font-weight: 700; white-space: nowrap; }
+.kw img { width: 16px; height: 16px; object-fit: contain; vertical-align: -3px; margin-right: 2px; }
+.rarity { font: 700 12px var(--body); }
+.r-Common { color: var(--common); } .r-Uncommon { color: var(--uncommon); } .r-Rare { color: var(--rare); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; border: 1px solid var(--rule); }
+.file { font: 500 11px var(--mono); color: var(--muted); margin-top: 4px; overflow-wrap: anywhere; }
+.empty { padding: 32px 16px; text-align: center; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel h2 { font: 400 22px/1.1 var(--display); margin: 0; display: flex; align-items: center; gap: 10px; }
+.panel h2 .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.panel h3 { font: 700 11px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+.needs { display: flex; flex-wrap: wrap; gap: 6px; }
+.need { font: 13px var(--body); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 6px; padding: 2px 8px; }
+.need b { font-family: var(--mono); font-weight: 500; }
+ol.levels, ul.choices { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+ol.levels li { display: grid; grid-template-columns: 44px 1fr; gap: 8px; }
+ol.levels .lv { font: 500 12px var(--mono); color: var(--muted); padding-top: 2px; }
+ul.choices li::before { content: "or "; color: var(--muted); }
+ul.choices li:first-child::before { content: ""; }
+.chef { flex-direction: row; align-items: center; gap: 16px; }
+.chef img { width: 88px; height: 88px; object-fit: contain; flex: none; }
+.glossary { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.glossary .kw { margin-right: 4px; }
+
+@media (max-width: 760px) {
+  .head { display: none; }
+  .g-cards, .g-cond { grid-template-columns: 48px minmax(0, 1fr); }
+  .g-tech { grid-template-columns: minmax(0, 1fr); }
+  .g-cards > :nth-child(n+3), .g-cond > :nth-child(n+3) { grid-column: 2; }
+  .row .cell-stats { display: flex; gap: 14px; }
+}
+@media (min-width: 761px) { .cell-stats { display: contents; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="titlerow">
+      <h1>Flavour Pass Catalog</h1>
+      <div class="meta" id="meta"></div>
+    </div>
+    <div class="searchrow">
+      <label for="q" hidden>Search</label>
+      <input id="q" type="search" placeholder="Search names and effects, e.g. garnish, seafood, trigger" autocomplete="off">
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+<main><div class="wrap" id="view"></div></main>
+
+<script>
+const DATA = /*__DATA__*/null;
+const ICONS = /*__ICONS__*/null;
+const STAT = /*__STAT_ICONS__*/null;
+
+const TABS = [
+  { id: "cards", label: "Cards", items: DATA.cards },
+  { id: "techniques", label: "Techniques", items: DATA.techniques },
+  { id: "condiments", label: "Condiments", items: DATA.condiments },
+  { id: "stations", label: "Stations", items: DATA.stations },
+  { id: "chefs", label: "Chefs", items: DATA.chefs },
+];
+const KEYWORD_ICON = { flavour: "flavour", mult: "mult", garnish: "garnish", garnished: "garnish", garnishes: "garnish",
+  trigger: "trigger", triggers: "trigger", triggered: "trigger", retrigger: "trigger", retriggers: "trigger" };
+const KEYWORD_LABEL = { flavour: "Flavour", mult: "Mult", garnish: "Garnish", garnished: "Garnished", garnishes: "Garnishes",
+  trigger: "Trigger", triggers: "Triggers", triggered: "Triggered", retrigger: "Retrigger", retriggers: "Retriggers",
+  following: "Following", destroy: "Destroy", destroys: "Destroys", destroyed: "Destroyed" };
+const PRODUCT_ICON = { Flavour: "flavour", Mult: "mult", Gold: "gold" };
+
+const state = { tab: "cards", q: "", sort: { key: "name", dir: 1 }, f: {} };
+try { const saved = JSON.parse(localStorage.getItem("fp-catalog") || "{}"); if (saved.sort) state.sort = saved.sort; } catch (e) {}
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function rich(raw) {
+  return esc(raw).replace(/\{([a-z_]+)\}/g, (m, tok) => {
+    const icon = KEYWORD_ICON[tok] ? `<img src="${STAT[KEYWORD_ICON[tok]]}" alt="">` : "";
+    return `<span class="kw">${icon}${esc(KEYWORD_LABEL[tok] || tok)}</span>`;
+  });
+}
+const img = (path, cls = "ico") => path && ICONS[path] ? `<img class="${cls}" src="${ICONS[path]}" alt="" loading="lazy">` : `<span class="${cls}"></span>`;
+const statNum = (n, key) => `<span class="num">${STAT[key] ? `<img src="${STAT[key]}" alt="">` : ""}${n}</span>`;
+const matches = (item) => {
+  if (!state.q) return true;
+  const hay = [item.name, item.id, item.type, (item.tags || []).join(" "), item.description?.plain, item.speciality?.plain,
+    item.effect, item.rarity, ...(item.level_perks || []).map((p) => p.plain), ...(item.choices || []).map((p) => p.plain)]
+    .join(" ").toLowerCase();
+  return state.q.toLowerCase().split(/\s+/).every((w) => hay.includes(w));
+};
+
+function filterChips(key, label, values) {
+  const cur = state.f[key] || "";
+  return `<div class="fgroup"><span class="flabel">${label}</span>` +
+    ["", ...values].map((v) => `<button class="chip" data-f="${key}" data-v="${esc(v)}" aria-pressed="${cur === v}">${v || "All"}</button>`).join("") + `</div>`;
+}
+function sortHead(key, label) {
+  const dir = state.sort.key === key ? (state.sort.dir > 0 ? "↑" : "↓") : null;
+  return `<span><button data-sort="${key}"${dir ? ` data-dir="${dir}"` : ""}>${label}</button></span>`;
+}
+function sorted(items, getters) {
+  const g = getters[state.sort.key] || getters.name;
+  return [...items].sort((a, b) => {
+    const x = g(a), y = g(b);
+    return (typeof x === "number" ? x - y : String(x).localeCompare(String(y))) * state.sort.dir || a.name.localeCompare(b.name);
+  });
+}
+const uniq = (arr) => [...new Set(arr)].filter(Boolean).sort();
+const TYPE_ORDER = { Ingredient: 0, Kitchenware: 1, Meal: 2 };
+
+function viewCards() {
+  let items = DATA.cards.filter(matches);
+  const f = state.f;
+  if (f.type) items = items.filter((c) => c.type === f.type);
+  if (f.tag) items = items.filter((c) => c.tags.includes(f.tag));
+  if (f.product) items = items.filter((c) => c.product === f.product);
+  if (f.starter) items = items.filter((c) => (f.starter === "Starters") === c.starting_hand);
+  items = sorted(items, { name: (c) => c.name, type: (c) => TYPE_ORDER[c.type] ?? 9, output: (c) => c.base_amount, price: (c) => c.price });
+  const tags = uniq(DATA.cards.flatMap((c) => c.tags)).filter((t) => t !== "Kitchenware" && t !== "Dish");
+  const products = uniq(DATA.cards.map((c) => c.product)).filter((p) => p !== "None");
+  return `<div class="filters">${filterChips("type", "Type", ["Ingredient", "Kitchenware", "Meal"])}
+      ${filterChips("tag", "Kind", tags)}${filterChips("product", "Makes", products)}${filterChips("starter", "Hand", ["Starters", "Shop only"])}</div>
+    <div class="resultline">${items.length} of ${DATA.cards.length} cards</div>
+    <div class="list"><div class="head g-cards"><span></span>${sortHead("name", "Card")}${sortHead("output", "Output")}${sortHead("price", "Price")}<span>Effect</span></div>
+    ${items.map((c) => `<div class="row g-cards">${img(c.icon)}
+      <div><div class="name">${esc(c.name)}</div><div class="sub"><span class="badge t-${c.type}">${c.type}</span>
+        ${c.tags.filter((t) => t !== c.type && t !== "Dish").map((t) => `<span class="tag">${esc(t)}</span>`).join("")}
+        ${c.starting_hand ? `<span class="starter">Starter</span>` : ""}</div></div>
+      <div class="cell-stats"><div>${c.base_amount ? statNum(c.base_amount, PRODUCT_ICON[c.product]) : `<span class="num dim">–</span>`}</div>
+      <div>${statNum(c.price, "gold")}</div></div>
+      <div class="desc">${rich(c.description.raw)}
+        ${c.recipe && Object.keys(c.recipe).length ? `<div class="recipe">Recipe: ${Object.entries(c.recipe).map(([k, n]) => `${n} ${esc(k)}`).join(", ")}${c.recipe_cards?.length ? ` · needs ${c.recipe_cards.map(esc).join(", ")}` : ""}</div>` : ""}
+        ${c.once_per_hour ? `<div class="recipe">Once per Hour</div>` : ""}
+        <div class="file">${esc(c.file.replace("res://", ""))}${c.script ? ` · ${esc(c.script)}` : ""}</div></div></div>`).join("") || `<div class="empty">No cards match. Clear a filter or the search.</div>`}</div>`;
+}
+
+const RARITY_ORDER = { Common: 0, Uncommon: 1, Rare: 2 };
+function viewTechniques() {
+  let items = DATA.techniques.filter(matches);
+  if (state.f.rarity) items = items.filter((t) => t.rarity === state.f.rarity);
+  items = sorted(items, { name: (t) => t.name, rarity: (t) => RARITY_ORDER[t.rarity], price: (t) => t.price });
+  return `<div class="filters">${filterChips("rarity", "Rarity", ["Common", "Uncommon", "Rare"])}</div>
+    <div class="resultline">${items.length} of ${DATA.techniques.length} techniques</div>
+    <div class="list"><div class="head g-tech">${sortHead("name", "Technique")}${sortHead("rarity", "Rarity")}${sortHead("price", "Price")}<span>Effect</span></div>
+    ${items.map((t) => `<div class="row g-tech"><div class="name">${esc(t.name)}</div>
+      <div class="cell-stats"><div class="rarity r-${t.rarity}">${t.rarity}</div><div>${statNum(t.price, "gold")}</div></div>
+      <div class="desc">${rich(t.description.raw)}<div class="file">${esc(t.file.replace("res://", ""))}</div></div></div>`).join("") || `<div class="empty">No techniques match.</div>`}</div>`;
+}
+
+function viewCondiments() {
+  let items = DATA.condiments.filter(matches);
+  if (state.f.target) items = items.filter((c) => c.target === state.f.target);
+  items = sorted(items, { name: (c) => c.name, price: (c) => c.price, target: (c) => c.target });
+  const targetLabel = { None: "No target", Tile: "One spot", "Two Tile": "Two spots" };
+  return `<div class="filters">${filterChips("target", "Used on", uniq(DATA.condiments.map((c) => c.target)))}</div>
+    <div class="resultline">${items.length} of ${DATA.condiments.length} condiments</div>
+    <div class="list"><div class="head g-cond"><span></span>${sortHead("name", "Condiment")}${sortHead("price", "Price")}${sortHead("target", "Used on")}<span>Effect</span></div>
+    ${items.map((c) => `<div class="row g-cond">${img(c.icon)}
+      <div><div class="name"><span class="swatch" style="background:#${esc(c.color)}"></span>${esc(c.name)}</div><div class="sub"><span class="tag">${esc(c.effect)}</span></div></div>
+      <div class="cell-stats"><div>${statNum(c.price, "gold")}</div><div class="dim">${targetLabel[c.target] || esc(c.target)}</div></div>
+      <div class="desc">${rich(c.description.raw)}<div class="file">${esc(c.file.replace("res://", ""))}</div></div></div>`).join("") || `<div class="empty">No condiments match.</div>`}</div>`;
+}
+
+function viewStations() {
+  const items = DATA.stations.filter(matches).sort((a, b) => a.name.localeCompare(b.name));
+  return `<div class="resultline">${items.length} of ${DATA.stations.length} stations</div><div class="grid">
+    ${items.map((s) => `<section class="panel"><h2><span class="dot" style="background:#${esc(s.color)}"></span>${esc(s.name)}</h2>
+      <div><h3>Needs</h3><div class="needs">${Object.entries(s.needs).map(([k, n]) => `<span class="need"><b>${n}</b> ${esc(k)}</span>`).join("")}</div></div>
+      <div><h3>Level perks</h3><ol class="levels">${s.level_perks.map((p, i) => `<li><span class="lv">Lv ${i + 1}</span><span>${rich(p.raw)}</span></li>`).join("")}</ol></div>
+      ${s.choices.length ? `<div><h3>Upgrade choice</h3><ul class="choices">${s.choices.map((p) => `<li>${rich(p.raw)}</li>`).join("")}</ul></div>` : ""}
+      <div class="file">${esc(s.file.replace("res://", ""))}</div></section>`).join("") || `<div class="empty">No stations match.</div>`}</div>`;
+}
+
+function viewChefs() {
+  const items = DATA.chefs.filter(matches);
+  return `<div class="grid">${items.map((c) => `<section class="panel chef">${img(c.icon, "")}<div><h2>${esc(c.name)}</h2>
+      <p style="margin:6px 0 0">${rich(c.speciality.raw)}</p><div class="file">${esc(c.file.replace("res://", ""))}</div></div></section>`).join("") || `<div class="empty">No chefs match.</div>`}</div>`;
+}
+
+const VIEWS = { cards: viewCards, techniques: viewTechniques, condiments: viewCondiments, stations: viewStations, chefs: viewChefs };
+const glossary = () => `<div class="glossary">${DATA.keywords.map((k) => `<span>${rich("{" + k.id + "}")} ${esc(k.tooltip)}</span>`).join("")}</div>`;
+
+function render() {
+  document.getElementById("tabs").innerHTML = TABS.map((t) => {
+    const n = t.items.filter(matches).length;
+    return `<button class="tab" role="tab" data-tab="${t.id}" aria-selected="${state.tab === t.id}">${t.label}<span class="n">${n}</span></button>`;
+  }).join("");
+  document.getElementById("view").innerHTML = VIEWS[state.tab]() + (state.tab === "cards" ? glossary() : "");
+}
+
+document.getElementById("meta").textContent =
+  `v${DATA.version}${DATA.commit ? " · " + DATA.commit : ""} · exported ${DATA.exported_at.replace("T", " ").slice(0, 16)} UTC`;
+document.getElementById("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); render(); });
+document.addEventListener("click", (e) => {
+  const tab = e.target.closest("[data-tab]");
+  if (tab) { location.hash = tab.dataset.tab; return; }
+  const chip = e.target.closest("[data-f]");
+  if (chip) { state.f[chip.dataset.f] = chip.dataset.v; render(); return; }
+  const sort = e.target.closest("[data-sort]");
+  if (sort) {
+    const key = sort.dataset.sort;
+    state.sort = { key, dir: state.sort.key === key ? -state.sort.dir : 1 };
+    try { localStorage.setItem("fp-catalog", JSON.stringify({ sort: state.sort })); } catch (err) {}
+    render();
+  }
+});
+function fromHash() {
+  const id = location.hash.slice(1);
+  state.tab = VIEWS[id] ? id : "cards";
+  state.f = {};
+  render();
+}
+window.addEventListener("hashchange", fromHash);
+fromHash();
+</script>
