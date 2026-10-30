@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/debug/catalog/export_catalog.gd" id="1_export"]
+
+[node name="ExportCatalog" type="Node"]
+script = ExtResource("1_export")
