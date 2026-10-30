@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("2_script")
+meal_category = 8
 base_production_amount = 2
 type = 2
 product = 2

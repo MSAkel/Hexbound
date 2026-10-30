@@ -99,6 +99,7 @@ func _cards() -> Array:
 					recipe[pair[0]] = pair[1]
 			entry["recipe"] = recipe
 			entry["recipe_cards"] = meal.recipe_required_card_ids
+			entry["category"] = GameTerms.get_meal_category_label(meal.meal_category)
 		result.append(entry)
 	return result
 
