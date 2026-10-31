@@ -28,7 +28,7 @@ const BOARD := [
 const MEALS := ["grilled_steak", "lobster_roll", "creme_brulee", ""]
 const STAFF := ["", "brine", "", ""]
 const HAND := ["grape", "lemon", "chili_pepper"]
-const OFFER := ["coffee", "wine", "cheese_fondue"]
+const OFFER := ["coffee", "wine", "hot_dog"]
 ## Where the board's grape and wine go in the last station.
 const CLIP_STATION := 3
 const GRAPE_SPOT := 3

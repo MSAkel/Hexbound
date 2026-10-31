@@ -69,7 +69,7 @@ func maybe_repeat_kitchenware(tile: Hex, card: TileCard) -> void:
 		return
 	if card.type != TileCard.TileCardType.KITCHENWARE:
 		return
-	# Cards that cannot be retriggered (Fire Extinguisher, Chef's Knife) do not count toward the repeat.
+	# Cards that cannot be retriggered (Chef's Knife) do not count toward the repeat.
 	if not card.can_be_triggered_by_other_card(tile):
 		return
 	if _sous_chef_bonus_active:

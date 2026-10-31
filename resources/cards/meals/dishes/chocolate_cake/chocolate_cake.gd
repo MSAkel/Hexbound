@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Chocolate. Starts at x1 Mult and gains x0.25 for each different Sweet on its station.
+## Needs Chocolate, another Sweet and a Kitchenware. Starts at x1 Mult and gains x0.25 for each different Sweet on its station.
 
 const XMULT_PER_SWEET := 0.25
 

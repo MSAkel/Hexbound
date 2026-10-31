@@ -202,6 +202,13 @@ func output_scale_for(tile: Hex, card: TileCard) -> float:
 		var neighbour := hex.active_tile_card
 		if neighbour != null and neighbour != card:
 			scale *= neighbour.station_output_scale_for(card)
+	for side_index: int in [segment_index - 1, segment_index + 1]:
+		if side_index < 0 or side_index >= tile.map.get_segment_count():
+			continue
+		for hex: Hex in tile.map.get_hexes_in_segment(side_index):
+			var side_card := hex.active_tile_card
+			if side_card != null and side_card != card:
+				scale *= side_card.neighbour_station_output_scale_for(card, hex)
 	return scale
 
 

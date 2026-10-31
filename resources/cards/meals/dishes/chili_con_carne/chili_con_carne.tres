@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MealCard" format=3]
+
+[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/cards/meals/dishes/chili_con_carne/chili_con_carne.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+meal_category = 1
+recipe_meat_count = 1
+recipe_required_card_ids = Array[String](["chili_flakes", "onion"])
+base_production_amount = 4
+type = 2
+product = 2
+ingredient_tags = Array[StringName]([&"dish"])
+id = "chili_con_carne"
+name = "Chili con Carne"
+icon = ExtResource("1_icon")
+description = "+4 {mult}. Gains the {flavour} of the Meat on its Station x1.5."
+metadata/_custom_type_script = "uid://d4h7dishcrd01"
