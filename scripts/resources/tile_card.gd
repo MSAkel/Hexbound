@@ -733,6 +733,12 @@ func station_output_scale_for(_card: TileCard) -> float:
 	return 1.0
 
 
+## Scale this seated card lends to a card on the station on either side of its own.
+## own_tile is this card's hex. StationManager reads it with station_output_scale_for. Vinaigrette lifts Salads.
+func neighbour_station_output_scale_for(_card: TileCard, _own_tile: Hex) -> float:
+	return 1.0
+
+
 ## Default fire. Override when the card does more than pay its product.
 func _on_activate_tile_card(tile: Hex) -> void:
 	_pay_effect_amount(tile)

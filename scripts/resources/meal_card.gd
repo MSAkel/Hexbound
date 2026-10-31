@@ -275,7 +275,21 @@ func _missing_for_tag(cards: Array[TileCard], tag: StringName) -> int:
 	var needed := int(_recipe_slot_counts().get(tag, 0))
 	if needed <= 0:
 		return 0
-	return maxi(needed - _filter_tile_cards_by_kind(cards, tag).size(), 0)
+	return maxi(needed - _filter_tile_cards_by_kind(_cards_left_for_kind_slots(cards), tag).size(), 0)
+
+
+## Station cards minus one copy of each named requirement. A named card fills its own slot only,
+## so Chocolate Cake (Chocolate + any Sweet) needs a second Sweet beside the Chocolate.
+func _cards_left_for_kind_slots(cards: Array[TileCard]) -> Array[TileCard]:
+	if recipe_required_card_ids.is_empty():
+		return cards
+	var left: Array[TileCard] = cards.duplicate()
+	for card_id: String in recipe_required_card_ids:
+		for i in left.size():
+			if left[i].id == card_id:
+				left.remove_at(i)
+				break
+	return left
 
 
 ## Ingredient requirements the station does not cover. Staff discounts can waive these.
@@ -325,4 +339,46 @@ func _station_flavour_for_kind(tile: Hex, kind: StringName, preview: bool) -> in
 		if int(chip.get("mode", BoardChipMode.HIDDEN)) == BoardChipMode.AMOUNT and card.product == Product.FLAVOUR:
 			total += int(round(float(chip.get("amount", 0.0))))
 	return total
+
+
+## Protein is Meat, Poultry and Seafood. Used by broad effects such as French Fries. Wine stays Meat only.
+func is_protein() -> bool:
+	return meal_category in [MealCategory.MEAT, MealCategory.POULTRY, MealCategory.SEAFOOD]
+
+
+## Meals seated on the stations either side of this one. serving_only skips Failed Meals and Meals
+## idle in a locked slot, so chips and payouts agree whatever order the stations fire in.
+func _neighbour_station_meals(tile: Hex, serving_only: bool = false) -> Array[MealCard]:
+	var meals: Array[MealCard] = []
+	if tile == null or tile.map == null:
+		return meals
+	var segment_index := _get_segment_index(tile)
+	for side_index: int in [segment_index - 1, segment_index + 1]:
+		if side_index < 0 or side_index >= _get_segment_count(tile):
+			continue
+		for hex: Hex in tile.map.get_hexes_in_segment(side_index):
+			var meal := hex.active_tile_card as MealCard
+			if meal == null:
+				continue
+			if serving_only and not meal.is_serving(hex):
+				continue
+			meals.append(meal)
+	return meals
+
+
+## Meals being served anywhere on the board, this one included.
+func _serving_meals_on_board(tile: Hex) -> Array[MealCard]:
+	var meals: Array[MealCard] = []
+	for card: TileCard in _get_all_placed_tile_cards(tile, TileCardType.MEAL):
+		var meal := card as MealCard
+		if meal != null and meal.is_serving(_hex_for(tile, card)):
+			meals.append(meal)
+	return meals
+
+
+func _meals_as_tile_cards(meals: Array[MealCard]) -> Array[TileCard]:
+	var cards: Array[TileCard] = []
+	for meal: MealCard in meals:
+		cards.append(meal)
+	return cards
 #endregion --- Station reads for dish formulas ---

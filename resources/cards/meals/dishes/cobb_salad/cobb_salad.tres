@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MealCard" format=3]
+
+[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/cards/meals/dishes/cobb_salad/cobb_salad.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+meal_category = 4
+recipe_required_card_ids = Array[String](["chicken", "avocado", "lettuce"])
+type = 2
+product = 2
+ingredient_tags = Array[StringName]([&"dish"])
+id = "cobb_salad"
+name = "Cobb Salad"
+icon = ExtResource("1_icon")
+description = "Starts at x1 {mult}. Gains x0.25 {mult} for each different kind of Ingredient on its Station."
+metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TileCard" format=3]
+
+[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/cards/kitchenware/deep_fryer/deep_fryer.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+support_role = 2
+base_production_amount = 2
+type = 1
+product = 2
+starting_hand_eligible = false
+id = "deep_fryer"
+name = "Deep Fryer"
+icon = ExtResource("1_icon")
+description = "+2 {mult}. The {following} Ingredient gains x2 {flavour}, x3 if Potato or Chicken."
+metadata/_custom_type_script = "uid://bxkqr45fqowe7"
