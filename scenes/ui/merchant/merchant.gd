@@ -234,12 +234,10 @@ func _roll_card_stock() -> Array[Card]:
 	var staff: Array = draw_staff_stock(_stock_reroll_count, excluded_staff_ids)
 	var inventory: Array[Card] = []
 	for slot in MERCHANT_TILE_CARD_COUNT + MERCHANT_STAFF_COUNT:
+		var drawn := tiles if slot < MERCHANT_TILE_CARD_COUNT else staff
 		var item: Card = _locked_cards.get(slot, null)
-		# Tile slots keep their lane: slot i takes the i-th drawn card, even next to a locked slot.
-		if item == null and slot < MERCHANT_TILE_CARD_COUNT and slot < tiles.size():
-			item = tiles[slot]
-		elif item == null and slot >= MERCHANT_TILE_CARD_COUNT and not staff.is_empty():
-			item = staff.pop_front()
+		if item == null and not drawn.is_empty():
+			item = drawn.pop_front()
 		if item != null:
 			inventory.append(item)
 	return inventory
@@ -261,8 +259,7 @@ func _roll_condiment_stock() -> Array[Condiment]:
 
 
 ## Stock rolls are static so the headless playtest bot shops the same shelves.
-## One card per slot from CardLoot.MERCHANT_LANES (Ingredient, Kitchenware, Meal), so slot i is
-## always that slot's type. exclude_ids are left off the roll so locked items never appear twice.
+## exclude_ids are left off the roll so locked items never appear twice.
 static func draw_tile_card_stock(
 	stock_reroll_count: int,
 	exclude_ids: Array[String] = []
@@ -271,13 +268,16 @@ static func draw_tile_card_stock(
 		GameManager.current_round,
 		stock_reroll_count
 	)
-	return CardLoot.lane_draw(
-		CardLoot.MERCHANT_LANES,
-		MERCHANT_TILE_CARD_COUNT,
+	var drawn := CardLoot.station_weighted_draw(
+		MERCHANT_TILE_CARD_COUNT + exclude_ids.size(),
 		GameManager.tile_cards_pool,
-		RunRng.create_rng(stream_name),
-		exclude_ids
+		RunRng.create_rng(stream_name)
 	)
+	var stock: Array[TileCard] = []
+	for tile_card in drawn:
+		if stock.size() < MERCHANT_TILE_CARD_COUNT and tile_card.id not in exclude_ids:
+			stock.append(tile_card)
+	return stock
 
 
 ## Staff already owned when the stock is rolled stay off the shelf.
