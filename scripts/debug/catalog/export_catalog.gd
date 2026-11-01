@@ -165,19 +165,32 @@ func _stations() -> Array:
 		var station := load("res://resources/stations/" + entry) as StationType
 		if station == null:
 			continue
+		# needs: display labels -> count (kept for older readers). setup: the same slots in a form
+		# pages can follow: {kind, count, distinct} for a kind ("Ingredient" = any kind) or
+		# {card, count} for one named card.
 		var needs := {}
+		var setup: Array = []
 		for card_id: String in station.required_card_ids:
 			needs[card_id.capitalize()] = 1
+			setup.append({"card": card_id, "count": 1})
 		for key: Variant in station.required_counts:
-			var label := GameTerms.get_ingredient_kind_label(StringName(key))
-			if label.is_empty():
-				label = "Different kinds of Ingredient" if StringName(key) in station.distinct_tags else "Any Ingredient"
-			needs[label] = station.required_counts[key]
+			var tag := StringName(key)
+			var distinct: bool = tag in station.distinct_tags
+			var label := GameTerms.get_ingredient_kind_label(tag)
+			var kind := label
+			if tag == StationType.TAG_ANY_INGREDIENT or label.is_empty():
+				kind = "Ingredient"
+				label = "Different kinds of Ingredient" if distinct else "Any Ingredient"
+			var count := int(station.required_counts[key])
+			needs[label] = count
+			setup.append({"kind": kind, "count": count, "distinct": distinct})
 		result.append({
 			"id": station.id,
 			"name": station.display_name,
 			"color": station.color.to_html(false),
 			"needs": needs,
+			"setup": setup,
+			"setup_text": station.get_requirements_text(),
 			"level_perks": _perks(station.level_perks),
 			"choices": _perks(station.choice_options),
 			"capstones": _perks(station.capstone_options),

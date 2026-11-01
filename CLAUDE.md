@@ -55,7 +55,14 @@ turns that JSON into a single self-contained HTML page with search, filters and 
 ```
 godot --headless --path . res://scenes/debug/export_catalog.tscn -- --out=catalog.json
 python scripts/debug/catalog/build_catalog_page.py catalog.json catalog.html --commit=<sha>
+python scripts/debug/catalog/build_map_pages.py catalog.json <out_dir> --commit=<sha>
 ```
+
+`build_map_pages.py` writes the Meal, Station, Dependency and Technique maps. The first three share
+`map_template.html` (meals, stations, or both). The Technique Map's hand mapping of each Technique
+to the mechanics it relies on and affects is the `MAP` table in `technique_map_template.html`;
+a new Technique shows as unmapped until it gets an entry there. Stations export a `setup` list
+(kinds, named cards, "different" rules) that the maps read; keep it in step with `StationType`.
 
 ## Design notes
 
