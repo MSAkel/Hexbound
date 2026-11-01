@@ -285,7 +285,12 @@ static func draw_offer(
 		reroll_index
 	)
 	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	return CardLoot.station_weighted_draw(pack_size, GameManager.tile_cards_pool, loot_rng)
+	return CardLoot.lane_draw(
+		CardLoot.lanes_for_round(round_number),
+		pack_size,
+		GameManager.tile_cards_pool,
+		loot_rng
+	)
 
 
 func _get_offer_round_number() -> int:
