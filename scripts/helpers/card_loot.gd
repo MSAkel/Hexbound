@@ -64,23 +64,24 @@ const _KITCHENWARE := TileCard.TileCardType.KITCHENWARE
 const _MEAL := TileCard.TileCardType.MEAL
 const LANE_TYPE_ORDER: Array[TileCard.TileCardType] = [_INGREDIENT, _KITCHENWARE, _MEAL]
 
-## Prep: Day 1 before any typed station. Two Ingredients, then Kitchenware or a Meal.
+## Prep: Day 1 before any typed station. Two Ingredients, then a Meal or (less often) Kitchenware.
+## The starting hand already holds Kitchenware, so early picks offer less of it than the old draw.
 const PREP_LANES: Array[Dictionary] = [
 	{_INGREDIENT: 1.0},
 	{_INGREDIENT: 1.0},
-	{_KITCHENWARE: 0.5, _MEAL: 0.5},
+	{_KITCHENWARE: 0.3, _MEAL: 0.7},
 ]
 ## Opening: Day 1 once a station is typed, or Day 2 before one is.
 const OPENING_LANES: Array[Dictionary] = [
 	{_INGREDIENT: 1.0},
-	{_INGREDIENT: 0.5, _KITCHENWARE: 0.5},
+	{_INGREDIENT: 0.7, _KITCHENWARE: 0.3},
 	{_MEAL: 1.0},
 ]
-## Service: everything after. Close to the old uniform mix (about 1.3 / 0.4 / 1.3 per pick).
+## Service: everything after. Keeps 1.5 Ingredients a pick so second and third stations still form.
 const SERVICE_LANES: Array[Dictionary] = [
 	{_INGREDIENT: 1.0},
+	{_INGREDIENT: 0.5, _KITCHENWARE: 0.5},
 	{_MEAL: 1.0},
-	{_INGREDIENT: 0.3, _KITCHENWARE: 0.4, _MEAL: 0.3},
 ]
 ## The merchant's tile shelf always holds one of each type, every Day.
 const MERCHANT_LANES: Array[Dictionary] = [
