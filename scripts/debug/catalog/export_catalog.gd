@@ -166,8 +166,13 @@ func _stations() -> Array:
 		if station == null:
 			continue
 		var needs := {}
+		for card_id: String in station.required_card_ids:
+			needs[card_id.capitalize()] = 1
 		for key: Variant in station.required_counts:
-			needs[GameTerms.get_ingredient_kind_label(StringName(key))] = station.required_counts[key]
+			var label := GameTerms.get_ingredient_kind_label(StringName(key))
+			if label.is_empty():
+				label = "Any Ingredient"
+			needs[label] = station.required_counts[key]
 		result.append({
 			"id": station.id,
 			"name": station.display_name,
@@ -175,6 +180,7 @@ func _stations() -> Array:
 			"needs": needs,
 			"level_perks": _perks(station.level_perks),
 			"choices": _perks(station.choice_options),
+			"capstones": _perks(station.capstone_options),
 			"icon": _icon_path(station.icon),
 			"file": station.resource_path,
 		})

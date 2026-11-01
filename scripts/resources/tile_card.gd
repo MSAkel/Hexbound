@@ -118,8 +118,15 @@ var is_active: bool = true
 var star_level: int = 1
 # Activations of this instance during the current run.
 var run_trigger_count: int = 0
-# Garnish stacks persist for the rest of the Hour and multiply every fire.
+# Garnish stacks wait on the card until it next triggers (across Hours), boost that one trigger and
+# are used up. Whatever is still waiting at the end of the Day is cleared (StationManager.on_day_ended).
 var garnish_stacks: int = 0
+# Triggers the waiting Garnish still boosts. Set when the first stack lands. Preserving adds one.
+var garnish_triggers_left: int = 0
+# True when a Garnish boosted one of this card's triggers this Hour. Lobster Roll reads it.
+var hour_was_garnished: bool = false
+# Run-long growth station perks store on this card (Seasoned Grill). Saved with the card.
+var perk_growth: Dictionary = {}
 var is_garnished: bool:
 	get:
 		return garnish_stacks > 0
@@ -138,6 +145,8 @@ var _activation_output_scale: float = 1.0
 var _activation_star_scale: float = 1.0
 # True when this activation had at least one Garnish stack. Checked by cards that pay extra on Garnish.
 var _activation_was_garnished: bool = false
+# Station flat Flavour still to fold into this activation's first Flavour payout (before scaling).
+var _activation_flat_bonus: int = 0
 # Flavour this instance paid with add_flavour this Hour. Dishes read the station snapshot.
 var hour_flavour_produced: int = 0
 # Additive Mult this instance paid this Hour.
@@ -267,8 +276,8 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 	if is_producer_type(type):
 		if product == Product.HYBRID or product == Product.NONE:
 			return _hidden_board_chip()
-		var amount := _effect_amount(tile) * StationManager.output_scale_for(tile, self) * star_output_scale()
-		amount += StationManager.flat_flavour_bonus_for(tile, self)
+		var base := _effect_amount(tile) + float(StationManager.flat_flavour_bonus_for(tile, self))
+		var amount := base * StationManager.output_scale_for(tile, self) * star_output_scale()
 		if amount <= 0.0:
 			return _hidden_board_chip()
 		if product == Product.MULTIPLIER:
@@ -440,6 +449,8 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	run_trigger_count += 1
 	GameManager.register_tile_card_activation(self)
 	EventBus.tile_card_activated.emit(self)
+	if tile.map != null:
+		StationManager.before_card_triggers(tile, self)
 
 	var output_scale := activation_scale
 	_activation_was_garnished = garnish_stacks > 0
@@ -455,17 +466,36 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		pending_output_scale = 1.0
 
 	_activation_output_scale = output_scale
+	_activation_flat_bonus = StationManager.flat_flavour_bonus_for(tile, self)
 	# Count this activation before the card resolves so "triggers so far" includes the current one.
 	tile.map.record_segment_trigger_for_tile(tile)
 	_on_activate_tile_card(tile)
-	StationManager.apply_flat_bonus(tile, self)
+	# A card that paid no Flavour this trigger still gets its station bonus, scaled the same way.
+	if _activation_flat_bonus > 0:
+		add_flavour(tile, 0)
+	var garnish_used := _activation_was_garnished and not EventManager.are_garnishes_blocked()
 	_play_trigger_sound()
 	GameManager.chef_speciality.maybe_repeat_kitchenware(tile, self)
 	CondimentManager.after_card_activated(tile, self)
 	StaffManager.after_card_activated(tile, self)
+	StationManager.after_card_triggered(tile, self)
+	if garnish_used:
+		_use_garnish_trigger()
 	_activation_output_scale = 1.0
 	_activation_star_scale = 1.0
 	_activation_was_garnished = false
+	_activation_flat_bonus = 0
+
+
+## The Garnish boosted a trigger. Used up once its triggers run out (one, two with Preserving).
+func _use_garnish_trigger() -> void:
+	hour_was_garnished = true
+	garnish_triggers_left -= 1
+	if garnish_triggers_left > 0 or garnish_stacks <= 0:
+		return
+	garnish_stacks = 0
+	garnish_triggers_left = 0
+	EventBus.tile_card_garnish_cleared.emit(self)
 
 # Queue extra spot card activations to resolve before fire flow continues.
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
@@ -529,16 +559,13 @@ func get_trigger_preview_gold_coords(_hover_tile: Hex) -> Array[Vector2i]:
 
 #region --- Flavour, Gold, Mult, and floating text helpers ---
 func add_flavour(tile: Hex, base_points: Variant) -> void:
-	var points := int(round(float(base_points) * _activation_output_scale))
+	# The station's flat bonus joins the first Flavour payout's base, so every multiplier scales it.
+	var base := float(base_points) + float(_activation_flat_bonus)
+	_activation_flat_bonus = 0
+	var points := int(round(base * _activation_output_scale))
 	hour_flavour_produced += points
 	tile.map.add_turn_flavour_for_tile(tile, points)
 	_create_floating_text(tile, "+%d" % points, Color.AQUA, ICON_FLAVOUR, null, _payout_float_is_garnished())
-
-## Flat station perk Flavour. Never scaled by Garnish. Floats in the station's colour.
-func add_station_bonus_flavour(tile: Hex, points: int, color: Color) -> void:
-	hour_flavour_produced += points
-	tile.map.add_turn_flavour_for_tile(tile, points)
-	_create_floating_text(tile, "+%d" % points, color, ICON_FLAVOUR)
 
 
 func add_gold(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
@@ -703,15 +730,18 @@ func add_garnish() -> bool:
 	if garnish_stacks >= StaffManager.max_garnish_stacks_for(self):
 		return false
 
+	if garnish_stacks <= 0:
+		garnish_triggers_left = 1 + StaffManager.extra_garnish_triggers(self)
 	garnish_stacks += 1
 	EventBus.tile_card_garnished.emit(self)
 	StaffManager.after_card_garnished(self)
 	return true
 
 
-## Clears Garnish stacks and any unspent Skillet scale at Hour end.
+## Clears Garnish stacks and any unspent Skillet scale. Runs at the end of the Day.
 func clear_garnish() -> void:
 	pending_output_scale = 1.0
+	garnish_triggers_left = 0
 	if garnish_stacks <= 0:
 		return
 
@@ -719,13 +749,9 @@ func clear_garnish() -> void:
 	EventBus.tile_card_garnish_cleared.emit(self)
 
 
-## Hour-end clear that leaves up to keep stacks behind. Unspent Skillet scale still goes.
-func trim_garnish(keep: int) -> void:
-	if keep <= 0 or garnish_stacks <= 0:
-		clear_garnish()
-		return
+## Hour end: unspent Skillet scale goes. A waiting Garnish stays until the card triggers.
+func clear_hour_scale() -> void:
 	pending_output_scale = 1.0
-	garnish_stacks = mini(garnish_stacks, keep)
 
 ## Scale this seated card lends to another card on its station whenever that card fires.
 ## StationManager multiplies these into the activation scale and the board chip. Grape lifts Beverages.
@@ -836,6 +862,7 @@ func _get_tile_cards_on_immediately_previous_hexes(tile: Hex, count: int) -> Arr
 
 ## Clears Hour Flavour and Mult snapshots before this Hour's fire order starts.
 func reset_hour_product_snapshot() -> void:
+	hour_was_garnished = false
 	hour_flavour_produced = 0
 	hour_additive_mult_produced = 0.0
 

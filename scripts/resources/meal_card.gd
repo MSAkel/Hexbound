@@ -105,6 +105,7 @@ func _serve(tile: Hex) -> void:
 	if _missing_ingredient_count(tile) > 0:
 		StaffManager.notify_dish_discount_used(tile)
 	StationManager.record_serving(_get_segment_index(tile))
+	StationManager.on_meal_served(tile, self)
 	StaffManager.after_meal_served(tile, self)
 
 
@@ -364,6 +365,19 @@ func _neighbour_station_meals(tile: Hex, serving_only: bool = false) -> Array[Me
 				continue
 			meals.append(meal)
 	return meals
+
+
+## Cards on this Meal's station, plus cards on Bars next to it whose Pairing perk shares their
+## Beverages. Meals that check "a Beverage on its station" read this.
+func _cards_on_beverage_stations(tile: Hex) -> Array[TileCard]:
+	var cards: Array[TileCard] = []
+	if tile == null or tile.map == null:
+		return cards
+	for seg: int in StationManager.beverage_source_segments(_get_segment_index(tile)):
+		for hex: Hex in tile.map.get_hexes_in_segment(seg):
+			if hex.active_tile_card != null:
+				cards.append(hex.active_tile_card)
+	return cards
 
 
 ## Meals being served anywhere on the board, this one included.

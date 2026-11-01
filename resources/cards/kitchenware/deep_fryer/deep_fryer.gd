@@ -15,7 +15,9 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 	for target: TileCard in targets:
-		var factor := FAVOURITE_SCALE if target.id in FAVOURITE_IDS else SCALE
+		# Tempura (Fry Station) lets Seafood and Vegetables count as Potato.
+		var favourite := target.id in FAVOURITE_IDS or StationManager.counts_as_potato(_hex_for(tile, target), target)
+		var factor := FAVOURITE_SCALE if favourite else SCALE
 		if _try_scale_tile_card(tile, target, factor):
 			_create_fired_floating_text(tile, target)
 

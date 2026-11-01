@@ -1,0 +1,86 @@
+[gd_resource type="Resource" script_class="StationType" format=3]
+
+[ext_resource type="Script" uid="uid://rpgwnpjas3xh" path="res://scripts/resources/station_type.gd" id="1_type"]
+[ext_resource type="Script" uid="uid://dsqcvvw2je1ns" path="res://scripts/resources/station_perk.gd" id="2_perk"]
+[ext_resource type="Texture2D" path="res://assets/icons/food/ingredients/seafood/shrimp.png" id="3_icon"]
+[ext_resource type="Script" path="res://resources/stations/perks/seafood_platter.gd" id="s_seafood_platter"]
+[ext_resource type="Script" path="res://resources/stations/perks/serve_bonus.gd" id="s_serve_bonus"]
+[ext_resource type="Script" path="res://resources/stations/perks/leche_de_tigre.gd" id="s_leche_de_tigre"]
+[ext_resource type="Script" path="res://resources/stations/perks/surf_and_turf.gd" id="s_surf_and_turf"]
+
+[sub_resource type="Resource" id="level_1"]
+script = ExtResource("2_perk")
+description = "Seafood on this station gain +10 {flavour}"
+target_tags = Array[StringName]([&"seafood"])
+flat_flavour = 10
+
+[sub_resource type="Resource" id="level_2"]
+script = ExtResource("2_perk")
+description = "Seafood on this station gain +15 {flavour}"
+target_tags = Array[StringName]([&"seafood"])
+flat_flavour = 15
+
+[sub_resource type="Resource" id="level_3"]
+script = ExtResource("2_perk")
+description = "Seafood on this station gain +15 {flavour}"
+target_tags = Array[StringName]([&"seafood"])
+flat_flavour = 15
+
+[sub_resource type="Resource" id="level_4"]
+script = ExtResource("2_perk")
+description = "Seafood on this station gain +20 {flavour}"
+target_tags = Array[StringName]([&"seafood"])
+flat_flavour = 20
+
+[sub_resource type="Resource" id="level_5"]
+script = ExtResource("2_perk")
+description = "Seafood on this station gain +25 {flavour}"
+target_tags = Array[StringName]([&"seafood"])
+flat_flavour = 25
+
+[sub_resource type="Resource" id="level_6"]
+script = ExtResource("2_perk")
+description = "Seafood on this station gain +25 {flavour}"
+target_tags = Array[StringName]([&"seafood"])
+flat_flavour = 25
+
+[sub_resource type="Resource" id="choice_0"]
+script = ExtResource("s_seafood_platter")
+description = "Seafood Platter: Seafood on this station gains x0.25 output for each different Seafood here"
+target_tags = Array[StringName]([&"seafood"])
+per_kind = 0.25
+
+[sub_resource type="Resource" id="choice_1"]
+script = ExtResource("s_serve_bonus")
+description = "Seafood Meals served here gain +8 {mult} while a Sauce Station is on the board"
+target_meal_categories = Array[int]([3])
+bonus_mult = 8.0
+requires_type_id = "sauce_station"
+
+[sub_resource type="Resource" id="capstone_0"]
+script = ExtResource("s_leche_de_tigre")
+description = "Leche de Tigre: Seafood on this station gains +10 {flavour} for each Vegetable on an adjacent Cold Station"
+target_tags = Array[StringName]([&"seafood"])
+flat_flavour = 10
+
+[sub_resource type="Resource" id="capstone_1"]
+script = ExtResource("s_surf_and_turf")
+description = "Surf & Turf: Seafood Meals on this station gain x1.5 output while a Meat Meal is being served on a Grilling Station"
+output_scale = 1.5
+
+[resource]
+script = ExtResource("1_type")
+id = "fish_station"
+display_name = "Fish Station"
+icon = ExtResource("3_icon")
+color = Color(0.2, 0.62, 0.86, 1)
+required_counts = {
+&"seafood": 2,
+&"fruit": 1,
+&"kitchenware": 1
+}
+distinct_tags = Array[StringName]([&"seafood"])
+required_card_ids = Array[String]([])
+level_perks = Array[ExtResource("2_perk")]([SubResource("level_1"), SubResource("level_2"), SubResource("level_3"), SubResource("level_4"), SubResource("level_5"), SubResource("level_6")])
+choice_options = Array[ExtResource("2_perk")]([SubResource("choice_0"), SubResource("choice_1")])
+capstone_options = Array[ExtResource("2_perk")]([SubResource("capstone_0"), SubResource("capstone_1")])

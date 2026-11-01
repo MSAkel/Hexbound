@@ -1,0 +1,79 @@
+[gd_resource type="Resource" script_class="StationType" format=3]
+
+[ext_resource type="Script" uid="uid://rpgwnpjas3xh" path="res://scripts/resources/station_type.gd" id="1_type"]
+[ext_resource type="Script" uid="uid://dsqcvvw2je1ns" path="res://scripts/resources/station_perk.gd" id="2_perk"]
+[ext_resource type="Texture2D" path="res://assets/icons/food/meals/beverage/red_wine.png" id="3_icon"]
+[ext_resource type="Script" path="res://resources/stations/perks/pairing.gd" id="s_pairing"]
+[ext_resource type="Script" path="res://resources/stations/perks/lemon_wedge.gd" id="s_lemon_wedge"]
+[ext_resource type="Script" path="res://resources/stations/perks/round_for_the_kitchen.gd" id="s_round_for_the_kitchen"]
+[ext_resource type="Script" path="res://resources/stations/perks/digestif.gd" id="s_digestif"]
+
+[sub_resource type="Resource" id="level_1"]
+script = ExtResource("2_perk")
+description = "Fruits on this station gain +10 {flavour}"
+target_tags = Array[StringName]([&"fruit"])
+flat_flavour = 10
+
+[sub_resource type="Resource" id="level_2"]
+script = ExtResource("2_perk")
+description = "Fruits on this station gain +15 {flavour}"
+target_tags = Array[StringName]([&"fruit"])
+flat_flavour = 15
+
+[sub_resource type="Resource" id="level_3"]
+script = ExtResource("2_perk")
+description = "Fruits on this station gain +15 {flavour}"
+target_tags = Array[StringName]([&"fruit"])
+flat_flavour = 15
+
+[sub_resource type="Resource" id="level_4"]
+script = ExtResource("2_perk")
+description = "Fruits on this station gain +20 {flavour}"
+target_tags = Array[StringName]([&"fruit"])
+flat_flavour = 20
+
+[sub_resource type="Resource" id="level_5"]
+script = ExtResource("2_perk")
+description = "Fruits on this station gain +25 {flavour}"
+target_tags = Array[StringName]([&"fruit"])
+flat_flavour = 25
+
+[sub_resource type="Resource" id="level_6"]
+script = ExtResource("2_perk")
+description = "Fruits on this station gain +25 {flavour}"
+target_tags = Array[StringName]([&"fruit"])
+flat_flavour = 25
+
+[sub_resource type="Resource" id="choice_0"]
+script = ExtResource("s_pairing")
+description = "Pairing: Beverages on this station also count as on the stations either side"
+
+[sub_resource type="Resource" id="choice_1"]
+script = ExtResource("s_lemon_wedge")
+description = "Lemon Wedge: the first Fruit to {trigger} here each Hour gives a {garnish} to a Beverage here"
+target_tags = Array[StringName]([&"fruit"])
+
+[sub_resource type="Resource" id="capstone_0"]
+script = ExtResource("s_round_for_the_kitchen")
+description = "Round for the Kitchen: the first Beverage served here each Hour gives a {garnish} to an Ingredient on each station either side"
+
+[sub_resource type="Resource" id="capstone_1"]
+script = ExtResource("s_digestif")
+description = "Digestif: when a Dessert is served on an adjacent station, a Beverage here gets a {garnish}"
+
+[resource]
+script = ExtResource("1_type")
+id = "bar_station"
+display_name = "Bar"
+icon = ExtResource("3_icon")
+color = Color(0.62, 0.3, 0.55, 1)
+required_counts = {
+&"fruit": 2,
+&"sweet": 1,
+&"kitchenware": 1
+}
+distinct_tags = Array[StringName]([&"fruit"])
+required_card_ids = Array[String]([])
+level_perks = Array[ExtResource("2_perk")]([SubResource("level_1"), SubResource("level_2"), SubResource("level_3"), SubResource("level_4"), SubResource("level_5"), SubResource("level_6")])
+choice_options = Array[ExtResource("2_perk")]([SubResource("choice_0"), SubResource("choice_1")])
+capstone_options = Array[ExtResource("2_perk")]([SubResource("capstone_0"), SubResource("capstone_1")])

@@ -85,7 +85,7 @@ func _build() -> void:
 
 func _on_station_choice_requested(segment_index: int) -> void:
 	var station_type := StationManager.get_station_type(segment_index)
-	if station_type == null or station_type.choice_options.is_empty():
+	if station_type == null or StationManager.get_choice_options(segment_index).is_empty():
 		return
 	_segment_index = segment_index
 	_picking = false
@@ -118,10 +118,14 @@ func _populate(station_type: StationType) -> void:
 		panel.queue_free()
 	_option_panels.clear()
 	_focus_index = -1
-	_title.text = "%s · Level %d" % [station_type.display_name, StationManager.CHOICE_LEVEL]
+	var level := StationManager.get_pending_choice_level(_segment_index)
+	if level <= 0:
+		level = StationManager.CHOICE_LEVEL
+	_title.text = "%s · Level %d" % [station_type.display_name, level]
 	_title.add_theme_color_override("font_color", station_type.color)
-	for i in station_type.choice_options.size():
-		var panel := _make_option(station_type.choice_options[i], station_type, i)
+	var options := StationManager.get_choice_options(_segment_index)
+	for i in options.size():
+		var panel := _make_option(options[i], station_type, i)
 		_options_row.add_child(panel)
 		_option_panels.append(panel)
 

@@ -24,7 +24,7 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 
 func _beverages(tile: Hex) -> Array[TileCard]:
 	var beverages: Array[TileCard] = []
-	for card: TileCard in _get_all_tile_cards_on_same_segment(tile):
+	for card: TileCard in _cards_on_beverage_stations(tile):
 		if card != self and card.has_ingredient_tag(TAG_BEVERAGE):
 			beverages.append(card)
 	return beverages

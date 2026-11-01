@@ -171,7 +171,7 @@ const statNum = (n, key) => `<span class="num">${STAT[key] ? `<img src="${STAT[k
 const matches = (item) => {
   if (!state.q) return true;
   const hay = [item.name, item.id, item.type, item.category, (item.tags || []).join(" "), item.description?.plain, item.speciality?.plain,
-    item.effect, item.rarity, ...(item.level_perks || []).map((p) => p.plain), ...(item.choices || []).map((p) => p.plain)]
+    item.effect, item.rarity, ...(item.level_perks || []).map((p) => p.plain), ...(item.choices || []).map((p) => p.plain), ...(item.capstones || []).map((p) => p.plain)]
     .join(" ").toLowerCase();
   return state.q.toLowerCase().split(/\s+/).every((w) => hay.includes(w));
 };
@@ -266,7 +266,8 @@ function viewStations() {
     ${items.map((s) => `<section class="panel"><h2><span class="dot" style="background:#${esc(s.color)}"></span>${esc(s.name)}</h2>
       <div><h3>Needs</h3><div class="needs">${Object.entries(s.needs).map(([k, n]) => `<span class="need"><b>${n}</b> ${esc(k)}</span>`).join("")}</div></div>
       <div><h3>Level perks</h3><ol class="levels">${s.level_perks.map((p, i) => `<li><span class="lv">Lv ${i + 1}</span><span>${rich(p.raw)}</span></li>`).join("")}</ol></div>
-      ${s.choices.length ? `<div><h3>Upgrade choice</h3><ul class="choices">${s.choices.map((p) => `<li>${rich(p.raw)}</li>`).join("")}</ul></div>` : ""}
+      ${s.choices.length ? `<div><h3>Level 3 choice</h3><ul class="choices">${s.choices.map((p) => `<li>${rich(p.raw)}</li>`).join("")}</ul></div>` : ""}
+      ${(s.capstones || []).length ? `<div><h3>Level 6 choice</h3><ul class="choices">${s.capstones.map((p) => `<li>${rich(p.raw)}</li>`).join("")}</ul></div>` : ""}
       <div class="file">${esc(s.file.replace("res://", ""))}</div></section>`).join("") || `<div class="empty">No stations match.</div>`}</div>`;
 }
 

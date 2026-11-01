@@ -1,0 +1,85 @@
+[gd_resource type="Resource" script_class="StationType" format=3]
+
+[ext_resource type="Script" uid="uid://rpgwnpjas3xh" path="res://scripts/resources/station_type.gd" id="1_type"]
+[ext_resource type="Script" uid="uid://dsqcvvw2je1ns" path="res://scripts/resources/station_perk.gd" id="2_perk"]
+[ext_resource type="Texture2D" path="res://assets/icons/food/ingredients/vegetables/potato.png" id="3_icon"]
+[ext_resource type="Script" path="res://resources/stations/perks/per_hour_flat.gd" id="s_per_hour_flat"]
+[ext_resource type="Script" path="res://resources/stations/perks/low_and_slow.gd" id="s_low_and_slow"]
+[ext_resource type="Script" path="res://resources/stations/perks/serve_bonus.gd" id="s_serve_bonus"]
+[ext_resource type="Script" path="res://resources/stations/perks/sunday_roast.gd" id="s_sunday_roast"]
+[ext_resource type="Script" path="res://resources/stations/perks/roast_dinner.gd" id="s_roast_dinner"]
+
+[sub_resource type="Resource" id="level_1"]
+script = ExtResource("s_per_hour_flat")
+description = "Meats and Vegetables on this station gain +3 {flavour} for each Hour played today"
+target_tags = Array[StringName]([&"meat", &"vegetable"])
+per_hour = 3
+
+[sub_resource type="Resource" id="level_2"]
+script = ExtResource("s_per_hour_flat")
+description = "Meats and Vegetables on this station gain +4 {flavour} for each Hour played today"
+target_tags = Array[StringName]([&"meat", &"vegetable"])
+per_hour = 4
+
+[sub_resource type="Resource" id="level_3"]
+script = ExtResource("s_per_hour_flat")
+description = "Meats and Vegetables on this station gain +4 {flavour} for each Hour played today"
+target_tags = Array[StringName]([&"meat", &"vegetable"])
+per_hour = 4
+
+[sub_resource type="Resource" id="level_4"]
+script = ExtResource("s_per_hour_flat")
+description = "Meats and Vegetables on this station gain +5 {flavour} for each Hour played today"
+target_tags = Array[StringName]([&"meat", &"vegetable"])
+per_hour = 5
+
+[sub_resource type="Resource" id="level_5"]
+script = ExtResource("s_per_hour_flat")
+description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today"
+target_tags = Array[StringName]([&"meat", &"vegetable"])
+per_hour = 6
+
+[sub_resource type="Resource" id="level_6"]
+script = ExtResource("s_per_hour_flat")
+description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today"
+target_tags = Array[StringName]([&"meat", &"vegetable"])
+per_hour = 6
+
+[sub_resource type="Resource" id="choice_0"]
+script = ExtResource("s_low_and_slow")
+description = "Low and Slow: Meals that were on this station when the Day started gain x1.5 output"
+output_scale = 1.5
+
+[sub_resource type="Resource" id="choice_1"]
+script = ExtResource("s_serve_bonus")
+description = "Roast Potatoes: Sides served on this station gain +4 {mult}"
+target_meal_categories = Array[int]([6])
+bonus_mult = 4.0
+
+[sub_resource type="Resource" id="capstone_0"]
+script = ExtResource("s_sunday_roast")
+description = "Sunday Roast: a {garnish} from a Sauce & Dip Meal on an adjacent Sauce Station counts twice on Meals here"
+extra_stacks = 1
+
+[sub_resource type="Resource" id="capstone_1"]
+script = ExtResource("s_roast_dinner")
+description = "Roast Dinner: while a Meat Meal is being served here, Sides on the next station gain x2 output"
+output_scale = 2.0
+
+[resource]
+script = ExtResource("1_type")
+id = "roasting_station"
+display_name = "Roasting Station"
+icon = ExtResource("3_icon")
+color = Color(0.78, 0.45, 0.25, 1)
+required_counts = {
+&"meat": 1,
+&"vegetable": 1,
+&"seasoning": 1,
+&"kitchenware": 1
+}
+distinct_tags = Array[StringName]([])
+required_card_ids = Array[String]([])
+level_perks = Array[ExtResource("2_perk")]([SubResource("level_1"), SubResource("level_2"), SubResource("level_3"), SubResource("level_4"), SubResource("level_5"), SubResource("level_6")])
+choice_options = Array[ExtResource("2_perk")]([SubResource("choice_0"), SubResource("choice_1")])
+capstone_options = Array[ExtResource("2_perk")]([SubResource("capstone_0"), SubResource("capstone_1")])

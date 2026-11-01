@@ -29,7 +29,7 @@ func _has_coffee(tile: Hex) -> bool:
 
 func _coffees(tile: Hex) -> Array[TileCard]:
 	var coffees: Array[TileCard] = []
-	for card: TileCard in _get_all_tile_cards_on_same_segment(tile):
+	for card: TileCard in _cards_on_beverage_stations(tile):
 		if card.id == COFFEE_ID:
 			coffees.append(card)
 	return coffees

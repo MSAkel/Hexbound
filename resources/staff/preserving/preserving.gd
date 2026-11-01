@@ -1,11 +1,11 @@
 extends StaffCard
 
-## Garnished cards on this station carry one stack into the next Hour.
-const KEPT_STACKS := 1
+## A Garnish on a card on this station boosts one more trigger before it is used up.
+const EXTRA_TRIGGERS := 1
 
 
-func garnish_kept_after_hour(ctx: StaffContext, tile: Hex, card: TileCard) -> int:
-	if not ctx.is_on_station(tile) or not card.is_garnished:
+func extra_garnish_triggers(ctx: StaffContext, tile: Hex, _card: TileCard) -> int:
+	if not ctx.is_on_station(tile):
 		return 0
 	ctx.pulse(tile)
-	return KEPT_STACKS
+	return EXTRA_TRIGGERS
