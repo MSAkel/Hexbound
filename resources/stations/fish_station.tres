@@ -10,39 +10,54 @@
 
 [sub_resource type="Resource" id="level_1"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +10 {flavour}"
+description = "Seafood on this station gain +10 {flavour}."
 target_tags = Array[StringName]([&"seafood"])
 flat_flavour = 10
 
 [sub_resource type="Resource" id="level_2"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +15 {flavour}"
+description = "Seafood on this station gain +10 {flavour}. Seafood appear twice as often in card picks and at the merchant."
 target_tags = Array[StringName]([&"seafood"])
-flat_flavour = 15
+flat_flavour = 10
+draw_tags = Array[StringName]([&"seafood"])
+draw_meal_categories = Array[int]([])
+draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_3"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +15 {flavour}"
+description = "Seafood on this station gain +10 {flavour}. Seafood appear twice as often in card picks and at the merchant."
 target_tags = Array[StringName]([&"seafood"])
-flat_flavour = 15
+flat_flavour = 10
+draw_tags = Array[StringName]([&"seafood"])
+draw_meal_categories = Array[int]([])
+draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_4"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +20 {flavour}"
+description = "Seafood on this station gain +20 {flavour}. Seafood appear twice as often in card picks and at the merchant."
 target_tags = Array[StringName]([&"seafood"])
 flat_flavour = 20
+draw_tags = Array[StringName]([&"seafood"])
+draw_meal_categories = Array[int]([])
+draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_5"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +25 {flavour}"
+description = "Seafood on this station gain +25 {flavour}. Seafood appear twice as often in card picks and at the merchant."
 target_tags = Array[StringName]([&"seafood"])
 flat_flavour = 25
+draw_tags = Array[StringName]([&"seafood"])
+draw_meal_categories = Array[int]([])
+draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_6"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +25 {flavour}"
+description = "Seafood on this station gain +25 {flavour}. Seafood appear twice as often in card picks and at the merchant."
 target_tags = Array[StringName]([&"seafood"])
 flat_flavour = 25
+draw_tags = Array[StringName]([&"seafood"])
+draw_meal_categories = Array[int]([])
+draw_weight = 2.0
 
 [sub_resource type="Resource" id="choice_0"]
 script = ExtResource("s_seafood_platter")

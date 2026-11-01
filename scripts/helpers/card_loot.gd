@@ -51,6 +51,36 @@ static func card_draw(
 	return draw_filtered(count, pool, null, null, unique, rng)
 
 
+## Card pick and merchant draw: unique cards, weighted by station draw boosts (Fish Station level 2
+## makes Seafood twice as likely). With no boost active it is the same uniform draw as card_draw.
+static func station_weighted_draw(
+	count: int,
+	pool: Array[TileCard] = [],
+	rng: RandomNumberGenerator = null
+) -> Array[TileCard]:
+	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
+	var available := _sorted_by_id(_filter_cards(source_pool, null, null))
+	var weights: Array[float] = []
+	var any_boost := false
+	for card: TileCard in available:
+		var weight := StationManager.draw_weight_for(card)
+		weights.append(weight)
+		if not is_equal_approx(weight, 1.0):
+			any_boost = true
+	if not any_boost:
+		return draw_filtered(count, pool, null, null, true, rng)
+	# Weighted draw without replacement: each card gets the key u^(1/weight); highest keys win.
+	var keyed: Array = []
+	for i in available.size():
+		var u := maxf(_randf(rng), 0.000001)
+		keyed.append([pow(u, 1.0 / weights[i]), i])
+	keyed.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) > float(b[0]))
+	var result: Array[TileCard] = []
+	for k in mini(count, keyed.size()):
+		result.append(available[int(keyed[k][1])].duplicate(true))
+	return result
+
+
 ## Uniform draw, optionally filtered by card type and/or product.
 static func draw_filtered(
 	count: int,
