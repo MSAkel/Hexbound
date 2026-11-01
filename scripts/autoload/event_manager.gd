@@ -288,7 +288,12 @@ func grant_auto_card(is_round_reward: bool, fail_remaining_turns: int = -1) -> b
 		0
 	)
 	var loot_rng := RunRng.create_rng(stream_name)
-	var pack := CardLoot.station_weighted_draw(1, GameManager.tile_cards_pool, loot_rng)
+	var pack := CardLoot.lane_draw(
+		CardLoot.lanes_for_round(round_number),
+		1,
+		GameManager.tile_cards_pool,
+		loot_rng
+	)
 	if pack.is_empty():
 		return false
 
