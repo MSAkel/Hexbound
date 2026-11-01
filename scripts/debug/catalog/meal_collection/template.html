@@ -1,0 +1,235 @@
+<title>Flavour Pass Meal Collection</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+@font-face { font-family: 'Gimbot'; src: url(data:font/otf;base64,/*__FONT__*/) format('opentype'); font-display: swap; }
+/* Layout: the game's dark teal Collection screen, a recipe-book grid on the left and a parchment recipe card on the right; stacked on phones. Single dark look, matching the game. */
+:root {
+  color-scheme: dark;
+  --ground: #0C1719; --panel: #12232A; --tile: #182B30; --tile-on: #21393F; --line: #2C4247; --edge: #617575;
+  --ink: #E8DFC9; --muted: #AEB9B3; --gold: #C29A56; --gold-hi: #E0BC7A; --gold-glow: rgba(194,154,86,0.28);
+  --paper: #F3EAD3; --paper-tile: #FBF5E6; --paper-line: #E3D2AC; --paper-well: #E6D7B4; --paper-dash: #CDB27E;
+  --paper-ink: #2A2620; --paper-body: #3E3426; --paper-muted: #5C4B35; --paper-label: #7A5A2A;
+  --tag-bg: #E7D2A6; --tag-ink: #5E4520; --note-bg: #E4ECE8; --note-ink: #22403A;
+  --mult: #F2A68F; --flavour: #9BD3C0; --garnish: #B9D98C;
+  --display: 'Gimbot', 'Fredoka', system-ui, sans-serif;
+  --round: 'Fredoka', system-ui, sans-serif;
+  --body: 'Nunito', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1400px; margin: 0 auto; padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 22px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.9px; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 2px 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(32px, 5vw, 46px); line-height: 1; color: var(--gold); letter-spacing: 0.5px; text-wrap: balance; }
+.meta { color: var(--muted); font-size: 13px; }
+.meta code { font-size: 12px; color: var(--ink); background: var(--tile); padding: 1px 6px; border-radius: 6px; }
+button { font: inherit; }
+:focus-visible { outline: 3px solid var(--gold-hi); outline-offset: 2px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.book { background: var(--panel); border: 2px solid var(--line); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); max-height: calc(100vh - 32px); min-height: 0; }
+.book-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.book h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 24px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search { flex: 1 1 160px; min-width: 0; background: var(--ground); border: 2px solid var(--line); border-radius: 99px; color: var(--ink); padding: 8px 14px; font: inherit; font-size: 14px; }
+.search::placeholder { color: var(--muted); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 2px solid var(--line); background: transparent; color: var(--muted); font-weight: 800; font-size: 13px; padding: 6px 12px; border-radius: 99px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--ground); }
+.grid-scroll { overflow-y: auto; min-height: 0; padding: 4px; margin: -4px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; }
+.tile { background: var(--tile); border: 3px solid var(--line); border-radius: 20px; padding: 10px 6px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: var(--ink); transition: transform .15s ease, border-color .15s ease; }
+.tile:hover { transform: translateY(-2px); border-color: var(--edge); }
+.tile[aria-pressed="true"] { background: var(--tile-on); border-color: var(--gold); box-shadow: 0 0 0 4px var(--gold-glow); }
+.tile .pic { height: 78px; width: 100%; display: flex; align-items: center; justify-content: center; }
+.tile img { max-width: 100px; max-height: 74px; object-fit: contain; }
+.tile .nm { font-family: var(--display); font-size: 15px; line-height: 1.15; text-align: center; }
+.tile .kd { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); }
+.empty { color: var(--muted); padding: 24px 4px; text-align: center; }
+
+.card { background: var(--paper); color: var(--paper-ink); border: 4px solid var(--gold); border-radius: 28px; padding: clamp(18px, 3vw, 30px); display: flex; flex-direction: column; gap: 22px; min-width: 0; scroll-margin-top: 16px; }
+.hero { display: flex; flex-wrap: wrap; gap: 22px; align-items: center; }
+.well { width: 176px; height: 156px; flex-shrink: 0; border-radius: 34px; background: var(--paper-well); border: 3px dashed var(--paper-dash); display: flex; align-items: center; justify-content: center; }
+.well img { max-width: 150px; max-height: 124px; object-fit: contain; animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-5px) rotate(1deg); } }
+.hero-text { display: flex; flex-direction: column; gap: 8px; flex: 1 1 260px; min-width: 0; }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.tag { font-size: 12px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; padding: 5px 11px; border-radius: 99px; }
+.tag.kind { background: var(--tile); color: var(--ink); }
+.tag.place { background: var(--tag-bg); color: var(--tag-ink); }
+.card h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(32px, 4vw, 46px); line-height: 1.05; text-wrap: balance; }
+.tagline { margin: 0; font-size: 16px; color: var(--paper-muted); }
+.facts3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.fact3 { background: var(--paper-tile); border: 2px solid var(--paper-line); border-radius: 18px; padding: 12px 15px; display: flex; flex-direction: column; gap: 4px; }
+.lbl { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; color: var(--paper-label); }
+.val { font-family: var(--round); font-weight: 600; font-size: 17px; line-height: 1.2; }
+.note { display: flex; gap: 10px; align-items: flex-start; background: var(--note-bg); color: var(--note-ink); border-radius: 16px; padding: 11px 14px; font-size: 14px; }
+.note svg { flex-shrink: 0; margin-top: 1px; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 24px; }
+.story { margin: 0; font-size: 16px; line-height: 1.65; color: var(--paper-body); max-width: 68ch; }
+.funlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.funlist li { display: flex; gap: 12px; align-items: flex-start; color: var(--paper-body); }
+.star { width: 28px; height: 28px; flex-shrink: 0; border-radius: 10px; background: var(--gold); display: flex; align-items: center; justify-content: center; }
+.funlist span.t { padding-top: 3px; max-width: 70ch; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { background: var(--paper-tile); border: 2px solid var(--paper-line); color: var(--tag-ink); font-weight: 700; font-size: 14px; padding: 6px 13px; border-radius: 99px; }
+.kitchen { background: var(--tile); color: var(--ink); border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+.kitchen-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.kitchen h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 22px; color: var(--gold); }
+.kitchen .eyebrow { font-size: 11px; }
+.effect { margin: 0; font-size: 16px; line-height: 1.8; }
+.stat { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; font-weight: 800; }
+.stat img { width: 22px; height: 22px; object-fit: contain; }
+.kw { font-weight: 800; color: var(--gold-hi); }
+.slot { font-weight: 700; font-size: 14px; padding: 6px 13px; border-radius: 12px; border: 2px solid var(--gold); background: var(--tile-on); color: var(--ink); }
+.slot.any { border-style: dashed; border-color: var(--edge); background: transparent; color: var(--muted); }
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .book { position: static; max-height: none; }
+  .grid-scroll { overflow: visible; }
+}
+@media (max-width: 560px) {
+  .facts3 { grid-template-columns: minmax(0, 1fr); }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+  .well { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .well img { animation: none; } .tile { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Flavour Pass · Collection</div>
+      <h1>Meal Collection</h1>
+    </div>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <div class="layout">
+    <section class="book" aria-label="Recipe book">
+      <div class="book-head">
+        <h2>Recipe Book</h2>
+      </div>
+      <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+      <div class="tools">
+        <label for="q" class="eyebrow" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search meals</label>
+        <input id="q" class="search" type="search" placeholder="Search meals or ingredients" autocomplete="off">
+      </div>
+      <div class="grid-scroll"><div class="grid" id="grid"></div></div>
+    </section>
+
+    <article class="card" id="card" aria-live="polite"></article>
+  </div>
+</div>
+
+<script>
+const ICONS = /*__ICONS__*/null;
+const DATA = /*__MEALS__*/null;
+const STATS = {
+  mult: { icon: ICONS['mult'], text: 'Mult', cls: 'var(--mult)' },
+  flavour: { icon: ICONS['flavour'], text: 'Flavour', cls: 'var(--flavour)' },
+  garnished: { icon: ICONS['garnish'], text: 'Garnished', cls: 'var(--garnish)' }
+};
+const WORDS = { triggers: 'triggers', triggered: 'triggered', trigger: 'trigger' };
+const MEALS = DATA.meals;
+const CATEGORY_ORDER = ['Meat', 'Poultry', 'Seafood', 'Salad', 'Side', 'Sauce & Dip', 'Dessert', 'Beverage'];
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const slug = (m) => m.name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+MEALS.forEach((m) => { m.slug = slug(m); });
+const cats = [...new Set(MEALS.map((m) => m.category))].sort((a, b) => (CATEGORY_ORDER.indexOf(a) + 99) % 99 - (CATEGORY_ORDER.indexOf(b) + 99) % 99 || a.localeCompare(b));
+let filter = 'all';
+let selected = MEALS.some((m) => m.slug === 'lobster-roll') ? 'lobster-roll' : MEALS[0].slug;
+
+const withLore = MEALS.filter((m) => m.lore).length;
+$('#meta').innerHTML = `${MEALS.length} meals from <code>main</code>${DATA.commit ? ` at <code>${esc(DATA.commit)}</code>` : ''}. Histories are draft lore, not game data${withLore < MEALS.length ? `; ${MEALS.length - withLore} still to write` : ''}.`;
+$('#chips').innerHTML = [['all', 'All', MEALS.length], ...cats.map((c) => [c, c, MEALS.filter((m) => m.category === c).length])]
+  .map(([k, label, n]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${k === filter}">${esc(label)} · ${n}</button>`).join('');
+
+function effectHTML(text) {
+  return text.split(/(\{\w+\})/).filter(Boolean).map((p) => {
+    const k = p[0] === '{' ? p.slice(1, -1) : null;
+    if (k && STATS[k]) return `<span class="stat"><img src="${STATS[k].icon}" alt=""><span style="color:${STATS[k].cls}">${STATS[k].text}</span></span>`;
+    if (k) return `<span class="kw">${esc(WORDS[k] || k)}</span>`;
+    return esc(p);
+  }).join('');
+}
+
+function renderGrid() {
+  const q = $('#q').value.trim().toLowerCase();
+  const list = MEALS.filter((m) => (filter === 'all' || m.category === filter) &&
+    (!q || [m.name, m.category, ...(m.lore ? [m.lore.origin, ...m.lore.ingredients] : []), ...m.recipe.map((r) => r[0])].join(' ').toLowerCase().includes(q)));
+  $('#grid').innerHTML = list.length ? list.map((m) => `
+    <button class="tile" data-id="${m.slug}" aria-pressed="${m.slug === selected}">
+      <span class="pic"><img src="${ICONS[m.icon]}" alt=""></span>
+      <span class="nm">${esc(m.name)}</span>
+      <span class="kd">${esc(m.category)}</span>
+    </button>`).join('') : '<p class="empty">No meals match that search.</p>';
+}
+
+function renderCard() {
+  const m = MEALS.find((x) => x.slug === selected) || MEALS[0], l = m.lore;
+  const recipe = m.recipe.length
+    ? m.recipe.map(([label, any]) => `<span class="slot${any ? ' any' : ''}">${any ? 'Any ' : ''}${esc(label)}</span>`).join('')
+    : '<span class="slot any">No recipe: always ready to serve</span>';
+  const kitchen = `<section class="kitchen" aria-label="In the kitchen">
+      <div class="kitchen-head"><h3>In the kitchen</h3><span class="eyebrow">Game data</span></div>
+      <p class="effect">${effectHTML(m.effect)}</p>
+      <div class="sec"><span class="eyebrow">Recipe</span><div class="pills">${recipe}</div></div>
+    </section>`;
+  $('#card').innerHTML = `
+    <div class="hero">
+      <div class="well"><img src="${ICONS[m.icon]}" alt="${esc(m.name)}"></div>
+      <div class="hero-text">
+        <div class="tags"><span class="tag kind">${esc(m.category)}</span>${l ? `<span class="tag place">${esc(l.origin)}</span>` : ''}</div>
+        <h2>${esc(m.name)}</h2>
+        <p class="tagline">${l ? esc(l.tagline) : 'Its story hasn’t been written yet.'}</p>
+      </div>
+    </div>
+    ${l ? `<div class="facts3">
+      <div class="fact3"><span class="lbl">First made by</span><span class="val">${esc(l.first_made_by)}</span></div>
+      <div class="fact3"><span class="lbl">Where</span><span class="val">${esc(l.where)}</span></div>
+      <div class="fact3"><span class="lbl">When</span><span class="val">${esc(l.when)}</span></div>
+    </div>
+    <div class="note">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+      <span><strong>${esc(l.certainty)}</strong> ${esc(l.certainty_note)}</span>
+    </div>
+    <section class="sec"><h3>The story</h3><p class="story">${esc(l.story)}</p></section>
+    <section class="sec"><h3>Fun facts</h3><ul class="funlist">${l.facts.map((f) => `
+      <li><span class="star"><svg width="15" height="15" viewBox="0 0 24 24" fill="var(--paper-tile)" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></span><span class="t">${esc(f)}</span></li>`).join('')}</ul></section>
+    <section class="sec"><h3>Traditional ingredients</h3><div class="pills">${l.ingredients.map((i) => `<span class="pill">${esc(i)}</span>`).join('')}</div></section>`
+    : `<div class="note"><span>This meal is in the game but has no entry in <strong>meal_lore.json</strong> yet.</span></div>`}
+    ${kitchen}`;
+}
+
+function select(id, fromUser) {
+  if (!MEALS.some((m) => m.slug === id)) return;
+  selected = id;
+  renderGrid(); renderCard();
+  if (fromUser) {
+    if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    if (window.matchMedia('(max-width: 980px)').matches) {
+      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      $('#card').scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+    }
+  }
+}
+
+$('#grid').addEventListener('click', (e) => { const t = e.target.closest('.tile'); if (t) select(t.dataset.id, true); });
+$('#chips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (!c) return;
+  filter = c.dataset.f;
+  document.querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', String(x === c)));
+  renderGrid();
+});
+$('#q').addEventListener('input', renderGrid);
+window.addEventListener('hashchange', () => select(location.hash.slice(1), false));
+
+const start = location.hash.slice(1);
+select(MEALS.some((m) => m.slug === start) ? start : selected, false);
+</script>

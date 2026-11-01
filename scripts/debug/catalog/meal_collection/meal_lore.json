@@ -1,0 +1,611 @@
+{
+  "_note": "Draft real-world history for the Meal Collection page. Not used by the game yet. Keyed by meal card id.",
+  "meals": {
+    "apple_pie": {
+      "origin": "England",
+      "tagline": "Older than the country it is most famous in.",
+      "first_made_by": "Unknown medieval cooks",
+      "where": "England",
+      "when": "c. 1381",
+      "certainty": "No single inventor.",
+      "certainty_note": "The oldest known English recipe dates to the late 1300s; the dish grew from many kitchens.",
+      "story": "The earliest English apple pie recipe, from around 1381, called for apples, figs, raisins, pears and saffron in a pastry case. Sugar was too expensive to add. Settlers later brought pies to America, where apple pie became a national symbol.",
+      "facts": [
+        "Apples are not native to America: early colonists brought seeds and cuttings from Europe.",
+        "Medieval pie crusts were often thick and inedible, used more like a baking dish than a treat.",
+        "The Dutch, Swedes and French all have their own long-standing apple pie traditions."
+      ],
+      "ingredients": [
+        "Apples",
+        "Butter",
+        "Sugar",
+        "Flour",
+        "Cinnamon",
+        "Lemon juice"
+      ]
+    },
+    "beer": {
+      "origin": "Mesopotamia",
+      "tagline": "One of the oldest drinks people ever made.",
+      "first_made_by": "Early farmers of the Near East",
+      "where": "Mesopotamia",
+      "when": "c. 3500 BCE",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Residue on jars from around 3500 BCE is strong evidence; brewing may be older.",
+      "story": "Early farmers in the Near East discovered that soaked grain left to sit would ferment. The Sumerians loved beer so much they had a goddess of brewing, Ninkasi. A hymn to her, written about 1800 BCE, doubles as one of the oldest beer recipes.",
+      "facts": [
+        "Bavaria’s 1516 purity law allowed only water, barley and hops in beer.",
+        "Workers who built Egypt’s pyramids were paid partly in beer.",
+        "Yeast was not part of the purity law because nobody knew it existed yet."
+      ],
+      "ingredients": [
+        "Water",
+        "Malted barley",
+        "Hops",
+        "Yeast"
+      ]
+    },
+    "beurre_blanc_scallops": {
+      "origin": "France",
+      "tagline": "A famous butter sauce born from a kitchen slip-up.",
+      "first_made_by": "Clémence Lefeuvre",
+      "where": "Near Nantes, France",
+      "when": "c. 1890s",
+      "certainty": "Popular legend.",
+      "certainty_note": "Lefeuvre is widely credited with beurre blanc; the \"happy accident\" detail is a cherished story.",
+      "story": "Cook Clémence Lefeuvre was said to be making a béarnaise for fish when she forgot the egg yolks. What came out was a silky sauce of butter, shallots and wine vinegar. Diners loved it, and beurre blanc (\"white butter\") became a classic of the Loire Valley.",
+      "facts": [
+        "Beurre blanc was first served with pike from the Loire, not scallops.",
+        "The sauce must be whisked gently over low heat: too hot and the butter splits.",
+        "It is one of the few classic French sauces with no flour and no egg."
+      ],
+      "ingredients": [
+        "Scallops",
+        "Butter",
+        "Shallots",
+        "White wine vinegar",
+        "White wine",
+        "Lemon"
+      ]
+    },
+    "ceviche": {
+      "origin": "Peru",
+      "tagline": "Fish \"cooked\" by citrus instead of fire.",
+      "first_made_by": "Coastal peoples of Peru",
+      "where": "Peru",
+      "when": "About 2,000 years ago",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Early versions used local fruit juices; lime arrived later with the Spanish.",
+      "story": "Along Peru’s coast, people have eaten raw fish marinated in tangy juices for around two thousand years. When Spanish ships brought limes and onions, the dish became the bright, zesty ceviche known today. The citrus firms up the fish so it tastes cooked without any heat.",
+      "facts": [
+        "Peru celebrates National Ceviche Day every June 28th.",
+        "UNESCO added Peruvian ceviche to its Intangible Cultural Heritage list in 2023.",
+        "The leftover marinade is called \"leche de tigre\" (tiger’s milk) and is often drunk as a shot."
+      ],
+      "ingredients": [
+        "Fresh white fish",
+        "Lime juice",
+        "Red onion",
+        "Chili pepper",
+        "Cilantro",
+        "Salt"
+      ]
+    },
+    "chicken_curry": {
+      "origin": "India & Britain",
+      "tagline": "A spiced stew that travelled from India to become a British favourite.",
+      "first_made_by": "Indian cooks; Hannah Glasse wrote the first English recipe",
+      "where": "India, then London",
+      "when": "1747 (first English recipe)",
+      "certainty": "No single inventor.",
+      "certainty_note": "Spiced meat stews are far older than the word “curry”; the dates here are when the dish reached English cookbooks and restaurants.",
+      "story": "Cooks across India have simmered meat in spiced sauces for centuries. British traders and soldiers brought a taste for these dishes home, and in 1747 Hannah Glasse printed a recipe “to make a Currey the India way” in her best-selling cookbook. In 1810 Sake Dean Mahomed opened the Hindoostane Coffee House in London, the first Indian restaurant in Britain.",
+      "facts": [
+        "The English word “curry” is often traced to the Tamil “kari”, a spiced sauce.",
+        "Sake Dean Mahomed was a former captain in the East India Company’s army before opening his London restaurant.",
+        "Turmeric gives most curries their golden colour."
+      ],
+      "ingredients": [
+        "Chicken",
+        "Onion",
+        "Garlic",
+        "Ginger",
+        "Turmeric",
+        "Cumin",
+        "Coriander",
+        "Chili"
+      ]
+    },
+    "chili_con_carne": {
+      "origin": "Texas, USA",
+      "tagline": "A bowl of red first sold by the plaza stalls of San Antonio.",
+      "first_made_by": "The chili queens of San Antonio",
+      "where": "San Antonio, Texas",
+      "when": "1860s–1930s",
+      "certainty": "No single inventor.",
+      "certainty_note": "Chili was street food long before anyone wrote a recipe down; the chili queens made it famous.",
+      "story": "From the 1860s, women known as the chili queens set up stalls in San Antonio’s plazas each evening and sold bowls of spicy beef stew by lantern light. Visitors spread the word. In 1896 William Gebhardt registered his Eagle Brand chili powder in San Antonio, so anyone could make the dish at home.",
+      "facts": [
+        "Chili was named the official state dish of Texas in 1977.",
+        "Traditional Texas chili, the “bowl of red”, has no beans.",
+        "“Chili con carne” is Spanish for “chili with meat”."
+      ],
+      "ingredients": [
+        "Beef",
+        "Dried chilies",
+        "Onion",
+        "Garlic",
+        "Cumin",
+        "Oregano",
+        "Tomato"
+      ]
+    },
+    "chocolate_cake": {
+      "origin": "Europe",
+      "tagline": "Possible only once chocolate became a powder.",
+      "first_made_by": "Coenraad van Houten (cocoa powder)",
+      "where": "Amsterdam, Netherlands",
+      "when": "1828",
+      "certainty": "No single inventor.",
+      "certainty_note": "Van Houten’s cocoa press made baking with chocolate practical; many bakers built on it.",
+      "story": "For centuries chocolate was mostly a drink. In 1828 Dutch chemist Coenraad van Houten patented a press that squeezed fat from cocoa beans, leaving a fine powder. Bakers could now mix chocolate straight into batter, and chocolate cakes spread across Europe and America.",
+      "facts": [
+        "Austria’s Sachertorte was created in 1832 by 16-year-old apprentice Franz Sacher.",
+        "German chocolate cake is named after Samuel German, an American baker, not Germany.",
+        "Early chocolate cakes were often plain cakes with chocolate only in the frosting."
+      ],
+      "ingredients": [
+        "Cocoa powder",
+        "Flour",
+        "Sugar",
+        "Eggs",
+        "Butter",
+        "Milk"
+      ]
+    },
+    "cobb_salad": {
+      "origin": "Hollywood, USA",
+      "tagline": "A midnight raid on a restaurant fridge, chopped into neat rows.",
+      "first_made_by": "Robert Cobb (usually credited)",
+      "where": "The Brown Derby, Hollywood",
+      "when": "1937 (some say 1929)",
+      "certainty": "Disputed origin.",
+      "certainty_note": "Most accounts credit owner Robert Cobb in 1937; others credit his chefs, and one story dates it to 1929.",
+      "story": "The best-known story says Robert Cobb, owner of the Hollywood Brown Derby, was hungry late one night and chopped up whatever he found in the kitchen: lettuce, avocado, tomato, chicken, egg, cheese and bacon. Another version says he chopped it finely for a friend, theatre owner Sid Grauman, after dental work. Either way it went on the menu and became a classic.",
+      "facts": [
+        "The salad is traditionally served with each ingredient laid out in its own row.",
+        "The Brown Derby was a favourite haunt of Hollywood stars in the 1930s and 40s.",
+        "Blue cheese, often Roquefort, is part of the classic version."
+      ],
+      "ingredients": [
+        "Lettuce",
+        "Chicken",
+        "Bacon",
+        "Avocado",
+        "Tomato",
+        "Hard-boiled egg",
+        "Blue cheese",
+        "Red wine vinaigrette"
+      ]
+    },
+    "coffee": {
+      "origin": "Ethiopia",
+      "tagline": "Discovered, the story goes, by some very lively goats.",
+      "first_made_by": "Kaldi the goatherd (legend)",
+      "where": "Ethiopia and Yemen",
+      "when": "1400s (first records)",
+      "certainty": "Popular legend.",
+      "certainty_note": "The Kaldi story was first written down in 1671; the earliest solid records come from Yemen’s Sufi monasteries.",
+      "story": "Legend says an Ethiopian goatherd named Kaldi noticed his goats dancing after eating red berries from a shrub. What is certain is that by the 1400s, Sufi monks in Yemen brewed coffee to stay awake through night prayers. Coffeehouses soon spread to Mecca, Istanbul and Europe.",
+      "facts": [
+        "Coffee \"beans\" are actually the seeds of a cherry-like fruit.",
+        "Early European coffeehouses were nicknamed \"penny universities\" for their lively debates.",
+        "Ethiopia remains one of the world’s great coffee growers."
+      ],
+      "ingredients": [
+        "Roasted coffee beans",
+        "Water"
+      ]
+    },
+    "creme_brulee": {
+      "origin": "France",
+      "tagline": "Silky custard under a glassy, crackable top.",
+      "first_made_by": "François Massialot",
+      "where": "Versailles, France",
+      "when": "1691",
+      "certainty": "Disputed origin.",
+      "certainty_note": "Massialot printed the first recipe, but England and Spain both claim similar desserts.",
+      "story": "François Massialot, chef to the brother of Louis XIV, published a recipe for \"burnt cream\" in his 1691 cookbook. Cooks caramelised the sugar topping with a red-hot iron called a salamander. Today a kitchen torch does the job, giving that satisfying crack under the spoon.",
+      "facts": [
+        "Trinity College, Cambridge claims its own \"burnt cream\", branding the college crest into the sugar.",
+        "Spain’s crema catalana is a close cousin, flavoured with citrus and cinnamon.",
+        "The name simply means \"burnt cream\" in French."
+      ],
+      "ingredients": [
+        "Cream",
+        "Egg yolks",
+        "Sugar",
+        "Vanilla"
+      ]
+    },
+    "french_fries": {
+      "origin": "Belgium or France",
+      "tagline": "Two countries claim them. Everyone eats them.",
+      "first_made_by": "Unknown street cooks",
+      "where": "Belgium or France",
+      "when": "Late 1700s",
+      "certainty": "Disputed origin.",
+      "certainty_note": "Belgium and France both claim fried potato sticks; neither story has firm proof.",
+      "story": "Belgians tell of river villages that fried potato strips when the rivers froze and they couldn’t catch fish. The French point to Paris street vendors selling fried potatoes around the time of the Revolution. In 1802 Thomas Jefferson served “potatoes served in the French manner” at the White House, and fries never left the menu.",
+      "facts": [
+        "Belgian frites are traditionally fried twice, once to cook and once to crisp.",
+        "One popular theory says the name “French” came from soldiers who ate them in French-speaking Belgium.",
+        "Bruges in Belgium has a museum dedicated to fries."
+      ],
+      "ingredients": [
+        "Potatoes",
+        "Frying oil",
+        "Salt"
+      ]
+    },
+    "fried_chicken": {
+      "origin": "Southern USA",
+      "tagline": "Crisp, seasoned and shaped by two cooking traditions.",
+      "first_made_by": "Cooks of the American South; Mary Randolph printed an early recipe",
+      "where": "Virginia, USA",
+      "when": "1820s (first printed recipe)",
+      "certainty": "No single inventor.",
+      "certainty_note": "Southern fried chicken grew out of many kitchens; the date is the earliest printed American recipe.",
+      "story": "Scottish settlers liked to fry chicken in fat, and enslaved West African cooks brought rich seasoning traditions to Southern kitchens. Together they shaped the crisp, spiced fried chicken of the American South. Mary Randolph’s cookbook The Virginia House-Wife, from the 1820s, has one of the first printed American recipes: dredge in flour, salt, and fry in lard until light brown.",
+      "facts": [
+        "Colonel Harland Sanders began selling his fried chicken at a roadside restaurant in Corbin, Kentucky.",
+        "In Japan, eating fried chicken at Christmas became a popular tradition from the 1970s.",
+        "Soaking chicken in buttermilk before frying keeps it tender."
+      ],
+      "ingredients": [
+        "Chicken",
+        "Flour",
+        "Buttermilk",
+        "Salt",
+        "Black pepper",
+        "Paprika",
+        "Frying oil"
+      ]
+    },
+    "fruit_salad": {
+      "origin": "Everywhere",
+      "tagline": "A bowl of whatever is ripe and sweet.",
+      "first_made_by": "Unknown",
+      "where": "Worldwide",
+      "when": "Ancient",
+      "certainty": "No single inventor.",
+      "certainty_note": "Mixing fresh fruit is as old as orchards; there is no first recipe to point to.",
+      "story": "People have tossed fresh fruit together for as long as orchards have existed. In the early 1900s, canneries in California turned leftover peaches, pears and grapes into \"fruit cocktail\", making fruit salad a year-round staple in kitchens around the world.",
+      "facts": [
+        "Food scientist William Vere Cruess at UC Berkeley is often called the father of canned fruit cocktail.",
+        "The American South has \"ambrosia\", a fruit salad with coconut and marshmallows.",
+        "A squeeze of citrus stops cut apples and bananas from browning."
+      ],
+      "ingredients": [
+        "Seasonal fruit",
+        "Citrus juice",
+        "Honey",
+        "Mint"
+      ]
+    },
+    "grilled_corn": {
+      "origin": "Mexico",
+      "tagline": "A crop thousands of years in the making, charred over a flame.",
+      "first_made_by": "Indigenous farmers of Mexico",
+      "where": "Mexico",
+      "when": "About 9,000 years ago (corn)",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Corn was domesticated in Mexico thousands of years ago; roasting it over fire is as old as the crop.",
+      "story": "Farmers in southern Mexico bred corn from a wild grass called teosinte around 9,000 years ago. Roasting cobs over an open fire is one of the oldest ways to eat it. In Mexico today, street vendors sell elote: grilled corn spread with mayonnaise, crumbly cheese, chili powder and lime.",
+      "facts": [
+        "“Elote” comes from the Nahuatl word “elotl”, meaning ear of corn.",
+        "Teosinte, corn’s wild ancestor, has tiny ears with only a handful of hard kernels.",
+        "Grilling corn in its husk steams the kernels before they char."
+      ],
+      "ingredients": [
+        "Corn on the cob",
+        "Butter",
+        "Salt",
+        "Chili powder",
+        "Lime",
+        "Cotija cheese"
+      ]
+    },
+    "grilled_steak": {
+      "origin": "Worldwide",
+      "tagline": "Meat, fire and salt: the oldest recipe there is.",
+      "first_made_by": "Prehistoric cooks",
+      "where": "Worldwide",
+      "when": "Prehistoric",
+      "certainty": "No single inventor.",
+      "certainty_note": "Grilling meat over flame predates written history.",
+      "story": "Cooking cuts of meat over open fire is one of humanity’s oldest cooking methods. The word \"steak\" comes from the Old Norse \"steik\", meaning roast. Over time every culture built its own tradition, from Florence’s thick bistecca to the Argentine asado.",
+      "facts": [
+        "London’s Sublime Society of Beef Steaks, a dining club devoted to steak, was founded in 1735.",
+        "Resting a steak after grilling lets its juices settle back into the meat.",
+        "Bistecca alla fiorentina is traditionally cooked rare and seasoned only with salt, pepper and oil."
+      ],
+      "ingredients": [
+        "Beef steak",
+        "Salt",
+        "Black pepper",
+        "Butter",
+        "Garlic",
+        "Thyme"
+      ]
+    },
+    "guacamole": {
+      "origin": "Mexico",
+      "tagline": "An avocado sauce older than the Spanish arrival in Mexico.",
+      "first_made_by": "The Aztecs",
+      "where": "Central Mexico",
+      "when": "Before the 1500s",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Spanish visitors in the 1500s described an Aztec avocado sauce; the dish is likely much older.",
+      "story": "The Aztecs mashed avocados in a stone bowl called a molcajete and called the result “ahuacamolli”, avocado sauce. Spanish arrivals in the 1500s wrote about it with delight. The basic idea has barely changed: ripe avocado, chili, a little onion and salt, with lime added later.",
+      "facts": [
+        "The name joins the Nahuatl words “ahuacatl” (avocado) and “molli” (sauce).",
+        "Botanically, an avocado is a large berry with a single seed.",
+        "Lime juice slows the browning of mashed avocado."
+      ],
+      "ingredients": [
+        "Avocado",
+        "Lime",
+        "Onion",
+        "Chili",
+        "Cilantro",
+        "Tomato",
+        "Salt"
+      ]
+    },
+    "hamburger": {
+      "origin": "USA",
+      "tagline": "Everyone claims it. Nobody can prove it.",
+      "first_made_by": "Louis Lassen (claimed)",
+      "where": "New Haven, Connecticut",
+      "when": "1900",
+      "certainty": "Disputed origin.",
+      "certainty_note": "Several towns in Wisconsin, New York and Texas also claim the first burger, some from the 1880s.",
+      "story": "Louis’ Lunch in New Haven says a customer in a hurry asked for something to eat on the go in 1900, so Louis Lassen put a beef patty between two slices of toast. Rival claims go back to 1885 county fairs. The name comes from the \"Hamburg steak\", brought over by German immigrants.",
+      "facts": [
+        "Louis’ Lunch still serves its burgers on toast, and does not offer ketchup.",
+        "White Castle, founded in 1921, is considered the first fast-food burger chain.",
+        "Seymour, Wisconsin calls itself the \"Home of the Hamburger\"."
+      ],
+      "ingredients": [
+        "Ground beef",
+        "Bun",
+        "Lettuce",
+        "Tomato",
+        "Onion",
+        "Salt & pepper"
+      ]
+    },
+    "honey_glazed_salmon": {
+      "origin": "Pacific coasts",
+      "tagline": "Two very old foods, salmon and honey, in one pan.",
+      "first_made_by": "Unknown",
+      "where": "No single place",
+      "when": "Modern dish, ancient parts",
+      "certainty": "No single inventor.",
+      "certainty_note": "Salmon and honey have each been eaten for thousands of years; the glazed dish has no recorded first cook.",
+      "story": "Peoples of the Pacific Northwest have roasted salmon over open fires for thousands of years, often on cedar planks. Honey is one of humanity’s oldest sweeteners; a cave painting in Spain thousands of years old shows someone gathering it from a wild hive. Brushing honey over salmon so it caramelises in the heat is a modern meeting of the two.",
+      "facts": [
+        "Salmon usually return to the stream where they hatched to spawn.",
+        "Sealed honey keeps for an extraordinarily long time because of its low water content.",
+        "A honey glaze browns quickly, so it is often brushed on near the end of cooking."
+      ],
+      "ingredients": [
+        "Salmon",
+        "Honey",
+        "Soy sauce",
+        "Garlic",
+        "Lemon",
+        "Butter"
+      ]
+    },
+    "hot_dog": {
+      "origin": "Germany & USA",
+      "tagline": "A German sausage that found its bun at the seaside.",
+      "first_made_by": "Charles Feltman (often credited)",
+      "where": "Coney Island, New York",
+      "when": "Late 1800s",
+      "certainty": "Disputed origin.",
+      "certainty_note": "Feltman is generally credited with the sausage in a bun; others claim it, and the name’s origin is also argued over.",
+      "story": "German immigrants brought frankfurters and wieners to America. Charles Feltman, a German baker’s son, began selling food from a cart at Coney Island in 1867, and he is generally credited with putting hot sausages in rolls so customers needed no plates or cutlery. His restaurant grew to fill a whole city block, and in 1916 a former employee, Nathan Handwerker, opened Nathan’s Famous nearby.",
+      "facts": [
+        "Nathan’s holds a famous hot dog eating contest at Coney Island every Fourth of July.",
+        "Both Frankfurt and Vienna claim the sausage itself, hence “frankfurter” and “wiener”.",
+        "A Chicago-style hot dog traditionally comes without ketchup."
+      ],
+      "ingredients": [
+        "Sausage",
+        "Bun",
+        "Mustard",
+        "Onion",
+        "Relish",
+        "Sauerkraut"
+      ]
+    },
+    "lobster_roll": {
+      "origin": "USA",
+      "tagline": "Warm lobster, melted butter, toasted bun.",
+      "first_made_by": "Harry Perry (Perry’s)",
+      "where": "Milford, Connecticut",
+      "when": "1929",
+      "certainty": "Well attributed.",
+      "certainty_note": "Perry’s restaurant is the usual credit for the hot, buttered Connecticut-style roll.",
+      "story": "Perry’s restaurant in Milford served a warm lobster roll, dressed with melted butter in a toasted bun, from 1929. The cold Maine version with mayonnaise came later. Both now define a New England summer.",
+      "facts": [
+        "In colonial New England lobster was so plentiful it was seen as poor people’s food.",
+        "Connecticut style is warm with butter; Maine style is cold with mayo.",
+        "A split-top bun lets the sides be buttered and griddled to a golden crisp."
+      ],
+      "ingredients": [
+        "Lobster meat",
+        "Butter",
+        "Split-top bun",
+        "Lemon",
+        "Chives"
+      ]
+    },
+    "mashed_potatoes": {
+      "origin": "England",
+      "tagline": "From mountain tuber to the ultimate comfort food.",
+      "first_made_by": "Hannah Glasse (first recipe)",
+      "where": "London, England",
+      "when": "1747",
+      "certainty": "Well documented.",
+      "certainty_note": "Glasse’s cookbook has an early printed recipe; people likely mashed potatoes long before.",
+      "story": "Potatoes came from the Andes and reached Europe in the 1500s, but many people were wary of them at first. Hannah Glasse’s best-selling 1747 cookbook included a recipe for potatoes mashed with butter and milk. In France, Antoine-Augustin Parmentier helped win people over to the potato.",
+      "facts": [
+        "Parmentier first ate potatoes as a prisoner of war and spent years promoting them in France.",
+        "Chef Joël Robuchon’s famous purée used almost as much butter as potato.",
+        "Overmixing releases starch and turns mash gluey, so a gentle hand works best."
+      ],
+      "ingredients": [
+        "Potatoes",
+        "Butter",
+        "Milk or cream",
+        "Salt",
+        "Pepper"
+      ]
+    },
+    "salad": {
+      "origin": "Ancient Rome",
+      "tagline": "Its name literally means \"salted\".",
+      "first_made_by": "Ancient Greeks and Romans",
+      "where": "Mediterranean",
+      "when": "Ancient",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Dressed raw greens appear in Roman writing; no single creator.",
+      "story": "Romans enjoyed raw greens dressed with salt, oil and vinegar. They called them \"herba salata\", salted greens, which gave us the word salad. Over the centuries, salads grew from simple leaves into whole meals.",
+      "facts": [
+        "In 1699 English writer John Evelyn published \"Acetaria\", an entire book about salads.",
+        "Ancient Romans believed lettuce helped them sleep.",
+        "Tearing leaves by hand bruises them less than cutting with a knife."
+      ],
+      "ingredients": [
+        "Mixed greens",
+        "Cucumber",
+        "Tomato",
+        "Olive oil",
+        "Vinegar",
+        "Salt"
+      ]
+    },
+    "shrimp_cocktail": {
+      "origin": "USA",
+      "tagline": "What to put in a cocktail glass when cocktails are banned.",
+      "first_made_by": "Unknown",
+      "where": "United States",
+      "when": "1920s",
+      "certainty": "Popular story.",
+      "certainty_note": "Seafood \"cocktails\" existed earlier; Prohibition is credited with making them fashionable.",
+      "story": "Seafood cocktails go back to the Gold Rush, but shrimp cocktail took off during Prohibition in the 1920s. With alcohol banned, restaurants filled their cocktail glasses with chilled shrimp and tangy sauce instead. It became the classic steakhouse starter.",
+      "facts": [
+        "In 1970s Britain, prawn cocktail was the country’s most popular starter.",
+        "Classic cocktail sauce is mostly ketchup with a kick of horseradish.",
+        "The shrimp are hung over the glass rim so guests can pick them up easily."
+      ],
+      "ingredients": [
+        "Shrimp",
+        "Ketchup",
+        "Horseradish",
+        "Lemon",
+        "Lettuce"
+      ]
+    },
+    "sorbet": {
+      "origin": "Persia",
+      "tagline": "A frozen treat that began as a chilled fruit drink.",
+      "first_made_by": "Persian and Arab cooks",
+      "where": "Persia and the Middle East",
+      "when": "Medieval times",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Chilled sweet drinks called sharbat came first; frozen sorbetto developed later in Italy and France.",
+      "story": "In Persia, people cooled sweet fruit drinks called sharbat with ice stored through the summer in domed ice houses. The idea travelled to Italy, where cooks froze sweetened fruit juice into sorbetto, and on to France as sorbet. With no milk or cream, it tastes of pure fruit.",
+      "facts": [
+        "The word comes from the Arabic “sharbat”, a drink.",
+        "Persian ice houses, called yakhchāl, kept ice frozen through desert summers.",
+        "Sorbet is often served between courses to refresh the palate."
+      ],
+      "ingredients": [
+        "Fruit",
+        "Sugar",
+        "Water",
+        "Lemon juice"
+      ]
+    },
+    "tapenade": {
+      "origin": "Provence, France",
+      "tagline": "An olive spread named after capers.",
+      "first_made_by": "Chef Meynier",
+      "where": "La Maison Dorée, Marseille",
+      "when": "1880",
+      "certainty": "Well attributed.",
+      "certainty_note": "French culinary writers credit Meynier with the 1880 recipe; olive pastes go back to Roman times.",
+      "story": "In 1880, chef Meynier of La Maison Dorée in Marseille blended black olives, capers and anchovies with olive oil into a rich paste. He named it after the capers, “tapenas” in Provençal. Olive pastes are much older: Roman writers such as Cato the Elder described olive relishes over two thousand years ago.",
+      "facts": [
+        "The name comes from the Provençal word for capers, not olives.",
+        "Cato the Elder described an olive relish called epityrum.",
+        "Tapenade is often spread on toasted bread as an appetiser in Provence."
+      ],
+      "ingredients": [
+        "Black olives",
+        "Capers",
+        "Anchovies",
+        "Olive oil",
+        "Garlic",
+        "Lemon"
+      ]
+    },
+    "vinaigrette": {
+      "origin": "France",
+      "tagline": "Oil and vinegar, convinced to get along.",
+      "first_made_by": "Unknown",
+      "where": "France (the name)",
+      "when": "Ancient",
+      "certainty": "No single inventor.",
+      "certainty_note": "Oil and vinegar dressings are ancient; the French name came much later.",
+      "story": "People have dressed food with oil and vinegar since ancient times. The name comes from the French \"vinaigre\", meaning sour wine. A spoon of mustard helps the oil and vinegar stay mixed, turning two liquids that hate each other into a smooth dressing.",
+      "facts": [
+        "The classic ratio is three parts oil to one part vinegar.",
+        "Mustard works as an emulsifier, holding oil and vinegar together.",
+        "In French cooking, vinaigrette is one of the base sauces many others build on."
+      ],
+      "ingredients": [
+        "Olive oil",
+        "Vinegar",
+        "Dijon mustard",
+        "Shallot",
+        "Salt",
+        "Pepper"
+      ]
+    },
+    "wine": {
+      "origin": "Georgia",
+      "tagline": "Eight thousand years of grapes left to ferment.",
+      "first_made_by": "Early farmers of the Caucasus",
+      "where": "Georgia",
+      "when": "c. 6000 BCE",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Chemical traces in pottery jars from Georgia are the oldest evidence of grape wine so far.",
+      "story": "Archaeologists found traces of grape wine in clay jars in Georgia dating to around 6000 BCE. Georgians still ferment wine in huge buried clay pots called qvevri. From the Caucasus, winemaking spread across the Mediterranean.",
+      "facts": [
+        "The oldest known winery, with a grape press, was found in a cave in Armenia.",
+        "Georgian qvevri winemaking is on UNESCO’s Intangible Cultural Heritage list.",
+        "Red wine gets its colour from grape skins; the juice of most grapes is clear."
+      ],
+      "ingredients": [
+        "Grapes",
+        "Yeast"
+      ]
+    }
+  }
+}

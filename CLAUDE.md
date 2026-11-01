@@ -56,12 +56,17 @@ turns that JSON into a single self-contained HTML page with search, filters and 
 godot --headless --path . res://scenes/debug/export_catalog.tscn -- --out=catalog.json
 python scripts/debug/catalog/build_catalog_page.py catalog.json catalog.html --commit=<sha>
 python scripts/debug/catalog/build_map_pages.py catalog.json <out_dir> --commit=<sha>
+python scripts/debug/catalog/build_meal_collection.py catalog.json meal_collection.html --commit=<sha>
 ```
 
 `build_map_pages.py` writes the Meal, Station, Dependency and Technique maps. The first three share
 `map_template.html` (meals, stations, or both). The Technique Map's hand mapping of each Technique
 to the mechanics it relies on and affects is the `MAP` table in `technique_map_template.html`;
-a new Technique shows as unmapped until it gets an entry there. Stations export a `setup` list
+a new Technique shows as unmapped until it gets an entry there.
+`build_meal_collection.py catalog.json meal_collection.html` builds the Meal Collection page:
+draft real-world history per Meal from `meal_collection/meal_lore.json` (keyed by meal id, not
+used by the game) plus effect, category and recipe from the export. A new Meal shows as
+"still to write" until it gets a lore entry; the builder lists those. Stations export a `setup` list
 (kinds, named cards, "different" rules) that the maps read; keep it in step with `StationType`.
 
 ## Design notes
