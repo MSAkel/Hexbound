@@ -17,6 +17,11 @@ extends Resource
 @export var flat_flavour: int = 0
 ## Multiplies a matching card's output for the whole activation. 1.0 means no change.
 @export var output_scale: float = 1.0
+## Card picks and the merchant draw cards with these tags (or Meals in these categories)
+## draw_weight times as often while this perk is active. 1.0 means no change.
+@export var draw_tags: Array[StringName] = []
+@export var draw_meal_categories: Array[int] = []
+@export var draw_weight: float = 1.0
 
 
 func matches(card: TileCard) -> bool:
@@ -32,6 +37,19 @@ func matches(card: TileCard) -> bool:
 		if meal != null and int(meal.meal_category) in target_meal_categories:
 			return true
 	return false
+
+
+## Draw weight this perk gives a card in card picks and at the merchant.
+func draw_weight_for(card: TileCard) -> float:
+	if is_equal_approx(draw_weight, 1.0) or card == null:
+		return 1.0
+	for tag: StringName in draw_tags:
+		if TileCard.matches_kind_filter(card, tag):
+			return draw_weight
+	var meal := card as MealCard
+	if meal != null and int(meal.meal_category) in draw_meal_categories:
+		return draw_weight
+	return 1.0
 
 
 #region --- Hooks (override in perk scripts) ---
