@@ -253,6 +253,7 @@ func debug_meet_round_goal_and_complete() -> void:
 func _complete_current_round(skipped_turns: int = get_skipped_turns()) -> void:
 	EconomyManager.apply_round_speed_rewards(skipped_turns)
 	StaffManager.on_day_ended()
+	StationManager.on_day_ended()
 	if EventManager.is_completing_final_event_round():
 		RoundFlow.begin_victory_transition()
 		return

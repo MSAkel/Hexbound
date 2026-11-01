@@ -1417,6 +1417,8 @@ func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:
 		"star_level": tile_card.star_level,
 		"run_trigger_count": tile_card.run_trigger_count,
 		"garnish_stacks": tile_card.garnish_stacks,
+		"garnish_triggers_left": tile_card.garnish_triggers_left,
+		"perk_growth": tile_card.perk_growth.duplicate(true),
 		"condiment_fuses": tile_card.condiment_fuses.duplicate(true),
 	}
 	var card_state := tile_card.capture_placed_save_state()
@@ -1441,6 +1443,9 @@ func _apply_placed_tile_card_state(tile_card: TileCard, data: Dictionary) -> voi
 	tile_card.star_level = int(data.get("star_level", 1))
 	tile_card.run_trigger_count = int(data.get("run_trigger_count", 0))
 	tile_card.garnish_stacks = int(data.get("garnish_stacks", 0))
+	tile_card.garnish_triggers_left = int(data.get("garnish_triggers_left", 1 if tile_card.garnish_stacks > 0 else 0))
+	var growth: Variant = data.get("perk_growth", {})
+	tile_card.perk_growth = (growth as Dictionary).duplicate(true) if growth is Dictionary else {}
 	tile_card.condiment_fuses.clear()
 	for fuse in data.get("condiment_fuses", []):
 		if fuse is Dictionary:

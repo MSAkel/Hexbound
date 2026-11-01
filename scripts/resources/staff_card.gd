@@ -109,8 +109,8 @@ func extra_garnish_applications(
 	return 0
 
 
-## Garnish stacks this card keeps when the Hour ends instead of clearing.
-func garnish_kept_after_hour(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> int:
+## Extra triggers a Garnish on this card boosts before it is used up.
+func extra_garnish_triggers(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> int:
 	return 0
 
 

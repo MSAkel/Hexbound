@@ -22,6 +22,7 @@ func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
 func _serving_neighbour_sides(tile: Hex) -> Array[MealCard]:
 	var sides: Array[MealCard] = []
 	for meal: MealCard in _neighbour_station_meals(tile, true):
-		if meal.meal_category == MealCategory.SIDE:
+		# Fish & Chips (Fry Station) can make a Seafood meal count as a Side.
+		if StationManager.meal_counts_as(meal, _hex_for(tile, meal), MealCategory.SIDE):
 			sides.append(meal)
 	return sides

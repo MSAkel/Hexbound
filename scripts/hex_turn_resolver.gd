@@ -58,6 +58,7 @@ func resolve_turn() -> void:
 	for tile: Hex in hexes:
 		if tile.active_tile_card != null:
 			tile.active_tile_card.reset_hour_product_snapshot()
+	StationManager.on_hour_started()
 	map.refresh_dish_output_chips()
 
 	var active_segment := -1
@@ -552,13 +553,13 @@ func _on_tile_card_garnished(rune: TileCard) -> void:
 	hex.start_garnish_sparks(rune.garnish_stacks)
 
 
-## Staff such as the Pickler can let a card keep some stacks into the next Hour.
+## Unspent Skillet scale ends with the Hour. A Garnish waits until its card triggers or the Day ends.
 func _clear_hour_garnish() -> void:
 	for tile: Hex in map.get_all_hexes_with_runes():
 		var card := tile.active_tile_card
 		if card == null:
 			continue
-		card.trim_garnish(StaffManager.garnish_kept_after_hour(card))
+		card.clear_hour_scale()
 		if card.is_garnished:
 			tile.start_garnish_sparks(card.garnish_stacks)
 

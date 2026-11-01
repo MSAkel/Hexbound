@@ -238,8 +238,8 @@ func extra_garnish_applications(source_tile: Hex, source_card: TileCard, target:
 	return extra
 
 
-## Most Garnish stacks any staff member lets this card keep past the end of the Hour.
-func garnish_kept_after_hour(card: TileCard) -> int:
+## Extra triggers a Garnish on this card boosts before it is used up (Preserving).
+func extra_garnish_triggers(card: TileCard) -> int:
 	var map := _tile_map()
 	if map == null or card == null:
 		return 0
@@ -248,7 +248,7 @@ func garnish_kept_after_hour(card: TileCard) -> int:
 		return 0
 	var kept := 0
 	for ctx: StaffContext in _contexts(map):
-		kept = maxi(kept, ctx.effect.garnish_kept_after_hour(ctx, tile, card))
+		kept = maxi(kept, ctx.effect.extra_garnish_triggers(ctx, tile, card))
 	return kept
 
 

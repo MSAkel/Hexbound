@@ -176,6 +176,7 @@ func _finish_transition() -> void:
 	_outgoing_event = -1
 
 	StaffManager.on_day_started()
+	StationManager.on_day_started()
 	EventBus.turn_started.emit()
 	RunSaveManager.request_autosave()
 

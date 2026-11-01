@@ -1,6 +1,8 @@
 extends MealCard
 
 ## Needs Lobster and Butter. +60 Flavour. Doubled when every Seafood on its station is Garnished.
+## A Garnish is used up when its card triggers, so a Seafood that already triggered Garnished this
+## Hour still counts.
 
 const GARNISHED_SCALE := 2.0
 
@@ -26,4 +28,4 @@ func _all_seafood_garnished(tile: Hex) -> bool:
 	var seafood := _filter_tile_cards_by_kind(_station_cards(tile), TAG_SEAFOOD)
 	if seafood.is_empty():
 		return false
-	return seafood.all(func(card: TileCard) -> bool: return card.is_garnished)
+	return seafood.all(func(card: TileCard) -> bool: return card.is_garnished or card.hour_was_garnished)

@@ -1,0 +1,78 @@
+[gd_resource type="Resource" script_class="StationType" format=3]
+
+[ext_resource type="Script" uid="uid://rpgwnpjas3xh" path="res://scripts/resources/station_type.gd" id="1_type"]
+[ext_resource type="Script" uid="uid://dsqcvvw2je1ns" path="res://scripts/resources/station_perk.gd" id="2_perk"]
+[ext_resource type="Texture2D" path="res://assets/icons/food/meals/dishes/mashed_potatoes.png" id="3_icon"]
+[ext_resource type="Script" path="res://resources/stations/perks/hot_oil.gd" id="s_hot_oil"]
+[ext_resource type="Script" path="res://resources/stations/perks/tempura.gd" id="s_tempura"]
+[ext_resource type="Script" path="res://resources/stations/perks/fish_and_chips.gd" id="s_fish_and_chips"]
+[ext_resource type="Script" path="res://resources/stations/perks/pub_grub.gd" id="s_pub_grub"]
+
+[sub_resource type="Resource" id="level_1"]
+script = ExtResource("2_perk")
+description = "All Ingredients on this station gain +3 {flavour}"
+target_tags = Array[StringName]([&"vegetable", &"fruit", &"meat", &"seafood", &"dairy", &"sweet", &"seasoning"])
+flat_flavour = 3
+
+[sub_resource type="Resource" id="level_2"]
+script = ExtResource("2_perk")
+description = "All Ingredients on this station gain +5 {flavour}"
+target_tags = Array[StringName]([&"vegetable", &"fruit", &"meat", &"seafood", &"dairy", &"sweet", &"seasoning"])
+flat_flavour = 5
+
+[sub_resource type="Resource" id="level_3"]
+script = ExtResource("2_perk")
+description = "All Ingredients on this station gain +5 {flavour}"
+target_tags = Array[StringName]([&"vegetable", &"fruit", &"meat", &"seafood", &"dairy", &"sweet", &"seasoning"])
+flat_flavour = 5
+
+[sub_resource type="Resource" id="level_4"]
+script = ExtResource("2_perk")
+description = "All Ingredients on this station gain +8 {flavour}"
+target_tags = Array[StringName]([&"vegetable", &"fruit", &"meat", &"seafood", &"dairy", &"sweet", &"seasoning"])
+flat_flavour = 8
+
+[sub_resource type="Resource" id="level_5"]
+script = ExtResource("2_perk")
+description = "All Ingredients on this station gain +10 {flavour}"
+target_tags = Array[StringName]([&"vegetable", &"fruit", &"meat", &"seafood", &"dairy", &"sweet", &"seasoning"])
+flat_flavour = 10
+
+[sub_resource type="Resource" id="level_6"]
+script = ExtResource("2_perk")
+description = "All Ingredients on this station gain +10 {flavour}"
+target_tags = Array[StringName]([&"vegetable", &"fruit", &"meat", &"seafood", &"dairy", &"sweet", &"seasoning"])
+flat_flavour = 10
+
+[sub_resource type="Resource" id="choice_0"]
+script = ExtResource("s_hot_oil")
+description = "Hot Oil: the first Ingredient to {trigger} here each Hour triggers again"
+
+[sub_resource type="Resource" id="choice_1"]
+script = ExtResource("s_tempura")
+description = "Tempura: Seafood and Vegetables on this station count as Potato for the Deep Fryer"
+target_tags = Array[StringName]([&"seafood", &"vegetable"])
+
+[sub_resource type="Resource" id="capstone_0"]
+script = ExtResource("s_fish_and_chips")
+description = "Fish & Chips: while a Fish Station is adjacent, Seafood Meals on this station also count as Sides"
+
+[sub_resource type="Resource" id="capstone_1"]
+script = ExtResource("s_pub_grub")
+description = "Pub Grub: each Ingredient {trigger} here gives every Beer on a Bar +x0.05 {mult} for the rest of the Day"
+xmult_per_trigger = 0.05
+
+[resource]
+script = ExtResource("1_type")
+id = "fry_station"
+display_name = "Fry Station"
+icon = ExtResource("3_icon")
+color = Color(0.95, 0.75, 0.25, 1)
+required_counts = {
+&"ingredient": 3
+}
+distinct_tags = Array[StringName]([&"ingredient"])
+required_card_ids = Array[String](["deep_fryer"])
+level_perks = Array[ExtResource("2_perk")]([SubResource("level_1"), SubResource("level_2"), SubResource("level_3"), SubResource("level_4"), SubResource("level_5"), SubResource("level_6")])
+choice_options = Array[ExtResource("2_perk")]([SubResource("choice_0"), SubResource("choice_1")])
+capstone_options = Array[ExtResource("2_perk")]([SubResource("capstone_0"), SubResource("capstone_1")])

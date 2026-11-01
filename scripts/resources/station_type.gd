@@ -2,21 +2,34 @@ class_name StationType
 extends Resource
 
 ## A station specialisation. A base station turns into this type the first time its regular
-## spots hold the required cards. Perks grow with the station level. Level 3 offers a choice.
+## spots hold the required cards. Perks grow with the station level. Levels 3 and 6 offer a choice.
+
+## Tag counted by required_counts that matches any Ingredient (Fry Station). Listed in distinct_tags,
+## it counts different kinds of Ingredient (Vegetable, Meat, Seasoning...) instead of different cards.
+const TAG_ANY_INGREDIENT := &"ingredient"
+const INGREDIENT_KIND_TAGS: Array[StringName] = [
+	TileCard.TAG_VEGETABLE, TileCard.TAG_FRUIT, TileCard.TAG_MEAT, TileCard.TAG_SEAFOOD,
+	TileCard.TAG_DAIRY, TileCard.TAG_SWEET, TileCard.TAG_SEASONING,
+]
 
 @export var id: String = ""
 @export var display_name: String = ""
 @export var icon: Texture2D
 ## Badge, row tint and perk float colour.
 @export var color: Color = Color.WHITE
-## Tag -> card count the station needs. TAG_KITCHENWARE counts Kitchenware cards.
+## Tag -> card count the station needs. TAG_KITCHENWARE counts Kitchenware cards,
+## TAG_ANY_INGREDIENT counts any Ingredient.
 @export var required_counts: Dictionary = {}
 ## Tags in required_counts that must be filled by different cards (two different Meats).
 @export var distinct_tags: Array[StringName] = []
-## Perk active at levels 1 to 4. Index 0 is level 1. Each one replaces the previous level's perk.
+## Specific cards the station needs, by id (Fry Station needs a Deep Fryer).
+@export var required_card_ids: Array[String] = []
+## Perk active at levels 1 to 6. Index 0 is level 1. Each one replaces the previous level's perk.
 @export var level_perks: Array[StationPerk] = []
 ## Two options offered at level 3. The pick stays for the rest of the run, on top of the level perk.
 @export var choice_options: Array[StationPerk] = []
+## Two options offered at level 6. The pick stays on top of the level perk and the level 3 pick.
+@export var capstone_options: Array[StationPerk] = []
 
 
 ## True when cards (the station's regular spots) satisfy every requirement.
@@ -24,12 +37,23 @@ func is_satisfied_by(cards: Array[TileCard]) -> bool:
 	return missing_counts(cards).is_empty()
 
 
-## Tag -> how many more cards the station needs. Empty when the requirements are met.
+## Tag (or card id) -> how many more cards the station needs. Empty when the requirements are met.
 func missing_counts(cards: Array[TileCard]) -> Dictionary:
 	var missing := {}
+	var left: Array[TileCard] = cards.duplicate()
+	for card_id: String in required_card_ids:
+		var found := -1
+		for i in left.size():
+			if left[i].id == card_id:
+				found = i
+				break
+		if found < 0:
+			missing[StringName(card_id)] = 1
+		else:
+			left.remove_at(found)
 	for tag: StringName in required_counts:
 		var needed := int(required_counts[tag])
-		var have := _count_for_tag(cards, tag)
+		var have := _count_for_tag(left, tag)
 		if have < needed:
 			missing[tag] = needed - have
 	return missing
@@ -42,14 +66,19 @@ const UNCOUNTABLE_LABELS: Array[String] = [GameTerms.SEAFOOD, GameTerms.DAIRY, G
 ## Player-facing requirements, e.g. "2 different Vegetables · 1 Fruit · 1 Kitchenware".
 func get_requirements_text(separator: String = " · ") -> String:
 	var parts: PackedStringArray = []
+	for card_id: String in required_card_ids:
+		var template := GameManager.get_tile_card_by_id(card_id)
+		parts.append(template.name if template != null else card_id.capitalize())
 	for tag: StringName in required_counts:
 		var count := int(required_counts[tag])
-		var label := GameTerms.get_ingredient_kind_label(tag)
+		var label := "Ingredient" if tag == TAG_ANY_INGREDIENT else GameTerms.get_ingredient_kind_label(tag)
 		if label.is_empty():
 			label = String(tag).capitalize()
 		if count > 1 and not label in UNCOUNTABLE_LABELS:
 			label += "s"
-		if tag in distinct_tags and count > 1:
+		if tag == TAG_ANY_INGREDIENT:
+			label = "different kinds of Ingredient" if tag in distinct_tags else "any %s" % label
+		elif tag in distinct_tags and count > 1:
 			label = "different %s" % label
 		parts.append("%d %s" % [count, label])
 	return separator.join(parts)
@@ -63,10 +92,15 @@ func perk_for_level(level: int) -> StationPerk:
 
 
 func _count_for_tag(cards: Array[TileCard], tag: StringName) -> int:
+	if tag == TAG_ANY_INGREDIENT and tag in distinct_tags:
+		return _count_ingredient_kinds(cards)
 	var ids := {}
 	var count := 0
 	for card: TileCard in cards:
-		if not TileCard.matches_kind_filter(card, tag):
+		if tag == TAG_ANY_INGREDIENT:
+			if card.type != TileCard.TileCardType.INGREDIENT:
+				continue
+		elif not TileCard.matches_kind_filter(card, tag):
 			continue
 		if tag in distinct_tags:
 			ids[card.id] = true
@@ -75,3 +109,16 @@ func _count_for_tag(cards: Array[TileCard], tag: StringName) -> int:
 	if tag in distinct_tags:
 		return ids.size()
 	return count
+
+
+## Different Ingredient kinds among cards. A card with two kind tags still counts as one kind.
+func _count_ingredient_kinds(cards: Array[TileCard]) -> int:
+	var kinds := {}
+	for card: TileCard in cards:
+		if card.type != TileCard.TileCardType.INGREDIENT:
+			continue
+		for kind: StringName in INGREDIENT_KIND_TAGS:
+			if card.has_ingredient_tag(kind) and not kinds.has(kind):
+				kinds[kind] = true
+				break
+	return kinds.size()
