@@ -141,8 +141,9 @@ func _track_device(event: InputEvent) -> void:
 		_set_input_mode(InputMode.GAMEPAD)
 		_focus_visible = true
 	elif event is InputEventKey and event.pressed:
+		# The focus ring is for gamepad navigation only. Keys (even Ctrl) must not show it.
 		_set_input_mode(InputMode.KEYBOARD_MOUSE)
-		_focus_visible = true
+		_focus_visible = false
 	elif event is InputEventMouseButton and event.pressed:
 		_set_input_mode(InputMode.KEYBOARD_MOUSE)
 		_focus_visible = false

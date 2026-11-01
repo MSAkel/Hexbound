@@ -40,16 +40,6 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xtvdp"]
-content_margin_top = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0.12290869, 0.19797018, 0.21427926, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.54509807, 0.43137255, 0.24313726, 1)
-
 [node name="PauseMenu" type="Control" unique_id=1402050020]
 z_index = 110
 layout_mode = 3
@@ -100,7 +90,7 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_347px")
 text = "Resume"
 
 [node name="Settings" type="Button" parent="Panel/MenuItemsContainer" unique_id=1838627620]
@@ -110,7 +100,7 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_347px")
 text = "Settings"
 
 [node name="Collection" type="Button" parent="Panel/MenuItemsContainer" unique_id=730216108]
@@ -120,7 +110,7 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_347px")
 text = "Collection"
 
 [node name="Tips" type="Button" parent="Panel/MenuItemsContainer" unique_id=730216109]
@@ -130,7 +120,7 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_347px")
 text = "Tips"
 
 [node name="MainMenu" type="Button" parent="Panel/MenuItemsContainer" unique_id=847775209]
@@ -140,7 +130,7 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_347px")
 text = "Main Menu"
 
 [node name="NewRun" type="Button" parent="Panel/MenuItemsContainer" unique_id=1982479467]
@@ -151,7 +141,7 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_347px")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_xgg5q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_rv5mv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_2mh1u")
-theme_override_styles/focus = SubResource("StyleBoxFlat_xtvdp")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_347px")
 text = "New Run"
 
 [connection signal="pressed" from="Panel/MenuItemsContainer/Continue" to="." method="_on_continue_pressed"]
