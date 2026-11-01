@@ -71,7 +71,7 @@ color = Color(0.95, 0.75, 0.25, 1)
 required_counts = {
 &"ingredient": 3
 }
-distinct_tags = Array[StringName]([])
+distinct_tags = Array[StringName]([&"ingredient"])
 required_card_ids = Array[String](["deep_fryer"])
 level_perks = Array[ExtResource("2_perk")]([SubResource("level_1"), SubResource("level_2"), SubResource("level_3"), SubResource("level_4"), SubResource("level_5"), SubResource("level_6")])
 choice_options = Array[ExtResource("2_perk")]([SubResource("choice_0"), SubResource("choice_1")])

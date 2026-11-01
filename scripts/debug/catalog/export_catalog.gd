@@ -171,7 +171,7 @@ func _stations() -> Array:
 		for key: Variant in station.required_counts:
 			var label := GameTerms.get_ingredient_kind_label(StringName(key))
 			if label.is_empty():
-				label = "Any Ingredient"
+				label = "Different kinds of Ingredient" if StringName(key) in station.distinct_tags else "Any Ingredient"
 			needs[label] = station.required_counts[key]
 		result.append({
 			"id": station.id,

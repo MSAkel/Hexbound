@@ -4,8 +4,13 @@ extends Resource
 ## A station specialisation. A base station turns into this type the first time its regular
 ## spots hold the required cards. Perks grow with the station level. Levels 3 and 6 offer a choice.
 
-## Tag counted by required_counts that matches any Ingredient (Fry Station).
+## Tag counted by required_counts that matches any Ingredient (Fry Station). Listed in distinct_tags,
+## it counts different kinds of Ingredient (Vegetable, Meat, Seasoning...) instead of different cards.
 const TAG_ANY_INGREDIENT := &"ingredient"
+const INGREDIENT_KIND_TAGS: Array[StringName] = [
+	TileCard.TAG_VEGETABLE, TileCard.TAG_FRUIT, TileCard.TAG_MEAT, TileCard.TAG_SEAFOOD,
+	TileCard.TAG_DAIRY, TileCard.TAG_SWEET, TileCard.TAG_SEASONING,
+]
 
 @export var id: String = ""
 @export var display_name: String = ""
@@ -71,10 +76,10 @@ func get_requirements_text(separator: String = " · ") -> String:
 			label = String(tag).capitalize()
 		if count > 1 and not label in UNCOUNTABLE_LABELS:
 			label += "s"
-		if tag in distinct_tags and count > 1:
+		if tag == TAG_ANY_INGREDIENT:
+			label = "different kinds of Ingredient" if tag in distinct_tags else "any %s" % label
+		elif tag in distinct_tags and count > 1:
 			label = "different %s" % label
-		elif tag == TAG_ANY_INGREDIENT:
-			label = "any %s" % label
 		parts.append("%d %s" % [count, label])
 	return separator.join(parts)
 
@@ -87,6 +92,8 @@ func perk_for_level(level: int) -> StationPerk:
 
 
 func _count_for_tag(cards: Array[TileCard], tag: StringName) -> int:
+	if tag == TAG_ANY_INGREDIENT and tag in distinct_tags:
+		return _count_ingredient_kinds(cards)
 	var ids := {}
 	var count := 0
 	for card: TileCard in cards:
@@ -102,3 +109,16 @@ func _count_for_tag(cards: Array[TileCard], tag: StringName) -> int:
 	if tag in distinct_tags:
 		return ids.size()
 	return count
+
+
+## Different Ingredient kinds among cards. A card with two kind tags still counts as one kind.
+func _count_ingredient_kinds(cards: Array[TileCard]) -> int:
+	var kinds := {}
+	for card: TileCard in cards:
+		if card.type != TileCard.TileCardType.INGREDIENT:
+			continue
+		for kind: StringName in INGREDIENT_KIND_TAGS:
+			if card.has_ingredient_tag(kind) and not kinds.has(kind):
+				kinds[kind] = true
+				break
+	return kinds.size()
