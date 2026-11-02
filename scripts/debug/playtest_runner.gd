@@ -40,6 +40,8 @@ class MerchantVisit:
 	var cards: Array[TileCard] = []
 	var staff: Array[StaffCard] = []
 	var condiments: Array[Condiment] = []
+	## MerchantPacks.Kind per shelf slot, -1 once bought.
+	var packs: Array[int] = []
 	var reroll_cost := Merchant.BASE_REROLL_COST
 	## Rerolls this visit that cost nothing (Restaurateur), as on the Merchant panel.
 	var free_rerolls := 0
@@ -55,9 +57,63 @@ class MerchantVisit:
 		cards = Merchant.draw_tile_card_stock(_reroll_count)
 		staff = Merchant.draw_staff_stock(_reroll_count, StaffManager.owned_ids())
 		condiments = Merchant.draw_condiment_stock(_reroll_count)
+		packs.clear()
+		for kind in MerchantPacks.draw_kinds(_reroll_count):
+			packs.append(kind)
 
 	func price_of(item: Resource) -> int:
 		return item.get_shop_price()
+
+	## Gold a shelf pack costs. 0 for a slot already bought.
+	func pack_price(index: int) -> int:
+		if packs[index] < 0:
+			return 0
+		return MerchantPacks.price(packs[index] as MerchantPacks.Kind)
+
+	## Whether the pack can be bought now (not sold, a free seat for a Technique pack).
+	func can_open_pack(index: int) -> bool:
+		if packs[index] < 0:
+			return false
+		var kind := packs[index] as MerchantPacks.Kind
+		return (
+			MerchantPacks.get_purchase_block_reason(kind).is_empty()
+			and EconomyManager.can_afford(pack_price(index))
+		)
+
+	## A look at what a pack of this kind tends to hold, from a draw that is not the real one.
+	## The bot judges packs with this, so it never knows the contents before it pays.
+	func preview_pack(index: int) -> Array[Card]:
+		return MerchantPacks.draw_contents(
+			packs[index] as MerchantPacks.Kind,
+			_reroll_count,
+			index,
+			MerchantPacks.PREVIEW_STREAM_TAG
+		)
+
+	## Pays for the pack and returns its real cards, as the shop opens them. Empty when it can't be bought.
+	func open_pack(index: int) -> Array[Card]:
+		if not can_open_pack(index):
+			return []
+		var kind := packs[index] as MerchantPacks.Kind
+		var contents := MerchantPacks.draw_contents(kind, _reroll_count, index)
+		if contents.is_empty():
+			return []
+		var price := pack_price(index)
+		EconomyManager.remove(price)
+		packs[index] = -1
+		_runner.note_buy("pack:", MerchantPacks.id_of(kind), price)
+		return contents
+
+	## Keeps one card of an opened pack. The pack's gold was paid in open_pack.
+	func keep_from_pack(card: Card, staff_slot: int) -> void:
+		if card is TileCard:
+			_runner.note_buy("", card.id, 0)
+			EventBus.tile_card_selected.emit(card as TileCard)
+		elif card is StaffCard:
+			var seated := StaffManager.add_staff(card as StaffCard)
+			if staff_slot >= 0 and seated >= 0 and staff_slot != seated:
+				StaffManager.move_staff(seated, staff_slot)
+			_runner.note_buy("staff:", card.id, 0)
 
 	func buy_card(index: int) -> bool:
 		var card := cards[index]

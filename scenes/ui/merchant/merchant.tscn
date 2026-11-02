@@ -184,7 +184,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_21gju")
 
 [node name="MerchandiseColumn" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter" unique_id=33221293]
 layout_mode = 2
-theme_override_constants/separation = 72
+theme_override_constants/separation = 14
 
 [node name="ShelfRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1760726572]
 layout_mode = 2
@@ -230,6 +230,13 @@ offset_right = -36.0
 offset_bottom = 140.0
 grow_horizontal = 2
 theme_override_constants/separation = 18
+alignment = 1
+
+[node name="PacksRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1844210376]
+custom_minimum_size = Vector2(0, 194)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 26
 alignment = 1
 
 [node name="CardsGridContainer" type="GridContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1594343347]
