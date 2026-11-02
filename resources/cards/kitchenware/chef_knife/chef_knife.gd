@@ -3,10 +3,6 @@ extends TileCard
 ## +1 Mult. Triggers the Following Ingredient twice.
 
 
-func _init() -> void:
-	single_activation_per_turn = true
-
-
 func _on_activate_tile_card(tile: Hex) -> void:
 	_pay_kitchenware_mult(tile)
 	var next_cards := _effect_preview_cards(tile)

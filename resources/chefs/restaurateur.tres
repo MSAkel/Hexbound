@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ChefDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/chef_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/the_columnist.png" id="2_icon"]
+[ext_resource type="Script" path="res://resources/chefs/perks/restaurateur.gd" id="4_perk"]
+
+[sub_resource type="Resource" id="Perk"]
+script = ExtResource("4_perk")
+starting_gold_amount = 20
+extra_tile_slots = 1
+free_rerolls = 1
+
+[resource]
+script = ExtResource("1_script")
+id = "restaurateur"
+display_name = "Restaurateur"
+icon = ExtResource("2_icon")
+speciality_description = "Start with 20 Gold. The merchant shelf has 1 more card, and the first reroll each visit is free."
+perk = SubResource("Perk")
+starting_hand = Array[String]([])
+last_card_is_flex = true

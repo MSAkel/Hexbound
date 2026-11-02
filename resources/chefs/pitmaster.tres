@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ChefDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/chef_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/the_surveyor.png" id="2_icon"]
+[ext_resource type="Script" path="res://resources/chefs/perks/pitmaster.gd" id="4_perk"]
+
+[sub_resource type="Resource" id="Perk"]
+script = ExtResource("4_perk")
+station_type_id = "grilling_station"
+fast_thresholds = Array[int]([1, 3, 4, 6, 8])
+target_meal_categories = Array[int]([1, 2])
+mult_per_level = 1.0
+
+[resource]
+script = ExtResource("1_script")
+id = "pitmaster"
+display_name = "Pitmaster"
+icon = ExtResource("2_icon")
+speciality_description = "Grilling Stations level up faster. Meat and Poultry dishes gain +1 {mult} for each level of their Station."
+perk = SubResource("Perk")
+starting_hand = Array[String](["steak", "meat", "salt", "skillet", "black_pepper"])
+last_card_is_flex = true

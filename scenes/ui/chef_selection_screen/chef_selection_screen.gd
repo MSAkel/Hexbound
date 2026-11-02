@@ -183,7 +183,7 @@ func _start_new_run() -> void:
 	# Chef choice locks in its speciality for the entire run.
 	GameManager.selected_chef = selected_chef
 	GameManager.selected_difficulty = difficulty_container.get_selected_difficulty()
-	GameManager.bind_chef_speciality()
+	GameManager.bind_chef()
 	RunSaveManager.set_pending_run_seed(seeded_run_panel.get_effective_seed_text())
 	RunSaveManager.request_scene_enter_transition()
 	get_tree().change_scene_to_file(ScenePaths.MAIN)

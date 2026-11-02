@@ -177,6 +177,7 @@ func _finish_transition() -> void:
 
 	StaffManager.on_day_started()
 	StationManager.on_day_started()
+	GameManager.chef.on_day_started()
 	EventBus.turn_started.emit()
 	RunSaveManager.request_autosave()
 

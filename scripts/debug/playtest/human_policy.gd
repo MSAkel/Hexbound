@@ -25,10 +25,10 @@ const CHEF_PROFILES := {
 		"gold_weight": 1.0,
 		"shop_reserve": 4,
 	},
-	"gourmet_restaurant": {
+	"restaurateur": {
 		"kitchenware_pick_bias": 1.0,
 		"beverage_pick_bias": 1.0,
-		## Extra gold every day makes each coin worth less, so spend more freely.
+		## Builds from the shop (big starting purse, extra shelf card, free reroll), so spend freely.
 		"gold_weight": 0.7,
 		"shop_reserve": 0,
 	},
@@ -458,7 +458,7 @@ func shop(visit: RefCounted) -> void:
 		var reroll_budget := clampi(MIN_MERCHANT_REROLLS + spare / 10, MIN_MERCHANT_REROLLS, MAX_MERCHANT_REROLLS)
 		if rerolls >= reroll_budget:
 			break
-		var after_reroll: int = EconomyManager.amount - visit.reroll_cost
+		var after_reroll: int = EconomyManager.amount - visit.next_reroll_cost()
 		if after_reroll < reserve + 2 * TileCard.SHOP_PRICE:
 			break
 		visit.reroll()

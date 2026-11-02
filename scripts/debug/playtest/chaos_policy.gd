@@ -104,7 +104,7 @@ func shop(visit: RefCounted) -> void:
 					var index := _rng().randi_range(0, visit.condiments.size() - 1)
 					if visit.condiments[index] != null and EconomyManager.can_afford(visit.price_of(visit.condiments[index])):
 						visit.buy_condiment(index)
-	if EconomyManager.can_afford(visit.reroll_cost) and _rng().randf() < 0.3:
+	if EconomyManager.can_afford(visit.next_reroll_cost()) and _rng().randf() < 0.3:
 		visit.reroll()
 
 

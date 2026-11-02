@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ChefDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/chef_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/the_encircler.png" id="2_icon"]
+[ext_resource type="Script" path="res://resources/chefs/perks/pastry_chef.gd" id="4_perk"]
+
+[sub_resource type="Resource" id="Perk"]
+script = ExtResource("4_perk")
+meal_category = 5
+target_tag = &"sweet"
+
+[resource]
+script = ExtResource("1_script")
+id = "pastry_chef"
+display_name = "Pastry Chef"
+icon = ExtResource("2_icon")
+speciality_description = "Each Dessert served {garnishes} a random Sweet on its Station."
+perk = SubResource("Perk")
+starting_hand = Array[String](["vanilla", "chocolate", "cream", "kitchen_torch", "random:fruit"])
+last_card_is_flex = true

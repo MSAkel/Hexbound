@@ -88,7 +88,9 @@ func _read_output(tile: Hex, preview: bool, scale: float, star_scale: float = 1.
 	var raw := _meal_outputs(tile, preview)
 	var output := Output.new()
 	output.flavour = int(round(float(raw.get("flavour", 0)) * scale * star_scale))
-	output.additive_mult = float(raw.get("additive_mult", 0.0)) * scale * star_scale
+	# The chef's Meal bonus (Pitmaster) joins the Meal's own +Mult before every multiplier.
+	var additive := float(raw.get("additive_mult", 0.0)) + GameManager.chef.meal_extra_mult(tile, self)
+	output.additive_mult = additive * scale * star_scale
 	output.multiplicative_mult = float(raw.get("multiplicative_mult", 1.0))
 	if output.has_multiplicative_mult():
 		output.multiplicative_mult *= scale
@@ -97,15 +99,13 @@ func _read_output(tile: Hex, preview: bool, scale: float, star_scale: float = 1.
 
 ## Every served Meal adds Gold and a serving for its station.
 func _serve(tile: Hex) -> void:
-	var gold := SERVING_GOLD
-	if GameManager.chef_speciality != null:
-		gold += GameManager.chef_speciality.extra_meal_gold()
-	_add_quiet_gold(tile, gold)
+	_add_quiet_gold(tile, SERVING_GOLD)
 	RunLedger.record_dish_plated()
 	if _missing_ingredient_count(tile) > 0:
 		StaffManager.notify_dish_discount_used(tile)
 	StationManager.record_serving(_get_segment_index(tile))
 	StationManager.on_meal_served(tile, self)
+	GameManager.chef.on_meal_served(tile, self)
 	StaffManager.after_meal_served(tile, self)
 
 

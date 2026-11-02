@@ -59,6 +59,7 @@ func resolve_turn() -> void:
 		if tile.active_tile_card != null:
 			tile.active_tile_card.reset_hour_product_snapshot()
 	StationManager.on_hour_started()
+	GameManager.chef.on_hour_started()
 	map.refresh_dish_output_chips()
 
 	var active_segment := -1

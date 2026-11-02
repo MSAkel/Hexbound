@@ -1,12 +1,23 @@
-[gd_resource type="Resource" script_class="ChefDefinition" format=3 uid="uid://bbcgl6ogf4o35"]
+[gd_resource type="Resource" script_class="ChefDefinition" format=3]
 
-[ext_resource type="Texture2D" uid="uid://ha3y72ugqnr6" path="res://assets/characters/the_encircler.png" id="1_icon"]
 [ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/chef_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/sommelier.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/characters/sommelier_ingame.png" id="3_ingame"]
+[ext_resource type="Script" path="res://resources/chefs/perks/tag_output_scale.gd" id="4_perk"]
+
+[sub_resource type="Resource" id="Perk"]
+script = ExtResource("4_perk")
+target_tags = Array[StringName]([&"beverage"])
+scale = 2.0
+ingredients_only = false
 
 [resource]
 script = ExtResource("1_script")
 id = "sommelier"
 display_name = "Sommelier"
-icon = ExtResource("1_icon")
-speciality_kind = 2
+icon = ExtResource("2_icon")
+ingame_portrait = ExtResource("3_ingame")
 speciality_description = "Beverages have their effects doubled."
+perk = SubResource("Perk")
+starting_hand = Array[String](["grape", "apple", "honey", "blender", "random:ingredient"])
+last_card_is_flex = true

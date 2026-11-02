@@ -288,7 +288,7 @@ static func draw_offer(
 	return CardLoot.lane_draw(
 		CardLoot.lanes_for_round(round_number),
 		pack_size,
-		GameManager.tile_cards_pool,
+		GameManager.get_draw_pool(),
 		loot_rng
 	)
 

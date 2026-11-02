@@ -1,12 +1,21 @@
-[gd_resource type="Resource" script_class="ChefDefinition" format=3 uid="uid://bbkmj2khdo735"]
+[gd_resource type="Resource" script_class="ChefDefinition" format=3]
 
-[ext_resource type="Texture2D" uid="uid://df05dexlnxi1o" path="res://assets/characters/the_surveyor.png" id="1_icon"]
 [ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/chef_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/sous_chef.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/characters/sous_chef_ingame.png" id="3_ingame"]
+[ext_resource type="Script" path="res://resources/chefs/perks/sous_chef.gd" id="4_perk"]
+
+[sub_resource type="Resource" id="Perk"]
+script = ExtResource("4_perk")
+repeat_every = 3
 
 [resource]
 script = ExtResource("1_script")
 id = "sous_chef"
 display_name = "Sous Chef"
-icon = ExtResource("1_icon")
-speciality_kind = 1
-speciality_description = "Every 3rd Kitchenware {trigger} repeats."
+icon = ExtResource("2_icon")
+ingame_portrait = ExtResource("3_ingame")
+speciality_description = "Every 3rd Kitchenware {trigger} each Hour repeats."
+perk = SubResource("Perk")
+starting_hand = Array[String](["deep_fryer", "potato", "chicken", "cheese", "random:kitchenware"])
+last_card_is_flex = true

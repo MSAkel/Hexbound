@@ -82,11 +82,12 @@ var turn_stamp: int = 0
 
 #region Chef selection
 
-## Chosen on the chef selection screen. Drives chef speciality and starting hand.
+## Chosen on the chef selection screen. Drives the chef's ability and starting hand.
 var selected_chef: ChefDefinition = null
 var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
-const ChefSpecialityRuntimeScript := preload("res://scripts/chef_speciality_runtime.gd")
-var chef_speciality := ChefSpecialityRuntimeScript.new()
+const ChefRuntimeScript := preload("res://scripts/chef_runtime.gd")
+## The bound chef. Game systems call its hooks (output scale, starting gold, pool filter...).
+var chef: ChefRuntime = ChefRuntimeScript.new()
 
 #endregion
 
@@ -209,7 +210,7 @@ func reset_turn_counters() -> void:
 	_activation_counts_this_turn.clear()
 	_current_turn_trigger_count = 0
 	EconomyManager.reset_turn_tracking()
-	chef_speciality.reset_turn()
+	chef.reset_turn()
 
 
 func _has_met_round_goal() -> bool:
@@ -308,10 +309,16 @@ func get_tile_card_activation_count_this_turn(rune: TileCard) -> int:
 
 #endregion
 
-#region Chef speciality and turn scoring
+#region Chef and turn scoring
 
-func bind_chef_speciality() -> void:
-	chef_speciality.bind(selected_chef)
+func bind_chef() -> void:
+	chef.bind(selected_chef)
+
+
+## Every card this run can draw: the whole pool minus cards the chef never sees (Forager).
+## Card picks, the auto-granted card, the merchant and mid-run random cards draw from this.
+func get_draw_pool() -> Array[TileCard]:
+	return chef.filter_pool(tile_cards_pool)
 
 
 ## Rating is Flavour x Additive. xMult already folded into Additive when it fired.
@@ -421,7 +428,7 @@ func reset_for_new_run() -> void:
 	game_speed = GameSettings.game_speed
 	clear_run_peak_tracking()
 	if selected_chef != null:
-		bind_chef_speciality()
+		bind_chef()
 	CondimentManager.reset_for_new_run()
 	StaffManager.reset_for_new_run()
 	StationManager.reset_for_new_run()
@@ -488,9 +495,9 @@ func apply_run_state(state: Dictionary) -> void:
 	_run_peak_gold_held = int(state.get("peak_gold_held", 0))
 	_run_peak_segment_score_single_turn = int(state.get("peak_segment_score_single_turn", 0))
 	_run_peak_triggers_single_turn = int(state.get("peak_triggers_single_turn", 0))
-	# Continue does not go through reset_for_new_run, so re-bind chef speciality.
+	# Continue does not go through reset_for_new_run, so re-bind the chef.
 	if selected_chef != null:
-		bind_chef_speciality()
+		bind_chef()
 
 
 func get_tile_card_by_id(card_id: String) -> TileCard:
