@@ -10,6 +10,11 @@ signal turn_started
 signal turn_changed
 ## Emitted when the round changes
 signal round_changed(new_round: int)
+## RoundFlow asks the center-screen day announcement to play.
+signal day_intro_requested(day: int)
+## The announcement merged into the HUD. The HUD shows the new day from here.
+signal day_intro_landed(day: int)
+signal day_intro_finished
 ## Emitted once a fresh or restored run has replaced last run's autoload state.
 ## HUD readouts snap to the new values instead of counting from the old ones.
 signal run_state_loaded

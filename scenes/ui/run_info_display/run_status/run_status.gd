@@ -5,9 +5,14 @@ extends PanelContainer
 @onready var round_label: Label = $HBoxContainer/RoundLabel
 @onready var turn_counter_label: Label = $HBoxContainer/TurnsContainer/TurnCounterLabel
 @onready var turns_container: Control = $HBoxContainer/TurnsContainer
+@onready var _merge_sparks: CPUParticles2D = %MergeSparks
 
 const PUNCH_SCALE := 1.12
 const PUNCH_DURATION := 0.18
+# The day intro lands harder than a plain counter tick.
+const DAY_MERGE_PUNCH_SCALE := 1.4
+const DAY_MERGE_FLASH := Color(1.6, 1.45, 1.1, 1.0)
+const DAY_MERGE_FLASH_DURATION := 0.4
 
 const TOOLTIP_DAY := "Current day. %d days complete a run." % ScoreProgression.RUN_LENGTH_ROUNDS
 const TOOLTIP_HOURS := "Hours left before kitchen close. Reach the day target with hours to spare."
@@ -15,6 +20,7 @@ const TOOLTIP_HOURS := "Hours left before kitchen close. Reach the day target wi
 var _round_counter: CountingNumber
 var _turn_counter: CountingNumber
 var _punch_tweens: Dictionary = {}
+var _flash_tween: Tween
 
 
 func _ready() -> void:
@@ -27,6 +33,7 @@ func _ready() -> void:
 	_snap_all()
 
 	EventBus.round_changed.connect(_on_round_changed)
+	EventBus.day_intro_landed.connect(_on_day_intro_landed)
 	EventBus.turn_changed.connect(_on_turn_changed)
 	EventBus.run_state_loaded.connect(_snap_all)
 	_bind_status_tooltips()
@@ -38,7 +45,8 @@ func _snap_all() -> void:
 		(_punch_tweens[control] as Tween).kill()
 		control.scale = Vector2.ONE
 	_punch_tweens.clear()
-	_round_counter.snap_to(GameManager.current_round)
+	# A save mid-transition has already advanced the round. The intro still owes the reveal.
+	_round_counter.snap_to(GameManager.current_round - (1 if RoundFlow.is_day_reveal_pending() else 0))
 	_turn_counter.snap_to(GameManager.remaining_turns)
 
 
@@ -67,7 +75,26 @@ func _hide_status_tooltip() -> void:
 
 
 func _on_round_changed(new_round: int) -> void:
+	# The round advances at the summary. The new day shows when the day intro lands.
+	if RoundFlow.is_transitioning():
+		return
 	_play_counter(_round_counter, new_round, round_label)
+
+
+func _on_day_intro_landed(day: int) -> void:
+	_round_counter.snap_to(day)
+	if GameManager.skip_presentation:
+		return
+	_punch(round_label, DAY_MERGE_PUNCH_SCALE)
+	ScoreLandFx.play_panel_pulse(self, self)
+	_merge_sparks.global_position = round_label.get_global_rect().get_center()
+	_merge_sparks.restart()
+	AudioManager.play_sfx(UISounds.MERCHANT_BELL)
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	modulate = DAY_MERGE_FLASH
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(self, "modulate", Color.WHITE, DAY_MERGE_FLASH_DURATION / GameManager.game_speed)
 
 
 func _on_turn_changed() -> void:
@@ -80,7 +107,7 @@ func _play_counter(counter: CountingNumber, target: int, punch_target: Control) 
 		_punch(punch_target)
 
 
-func _punch(control: Control) -> void:
+func _punch(control: Control, punch_scale: float = PUNCH_SCALE) -> void:
 	if control == null:
 		return
 
@@ -93,7 +120,7 @@ func _punch(control: Control) -> void:
 
 	var duration := PUNCH_DURATION / GameManager.game_speed
 	var tween := create_tween()
-	tween.tween_property(control, "scale", Vector2(PUNCH_SCALE, PUNCH_SCALE), duration * 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2(punch_scale, punch_scale), duration * 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(control, "scale", Vector2.ONE, duration * 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_punch_tweens[control] = tween
 

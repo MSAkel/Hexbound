@@ -13,6 +13,9 @@ texture = ExtResource("1_btgct")
 
 [sub_resource type="FontVariation" id="FontVariation_i0xcj"]
 
+[sub_resource type="Gradient" id="Gradient_sparks"]
+colors = PackedColorArray(1, 0.86, 0.45, 1, 1, 0.7, 0.25, 0)
+
 [node name="RunStatus" type="PanelContainer" unique_id=2029786034]
 texture_filter = 1
 custom_minimum_size = Vector2(300, 69)
@@ -26,7 +29,7 @@ script = ExtResource("2_i0xcj")
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="RoundLabel" type="Label" parent="HBoxContainer" unique_id=235269414]
+[node name="RoundLabel" type="Label" parent="HBoxContainer" unique_id=235269414 groups=["run_day_label"]]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
@@ -79,3 +82,22 @@ custom_maximum_size = Vector2(35, 45)
 layout_mode = 2
 texture = ExtResource("3_y7j43")
 expand_mode = 1
+
+[node name="MergeSparks" type="CPUParticles2D" parent="."]
+unique_name_in_owner = true
+z_index = 1
+emitting = false
+amount = 18
+lifetime = 0.55
+one_shot = true
+explosiveness = 1.0
+emission_shape = 3
+emission_rect_extents = Vector2(36, 8)
+direction = Vector2(0, -1)
+spread = 180.0
+gravity = Vector2(0, 180)
+initial_velocity_min = 70.0
+initial_velocity_max = 170.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+color_ramp = SubResource("Gradient_sparks")

@@ -1,7 +1,7 @@
 extends Node
 
 ## Owns the ordered round-transition sequence so no single screen decides what comes next.
-## Round goal met -> summary -> card pick -> merchant -> event reveal -> first hour.
+## Round goal met -> summary -> card pick -> merchant -> day intro -> event reveal -> first hour.
 ## Mid-hour card picks also use card_selection_ui outside this transition.
 
 enum Step {
@@ -12,12 +12,15 @@ enum Step {
 	MERCHANT,
 	EVENT_REVEAL,
 	VICTORY,
+	DAY_INTRO,
 }
 
 ## Force-completes the reveal step when the banner never reports back, so a missing or
 ## freed banner node cannot strand the run mid-transition. The overlay waits for a click,
 ## so this is only a failsafe, not a read timer.
 const EVENT_REVEAL_TIMEOUT := 120.0
+## Same failsafe for the day intro, which plays by itself in well under this.
+const DAY_INTRO_TIMEOUT := 6.0
 
 var _step: Step = Step.IDLE
 ## Armed when a round advance lands on an event round. RoundFlow owns this, not EventManager.
@@ -36,6 +39,7 @@ var _reveal_timeout_token: SceneTreeTimer = null
 func _ready() -> void:
 	EventBus.merchant_closed.connect(_on_merchant_closed)
 	EventBus.event_reveal_finished.connect(_on_event_reveal_finished)
+	EventBus.day_intro_finished.connect(_on_day_intro_finished)
 
 
 func is_transitioning() -> bool:
@@ -51,6 +55,11 @@ func has_armed_event_reveal() -> bool:
 ## Only meaningful while a transition is running.
 func get_outgoing_event() -> int:
 	return _outgoing_event
+
+
+## True between the round advancing and the day intro. The HUD keeps showing the old day.
+func is_day_reveal_pending() -> bool:
+	return (_step == Step.CARD_PICK or _step == Step.MERCHANT) and not _advance_round_after_merchant
 
 
 func is_transition_card_pick() -> bool:
@@ -119,6 +128,23 @@ func _on_merchant_closed() -> void:
 		GameManager.advance_round()
 		_arm_event_reveal()
 
+	if GameManager.skip_presentation:
+		EventBus.day_intro_landed.emit(GameManager.current_round)
+		_continue_after_day_intro()
+		return
+
+	_enter_step(Step.DAY_INTRO)
+
+
+func _on_day_intro_finished() -> void:
+	if _step != Step.DAY_INTRO:
+		return
+
+	_reveal_timeout_token = null
+	_continue_after_day_intro()
+
+
+func _continue_after_day_intro() -> void:
 	if _event_reveal_armed:
 		_event_reveal_armed = false
 		# Reveal before the turn starts so the banner leads into the effects it describes.
@@ -163,6 +189,9 @@ func _enter_step(step: Step) -> void:
 			UiManager.show_merchant_panel.emit()
 		Step.EVENT_REVEAL:
 			_start_reveal_timeout()
+		Step.DAY_INTRO:
+			EventBus.day_intro_requested.emit(GameManager.current_round)
+			_start_day_intro_timeout()
 
 	RunSaveManager.request_autosave()
 
@@ -194,6 +223,17 @@ func _start_reveal_timeout() -> void:
 	if _reveal_timeout_token == timer and _step == Step.EVENT_REVEAL:
 		push_warning("RoundFlow: event reveal never reported back, continuing the round.")
 		_finish_transition()
+
+
+func _start_day_intro_timeout() -> void:
+	var timer := get_tree().create_timer(DAY_INTRO_TIMEOUT, false)
+	_reveal_timeout_token = timer
+	await timer.timeout
+
+	if _reveal_timeout_token == timer and _step == Step.DAY_INTRO:
+		push_warning("RoundFlow: day intro never reported back, continuing the round.")
+		EventBus.day_intro_landed.emit(GameManager.current_round)
+		_on_day_intro_finished()
 
 #endregion
 
@@ -245,6 +285,11 @@ func restore_after_load() -> void:
 	# was restored docked, so the only thing left owed is the round's first turn.
 	if _step == Step.EVENT_REVEAL:
 		_finish_transition()
+		return
+
+	# The HUD restored on the new day, so only what follows the intro is left.
+	if _step == Step.DAY_INTRO:
+		_continue_after_day_intro()
 		return
 
 	_enter_step(_step)
