@@ -3,6 +3,7 @@ extends Control
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CONDIMENT_ITEM_SCENE := preload("res://scenes/ui/condiments/condiment_shop_item.tscn")
+## Tile cards on the shelf before the chef's extra slots (tile_card_count).
 const MERCHANT_TILE_CARD_COUNT := 3
 ## Extra shelf slot that always offers a staff member the player does not own.
 const MERCHANT_STAFF_COUNT := 1
@@ -24,6 +25,8 @@ var _selected_condiment_ui: CondimentShopItem = null
 var _stock_reroll_count := 0
 ## Gold cost for the next merchant reroll. Resets when the shop opens.
 var _reroll_cost := BASE_REROLL_COST
+## Rerolls left this visit that cost nothing (Restaurateur). Reset when the shop opens.
+var _free_rerolls_left := 0
 ## Pending shop snapshot applied the next time open() runs after a continue.
 var _restore_state: Dictionary = {}
 ## True from open() until Leave. Independent of board-peek visibility.
@@ -69,6 +72,7 @@ func open() -> void:
 	if restoring:
 		_stock_reroll_count = int(_restore_state.get("stock_reroll_count", 0))
 		_reroll_cost = int(_restore_state.get("reroll_cost", BASE_REROLL_COST))
+		_free_rerolls_left = int(_restore_state.get("free_rerolls_left", 0))
 		sold_card_indices = _restore_state.get("sold_indices", [])
 		sold_condiment_indices = _restore_state.get("sold_condiment_indices", [])
 		for entry in _restore_state.get("stock_cards", []):
@@ -83,6 +87,8 @@ func open() -> void:
 	else:
 		_stock_reroll_count = 0
 		_reroll_cost = BASE_REROLL_COST
+		_free_rerolls_left = GameManager.chef.free_merchant_rerolls()
+	cards_grid.columns = tile_card_count() + MERCHANT_STAFF_COUNT
 	_update_reroll_button()
 	UiManager.show_panel(self)
 	await _refresh_merchant_stock(restored_cards, restored_condiments)
@@ -233,8 +239,9 @@ func _roll_card_stock() -> Array[Card]:
 	var tiles: Array = draw_tile_card_stock(_stock_reroll_count, locked_tile_ids)
 	var staff: Array = draw_staff_stock(_stock_reroll_count, excluded_staff_ids)
 	var inventory: Array[Card] = []
-	for slot in MERCHANT_TILE_CARD_COUNT + MERCHANT_STAFF_COUNT:
-		var drawn := tiles if slot < MERCHANT_TILE_CARD_COUNT else staff
+	var tile_slots := tile_card_count()
+	for slot in tile_slots + MERCHANT_STAFF_COUNT:
+		var drawn := tiles if slot < tile_slots else staff
 		var item: Card = _locked_cards.get(slot, null)
 		if item == null and not drawn.is_empty():
 			item = drawn.pop_front()
@@ -258,6 +265,11 @@ func _roll_condiment_stock() -> Array[Condiment]:
 	return stock
 
 
+## Tile cards on the shelf: the base count plus the chef's extra slots (Restaurateur).
+static func tile_card_count() -> int:
+	return MERCHANT_TILE_CARD_COUNT + GameManager.chef.extra_merchant_tile_slots()
+
+
 ## Stock rolls are static so the headless playtest bot shops the same shelves.
 ## exclude_ids are left off the roll so locked items never appear twice.
 static func draw_tile_card_stock(
@@ -268,14 +280,15 @@ static func draw_tile_card_stock(
 		GameManager.current_round,
 		stock_reroll_count
 	)
+	var tile_slots := tile_card_count()
 	var drawn := CardLoot.station_weighted_draw(
-		MERCHANT_TILE_CARD_COUNT + exclude_ids.size(),
-		GameManager.tile_cards_pool,
+		tile_slots + exclude_ids.size(),
+		GameManager.get_draw_pool(),
 		RunRng.create_rng(stream_name)
 	)
 	var stock: Array[TileCard] = []
 	for tile_card in drawn:
-		if stock.size() < MERCHANT_TILE_CARD_COUNT and tile_card.id not in exclude_ids:
+		if stock.size() < tile_slots and tile_card.id not in exclude_ids:
 			stock.append(tile_card)
 	return stock
 
@@ -464,10 +477,13 @@ func _complete_condiment_purchase() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
-	if not EconomyManager.can_afford(_reroll_cost):
-		return
-	EconomyManager.remove(_reroll_cost)
-	_reroll_cost += 1
+	if _free_rerolls_left > 0:
+		_free_rerolls_left -= 1
+	else:
+		if not EconomyManager.can_afford(_reroll_cost):
+			return
+		EconomyManager.remove(_reroll_cost)
+		_reroll_cost += 1
 
 	AudioManager.play_sfx(UISounds.CLICK)
 	_stock_reroll_count += 1
@@ -524,6 +540,10 @@ func _update_currency_display() -> void:
 
 
 func _update_reroll_button() -> void:
+	if _free_rerolls_left > 0:
+		reroll_button.text = "REROLL - FREE"
+		reroll_button.disabled = false
+		return
 	reroll_button.text = "REROLL - %d" % _reroll_cost
 	reroll_button.disabled = not EconomyManager.can_afford(_reroll_cost)
 
@@ -556,6 +576,7 @@ func capture_shop_state() -> Dictionary:
 		"open": _session_open,
 		"stock_reroll_count": _stock_reroll_count,
 		"reroll_cost": _reroll_cost,
+		"free_rerolls_left": _free_rerolls_left,
 		"sold_indices": sold_indices,
 		"sold_condiment_indices": sold_condiment_indices,
 		"stock_cards": stock_cards,

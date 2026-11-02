@@ -261,7 +261,7 @@ func _on_chef_option_item_selected(index: int) -> void:
 ## Lock in the new chef, drop the current save, and reload the run scene.
 func _restart_run_as(chef: ChefDefinition) -> void:
 	GameManager.selected_chef = chef
-	GameManager.bind_chef_speciality()
+	GameManager.bind_chef()
 	RunSaveManager.delete_save()
 	RunRng.restart_same_seed()
 	RunSaveManager.request_scene_enter_transition()

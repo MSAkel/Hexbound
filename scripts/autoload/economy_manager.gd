@@ -56,8 +56,8 @@ var rerolls_remaining: int:
 ## Set starting gold for a new run based on difficulty and notify UI listeners.
 func set_run_starting_gold(difficulty: Difficulty.Level) -> void:
 	var base_gold := Difficulty.BASE_STARTING_GOLD
-	if GameManager.chef_speciality != null:
-		base_gold = GameManager.chef_speciality.starting_gold()
+	if GameManager.chef != null:
+		base_gold = GameManager.chef.starting_gold(base_gold)
 	_amount = maxi(0, base_gold - Difficulty.get_starting_gold_reduction(difficulty))
 	_total_earned_this_run = 0
 	_earned_this_turn = 0

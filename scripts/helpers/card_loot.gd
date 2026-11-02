@@ -129,7 +129,7 @@ static func lane_draw(
 	rng: RandomNumberGenerator = null,
 	exclude_ids: Array[String] = []
 ) -> Array[TileCard]:
-	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
+	var source_pool := pool if not pool.is_empty() else GameManager.get_draw_pool()
 	var by_type: Dictionary = {}
 	for card_type in LANE_TYPE_ORDER:
 		var of_type: Array[TileCard] = []
@@ -209,7 +209,7 @@ static func station_weighted_draw(
 	pool: Array[TileCard] = [],
 	rng: RandomNumberGenerator = null
 ) -> Array[TileCard]:
-	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
+	var source_pool := pool if not pool.is_empty() else GameManager.get_draw_pool()
 	var available := _sorted_by_id(_filter_cards(source_pool, null, null))
 	var weights: Array[float] = []
 	var any_boost := false
@@ -241,7 +241,7 @@ static func draw_filtered(
 	unique: bool = true,
 	rng: RandomNumberGenerator = null
 ) -> Array[TileCard]:
-	var source_pool := pool if not pool.is_empty() else GameManager.tile_cards_pool
+	var source_pool := pool if not pool.is_empty() else GameManager.get_draw_pool()
 	var available := _sorted_by_id(_filter_cards(source_pool, card_type, product))
 	var result: Array[TileCard] = []
 

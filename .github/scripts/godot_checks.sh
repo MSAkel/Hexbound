@@ -6,7 +6,7 @@ set -uo pipefail
 
 GODOT="${GODOT:-godot}"
 RUNS="${PLAYTEST_RUNS:-1}"
-FUZZ_RUNS="${FUZZ_RUNS:-20}"
+FUZZ_RUNS="${FUZZ_RUNS:-8}"
 LOG_DIR="${LOG_DIR:-ci-logs}"
 mkdir -p "$LOG_DIR"
 LOG_ABS="$(cd "$LOG_DIR" && pwd)"

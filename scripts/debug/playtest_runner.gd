@@ -5,7 +5,7 @@ extends Node
 ##
 ## godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 ##   --runs=N          Seeds per chef (default 8). Every chef plays the same seeds.
-##   --chef=<id>       One chef: sous_chef, sommelier or gourmet_restaurant.
+##   --chef=<id>       One chef by id (resources/chefs/), e.g. sous_chef or forager.
 ##   --seed=<text>     Play one seed. --repeat=N plays it N times to check determinism.
 ##   --difficulty=N    Difficulty level index (default 0).
 ##   --power           Days have no goal and always play every Hour. Reports raw score per day.
@@ -41,11 +41,14 @@ class MerchantVisit:
 	var staff: Array[StaffCard] = []
 	var condiments: Array[Condiment] = []
 	var reroll_cost := Merchant.BASE_REROLL_COST
+	## Rerolls this visit that cost nothing (Restaurateur), as on the Merchant panel.
+	var free_rerolls := 0
 	var _runner: Node
 	var _reroll_count := 0
 
 	func _init(runner: Node) -> void:
 		_runner = runner
+		free_rerolls = GameManager.chef.free_merchant_rerolls()
 		_roll_stock()
 
 	func _roll_stock() -> void:
@@ -96,11 +99,18 @@ class MerchantVisit:
 		_runner.note_buy("condiment:", condiment.id, price)
 		return true
 
+	## Gold the next reroll costs. 0 while a free reroll is left.
+	func next_reroll_cost() -> int:
+		return 0 if free_rerolls > 0 else reroll_cost
+
 	func reroll() -> bool:
-		if not EconomyManager.can_afford(reroll_cost):
-			return false
-		EconomyManager.remove(reroll_cost)
-		reroll_cost += 1
+		if free_rerolls > 0:
+			free_rerolls -= 1
+		else:
+			if not EconomyManager.can_afford(reroll_cost):
+				return false
+			EconomyManager.remove(reroll_cost)
+			reroll_cost += 1
 		_reroll_count += 1
 		_roll_stock()
 		_runner.note_merchant_reroll()
@@ -235,11 +245,14 @@ func _run_all() -> void:
 
 #region Starter hand
 
-## Opening hand is 3 Ingredients and 2 Kitchenware, all tagged starting_hand_eligible.
+## Chefs without a fixed hand open with 3 Ingredients and 2 Kitchenware, all tagged
+## starting_hand_eligible. Fixed hands deal every fixed card, and random entries stay eligible.
 func _run_starter_fairness() -> void:
 	for chef_id: String in _chef_ids:
-		GameManager.selected_chef = ChefRegistry.get_chef_by_id(chef_id)
+		var chef := ChefRegistry.get_chef_by_id(chef_id)
+		GameManager.selected_chef = chef
 		GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
+		GameManager.bind_chef()
 		for index in STARTER_SEED_COUNT:
 			var seed_text := "ST%s%03d" % [chef_id.substr(0, 3).to_upper(), index]
 			RunRng.begin_new_run(seed_text)
@@ -247,10 +260,11 @@ func _run_starter_fairness() -> void:
 			var ingredients := 0
 			var kitchenware := 0
 			var reasons: Array[String] = []
-			for card: TileCard in _deal_starting_hand():
+			var hand := _deal_starting_hand()
+			for card: TileCard in hand:
 				ids.append(card.id)
-				if not card.starting_hand_eligible:
-					reasons.append("%s is not starting_hand_eligible" % card.id)
+				if not GameManager.chef.allows_card(card):
+					reasons.append("%s is hidden from this chef" % card.id)
 				match card.type:
 					TileCard.TileCardType.INGREDIENT:
 						ingredients += 1
@@ -258,10 +272,24 @@ func _run_starter_fairness() -> void:
 						kitchenware += 1
 					_:
 						reasons.append("unexpected Meal %s" % card.id)
-			if ingredients != ChefRegistry.STARTING_INGREDIENT_COUNT:
-				reasons.append("expected %d Ingredients, got %d" % [ChefRegistry.STARTING_INGREDIENT_COUNT, ingredients])
-			if kitchenware != ChefRegistry.STARTING_KITCHENWARE_COUNT:
-				reasons.append("expected %d Kitchenware, got %d" % [ChefRegistry.STARTING_KITCHENWARE_COUNT, kitchenware])
+			if chef.has_fixed_starting_hand():
+				if hand.size() != chef.starting_hand.size():
+					reasons.append("expected %d cards, got %d" % [chef.starting_hand.size(), hand.size()])
+				for i in mini(hand.size(), chef.starting_hand.size()):
+					var entry := chef.starting_hand[i]
+					if entry.begins_with(ChefDefinition.RANDOM_PREFIX):
+						if not hand[i].starting_hand_eligible:
+							reasons.append("%s (for %s) is not starting_hand_eligible" % [hand[i].id, entry])
+					elif hand[i].id != entry:
+						reasons.append("slot %d: expected %s, got %s" % [i, entry, hand[i].id])
+			else:
+				for card: TileCard in hand:
+					if not card.starting_hand_eligible:
+						reasons.append("%s is not starting_hand_eligible" % card.id)
+				if ingredients != ChefRegistry.STARTING_INGREDIENT_COUNT:
+					reasons.append("expected %d Ingredients, got %d" % [ChefRegistry.STARTING_INGREDIENT_COUNT, ingredients])
+				if kitchenware != ChefRegistry.STARTING_KITCHENWARE_COUNT:
+					reasons.append("expected %d Kitchenware, got %d" % [ChefRegistry.STARTING_KITCHENWARE_COUNT, kitchenware])
 			_record("starter_fairness", chef_id, seed_text, reasons, {"hand": ids})
 
 

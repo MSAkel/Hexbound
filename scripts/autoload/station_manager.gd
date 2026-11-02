@@ -20,12 +20,14 @@ const STATION_TYPE_PATHS: Array[String] = [
 	"res://resources/stations/sauce_station.tres",
 	"res://resources/stations/roasting_station.tres",
 	"res://resources/stations/bar_station.tres",
-	# Fry takes any Ingredients, so it is tried last and never takes over another station.
+	# Fry takes any Ingredients, so it is tried last. Its Deep Fryer still wins a tie on a new row
+	# (see evaluate_station_types).
 	"res://resources/stations/fry_station.tres",
 ]
 ## Old ids still found in saves.
 const LEGACY_TYPE_IDS := {"raw_bar": "fish_station"}
 ## Total Meals served (a running total after gaining a type) to reach levels 2 to 6.
+## Some chefs change these per station type (get_level_thresholds).
 const LEVEL_THRESHOLDS: Array[int] = [2, 5, 8, 12, 16]
 const START_LEVEL := 1
 const MAX_LEVEL := START_LEVEL + 5
@@ -140,12 +142,18 @@ func get_station_count() -> int:
 	return _stations.size()
 
 
+## Level 2 to 6 thresholds for a station of this type with the current chef.
+func get_level_thresholds(station_type: StationType) -> Array[int]:
+	var thresholds := GameManager.chef.level_thresholds(station_type, LEVEL_THRESHOLDS)
+	return thresholds if thresholds.size() == LEVEL_THRESHOLDS.size() else LEVEL_THRESHOLDS
+
+
 ## Meals served needed for the next level, or -1 at max level.
 func get_next_threshold(segment_index: int) -> int:
 	var level := get_level(segment_index)
 	if level >= MAX_LEVEL:
 		return -1
-	return LEVEL_THRESHOLDS[level - START_LEVEL]
+	return get_level_thresholds(get_station_type(segment_index))[level - START_LEVEL]
 
 
 ## Meals served needed for the current level. 0 at the starting level.
@@ -153,7 +161,7 @@ func get_current_threshold(segment_index: int) -> int:
 	var level := get_level(segment_index)
 	if level <= START_LEVEL:
 		return 0
-	return LEVEL_THRESHOLDS[level - START_LEVEL - 1]
+	return get_level_thresholds(get_station_type(segment_index))[level - START_LEVEL - 1]
 
 
 ## Index into the type's choice_options, or -1 when nothing was picked.
@@ -189,10 +197,36 @@ func get_station_types() -> Array[StationType]:
 	return _types
 
 
+## Level 3 and level 6 perks this station has: the picks, or every option when the chef
+## takes every pick (Chef de Cuisine). Station tooltips list these.
+func get_picked_perks(segment_index: int) -> Array[StationPerk]:
+	var perks: Array[StationPerk] = []
+	var station_type := get_station_type(segment_index)
+	if station_type == null:
+		return perks
+	if GameManager.chef.takes_every_station_pick():
+		var level := get_level(segment_index)
+		if level >= CHOICE_LEVEL:
+			perks.append_array(station_type.choice_options)
+		if level >= CAPSTONE_LEVEL:
+			perks.append_array(station_type.capstone_options)
+		return perks
+	var chosen := get_chosen_perk(segment_index)
+	if chosen != null:
+		perks.append(chosen)
+	var capstone := get_capstone_perk(segment_index)
+	if capstone != null:
+		perks.append(capstone)
+	return perks
+
+
 ## Level of the pick this station is waiting on (CHOICE_LEVEL or CAPSTONE_LEVEL), or 0.
+## Always 0 when the chef takes every pick, so no popup opens.
 func get_pending_choice_level(segment_index: int) -> int:
 	var station := _station(segment_index)
 	if station == null or station.type == null:
+		return 0
+	if GameManager.chef.takes_every_station_pick():
 		return 0
 	if station.level >= CHOICE_LEVEL and station.choice < 0 and not station.type.choice_options.is_empty():
 		return CHOICE_LEVEL
@@ -220,12 +254,7 @@ func get_active_perks(segment_index: int) -> Array[StationPerk]:
 	var level_perk := station_type.perk_for_level(get_level(segment_index))
 	if level_perk != null:
 		perks.append(level_perk)
-	var chosen := get_chosen_perk(segment_index)
-	if chosen != null:
-		perks.append(chosen)
-	var capstone := get_capstone_perk(segment_index)
-	if capstone != null:
-		perks.append(capstone)
+	perks.append_array(get_picked_perks(segment_index))
 	return perks
 
 
@@ -540,7 +569,8 @@ func _run_queued_evaluation() -> void:
 
 ## Base stations take the first type their regular spots satisfy. A typed station keeps its type
 ## while it stays satisfied. Once it is not, its progress resets and it takes the first type it
-## still satisfies, or turns back into a base station.
+## still satisfies, or turns back into a base station. When a row meets several setups at once,
+## a type that names a specific card (Fry's Deep Fryer) wins over the rest.
 func evaluate_station_types() -> void:
 	if _board == null:
 		return
@@ -549,11 +579,7 @@ func evaluate_station_types() -> void:
 		var cards := _board.get_regular_tile_cards(segment_index)
 		if station.type != null and station.type.is_satisfied_by(cards):
 			continue
-		var new_type: StationType = null
-		for station_type: StationType in _types:
-			if station_type.is_satisfied_by(cards):
-				new_type = station_type
-				break
+		var new_type := _first_satisfied_type(cards)
 		if new_type == station.type:
 			continue
 		if station.type != null:
@@ -561,6 +587,20 @@ func evaluate_station_types() -> void:
 		station.type = new_type
 		EventBus.station_type_changed.emit(segment_index, new_type.id if new_type != null else "")
 		EventBus.station_state_changed.emit(segment_index)
+
+
+## Type a row with these regular-spot cards becomes. Types that name a specific card come first,
+## then the rest in STATION_TYPE_PATHS order. Null when no setup is met.
+func _first_satisfied_type(cards: Array[TileCard]) -> StationType:
+	var fallback: StationType = null
+	for station_type: StationType in _types:
+		if not station_type.is_satisfied_by(cards):
+			continue
+		if not station_type.required_card_ids.is_empty():
+			return station_type
+		if fallback == null:
+			fallback = station_type
+	return fallback
 
 
 ## Back to level 1 with no Meals served, no picks and no perk progress. Drops a pick still waiting.
@@ -586,7 +626,8 @@ func record_serving(segment_index: int) -> void:
 	if station == null or station.type == null:
 		return
 	station.served += 1
-	while station.level < MAX_LEVEL and station.served >= LEVEL_THRESHOLDS[station.level - START_LEVEL]:
+	var thresholds := get_level_thresholds(station.type)
+	while station.level < MAX_LEVEL and station.served >= thresholds[station.level - START_LEVEL]:
 		station.level += 1
 		EventBus.station_leveled_up.emit(segment_index, station.level)
 		if station.level == MEAL_SLOT_UNLOCK_LEVEL:

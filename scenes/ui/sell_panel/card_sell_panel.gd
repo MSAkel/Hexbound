@@ -1,7 +1,9 @@
 class_name CardSellPanel
 extends PanelContainer
 
-## Drop zone in the bottom-left corner. Drag a hand card, a staff member or a condiment here and release to sell it.
+## Bottom-left corner of the run screen: the current chef's portrait above the gold panel.
+## The gold panel shows the player's gold. While a hand card, staff member or condiment is dragged
+## over the corner it shows that item's sell price instead. Release there to sell it.
 
 const SELL_VALUE := 2
 
@@ -16,6 +18,11 @@ const SELL_PULSE_RISE := 0.08
 const SELL_PULSE_SETTLE := 0.22
 
 @onready var _art: TextureRect = %Art
+## Takes the drag tint, hover scale and sell pulse. The chef portrait stays as it is.
+@onready var _gold_panel: TextureRect = %GoldPanel
+@onready var _gold_label: Label = %GoldLabel
+## Text colour for the sell price, so it reads as a gain rather than the wallet.
+const SELL_PRICE_COLOR := Color(0.62, 1.0, 0.55)
 
 ## True while a hand card is picked up.
 var _card_dragged := false
@@ -23,11 +30,23 @@ var _card_dragged := false
 var _drag_staff_slot := -1
 ## True while a belt condiment is held. Condiments sell for their own value too.
 var _condiment_dragged := false
+## Belt slot of the condiment being dragged, or -1.
+var _drag_condiment_slot := -1
 var _pulse_tween: Tween
+var _gold_counter: CountingNumber
+var _gold_color: Color
+## True while the gold panel shows a sell price instead of the wallet.
+var _showing_price := false
 
 
 func _ready() -> void:
 	add_to_group("card_sell_panel")
+	_gold_color = _gold_label.get_theme_color("font_color")
+	_gold_counter = CountingNumber.for_label(self, _gold_label)
+	_gold_counter.snap_to(EconomyManager.amount)
+	_show_chef_portrait()
+	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.run_state_loaded.connect(_on_run_state_loaded)
 	EventBus.card_drag_started.connect(_on_card_drag_started)
 	EventBus.card_drag_ended.connect(_on_card_drag_ended)
 	EventBus.staff_drag_started.connect(_on_staff_drag_started)
@@ -63,14 +82,67 @@ func _on_staff_drag_ended() -> void:
 	_refresh_state()
 
 
-func _on_condiment_drag_started(_slot: int) -> void:
+func _on_condiment_drag_started(slot: int) -> void:
 	_condiment_dragged = true
+	_drag_condiment_slot = slot
 	_refresh_state()
 
 
 func _on_condiment_drag_ended() -> void:
 	_condiment_dragged = false
+	_drag_condiment_slot = -1
 	_refresh_state()
+
+
+## The bound chef's in-game portrait. Chefs without one fall back to their selection portrait.
+func _show_chef_portrait() -> void:
+	var chef := GameManager.selected_chef
+	if chef == null:
+		return
+	var portrait := chef.get_ingame_portrait()
+	if portrait != null:
+		_art.texture = portrait
+
+
+func _on_gold_changed(amount: int) -> void:
+	# A sell price on show is replaced by the wallet once the drag ends.
+	if _showing_price:
+		return
+	_gold_counter.play(amount)
+
+
+func _on_run_state_loaded() -> void:
+	_show_chef_portrait()
+	_gold_counter.snap_to(EconomyManager.amount)
+
+
+## Gold the dragged item sells for, or -1 when nothing sellable is held.
+func _held_sell_price() -> int:
+	if _card_dragged:
+		return SELL_VALUE
+	if _drag_staff_slot >= 0:
+		var staff := StaffManager.get_staff(_drag_staff_slot)
+		return staff.get_sell_value() if staff != null else -1
+	if _condiment_dragged and _drag_condiment_slot >= 0 and _drag_condiment_slot < CondimentManager.belt.size():
+		var condiment: Condiment = CondimentManager.belt[_drag_condiment_slot]
+		return condiment.get_sell_value() if condiment != null else -1
+	return -1
+
+
+## Wallet by default. The held item's sell price while it hovers the corner.
+func _refresh_gold_text(hovered: bool) -> void:
+	var price := _held_sell_price() if hovered else -1
+	if price >= 0:
+		_gold_counter.kill()
+		_showing_price = true
+		_gold_label.text = "+%d" % price
+		_gold_label.add_theme_color_override("font_color", SELL_PRICE_COLOR)
+		return
+	if not _showing_price:
+		return
+	_showing_price = false
+	_gold_label.add_theme_color_override("font_color", _gold_color)
+	_gold_counter.snap_to(EconomyManager.amount)
 
 
 ## Used by CondimentBelt when the player releases a dragged condiment. True when it was sold.
@@ -110,20 +182,20 @@ func sell_card() -> void:
 	AudioManager.play_sfx(UISounds.GOLD_GAINED)
 
 
-## Pops the art as the sold card's ghost lands on the panel.
+## Pops the gold panel as the sold card's ghost lands on it.
 func play_sell_pulse() -> void:
 	if GameManager.skip_presentation:
 		return
 	if _pulse_tween != null and _pulse_tween.is_valid():
 		_pulse_tween.kill()
-	_art.pivot_offset = _art.size * 0.5
-	_art.scale = Vector2.ONE
+	_gold_panel.pivot_offset = _gold_panel.size * 0.5
+	_gold_panel.scale = Vector2.ONE
 	_pulse_tween = create_tween()
 	_pulse_tween.tween_property(
-		_art, "scale", Vector2.ONE * SELL_PULSE_SCALE, SELL_PULSE_RISE
+		_gold_panel, "scale", Vector2.ONE * SELL_PULSE_SCALE, SELL_PULSE_RISE
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_pulse_tween.tween_property(
-		_art, "scale", Vector2.ONE, SELL_PULSE_SETTLE
+		_gold_panel, "scale", Vector2.ONE, SELL_PULSE_SETTLE
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
@@ -136,14 +208,15 @@ func is_cursor_over() -> bool:
 func _refresh_state() -> void:
 	var armed := _is_armed()
 	var hovered := armed and is_cursor_over()
+	_refresh_gold_text(hovered)
 	if hovered:
-		modulate = HOVER_MODULATE
+		_gold_panel.modulate = HOVER_MODULATE
 	elif armed:
-		modulate = ARMED_MODULATE
+		_gold_panel.modulate = ARMED_MODULATE
 	else:
-		modulate = IDLE_MODULATE
+		_gold_panel.modulate = IDLE_MODULATE
 	# Leave scale alone while the sell pulse owns it.
 	if _pulse_tween != null and _pulse_tween.is_valid():
 		return
-	_art.pivot_offset = _art.size * 0.5
-	_art.scale = Vector2.ONE * (HOVER_SCALE if hovered else 1.0)
+	_gold_panel.pivot_offset = _gold_panel.size * 0.5
+	_gold_panel.scale = Vector2.ONE * (HOVER_SCALE if hovered else 1.0)

@@ -19,7 +19,7 @@ output prints to the terminal).
 godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 ```
 
-- `--runs=N` seeds per chef (default 8); `--chef=sous_chef|sommelier|gourmet_restaurant`
+- `--runs=N` seeds per chef (default 8); `--chef=<id>` one chef (ids in `resources/chefs/*.tres`)
 - `--seed=<text>` one seed; `--repeat=N` replays it to check determinism
 - `--difficulty=N` difficulty index (default 0)
 - `--power` no day goals, reports raw score per day
@@ -35,7 +35,7 @@ After gameplay or balance changes, run at least `--runs=2` and a `--fuzz` pass b
 ## Push checks (CI)
 
 `.github/workflows/checks.yml` runs on every push to `main` and every pull request:
-import, boot, 1 bot playtest per chef and 20 fuzz runs per chef (~4 min). It fails on any
+import, boot, 1 bot playtest per chef and 8 fuzz runs per chef (8 chefs, ~8 min). It fails on any
 `SCRIPT ERROR` / `Parse Error` / `ERROR:` line, since Godot often exits 0 when scripts fail to
 compile. Run the same checks locally (Git Bash on Windows) with:
 
@@ -75,6 +75,22 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
   judge balance at higher difficulties.
 - Baseline (Oct 2026, difficulty 0, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
+
+## Chefs
+
+Each chef is a `ChefDefinition` in `resources/chefs/<id>.tres`, listed in `ChefRegistry.CHEF_PATHS`:
+name, selection portrait (`icon`), in-game portrait (shown above the gold panel), ability text,
+`starting_hand` and a `perk`. The perk is a script in `resources/chefs/perks/` extending `ChefPerk`;
+its tunable numbers are `@export` fields set in the chef's `.tres`. Game systems call the bound chef
+through `GameManager.chef` (`ChefRuntime`), which forwards to the perk's hooks: starting gold, card
+pool filter (`GameManager.get_draw_pool()`), output scale, after-trigger, Meal +Mult, Meal served,
+Hour/Day start, station level thresholds, taking every station pick, merchant slots and free rerolls.
+Add a hook to `ChefPerk` + `ChefRuntime` when a new chef needs one.
+
+`starting_hand` lists card ids or random entries (`random:kitchenware`, `random:ingredient`,
+`random:<ingredient tag>`), dealt in order. With `last_card_is_flex`, a difficulty starting-hand
+reduction removes the last card first so the station setup stays whole. An empty list deals the
+default random 3 Ingredients + 2 Kitchenware.
 
 ## Conventions
 

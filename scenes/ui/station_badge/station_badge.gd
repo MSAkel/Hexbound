@@ -229,12 +229,8 @@ func get_tooltip_body() -> String:
 	var current := station_type.perk_for_level(StationManager.get_level(segment_index))
 	if current != null:
 		lines.append(current.description)
-	var chosen := StationManager.get_chosen_perk(segment_index)
-	if chosen != null:
-		lines.append(chosen.description)
-	var capstone := StationManager.get_capstone_perk(segment_index)
-	if capstone != null:
-		lines.append(capstone.description)
+	for perk: StationPerk in StationManager.get_picked_perks(segment_index):
+		lines.append(perk.description)
 	return CardKeywordGlossary.to_plain("\n".join(lines))
 
 #endregion --- Tooltip ---

@@ -419,7 +419,9 @@ func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:
 	var hand_state: Dictionary = payload.get("hand", {})
 	var saved_count: int = hand_state.get("cards", []).size()
 	var difficulty := int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
-	var expected := ChefRegistry.get_expected_opening_hand_size(difficulty)
+	var expected := ChefRegistry.get_expected_opening_hand_size(
+		difficulty, ChefRegistry.get_chef_by_id(String(payload.get("chef_id", "")))
+	)
 	var map_state: Dictionary = payload.get("map", {})
 	var placed_count: int = map_state.get("placed_cards", []).size()
 	var round_num := int(payload.get("game_manager", {}).get("current_round", 1))

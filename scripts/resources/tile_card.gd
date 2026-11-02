@@ -457,7 +457,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	if garnish_stacks > 0 and not EventManager.are_garnishes_blocked():
 		output_scale *= pow(GARNISH_OUTPUT_SCALE, garnish_stacks)
 	if tile.map != null:
-		output_scale *= GameManager.chef_speciality.beverage_output_scale(self)
+		output_scale *= GameManager.chef.output_scale_for(tile, self)
 		output_scale *= StationManager.output_scale_for(tile, self)
 	_activation_star_scale = star_output_scale()
 	output_scale *= _activation_star_scale
@@ -475,7 +475,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		add_flavour(tile, 0)
 	var garnish_used := _activation_was_garnished and not EventManager.are_garnishes_blocked()
 	_play_trigger_sound()
-	GameManager.chef_speciality.maybe_repeat_kitchenware(tile, self)
+	GameManager.chef.after_card_triggered(tile, self)
 	CondimentManager.after_card_activated(tile, self)
 	StaffManager.after_card_activated(tile, self)
 	StationManager.after_card_triggered(tile, self)

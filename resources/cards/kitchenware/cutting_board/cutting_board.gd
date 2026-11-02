@@ -33,7 +33,7 @@ func apply_placed_save_state(data: Dictionary) -> void:
 func _add_random_ingredient_to_hand(tile: Hex) -> void:
 	var drafted := CardLoot.draw_filtered(
 		1,
-		GameManager.tile_cards_pool,
+		GameManager.get_draw_pool(),
 		TileCardType.INGREDIENT,
 		null,
 		true,

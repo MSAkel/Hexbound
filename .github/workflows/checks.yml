@@ -51,7 +51,7 @@ jobs:
       - name: Run checks
         env:
           PLAYTEST_RUNS: ${{ github.event.inputs.playtest_runs || '1' }}
-          FUZZ_RUNS: ${{ github.event.inputs.fuzz_runs || '20' }}
+          FUZZ_RUNS: ${{ github.event.inputs.fuzz_runs || '8' }}
           LOG_DIR: ci-logs
         run: |
           export GODOT="$HOME/godot/godot"
