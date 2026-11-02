@@ -7,7 +7,8 @@ const _CondimentCatalogScript := preload("res://scripts/helpers/condiment_catalo
 ## Run-long condiment belt, targeting, and fuses applied to placed cards.
 
 const BELT_SIZE := 3
-const SHOP_STOCK := 3
+## Condiments on the merchant shelf. Cut from 3 when packs got their own row (untuned).
+const SHOP_STOCK := 2
 const PACK_GRANT_COUNT := 3
 const TWO_TURN_FUSE := 2
 const HEX_MAP_GROUP := "hex_map_group"
