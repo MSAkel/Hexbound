@@ -1,9 +1,9 @@
 class_name CardFace
 extends Control
 
-## Printed side of a card: layered frame art, name banner, icon, type ribbon, and rules text.
+## Printed side of a card: full card art per type, name banner, icon, type label, and rules text.
 ## Authored at a fixed size. Hosts call fit_to() so the whole face scales as one piece
-## and the layered art never distorts.
+## and the art never distorts.
 ## Presentation only. Input, hover, and shop behavior live in CardUI.
 
 # Name text carries rarity for staff, since the banner fill shows the card type. Spot cards have none.
@@ -17,29 +17,31 @@ const SELECTED_TINT := Color(1.15, 1.1, 0.75, 1.0)
 # Text starts at the size authored in the scene and shrinks toward these until it fits.
 const NAME_MIN_FONT_SIZE := 9
 const NAME_MAX_WIDTH := 150.0
-# Below this the full "Type · Tag" label is dropped for the tag alone.
-const TYPE_LABEL_MIN_FULL_FONT_SIZE := 11
-const TYPE_LABEL_MIN_FONT_SIZE := 9
-# Clear space kept at each end of the ribbon.
-const TYPE_LABEL_SIDE_PADDING := 2.0
-# The scene gives the type label a RibbonTextEffect that bends the text along the art.
-const TYPE_LABEL_BBCODE := "[ribbon]%s[/ribbon]"
+const TYPE_LABEL_MIN_FONT_SIZE := 12
 const DESCRIPTION_MIN_FONT_SIZE := 10
 # Meal requirement row above the rules text. Kind slots ("any Vegetable") sit on a round
 # backdrop so they read apart from named cards, which show their own icon bare.
 const REQUIREMENT_ICON_SIZE := 18.0
 const REQUIREMENT_ICON_PADDING := 1.0
-# Rules text starts this far lower while the requirement row shows.
-const REQUIREMENT_ROW_HEIGHT := 21.0
+# The name banner sits this much darker than the card art, matching the banner printed on it.
+const BANNER_DARKEN := 0.12
 
-# Paper background. The details and tinted border are its children, so they share the selection tint.
+# Full card art, rules-text keyword colour, and printed banner width per card type. Set in card_face.tscn.
+@export var ingredient_art: Texture2D
+@export var kitchenware_art: Texture2D
+@export var meal_art: Texture2D
+@export var ingredient_keyword_color: Color
+@export var kitchenware_keyword_color: Color
+@export var meal_keyword_color: Color
+@export var ingredient_banner_width: float
+@export var kitchenware_banner_width: float
+@export var meal_banner_width: float
+
 @onready var _background: TextureRect = %Background
-@onready var _border: TextureRect = %Border
 @onready var _name_banner: PanelContainer = %NameBanner
 @onready var _name_label: Label = %NameLabel
-@onready var _icon_backdrop: TextureRect = %IconBackdrop
 @onready var _icon: CardIcon = %Icon
-@onready var _type_label: RichTextLabel = %TypeLabel
+@onready var _type_label: Label = %TypeLabel
 @onready var _description: RichTextLabel = %Description
 @onready var _requirement_icons: HBoxContainer = %RequirementIcons
 @onready var _selection_glow: Panel = %SelectionGlow
@@ -47,22 +49,22 @@ const REQUIREMENT_ROW_HEIGHT := 21.0
 
 # Largest text sizes, read from the scene so the look is tuned in one place.
 @onready var _name_font_size := _name_label.get_theme_font_size("font_size")
-@onready var _type_label_font_size := _type_label.get_theme_font_size("normal_font_size")
+@onready var _type_label_font_size := _type_label.get_theme_font_size("font_size")
 @onready var _description_font_size := _description.get_theme_font_size("normal_font_size")
-@onready var _description_offset_top := _description.offset_top
+
+var _keyword_color := CardKeywordGlossary.COLOR
 
 
 ## Binds every printed field from the shared Card resource.
 func set_card(card: Card) -> void:
 	if not is_node_ready():
 		await ready
+	_apply_design(card)
 	_icon.setup(card)
 	_apply_name(card)
 	_apply_type_label(card)
-	# Before the description, which fits its font to the space the row leaves.
 	_apply_requirement_icons(card)
 	_apply_description(card)
-	_apply_accent(CardTypeColors.for_card(card))
 
 
 ## Scales the face uniformly to fit rect, top-aligned and centered.
@@ -99,37 +101,26 @@ func _apply_name(card: Card) -> void:
 
 func _apply_type_label(card: Card) -> void:
 	var label := card.get_card_kind_label()
-	var tag_label := ""
 	if card is TileCard:
-		label = (card as TileCard).get_card_type_display()
-		tag_label = (card as TileCard).get_distinct_recipe_tag_label()
-	var font := _type_label.get_theme_font("normal_font")
-	var max_width := _type_label.size.x - TYPE_LABEL_SIDE_PADDING * 2.0
-	var font_size := _fitted_font_size(
-		font,
-		label,
-		max_width,
-		_type_label_font_size,
-		TYPE_LABEL_MIN_FULL_FONT_SIZE
-	)
-	if _text_width(font, label, font_size) > max_width:
-		# The ribbon is short. The accent color already shows the type, so keep the tag.
-		if not tag_label.is_empty():
+		var tile_card := card as TileCard
+		label = tile_card.get_card_type_display()
+		# Ingredients show their tag alone. The art already shows the type.
+		var tag_label := tile_card.get_distinct_recipe_tag_label()
+		if tile_card.type == TileCard.TileCardType.INGREDIENT and not tag_label.is_empty():
 			label = tag_label
-		font_size = _fitted_font_size(
-			font,
-			label,
-			max_width,
-			_type_label_font_size,
-			TYPE_LABEL_MIN_FONT_SIZE
-		)
-	_type_label.add_theme_font_size_override("normal_font_size", font_size)
-	_type_label.text = TYPE_LABEL_BBCODE % label
+	_type_label.text = label
+	_type_label.add_theme_font_size_override("font_size", _fitted_font_size(
+		_type_label.get_theme_font("font"),
+		label,
+		_type_label.size.x,
+		_type_label_font_size,
+		TYPE_LABEL_MIN_FONT_SIZE
+	))
 
 
 func _apply_description(card: Card) -> void:
 	# Keywords such as Flavour, Mult, and Rating are colored in CardKeywordGlossary.
-	_description.text = CardKeywordGlossary.to_bbcode(card.get_description_text())
+	_description.text = CardKeywordGlossary.to_bbcode(card.get_description_text(), _keyword_color)
 	_description.add_theme_font_size_override(
 		"normal_font_size",
 		_fitted_description_font_size(CardKeywordGlossary.to_plain(card.get_description_text()))
@@ -144,7 +135,6 @@ func _apply_requirement_icons(card: Card) -> void:
 	if card is MealCard:
 		entries = (card as MealCard).get_requirement_icons()
 	_requirement_icons.visible = not entries.is_empty()
-	_description.offset_top = _description_offset_top + (REQUIREMENT_ROW_HEIGHT if _requirement_icons.visible else 0.0)
 	for entry: Dictionary in entries:
 		_requirement_icons.add_child(_make_requirement_icon(entry["icon"], entry["kind"]))
 
@@ -171,12 +161,23 @@ func _make_requirement_icon(texture: Texture2D, kind: StringName) -> PanelContai
 	return slot
 
 
-## Tints the inner border, name banner, and icon backdrop with the card type accent.
-func _apply_accent(accent: Color) -> void:
-	_border.modulate = accent
-	_icon_backdrop.modulate = accent
-	# Self modulate tints the banner art and leaves the name text alone.
-	_name_banner.self_modulate = accent
+## Picks the card art and keyword colour for the card's type, and matches the name banner to it.
+func _apply_design(card: Card) -> void:
+	var accent := CardTypeColors.for_card(card)
+	if accent == CardTypeColors.MEAL:
+		_background.texture = meal_art
+		_keyword_color = meal_keyword_color
+		_name_banner.custom_minimum_size.x = meal_banner_width
+	elif accent == CardTypeColors.KITCHENWARE:
+		_background.texture = kitchenware_art
+		_keyword_color = kitchenware_keyword_color
+		_name_banner.custom_minimum_size.x = kitchenware_banner_width
+	else:
+		_background.texture = ingredient_art
+		_keyword_color = ingredient_keyword_color
+		_name_banner.custom_minimum_size.x = ingredient_banner_width
+	# Self modulate tints the banner and leaves the name text alone.
+	_name_banner.self_modulate = accent.darkened(BANNER_DARKEN)
 
 
 ## Largest font size that keeps the text on one line within max_width.
@@ -198,7 +199,7 @@ func _text_width(font: Font, text: String, font_size: int) -> float:
 	return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x
 
 
-## Largest font size whose wrapped lines fit the description box under the ribbon.
+## Largest font size whose wrapped lines fit the description box.
 func _fitted_description_font_size(plain_text: String) -> int:
 	var font := _description.get_theme_font("normal_font")
 	var box := _description.size

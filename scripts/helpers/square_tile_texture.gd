@@ -1,24 +1,8 @@
 class_name SquareTileTexture
 extends RefCounted
 
-## Rounded-square board tiles drawn in code. Stands in for the old hex PNGs so the board needs no square art.
+## Rounded-square board overlays drawn in code. Stands in for the old hex PNGs so the board needs no square art.
 
-## Base spot. Dark rim, thin light inner rim, warm top-to-bottom gradient.
-const BASE := {
-	"fill": Color8(255, 225, 178),
-	"fill_bottom": Color8(255, 189, 97),
-	"border": Color8(208, 157, 100),
-	"border_width": 5,
-	"inner_rim": Color8(250, 220, 170),
-}
-## Staff slot. Same shape as BASE in a cooler, muted tan so the column reads apart from the board.
-const STAFF := {
-	"fill": Color8(240, 228, 200),
-	"fill_bottom": Color8(214, 184, 136),
-	"border": Color8(176, 146, 108),
-	"border_width": 5,
-	"inner_rim": Color8(236, 224, 196),
-}
 const HOVER := {
 	"fill": Color8(171, 195, 96, 128),
 	"border": Color8(140, 161, 80),

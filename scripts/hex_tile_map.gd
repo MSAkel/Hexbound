@@ -42,7 +42,7 @@ const OVERLAY_TILE_SOURCE_ID := 0
 @export_range(-16, 64, 1) var hex_tile_gap_x: int = 4
 @export_range(0, 64, 1) var hex_tile_gap_y: int = 8
 
-# Square tile art size, drawn by SquareTileTexture. tile_size = this + the X/Y gaps.
+# Square tile art size. tile_size = this + the X/Y gaps.
 const HEX_TEXTURE_SIZE := Vector2i(104, 104)
 # Placed rune UI. Square token centered on the cell.
 const HEX_RUNE_SIZE := Vector2(112, 112)
@@ -157,10 +157,10 @@ func _exit_tree() -> void:
 	_free_map_hexes()
 
 
-## Swap each layer's authored hex PNG for a generated square tile in the same colours.
+## Swap each overlay layer's authored hex PNG for a generated square tile in the same colours.
+## BaseLayer keeps the box art set in hex_tile_map.tscn.
 func _apply_square_tile_textures() -> void:
 	var styles := {
-		base_layer: SquareTileTexture.BASE,
 		selection_overlay_layer: SquareTileTexture.HOVER,
 		card_highlight_overlay_layer: SquareTileTexture.CARD_HIGHLIGHT,
 		disabled_tile_overlay_layer: SquareTileTexture.DISABLED,
@@ -265,11 +265,10 @@ func dismiss_hover_feedback() -> void:
 	_clear_selection_hover_highlight()
 
 
-## Refreshes tile cards, hover selection, and dashed outlines.
+## Refreshes tile cards and hover selection.
 func _refresh_map_focus_overlays() -> void:
 	_refresh_tile_card_visibility()
 	_refresh_segment_role_highlights()
-	refresh_dashed_outlines()
 
 
 func _refresh_tile_card_visibility() -> void:
@@ -326,6 +325,7 @@ func clear_placement_merge_highlights() -> void:
 func _setup_station_overlay() -> void:
 	station_overlay = StationBoardOverlay.new()
 	station_overlay.name = "StationOverlay"
+	station_overlay.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	station_overlay.z_index = TILE_OVERLAY_LAYER_Z_INDEX
 	add_child(station_overlay)
 	# Draw over the dashed base hexes and under every overlay layer and seated card.
@@ -566,15 +566,6 @@ func _stamp_hover_selection(coords: Vector2i) -> void:
 	)
 
 
-## Hides the dashed hex outline during the full order overlay, or when a card occupies the tile.
-func refresh_dashed_outlines() -> void:
-	for coords: Vector2i in map_data:
-		if _should_hide_dashed_outline(coords):
-			base_layer.set_cell(coords, -1)
-		else:
-			base_layer.set_cell(coords, 0, BASE_TILE_ATLAS_COORDS)
-
-
 ## Recompute output chips that read other placed cards. Dishes, steak-style ingredients, and similar.
 func refresh_board_output_chips() -> void:
 	if _refreshing_board_chips:
@@ -590,11 +581,6 @@ func refresh_board_output_chips() -> void:
 ## Kept for older call sites. Refreshes every context-sensitive board chip, not just dishes.
 func refresh_dish_output_chips() -> void:
 	refresh_board_output_chips()
-
-
-func _should_hide_dashed_outline(coords: Vector2i) -> bool:
-	var hex: Hex = map_data[coords]
-	return hex.active_tile_card != null
 
 
 # Convert a map cell into a viewport/CanvasLayer rect so the panel aligns with the camera.

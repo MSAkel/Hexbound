@@ -1,16 +1,9 @@
 [gd_scene format=3 uid="uid://dh8s60bf3jvak"]
 
 [ext_resource type="Script" uid="uid://cawjeaar55yqc" path="res://scenes/ui/challenge_container/challenge_container.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="2_panel"]
-[ext_resource type="Texture2D" uid="uid://bgr8s8m52y8wo" path="res://assets/gui/map_layouts/event_normal.png" id="3_icon"]
+[ext_resource type="Texture2D" uid="uid://dv4nua1dfg3qf" path="res://assets/gui/event_icon.png" id="2_ghho3"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
-texture = ExtResource("2_panel")
-modulate_color = Color(0.9340804, 0.9340805, 0.93408036, 1)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_u11vp"]
 
 [node name="ChallengeContainer" type="PanelContainer" unique_id=948507863 groups=["event_hud_slot"]]
 anchors_preset = 1
@@ -21,13 +14,13 @@ offset_top = 32.0
 offset_right = -32.0
 offset_bottom = 98.0
 grow_horizontal = 0
-theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_u11vp")
 script = ExtResource("1_script")
 
 [node name="EventIcon" type="TextureRect" parent="." unique_id=1050428528]
 custom_minimum_size = Vector2(50, 50)
 custom_maximum_size = Vector2(50, 50)
 layout_mode = 2
-texture = ExtResource("3_icon")
+texture = ExtResource("2_ghho3")
 expand_mode = 1
 stretch_mode = 5

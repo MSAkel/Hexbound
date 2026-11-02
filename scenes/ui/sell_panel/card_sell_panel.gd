@@ -4,6 +4,7 @@ extends PanelContainer
 ## Bottom-left corner of the run screen: the current chef's portrait above the gold panel.
 ## The gold panel shows the player's gold. While a hand card, staff member or condiment is dragged
 ## over the corner it shows that item's sell price instead. Release there to sell it.
+## Hovering the portrait shows the chef's name and ability.
 
 const SELL_VALUE := 2
 
@@ -45,6 +46,8 @@ func _ready() -> void:
 	_gold_counter = CountingNumber.for_label(self, _gold_label)
 	_gold_counter.snap_to(EconomyManager.amount)
 	_show_chef_portrait()
+	_art.mouse_entered.connect(_on_art_mouse_entered)
+	_art.mouse_exited.connect(_on_art_mouse_exited)
 	EventBus.gold_changed.connect(_on_gold_changed)
 	EventBus.run_state_loaded.connect(_on_run_state_loaded)
 	EventBus.card_drag_started.connect(_on_card_drag_started)
@@ -102,6 +105,20 @@ func _show_chef_portrait() -> void:
 	var portrait := chef.get_ingame_portrait()
 	if portrait != null:
 		_art.texture = portrait
+
+
+func _on_art_mouse_entered() -> void:
+	var chef := GameManager.selected_chef
+	# The corner is a sell target during a drag, so the tooltip stays out of the way.
+	if chef == null or _is_armed():
+		return
+	var ability := CardKeywordGlossary.to_plain(chef.speciality_description)
+	EventBus.show_tooltip_above.emit("%s
+%s" % [chef.display_name, ability], _art.get_global_rect())
+
+
+func _on_art_mouse_exited() -> void:
+	EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 
 func _on_gold_changed(amount: int) -> void:

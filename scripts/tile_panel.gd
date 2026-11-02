@@ -12,6 +12,7 @@ extends Control
 @onready var card_bonus_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneBonusLine
 @onready var condiment_fuse_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/CondimentFuseLine
 
+const EMPTY_SPOT_TEXTURE: Texture2D = preload("res://assets/gui/panels/box_tile.png")
 const RARITY_BG_COLORS := {
 	Card.Rarity.COMMON: Color(0.7473333, 0.7472968, 0.77322227, 1),
 	Card.Rarity.UNCOMMON: Color(0.72, 0.86, 0.96, 1),
@@ -104,7 +105,7 @@ func _refresh_spot_card() -> void:
 		_set_bonus_line(card)
 		_set_condiment_fuse_line(card)
 	else:
-		card_icon.show_empty(SquareTileTexture.get_texture(SquareTileTexture.BASE, HexTileMap.HEX_TEXTURE_SIZE))
+		card_icon.show_empty(EMPTY_SPOT_TEXTURE)
 		card_name_label.text = "Empty %s" % GameTerms.SPOT
 		_hide_rarity_badge()
 		card_subtitle.text = ""

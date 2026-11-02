@@ -14,11 +14,14 @@ const HEADER_FONT_SIZE := 17
 @export var bind_event_bus: bool = true
 
 var target_rect: Rect2 = Rect2()
+# Set by show_tooltip_above. Normal tooltips try below the element first.
+var _centered_above := false
 
 
 func _ready() -> void:
 	if bind_event_bus:
 		EventBus.toggle_tooltip.connect(_on_toggle_tooltip)
+		EventBus.show_tooltip_above.connect(_on_show_tooltip_above)
 		EventBus.tooltip_hover_refresh_requested.connect(_on_hover_refresh_requested)
 	hide()
 	# Make sure tooltip is on top
@@ -30,6 +33,8 @@ func _exit_tree() -> void:
 		return
 	if EventBus.toggle_tooltip.is_connected(_on_toggle_tooltip):
 		EventBus.toggle_tooltip.disconnect(_on_toggle_tooltip)
+	if EventBus.show_tooltip_above.is_connected(_on_show_tooltip_above):
+		EventBus.show_tooltip_above.disconnect(_on_show_tooltip_above)
 	if EventBus.tooltip_hover_refresh_requested.is_connected(_on_hover_refresh_requested):
 		EventBus.tooltip_hover_refresh_requested.disconnect(_on_hover_refresh_requested)
 
@@ -57,12 +62,20 @@ func _on_toggle_tooltip(
 	text: String,
 	element_rect: Rect2 = Rect2()
 ) -> void:
+	_centered_above = false
 	if is_tooltip_visible and text != "":
 		target_rect = element_rect
 		_update_content(text)
 		show()
 	else:
 		hide()
+
+
+func _on_show_tooltip_above(text: String, element_rect: Rect2) -> void:
+	_centered_above = true
+	target_rect = element_rect
+	_update_content(text)
+	show()
 
 
 func _update_content(text: String) -> void:
@@ -130,6 +143,14 @@ func _update_position() -> void:
 		# Fallback to mouse position if no element rect provided
 		var mouse_pos = get_viewport().get_mouse_position()
 		position = mouse_pos + offset
+		_clamp_to_viewport()
+		return
+
+	if _centered_above:
+		position = Vector2(
+			target_rect.get_center().x - size.x * 0.5,
+			target_rect.position.y - size.y - offset.y
+		)
 		_clamp_to_viewport()
 		return
 

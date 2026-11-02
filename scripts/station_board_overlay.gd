@@ -1,17 +1,15 @@
 class_name StationBoardOverlay
 extends Node2D
 
-## Station dressing drawn in map space, between the dashed base hexes and the seated cards.
-## Meal slots get a warm fill. A locked second slot is darker and carries a padlock.
+## Station dressing drawn in map space, between the base tiles and the seated cards.
+## Meal slots get a warm fill. A locked second slot shows the locked box art.
 ## Typed stations tint their regular spots in the type colour. Station events animate here.
 
 const MEAL_SLOT_FILL := Color(0.92, 0.32, 0.36, 0.34)
-const MEAL_SLOT_LOCKED_FILL := Color(0.16, 0.1, 0.08, 0.55)
 const STATION_TINT_ALPHA := 0.13
 ## Extra alpha at full flash strength.
 const FLASH_ALPHA := 0.35
-const LOCK_COLOR := Color(1.0, 0.82, 0.55, 0.9)
-const LOCK_SHADOW := Color(0, 0, 0, 0.45)
+const LOCKED_BOX: Texture2D = preload("res://assets/gui/panels/box_container_locked.png")
 ## Rounded square matching the base tile, inset so the tile border stays visible.
 const HEX_INSET := 0.9
 
@@ -64,12 +62,10 @@ func _draw_meal_slot(segment_index: int, meal_slot_index: int, center: Vector2, 
 	var fill := MEAL_SLOT_FILL
 	fill.a += FLASH_ALPHA * 0.7 * flash
 	if not StationManager.is_meal_slot_unlocked(segment_index, meal_slot_index):
-		_draw_hex(center, MEAL_SLOT_LOCKED_FILL)
 		_draw_lock(center, 0.0)
 	elif meal_slot_index > 0 and _lock_break.has(segment_index):
-		var progress := float(_lock_break[segment_index])
-		_draw_hex(center, MEAL_SLOT_LOCKED_FILL.lerp(fill, progress))
-		_draw_lock(center, progress)
+		_draw_hex(center, fill)
+		_draw_lock(center, float(_lock_break[segment_index]))
 	else:
 		_draw_hex(center, fill)
 
@@ -83,23 +79,15 @@ func _draw_hex(center: Vector2, color: Color) -> void:
 	draw_colored_polygon(points, color)
 
 
-## Padlock built from primitives. progress > 0 shakes, lifts the shackle, and fades it out.
+## Locked box art over the tile. progress > 0 shakes it, then fades it out.
 func _draw_lock(center: Vector2, progress: float) -> void:
 	var alpha := 1.0 - clampf((progress - 0.45) / 0.55, 0.0, 1.0)
 	if alpha <= 0.0:
 		return
 	var shake := sin(progress * 60.0) * 3.0 * (1.0 - progress) if progress > 0.0 else 0.0
-	var origin := center + Vector2(shake, 4.0)
-	var body := Rect2(origin + Vector2(-13, -4), Vector2(26, 20))
-	var lift := -10.0 * clampf(progress * 2.0, 0.0, 1.0)
-	var lock_color := LOCK_COLOR
-	lock_color.a *= alpha
-	var shadow := LOCK_SHADOW
-	shadow.a *= alpha
-	draw_rect(Rect2(body.position + Vector2(2, 2), body.size), shadow)
-	draw_arc(origin + Vector2(0, -4 + lift), 9.0, PI, TAU, 16, lock_color, 4.0, true)
-	draw_rect(body, lock_color)
-	draw_circle(origin + Vector2(0, 5), 3.0, MEAL_SLOT_LOCKED_FILL)
+	var tile_size := Vector2(HexTileMap.HEX_TEXTURE_SIZE)
+	var rect := Rect2(center + Vector2(shake, 0.0) - tile_size * 0.5, tile_size)
+	draw_texture_rect(LOCKED_BOX, rect, false, Color(1, 1, 1, alpha))
 
 
 func _cell_center(coords: Vector2i) -> Vector2:

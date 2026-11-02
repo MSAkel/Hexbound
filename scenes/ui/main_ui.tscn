@@ -15,13 +15,13 @@
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tutorial/tutorial_overlay.tscn" id="17_tutorial"]
-[ext_resource type="PackedScene" path="res://scenes/ui/tutorial/tips_archive.tscn" id="26_tips_archive"]
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_belt.tscn" id="19_condiment_belt"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_edge_glow.tscn" id="21_condiment_glow"]
 [ext_resource type="PackedScene" uid="uid://c8sellpanel01" path="res://scenes/ui/sell_panel/card_sell_panel.tscn" id="22_sell_panel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/staff/staff_rail.tscn" id="24_staff_rail"]
+[ext_resource type="PackedScene" uid="uid://dn8pqhd1qm5sh" path="res://scenes/ui/staff/staff_rail.tscn" id="24_staff_rail"]
 [ext_resource type="PackedScene" path="res://scenes/ui/station_upgrade_choice/station_upgrade_choice.tscn" id="25_station_choice"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tutorial/tips_archive.tscn" id="26_tips_archive"]
 
 [node name="MainUI" type="CanvasLayer" unique_id=1523912879]
 script = ExtResource("1_l8t6x")

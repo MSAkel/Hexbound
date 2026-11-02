@@ -99,8 +99,6 @@ func place_tile_card(rune: TileCard, animate: bool = true) -> void:
 		new_rune_instance.play_placement_animation()
 	_apply_display_mode()
 	refresh_tile_card_visual_state()
-	if map != null:
-		map.refresh_dashed_outlines()
 
 
 # Restore a placed rune from a save file without duplicating the resource again.
@@ -121,8 +119,6 @@ func restore_placed_tile_card(rune: TileCard) -> void:
 	items_grid.add_child(new_rune_instance)
 	_apply_display_mode()
 	refresh_tile_card_visual_state()
-	if map != null:
-		map.refresh_dashed_outlines()
 
 
 func _apply_display_mode() -> void:
@@ -184,7 +180,6 @@ func remove_tile_card() -> void:
 		card_icon_ui = null
 	_apply_display_mode()
 	if map != null:
-		map.refresh_dashed_outlines()
 		map.refresh_dish_output_chips()
 
 

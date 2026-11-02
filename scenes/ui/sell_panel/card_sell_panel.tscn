@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://c8sellpanel01"]
 
 [ext_resource type="Script" uid="uid://bq8sellpanel1" path="res://scenes/ui/sell_panel/card_sell_panel.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://blx67yh02regg" path="res://assets/test/test-image 1.png" id="2_art"]
+[ext_resource type="Texture2D" uid="uid://hsm65o42e3km" path="res://assets/characters/sous_chef_ingame.png" id="2_i166s"]
 [ext_resource type="Texture2D" uid="uid://cfyi20417t01c" path="res://assets/gui/panels/gold_panel.png" id="3_gold_panel"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="4_gold_icon"]
 
 [sub_resource type="StyleBoxEmpty" id="EmptyPanel"]
 
-[node name="CardSellPanel" type="PanelContainer"]
+[node name="CardSellPanel" type="PanelContainer" unique_id=647209591]
 z_index = 6
 custom_minimum_size = Vector2(254, 272)
 anchors_preset = 2
@@ -22,24 +22,24 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("EmptyPanel")
 script = ExtResource("1_script")
 
-[node name="Stack" type="VBoxContainer" parent="."]
+[node name="Stack" type="VBoxContainer" parent="." unique_id=2046522143]
 layout_mode = 2
 mouse_filter = 2
-alignment = 2
 theme_override_constants/separation = 4
+alignment = 2
 
-[node name="Art" type="TextureRect" parent="Stack"]
+[node name="Art" type="TextureRect" parent="Stack" unique_id=180691932]
 unique_name_in_owner = true
 texture_filter = 1
 custom_minimum_size = Vector2(254, 196)
 layout_mode = 2
 size_flags_vertical = 3
-mouse_filter = 2
-texture = ExtResource("2_art")
+mouse_filter = 1
+texture = ExtResource("2_i166s")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="GoldPanel" type="TextureRect" parent="Stack"]
+[node name="GoldPanel" type="TextureRect" parent="Stack" unique_id=1878181627]
 unique_name_in_owner = true
 texture_filter = 1
 custom_minimum_size = Vector2(254, 62)
@@ -47,9 +47,8 @@ layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("3_gold_panel")
 expand_mode = 1
-stretch_mode = 0
 
-[node name="GoldRow" type="HBoxContainer" parent="Stack/GoldPanel"]
+[node name="GoldRow" type="HBoxContainer" parent="Stack/GoldPanel" unique_id=1433956837]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -57,10 +56,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-alignment = 1
 theme_override_constants/separation = 8
+alignment = 1
 
-[node name="GoldIcon" type="TextureRect" parent="Stack/GoldPanel/GoldRow"]
+[node name="GoldIcon" type="TextureRect" parent="Stack/GoldPanel/GoldRow" unique_id=784378381]
 texture_filter = 1
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
@@ -70,10 +69,9 @@ texture = ExtResource("4_gold_icon")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="GoldLabel" type="Label" parent="Stack/GoldPanel/GoldRow"]
+[node name="GoldLabel" type="Label" parent="Stack/GoldPanel/GoldRow" unique_id=1846188193]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 4
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
 theme_override_colors/font_outline_color = Color(0.16, 0.09, 0.03, 1)
 theme_override_constants/outline_size = 6

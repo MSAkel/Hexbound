@@ -1,42 +1,46 @@
 [gd_scene format=3 uid="uid://bj0bkesq2wj5x"]
 
-[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/h_bar_light.png" id="1_i0xcj"]
+[ext_resource type="Texture2D" uid="uid://duehlrsteooj0" path="res://assets/gui/panels/day_panel.png" id="1_btgct"]
 [ext_resource type="Script" uid="uid://5y8yi6vfkggb" path="res://scenes/ui/run_info_display/run_status/run_status.gd" id="2_i0xcj"]
 [ext_resource type="Texture2D" uid="uid://dxs2x8gfd2y0a" path="res://assets/gui/dividers/v_divider.png" id="3_y7j43"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r6dd1"]
 content_margin_left = 16.0
-content_margin_top = 8.0
+content_margin_top = 14.0
 content_margin_right = 16.0
-content_margin_bottom = 8.0
-texture = ExtResource("1_i0xcj")
+content_margin_bottom = 17.0
+texture = ExtResource("1_btgct")
 
 [sub_resource type="FontVariation" id="FontVariation_i0xcj"]
 
 [node name="RunStatus" type="PanelContainer" unique_id=2029786034]
+texture_filter = 1
+custom_minimum_size = Vector2(300, 69)
 offset_right = 300.0
-offset_bottom = 61.0
+offset_bottom = 69.0
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxTexture_r6dd1")
 script = ExtResource("2_i0xcj")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1551532218]
 layout_mode = 2
-size_flags_vertical = 0
-theme_override_constants/separation = 12
+theme_override_constants/separation = 20
 
 [node name="RoundLabel" type="Label" parent="HBoxContainer" unique_id=235269414]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_constants/shadow_outline_size = 2
 theme_override_fonts/font = SubResource("FontVariation_i0xcj")
 theme_override_font_sizes/font_size = 21
 text = "Day 1/9"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="VDivider" type="TextureRect" parent="HBoxContainer" unique_id=1767232975]
+visible = false
 custom_minimum_size = Vector2(2, 45)
 custom_maximum_size = Vector2(35, 45)
 layout_mode = 2
@@ -47,24 +51,26 @@ expand_mode = 1
 [node name="TurnsContainer" type="HBoxContainer" parent="HBoxContainer" unique_id=1813027528]
 layout_mode = 2
 size_flags_horizontal = 3
-alignment = 1
 theme_override_constants/separation = 8
+alignment = 1
 
 [node name="TurnCounterLabel" type="Label" parent="HBoxContainer/TurnsContainer" unique_id=879926520 groups=["main_ui"]]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 21
 text = "5"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="TurnsLeft" type="Label" parent="HBoxContainer/TurnsContainer" unique_id=1040083914 groups=["main_ui"]]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.27450982, 0.22745098, 0.11372549, 1)
+theme_override_colors/font_color = Color(0.93, 0.78, 0.5, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 18
 text = "Hours Left"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="VDivider3" type="TextureRect" parent="HBoxContainer" unique_id=612236307]
 visible = false

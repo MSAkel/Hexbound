@@ -1,23 +1,19 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cicoh2v7t3gd3"]
 
-[ext_resource type="Script" path="res://scenes/ui/staff/staff_slot.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://djyfdn8mgw2nv" path="res://assets/tilesets/tile_dashed.png" id="2_well"]
-[ext_resource type="Texture2D" uid="uid://bjnxu3p56m13h" path="res://assets/icons/icon_background/utility.png" id="3_back"]
+[ext_resource type="Script" uid="uid://bmdi4ilbj64uk" path="res://scenes/ui/staff/staff_slot.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://u433044huqg5" path="res://assets/tilesets/tile_hover_highlight.png" id="4_rim"]
-[ext_resource type="Shader" path="res://scenes/ui/staff/staff_token_back.gdshader" id="5_back_shader"]
+[ext_resource type="Texture2D" uid="uid://chih18colxf1w" path="res://assets/gui/panels/box_container.png" id="5_droql"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_back"]
-shader = ExtResource("5_back_shader")
-
-[node name="StaffSlot" type="Control"]
+[node name="StaffSlot" type="Control" unique_id=629578661]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 130.0
 offset_bottom = 151.0
 script = ExtResource("1_script")
 
-[node name="Well" type="TextureRect" parent="."]
+[node name="Well" type="TextureRect" parent="." unique_id=1214317151]
 unique_name_in_owner = true
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,11 +21,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_well")
+texture = ExtResource("5_droql")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="DropGlow" type="TextureRect" parent="."]
+[node name="DropGlow" type="TextureRect" parent="." unique_id=537689010]
 unique_name_in_owner = true
 visible = false
 modulate = Color(0.45, 0.88, 1.15, 0.72)
@@ -44,7 +40,7 @@ texture = ExtResource("4_rim")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Token" type="Control" parent="."]
+[node name="Token" type="Control" parent="." unique_id=2010112849]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -54,8 +50,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Back" type="TextureRect" parent="Token"]
+[node name="Back" type="TextureRect" parent="Token" unique_id=46511832]
 unique_name_in_owner = true
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -63,14 +60,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-material = SubResource("ShaderMaterial_back")
-texture = ExtResource("3_back")
+texture = ExtResource("5_droql")
 expand_mode = 1
 
-[node name="Icon" type="TextureRect" parent="Token"]
+[node name="Icon" type="TextureRect" parent="Token" unique_id=1514215217]
 unique_name_in_owner = true
 texture_filter = 2
 layout_mode = 1
+anchors_preset = -1
 anchor_left = 0.2
 anchor_top = 0.2
 anchor_right = 0.8
@@ -81,11 +78,12 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CopyGhost" type="TextureRect" parent="Token"]
+[node name="CopyGhost" type="TextureRect" parent="Token" unique_id=1091542461]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 texture_filter = 2
 layout_mode = 1
+anchors_preset = -1
 anchor_left = 0.2
 anchor_top = 0.2
 anchor_right = 0.8
@@ -96,7 +94,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Rim" type="TextureRect" parent="Token"]
+[node name="Rim" type="TextureRect" parent="Token" unique_id=1015412419]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
@@ -110,7 +108,7 @@ texture = ExtResource("4_rim")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NameTag" type="Label" parent="Token"]
+[node name="NameTag" type="Label" parent="Token" unique_id=773554974]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 12
@@ -123,7 +121,6 @@ offset_right = 20.0
 offset_bottom = -22.0
 grow_horizontal = 2
 grow_vertical = 0
-mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.97, 0.88, 1)
 theme_override_colors/font_outline_color = Color(0.1, 0.07, 0.14, 1)
 theme_override_constants/outline_size = 5

@@ -1,7 +1,7 @@
 class_name StaffSlot
 extends Control
 
-## One square in the staff column. Shows the seated staff member, or a dashed well when empty.
+## One square in the staff column. Shows the seated staff member, or the empty box when empty.
 ## StaffRail owns layout, drag and drop, and decides which animation plays.
 ## Layout lives in staff_slot.tscn.
 
@@ -68,9 +68,7 @@ var _dust: CPUParticles2D
 
 
 func _ready() -> void:
-	# Square board tiles, so the well and rims use the same generated squares as the spots.
-	# The well gets its own tint so the staff column reads apart from the board.
-	_well.texture = SquareTileTexture.get_texture(SquareTileTexture.STAFF, HexTileMap.HEX_TEXTURE_SIZE)
+	# Square board tiles, so the rims use the same generated squares as the spots.
 	var rim_texture := SquareTileTexture.get_texture(SquareTileTexture.HOVER, HexTileMap.HEX_TEXTURE_SIZE)
 	_drop_glow.texture = rim_texture
 	_rim.texture = rim_texture
