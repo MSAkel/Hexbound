@@ -91,6 +91,25 @@ func perk_for_level(level: int) -> StationPerk:
 	return level_perks[mini(level, level_perks.size()) - 1]
 
 
+## What a level's perk adds to the level before: its sentences that are new, with {tokens} intact.
+## Empty when the perk text does not change.
+func get_level_upgrade_text(level: int) -> String:
+	var perk := perk_for_level(level)
+	if perk == null:
+		return ""
+	var previous := perk_for_level(level - 1)
+	var previous_sentences := _sentences(previous.description) if previous != null else PackedStringArray()
+	var added: PackedStringArray = []
+	for sentence: String in _sentences(perk.description):
+		if not sentence in previous_sentences:
+			added.append(sentence)
+	return ". ".join(added) + "." if not added.is_empty() else ""
+
+
+func _sentences(text: String) -> PackedStringArray:
+	return text.trim_suffix(".").split(". ")
+
+
 func _count_for_tag(cards: Array[TileCard], tag: StringName) -> int:
 	if tag == TAG_ANY_INGREDIENT and tag in distinct_tags:
 		return _count_ingredient_kinds(cards)

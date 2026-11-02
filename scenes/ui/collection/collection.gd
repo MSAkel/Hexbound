@@ -312,7 +312,52 @@ func _create_station_entry(station_type: StationType) -> PanelContainer:
 	var requirements := _create_label(station_type.get_requirements_text(), 18, TEXT_PRIMARY)
 	requirements.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_child(requirements)
+
+	details.add_child(_create_separator())
+	details.add_child(_create_label("LEVELS", 14, ACCENT))
+	for level: int in range(StationManager.START_LEVEL, StationManager.MAX_LEVEL + 1):
+		details.add_child(_create_station_level_row(level, _station_level_lines(station_type, level)))
 	return panel
+
+
+## Everything reaching a level gives a station, one line each.
+func _station_level_lines(station_type: StationType, level: int) -> PackedStringArray:
+	var lines: PackedStringArray = []
+	var upgrade := station_type.get_level_upgrade_text(level)
+	if not upgrade.is_empty():
+		lines.append(CardKeywordGlossary.to_plain(upgrade))
+	if level == StationManager.MEAL_SLOT_UNLOCK_LEVEL:
+		lines.append("Opens a second %s." % GameTerms.MEAL_SLOT)
+	var options: Array[StationPerk] = []
+	if level == StationManager.CHOICE_LEVEL:
+		options = station_type.choice_options
+	elif level == StationManager.CAPSTONE_LEVEL:
+		options = station_type.capstone_options
+	if not options.is_empty():
+		lines.append("Choose one perk:")
+	for perk: StationPerk in options:
+		lines.append("• %s" % CardKeywordGlossary.to_plain(perk.description))
+	return lines
+
+
+func _create_station_level_row(level: int, lines: PackedStringArray) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+
+	var level_label := _create_label("LV %d" % level, 16, ACCENT)
+	level_label.custom_minimum_size = Vector2(42, 0)
+	level_label.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.add_child(level_label)
+
+	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override("separation", 2)
+	row.add_child(column)
+	for line: String in lines:
+		var label := _create_label(line, 16, TEXT_PRIMARY)
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		column.add_child(label)
+	return row
 
 
 func _create_item_panel(minimum_size: Vector2) -> PanelContainer:
