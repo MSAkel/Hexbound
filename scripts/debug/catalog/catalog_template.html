@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: a kitchen pass. Sticky header with search and tabs; content as a scannable ticket list. */
-@font-face { font-family: "Gimbot"; src: url(data:font/otf;base64,/*__FONT__*/) format("opentype"); font-display: swap; }
+@font-face { font-family: "Gimbot"; src: url(data:font/otf;base64,/*__FONT__*/) format("opentype"); font-display: swap; unicode-range: U+0020-007E; }
 :root {
   --bg: #eef2ef; --surface: #ffffff; --surface-2: #f6f8f6; --fg: #17211c; --muted: #5a6a62; --rule: #d6ded9;
   --keyword: #2e855c; --keyword-bg: #e3f1ea;
@@ -264,7 +264,7 @@ function viewStations() {
   const items = DATA.stations.filter(matches).sort((a, b) => a.name.localeCompare(b.name));
   return `<div class="resultline">${items.length} of ${DATA.stations.length} stations</div><div class="grid">
     ${items.map((s) => `<section class="panel"><h2><span class="dot" style="background:#${esc(s.color)}"></span>${esc(s.name)}</h2>
-      <div><h3>Needs</h3><div class="needs">${Object.entries(s.needs).map(([k, n]) => `<span class="need"><b>${n}</b> ${esc(k)}</span>`).join("")}</div></div>
+      <div><h3>Needs</h3><div class="needs">${(s.setup_text ? s.setup_text.split(" · ").map((t) => { const m = t.match(/^(\d+) (.*)$/); return m ? [m[2], m[1]] : [t, ""]; }) : Object.entries(s.needs)).map(([k, n]) => `<span class="need">${n ? `<b>${n}</b> ` : ""}${esc(k)}</span>`).join("")}</div></div>
       <div><h3>Level perks</h3><ol class="levels">${s.level_perks.map((p, i) => `<li><span class="lv">Lv ${i + 1}</span><span>${rich(p.raw)}</span></li>`).join("")}</ol></div>
       ${s.choices.length ? `<div><h3>Level 3 choice</h3><ul class="choices">${s.choices.map((p) => `<li>${rich(p.raw)}</li>`).join("")}</ul></div>` : ""}
       ${(s.capstones || []).length ? `<div><h3>Level 6 choice</h3><ul class="choices">${s.capstones.map((p) => `<li>${rich(p.raw)}</li>`).join("")}</ul></div>` : ""}

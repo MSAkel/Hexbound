@@ -1,0 +1,504 @@
+<title>Flavour Pass Technique Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: sibling of the dependency map. Sticky header with tabs; a three-column wiring board (relies on / techniques / affects) with a detail rail, plus coverage, matrix and list views. */
+@font-face { font-family: "Gimbot"; src: url(data:font/otf;base64,/*__FONT__*/) format("opentype"); font-display: swap; unicode-range: U+0020-007E; }
+:root {
+  --bg: #eef2ef; --surface: #ffffff; --surface-2: #f6f8f6; --fg: #17211c; --muted: #5a6a62; --rule: #d6ded9;
+  --accent: #2e855c; --accent-bg: #e3f1ea;
+  --hot: #c2412b; --hot-bg: #fbe4df; --ok: #2e855c; --ok-bg: #e3f1ea; --cool: #3e6b8a; --cool-bg: #e2edf5; --warn: #9a6a00; --warn-bg: #fbf0d2;
+  --g-score: #b07a10; --g-keyword: #1f8a8a; --g-type: #7449e6; --g-board: #4f6b85;
+  --c-Vegetable: #3f9e55; --c-Fruit: #c99a0c; --c-Meat: #d0432a; --c-Seasoning: #e07a22;
+  --c-Sweet: #d0609f; --c-Dairy: #7f878f; --c-Seafood: #2f8fcc;
+  --r-Common: #5a6a62; --r-Uncommon: #2e7a8a; --r-Rare: #9a5b12;
+  --display: "Gimbot", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121815; --surface: #1a221e; --surface-2: #202a25; --fg: #e6ede9; --muted: #98a8a0; --rule: #2e3a34;
+  --accent: #6fcf9c; --accent-bg: #1f3a2d;
+  --hot: #f08a73; --hot-bg: #3d1f19; --ok: #6fcf9c; --ok-bg: #1f3a2d; --cool: #8bbbe0; --cool-bg: #1c2e3c; --warn: #f0c05a; --warn-bg: #3a2e12;
+  --g-score: #f0c05a; --g-keyword: #5fd0d0; --g-type: #a98cff; --g-board: #9db8d2;
+  --c-Vegetable: #6fcf86; --c-Fruit: #f2c94c; --c-Meat: #f2765a; --c-Seasoning: #f5a15a;
+  --c-Sweet: #f29ccd; --c-Dairy: #b8bec4; --c-Seafood: #79c3f2;
+  --r-Common: #98a8a0; --r-Uncommon: #6cc6d6; --r-Rare: #e8b060;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #121815; --surface: #1a221e; --surface-2: #202a25; --fg: #e6ede9; --muted: #98a8a0; --rule: #2e3a34;
+  --accent: #6fcf9c; --accent-bg: #1f3a2d;
+  --hot: #f08a73; --hot-bg: #3d1f19; --ok: #6fcf9c; --ok-bg: #1f3a2d; --cool: #8bbbe0; --cool-bg: #1c2e3c; --warn: #f0c05a; --warn-bg: #3a2e12;
+  --g-score: #f0c05a; --g-keyword: #5fd0d0; --g-type: #a98cff; --g-board: #9db8d2;
+  --c-Vegetable: #6fcf86; --c-Fruit: #f2c94c; --c-Meat: #f2765a; --c-Seasoning: #f5a15a;
+  --c-Sweet: #f29ccd; --c-Dairy: #b8bec4; --c-Seafood: #79c3f2;
+  --r-Common: #98a8a0; --r-Uncommon: #6cc6d6; --r-Rare: #e8b060;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1480px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.top .wrap { display: flex; flex-direction: column; gap: 10px; padding-block: 16px 0; }
+.titlerow { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font: 400 clamp(24px, 4vw, 32px)/1.05 var(--display); letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.meta { font: 500 12px/1.4 var(--mono); color: var(--muted); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; font: 700 14px var(--body); color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px 10px; cursor: pointer; text-decoration: none; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main .wrap { padding-block: 16px 48px; display: flex; flex-direction: column; gap: 16px; }
+.lede { color: var(--muted); max-width: 72ch; margin: 0; font-size: 14px; }
+h2 { font: 400 22px/1.1 var(--display); margin: 0; }
+h3 { font: 700 11px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+
+.board { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.mapcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; min-width: 0; }
+.maptools { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.spacer { flex: 1; }
+.btn { font: 700 13px var(--body); color: var(--fg); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.scroller { overflow-x: auto; }
+svg.map { display: block; margin: 0 auto; }
+svg.map text { fill: var(--fg); font-family: var(--body); }
+.colh { font: 400 16px var(--display); }
+.grph { font: 700 10px var(--body); letter-spacing: .08em; text-transform: uppercase; fill: var(--muted) !important; }
+.edge { pointer-events: none; fill: none; stroke-width: 1.5; opacity: .35; transition: opacity .15s; }
+.edge.need { stroke-dasharray: 5 3; }
+.node { cursor: pointer; transition: opacity .15s; }
+.node:focus { outline: none; }
+.node:focus-visible .box { stroke: var(--accent); stroke-width: 2; }
+.box { fill: var(--surface-2); stroke: var(--rule); }
+.box.gap { fill: transparent; stroke: var(--muted); stroke-dasharray: 3 3; }
+.lbl { font-size: 12.5px; }
+.lbl.gap { fill: var(--muted) !important; font-style: italic; }
+.cnt { font: 500 11px var(--mono); fill: var(--muted) !important; }
+.tname { font-weight: 700; font-size: 13px; }
+svg.map.sel .edge { opacity: .04; }
+svg.map.sel .edge.on { opacity: .95; stroke-width: 2.3; }
+svg.map.sel .node { opacity: .25; }
+svg.map.sel .node.on { opacity: 1; }
+svg.map.sel .node.me .box { stroke: var(--fg); stroke-width: 2; }
+
+.rail { position: sticky; top: 130px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; max-height: calc(100vh - 150px); overflow: auto; }
+.rhead { display: flex; gap: 12px; align-items: center; }
+.rhead img, .rhead .dotbig { width: 44px; height: 44px; object-fit: contain; flex: none; border-radius: 10px; }
+.kind { font: 700 11px var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.nm { font: 400 22px/1.1 var(--display); }
+.effect { font-size: 14px; background: var(--surface-2); border-radius: 6px; padding: 8px 10px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface-2); border-radius: 6px; padding: 6px 8px; }
+.stat b { display: block; font: 500 20px var(--mono); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.sec { display: flex; flex-direction: column; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font: 13px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 2px 9px 2px 5px; cursor: pointer; text-align: left; }
+.chip.static { cursor: default; }
+.chip img { width: 18px; height: 18px; object-fit: contain; }
+.chip .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.chip .x { font: 500 11px var(--mono); color: var(--muted); }
+.none { font-size: 13px; color: var(--muted); }
+.hint { font-size: 13px; color: var(--muted); margin: 0; }
+
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.tblwrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+th { font: 700 11px var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; background: var(--surface-2); }
+th button { all: unset; cursor: pointer; }
+th button:focus-visible { outline: 2px solid var(--accent); }
+th button[data-dir]::after { content: " " attr(data-dir); font-family: var(--mono); }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: var(--surface-2); }
+tr.grp td { background: var(--surface-2); font: 700 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.cname { display: flex; align-items: center; gap: 8px; font-weight: 700; white-space: nowrap; }
+.cname img { width: 22px; height: 22px; object-fit: contain; }
+.cname .sw { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.bars { display: flex; height: 10px; min-width: 120px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+.bars i { display: block; height: 100%; }
+.pill { font: 700 11px var(--body); letter-spacing: 0.04em; border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+.p-gap { color: var(--hot); background: var(--hot-bg); }
+.p-thin { color: var(--warn); background: var(--warn-bg); }
+.p-ok { color: var(--ok); background: var(--ok-bg); }
+.p-crowd { color: var(--cool); background: var(--cool-bg); }
+.rar { font: 700 12px var(--body); }
+.insights { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+.ins { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); align-items: center; }
+.filters { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.fchip { font: 13px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.fchip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+.matrix th.mh { writing-mode: vertical-rl; transform: rotate(180deg); padding: 8px 4px; text-align: left; height: 130px; vertical-align: bottom; font-size: 11px; }
+.matrix th.mh.gapcol { color: var(--hot); }
+.matrix td.c { text-align: center; padding: 4px 2px; min-width: 26px; }
+.mk { display: inline-block; width: 16px; height: 16px; border-radius: 4px; vertical-align: middle; }
+.mk.need { border: 2px solid currentColor; }
+.mk.give { background: currentColor; }
+.mk.both { background: linear-gradient(135deg, currentColor 50%, transparent 50%); border: 2px solid currentColor; }
+.matrix td.gapcol { background: color-mix(in srgb, var(--hot) 7%, transparent); }
+.matrix tfoot td { font-family: var(--mono); text-align: center; background: var(--surface-2); font-size: 12px; }
+
+.tlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+.tcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; text-align: left; font: inherit; color: inherit; }
+.tcard:hover { border-color: var(--muted); }
+.tcard .top2 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.tcard .tn { font: 400 18px/1.1 var(--display); }
+.tcard .pr { font: 500 13px var(--mono); display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; }
+.tcard .pr img { width: 16px; height: 16px; }
+.tcard .row2 { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted); }
+.tcard .row2 b { font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: 10px; min-width: 52px; }
+.kw { color: var(--accent); font-weight: 700; }
+
+@media (max-width: 1100px) { .board { grid-template-columns: minmax(0, 1fr); } .rail { position: static; max-height: none; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="titlerow"><h1>Flavour Pass Technique Map</h1><div class="meta" id="meta"></div></div>
+    <nav class="tabs" role="tablist">
+      <a class="tab" role="tab" href="#map" data-tab="map">Map</a>
+      <a class="tab" role="tab" href="#coverage" data-tab="coverage">Coverage</a>
+      <a class="tab" role="tab" href="#matrix" data-tab="matrix">Matrix</a>
+      <a class="tab" role="tab" href="#list" data-tab="list">Techniques</a>
+    </nav>
+  </div>
+</header>
+<main><div class="wrap" id="view"></div></main>
+
+<script>
+const DATA = /*__DATA__*/null;
+const ICONS = /*__ICONS__*/null;
+const STAT = /*__STAT_ICONS__*/null;
+
+/* Mechanics. Every one is listed, whether or not a technique touches it.
+   hook: how to spot it among cards, stations, condiments and chefs (for "game hooks"). */
+const GROUPS = [
+  { id: "score", label: "Scoring & economy", color: "var(--g-score)" },
+  { id: "keyword", label: "Keywords", color: "var(--g-keyword)" },
+  { id: "type", label: "Card types", color: "var(--g-type)" },
+  { id: "kind", label: "Ingredient kinds", color: null },
+  { id: "category", label: "Meal categories", color: "var(--g-type)" },
+  { id: "board", label: "Board & timing", color: "var(--g-board)" },
+];
+const MECH = [
+  { id: "flavour", g: "score", name: "+Flavour", stat: "flavour", re: /Flavour/ },
+  { id: "mult_add", g: "score", name: "+Mult", stat: "mult", re: /\+[\d.]+( to \d+)? Mult/ },
+  { id: "mult_x", g: "score", name: "xMult", stat: "mult", re: /\bx\d|[Dd]oubled|tripled/ },
+  { id: "gold", g: "score", name: "Gold", stat: "gold", re: /Gold/ },
+  { id: "trigger", g: "keyword", name: "Trigger", stat: "trigger", re: /\bTrigger/ },
+  { id: "retrigger", g: "keyword", name: "Retrigger", stat: "trigger", re: /Retrigger|Trigger again|twice|repeats|two more times/ },
+  { id: "garnish", g: "keyword", name: "Garnish", stat: "garnish", re: /Garnish/ },
+  { id: "destroy", g: "keyword", name: "Destroy", re: /Destroy/ },
+  { id: "adjacency", g: "keyword", name: "Adjacency & Following", re: /Following|adjacent|next to|either side|directly before/ },
+  { id: "stars", g: "keyword", name: "Stars", re: /\bstars?\b/ },
+  { id: "condiments", g: "keyword", name: "Condiments", icon: "condiments", re: /[Cc]ondiment/ },
+  { id: "ingredient", g: "type", name: "Ingredients (any)", type: "Ingredient", re: /Ingredient/ },
+  { id: "variety", g: "type", name: "Ingredient variety", variety: true, re: /different (kinds?|Sweets?|Seasonings?|Fruits?|Vegetables?)\b/ },
+  { id: "kitchenware", g: "type", name: "Kitchenware", card: "chef_knife", type: "Kitchenware", need: "Kitchenware", re: /Kitchenware/ },
+  { id: "meal", g: "type", name: "Meals served", card: "salad", type: "Meal", re: /Meal|served/ },
+  { id: "dish", g: "type", name: "Dishes", card: "hamburger", tag: "Dish", re: /\bDish/ },
+  { id: "beverage", g: "type", name: "Beverages", card: "coffee", tag: "Beverage", re: /Beverage/ },
+  { id: "recipe", g: "type", name: "Recipes", card: "apple_pie", recipe: true, re: /recipe/i },
+  { id: "Vegetable", g: "kind", name: "Vegetables", card: "lettuce", tag: "Vegetable", need: "Vegetable", re: /Vegetables?\b/ },
+  { id: "Fruit", g: "kind", name: "Fruits", card: "apple", tag: "Fruit", need: "Fruit", re: /Fruits?\b/ },
+  { id: "Meat", g: "kind", name: "Meats", card: "steak", tag: "Meat", need: "Meat", re: /\bMeats?\b/ },
+  { id: "Seasoning", g: "kind", name: "Seasonings", card: "salt", tag: "Seasoning", need: "Seasoning", re: /Seasonings?\b/ },
+  { id: "Sweet", g: "kind", name: "Sweets", card: "chocolate", tag: "Sweet", need: "Sweet", re: /Sweets?\b/ },
+  { id: "Dairy", g: "kind", name: "Dairy", card: "cheese", tag: "Dairy", need: "Dairy", re: /Dairy/ },
+  { id: "Seafood", g: "kind", name: "Seafood", card: "shrimp", tag: "Seafood", need: "Seafood", re: /Seafood/ },
+  { id: "cat_meat", g: "category", name: "Meat meals", card: "grilled_steak", category: "Meat", re: /Meat (meal|dish)|Protein meal|Meat, Poultry/ },
+  { id: "cat_poultry", g: "category", name: "Poultry meals", card: "fried_chicken", category: "Poultry", re: /Poultry|Protein meal/ },
+  { id: "cat_seafood", g: "category", name: "Seafood meals", card: "ceviche", category: "Seafood", re: /Seafood (meal|dish)|Protein meal|Poultry or Seafood/ },
+  { id: "cat_salad", g: "category", name: "Salads", card: "salad", category: "Salad", re: /Salads?\b/ },
+  { id: "cat_dessert", g: "category", name: "Desserts", card: "chocolate_cake", category: "Dessert", re: /Desserts?\b/ },
+  { id: "cat_side", g: "category", name: "Sides", card: "mashed_potatoes", category: "Side", re: /\bSides?\b/ },
+  { id: "cat_sauce", g: "category", name: "Sauces & dips", card: "vinaigrette", category: "Sauce & Dip", re: /Sauce & Dip/ },
+  { id: "station_perks", g: "board", name: "Station perks & levels", stationAll: true, re: /\bthis station gain|output on this station/ },
+  { id: "card_draws", g: "board", name: "Card picks & merchant", re: /card picks|merchant|appear .* as often/ },
+  { id: "other_stations", g: "board", name: "Other stations", re: /next Station|another Station|each Station|on either side/ },
+  { id: "hour", g: "board", name: "Hour start / end", re: /\bHour\b/ },
+  { id: "day", g: "board", name: "Day start / end", re: /\bDay\b/ },
+  { id: "chance", g: "board", name: "Chance & random", re: /chance|random/ },
+  { id: "hand", g: "board", name: "Hand & deck", re: /\bhand\b/ },
+  { id: "chefs", g: "board", name: "Chef specialities", chefAll: true, re: /$^/ },
+  { id: "technique", g: "board", name: "Other techniques", re: /Technique/ },
+];
+/* Hand mapping of each technique: what it relies on (needs) and what it affects (gives). main = its headline mechanic. */
+const MAP = {
+  basting:          { main: "garnish", needs: ["garnish", "ingredient"], gives: ["garnish"] },
+  batch_prep:       { main: "ingredient", needs: ["ingredient"], gives: ["mult_add"] },
+  brine:            { main: "Seafood", needs: ["Seafood", "hour"], gives: ["garnish"] },
+  copycat_recipe:   { main: "technique", needs: ["technique"], gives: ["technique"] },
+  crudo:            { main: "kitchenware", needs: ["kitchenware"], gives: ["flavour"], note: "Needs the station to have no Kitchenware." },
+  daily_special:    { main: "meal", needs: ["meal", "hour"], gives: ["gold"] },
+  deglaze:          { main: "destroy", needs: ["destroy"], gives: ["mult_add"] },
+  double_fry:       { main: "retrigger", needs: ["retrigger"], gives: ["flavour"] },
+  double_shot:      { main: "beverage", needs: ["beverage", "chance"], gives: ["retrigger"] },
+  dry_rub:          { main: "Seasoning", needs: ["Seasoning", "trigger", "other_stations"], gives: ["mult_add"] },
+  flambe:           { main: "kitchenware", needs: ["kitchenware", "trigger"], gives: ["trigger", "other_stations"] },
+  foraging:         { main: "condiments", needs: ["day"], gives: ["condiments", "chance"] },
+  fusion:           { main: "variety", needs: ["variety"], gives: ["flavour"] },
+  glazing:          { main: "garnish", needs: ["kitchenware", "garnish", "chance"], gives: ["garnish"] },
+  gold_leaf:        { main: "gold", needs: ["gold"], gives: ["flavour"], note: "Scales with Gold held." },
+  haute_cuisine:    { main: "stars", needs: ["stars"], gives: ["mult_add"] },
+  layering:         { main: "garnish", needs: ["garnish"], gives: ["garnish"] },
+  market_run:       { main: "gold", needs: ["gold"], gives: ["mult_add"], note: "Scales with Gold spent." },
+  mise_en_place:    { main: "recipe", needs: ["dish", "recipe"], gives: ["recipe"] },
+  preheat:          { main: "kitchenware", needs: ["kitchenware"], gives: ["retrigger"] },
+  preserving:       { main: "garnish", needs: ["garnish", "hour"], gives: ["garnish"] },
+  prix_fixe:        { main: "gold", needs: ["day"], gives: ["gold"] },
+  rolling_boil:     { main: "trigger", needs: ["trigger", "hour"], gives: ["mult_x"] },
+  second_helping:   { main: "meal", needs: ["meal", "hour"], gives: ["retrigger"] },
+  secret_sauce:     { main: "condiments", needs: ["condiments"], gives: ["mult_add"] },
+  slow_cooking:     { main: "gold", needs: ["gold", "day"], gives: ["gold"], note: "Scales with Gold held." },
+  sourdough_starter:{ main: "meal", needs: ["meal"], gives: ["mult_add"] },
+  truffle_shavings: { main: "gold", needs: ["gold"], gives: ["mult_x"], note: "Scales with Gold held." },
+  zero_waste:       { main: "destroy", needs: ["destroy"], gives: ["gold"] },
+};
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const M = Object.fromEntries(MECH.map((m) => [m.id, m]));
+const G = Object.fromEntries(GROUPS.map((g) => [g.id, g]));
+const CARD = Object.fromEntries(DATA.cards.map((c) => [c.id, c]));
+const mcol = (m) => m.g === "kind" ? `var(--c-${m.id})` : G[m.g].color;
+const micon = (m) => m.stat ? STAT[m.stat] : m.card && CARD[m.card] ? ICONS[CARD[m.card].icon] : m.icon === "condiments" ? ICONS[(DATA.condiments.find((c) => c.id === "hot_sauce") || {}).icon] : "";
+const TECH = DATA.techniques.map((t) => ({ ...t, map: MAP[t.id] || { main: null, needs: [], gives: [], unmapped: true } }));
+const T = Object.fromEntries(TECH.map((t) => [t.id, t]));
+
+/* Game hooks: cards, stations, condiments and chefs that touch each mechanic. */
+const ITEMS = [
+  ...DATA.cards.map((c) => ({ id: c.id, name: c.name, icon: c.icon, what: c.type, text: c.description.plain, tags: c.tags, type: c.type, category: c.category, recipe: (c.recipe_cards || []).length || Object.keys(c.recipe || {}).length })),
+  ...DATA.stations.map((s) => ({ id: s.id, name: s.name, icon: s.icon, what: "Station", station: true,
+    text: [...(s.level_perks || []), ...(s.choices || []), ...(s.capstones || [])].map((p) => p.plain).join(". "),
+    // Kinds the setup asks for; older exports only have `needs` keyed by label.
+    needs: Array.isArray(s.setup) ? Object.fromEntries(s.setup.filter((x) => x.kind).map((x) => [x.kind, x.count])) : s.needs,
+    variety: Array.isArray(s.setup) ? s.setup.some((x) => x.distinct) : Object.keys(s.needs || {}).some((k) => /different/i.test(k)) })),
+  ...DATA.condiments.map((c) => ({ id: c.id, name: c.name, icon: c.icon, what: "Condiment", text: c.description.plain, condiment: true })),
+  ...DATA.chefs.map((c) => ({ id: c.id, name: c.name, icon: c.icon, what: "Chef", text: c.speciality.plain, chef: true })),
+];
+MECH.forEach((m) => {
+  m.hooks = ITEMS.filter((it) => (m.re && m.re.test(it.text)) || (m.tag && (it.tags || []).includes(m.tag)) || (m.type && it.type === m.type)
+    || (m.need && it.needs && it.needs[m.need]) || (m.recipe && it.recipe) || (m.id === "condiments" && it.condiment)
+    || (m.category && it.category === m.category) || (m.variety && it.variety)
+    || (m.stationAll && it.station) || (m.chefAll && it.chef));
+  m.needT = TECH.filter((t) => t.map.needs.includes(m.id)).map((t) => t.id);
+  m.giveT = TECH.filter((t) => t.map.gives.includes(m.id)).map((t) => t.id);
+  m.mainT = TECH.filter((t) => t.map.main === m.id).map((t) => t.id);
+  m.allT = [...new Set([...m.needT, ...m.giveT])];
+  const n = m.allT.length;
+  m.status = n === 0 ? "gap" : n === 1 ? "thin" : n >= 5 ? "crowd" : "ok";
+});
+const STATUS = { gap: ["No techniques", "p-gap"], thin: ["Only 1", "p-thin"], ok: ["Covered", "p-ok"], crowd: ["Crowded", "p-crowd"] };
+const RAR = ["Common", "Uncommon", "Rare"];
+
+document.getElementById("meta").textContent =
+  `${TECH.length} techniques · ${MECH.length} mechanics · ${MECH.filter((m) => m.status === "gap").length} with no technique · catalog v${DATA.version || "?"}`;
+
+/* ---------- shared UI ---------- */
+const lead = (m) => micon(m) ? `<img src="${micon(m)}" alt="">` : `<span class="sw" style="background:${mcol(m)}"></span>`;
+const mchip = (id, extra = "") => { const m = M[id]; return `<button class="chip" data-go="m:${id}">${lead(m)}${esc(m.name)}${extra ? ` <span class="x">${extra}</span>` : ""}</button>`; };
+const tchip = (id) => `<button class="chip" data-go="t:${id}"><span class="sw" style="background:var(--r-${T[id].rarity})"></span>${esc(T[id].name)}</button>`;
+const hchip = (it) => `<span class="chip static">${it.icon && ICONS[it.icon] ? `<img src="${ICONS[it.icon]}" alt="">` : ""}${esc(it.name)} <span class="x">${it.what}</span></span>`;
+const list = (arr, f) => arr.length ? `<div class="chips">${arr.map(f).join("")}</div>` : `<div class="none">None</div>`;
+const sec = (t, b) => `<div class="sec"><h3>${t}</h3>${b}</div>`;
+const stat = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+const rich = (raw) => esc(raw).replace(/\{([a-z_]+)\}/g, (x, k) => `<span class="kw">${esc(k[0].toUpperCase() + k.slice(1))}</span>`);
+const gold = (n) => `<span class="pr">${STAT.gold ? `<img src="${STAT.gold}" alt="">` : ""}${n}</span>`;
+
+/* ---------- MAP ---------- */
+const L = {};
+function layout() {
+  const rowH = 26, grpH = 30, padT = 56;
+  let y = padT;
+  GROUPS.forEach((g) => { L["g:" + g.id] = y + 14; y += grpH - 8;
+    MECH.filter((m) => m.g === g.id).forEach((m) => { L["m:" + m.id] = y + rowH / 2; y += rowH; }); y += 8; });
+  const H = y + 12, tStep = (H - padT - 12) / TECH.length;
+  const order = [...TECH].sort((a, b) => avgY(a) - avgY(b));
+  order.forEach((t, i) => L["t:" + t.id] = padT + tStep * (i + .5));
+  Object.assign(L, { H, W: 1060, lx: 16, lw: 230, tx: 395, tw: 270, rx: 814, rw: 230, tStep });
+  function avgY(t) { const ys = [...t.map.needs, ...t.map.gives].map((id) => L["m:" + id]).filter(Boolean); return ys.length ? ys.reduce((a, b) => a + b) / ys.length : H; }
+}
+const curve = (x1, y1, x2, y2) => { const mx = (x1 + x2) / 2; return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`; };
+function mapSVG() {
+  layout();
+  const { W, H, lx, lw, tx, tw, rx, rw } = L;
+  let edges = "", nodes = "";
+  TECH.forEach((t) => {
+    t.map.needs.forEach((id) => edges += `<path class="edge need" data-t="${t.id}" data-m="${id}" stroke="${mcol(M[id])}" d="${curve(lx + lw, L["m:" + id], tx, L["t:" + t.id])}"/>`);
+    t.map.gives.forEach((id) => edges += `<path class="edge give" data-t="${t.id}" data-m="${id}" stroke="${mcol(M[id])}" d="${curve(tx + tw, L["t:" + t.id], rx, L["m:" + id])}"/>`);
+  });
+  [["need", lx, lw, "needT"], ["give", rx, rw, "giveT"]].forEach(([side, x, w, key]) => {
+    GROUPS.forEach((g) => nodes += `<text class="grph" x="${x + 4}" y="${L["g:" + g.id]}">${g.label}</text>`);
+    MECH.forEach((m) => { const y = L["m:" + m.id], n = m[key].length, gap = m.status === "gap", ic = micon(m);
+      nodes += `<g class="node" data-id="m:${m.id}" tabindex="0" role="button" aria-label="${esc(m.name)}">
+        <rect class="box${gap ? " gap" : ""}" x="${x}" y="${y - 11}" width="${w}" height="22" rx="6"/>
+        ${ic ? `<image href="${ic}" x="${x + 5}" y="${y - 8}" width="16" height="16"/>` : `<circle cx="${x + 13}" cy="${y}" r="5" fill="${mcol(m)}"/>`}
+        <text class="lbl${gap ? " gap" : ""}" x="${x + 27}" y="${y + 4.5}">${esc(m.name)}</text>
+        <text class="cnt" x="${x + w - 8}" y="${y + 4}" text-anchor="end">${gap ? "gap" : n || "–"}</text></g>`; });
+  });
+  TECH.forEach((t) => { const y = L["t:" + t.id], h = Math.min(26, L.tStep - 4);
+    nodes += `<g class="node" data-id="t:${t.id}" tabindex="0" role="button" aria-label="${esc(t.name)}">
+      <rect class="box" x="${tx}" y="${y - h / 2}" width="${tw}" height="${h}" rx="6"/>
+      <rect x="${tx}" y="${y - h / 2}" width="6" height="${h}" rx="3" fill="var(--r-${t.rarity})"/>
+      <text class="tname" x="${tx + 14}" y="${y + 4.5}">${esc(t.name)}</text>
+      <text class="cnt" x="${tx + tw - 8}" y="${y + 4}" text-anchor="end">${t.price}g</text></g>`; });
+  const heads = `<text class="colh" x="${lx}" y="22">Relies on</text><text class="colh" x="${tx}" y="22">Techniques</text><text class="colh" x="${rx}" y="22">Affects</text>`;
+  return `<svg class="map" id="map" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${heads}<g>${edges}</g><g>${nodes}</g></svg>`;
+}
+let pinned = null;
+function highlight(id) {
+  const svg = document.getElementById("map"); if (!svg) return;
+  svg.classList.toggle("sel", !!id);
+  const on = new Set(); let edgeOn = () => false;
+  if (id && id.startsWith("t:")) { const t = T[id.slice(2)]; on.add(id); [...t.map.needs, ...t.map.gives].forEach((m) => on.add("m:" + m)); edgeOn = (p) => p.dataset.t === t.id; }
+  if (id && id.startsWith("m:")) { const m = M[id.slice(2)]; on.add(id); m.allT.forEach((t) => on.add("t:" + t)); edgeOn = (p) => p.dataset.m === m.id; }
+  svg.querySelectorAll(".node").forEach((g) => { g.classList.toggle("on", on.has(g.dataset.id)); g.classList.toggle("me", g.dataset.id === id); });
+  svg.querySelectorAll(".edge").forEach((p) => p.classList.toggle("on", !!id && edgeOn(p)));
+  document.getElementById("rail").innerHTML = id ? detail(id) : intro();
+}
+function intro() {
+  const gaps = MECH.filter((m) => m.status === "gap").sort((a, b) => b.hooks.length - a.hooks.length);
+  return `<div class="sec"><h2>Pick anything</h2><p class="hint">Hover to preview, click to pin, Esc to clear. Left column is what a technique needs to work, right column is what it changes. Mechanics with a dashed outline have no technique yet.</p></div>
+    ${sec(`No technique yet (${gaps.length})`, list(gaps.map((m) => m.id), (id) => mchip(id, M[id].hooks.length + " hooks")))}
+    <p class="hint">Hooks = cards, stations, condiments and chefs in the game that already use that mechanic.</p>`;
+}
+function detail(id) {
+  if (id.startsWith("t:")) { const t = T[id.slice(2)], m = t.map;
+    return `<div class="rhead"><span class="dotbig" style="background:var(--r-${t.rarity})"></span><div><div class="kind">Technique · <span style="color:var(--r-${t.rarity})">${t.rarity}</span> · ${t.price} Gold</div><div class="nm">${esc(t.name)}</div></div></div>
+      <div class="effect">${rich(t.description.raw)}</div>${m.note ? `<p class="hint">${esc(m.note)}</p>` : ""}
+      ${m.unmapped ? `<p class="hint">This technique is new and has no mapping yet.</p>` : ""}
+      ${sec("Main mechanic", m.main ? list([m.main], (x) => mchip(x)) : `<div class="none">Not set</div>`)}
+      ${sec("Relies on", list(m.needs, (x) => mchip(x)))}${sec("Affects", list(m.gives, (x) => mchip(x)))}
+      ${sec("Shares a mechanic with", list(TECH.filter((o) => o.id !== t.id && [...o.map.needs, ...o.map.gives].some((x) => [...m.needs, ...m.gives].includes(x) && !["hour", "day"].includes(x))).map((o) => o.id), tchip))}`; }
+  const m = M[id.slice(2)], [sl, sc] = STATUS[m.status];
+  return `<div class="rhead">${micon(m) ? `<img src="${micon(m)}" alt="">` : `<span class="dotbig" style="background:${mcol(m)}"></span>`}<div><div class="kind">${G[m.g].label}</div><div class="nm">${esc(m.name)}</div></div></div>
+    <div><span class="pill ${sc}">${sl}</span></div>
+    <div class="stats">${stat(m.needT.length, "rely on it")}${stat(m.giveT.length, "affect it")}${stat(m.hooks.length, "game hooks")}</div>
+    ${sec("Techniques that rely on it", list(m.needT, tchip))}${sec("Techniques that affect it", list(m.giveT, tchip))}
+    ${sec("Already in the game", list(m.hooks, hchip))}`;
+}
+function viewMap() {
+  const k = (dash, l) => `<span class="key"><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--muted)" stroke-width="2" ${dash ? `stroke-dasharray="5 3"` : ""}/></svg>${l}</span>`;
+  const rk = RAR.map((r) => `<span class="key"><span class="mk give" style="color:var(--r-${r});width:10px;height:10px"></span>${r}</span>`).join("");
+  return `<p class="lede">Every technique wired to the mechanics it needs (left) and the mechanics it changes (right). All ${MECH.length} mechanics are listed, including the ones no technique touches yet.</p>
+    <div class="board"><div class="mapcard"><div class="maptools">${k(true, "Relies on")}${k(false, "Affects")}${rk}<span class="spacer"></span><button class="btn" id="clear">Clear selection</button></div>
+    <div class="scroller">${mapSVG()}</div></div><aside class="rail" id="rail" aria-live="polite"></aside></div>`;
+}
+function wireMap() {
+  const svg = document.getElementById("map");
+  svg.addEventListener("mouseover", (e) => { const g = e.target.closest(".node"); if (g && !pinned) highlight(g.dataset.id); });
+  svg.addEventListener("mouseleave", () => { if (!pinned) highlight(null); });
+  svg.addEventListener("click", (e) => { const g = e.target.closest(".node"); pinned = g ? (pinned === g.dataset.id ? null : g.dataset.id) : null; highlight(pinned); });
+  svg.addEventListener("keydown", (e) => { const g = e.target.closest(".node"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pinned = g.dataset.id; highlight(pinned); } });
+  document.getElementById("clear").onclick = () => { pinned = null; highlight(null); };
+  highlight(pinned);
+}
+
+/* ---------- COVERAGE ---------- */
+const cov = { key: "group", dir: 1 };
+function insights() {
+  const out = [];
+  const gaps = MECH.filter((m) => m.status === "gap").sort((a, b) => b.hooks.length - a.hooks.length);
+  const bigGaps = gaps.filter((m) => m.hooks.length >= 3);
+  if (bigGaps.length) out.push(["p-gap", "Biggest gaps", `These mechanics show up across the game but no technique builds on them. Sorted by how many cards, stations and condiments already use them.`, bigGaps.map((m) => mchip(m.id, m.hooks.length + " hooks"))]);
+  const kinds = MECH.filter((m) => m.g === "kind");
+  const kgap = kinds.filter((m) => m.status === "gap");
+  out.push(["p-gap", "Ingredient kinds", `${kinds.length - kgap.length} of ${kinds.length} ingredient kinds have a technique (${kinds.filter((m) => m.allT.length).map((m) => `${m.name} via ${m.allT.map((t) => T[t].name).join(", ")}`).join("; ")}). The other ${kgap.length} have none.`, kgap.map((m) => mchip(m.id))]);
+  const oneWayGive = MECH.filter((m) => m.giveT.length && !m.needT.length), oneWayNeed = MECH.filter((m) => m.needT.length && !m.giveT.length && m.g === "keyword");
+  if (oneWayGive.length) out.push(["p-thin", "Produced, never used", `Techniques create these but no technique pays off from having more of them.`, oneWayGive.map((m) => mchip(m.id, `${m.giveT.length} give`))]);
+  if (oneWayNeed.length) out.push(["p-thin", "Used, never produced", `Techniques depend on these but no technique helps you get more of them.`, oneWayNeed.map((m) => mchip(m.id, `${m.needT.length} need`))]);
+  const crowd = MECH.filter((m) => m.status === "crowd");
+  if (crowd.length) out.push(["p-crowd", "Most crowded", `Five or more techniques touch these. New techniques here add less variety.`, crowd.map((m) => mchip(m.id, m.allT.length + " tech"))]);
+  const mains = {}; TECH.forEach((t) => t.map.main && (mains[t.map.main] = (mains[t.map.main] || 0) + 1));
+  const topMain = Object.entries(mains).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  out.push(["p-ok", "Main focus", `The headline mechanic of each technique, counted. ${topMain.map(([id, n]) => `${M[id].name} ${n}`).join(", ")} lead.`, topMain.map(([id, n]) => mchip(id, n + " main"))]);
+  const outputs = ["flavour", "mult_add", "mult_x", "gold"].map((id) => [id, M[id].giveT.length]);
+  out.push(["p-ok", "What techniques pay out", outputs.map(([id, n]) => `${M[id].name} ${n}`).join(" · ") + `. ${M.mult_x.giveT.length <= 2 ? "xMult is rare, which keeps it special but leaves little choice." : ""}`, outputs.map(([id, n]) => mchip(id, n + " give"))]);
+  return out;
+}
+function viewCoverage() {
+  const maxT = Math.max(...MECH.map((m) => m.allT.length), 1);
+  const get = { group: (m) => GROUPS.findIndex((g) => g.id === m.g) * 100 + MECH.indexOf(m), name: (m) => m.name, need: (m) => m.needT.length, give: (m) => m.giveT.length, total: (m) => m.allT.length, hooks: (m) => m.hooks.length, status: (m) => ["gap", "thin", "ok", "crowd"].indexOf(m.status) };
+  const rows = [...MECH].sort((a, b) => { const x = get[cov.key](a), y = get[cov.key](b); return (typeof x === "number" ? x - y : String(x).localeCompare(y)) * cov.dir || MECH.indexOf(a) - MECH.indexOf(b); });
+  const sb = (k, l) => `<button data-cov="${k}"${cov.key === k ? ` data-dir="${cov.dir > 0 ? "↑" : "↓"}"` : ""}>${l}</button>`;
+  let last = null;
+  const body = rows.map((m) => { const g = cov.key === "group" && m.g !== last ? `<tr class="grp"><td colspan="8">${G[m.g].label}</td></tr>` : ""; last = m.g;
+    const rar = RAR.map((r) => [r, m.allT.filter((t) => T[t].rarity === r).length]);
+    return g + `<tr class="clickable" data-go="m:${m.id}"><td><span class="cname">${lead(m)}${esc(m.name)}</span></td>
+      <td class="n">${m.needT.length}</td><td class="n">${m.giveT.length}</td><td class="n">${m.allT.length}</td>
+      <td><div class="bars" title="${rar.map(([r, n]) => `${r} ${n}`).join(", ")}">${rar.map(([r, n]) => `<i style="width:${n / maxT * 100}%;background:var(--r-${r})"></i>`).join("")}</div></td>
+      <td class="n">${m.hooks.length}</td><td><span class="pill ${STATUS[m.status][1]}">${STATUS[m.status][0]}</span></td>
+      <td style="font-size:13px;color:var(--muted)">${m.allT.map((t) => esc(T[t].name)).join(", ") || "—"}</td></tr>`; }).join("");
+  return `<p class="lede">How many techniques rely on or affect each mechanic, next to how often the rest of the game already uses it. A mechanic with lots of game hooks and no techniques is a direction to grow.</p>
+    <div class="panel"><h2>What stands out</h2><div class="insights">${insights().map(([c, l, t, chips]) => `<div class="ins"><div><span class="pill ${c}">${l}</span></div><div>${t}</div><div class="chips">${chips.join("")}</div></div>`).join("")}</div></div>
+    <div class="panel"><h2>Every mechanic</h2><div class="legend">${RAR.map((r) => `<span class="key"><span class="mk give" style="color:var(--r-${r});width:10px;height:10px"></span>${r}</span>`).join("")}<span>Bar shows techniques touching it, split by rarity.</span></div>
+    <div class="tblwrap"><table><thead><tr><th>${sb("name", "Mechanic")}</th><th class="n">${sb("need", "Rely on")}</th><th class="n">${sb("give", "Affect")}</th><th class="n">${sb("total", "Techniques")}</th><th>By rarity</th><th class="n">${sb("hooks", "Game hooks")}</th><th>${sb("status", "Status")}</th><th>Which</th></tr></thead>
+    <tbody>${body}</tbody></table></div><p class="hint">Click a header to sort. <button class="btn" data-cov="group">Back to grouped order</button></p></div>`;
+}
+
+/* ---------- MATRIX ---------- */
+const mx = { sort: "" };
+function viewMatrix() {
+  let rows = [...TECH];
+  if (mx.sort) rows.sort((a, b) => (+[...b.map.needs, ...b.map.gives].includes(mx.sort)) - (+[...a.map.needs, ...a.map.gives].includes(mx.sort)) || a.name.localeCompare(b.name));
+  else rows.sort((a, b) => RAR.indexOf(a.rarity) - RAR.indexOf(b.rarity) || a.name.localeCompare(b.name));
+  const cell = (t, m) => { const n = t.map.needs.includes(m.id), g = t.map.gives.includes(m.id), gap = m.status === "gap" ? " gapcol" : "";
+    if (!n && !g) return `<td class="c${gap}"></td>`;
+    return `<td class="c${gap}" title="${esc(t.name)} ${n && g ? "relies on and affects" : n ? "relies on" : "affects"} ${esc(m.name)}"><span class="mk ${n && g ? "both" : n ? "need" : "give"}" style="color:${mcol(m)}"></span></td>`; };
+  const head = MECH.map((m) => `<th class="mh${m.status === "gap" ? " gapcol" : ""}"><button data-mx="${m.id}"${mx.sort === m.id ? ` data-dir="↓"` : ""}>${esc(m.name)}</button></th>`).join("");
+  const body = rows.map((t) => `<tr class="clickable" data-go="t:${t.id}"><td><span class="cname"><span class="sw" style="background:var(--r-${t.rarity})"></span>${esc(t.name)}</span></td>${MECH.map((m) => cell(t, m)).join("")}</tr>`).join("");
+  return `<p class="lede">Techniques down the side, every mechanic across the top, grouped as on the map. Red-tinted columns have no technique. Click a column to bring its techniques to the top, click a row to open it on the map.</p>
+    <div class="panel"><div class="legend"><span class="key"><span class="mk need" style="color:var(--muted)"></span>Relies on</span><span class="key"><span class="mk give" style="color:var(--muted)"></span>Affects</span><span class="key"><span class="mk both" style="color:var(--muted)"></span>Both</span>
+      ${GROUPS.map((g) => `<span class="key"><span class="mk give" style="color:${g.color || "var(--c-Fruit)"};width:10px;height:10px"></span>${g.label}</span>`).join("")}</div>
+    <div class="tblwrap"><table class="matrix"><thead><tr><th><button data-mx="">Technique</button></th>${head}</tr></thead><tbody>${body}</tbody>
+    <tfoot><tr><td style="text-align:left">Techniques</td>${MECH.map((m) => `<td>${m.allT.length || ""}</td>`).join("")}</tr></tfoot></table></div></div>`;
+}
+
+/* ---------- LIST ---------- */
+const lf = { r: "" };
+function viewList() {
+  const items = TECH.filter((t) => !lf.r || t.rarity === lf.r).sort((a, b) => a.name.localeCompare(b.name));
+  return `<p class="lede">Every technique with its effect and how it is mapped. Click a card to open it on the map.</p>
+    <div class="filters"><button class="fchip" data-lf="" aria-pressed="${!lf.r}">All ${TECH.length}</button>${RAR.map((r) => `<button class="fchip" data-lf="${r}" aria-pressed="${lf.r === r}">${r} ${TECH.filter((t) => t.rarity === r).length}</button>`).join("")}</div>
+    <div class="tlist">${items.map((t) => `<div class="tcard" role="button" tabindex="0" data-go="t:${t.id}">
+      <div class="top2"><span class="tn">${esc(t.name)}</span>${gold(t.price)}</div>
+      <div class="rar" style="color:var(--r-${t.rarity})">${t.rarity}${t.map.main ? ` <span style="color:var(--muted);font-weight:400">· main: ${esc(M[t.map.main].name)}</span>` : ""}</div>
+      <div class="effect">${rich(t.description.raw)}</div>
+      <div class="row2"><b>Relies on</b>${t.map.needs.map((x) => `<span class="chip static">${lead(M[x])}${esc(M[x].name)}</span>`).join("") || "—"}</div>
+      <div class="row2"><b>Affects</b>${t.map.gives.map((x) => `<span class="chip static">${lead(M[x])}${esc(M[x].name)}</span>`).join("") || "—"}</div></div>`).join("")}</div>`;
+}
+
+/* ---------- routing ---------- */
+const VIEWS = { map: viewMap, coverage: viewCoverage, matrix: viewMatrix, list: viewList };
+const current = () => { const h = location.hash.slice(1); return VIEWS[h] ? h : "map"; };
+function render() {
+  const t = current();
+  document.querySelectorAll(".tab").forEach((a) => a.setAttribute("aria-selected", a.dataset.tab === t));
+  document.getElementById("view").innerHTML = VIEWS[t]();
+  if (t === "map") wireMap();
+}
+function go(id) {
+  pinned = id;
+  if (current() !== "map") { location.hash = "map"; return; }
+  highlight(pinned);
+}
+const view = document.getElementById("view");
+view.addEventListener("click", (e) => {
+  const g = e.target.closest("[data-go]"); if (g) return go(g.dataset.go);
+  const c = e.target.closest("[data-cov]"); if (c) { const k = c.dataset.cov; if (cov.key === k && k !== "group") cov.dir *= -1; else { cov.key = k; cov.dir = ["name", "group"].includes(k) ? 1 : -1; } return render(); }
+  const m = e.target.closest("[data-mx]"); if (m) { mx.sort = m.dataset.mx; return render(); }
+  const f = e.target.closest("[data-lf]"); if (f) { lf.r = f.dataset.lf; return render(); }
+});
+view.addEventListener("keydown", (e) => { const g = e.target.closest(".tcard"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go(g.dataset.go); } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && current() === "map") { pinned = null; highlight(null); } });
+window.addEventListener("hashchange", render);
+render();
+</script>

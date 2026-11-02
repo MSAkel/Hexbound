@@ -1,0 +1,681 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: companion to the catalog. Sticky header with tabs; a wide wiring board (meals / pantry / stations) with a detail rail, plus balance and matrix views. */
+@font-face { font-family: "Gimbot"; src: url(data:font/otf;base64,/*__FONT__*/) format("opentype"); font-display: swap; unicode-range: U+0020-007E; }
+:root {
+  --bg: #eef2ef; --surface: #ffffff; --surface-2: #f6f8f6; --fg: #17211c; --muted: #5a6a62; --rule: #d6ded9;
+  --accent: #2e855c; --accent-bg: #e3f1ea;
+  --hot: #c2412b; --hot-bg: #fbe4df; --ok: #2e855c; --ok-bg: #e3f1ea; --cool: #3e6b8a; --cool-bg: #e2edf5;
+  --mention: #6b5a8a;
+  --c-Vegetable: #3f9e55; --c-Fruit: #c99a0c; --c-Meat: #d0432a; --c-Seasoning: #e07a22;
+  --c-Sweet: #d0609f; --c-Dairy: #7f878f; --c-Seafood: #2f8fcc; --c-Kitchenware: #7449e6;
+  --display: "Gimbot", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121815; --surface: #1a221e; --surface-2: #202a25; --fg: #e6ede9; --muted: #98a8a0; --rule: #2e3a34;
+  --accent: #6fcf9c; --accent-bg: #1f3a2d;
+  --hot: #f08a73; --hot-bg: #3d1f19; --ok: #6fcf9c; --ok-bg: #1f3a2d; --cool: #8bbbe0; --cool-bg: #1c2e3c;
+  --mention: #b9a6e0;
+  --c-Vegetable: #6fcf86; --c-Fruit: #f2c94c; --c-Meat: #f2765a; --c-Seasoning: #f5a15a;
+  --c-Sweet: #f29ccd; --c-Dairy: #b8bec4; --c-Seafood: #79c3f2; --c-Kitchenware: #a98cff;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #121815; --surface: #1a221e; --surface-2: #202a25; --fg: #e6ede9; --muted: #98a8a0; --rule: #2e3a34;
+  --accent: #6fcf9c; --accent-bg: #1f3a2d;
+  --hot: #f08a73; --hot-bg: #3d1f19; --ok: #6fcf9c; --ok-bg: #1f3a2d; --cool: #8bbbe0; --cool-bg: #1c2e3c;
+  --mention: #b9a6e0;
+  --c-Vegetable: #6fcf86; --c-Fruit: #f2c94c; --c-Meat: #f2765a; --c-Seasoning: #f5a15a;
+  --c-Sweet: #f29ccd; --c-Dairy: #b8bec4; --c-Seafood: #79c3f2; --c-Kitchenware: #a98cff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1480px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.top .wrap { display: flex; flex-direction: column; gap: 10px; padding-block: 16px 0; }
+.titlerow { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font: 400 clamp(24px, 4vw, 32px)/1.05 var(--display); letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.meta { font: 500 12px/1.4 var(--mono); color: var(--muted); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; font: 700 14px var(--body); color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px 10px; cursor: pointer; text-decoration: none; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main .wrap { padding-block: 16px 48px; display: flex; flex-direction: column; gap: 16px; }
+.lede { color: var(--muted); max-width: 70ch; margin: 0; font-size: 14px; }
+h2 { font: 400 22px/1.1 var(--display); margin: 0; }
+h3 { font: 700 11px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+
+/* map */
+.board { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.mapcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; min-width: 0; }
+.maptools { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.key svg { flex: none; }
+.maptools .spacer { flex: 1; }
+.btn { font: 700 13px var(--body); color: var(--fg); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.scroller { overflow-x: auto; }
+svg.map { display: block; }
+svg.map text { fill: var(--fg); font-family: var(--body); }
+.tier { font: 400 15px var(--display); fill: var(--muted) !important; }
+.edge { pointer-events: none; fill: none; stroke-width: 1.4; opacity: .32; transition: opacity .15s; }
+.edge.any { stroke-dasharray: 4 3; }
+.node { cursor: pointer; transition: opacity .15s; }
+.node:focus { outline: none; }
+.node:focus-visible .hit { stroke: var(--accent); stroke-width: 2; }
+.hit { fill: transparent; }
+.catbox { fill: var(--surface-2); stroke-width: 1.5; }
+.cardslot { fill: var(--surface); stroke: var(--rule); }
+.stbox { fill: var(--surface-2); stroke-width: 1.5; }
+.mlabel { font-size: 10.5px; text-anchor: middle; }
+.cattitle { font-weight: 700; font-size: 13px; }
+.catcount { font: 500 11px var(--mono); fill: var(--muted) !important; }
+.endcap { stroke: none; }
+svg.map.sel .edge { opacity: .05; }
+svg.map.sel .edge.on { opacity: .95; stroke-width: 2.2; }
+svg.map.sel .edge.half { opacity: .45; }
+svg.map.sel .node { opacity: .22; }
+svg.map.sel .node.on, svg.map.sel .node.half { opacity: 1; }
+svg.map.sel .node.half { opacity: .7; }
+svg.map.sel .node.me .hit { stroke: var(--fg); stroke-width: 2; }
+.mention { pointer-events: none; fill: none; stroke: var(--mention); stroke-width: 1.8; stroke-dasharray: 1.5 4; stroke-linecap: round; }
+.catbox-node.on .catbox, .catbox-node.half .catbox { stroke-width: 2.5; }
+
+.rail { position: sticky; top: 130px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; max-height: calc(100vh - 150px); overflow: auto; }
+.rail .head { display: flex; gap: 12px; align-items: center; }
+.rail .head img, .rail .head .dotbig { width: 48px; height: 48px; object-fit: contain; flex: none; }
+.dotbig { border-radius: 10px; }
+.rail .kind { font: 700 11px var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.rail .nm { font: 400 22px/1.1 var(--display); }
+.effect { font-size: 14px; color: var(--fg); background: var(--surface-2); border-radius: 6px; padding: 8px 10px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface-2); border-radius: 6px; padding: 6px 8px; }
+.stat b { display: block; font: 500 20px var(--mono); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.sec { display: flex; flex-direction: column; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; font: 13px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 2px 9px 2px 4px; cursor: pointer; }
+.chip.noimg { padding-left: 9px; }
+.chip img { width: 18px; height: 18px; object-fit: contain; }
+.chip .x { font: 500 11px var(--mono); color: var(--muted); }
+.chip .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.none { font-size: 13px; color: var(--muted); }
+.hint { font-size: 13px; color: var(--muted); }
+
+/* tables */
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.tblwrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+th { font: 700 11px var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; background: var(--surface-2); }
+th button { all: unset; cursor: pointer; }
+th button:focus-visible { outline: 2px solid var(--accent); }
+th button[data-dir]::after { content: " " attr(data-dir); font-family: var(--mono); }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: var(--surface-2); }
+.cname { display: flex; align-items: center; gap: 8px; font-weight: 700; white-space: nowrap; }
+.cname img { width: 26px; height: 26px; object-fit: contain; }
+.cname .sw { width: 12px; height: 12px; border-radius: 50%; }
+.bar { position: relative; height: 10px; min-width: 120px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; border-radius: 5px; }
+.bar .avg { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--fg); opacity: .5; }
+.pill { font: 700 11px var(--body); letter-spacing: 0.04em; border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+.p-hot { color: var(--hot); background: var(--hot-bg); }
+.p-ok { color: var(--ok); background: var(--ok-bg); }
+.p-cool { color: var(--cool); background: var(--cool-bg); }
+.p-dim { color: var(--muted); background: var(--surface-2); }
+.insights { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+.ins { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; background: var(--surface); }
+.ins .lbl { display: flex; gap: 8px; align-items: center; }
+.filters { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.fchip { font: 13px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.fchip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+/* matrix */
+.matrix td.cell { text-align: center; min-width: 74px; padding: 4px; }
+.matrix .cellin { display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px; min-height: 26px; padding: 2px 6px; border-radius: 6px; }
+.matrix .cellin img { width: 20px; height: 20px; object-fit: contain; }
+.matrix .anyn { font: 500 12px var(--mono); }
+.matrix th.colh { text-align: center; }
+.matrix tr.sep td { background: var(--surface-2); font: 700 11px var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.matrix tfoot td { font-family: var(--mono); font-weight: 500; text-align: center; background: var(--surface-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); align-items: center; }
+
+@media (max-width: 1100px) {
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: static; max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="titlerow">
+      <h1>Flavour Pass __TITLE__</h1>
+      <div class="meta" id="meta"></div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <a class="tab" role="tab" href="#map" data-tab="map">Map</a>
+      <a class="tab" role="tab" href="#balance" data-tab="balance">Balance</a>
+      <a class="tab" role="tab" href="#matrix" data-tab="matrix">Matrix</a>
+    </nav>
+  </div>
+</header>
+<main><div class="wrap" id="view"></div></main>
+
+<script>
+// MODE: "meals" (Meal Map), "stations" (Station Map) or "all" (Dependency Map: meals and stations together).
+const MODE = "__MODE__";
+const SHOW_MEALS = MODE !== "stations", SHOW_STATIONS = MODE !== "meals", ALL = MODE === "all";
+const MEALMODE = SHOW_MEALS; // meal-centred metrics and wording
+const DATA = /*__DATA__*/null;
+const ICONS = /*__ICONS__*/null;
+
+const CATS = [
+  { id: "Vegetable", label: "Vegetables" }, { id: "Fruit", label: "Fruits" }, { id: "Meat", label: "Meats" },
+  { id: "Seasoning", label: "Seasonings" }, { id: "Sweet", label: "Sweets" }, { id: "Dairy", label: "Dairy" },
+  { id: "Seafood", label: "Seafood" }, { id: "Kitchenware", label: "Kitchenware" },
+];
+const CAT = Object.fromEntries(CATS.map((c) => [c.id, c]));
+const col = (cat) => `var(--c-${cat})`;
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ico = (n) => (n && n.icon && ICONS[n.icon]) || "";
+
+/* ---------- model ---------- */
+const N = {}; // id -> node
+const E = []; // edges
+const catOf = (c) => c.type === "Kitchenware" ? "Kitchenware" : c.type === "Ingredient" ? c.tags[0] : null;
+CATS.forEach((c) => N["cat:" + c.id] = { id: "cat:" + c.id, kind: "cat", cat: c.id, name: c.label, members: [] });
+DATA.cards.forEach((c) => {
+  const id = "card:" + c.id;
+  if (c.type === "Meal") { if (SHOW_MEALS) N[id] = { id, kind: "meal", name: c.name, icon: c.icon, raw: c, group: c.category || c.tags[0] || "Dish" }; }
+  else { const cat = catOf(c); if (!N["cat:" + cat]) return; N[id] = { id, kind: "card", name: c.name, icon: c.icon, raw: c, cat }; N["cat:" + cat].members.push(id); }
+});
+// A station's setup as slots: { kind, count, distinct } for a kind of card ("Ingredient" = any kind),
+// or { card, count } for one named card. Older exports only have `needs`, keyed by label.
+function stationSetup(s) {
+  if (Array.isArray(s.setup)) return s.setup;
+  return Object.entries(s.needs || {}).map(([k, count]) => {
+    if (CAT[k]) return { kind: k, count, distinct: false };
+    if (/kinds? of Ingredient|^Any Ingredient$/i.test(k)) return { kind: "Ingredient", count, distinct: /different/i.test(k) };
+    const card = DATA.cards.find((c) => c.name === k || c.id === k.toLowerCase().replace(/[^a-z0-9]+/g, "_"));
+    return card ? { card: card.id, count } : { label: k, count };
+  });
+}
+const kindWord = (kind, count) => kind === "Ingredient" ? (count > 1 ? "Ingredients" : "Ingredient") : count > 1 ? (CAT[kind] ? CAT[kind].label : kind + "s") : kind;
+const slotText = (sl) => sl.card ? `${N["card:" + sl.card] ? N["card:" + sl.card].name : sl.card}`
+  : sl.kind === "Ingredient" ? `${sl.count} ${sl.distinct ? "different kinds of Ingredient" : "any " + kindWord("Ingredient", sl.count)}`
+  : sl.kind ? `${sl.count} ${sl.distinct && sl.count > 1 ? "different " : ""}${kindWord(sl.kind, sl.count)}` : `${sl.count} ${sl.label}`;
+if (SHOW_STATIONS) DATA.stations.forEach((s) => { const setup = stationSetup(s);
+  N["st:" + s.id] = { id: "st:" + s.id, kind: "station", name: s.name, short: s.name.replace(/ Station$/, ""), icon: s.icon, raw: s, color: "#" + s.color,
+    setup, anyKinds: setup.find((x) => x.kind === "Ingredient") || null, setupText: s.setup_text || setup.map(slotText).join(" · ") }; });
+DATA.chefs.forEach((c) => N["chef:" + c.id] = { id: "chef:" + c.id, kind: "chef", name: c.name, icon: c.icon, raw: c });
+CATS.forEach((c) => N["cat:" + c.id].members.sort((a, b) => N[a].name.localeCompare(N[b].name)));
+
+const MEALS = Object.values(N).filter((n) => n.kind === "meal");
+const CARDS = Object.values(N).filter((n) => n.kind === "card");
+const STATIONS = Object.values(N).filter((n) => n.kind === "station");
+
+MEALS.forEach((m) => {
+  Object.entries(m.raw.recipe || {}).forEach(([cat, n]) => E.push({ a: m.id, b: "cat:" + cat, type: "any", n, cat }));
+  (m.raw.recipe_cards || []).forEach((cid) => { const t = N["card:" + cid]; if (t) E.push({ a: m.id, b: t.id, type: "named", n: 1, cat: t.cat }); });
+});
+STATIONS.forEach((s) => s.setup.forEach((sl) => {
+  if (sl.card) { const t = N["card:" + sl.card]; if (t) E.push({ a: s.id, b: t.id, type: "stnamed", n: sl.count || 1, cat: t.cat }); }
+  else if (CAT[sl.kind]) E.push({ a: s.id, b: "cat:" + sl.kind, type: "station", n: sl.count, cat: sl.kind, distinct: !!sl.distinct });
+}));
+
+// effect text mentions
+const CAT_WORDS = [["Vegetables?", "Vegetable"], ["Fruits?", "Fruit"], ["Meats?", "Meat"], ["Seasonings?", "Seasoning"], ["Seafood", "Seafood"],
+  ["Sweets?", "Sweet"], ["Dairy", "Dairy"], ["Kitchenware", "Kitchenware"], ["Beverages?", "Beverage"],
+  ["Desserts?", "meal:Dessert"], ["Sides?", "meal:Side"], ["Salads?", "meal:Salad"], ["Poultry", "meal:Poultry"], ["Sauce & Dip", "meal:Sauce & Dip"]];
+const NAMED = Object.values(N).filter((n) => (n.kind === "card" || n.kind === "meal") && n.name !== "Meat").sort((a, b) => b.name.length - a.name.length);
+function mentionsIn(text, selfId) {
+  let t = " " + text + " "; const out = new Set();
+  NAMED.forEach((n) => { const re = new RegExp("\\b" + n.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "g");
+    if (re.test(t)) { if (n.id !== selfId) out.add(n.id); t = t.replace(re, " "); } });
+  CAT_WORDS.forEach(([w, cat]) => { if (new RegExp("\\b" + w + "\\b").test(t)) {
+    if (cat === "Beverage") MEALS.filter((m) => m.group === "Beverage" && m.id !== selfId).forEach((m) => out.add(m.id));
+    else if (cat.startsWith("meal:")) MEALS.filter((m) => m.group === cat.slice(5) && m.id !== selfId).forEach((m) => out.add(m.id));
+    else out.add("cat:" + cat); } });
+  return [...out];
+}
+const textOf = (n) => n.kind === "station" ? [...(n.raw.level_perks || []), ...(n.raw.choices || []), ...(n.raw.capstones || [])].map((p) => p.plain).join(" ")
+  : n.kind === "chef" ? n.raw.speciality.plain : n.raw.description.plain;
+Object.values(N).filter((n) => n.kind !== "cat").forEach((n) => mentionsIn(textOf(n), n.id).forEach((t) => E.push({ a: n.id, b: t, type: "mention", n: 1 })));
+E.forEach((e, i) => e.i = i);
+const out = (id, type) => E.filter((e) => e.a === id && (!type || type.includes(e.type)));
+const inc = (id, type) => E.filter((e) => e.b === id && (!type || type.includes(e.type)));
+
+/* ---------- metrics ---------- */
+const catStats = CATS.map((c) => {
+  const cid = "cat:" + c.id, members = N[cid].members;
+  const anyE = inc(cid, ["any"]), namedE = E.filter((e) => e.type === "named" && N[e.b].cat === c.id), stE = inc(cid, ["station"]);
+  const meals = new Set([...anyE, ...namedE].map((e) => e.a));
+  const ment = new Set([...inc(cid, ["mention"]), ...E.filter((e) => e.type === "mention" && members.includes(e.b))].map((e) => e.a));
+  const anySlots = anyE.reduce((s, e) => s + e.n, 0), namedSlots = namedE.length, stSlots = stE.reduce((s, e) => s + e.n, 0);
+  const demand = anySlots + namedSlots + stSlots;
+  return { cat: c.id, label: c.label, supply: members.length, meals: meals.size, mealIds: [...meals], anySlots, namedSlots, stSlots,
+    stations: stE.length, mentions: ment.size, demand, load: members.length ? demand / members.length : 0 };
+});
+const avgLoad = catStats.reduce((s, c) => s + c.load, 0) / catStats.length;
+catStats.forEach((c) => c.status = c.load > avgLoad * 1.35 ? "hot" : c.load < avgLoad * 0.65 ? "cool" : "ok");
+const CS = Object.fromEntries(catStats.map((c) => [c.cat, c]));
+
+const cardStats = CARDS.map((n) => {
+  const named = inc(n.id, ["named"]).map((e) => e.a);
+  const open = [...new Set(inc("cat:" + n.cat, ["any"]).map((e) => e.a))].filter((m) => !named.includes(m));
+  const anyKind = n.cat !== "Kitchenware" ? STATIONS.filter((s) => s.anyKinds).map((s) => s.id) : [];
+  const stNamed = inc(n.id, ["stnamed"]).map((e) => e.a);
+  const stations = [...new Set([...inc("cat:" + n.cat, ["station"]).map((e) => e.a), ...stNamed, ...anyKind])];
+  const mentioned = [...new Set(inc(n.id, ["mention"]).map((e) => e.a))];
+  const perk = mentioned.filter((x) => x.startsWith("st:"));
+  const slots = inc("cat:" + n.cat, ["station"]).reduce((s, e) => s + e.n, 0) + inc(n.id, ["stnamed"]).reduce((s, e) => s + e.n, 0);
+  const status = MEALMODE ? (named.length >= 2 ? "key" : named.length === 1 ? "named" : open.length ? "generic" : "orphan")
+    : (!stations.length ? "nostation" : perk.length ? "perk" : "slot");
+  return { id: n.id, n, cat: n.cat, named, open, stations, stNamed, slots, perk, mentioned, reach: named.length + open.length, status };
+});
+// How a station takes this card, for chip labels: "×2 different", "named", "any kind".
+function fitLabel(stId, cardCat, cardId) {
+  const k = out(stId, ["station"]).find((e) => e.cat === cardCat);
+  if (k) return "×" + k.n + (k.distinct && k.n > 1 ? " different" : "");
+  if (cardId && out(stId, ["stnamed"]).some((e) => e.b === cardId)) return "named";
+  return N[stId].anyKinds ? "any kind" : "";
+}
+const CDS = Object.fromEntries(cardStats.map((c) => [c.id, c]));
+const STATUS = { key: ["Key ingredient", "p-hot"], named: ["In 1 recipe", "p-ok"], generic: ["Generic slots only", "p-cool"], orphan: ["No meal uses it", "p-dim"],
+  perk: ["Station perk boosts it", "p-hot"], slot: ["Fills station slots", "p-ok"], nostation: ["No station takes it", "p-dim"] };
+const LOAD = { hot: ["Heavily used", "p-hot"], ok: ["Balanced", "p-ok"], cool: ["Under-used", "p-cool"] };
+
+const mealNeeds = (m) => { // cat -> {any, named:[ids]}
+  const r = {}; CATS.forEach((c) => r[c.id] = { any: 0, named: [] });
+  out(m.id, ["any"]).forEach((e) => r[e.cat].any += e.n);
+  out(m.id, ["named"]).forEach((e) => r[e.cat].named.push(e.b));
+  return r;
+};
+
+document.getElementById("meta").textContent = [SHOW_MEALS && `${MEALS.length} meals`, !SHOW_MEALS && `${STATIONS.length} stations`, `${CARDS.length} ingredient & kitchenware cards`,
+  ALL && `${STATIONS.length} stations`, `catalog v${DATA.version || "?"}${DATA.commit ? " · " + DATA.commit : ""}`].filter(Boolean).join(" · ");
+
+/* ---------- shared UI ---------- */
+const chip = (id, extra = "") => { const n = N[id]; if (!n) return "";
+  const lead = n.kind === "cat" ? `<span class="sw" style="background:${col(n.cat)}"></span>` : ico(n) ? `<img src="${ico(n)}" alt="">` : n.color ? `<span class="sw" style="background:${n.color}"></span>` : "";
+  return `<button class="chip${lead ? "" : " noimg"}" data-go="${id}">${lead}${esc(n.name)}${extra ? ` <span class="x">${extra}</span>` : ""}</button>`; };
+const chipList = (ids, extra) => ids.length ? `<div class="chips">${ids.map((id) => chip(id, extra && extra(id))).join("")}</div>` : `<div class="none">None</div>`;
+const sec = (title, body) => `<div class="sec"><h3>${title}</h3>${body}</div>`;
+const stat = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+
+/* ---------- MAP ---------- */
+const L = {}; // layout
+function layout() {
+  const colW = 150, gap = 24, x0 = 24, W = x0 * 2 + CATS.length * colW + (CATS.length - 1) * gap;
+  const mealY = 40, boxTop = SHOW_MEALS ? 300 : 40;
+  let boxH = 0;
+  CATS.forEach((c, i) => { const rows = Math.ceil(N["cat:" + c.id].members.length / 3); boxH = Math.max(boxH, 12 + rows * 46 + 40); });
+  CATS.forEach((c, i) => {
+    const x = x0 + i * (colW + gap), node = N["cat:" + c.id];
+    L[node.id] = { x, y: boxTop, w: colW, h: boxH, cx: x + colW / 2, cy: boxTop + boxH - 20 };
+    node.members.forEach((m, j) => { const cx = x + 9 + 22 + (j % 3) * 44, cy = boxTop + 12 + 17 + Math.floor(j / 3) * 46;
+      L[m] = { cx, cy, top: cy - 19 }; });
+  });
+  const anchorX = (id) => L[id].cx;
+  const meals = MEALS.map((m) => { const xs = [...out(m.id, ["any"]), ...out(m.id, ["named"])].map((e) => anchorX(e.b));
+    return { m, k: xs.length ? xs.reduce((a, b) => a + b) / xs.length : W / 2 }; }).sort((a, b) => a.k - b.k);
+  const step = (W - x0 * 2) / meals.length;
+  // Two staggered rows once labels would collide (about 64px per meal).
+  const rowsN = step < 64 ? 2 : 1;
+  meals.forEach(({ m }, i) => { const y = mealY + (i % rowsN) * 74; L[m.id] = { cx: x0 + step * (i + .5), cy: y + 20, bottom: y + 44, y }; });
+  const stY = boxTop + boxH + 140;
+  const sts = STATIONS.map((s) => { const xs = out(s.id, ["station", "stnamed"]).map((e) => L[e.b].cx);
+    return { s, k: xs.length ? xs.reduce((a, b) => a + b) / xs.length : W / 2 }; }).sort((a, b) => a.k - b.k || a.s.name.localeCompare(b.s.name));
+  const sstep = sts.length ? (W - x0 * 2) / sts.length : 0, sw = Math.min(176, sstep - 12);
+  sts.forEach(({ s }, i) => L[s.id] = { cx: x0 + sstep * (i + .5), cy: stY + 24, y: stY, w: sw, h: s.anyKinds ? 62 : 48 });
+  Object.assign(L, { W, H: SHOW_STATIONS ? stY + 96 : boxTop + boxH + 24, boxTop, boxH, mealY });
+}
+function curve(x1, y1, x2, y2) { const my = (y1 + y2) / 2; return `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`; }
+function wrapLabel(s) { const w = s.split(" "); const lines = [""]; w.forEach((x) => { const cur = lines[lines.length - 1];
+  if ((cur + " " + x).trim().length > 12 && cur) lines.push(x); else lines[lines.length - 1] = (cur + " " + x).trim(); }); return lines.slice(0, 2); }
+
+function mapSVG() {
+  layout();
+  const { W, H, boxTop, boxH, mealY } = L;
+  const svgTop = SHOW_MEALS ? 0 : -16;
+  // spread generic anchors on box tops and station anchors on box bottoms
+  const topAnch = {}, botAnch = {};
+  CATS.forEach((c) => { const cid = "cat:" + c.id, b = L[cid];
+    const a = inc(cid, ["any"]).sort((p, q) => L[p.a].cx - L[q.a].cx);
+    a.forEach((e, k) => topAnch[e.i] = b.x + 14 + (k + 1) / (a.length + 1) * (b.w - 28));
+    const s = inc(cid, ["station"]).sort((p, q) => L[p.a].cx - L[q.a].cx);
+    s.forEach((e, k) => botAnch[e.i] = b.x + 14 + (k + 1) / (s.length + 1) * (b.w - 28)); });
+  let edges = "";
+  E.forEach((e) => {
+    if (e.type === "any") { const x1 = L[e.a].cx, x2 = topAnch[e.i];
+      edges += `<path class="edge any" data-e="${e.i}" stroke="${col(e.cat)}" stroke-width="${1.2 + (e.n - 1) * 1.2}" d="${curve(x1, L[e.a].bottom, x2, boxTop - 4)}"/>`
+        + `<circle class="edge endcap" data-e="${e.i}" cx="${x2}" cy="${boxTop - 3}" r="3" fill="${col(e.cat)}"/>`; }
+    if (e.type === "named") { const x1 = L[e.a].cx, t = L[e.b];
+      edges += `<path class="edge named" data-e="${e.i}" stroke="${col(e.cat)}" d="${curve(x1, L[e.a].bottom, t.cx, t.top)}"/>`; }
+    if (e.type === "station") { const s = L[e.a], x2 = botAnch[e.i];
+      edges += `<path class="edge any" data-e="${e.i}" stroke="${col(e.cat)}" stroke-width="${1.2 + (e.n - 1) * 1.2}" d="${curve(s.cx + (x2 - s.cx) * .25, s.y, x2, boxTop + boxH + 4)}"/>`
+        + `<circle class="edge endcap" data-e="${e.i}" cx="${x2}" cy="${boxTop + boxH + 3}" r="3" fill="${col(e.cat)}"/>`; }
+    if (e.type === "stnamed") { const s = L[e.a], t = L[e.b];
+      edges += `<path class="edge named" data-e="${e.i}" stroke="${col(e.cat)}" stroke-width="2" d="${curve(s.cx + s.w / 2 - 18, s.y, t.cx, t.cy + 20)}"/>`; }
+  });
+  let nodes = "";
+  MEALS.forEach((m) => { const p = L[m.id], lines = wrapLabel(m.name);
+    nodes += `<g class="node" data-id="${m.id}" tabindex="0" role="button" aria-label="${esc(m.name)}">
+      <rect class="hit" x="${p.cx - 34}" y="${p.y - 34}" width="68" height="80" rx="8"/>
+      ${lines.map((l, k) => `<text class="mlabel" x="${p.cx}" y="${p.y - 22 + k * 12}">${esc(l)}</text>`).join("")}
+      <image href="${ico(m)}" x="${p.cx - 20}" y="${p.y}" width="40" height="40"/></g>`; });
+  CATS.forEach((c) => { const cid = "cat:" + c.id, b = L[cid], s = CS[c.id];
+    nodes += `<g class="node catbox-node" data-id="${cid}" tabindex="0" role="button" aria-label="${c.label}">
+      <rect class="catbox hit" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="10" stroke="${col(c.id)}" style="fill:color-mix(in srgb, ${col(c.id)} 10%, var(--surface))"/>
+      <rect x="${b.x}" y="${b.y + b.h - 36}" width="${b.w}" height="36" rx="10" fill="${col(c.id)}" opacity=".22"/>
+      <text class="cattitle" x="${b.x + 12}" y="${b.y + b.h - 14}">${c.label}</text>
+      <text class="catcount" x="${b.x + b.w - 12}" y="${b.y + b.h - 14}" text-anchor="end">${s.supply} · ${SHOW_MEALS ? s.meals : s.stations}</text></g>`;
+    N[cid].members.forEach((mid) => { const p = L[mid], n = N[mid];
+      nodes += `<g class="node" data-id="${mid}" tabindex="0" role="button" aria-label="${esc(n.name)}">
+        <rect class="hit cardslot" x="${p.cx - 20}" y="${p.cy - 20}" width="40" height="40" rx="7"/>
+        <image href="${ico(n)}" x="${p.cx - 16}" y="${p.cy - 16}" width="32" height="32"><title>${esc(n.name)}</title></image></g>`; }); });
+  STATIONS.forEach((s) => { const p = L[s.id], x = p.cx - p.w / 2, im = ico(s);
+    nodes += `<g class="node" data-id="${s.id}" tabindex="0" role="button" aria-label="${esc(s.name)}">
+      <rect class="stbox hit" x="${x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="10" stroke="${s.color}"/>
+      <rect x="${x}" y="${p.y}" width="8" height="${p.h}" rx="4" fill="${s.color}"/>
+      ${im ? `<image href="${im}" x="${x + 14}" y="${p.y + 8}" width="32" height="32"/>` : ""}
+      <text class="cattitle" x="${x + (im ? 52 : 20)}" y="${p.y + 29}">${esc(s.short)}<title>${esc(s.name)}</title></text>
+      ${s.anyKinds ? `<text class="catcount" x="${x + 16}" y="${p.y + 52}">+ ${s.anyKinds.count} ${s.anyKinds.distinct ? "different kinds" : "any Ingredients"}</text>` : ""}</g>`; });
+  const tiers = (SHOW_MEALS ? `<text class="tier" x="${W - 24}" y="16" text-anchor="end">Meals</text>
+    <text class="tier" x="${W - 24}" y="${boxTop - 18}" text-anchor="end">Ingredients &amp; kitchenware</text>`
+    : `<text class="tier" x="${W - 24}" y="${boxTop - 14}" text-anchor="end">Ingredients &amp; kitchenware</text>`)
+    + (SHOW_STATIONS ? `<text class="tier" x="${W - 24}" y="${L.H - 6}" text-anchor="end">Stations</text>` : "");
+  return `<svg class="map" id="map" viewBox="0 ${svgTop} ${W} ${H - svgTop}" width="${W}" height="${H - svgTop}" role="group" aria-label="Dependency map">
+    ${tiers}<g id="edges">${edges}</g><g>${nodes}</g><g id="mentions"></g></svg>`;
+}
+
+// relationships for highlighting: primary (direct) and secondary (one hop further)
+function related(id) {
+  const n = N[id], P = new Set(), S = new Set();
+  if (n.kind === "meal") {
+    out(id, ["any"]).forEach((e) => P.add(e.b));
+    out(id, ["named"]).forEach((e) => { P.add(e.b); P.add("cat:" + N[e.b].cat); });
+    [...P].filter((x) => x.startsWith("cat:")).forEach((c) => inc(c, ["station"]).forEach((e) => S.add(e.a)));
+  } else if (n.kind === "card") {
+    P.add("cat:" + n.cat); inc(id, ["named", "stnamed"]).forEach((e) => P.add(e.a));
+    inc("cat:" + n.cat, ["any"]).forEach((e) => S.add(e.a)); inc("cat:" + n.cat, ["station"]).forEach((e) => S.add(e.a));
+    if (n.cat !== "Kitchenware") STATIONS.filter((s) => s.anyKinds).forEach((s) => S.add(s.id));
+  } else if (n.kind === "cat") {
+    n.members.forEach((m) => { P.add(m); inc(m, ["named", "stnamed"]).forEach((e) => P.add(e.a)); });
+    inc(id, ["any", "station"]).forEach((e) => P.add(e.a));
+  } else if (n.kind === "station") {
+    out(id, ["station"]).forEach((e) => { P.add(e.b); N[e.b].members.forEach((m) => S.add(m));
+      inc(e.b, ["any"]).forEach((x) => S.add(x.a)); N[e.b].members.forEach((m) => inc(m, ["named"]).forEach((x) => S.add(x.a))); });
+    out(id, ["stnamed"]).forEach((e) => { P.add(e.b); inc(e.b, ["named"]).forEach((x) => S.add(x.a)); });
+  }
+  S.forEach((x) => P.has(x) && S.delete(x));
+  return { P, S };
+}
+function edgeState(e, id, P, S) {
+  const A = (x) => x === id || P.has(x), B = (x) => A(x) || S.has(x);
+  if (e.type === "mention") return "";
+  if ((e.a === id || e.b === id) || (A(e.a) && A(e.b))) return "on";
+  if (B(e.a) && B(e.b) && (A(e.a) || A(e.b))) return "half";
+  return "";
+}
+let pinned = null;
+function highlight(id) {
+  const svg = document.getElementById("map"); if (!svg) return;
+  svg.classList.toggle("sel", !!id);
+  const { P, S } = id ? related(id) : { P: new Set(), S: new Set() };
+  svg.querySelectorAll(".node").forEach((g) => { const x = g.dataset.id;
+    g.classList.toggle("me", x === id); g.classList.toggle("on", x === id || P.has(x)); g.classList.toggle("half", S.has(x)); });
+  svg.querySelectorAll(".edge").forEach((p) => { const st = id ? edgeState(E[p.dataset.e], id, P, S) : "";
+    p.classList.toggle("on", st === "on"); p.classList.toggle("half", st === "half"); });
+  // effect mentions for the selected node, both directions
+  let m = "";
+  if (id) [...out(id, ["mention"]), ...inc(id, ["mention"])].forEach((e) => {
+    const a = L[e.a], b = L[e.b]; if (!a || !b) return;
+    const x1 = a.cx, y1 = a.cy, x2 = b.cx, y2 = b.cy, bow = Math.abs(y1 - y2) < 10 ? -70 : 0;
+    m += `<path class="mention" d="M${x1},${y1} Q${(x1 + x2) / 2 + (bow ? 0 : 60)},${(y1 + y2) / 2 + bow} ${x2},${y2}"/>`;
+  });
+  document.getElementById("mentions").innerHTML = m;
+  document.getElementById("rail").innerHTML = id ? detail(id) : railIntro();
+}
+function railIntro() {
+  const busiest = [...catStats].sort((a, b) => b.load - a.load)[0], quiet = [...catStats].sort((a, b) => a.load - b.load)[0];
+  return `<div class="sec"><h2>Pick anything</h2><p class="hint" style="margin:0">Hover to preview, click to pin. Click empty space or press Esc to clear.
+    ${ALL ? "Selecting a meal shows what it needs and which stations take those kinds. Selecting an ingredient shows every recipe that names it, every meal that could use it through a generic slot, and the stations it can sit on."
+      : MEALMODE ? "Selecting a meal shows what it needs. Selecting an ingredient or kitchenware shows every recipe that names it and every meal that could use it through a generic slot."
+      : "Selecting a station shows its setup and its perks. Selecting an ingredient or kitchenware shows every station it can fill and any station perk that boosts it."}</p></div>
+    ${sec("Most demand per card", chipList([`cat:${busiest.cat}`], () => busiest.load.toFixed(1) + " uses/card"))}
+    ${sec("Least demand per card", chipList([`cat:${quiet.cat}`], () => quiet.load.toFixed(1) + " uses/card"))}
+    ${sec(MEALMODE ? "Cards no meal uses" : "Cards no station takes", chipList(cardStats.filter((c) => c.status === (MEALMODE ? "orphan" : "nostation")).map((c) => c.id)))}`;
+}
+function detail(id) {
+  const n = N[id];
+  const head = (kind, sub = "") => `<div class="head">${n.kind === "cat" ? `<span class="dotbig" style="background:${col(n.cat)}"></span>` : ico(n) ? `<img src="${ico(n)}" alt="">` : `<span class="dotbig" style="background:${n.color || "var(--rule)"}"></span>`}
+    <div><div class="kind">${kind}${sub}</div><div class="nm">${esc(n.name)}</div></div></div>`;
+  const mentionsOut = out(id, ["mention"]).map((e) => e.b), mentionsIn = [...new Set(inc(id, ["mention"]).map((e) => e.a))];
+  const effects = sec("Its effect mentions", chipList(mentionsOut)) + sec("Mentioned by other effects", chipList(mentionsIn));
+  if (n.kind === "meal") {
+    const need = mealNeeds(n), cats = CATS.filter((c) => need[c.id].any || need[c.id].named.length);
+    const total = cats.reduce((s, c) => s + need[c.id].any + need[c.id].named.length, 0);
+    const sts = [...related(id).S].filter((x) => x.startsWith("st:"));
+    return head("Meal · ", esc(n.group)) + `<div class="effect">${esc(n.raw.description.plain)}</div>
+      <div class="stats">${stat(total, "cards needed")}${stat(cats.length, "kinds")}${ALL ? stat(sts.length, "stations share") : stat(out(id, ["named"]).length, "named cards")}</div>
+      ${sec("Named cards", chipList(cats.flatMap((c) => need[c.id].named)))}
+      ${sec("Any card of a kind", chipList(cats.filter((c) => need[c.id].any).map((c) => "cat:" + c.id), (x) => "×" + need[N[x].cat].any))}
+      ${ALL ? sec("Stations that take these kinds", chipList(sts)) : ""}${effects}`;
+  }
+  if (n.kind === "card") {
+    const s = CDS[id], [lbl, cls] = STATUS[s.status];
+    return head(n.cat === "Kitchenware" ? "Kitchenware" : "Ingredient · ", n.cat === "Kitchenware" ? "" : CAT[n.cat].label) +
+      `<div><span class="pill ${cls}">${lbl}</span></div><div class="effect">${esc(n.raw.description.plain)}</div>
+      ${MEALMODE ? `<div class="stats">${stat(s.named.length, "recipes name it")}${stat(s.open.length, "generic slots")}${ALL ? stat(s.stations.length, "stations") : stat(s.reach, "meal reach")}</div>
+      ${sec("Recipes that name it", chipList(s.named))}
+      ${sec(`Meals that take any ${CAT[n.cat].label.toLowerCase()}`, chipList(s.open))}` : ""}
+      ${!MEALMODE ? `<div class="stats">${stat(s.stations.length, "stations")}${stat(s.slots, "slots for its kind")}${stat(s.perk.length, "perks name it")}</div>` : ""}
+      ${SHOW_STATIONS ? sec("Stations it can fill", chipList(s.stations, (x) => fitLabel(x, n.cat, id))) : ""}
+      ${!MEALMODE ? sec("Station perks that name it", chipList(s.perk)) : ""}${effects}`;
+  }
+  if (n.kind === "cat") {
+    const s = CS[n.cat], [lbl, cls] = LOAD[s.status];
+    return head("Category") + `<div><span class="pill ${cls}">${lbl}</span> <span class="hint">${s.load.toFixed(1)} uses per card · avg ${avgLoad.toFixed(1)}</span></div>
+      ${MEALMODE ? `<div class="stats">${stat(s.supply, "cards")}${stat(s.meals, "meals use it")}${ALL ? stat(s.stSlots, "station slots") : stat(s.anySlots + s.namedSlots, "recipe slots")}</div>
+      ${sec("Cards", chipList(n.members, (m) => { const c = CDS[m]; return c.named.length ? "named " + c.named.length : ""; }))}
+      ${sec("Meals naming a specific card", chipList([...new Set(E.filter((e) => e.type === "named" && N[e.b].cat === n.cat).map((e) => e.a))]))}
+      ${sec("Meals taking any card", chipList(inc(id, ["any"]).map((e) => e.a), (m) => "×" + inc(id, ["any"]).find((e) => e.a === m).n))}`
+      : `<div class="stats">${stat(s.supply, "cards")}${stat(s.stations, "stations use it")}${stat(s.stSlots, "station slots")}</div>
+      ${sec("Cards", chipList(n.members))}`}
+      ${SHOW_STATIONS ? sec("Stations", chipList(inc(id, ["station"]).map((e) => e.a), (m) => fitLabel(m, n.cat))) : ""}
+      ${sec("Effects that mention it", chipList(mentionsIn))}`;
+  }
+  if (n.kind === "station") {
+    const needs = out(id, ["station"]), named = out(id, ["stnamed"]);
+    const meals = [...related(id).S].filter((x) => N[x].kind === "meal");
+    const fits = new Set([...needs.flatMap((e) => N[e.b].members), ...named.map((e) => e.b), ...(n.anyKinds ? CARDS.filter((c) => c.cat !== "Kitchenware").map((c) => c.id) : [])]);
+    const picks = (title, list) => list && list.length ? sec(title, `<div class="hint">${list.map((c) => esc(c.plain)).join("<br>or ")}</div>`) : "";
+    return head("Station") + `<div class="effect">${esc(n.setupText)}</div>
+      <div class="stats">${stat(n.setup.reduce((s, x) => s + (x.count || 1), 0), "slots")}${stat(n.setup.length, "parts")}${ALL ? stat(meals.length, "meals share") : stat(fits.size, "cards fit")}</div>
+      ${sec("Needs", (needs.length || named.length ? chipList([...named.map((e) => e.b), ...needs.map((e) => e.b)], (x) => x.startsWith("cat:") ? fitLabel(id, N[x].cat) : "named") : "")
+        + (n.anyKinds ? `<div class="hint">and ${n.anyKinds.count} ${n.anyKinds.distinct ? "different kinds of Ingredient" : "Ingredients of any kind"}</div>` : ""))}
+      ${sec("Level perks", `<div class="hint">${(n.raw.level_perks || []).map((c, i) => `Lv ${i + 1}: ${esc(c.plain)}`).join("<br>")}</div>`)}
+      ${picks("Level 3 choice", n.raw.choices)}${picks("Level 6 choice", n.raw.capstones)}
+      ${ALL ? sec("Meals using these kinds", chipList(meals)) : ""}${sec("Its perks mention", chipList(mentionsOut))}`;
+  }
+  return head("Chef") + `<div class="effect">${esc(n.raw.speciality.plain)}</div>${sec("Mentions", chipList(mentionsOut))}`;
+}
+function viewMap() {
+  const key = (dash, lbl, cap) => `<span class="key"><svg width="34" height="10"><line x1="2" y1="5" x2="${cap ? 28 : 32}" y2="5" stroke="var(--muted)" stroke-width="2" ${dash ? `stroke-dasharray="${dash}"` : ""}/>${cap ? `<circle cx="30" cy="5" r="3" fill="var(--muted)"/>` : ""}</svg>${lbl}</span>`;
+  return `<p class="lede">${ALL ? `Every meal, the cards it needs and the stations that take them. Solid lines point at a named card, dashed lines at “any card of this kind”. Each category shows <b>cards · meals</b> that use it.`
+    : MEALMODE ? `Every meal and the cards it needs. Solid lines point at a named card, dashed lines at “any card of this kind”. Each category shows <b>cards · meals</b> that use it.`
+    : `Every station and what its setup needs. Thicker lines mean more slots of that kind; a solid line points at a card the station names. Each category shows <b>cards · stations</b> that use it.`}</p>
+    <div class="board"><div class="mapcard">
+      <div class="maptools">${key("", MEALMODE ? "Names this card" : "Station names this card")}${key("4 3", "Needs any card of this kind", true)}
+        <span class="key"><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--mention)" stroke-width="2" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>Effect mentions (on select)</span>
+        <span class="spacer"></span><button class="btn" id="clear">Clear selection</button></div>
+      <div class="scroller">${mapSVG()}</div></div>
+      <aside class="rail" id="rail" aria-live="polite"></aside></div>`;
+}
+function wireMap() {
+  const svg = document.getElementById("map");
+  svg.addEventListener("mouseover", (ev) => { const g = ev.target.closest(".node"); if (g && !pinned) highlight(g.dataset.id); });
+  svg.addEventListener("mouseleave", () => { if (!pinned) highlight(null); });
+  svg.addEventListener("click", (ev) => { const g = ev.target.closest(".node"); pinned = g ? (pinned === g.dataset.id ? null : g.dataset.id) : null; highlight(pinned); });
+  svg.addEventListener("keydown", (ev) => { const g = ev.target.closest(".node"); if (g && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); pinned = g.dataset.id; highlight(pinned); } });
+  document.getElementById("clear").onclick = () => { pinned = null; highlight(null); };
+  highlight(pinned);
+}
+
+/* ---------- BALANCE ---------- */
+const sortState = { cat: { key: "load", dir: -1 }, card: { key: "reach", dir: -1 } }, cardFilter = { cat: "" };
+const sortBtn = (tbl, key, label) => { const s = sortState[tbl]; return `<button data-sort="${tbl}:${key}"${s.key === key ? ` data-dir="${s.dir > 0 ? "↑" : "↓"}"` : ""}>${label}</button>`; };
+function sortRows(rows, tbl, get) { const s = sortState[tbl], g = get[s.key];
+  return [...rows].sort((a, b) => { const x = g(a), y = g(b); return (typeof x === "number" ? x - y : String(x).localeCompare(String(y))) * s.dir; }); }
+function insights() {
+  const list = [], byLoad = [...catStats].sort((a, b) => b.load - a.load);
+  const users = MEALMODE ? "meals" : "stations", slotWord = ALL ? "uses" : MEALMODE ? "recipe slots" : "station slots";
+  const who = (c) => ALL ? `${c.meals} meals and ${c.stations} stations draw on them.` : `${MEALMODE ? c.meals : c.stations} ${users} draw on them.`;
+  byLoad.filter((c) => c.status === "hot").forEach((c) => list.push({ pill: ["Heavily used", "p-hot"],
+    text: `<b>${c.label}</b>: ${c.supply} cards carry ${c.demand} ${slotWord} (${c.load.toFixed(1)} per card, average ${avgLoad.toFixed(1)}). ${who(c)}`, ids: [`cat:${c.cat}`] }));
+  byLoad.filter((c) => c.status === "cool").forEach((c) => list.push({ pill: ["Under-used", "p-cool"],
+    text: `<b>${c.label}</b>: ${c.supply} cards but only ${c.demand} ${slotWord} (${c.load.toFixed(1)} per card).`, ids: [`cat:${c.cat}`] }));
+  const unused = catStats.filter((c) => !c.demand).map((c) => `cat:${c.cat}`);
+  if (unused.length) list.push({ pill: [MEALMODE ? "No meal" : "No station", "p-dim"], text: `No ${MEALMODE ? "meal" : "station"} asks for ${unused.map((x) => N[x].name.toLowerCase()).join(" or ")}.`, ids: unused });
+  if (MEALMODE) {
+    const unusedCards = cardStats.filter((c) => !c.named.length && !c.open.length).map((c) => c.id);
+    if (unusedCards.length) list.push({ pill: ["No meal", "p-dim"], text: `No recipe names or takes ${unusedCards.length === 1 ? "this card" : `these ${unusedCards.length} cards`}.`, ids: unusedCards });
+    CATS.forEach((c) => { const orph = cardStats.filter((x) => x.cat === c.id && !x.named.length).map((x) => x.id);
+      if (orph.length && orph.length >= Math.ceil(CS[c.id].supply / 2) && c.id !== "Kitchenware")
+        list.push({ pill: ["Unnamed cards", "p-dim"], text: `${orph.length} of ${CS[c.id].supply} ${c.label.toLowerCase()} are never named in a recipe${CS[c.id].anySlots ? ` and only reach meals through ${CS[c.id].anySlots} generic slot${CS[c.id].anySlots > 1 ? "s" : ""}` : ""}.`, ids: orph }); });
+    const kw = CS.Kitchenware;
+    list.push({ pill: ["Kitchenware", "p-dim"], text: `${kw.anySlots} meal slots take any kitchenware, and ${kw.namedSlots} recipe${kw.namedSlots === 1 ? " names" : "s name"} a specific tool.`, ids: E.filter((e) => e.type === "named" && N[e.b].cat === "Kitchenware").map((e) => e.b) });
+    const free = MEALS.filter((m) => !out(m.id, ["any", "named"]).length).map((m) => m.id);
+    if (free.length) list.push({ pill: ["No recipe", "p-dim"], text: `${free.length} meals need no cards at all.`, ids: free });
+    const heavy = MEALS.map((m) => ({ id: m.id, n: out(m.id, ["any", "named"]).reduce((s, e) => s + e.n, 0) })).sort((a, b) => b.n - a.n).filter((x) => x.n >= 4);
+    if (heavy.length) list.push({ pill: ["Big recipes", "p-dim"], text: `These meals need ${heavy[0].n} or more cards, the most of any recipe.`, ids: heavy.map((x) => x.id) });
+  }
+  if (SHOW_STATIONS) {
+    const names = (ids) => ids.map((x) => N[x].short || N[x].name);
+    const join = (xs) => xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1];
+    const perks = cardStats.filter((c) => c.perk.length).map((c) => c.id);
+    if (perks.length && !ALL) list.push({ pill: ["Perk favourites", "p-hot"], text: `Station perks name these cards directly, so they score extra on one station.`, ids: perks });
+    const anyTool = STATIONS.filter((s) => out(s.id, ["station"]).some((e) => e.cat === "Kitchenware")).map((s) => s.id);
+    const toolNamed = STATIONS.filter((s) => out(s.id, ["stnamed"]).some((e) => N[e.b].cat === "Kitchenware"));
+    list.push({ pill: ["Kitchenware", "p-dim"], text: `${anyTool.length} of ${STATIONS.length} stations take any kitchenware.`
+      + (toolNamed.length ? ` ${join(toolNamed.map((s) => `${s.short} needs the ${out(s.id, ["stnamed"]).filter((e) => N[e.b].cat === "Kitchenware").map((e) => N[e.b].name).join(" and ")}`))}.` : " No station names a specific tool."),
+      ids: [...toolNamed.flatMap((s) => out(s.id, ["stnamed"]).map((e) => e.b)), "cat:Kitchenware"] });
+    const doubled = STATIONS.filter((s) => out(s.id, ["station"]).some((e) => e.n >= 2 && e.cat !== "Kitchenware"));
+    const spread = STATIONS.filter((s) => !doubled.includes(s));
+    if (doubled.length) list.push({ pill: ["Main kind", "p-dim"], text: `${doubled.length} stations want 2 of one kind: ${doubled.map((s) => out(s.id, ["station"]).filter((e) => e.n >= 2).map((e) => `${s.short} (${e.distinct ? "2 different " : ""}${N[e.b].name.toLowerCase()})`).join("")).join(", ")}.`
+      + (spread.length ? ` ${join(names(spread.map((s) => s.id)))} spread${spread.length === 1 ? "s" : ""} across kinds instead.` : ""), ids: doubled.map((s) => s.id) });
+    const anyKinds = STATIONS.filter((s) => s.anyKinds);
+    if (anyKinds.length) list.push({ pill: ["Any ingredient", "p-ok"], text: anyKinds.map((s) => `${s.short} takes ${s.anyKinds.count} ${s.anyKinds.distinct ? "different kinds of Ingredient" : "Ingredients of any kind"}`).join("; ") + `, so every ingredient card has a station.`, ids: anyKinds.map((s) => s.id) });
+    const single = catStats.filter((c) => c.stations === 1 && c.cat !== "Kitchenware").map((c) => `cat:${c.cat}`);
+    if (single.length) list.push({ pill: ["One station", "p-cool"], text: `Only one station asks for these kinds by name.`, ids: single });
+    const noStation = catStats.filter((c) => !c.stations && c.cat !== "Kitchenware").map((c) => `cat:${c.cat}`);
+    if (noStation.length) list.push({ pill: ["No station", "p-dim"], text: `No station asks for ${noStation.map((x) => N[x].name.toLowerCase()).join(" or ")} by kind${anyKinds.length ? `; they only fit ${join(names(anyKinds.map((s) => s.id)))}` : ""}.`, ids: noStation });
+  }
+  return list;
+}
+function viewBalance() {
+  const maxLoad = Math.max(...catStats.map((c) => c.load), 0.01);
+  const catCols = MEALMODE
+    ? [["meals", "Meals using", (c) => c.meals], ["anySlots", "Any-slots", (c) => c.anySlots], ["namedSlots", "Named", (c) => c.namedSlots],
+      ...(ALL ? [["stSlots", "Station slots", (c) => c.stSlots]] : []), ["mentions", "Effects", (c) => c.mentions]]
+    : [["stations", "Stations using", (c) => c.stations], ["stSlots", "Station slots", (c) => c.stSlots], ["mentions", "Effects & perks", (c) => c.mentions]];
+  const cget = { label: (c) => c.label, supply: (c) => c.supply, load: (c) => c.load }; catCols.forEach(([k, , f]) => cget[k] = f);
+  if (!cget[sortState.cat.key]) sortState.cat = { key: "load", dir: -1 };
+  const crow = sortRows(catStats, "cat", cget).map((c) => `<tr class="clickable" data-go="cat:${c.cat}"><td><span class="cname"><span class="sw" style="background:${col(c.cat)}"></span>${c.label}</span></td>
+      <td class="n">${c.supply}</td>${catCols.map(([, , f]) => `<td class="n">${f(c)}</td>`).join("")}
+      <td class="n">${c.load.toFixed(1)}</td><td><div class="bar"><i style="width:${c.load / maxLoad * 100}%;background:${col(c.cat)}"></i><span class="avg" style="left:${avgLoad / maxLoad * 100}%"></span></div></td>
+      <td><span class="pill ${LOAD[c.status][1]}">${LOAD[c.status][0]}</span></td></tr>`).join("");
+  const cardCols = MEALMODE
+    ? [["named", "Named in", (c) => c.named.length], ["open", "Any-slot meals", (c) => c.open.length], ["reach", "Meal reach", (c) => c.reach, true],
+      ...(ALL ? [["stations", "Stations", (c) => c.stations.length]] : []), ["mentioned", "Mentioned by", (c) => c.mentioned.length]]
+    : [["stations", "Stations", (c) => c.stations.length, true], ["slots", "Slots for its kind", (c) => c.slots], ["perk", "Perks name it", (c) => c.perk.length], ["mentioned", "Mentioned by", (c) => c.mentioned.length]];
+  const barKey = cardCols.find((x) => x[3]);
+  const rget = { name: (c) => c.n.name, cat: (c) => CATS.findIndex((x) => x.id === c.cat), status: (c) => Object.keys(STATUS).indexOf(c.status) }; cardCols.forEach(([k, , f]) => rget[k] = f);
+  if (!rget[sortState.card.key]) sortState.card = { key: barKey[0], dir: -1 };
+  let cards = cardStats.filter((c) => !cardFilter.cat || c.cat === cardFilter.cat);
+  cards = sortRows(cards, "card", rget);
+  const maxBar = Math.max(...cardStats.map(barKey[2]), 1);
+  const rrow = cards.map((c) => `<tr class="clickable" data-go="${c.id}"><td><span class="cname"><img src="${ico(c.n)}" alt="">${esc(c.n.name)}</span></td>
+    <td><span class="cname" style="font-weight:400"><span class="sw" style="background:${col(c.cat)}"></span>${CAT[c.cat].label}</span></td>
+    ${cardCols.map(([k, , f, bar]) => `<td class="n">${f(c)}</td>${bar ? `<td><div class="bar" style="min-width:90px"><i style="width:${f(c) / maxBar * 100}%;background:${col(c.cat)}"></i></div></td>` : ""}`).join("")}
+    <td><span class="pill ${STATUS[c.status][1]}">${STATUS[c.status][0]}</span></td></tr>`).join("");
+  return `<p class="lede">${ALL ? `How much each kind of card is asked for, compared with how many cards of that kind exist. <b>Uses per card</b> adds every generic meal slot, every recipe that names one of its cards and every station slot, then divides by the number of cards.`
+      : MEALMODE ? `How much meals ask for each kind of card compared with how many cards of that kind exist. <b>Uses per card</b> adds every generic recipe slot and every recipe that names one of its cards, then divides by the number of cards.`
+      : `How much stations ask for each kind of card compared with how many cards of that kind exist. <b>Slots per card</b> adds every station slot for that kind, then divides by the number of cards.`} The line on each bar is the average.</p>
+    <div class="panel"><h2>What stands out</h2><div class="insights">${insights().map((x) => `<div class="ins"><div class="lbl"><span class="pill ${x.pill[1]}">${x.pill[0]}</span></div><div>${x.text}</div>${x.ids && x.ids.length ? chipList(x.ids) : ""}</div>`).join("")}</div></div>
+    <div class="panel"><h2>By category</h2><div class="tblwrap"><table><thead><tr>
+      <th>${sortBtn("cat", "label", "Category")}</th><th class="n">${sortBtn("cat", "supply", "Cards")}</th>${catCols.map(([k, l]) => `<th class="n">${sortBtn("cat", k, l)}</th>`).join("")}
+      <th class="n">${sortBtn("cat", "load", MEALMODE ? "Uses/card" : "Slots/card")}</th><th>Load</th><th>Status</th></tr></thead><tbody>${crow}</tbody></table></div></div>
+    <div class="panel"><h2>By card</h2>
+      <div class="filters"><button class="fchip" data-cf="" aria-pressed="${!cardFilter.cat}">All</button>${CATS.map((c) => `<button class="fchip" data-cf="${c.id}" aria-pressed="${cardFilter.cat === c.id}">${c.label}</button>`).join("")}</div>
+      <div class="tblwrap"><table><thead><tr><th>${sortBtn("card", "name", "Card")}</th><th>${sortBtn("card", "cat", "Kind")}</th>
+      ${cardCols.map(([k, l, , bar]) => `<th class="n">${sortBtn("card", k, l)}</th>${bar ? "<th></th>" : ""}`).join("")}<th>${sortBtn("card", "status", "Status")}</th></tr></thead><tbody>${rrow}</tbody></table></div>
+      <p class="hint" style="margin:0">Click any row or chip to open it on the map.</p></div>`;
+}
+const mx = { sort: "" };
+function viewMatrix() {
+  const cell = (c, any, named) => { if (!any && !named.length) return `<td class="cell"></td>`;
+    return `<td class="cell"><span class="cellin" style="background:color-mix(in srgb, ${col(c)} ${12 + Math.min(any + named.length, 4) * 9}%, var(--surface))">
+      ${named.map((id) => `<img src="${ico(N[id])}" alt="${esc(N[id].name)}" title="${esc(N[id].name)}">`).join("")}${any ? `<span class="anyn" title="any ${CAT[c].label.toLowerCase()}">${named.length ? "+" : ""}${any} any</span>` : ""}</span></td>`; };
+  let rows = "";
+  const extraCol = SHOW_STATIONS && STATIONS.some((s) => s.anyKinds);
+  const extra = (s) => !extraCol ? "" : `<td class="cell">${s && s.anyKinds ? `<span class="cellin" style="background:var(--surface-2)"><span class="anyn">${s.anyKinds.count} ${s.anyKinds.distinct ? "kinds" : "any"}</span></span>` : ""}</td>`;
+  if (SHOW_MEALS) {
+    let meals = MEALS.map((m) => ({ m, need: mealNeeds(m) }));
+    const tot = (r) => CATS.reduce((s, c) => s + r.need[c.id].any + r.need[c.id].named.length, 0);
+    meals.sort((a, b) => mx.sort ? (b.need[mx.sort].any + b.need[mx.sort].named.length) - (a.need[mx.sort].any + a.need[mx.sort].named.length) || tot(b) - tot(a) : tot(b) - tot(a) || a.m.name.localeCompare(b.m.name));
+    rows += meals.map(({ m, need }) => `<tr class="clickable" data-go="${m.id}"><td><span class="cname"><img src="${ico(m)}" alt="">${esc(m.name)}</span></td>
+      ${CATS.map((c) => cell(c.id, need[c.id].any, need[c.id].named)).join("")}${extra(null)}<td class="n">${tot({ need })}</td></tr>`).join("");
+  }
+  if (SHOW_STATIONS) {
+    const nd = (s) => Object.fromEntries(out(s.id, ["station"]).map((e) => [e.cat, e.n]));
+    const nn = (s, cat) => out(s.id, ["stnamed"]).filter((e) => e.cat === cat).map((e) => e.b);
+    const sts = [...STATIONS].sort((a, b) => mx.sort ? ((nd(b)[mx.sort] || 0) + nn(b, mx.sort).length) - ((nd(a)[mx.sort] || 0) + nn(a, mx.sort).length) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name));
+    if (ALL) rows += `<tr class="sep"><td colspan="${CATS.length + 2 + (extraCol ? 1 : 0)}">Stations</td></tr>`;
+    rows += sts.map((s) => { const n = nd(s); return `<tr class="clickable" data-go="${s.id}"><td><span class="cname">${ico(s) ? `<img src="${ico(s)}" alt="">` : `<span class="sw" style="background:${s.color}"></span>`}${esc(s.name)}</span></td>
+      ${CATS.map((c) => cell(c.id, n[c.id] || 0, nn(s, c.id))).join("")}${extra(s)}<td class="n">${s.setup.reduce((a, x) => a + (x.count || 1), 0)}</td></tr>`; }).join("");
+  }
+  const using = (c) => ALL ? `${CS[c.id].meals} · ${CS[c.id].stations}` : MEALMODE ? CS[c.id].meals : CS[c.id].stations;
+  return `<p class="lede">${MEALMODE ? "Meals down the side, kinds across the top. Icons are cards a recipe names; “any” counts slots any card of that kind can fill." : "Stations down the side, kinds across the top. Each cell counts the slots any card of that kind can fill; icons are cards a station names."}${extraCol ? " <b>Any kind</b> counts Ingredients of any kind a station takes." : ""} Click a column to sort by it, click a row to open it on the map.</p>
+    <div class="panel"><div class="tblwrap"><table class="matrix"><thead><tr><th><button data-mx="">${ALL ? "Meal / station" : MEALMODE ? "Meal" : "Station"}</button></th>
+      ${CATS.map((c) => `<th class="colh"><button data-mx="${c.id}"${mx.sort === c.id ? ` data-dir="↓"` : ""}><span style="color:${col(c.id)}">●</span> ${c.label}</button></th>`).join("")}${extraCol ? `<th class="colh">Any kind</th>` : ""}<th class="n">Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td style="text-align:left">${ALL ? "Meals · stations using" : MEALMODE ? "Meals using" : "Stations using"}</td>${CATS.map((c) => `<td>${using(c)}</td>`).join("")}${extraCol ? "<td></td>" : ""}<td></td></tr>
+      <tr><td style="text-align:left">Cards available</td>${CATS.map((c) => `<td>${CS[c.id].supply}</td>`).join("")}${extraCol ? "<td></td>" : ""}<td></td></tr></tfoot></table></div></div>`;
+}
+
+/* ---------- routing ---------- */
+const VIEWS = { map: viewMap, balance: viewBalance, matrix: viewMatrix };
+function current() { const h = location.hash.slice(1); return VIEWS[h] ? h : "map"; }
+function render() {
+  const t = current();
+  document.querySelectorAll(".tab").forEach((a) => a.setAttribute("aria-selected", a.dataset.tab === t));
+  document.getElementById("view").innerHTML = VIEWS[t]();
+  if (t === "map") wireMap();
+}
+document.getElementById("view").addEventListener("click", (ev) => {
+  const go = ev.target.closest("[data-go]");
+  if (go) { pinned = go.dataset.go; if (current() !== "map") location.hash = "map"; else highlight(pinned);
+    const svg = document.getElementById("map"); if (svg) { const g = svg.querySelector(`[data-id="${CSS.escape(pinned)}"]`), sc = svg.parentElement;
+      if (g) { const r = g.getBBox(); sc.scrollTo({ left: r.x - sc.clientWidth / 2 + r.width / 2, behavior: "smooth" }); } } return; }
+  const s = ev.target.closest("[data-sort]");
+  if (s) { const [tbl, key] = s.dataset.sort.split(":"), st = sortState[tbl]; if (st.key === key) st.dir *= -1; else { st.key = key; st.dir = ["label", "name", "cat"].includes(key) ? 1 : -1; } render(); return; }
+  const f = ev.target.closest("[data-cf]"); if (f) { cardFilter.cat = f.dataset.cf; render(); return; }
+  const m = ev.target.closest("[data-mx]"); if (m) { mx.sort = m.dataset.mx; render(); }
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && current() === "map") { pinned = null; highlight(null); } });
+window.addEventListener("hashchange", render);
+render();
+</script>
