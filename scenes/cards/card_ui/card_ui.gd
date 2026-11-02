@@ -207,8 +207,6 @@ func _supports_focus() -> bool:
 func _refresh_focus_mode() -> void:
 	var wants_focus := _supports_focus()
 	focus_mode = Control.FOCUS_ALL if wants_focus else Control.FOCUS_NONE
-	# Shop and choice cards lift when focused. Preview cards stay still, so they get the focus ring.
-	set_meta(InputManager.OWN_FOCUS_VISUAL_META, interaction_mode != InteractionMode.PREVIEW)
 	if not wants_focus and has_focus():
 		release_focus()
 

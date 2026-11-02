@@ -41,8 +41,6 @@ func _ready() -> void:
 			button.mouse_exited.connect(_on_button_unhover.bind(button))
 			button.focus_entered.connect(_on_button_focus.bind(button, true))
 			button.focus_exited.connect(_on_button_focus.bind(button, false))
-			# Focus grows and brightens the button like a hover, so it needs no focus ring.
-			button.set_meta(InputManager.OWN_FOCUS_VISUAL_META, true)
 
 	_set_button_pivot(developer_menu_button)
 	developer_menu_button.resized.connect(_on_button_resized.bind(developer_menu_button))
@@ -50,7 +48,6 @@ func _ready() -> void:
 	developer_menu_button.mouse_exited.connect(_on_button_unhover.bind(developer_menu_button))
 	developer_menu_button.focus_entered.connect(_on_button_focus.bind(developer_menu_button, true))
 	developer_menu_button.focus_exited.connect(_on_button_focus.bind(developer_menu_button, false))
-	developer_menu_button.set_meta(InputManager.OWN_FOCUS_VISUAL_META, true)
 	
 	settings_container.closed.connect(_on_settings_closed)
 	tips_archive.closed.connect(_on_tips_closed)
