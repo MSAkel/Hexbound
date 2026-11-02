@@ -87,7 +87,7 @@ func on_day_started() -> void:
 
 func shop(visit: RefCounted) -> void:
 	for _attempt in 4:
-		var choice := _rng().randi_range(0, 2)
+		var choice := _rng().randi_range(0, 3)
 		match choice:
 			0:
 				var index := _rng().randi_range(0, visit.cards.size() - 1)
@@ -104,6 +104,14 @@ func shop(visit: RefCounted) -> void:
 					var index := _rng().randi_range(0, visit.condiments.size() - 1)
 					if visit.condiments[index] != null and EconomyManager.can_afford(visit.price_of(visit.condiments[index])):
 						visit.buy_condiment(index)
+			3:
+				if not visit.packs.is_empty():
+					var index := _rng().randi_range(0, visit.packs.size() - 1)
+					var contents: Array[Card] = visit.open_pack(index)
+					# Sometimes take nothing, as a player can.
+					if not contents.is_empty() and _rng().randf() < 0.85:
+						var kept: Card = contents[_rng().randi_range(0, contents.size() - 1)]
+						visit.keep_from_pack(kept, StaffManager.first_free_slot())
 	if EconomyManager.can_afford(visit.next_reroll_cost()) and _rng().randf() < 0.3:
 		visit.reroll()
 

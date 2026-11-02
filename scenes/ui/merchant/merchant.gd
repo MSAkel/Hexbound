@@ -11,6 +11,7 @@ const BASE_REROLL_COST := 5
 
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/CardsGridContainer
 @onready var condiments_grid: HBoxContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/CondimentShelf/CondimentsGrid
+@onready var packs_row: HBoxContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PacksShelf/PacksRow
 @onready var gold_amount_label: Label = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/CurrencyRow/GoldAmount
 @onready var reroll_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/RerollButton
 @onready var leave_button: Button = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide/LeaveButton
@@ -20,8 +21,15 @@ const BASE_REROLL_COST := 5
 
 var _displayed_cards: Array[CardUI] = []
 var _displayed_condiments: Array[CondimentShopItem] = []
+var _displayed_packs: Array[PackShopItem] = []
 var _selected_card_ui: CardUI = null
 var _selected_condiment_ui: CondimentShopItem = null
+var _selected_pack_ui: PackShopItem = null
+## Shown over the shelf while a bought pack waits for its keep-one pick.
+var _pack_opening: PackOpening = null
+## The opened pack awaiting a pick: {"kind": pack id, "slot": shelf slot, "cards": saved cards}.
+## Empty when no pack is open. Saved, because the gold is spent when the pack opens.
+var _pending_pack: Dictionary = {}
 var _stock_reroll_count := 0
 ## Gold cost for the next merchant reroll. Resets when the shop opens.
 var _reroll_cost := BASE_REROLL_COST
@@ -35,6 +43,8 @@ var _session_open := false
 var _locked_cards: Dictionary = {}
 ## Condiment shelf slot -> locked Condiment.
 var _locked_condiments: Dictionary = {}
+## Pack shelf slot -> locked MerchantPacks.Kind. A locked pack keeps its kind, not its cards.
+var _locked_packs: Dictionary = {}
 
 
 func _ready() -> void:
@@ -45,6 +55,10 @@ func _ready() -> void:
 	leave_button.pressed.connect(_on_leave_button_pressed)
 	_show_board_button.pressed.connect(_on_show_board_button_pressed)
 	_show_merchant_button.pressed.connect(_on_show_merchant_button_pressed)
+	_pack_opening = PackOpening.new()
+	_content_panel.add_child(_pack_opening)
+	_pack_opening.card_kept.connect(_on_pack_card_kept)
+	_pack_opening.skipped.connect(_on_pack_skipped)
 	EventBus.gold_changed.connect(_on_currency_changed)
 	EventBus.rerolls_changed.connect(_on_currency_changed)
 	EventBus.condiment_belt_changed.connect(_on_currency_changed)
@@ -67,6 +81,9 @@ func open() -> void:
 	var sold_condiment_indices: Array = []
 	var restored_cards: Array[Card] = []
 	var restored_condiments: Array[Condiment] = []
+	var restored_packs: Array[int] = []
+	var sold_pack_indices: Array = []
+	var pending_pack: Dictionary = {}
 	_session_open = true
 	_set_board_view(false)
 	if restoring:
@@ -83,6 +100,12 @@ func open() -> void:
 			var condiment := CondimentCatalog.get_by_id(str(entry))
 			if condiment != null:
 				restored_condiments.append(condiment)
+		sold_pack_indices = _restore_state.get("sold_pack_indices", [])
+		for entry in _restore_state.get("stock_packs", []):
+			var pack_kind := MerchantPacks.kind_from_id(str(entry))
+			if pack_kind >= 0:
+				restored_packs.append(pack_kind)
+		pending_pack = _restore_state.get("pending_pack", {})
 		_restore_state.clear()
 	else:
 		_stock_reroll_count = 0
@@ -91,9 +114,11 @@ func open() -> void:
 	cards_grid.columns = tile_card_count() + MERCHANT_STAFF_COUNT
 	_update_reroll_button()
 	UiManager.show_panel(self)
-	await _refresh_merchant_stock(restored_cards, restored_condiments)
+	await _refresh_merchant_stock(restored_cards, restored_condiments, restored_packs)
 	_apply_sold_indices(sold_card_indices)
 	_apply_sold_condiment_indices(sold_condiment_indices)
+	_apply_sold_pack_indices(sold_pack_indices)
+	_resume_pending_pack(pending_pack)
 	_queue_focus()
 	if restoring:
 		return
@@ -150,7 +175,7 @@ func set_board_view(active: bool) -> void:
 
 
 func _has_selection() -> bool:
-	return _selected_card_ui != null or _selected_condiment_ui != null
+	return _selected_card_ui != null or _selected_condiment_ui != null or _selected_pack_ui != null
 
 
 func _queue_focus() -> void:
@@ -166,13 +191,22 @@ func _focus_merchant() -> void:
 		# The board view belongs to the in-run controller. A focused button would eat its presses.
 		get_viewport().gui_release_focus()
 		return
+	if _pack_opening.is_open():
+		_pack_opening.focus_first()
+		return
 	if _selected_card_ui != null and _selected_card_ui.focus_purchase_tray():
 		return
 	if _selected_condiment_ui != null and _selected_condiment_ui.focus_purchase_tray():
 		return
+	if _selected_pack_ui != null and _selected_pack_ui.focus_purchase_tray():
+		return
 	for card_ui in _displayed_cards:
 		if not card_ui.is_sold():
 			card_ui.grab_focus()
+			return
+	for pack_ui in _displayed_packs:
+		if not pack_ui.is_sold():
+			pack_ui.grab_focus()
 			return
 	for condiment_ui in _displayed_condiments:
 		if not condiment_ui.is_sold():
@@ -211,11 +245,15 @@ func _on_condiment_targeting_changed(slot_index: int) -> void:
 ## Restored stock is shown as saved. Otherwise a fresh roll fills every unlocked slot.
 func _refresh_merchant_stock(
 	restored_cards: Array[Card] = [],
-	restored_condiments: Array[Condiment] = []
+	restored_condiments: Array[Condiment] = [],
+	restored_packs: Array[int] = []
 ) -> void:
 	_clear_selection()
 	await _display_merchant_cards(
 		restored_cards if not restored_cards.is_empty() else _roll_card_stock()
+	)
+	await _display_merchant_packs(
+		restored_packs if not restored_packs.is_empty() else _roll_pack_stock()
 	)
 	await _display_merchant_condiments(
 		restored_condiments if not restored_condiments.is_empty() else _roll_condiment_stock()
@@ -262,6 +300,22 @@ func _roll_condiment_stock() -> Array[Condiment]:
 			item = drawn.pop_front()
 		if item != null:
 			stock.append(item)
+	return stock
+
+
+## Locked packs keep their slot. Every other slot gets a fresh kind, never repeating one on the shelf.
+func _roll_pack_stock() -> Array[int]:
+	var locked_kinds: Array[int] = []
+	for locked_kind: int in _locked_packs.values():
+		locked_kinds.append(locked_kind)
+	var drawn: Array = MerchantPacks.draw_kinds(_stock_reroll_count, locked_kinds)
+	var stock: Array[int] = []
+	for slot in MerchantPacks.SHELF_COUNT:
+		var pack_kind: int = _locked_packs.get(slot, -1)
+		if pack_kind < 0 and not drawn.is_empty():
+			pack_kind = int(drawn.pop_front())
+		if pack_kind >= 0:
+			stock.append(pack_kind)
 	return stock
 
 
@@ -336,6 +390,22 @@ func _display_merchant_cards(inventory: Array[Card]) -> void:
 		_displayed_cards.append(card_ui)
 
 
+func _display_merchant_packs(stock: Array[int]) -> void:
+	_displayed_packs.clear()
+	for child in packs_row.get_children():
+		child.queue_free()
+	await get_tree().process_frame
+	for pack_kind in stock:
+		var item := PackShopItem.new()
+		packs_row.add_child(item)
+		item.configure(pack_kind as MerchantPacks.Kind)
+		item.selected.connect(_on_stock_pack_selected)
+		item.gold_purchase_requested.connect(_on_stock_pack_gold_purchase_requested)
+		item.lock_toggle_requested.connect(_on_stock_pack_lock_toggled)
+		item.set_merchant_locked(_locked_packs.has(_displayed_packs.size()))
+		_displayed_packs.append(item)
+
+
 func _display_merchant_condiments(stock: Array[Condiment]) -> void:
 	_displayed_condiments.clear()
 	for child in condiments_grid.get_children():
@@ -356,6 +426,7 @@ func _on_stock_card_selected(card_ui: CardUI) -> void:
 	if card_ui.is_sold():
 		return
 	_clear_condiment_selection()
+	_clear_pack_selection()
 	if _selected_card_ui != null and _selected_card_ui != card_ui:
 		_selected_card_ui.set_merchant_selected(false)
 	_selected_card_ui = card_ui
@@ -368,10 +439,24 @@ func _on_stock_condiment_selected(item: CondimentShopItem) -> void:
 	if item.is_sold():
 		return
 	_clear_card_selection()
+	_clear_pack_selection()
 	if _selected_condiment_ui != null and _selected_condiment_ui != item:
 		_selected_condiment_ui.set_merchant_selected(false)
 	_selected_condiment_ui = item
 	_selected_condiment_ui.set_merchant_selected(true)
+	_refresh_selected_purchase_tray()
+	_queue_focus()
+
+
+func _on_stock_pack_selected(item: PackShopItem) -> void:
+	if item.is_sold():
+		return
+	_clear_card_selection()
+	_clear_condiment_selection()
+	if _selected_pack_ui != null and _selected_pack_ui != item:
+		_selected_pack_ui.set_merchant_selected(false)
+	_selected_pack_ui = item
+	_selected_pack_ui.set_merchant_selected(true)
 	_refresh_selected_purchase_tray()
 	_queue_focus()
 
@@ -386,6 +471,25 @@ func _on_stock_condiment_gold_purchase_requested(item: CondimentShopItem) -> voi
 	if _selected_condiment_ui != item:
 		return
 	_complete_purchase()
+
+
+func _on_stock_pack_gold_purchase_requested(item: PackShopItem) -> void:
+	if _selected_pack_ui != item:
+		return
+	_complete_purchase()
+
+
+func _on_stock_pack_lock_toggled(item: PackShopItem, locked: bool) -> void:
+	var slot := _displayed_packs.find(item)
+	if slot < 0 or item.is_sold():
+		return
+	if locked:
+		_locked_packs[slot] = item.kind
+	else:
+		_locked_packs.erase(slot)
+	item.set_merchant_locked(locked)
+	AudioManager.play_sfx(UISounds.CLICK)
+	RunSaveManager.request_autosave()
 
 
 func _on_stock_card_lock_toggled(card_ui: CardUI, locked: bool) -> void:
@@ -415,6 +519,9 @@ func _on_stock_condiment_lock_toggled(item: CondimentShopItem, locked: bool) -> 
 
 
 func _complete_purchase() -> void:
+	if _selected_pack_ui != null:
+		_complete_pack_purchase()
+		return
 	if _selected_condiment_ui != null:
 		_complete_condiment_purchase()
 		return
@@ -456,6 +563,77 @@ func _seat_purchased_staff(staff: StaffCard, shelf_rect: Rect2) -> void:
 	StaffManager.add_staff(staff)
 
 
+## Gold is spent when the pack opens. Its cards come from a draw seeded by the shelf slot,
+## so the bot and a restored save both open the same pack.
+func _complete_pack_purchase() -> void:
+	if _selected_pack_ui == null or _selected_pack_ui.is_sold():
+		return
+	var pack := _selected_pack_ui
+	if not MerchantPacks.get_purchase_block_reason(pack.kind).is_empty():
+		return
+	if not EconomyManager.can_afford(pack.price):
+		return
+	var slot := _displayed_packs.find(pack)
+	var contents := MerchantPacks.draw_contents(pack.kind, _stock_reroll_count, slot)
+	# Nothing to open means nothing to charge for.
+	if contents.is_empty():
+		return
+	EconomyManager.remove(pack.price)
+	_locked_packs.erase(slot)
+	pack.mark_sold()
+	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
+	_clear_selection()
+	_open_pack(pack.kind, slot, contents)
+	_update_reroll_button()
+	RunSaveManager.request_autosave()
+
+
+## Shows an opened pack and records it, so quitting before the pick does not lose the gold.
+func _open_pack(kind: MerchantPacks.Kind, slot: int, contents: Array[Card]) -> void:
+	var saved_cards: Array = []
+	for card in contents:
+		saved_cards.append(_card_to_save(card))
+	_pending_pack = {"kind": MerchantPacks.id_of(kind), "slot": slot, "cards": saved_cards}
+	_pack_opening.present(kind, contents)
+
+
+## A save made mid-pick reopens the same pack.
+func _resume_pending_pack(entry: Dictionary) -> void:
+	if entry.is_empty():
+		return
+	var pack_kind := MerchantPacks.kind_from_id(str(entry.get("kind", "")))
+	var contents: Array[Card] = []
+	for card_entry in entry.get("cards", []):
+		var card := _card_from_save(card_entry)
+		if card != null:
+			contents.append(card)
+	if pack_kind < 0 or contents.is_empty():
+		return
+	_open_pack(pack_kind as MerchantPacks.Kind, int(entry.get("slot", -1)), contents)
+
+
+func _on_pack_card_kept(card: Card, shelf_rect: Rect2) -> void:
+	_pending_pack.clear()
+	if card is TileCard:
+		EventBus.tile_card_selected.emit(card as TileCard)
+	elif card is StaffCard:
+		_seat_purchased_staff(card as StaffCard, shelf_rect)
+	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
+	_after_pack_closed()
+
+
+func _on_pack_skipped() -> void:
+	_pending_pack.clear()
+	AudioManager.play_sfx(UISounds.CLICK)
+	_after_pack_closed()
+
+
+func _after_pack_closed() -> void:
+	_update_reroll_button()
+	_queue_focus()
+	RunSaveManager.request_autosave()
+
+
 func _complete_condiment_purchase() -> void:
 	if _selected_condiment_ui == null or _selected_condiment_ui.is_sold():
 		return
@@ -477,6 +655,9 @@ func _complete_condiment_purchase() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
+	# An opened pack must be picked from or declined before the shelf changes.
+	if _pack_opening.is_open():
+		return
 	if _free_rerolls_left > 0:
 		_free_rerolls_left -= 1
 	else:
@@ -495,6 +676,8 @@ func _on_reroll_button_pressed() -> void:
 
 
 func _on_leave_button_pressed() -> void:
+	if _pack_opening.is_open():
+		return
 	_session_open = false
 	_set_board_view(false)
 	hide()
@@ -507,6 +690,8 @@ func _on_currency_changed(_new_amount: int = 0) -> void:
 		card_ui.refresh_affordability()
 	for condiment_ui in _displayed_condiments:
 		condiment_ui.refresh_affordability()
+	for pack_ui in _displayed_packs:
+		pack_ui.refresh_affordability()
 	_update_reroll_button()
 	_refresh_selected_purchase_tray()
 
@@ -514,6 +699,7 @@ func _on_currency_changed(_new_amount: int = 0) -> void:
 func _clear_selection() -> void:
 	_clear_card_selection()
 	_clear_condiment_selection()
+	_clear_pack_selection()
 
 
 func _clear_card_selection() -> void:
@@ -528,11 +714,19 @@ func _clear_condiment_selection() -> void:
 	_selected_condiment_ui = null
 
 
+func _clear_pack_selection() -> void:
+	if _selected_pack_ui != null:
+		_selected_pack_ui.set_merchant_selected(false)
+	_selected_pack_ui = null
+
+
 func _refresh_selected_purchase_tray() -> void:
 	if _selected_card_ui != null and not _selected_card_ui.is_sold():
 		_selected_card_ui.refresh_purchase_tray()
 	if _selected_condiment_ui != null and not _selected_condiment_ui.is_sold():
 		_selected_condiment_ui.refresh_purchase_tray()
+	if _selected_pack_ui != null and not _selected_pack_ui.is_sold():
+		_selected_pack_ui.refresh_purchase_tray()
 
 
 func _update_currency_display() -> void:
@@ -572,6 +766,15 @@ func capture_shop_state() -> Dictionary:
 	for slot in _locked_condiments:
 		var condiment: Condiment = _locked_condiments[slot]
 		locked_condiments.append({"slot": slot, "id": condiment.id})
+	var sold_pack_indices: Array = []
+	var stock_packs: Array = []
+	for index in _displayed_packs.size():
+		stock_packs.append(MerchantPacks.id_of(_displayed_packs[index].kind))
+		if _displayed_packs[index].is_sold():
+			sold_pack_indices.append(index)
+	var locked_packs: Array = []
+	for slot in _locked_packs:
+		locked_packs.append({"slot": slot, "id": MerchantPacks.id_of(_locked_packs[slot] as MerchantPacks.Kind)})
 	return {
 		"open": _session_open,
 		"stock_reroll_count": _stock_reroll_count,
@@ -579,10 +782,14 @@ func capture_shop_state() -> Dictionary:
 		"free_rerolls_left": _free_rerolls_left,
 		"sold_indices": sold_indices,
 		"sold_condiment_indices": sold_condiment_indices,
+		"sold_pack_indices": sold_pack_indices,
 		"stock_cards": stock_cards,
 		"stock_condiments": stock_condiments,
+		"stock_packs": stock_packs,
 		"locked_cards": locked_cards,
 		"locked_condiments": locked_condiments,
+		"locked_packs": locked_packs,
+		"pending_pack": _pending_pack.duplicate(true),
 	}
 
 
@@ -590,9 +797,15 @@ func capture_shop_state() -> Dictionary:
 func apply_shop_state(state: Dictionary) -> void:
 	_locked_cards.clear()
 	_locked_condiments.clear()
+	_locked_packs.clear()
+	_pending_pack.clear()
 	if state.is_empty():
 		_restore_state.clear()
 		return
+	for entry in state.get("locked_packs", []):
+		var pack_kind := MerchantPacks.kind_from_id(str(entry.get("id", "")))
+		if pack_kind >= 0:
+			_locked_packs[int(entry.get("slot", -1))] = pack_kind
 	for entry in state.get("locked_cards", []):
 		var card := _card_from_save(entry)
 		if card != null:
@@ -646,6 +859,14 @@ func _apply_sold_condiment_indices(sold_indices: Array) -> void:
 		if index < 0 or index >= _displayed_condiments.size():
 			continue
 		_displayed_condiments[index].mark_sold()
+
+
+func _apply_sold_pack_indices(sold_indices: Array) -> void:
+	for entry in sold_indices:
+		var index := int(entry)
+		if index < 0 or index >= _displayed_packs.size():
+			continue
+		_displayed_packs[index].mark_sold()
 
 
 func _hide_purchased_stock(card_ui: CardUI) -> void:

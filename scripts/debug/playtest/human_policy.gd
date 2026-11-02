@@ -452,6 +452,11 @@ func shop(visit: RefCounted) -> void:
 					card_values.clear()
 				"condiment":
 					bought = visit.buy_condiment(int(best["index"]))
+				"pack":
+					bought = await _open_and_keep_pack(visit, int(best["index"]))
+					# A kept Technique changes the roster, so every estimate is stale.
+					await _refresh_baseline()
+					card_values.clear()
 			if not bought:
 				break
 		var spare: int = EconomyManager.amount - reserve - GOLD_COMFORT
@@ -509,7 +514,63 @@ func _best_shop_item(visit: RefCounted, reserve: int, card_values: Dictionary) -
 			if ratio > best_ratio:
 				best_ratio = ratio
 				best = {"kind": "condiment", "index": index}
+
+	for index in visit.packs.size():
+		if not visit.can_open_pack(index) or visit.pack_price(index) > spendable:
+			continue
+		var pack_key := "pack%d" % index
+		if not card_values.has(pack_key):
+			card_values[pack_key] = await _pack_value(visit, index)
+		var ratio := _buy_ratio(float(card_values[pack_key]), visit.pack_price(index))
+		if ratio > best_ratio:
+			best_ratio = ratio
+			best = {"kind": "pack", "index": index}
 	return best
+
+
+## What opening a pack is worth: the buyer keeps the best card, so the best of a preview draw.
+## The preview is not the pack's real contents, so the bot buys on the odds like a player would.
+func _pack_value(visit: RefCounted, index: int) -> float:
+	var best_value := 0.0
+	for card: Card in visit.preview_pack(index):
+		var kept: Dictionary = await _kept_card_choice(card)
+		best_value = maxf(best_value, float(kept["value"]))
+	return best_value
+
+
+## {"value", "slot"} for keeping this card from a pack. slot is the Technique seat, else -1.
+func _kept_card_choice(card: Card) -> Dictionary:
+	if card is StaffCard:
+		var choice := await _staff_purchase_choice(card as StaffCard)
+		if choice.is_empty():
+			return {"value": 0.0, "slot": StaffManager.first_free_slot()}
+		return {"value": float(choice["value"]), "slot": int(choice["slot"])}
+	var tile_card := card as TileCard
+	var placement := await _best_placement(tile_card)
+	var value := _sell_value()
+	if placement["hex"] != null:
+		value = maxf(value, float(placement["value"]))
+	if value > 0.0:
+		value *= _pick_bias(tile_card)
+	return {"value": value, "slot": -1}
+
+
+## Pays for a pack, then keeps the best card it really holds. False when it could not be opened.
+func _open_and_keep_pack(visit: RefCounted, index: int) -> bool:
+	var contents: Array[Card] = visit.open_pack(index)
+	if contents.is_empty():
+		return false
+	var best_card: Card = contents[0]
+	var best_value := -INF
+	var best_slot := -1
+	for card in contents:
+		var kept: Dictionary = await _kept_card_choice(card)
+		if float(kept["value"]) > best_value:
+			best_value = float(kept["value"])
+			best_card = card
+			best_slot = int(kept["slot"])
+	visit.keep_from_pack(best_card, best_slot)
+	return true
 
 
 ## Value per coin, or 0 when the item is below the buy floor for its price.
