@@ -184,15 +184,57 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_21gju")
 
 [node name="MerchandiseColumn" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter" unique_id=33221293]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 72
 
 [node name="ShelfRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1760726572]
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 2
+theme_override_constants/separation = 24
+
+[node name="PacksShelf" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow" unique_id=1920384751]
+custom_minimum_size = Vector2(400, 210)
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="ShelfGlow" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PacksShelf" unique_id=1920384752]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("ShelfGlowTex")
+expand_mode = 1
+
+[node name="ShelfImage" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PacksShelf" unique_id=1920384753]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -92.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("5_shelf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PacksRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow/PacksShelf" unique_id=1920384754]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 36.0
+offset_right = -36.0
+offset_bottom = 140.0
+grow_horizontal = 2
+theme_override_constants/separation = 18
+alignment = 1
 
 [node name="CondimentShelf" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow" unique_id=711787578]
-custom_minimum_size = Vector2(480, 210)
+custom_minimum_size = Vector2(330, 210)
 layout_mode = 2
 size_flags_horizontal = 8
 
@@ -230,13 +272,6 @@ offset_right = -36.0
 offset_bottom = 140.0
 grow_horizontal = 2
 theme_override_constants/separation = 18
-alignment = 1
-
-[node name="PacksRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1844210376]
-custom_minimum_size = Vector2(0, 194)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_constants/separation = 26
 alignment = 1
 
 [node name="CardsGridContainer" type="GridContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1594343347]
