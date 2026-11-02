@@ -54,6 +54,8 @@ const MOUSE_WAKE_DISTANCE := 4.0
 ## Right-stick scroll speed in pixels per second at full tilt.
 const SCROLL_SPEED := 1400.0
 
+## Off until gamepad support gets its own focus visuals. The ring code is kept for that work.
+const FOCUS_RING_ENABLED := false
 const FOCUS_RING_LAYER := 120
 const FOCUS_RING_COLOR := Color("#ffd166")
 const FOCUS_RING_WIDTH := 3.0
@@ -141,7 +143,7 @@ func _track_device(event: InputEvent) -> void:
 		_set_input_mode(InputMode.GAMEPAD)
 		_focus_visible = true
 	elif event is InputEventKey and event.pressed:
-		# The focus ring is for gamepad navigation only. Keys (even Ctrl) must not show it.
+		# Keys (even Ctrl) must not show the focus ring.
 		_set_input_mode(InputMode.KEYBOARD_MOUSE)
 		_focus_visible = false
 	elif event is InputEventMouseButton and event.pressed:
@@ -154,7 +156,8 @@ func _track_device(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	_ring.queue_redraw()
+	if FOCUS_RING_ENABLED:
+		_ring.queue_redraw()
 	if is_using_gamepad():
 		_scroll_with_right_stick(delta)
 
@@ -374,7 +377,7 @@ func _build_focus_ring() -> void:
 
 
 func _draw_focus_ring() -> void:
-	if not _focus_visible:
+	if not FOCUS_RING_ENABLED or not _focus_visible:
 		return
 	var owner := get_viewport().gui_get_focus_owner()
 	if owner == null or not owner.is_visible_in_tree() or not _wants_ring(owner):
