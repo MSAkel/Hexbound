@@ -28,8 +28,6 @@ enum PadFamily {
 ##   is_gamepad_menu_active() -> bool  (default: visible). Inactive menus are skipped and do not block gameplay.
 ##   focus_default() -> void           (default: first focusable descendant).
 const MENU_GROUP := &"gamepad_menu"
-## Controls that draw their own focused state set this meta to true so the ring skips them.
-const OWN_FOCUS_VISUAL_META := &"own_focus_visual"
 
 const ACTION_CONFIRM := &"pad_confirm"
 const ACTION_BACK := &"pad_back"
@@ -53,11 +51,6 @@ const STICK_WAKE_THRESHOLD := 0.5
 const MOUSE_WAKE_DISTANCE := 4.0
 ## Right-stick scroll speed in pixels per second at full tilt.
 const SCROLL_SPEED := 1400.0
-
-const FOCUS_RING_LAYER := 120
-const FOCUS_RING_COLOR := Color("#ffd166")
-const FOCUS_RING_WIDTH := 3.0
-const FOCUS_RING_PADDING := 6.0
 
 ## action -> events. Keys are only added where they help keyboard menu use.
 ## Godot's ui_* actions already ship with keyboard events. The pad events are added to them here.
@@ -104,17 +97,12 @@ const BUTTON_NAMES := {
 
 var input_mode: InputMode = InputMode.KEYBOARD_MOUSE
 var pad_family: PadFamily = PadFamily.XBOX
-## True when the last menu input came from a pad or the keyboard, so focus should be drawn.
-var _focus_visible := false
 var _scroll_remainder := 0.0
-var _ring_layer: CanvasLayer
-var _ring: Control
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_register_bindings()
-	_build_focus_ring()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	# The window sees each event before any node does. Scene nodes run _input before autoloads,
 	# so a node that consumes a click would otherwise hide the device switch from this script.
@@ -139,21 +127,16 @@ func _track_device(event: InputEvent) -> void:
 	if _is_pad_wake_event(event):
 		_set_pad_family(_family_for_device(event.device))
 		_set_input_mode(InputMode.GAMEPAD)
-		_focus_visible = true
 	elif event is InputEventKey and event.pressed:
 		_set_input_mode(InputMode.KEYBOARD_MOUSE)
-		_focus_visible = true
 	elif event is InputEventMouseButton and event.pressed:
 		_set_input_mode(InputMode.KEYBOARD_MOUSE)
-		_focus_visible = false
 	elif event is InputEventMouseMotion \
 			and (event as InputEventMouseMotion).relative.length() >= MOUSE_WAKE_DISTANCE:
 		_set_input_mode(InputMode.KEYBOARD_MOUSE)
-		_focus_visible = false
 
 
 func _process(delta: float) -> void:
-	_ring.queue_redraw()
 	if is_using_gamepad():
 		_scroll_with_right_stick(delta)
 
@@ -353,53 +336,6 @@ func _can_scroll(scroll: ScrollContainer) -> bool:
 		return false
 	var bar := scroll.get_v_scroll_bar()
 	return bar != null and bar.max_value - bar.page > 0.5
-
-#endregion
-
-
-#region Focus ring
-
-func _build_focus_ring() -> void:
-	_ring_layer = CanvasLayer.new()
-	_ring_layer.name = "FocusRingLayer"
-	_ring_layer.layer = FOCUS_RING_LAYER
-	add_child(_ring_layer)
-	_ring = Control.new()
-	_ring.name = "FocusRing"
-	_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_ring.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_ring.draw.connect(_draw_focus_ring)
-	_ring_layer.add_child(_ring)
-
-
-func _draw_focus_ring() -> void:
-	if not _focus_visible:
-		return
-	var owner := get_viewport().gui_get_focus_owner()
-	if owner == null or not owner.is_visible_in_tree() or not _wants_ring(owner):
-		return
-	var xform := owner.get_global_transform_with_canvas()
-	var rect := Rect2(xform * Vector2.ZERO, Vector2.ZERO)
-	for corner: Vector2 in [Vector2(owner.size.x, 0.0), Vector2(0.0, owner.size.y), owner.size]:
-		rect = rect.expand(xform * corner)
-	rect = rect.grow(FOCUS_RING_PADDING)
-	var pulse := 0.75 + 0.25 * sin(Time.get_ticks_msec() / 180.0)
-	var style := StyleBoxFlat.new()
-	style.draw_center = false
-	style.border_color = Color(FOCUS_RING_COLOR, pulse)
-	style.set_border_width_all(int(FOCUS_RING_WIDTH))
-	style.set_corner_radius_all(8)
-	_ring.draw_style_box(style, rect)
-
-
-## Text fields and buttons with a drawn focus box show focus themselves. Everything else gets the ring.
-## The theme's Button focus style reuses the hover art, and many scenes blank it, so it does not count.
-func _wants_ring(control: Control) -> bool:
-	if bool(control.get_meta(OWN_FOCUS_VISUAL_META, false)) or control is LineEdit:
-		return false
-	if control is Button:
-		return not control.get_theme_stylebox(&"focus") is StyleBoxFlat
-	return true
 
 #endregion
 

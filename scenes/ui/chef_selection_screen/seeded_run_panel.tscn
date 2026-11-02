@@ -169,7 +169,7 @@ theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_paste")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_paste")
 theme_override_styles/hover = SubResource("StyleBoxFlat_paste_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_paste_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_x7o2x")
 text = "Paste"
 
 [connection signal="pressed" from="Body/SeedBody/SeedInputRow/PasteSeedButton" to="." method="_on_paste_seed_button_pressed"]
