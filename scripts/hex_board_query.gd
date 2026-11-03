@@ -28,6 +28,8 @@ var _neighbors_by_coords: Dictionary = {}
 var _edge_by_coords: Dictionary = {}
 ## Per-station hex lists in fire order, aligned with HexMapLayout.build_segments().
 var _hexes_by_segment: Array = []
+## Stations whose regular spots run right to left in the current index (Reverse Sear).
+var reversed_segments: Array[int] = []
 
 
 func setup(map: HexTileMap) -> void:
@@ -54,11 +56,13 @@ func rebuild_spatial_index() -> void:
 	# Technique reverses it (Reverse Sear) runs its regular spots right to left; its Meal slots
 	# still trigger last, in their usual order.
 	var segments := _map.build_segments()
+	reversed_segments.clear()
 	for segment_index in segments.size():
 		var row: Array[Vector2i] = []
 		row.assign(segments[segment_index])
 		if StaffManager.reverses_segment(segment_index):
 			row = _reversed_regular_spots(row)
+			reversed_segments.append(segment_index)
 		var hexes: Array[Hex] = []
 		for coords: Vector2i in row:
 			var hex: Hex = _map.map_data.get(coords)

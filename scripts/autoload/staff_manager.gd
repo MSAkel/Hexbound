@@ -18,6 +18,9 @@ var _hour_state: Array[Dictionary] = []
 var _seasoning_fires_this_hour := 0
 ## Live board. HexTileMap registers itself, so headless boards work without the main scene.
 var _board: HexTileMap = null
+## Union of the HOOK_* flags of every seated effect, or -1 to recompute. Cleared on roster changes.
+## Off-shift staff still count, so it can only ever say "maybe", never miss a hook.
+var _hook_mask := -1
 
 
 func _ready() -> void:
@@ -25,6 +28,7 @@ func _ready() -> void:
 	_reset_hour_state()
 	StaffCatalog.ensure_loaded()
 	EventBus.gold_spent.connect(_on_gold_spent)
+	EventBus.staff_roster_changed.connect(_invalidate_hook_mask)
 
 
 ## Called by HexTileMap when it enters the tree.
@@ -160,6 +164,8 @@ func _context_for(slot: int, map: HexTileMap = null) -> StaffContext:
 ## context when none does, which keeps per-trigger lookups cheap.
 func _contexts_with(hook: int, map: HexTileMap = null) -> Array[StaffContext]:
 	var contexts: Array[StaffContext] = []
+	if (_seated_hook_mask() & hook) == 0:
+		return contexts
 	for slot in SLOT_COUNT:
 		var effect := resolve_effect_at(slot)
 		if effect == null or (effect.hook_flags() & hook) == 0:
@@ -168,6 +174,24 @@ func _contexts_with(hook: int, map: HexTileMap = null) -> Array[StaffContext]:
 		if ctx != null:
 			contexts.append(ctx)
 	return contexts
+
+
+func _seated_hook_mask() -> int:
+	if _hook_mask < 0:
+		var mask := 0
+		for slot in SLOT_COUNT:
+			var staff := get_staff(slot)
+			if staff == null:
+				continue
+			var effect := staff.resolve_effect(self, slot, 0)
+			if effect != null:
+				mask |= effect.hook_flags()
+		_hook_mask = mask
+	return _hook_mask
+
+
+func _invalidate_hook_mask() -> void:
+	_hook_mask = -1
 
 
 ## Every slot with a live effect, top to bottom.
@@ -373,6 +397,8 @@ func borrowed_station_perks(segment_index: int) -> Array[StationPerk]:
 func reverses_segment(segment_index: int) -> bool:
 	if segment_index < 0 or segment_index >= SLOT_COUNT:
 		return false
+	if (_seated_hook_mask() & StaffCard.HOOK_REVERSE_STATION) == 0:
+		return false
 	var effect := resolve_effect_at(segment_index)
 	if effect == null or (effect.hook_flags() & StaffCard.HOOK_REVERSE_STATION) == 0:
 		return false
@@ -412,6 +438,8 @@ func pack_card_count_change() -> int:
 func end_hour() -> void:
 	_reset_hour_state()
 	EventManager.clear_off_shift_staff()
+	# A Copycat pointing at an off-shift Technique copies it again from the next Hour.
+	_invalidate_hook_mask()
 
 #endregion --- Engine hooks ---
 
