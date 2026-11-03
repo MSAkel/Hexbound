@@ -1,10 +1,18 @@
 extends StaffCard
 
-## Rewards a station that holds no Kitchenware at all.
-const FLAVOUR_BONUS := 100
+## Fish Station partner: its setup already pairs Seafood with Fruit.
+const FLAVOUR_PER_FRUIT := 15
 
 
-func on_station_started(ctx: StaffContext) -> void:
-	if not ctx.station_cards(TileCard.TileCardType.KITCHENWARE).is_empty():
-		return
-	ctx.add_flavour(FLAVOUR_BONUS)
+func hook_flags() -> int:
+	return HOOK_FLAT_FLAVOUR
+
+
+func flat_flavour_for(ctx: StaffContext, tile: Hex, card: TileCard) -> int:
+	if not ctx.is_on_station(tile) or not card.has_ingredient_tag(TileCard.TAG_SEAFOOD):
+		return 0
+	var fruits := 0
+	for other: TileCard in ctx.station_cards(TileCard.TileCardType.INGREDIENT):
+		if other.has_ingredient_tag(TileCard.TAG_FRUIT):
+			fruits += 1
+	return FLAVOUR_PER_FRUIT * fruits

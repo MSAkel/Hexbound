@@ -28,6 +28,8 @@ var _neighbors_by_coords: Dictionary = {}
 var _edge_by_coords: Dictionary = {}
 ## Per-station hex lists in fire order, aligned with HexMapLayout.build_segments().
 var _hexes_by_segment: Array = []
+## Stations whose regular spots run right to left in the current index (Reverse Sear).
+var reversed_segments: Array[int] = []
 
 
 func setup(map: HexTileMap) -> void:
@@ -50,23 +52,40 @@ func rebuild_spatial_index() -> void:
 	if _map == null:
 		return
 
-	for coords: Vector2i in _map.get_coords_in_trigger_order():
-		var hex: Hex = _map.map_data.get(coords)
-		if hex == null:
-			continue
-		_trigger_index_by_coords[coords] = _hexes_in_order.size()
-		_hexes_in_order.append(hex)
-		_cache_neighbors(hex)
-
-	for segment: Array in _map.build_segments():
+	# Trigger order is the stations top to bottom, each in its row order. A station whose
+	# Technique reverses it (Reverse Sear) runs its regular spots right to left; its Meal slots
+	# still trigger last, in their usual order.
+	var segments := _map.build_segments()
+	reversed_segments.clear()
+	for segment_index in segments.size():
+		var row: Array[Vector2i] = []
+		row.assign(segments[segment_index])
+		if StaffManager.reverses_segment(segment_index):
+			row = _reversed_regular_spots(row)
+			reversed_segments.append(segment_index)
 		var hexes: Array[Hex] = []
-		for coords: Vector2i in segment:
+		for coords: Vector2i in row:
 			var hex: Hex = _map.map_data.get(coords)
-			if hex != null:
-				hexes.append(hex)
+			if hex == null:
+				continue
+			_trigger_index_by_coords[coords] = _hexes_in_order.size()
+			_hexes_in_order.append(hex)
+			_cache_neighbors(hex)
+			hexes.append(hex)
 		_hexes_by_segment.append(hexes)
 
 	_rebuild_occupancy_from_map()
+
+
+## The row with its regular spots reversed and its Meal slots left at the end.
+func _reversed_regular_spots(row: Array[Vector2i]) -> Array[Vector2i]:
+	var regular_count := maxi(row.size() - HexMapLayout.MEAL_SLOTS_PER_STATION, 0)
+	var result: Array[Vector2i] = []
+	for i in range(regular_count - 1, -1, -1):
+		result.append(row[i])
+	for i in range(regular_count, row.size()):
+		result.append(row[i])
+	return result
 
 
 ## Keeps the card-to-hex index in sync when a seat is filled or cleared.

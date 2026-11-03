@@ -133,6 +133,15 @@ func get_level(segment_index: int) -> int:
 	return station.level if station != null else START_LEVEL
 
 
+## Level used for the level bonus and level-based Mult: the real level plus staff bonuses
+## (Smokehouse), capped at MAX_LEVEL. Picks, thresholds and Meal slots use get_level.
+func get_effective_level(segment_index: int) -> int:
+	var level := get_level(segment_index)
+	if get_station_type(segment_index) == null:
+		return level
+	return mini(level + StaffManager.station_level_bonus(segment_index), MAX_LEVEL)
+
+
 func get_served(segment_index: int) -> int:
 	var station := _station(segment_index)
 	return station.served if station != null else 0
@@ -148,12 +157,28 @@ func get_level_thresholds(station_type: StationType) -> Array[int]:
 	return thresholds if thresholds.size() == LEVEL_THRESHOLDS.size() else LEVEL_THRESHOLDS
 
 
+## Thresholds for one station: its type's thresholds less any staff discount (Head Start).
+## Never below 1, and each level still needs at least one more Meal than the last.
+func get_segment_thresholds(segment_index: int) -> Array[int]:
+	var thresholds := get_level_thresholds(get_station_type(segment_index))
+	var discount := StaffManager.level_threshold_discount(segment_index)
+	if discount <= 0:
+		return thresholds
+	var adjusted: Array[int] = []
+	var previous := 0
+	for threshold: int in thresholds:
+		var value := maxi(threshold - discount, previous + 1)
+		adjusted.append(value)
+		previous = value
+	return adjusted
+
+
 ## Meals served needed for the next level, or -1 at max level.
 func get_next_threshold(segment_index: int) -> int:
 	var level := get_level(segment_index)
 	if level >= MAX_LEVEL:
 		return -1
-	return get_level_thresholds(get_station_type(segment_index))[level - START_LEVEL]
+	return get_segment_thresholds(segment_index)[level - START_LEVEL]
 
 
 ## Meals served needed for the current level. 0 at the starting level.
@@ -161,7 +186,7 @@ func get_current_threshold(segment_index: int) -> int:
 	var level := get_level(segment_index)
 	if level <= START_LEVEL:
 		return 0
-	return get_level_thresholds(get_station_type(segment_index))[level - START_LEVEL - 1]
+	return get_segment_thresholds(segment_index)[level - START_LEVEL - 1]
 
 
 ## Index into the type's choice_options, or -1 when nothing was picked.
@@ -251,10 +276,13 @@ func get_active_perks(segment_index: int) -> Array[StationPerk]:
 	var station_type := get_station_type(segment_index)
 	if station_type == null:
 		return perks
-	var level_perk := station_type.perk_for_level(get_level(segment_index))
+	var level_perk := station_type.perk_for_level(get_effective_level(segment_index))
 	if level_perk != null:
 		perks.append(level_perk)
 	perks.append_array(get_picked_perks(segment_index))
+	for perk: StationPerk in StaffManager.borrowed_station_perks(segment_index):
+		if perk not in perks:
+			perks.append(perk)
 	return perks
 
 
@@ -273,7 +301,7 @@ func get_level_flat_flavour(segment_index: int) -> int:
 	var station_type := get_station_type(segment_index)
 	if station_type == null:
 		return 0
-	var level_perk := station_type.perk_for_level(get_level(segment_index))
+	var level_perk := station_type.perk_for_level(get_effective_level(segment_index))
 	return level_perk.flat_flavour if level_perk != null else 0
 
 
@@ -466,7 +494,7 @@ func output_scale_for(tile: Hex, card: TileCard) -> float:
 			var side_card := hex.active_tile_card
 			if side_card != null and side_card != card:
 				scale *= side_card.neighbour_station_output_scale_for(card, hex)
-	return scale
+	return scale * StaffManager.output_scale_for(tile, card)
 
 
 ## Flat Flavour station perks add to an Ingredient's base amount, before every multiplier.
@@ -484,6 +512,7 @@ func flat_flavour_bonus_for(tile: Hex, card: TileCard) -> int:
 			continue
 		for perk: StationPerk in get_active_perks(other):
 			bonus += perk.flat_flavour_elsewhere(other, segment_index, tile, card)
+	bonus += StaffManager.flat_flavour_bonus_for(tile, card)
 	return maxi(bonus, 0)
 
 
@@ -626,7 +655,7 @@ func record_serving(segment_index: int) -> void:
 	if station == null or station.type == null:
 		return
 	station.served += 1
-	var thresholds := get_level_thresholds(station.type)
+	var thresholds := get_segment_thresholds(segment_index)
 	while station.level < MAX_LEVEL and station.served >= thresholds[station.level - START_LEVEL]:
 		station.level += 1
 		EventBus.station_leveled_up.emit(segment_index, station.level)

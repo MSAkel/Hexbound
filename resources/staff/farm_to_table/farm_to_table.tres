@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/farm_to_table/farm_to_table.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "farm_to_table"
+name = "Farm to Table"
+description = "Vegetables and Fruits on this Station gain +6 {flavour}, or +12 on a Cold Station"
+rarity = 0

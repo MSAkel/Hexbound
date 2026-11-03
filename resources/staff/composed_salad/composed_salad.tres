@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/composed_salad/composed_salad.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "composed_salad"
+name = "Composed Salad"
+description = "Salads on this Station gain x0.25 output for each different Vegetable on this Station"
+rarity = 2

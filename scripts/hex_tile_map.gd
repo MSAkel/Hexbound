@@ -119,6 +119,8 @@ func _ready() -> void:
 	generate_terrain()
 	EventBus.turn_ended.connect(on_turn_ended)
 	EventBus.condiment_fuses_changed.connect(_refresh_condiment_fuse_badges)
+	# A Technique can reverse a station's trigger order (Reverse Sear). Rebuilt before the chips read it.
+	EventBus.staff_roster_changed.connect(_on_staff_roster_changed_trigger_order)
 	# Dish chips read the staff recipe discount, so a roster change can move them.
 	EventBus.staff_roster_changed.connect(refresh_board_output_chips)
 	StaffManager.bind_board(self)
@@ -791,6 +793,20 @@ func get_opposite_coords(coords: Vector2i) -> Vector2i:
 ## All map coordinates sorted by the active trigger-order rule.
 func get_coords_in_trigger_order() -> Array[Vector2i]:
 	return _layout.get_coords_in_trigger_order()
+
+
+## Rebuilds the trigger order only when a row's direction changed, since the bot reseats
+## Techniques constantly while it compares options.
+func _on_staff_roster_changed_trigger_order() -> void:
+	if query == null or map_data.is_empty():
+		return
+	var reversed: Array[int] = []
+	for segment_index in get_segment_count():
+		if StaffManager.reverses_segment(segment_index):
+			reversed.append(segment_index)
+	if reversed == query.reversed_segments:
+		return
+	query.rebuild_spatial_index()
 
 
 ## All map hex tiles in trigger order.

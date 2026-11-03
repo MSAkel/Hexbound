@@ -18,6 +18,9 @@ var _hour_state: Array[Dictionary] = []
 var _seasoning_fires_this_hour := 0
 ## Live board. HexTileMap registers itself, so headless boards work without the main scene.
 var _board: HexTileMap = null
+## Union of the HOOK_* flags of every seated effect, or -1 to recompute. Cleared on roster changes.
+## Off-shift staff still count, so it can only ever say "maybe", never miss a hook.
+var _hook_mask := -1
 
 
 func _ready() -> void:
@@ -25,6 +28,7 @@ func _ready() -> void:
 	_reset_hour_state()
 	StaffCatalog.ensure_loaded()
 	EventBus.gold_spent.connect(_on_gold_spent)
+	EventBus.staff_roster_changed.connect(_invalidate_hook_mask)
 
 
 ## Called by HexTileMap when it enters the tree.
@@ -154,6 +158,40 @@ func _context_for(slot: int, map: HexTileMap = null) -> StaffContext:
 	ctx.map = map if map != null else _tile_map()
 	ctx.hour_state = _hour_state[slot]
 	return ctx
+
+
+## Slots whose live effect declares hook (a StaffCard.HOOK_* flag), top to bottom. Builds no
+## context when none does, which keeps per-trigger lookups cheap.
+func _contexts_with(hook: int, map: HexTileMap = null) -> Array[StaffContext]:
+	var contexts: Array[StaffContext] = []
+	if (_seated_hook_mask() & hook) == 0:
+		return contexts
+	for slot in SLOT_COUNT:
+		var effect := resolve_effect_at(slot)
+		if effect == null or (effect.hook_flags() & hook) == 0:
+			continue
+		var ctx := _context_for(slot, map if map != null else _tile_map())
+		if ctx != null:
+			contexts.append(ctx)
+	return contexts
+
+
+func _seated_hook_mask() -> int:
+	if _hook_mask < 0:
+		var mask := 0
+		for slot in SLOT_COUNT:
+			var staff := get_staff(slot)
+			if staff == null:
+				continue
+			var effect := staff.resolve_effect(self, slot, 0)
+			if effect != null:
+				mask |= effect.hook_flags()
+		_hook_mask = mask
+	return _hook_mask
+
+
+func _invalidate_hook_mask() -> void:
+	_hook_mask = -1
 
 
 ## Every slot with a live effect, top to bottom.
@@ -305,10 +343,103 @@ func on_day_ended() -> void:
 		ctx.effect.on_day_ended(ctx)
 
 
+func after_meal_failed(tile: Hex, meal: TileCard) -> void:
+	if tile == null or meal == null:
+		return
+	for ctx: StaffContext in _contexts(tile.map):
+		ctx.effect.on_meal_failed(ctx, tile, meal)
+
+
+## Flat Flavour staff add to a Flavour Ingredient's base. StationManager adds it to the station bonus.
+func flat_flavour_bonus_for(tile: Hex, card: TileCard) -> int:
+	if tile == null or card == null:
+		return 0
+	var bonus := 0
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_FLAT_FLAVOUR, tile.map):
+		bonus += ctx.effect.flat_flavour_for(ctx, tile, card)
+	return bonus
+
+
+## Output multiplier from staff. StationManager folds it into the station output scale.
+func output_scale_for(tile: Hex, card: TileCard) -> float:
+	if tile == null or card == null:
+		return 1.0
+	var scale := 1.0
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_OUTPUT_SCALE, tile.map):
+		scale *= ctx.effect.output_scale_for(ctx, tile, card)
+	return scale
+
+
+func station_level_bonus(segment_index: int) -> int:
+	var bonus := 0
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_STATION_LEVEL):
+		bonus += ctx.effect.station_level_bonus(ctx, segment_index)
+	return bonus
+
+
+func level_threshold_discount(segment_index: int) -> int:
+	var discount := 0
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_LEVEL_THRESHOLD):
+		discount += ctx.effect.level_threshold_discount(ctx, segment_index)
+	return discount
+
+
+func borrowed_station_perks(segment_index: int) -> Array[StationPerk]:
+	var perks: Array[StationPerk] = []
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_BORROWED_PERKS):
+		for perk: StationPerk in ctx.effect.borrowed_station_perks(ctx, segment_index):
+			if perk not in perks:
+				perks.append(perk)
+	return perks
+
+
+## True when the staff member at this station's slot reverses its regular spots.
+func reverses_segment(segment_index: int) -> bool:
+	if segment_index < 0 or segment_index >= SLOT_COUNT:
+		return false
+	if (_seated_hook_mask() & StaffCard.HOOK_REVERSE_STATION) == 0:
+		return false
+	var effect := resolve_effect_at(segment_index)
+	if effect == null or (effect.hook_flags() & StaffCard.HOOK_REVERSE_STATION) == 0:
+		return false
+	var ctx := _context_for(segment_index)
+	return ctx != null and ctx.effect.reverses_station(ctx)
+
+
+func extra_card_pick_choices() -> int:
+	var extra := 0
+	for ctx: StaffContext in _contexts():
+		extra += ctx.effect.extra_card_pick_choices(ctx)
+	return extra
+
+
+func wants_recipe_card_in_picks() -> bool:
+	for ctx: StaffContext in _contexts():
+		if ctx.effect.wants_recipe_card_in_picks(ctx):
+			return true
+	return false
+
+
+func pack_price_discount() -> int:
+	var discount := 0
+	for ctx: StaffContext in _contexts():
+		discount += ctx.effect.pack_price_discount(ctx)
+	return discount
+
+
+func pack_card_count_change() -> int:
+	var change := 0
+	for ctx: StaffContext in _contexts():
+		change += ctx.effect.pack_card_count_change(ctx)
+	return change
+
+
 ## Hour finished firing. Drops per-Hour scratch state and brings Short Staffed's pick back.
 func end_hour() -> void:
 	_reset_hour_state()
 	EventManager.clear_off_shift_staff()
+	# A Copycat pointing at an off-shift Technique copies it again from the next Hour.
+	_invalidate_hook_mask()
 
 #endregion --- Engine hooks ---
 

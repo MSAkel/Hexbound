@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/emulsion/emulsion.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "emulsion"
+name = "Emulsion"
+description = "Dairy and Seasonings on this Station gain +4 {flavour} for each Sauce & Dip meal served this Day"
+rarity = 1

@@ -11,6 +11,15 @@ const BASE_PRICE_BY_RARITY := {
 	Rarity.RARE: 12,
 }
 
+## Per-trigger hooks a Technique uses, so StaffManager can skip the rest on hot paths (every card
+## trigger and every station perk lookup). Return a mask of these from hook_flags().
+const HOOK_FLAT_FLAVOUR := 1
+const HOOK_OUTPUT_SCALE := 2
+const HOOK_STATION_LEVEL := 4
+const HOOK_LEVEL_THRESHOLD := 8
+const HOOK_BORROWED_PERKS := 16
+const HOOK_REVERSE_STATION := 32
+
 ## Run-long counters for staff that grow. Saved with the slot. Not exported, so a fresh seat starts empty.
 var run_state: Dictionary = {}
 
@@ -147,5 +156,65 @@ func on_day_started(_ctx: StaffContext) -> void:
 ## Day goal met, before the summary and the merchant.
 func on_day_ended(_ctx: StaffContext) -> void:
 	pass
+
+
+## Which per-trigger hooks below this Technique overrides (HOOK_* mask). 0 for most.
+func hook_flags() -> int:
+	return 0
+
+
+## A Meal could not be served (its recipe was not ready). tile is its spot.
+func on_meal_failed(_ctx: StaffContext, _tile: Hex, _meal: TileCard) -> void:
+	pass
+
+
+## Flat Flavour added to a Flavour Ingredient's base, before every multiplier (like station levels).
+func flat_flavour_for(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> int:
+	return 0
+
+
+## Output multiplier for a seated card, folded in with station perks.
+func output_scale_for(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> float:
+	return 1.0
+
+
+## Extra levels a station counts for its level bonus and level-based Mult (Smokehouse). Picks ignore it.
+func station_level_bonus(_ctx: StaffContext, _segment_index: int) -> int:
+	return 0
+
+
+## Meals fewer each level threshold needs on a station (Head Start).
+func level_threshold_discount(_ctx: StaffContext, _segment_index: int) -> int:
+	return 0
+
+
+## Level 3 and level 6 perks a station borrows from elsewhere (Cross-Training).
+func borrowed_station_perks(_ctx: StaffContext, _segment_index: int) -> Array[StationPerk]:
+	return []
+
+
+## True when this staff member's station triggers its regular spots right to left (Reverse Sear).
+func reverses_station(_ctx: StaffContext) -> bool:
+	return false
+
+
+## Extra cards shown in each card pick (Recipe Card).
+func extra_card_pick_choices(_ctx: StaffContext) -> int:
+	return 0
+
+
+## True when every card pick should include a card a Meal on the board needs (Shopping List).
+func wants_recipe_card_in_picks(_ctx: StaffContext) -> bool:
+	return false
+
+
+## Gold off every merchant pack (Supplier Contract).
+func pack_price_discount(_ctx: StaffContext) -> int:
+	return 0
+
+
+## Change to the number of cards a merchant pack opens into (Supplier Contract).
+func pack_card_count_change(_ctx: StaffContext) -> int:
+	return 0
 
 #endregion --- Hooks ---

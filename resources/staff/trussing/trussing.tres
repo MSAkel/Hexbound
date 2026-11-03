@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/trussing/trussing.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "trussing"
+name = "Trussing"
+description = "Poultry dishes on this Station have x1.5 output, or x2 with a Vegetable on this Station"
+rarity = 1

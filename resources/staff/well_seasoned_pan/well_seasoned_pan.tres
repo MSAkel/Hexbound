@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/well_seasoned_pan/well_seasoned_pan.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "well_seasoned_pan"
+name = "Well-Seasoned Pan"
+description = "At the end of each Day, Kitchenware on this Station gain +1 {mult} for the rest of the run, even if moved"
+rarity = 1

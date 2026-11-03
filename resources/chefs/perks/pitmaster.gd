@@ -27,4 +27,4 @@ func meal_extra_mult(_state: Dictionary, tile: Hex, meal: MealCard) -> float:
 	var seg := StationManager.segment_of_tile(tile)
 	if seg < 0 or StationManager.get_station_type(seg) == null:
 		return 0.0
-	return mult_per_level * float(StationManager.get_level(seg))
+	return mult_per_level * float(StationManager.get_effective_level(seg))
