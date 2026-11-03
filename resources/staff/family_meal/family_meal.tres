@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/family_meal/family_meal.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "family_meal"
+name = "Family Meal"
+description = "Days 1 to 3: +3 {mult} whenever a Meal is served on this Station"
+rarity = 0

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/ramekins/ramekins.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "ramekins"
+name = "Ramekins"
+description = "Each Sauce & Dip meal served on this Station gives +3 {mult} to the next Meal served on any Station"
+rarity = 0

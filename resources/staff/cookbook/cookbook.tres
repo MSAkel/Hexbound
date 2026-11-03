@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/cookbook/cookbook.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "cookbook"
+name = "Cookbook"
+description = "At the end of each Day, gains x0.02 {mult} for each different Meal served that Day"
+rarity = 2

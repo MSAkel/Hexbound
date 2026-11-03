@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "glazing"
 name = "Glazing"
-description = "Every Kitchenware with a {garnish} ability has a 1 in 4 chance to apply {garnish} twice"
+description = "Gains +1 {mult} whenever a Sweet on this Station is {garnished}"
 rarity = 1

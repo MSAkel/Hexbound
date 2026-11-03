@@ -1,16 +1,17 @@
 extends StaffCard
 
-## Kitchenware Garnishes anywhere on the pass may land twice.
-const TWICE_ODDS := 4
+## Pastry Chef partner: every Sweet Garnish on this station grows it for the rest of the run.
+const MULT_PER_GARNISH := 1.0
 
 
-func extra_garnish_applications(
-	ctx: StaffContext,
-	_source_tile: Hex,
-	_source_card: TileCard,
-	target: TileCard
-) -> int:
-	if ctx.rng("garnish").randi_range(1, TWICE_ODDS) != 1:
-		return 0
-	ctx.pulse(ctx.map.get_hex_for_tile_card(target) if ctx.map != null else null)
-	return 1
+func on_station_started(ctx: StaffContext) -> void:
+	ctx.add_mult(run_total("mult"))
+
+
+func on_card_garnished(ctx: StaffContext, tile: Hex, card: TileCard) -> void:
+	if ctx.is_on_station(tile) and card.has_ingredient_tag(TileCard.TAG_SWEET):
+		ctx.grow("mult", MULT_PER_GARNISH, tile)
+
+
+func get_progress_text() -> String:
+	return "%s {mult}" % format_total(run_total("mult"))

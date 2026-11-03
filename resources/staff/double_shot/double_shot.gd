@@ -1,7 +1,7 @@
 extends StaffCard
 
 ## Beverages on this station may fire a second time.
-const REPEAT_ODDS := 5
+const REPEAT_ODDS := 3
 
 
 func on_card_activated(ctx: StaffContext, tile: Hex, card: TileCard) -> void:

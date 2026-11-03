@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/nose_to_tail/nose_to_tail.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "nose_to_tail"
+name = "Nose to Tail"
+description = "At the end of each Day, {destroys} the Ingredient with the lowest base {flavour} on this Station (never one its setup needs) and gains +2 {mult}"
+rarity = 1
