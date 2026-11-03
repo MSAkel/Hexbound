@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/plating/plating.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "plating"
+name = "Plating"
+description = "+1 {mult} for each Meal served on this Station this Hour, doubled when two or more are served"
+rarity = 0

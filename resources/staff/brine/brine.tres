@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "brine"
 name = "Brine"
-description = "Seafood on this Station start the Hour {garnished}"
+description = "The first Seafood on this Station is {garnished} at the start of each Hour"
 rarity = 1
