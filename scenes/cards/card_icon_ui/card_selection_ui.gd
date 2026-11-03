@@ -285,12 +285,18 @@ static func draw_offer(
 		reroll_index
 	)
 	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	return CardLoot.lane_draw(
+	# Techniques can widen a full pick (Recipe Card) but not Dealt Hand's single card.
+	if pack_size > 1:
+		pack_size += StaffManager.extra_card_pick_choices()
+	var offer := CardLoot.lane_draw(
 		CardLoot.lanes_for_round(round_number),
 		pack_size,
 		GameManager.get_draw_pool(),
 		loot_rng
 	)
+	if StaffManager.wants_recipe_card_in_picks():
+		CardLoot.ensure_recipe_card(offer, GameManager.get_draw_pool(), loot_rng)
+	return offer
 
 
 func _get_offer_round_number() -> int:

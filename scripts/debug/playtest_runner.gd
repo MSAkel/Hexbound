@@ -11,6 +11,8 @@ extends Node
 ##   --power           Days have no goal and always play every Hour. Reports raw score per day.
 ##   --fuzz            Chaos bot: random legal actions. Fails on invariants and script errors.
 ##   --no-condiments   The bot never buys or drinks condiments.
+##   --staff=<a,b>     Seats these Techniques (ids in resources/staff/), top slot first, at the start
+##                     of every run. For testing Techniques the bot would rarely buy.
 ##   --no-overplay     Cards only go on empty spots (no merging or replacing). A/B baseline.
 ##   --check-sim       Compare full state before and after every what-if Hour.
 ##   --verbose         One line per day.
@@ -190,6 +192,8 @@ var _repeat := 1
 var _difficulty := 0
 var _fuzz := false
 var _check_sim := false
+## Technique ids seated at the start of every run (--staff).
+var _start_staff: Array[String] = []
 var _verbose := false
 var _report_path := REPORT_PATH
 var _cases: Array[Dictionary] = []
@@ -256,6 +260,9 @@ func _parse_args() -> void:
 			power_mode = true
 		elif arg == "--fuzz":
 			_fuzz = true
+		elif arg.begins_with("--staff="):
+			for staff_id: String in value.split(",", false):
+				_start_staff.append(staff_id.strip_edges())
 		elif arg == "--no-condiments":
 			use_condiments = false
 		elif arg == "--no-overplay":
@@ -471,6 +478,17 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 	hand.clear()
 	EventBus.turn_started.emit()
 	hand.append_array(_deal_starting_hand())
+	_seat_start_staff()
+
+
+func _seat_start_staff() -> void:
+	for staff_id: String in _start_staff:
+		var staff := StaffCatalog.get_by_id(staff_id)
+		if staff == null:
+			push_error("PlaytestRunner: unknown Technique %s" % staff_id)
+			continue
+		if StaffManager.add_staff(staff) < 0:
+			push_error("PlaytestRunner: no free slot for %s" % staff_id)
 
 
 func _clear_board() -> void:

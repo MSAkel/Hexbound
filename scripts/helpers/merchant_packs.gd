@@ -54,16 +54,25 @@ static func contents_label(kind: Kind) -> String:
 
 
 static func tooltip_text(kind: Kind) -> String:
-	return "%s\nOpen to see %d %s. Keep 1." % [display_name(kind), CARD_COUNT, contents_label(kind)]
+	return "%s\nOpen to see %d %s. Keep 1." % [display_name(kind), card_count(), contents_label(kind)]
+
+
+## Cards a pack opens into, after techniques (Supplier Contract). At least 1.
+static func card_count() -> int:
+	return maxi(1, CARD_COUNT + StaffManager.pack_card_count_change())
 
 
 ## Regular card price of the category plus the premium. Techniques cost one flat price.
+## Technique discounts (Supplier Contract) come off last, never below 1.
 static func price(kind: Kind) -> int:
 	var multiplier := Difficulty.get_merchant_price_multiplier(GameManager.selected_difficulty)
+	var base := 0
 	if kind == Kind.TECHNIQUES:
-		return maxi(1, int(round(float(TECHNIQUE_PACK_PRICE) * multiplier)))
-	var card_price := TileCard.MEAL_SHOP_PRICE if kind == Kind.MEALS else TileCard.SHOP_PRICE
-	return maxi(1, int(round(float(card_price) * multiplier))) + TILE_PACK_PREMIUM
+		base = maxi(1, int(round(float(TECHNIQUE_PACK_PRICE) * multiplier)))
+	else:
+		var card_price := TileCard.MEAL_SHOP_PRICE if kind == Kind.MEALS else TileCard.SHOP_PRICE
+		base = maxi(1, int(round(float(card_price) * multiplier))) + TILE_PACK_PREMIUM
+	return maxi(1, base - StaffManager.pack_price_discount())
 
 
 ## Why this pack cannot be bought right now. Empty when it can.
@@ -112,14 +121,14 @@ static func draw_contents(
 	)
 	var cards: Array[Card] = []
 	if kind == Kind.TECHNIQUES:
-		for staff in StaffCatalog.draw(CARD_COUNT, rng, StaffManager.owned_ids()):
+		for staff in StaffCatalog.draw(card_count(), rng, StaffManager.owned_ids()):
 			cards.append(staff)
 		return cards
 	var pool := _tile_pool(kind)
 	# An empty pool would fall back to the whole card pool and break the category.
 	if pool.is_empty():
 		return cards
-	for tile_card in CardLoot.station_weighted_draw(CARD_COUNT, pool, rng):
+	for tile_card in CardLoot.station_weighted_draw(card_count(), pool, rng):
 		cards.append(tile_card)
 	return cards
 

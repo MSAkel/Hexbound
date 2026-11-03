@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/ferment/ferment.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "ferment"
+name = "Ferment"
+description = "Fruits on this Station gain +2 {flavour} for the rest of the run each time they {trigger}"
+rarity = 1

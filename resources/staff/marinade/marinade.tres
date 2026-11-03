@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/marinade/marinade.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "marinade"
+name = "Marinade"
+description = "Meats on this Station gain +3 {flavour} for each Seasoning on this Station"
+rarity = 0

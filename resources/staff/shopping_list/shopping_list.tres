@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/shopping_list/shopping_list.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "shopping_list"
+name = "Shopping List"
+description = "Every card pick includes a card that a Meal on your board needs"
+rarity = 1

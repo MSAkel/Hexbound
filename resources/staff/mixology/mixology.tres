@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/mixology/mixology.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "mixology"
+name = "Mixology"
+description = "+2 {mult} for each different Fruit on this Station. With 3 or more, Beverages here have x1.5 output"
+rarity = 1

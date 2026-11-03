@@ -119,8 +119,9 @@ static func has_typed_station() -> bool:
 
 
 ## Draw `count` unique cards, slot i from lanes[i], weighted by station draw boosts within the lane
-## (Fish Station level 2 makes Seafood twice as likely among Ingredients). When count does not match
-## the lane count (Dealt Hand grants one card), every slot uses the lanes' combined mix instead.
+## (Fish Station level 2 makes Seafood twice as likely among Ingredients). With fewer slots than
+## lanes (Dealt Hand grants one card) every slot uses the lanes' combined mix; slots past the lane
+## count (Recipe Card) use it too.
 ## A lane whose types are used up falls back to any type left. exclude_ids never appear.
 static func lane_draw(
 	lanes: Array[Dictionary],
@@ -141,7 +142,8 @@ static func lane_draw(
 	var combined := _combined_lane(lanes)
 	var result: Array[TileCard] = []
 	for slot in count:
-		var lane: Dictionary = lanes[slot] if count == lanes.size() else combined
+		# Extra slots (Recipe Card) use the combined mix; a single card (Dealt Hand) does too.
+		var lane: Dictionary = lanes[slot] if count >= lanes.size() and slot < lanes.size() else combined
 		var card_type: Variant = _roll_lane_type(lane, by_type, rng)
 		if card_type == null:
 			card_type = _roll_lane_type(combined, by_type, rng)
@@ -299,3 +301,79 @@ static func _shuffle_array(array: Array, rng: RandomNumberGenerator) -> void:
 		var temp: Variant = array[index]
 		array[index] = array[swap_index]
 		array[swap_index] = temp
+
+
+## Shopping List: makes sure offer holds at least one card a Meal on the board needs. Named recipe
+## cards count first, then Ingredients of a kind a recipe asks for (Kitchenware when one asks for it).
+## Replaces the last card when none does. Does nothing without Meals on the board.
+static func ensure_recipe_card(
+	offer: Array[TileCard],
+	pool: Array[TileCard],
+	rng: RandomNumberGenerator = null
+) -> void:
+	if offer.is_empty():
+		return
+	var meals := _board_meals()
+	if meals.is_empty():
+		return
+	for card: TileCard in offer:
+		if _recipe_match(card, meals) > 0:
+			return
+	var offered_ids: Array[String] = []
+	for card: TileCard in offer:
+		offered_ids.append(card.id)
+	var named: Array[TileCard] = []
+	var by_kind: Array[TileCard] = []
+	for card: TileCard in _sorted_by_id(pool):
+		if card.id in offered_ids:
+			continue
+		match _recipe_match(card, meals):
+			2:
+				named.append(card)
+			1:
+				by_kind.append(card)
+	var candidates := named if not named.is_empty() else by_kind
+	if candidates.is_empty():
+		return
+	var picked := candidates[_randi_range(rng, 0, candidates.size() - 1)]
+	offer[offer.size() - 1] = picked.duplicate(true)
+
+
+## 2 when a Meal names this card, 1 when a Meal asks for its kind, 0 otherwise.
+static func _recipe_match(card: TileCard, meals: Array[MealCard]) -> int:
+	var best := 0
+	for meal: MealCard in meals:
+		if card.id in meal.recipe_required_card_ids:
+			return 2
+		if card.type == TileCard.TileCardType.KITCHENWARE and meal.recipe_kitchenware_count > 0:
+			best = 1
+		elif card.type == TileCard.TileCardType.INGREDIENT and _asks_for_kind(meal, card):
+			best = 1
+	return best
+
+
+static func _asks_for_kind(meal: MealCard, card: TileCard) -> bool:
+	var counts := {
+		TileCard.TAG_VEGETABLE: meal.recipe_vegetable_count,
+		TileCard.TAG_FRUIT: meal.recipe_fruit_count,
+		TileCard.TAG_MEAT: meal.recipe_meat_count,
+		TileCard.TAG_SEAFOOD: meal.recipe_seafood_count,
+		TileCard.TAG_DAIRY: meal.recipe_dairy_count,
+		TileCard.TAG_SWEET: meal.recipe_sweet_count,
+		TileCard.TAG_SEASONING: meal.recipe_seasoning_count,
+	}
+	for tag: StringName in counts:
+		if int(counts[tag]) > 0 and card.has_ingredient_tag(tag):
+			return true
+	return false
+
+
+static func _board_meals() -> Array[MealCard]:
+	var meals: Array[MealCard] = []
+	var board := StationManager.get_board()
+	if board == null or board.query == null:
+		return meals
+	for card: TileCard in board.query.placed_cards(TileCard.TileCardType.MEAL):
+		if card is MealCard:
+			meals.append(card as MealCard)
+	return meals

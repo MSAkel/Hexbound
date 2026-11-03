@@ -305,6 +305,92 @@ func on_day_ended() -> void:
 		ctx.effect.on_day_ended(ctx)
 
 
+func after_meal_failed(tile: Hex, meal: TileCard) -> void:
+	if tile == null or meal == null:
+		return
+	for ctx: StaffContext in _contexts(tile.map):
+		ctx.effect.on_meal_failed(ctx, tile, meal)
+
+
+## Flat Flavour staff add to a Flavour Ingredient's base. StationManager adds it to the station bonus.
+func flat_flavour_bonus_for(tile: Hex, card: TileCard) -> int:
+	if tile == null or card == null:
+		return 0
+	var bonus := 0
+	for ctx: StaffContext in _contexts(tile.map):
+		bonus += ctx.effect.flat_flavour_for(ctx, tile, card)
+	return bonus
+
+
+## Output multiplier from staff. StationManager folds it into the station output scale.
+func output_scale_for(tile: Hex, card: TileCard) -> float:
+	if tile == null or card == null:
+		return 1.0
+	var scale := 1.0
+	for ctx: StaffContext in _contexts(tile.map):
+		scale *= ctx.effect.output_scale_for(ctx, tile, card)
+	return scale
+
+
+func station_level_bonus(segment_index: int) -> int:
+	var bonus := 0
+	for ctx: StaffContext in _contexts():
+		bonus += ctx.effect.station_level_bonus(ctx, segment_index)
+	return bonus
+
+
+func level_threshold_discount(segment_index: int) -> int:
+	var discount := 0
+	for ctx: StaffContext in _contexts():
+		discount += ctx.effect.level_threshold_discount(ctx, segment_index)
+	return discount
+
+
+func borrowed_station_perks(segment_index: int) -> Array[StationPerk]:
+	var perks: Array[StationPerk] = []
+	for ctx: StaffContext in _contexts():
+		for perk: StationPerk in ctx.effect.borrowed_station_perks(ctx, segment_index):
+			if perk not in perks:
+				perks.append(perk)
+	return perks
+
+
+## True when the staff member at this station's slot reverses its regular spots.
+func reverses_segment(segment_index: int) -> bool:
+	if segment_index < 0 or segment_index >= SLOT_COUNT:
+		return false
+	var ctx := _context_for(segment_index)
+	return ctx != null and ctx.effect.reverses_station(ctx)
+
+
+func extra_card_pick_choices() -> int:
+	var extra := 0
+	for ctx: StaffContext in _contexts():
+		extra += ctx.effect.extra_card_pick_choices(ctx)
+	return extra
+
+
+func wants_recipe_card_in_picks() -> bool:
+	for ctx: StaffContext in _contexts():
+		if ctx.effect.wants_recipe_card_in_picks(ctx):
+			return true
+	return false
+
+
+func pack_price_discount() -> int:
+	var discount := 0
+	for ctx: StaffContext in _contexts():
+		discount += ctx.effect.pack_price_discount(ctx)
+	return discount
+
+
+func pack_card_count_change() -> int:
+	var change := 0
+	for ctx: StaffContext in _contexts():
+		change += ctx.effect.pack_card_count_change(ctx)
+	return change
+
+
 ## Hour finished firing. Drops per-Hour scratch state and brings Short Staffed's pick back.
 func end_hour() -> void:
 	_reset_hour_state()

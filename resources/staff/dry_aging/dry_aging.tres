@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/dry_aging/dry_aging.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "dry_aging"
+name = "Dry Aging"
+description = "Meats on this Station gain x0.1 output for each Day this Technique has been seated"
+rarity = 2

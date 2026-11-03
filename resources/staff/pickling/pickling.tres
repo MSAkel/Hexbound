@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/pickling/pickling.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "pickling"
+name = "Pickling"
+description = "At the end of each Day, the last Vegetable on this Station gains +5 {flavour} for the rest of the run"
+rarity = 1

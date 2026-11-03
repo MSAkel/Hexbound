@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/reverse_sear/reverse_sear.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "reverse_sear"
+name = "Reverse Sear"
+description = "Cards on this Station {trigger} right to left, so {following} effects point the other way. Meals still {trigger} last"
+rarity = 2

@@ -205,7 +205,7 @@ func _refresh() -> void:
 	if _name_label == null:
 		return
 	_name_label.text = MerchantPacks.display_name(kind)
-	_count_label.text = "%d %s" % [MerchantPacks.CARD_COUNT, MerchantPacks.contents_label(kind)]
+	_count_label.text = "%d %s" % [MerchantPacks.card_count(), MerchantPacks.contents_label(kind)]
 	_price_label.text = MerchantShopStyling.format_price(price)
 	_well.add_theme_stylebox_override("panel", _well_style(_chosen))
 	var can_afford := EconomyManager.can_afford(price)

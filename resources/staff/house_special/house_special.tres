@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/house_special/house_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "house_special"
+name = "House Special"
+description = "The Meal you have served most this run has x1.5 output"
+rarity = 2
