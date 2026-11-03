@@ -3,6 +3,10 @@ extends StaffCard
 const SCALE_PER_VEGETABLE := 0.25
 
 
+func hook_flags() -> int:
+	return HOOK_OUTPUT_SCALE
+
+
 func output_scale_for(ctx: StaffContext, tile: Hex, card: TileCard) -> float:
 	if not ctx.is_on_station(tile) or not (card is MealCard):
 		return 1.0

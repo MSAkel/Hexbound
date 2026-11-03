@@ -156,6 +156,20 @@ func _context_for(slot: int, map: HexTileMap = null) -> StaffContext:
 	return ctx
 
 
+## Slots whose live effect declares hook (a StaffCard.HOOK_* flag), top to bottom. Builds no
+## context when none does, which keeps per-trigger lookups cheap.
+func _contexts_with(hook: int, map: HexTileMap = null) -> Array[StaffContext]:
+	var contexts: Array[StaffContext] = []
+	for slot in SLOT_COUNT:
+		var effect := resolve_effect_at(slot)
+		if effect == null or (effect.hook_flags() & hook) == 0:
+			continue
+		var ctx := _context_for(slot, map if map != null else _tile_map())
+		if ctx != null:
+			contexts.append(ctx)
+	return contexts
+
+
 ## Every slot with a live effect, top to bottom.
 func _contexts(map: HexTileMap = null) -> Array[StaffContext]:
 	var resolved_map := map if map != null else _tile_map()
@@ -317,7 +331,7 @@ func flat_flavour_bonus_for(tile: Hex, card: TileCard) -> int:
 	if tile == null or card == null:
 		return 0
 	var bonus := 0
-	for ctx: StaffContext in _contexts(tile.map):
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_FLAT_FLAVOUR, tile.map):
 		bonus += ctx.effect.flat_flavour_for(ctx, tile, card)
 	return bonus
 
@@ -327,28 +341,28 @@ func output_scale_for(tile: Hex, card: TileCard) -> float:
 	if tile == null or card == null:
 		return 1.0
 	var scale := 1.0
-	for ctx: StaffContext in _contexts(tile.map):
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_OUTPUT_SCALE, tile.map):
 		scale *= ctx.effect.output_scale_for(ctx, tile, card)
 	return scale
 
 
 func station_level_bonus(segment_index: int) -> int:
 	var bonus := 0
-	for ctx: StaffContext in _contexts():
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_STATION_LEVEL):
 		bonus += ctx.effect.station_level_bonus(ctx, segment_index)
 	return bonus
 
 
 func level_threshold_discount(segment_index: int) -> int:
 	var discount := 0
-	for ctx: StaffContext in _contexts():
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_LEVEL_THRESHOLD):
 		discount += ctx.effect.level_threshold_discount(ctx, segment_index)
 	return discount
 
 
 func borrowed_station_perks(segment_index: int) -> Array[StationPerk]:
 	var perks: Array[StationPerk] = []
-	for ctx: StaffContext in _contexts():
+	for ctx: StaffContext in _contexts_with(StaffCard.HOOK_BORROWED_PERKS):
 		for perk: StationPerk in ctx.effect.borrowed_station_perks(ctx, segment_index):
 			if perk not in perks:
 				perks.append(perk)
@@ -358,6 +372,9 @@ func borrowed_station_perks(segment_index: int) -> Array[StationPerk]:
 ## True when the staff member at this station's slot reverses its regular spots.
 func reverses_segment(segment_index: int) -> bool:
 	if segment_index < 0 or segment_index >= SLOT_COUNT:
+		return false
+	var effect := resolve_effect_at(segment_index)
+	if effect == null or (effect.hook_flags() & StaffCard.HOOK_REVERSE_STATION) == 0:
 		return false
 	var ctx := _context_for(segment_index)
 	return ctx != null and ctx.effect.reverses_station(ctx)

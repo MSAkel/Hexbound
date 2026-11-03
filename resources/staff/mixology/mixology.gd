@@ -6,6 +6,10 @@ const FRUITS_FOR_SCALE := 3
 const BEVERAGE_SCALE := 1.5
 
 
+func hook_flags() -> int:
+	return HOOK_OUTPUT_SCALE
+
+
 func on_station_started(ctx: StaffContext) -> void:
 	ctx.add_mult(MULT_PER_FRUIT * _different_fruits(ctx))
 

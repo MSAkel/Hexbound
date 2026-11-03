@@ -6,6 +6,10 @@ const COUNTS_KEY := "served_counts"
 const TOP_KEY := "top_meal"
 
 
+func hook_flags() -> int:
+	return HOOK_OUTPUT_SCALE
+
+
 func output_scale_for(_ctx: StaffContext, _tile: Hex, card: TileCard) -> float:
 	if card.type != TileCard.TileCardType.MEAL:
 		return 1.0

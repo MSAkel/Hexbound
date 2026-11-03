@@ -3,6 +3,10 @@ extends StaffCard
 ## Borrows only level 3 picks. This station needs a type of its own.
 
 
+func hook_flags() -> int:
+	return HOOK_BORROWED_PERKS
+
+
 func borrowed_station_perks(ctx: StaffContext, segment_index: int) -> Array[StationPerk]:
 	var perks: Array[StationPerk] = []
 	if segment_index != ctx.slot or StationManager.get_station_type(segment_index) == null:

@@ -6,6 +6,10 @@ const FLAVOUR_ON_COLD := 12
 const COLD_STATION_ID := "cold_station"
 
 
+func hook_flags() -> int:
+	return HOOK_FLAT_FLAVOUR
+
+
 func flat_flavour_for(ctx: StaffContext, tile: Hex, card: TileCard) -> int:
 	if not ctx.is_on_station(tile):
 		return 0

@@ -5,6 +5,10 @@ const FLAVOUR_PER_TRIGGER := 2.0
 const GROWTH_KEY := "ferment"
 
 
+func hook_flags() -> int:
+	return HOOK_FLAT_FLAVOUR
+
+
 func flat_flavour_for(ctx: StaffContext, _tile: Hex, card: TileCard) -> int:
 	# Only the original pays, so a copy does not count the same growth twice.
 	if ctx.owner != ctx.effect:

@@ -6,6 +6,10 @@ const MULT_PER_SIDE := 2.0
 const BATTER_IDS: Array[String] = ["potato", "chicken"]
 
 
+func hook_flags() -> int:
+	return HOOK_FLAT_FLAVOUR
+
+
 func flat_flavour_for(ctx: StaffContext, tile: Hex, card: TileCard) -> int:
 	if not ctx.is_on_station(tile):
 		return 0

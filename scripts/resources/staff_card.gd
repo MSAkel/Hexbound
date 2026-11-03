@@ -11,6 +11,15 @@ const BASE_PRICE_BY_RARITY := {
 	Rarity.RARE: 12,
 }
 
+## Per-trigger hooks a Technique uses, so StaffManager can skip the rest on hot paths (every card
+## trigger and every station perk lookup). Return a mask of these from hook_flags().
+const HOOK_FLAT_FLAVOUR := 1
+const HOOK_OUTPUT_SCALE := 2
+const HOOK_STATION_LEVEL := 4
+const HOOK_LEVEL_THRESHOLD := 8
+const HOOK_BORROWED_PERKS := 16
+const HOOK_REVERSE_STATION := 32
+
 ## Run-long counters for staff that grow. Saved with the slot. Not exported, so a fresh seat starts empty.
 var run_state: Dictionary = {}
 
@@ -147,6 +156,11 @@ func on_day_started(_ctx: StaffContext) -> void:
 ## Day goal met, before the summary and the merchant.
 func on_day_ended(_ctx: StaffContext) -> void:
 	pass
+
+
+## Which per-trigger hooks below this Technique overrides (HOOK_* mask). 0 for most.
+func hook_flags() -> int:
+	return 0
 
 
 ## A Meal could not be served (its recipe was not ready). tile is its spot.

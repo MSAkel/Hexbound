@@ -4,6 +4,10 @@ extends StaffCard
 const SCALE_PER_DAY := 0.1
 
 
+func hook_flags() -> int:
+	return HOOK_OUTPUT_SCALE
+
+
 func output_scale_for(ctx: StaffContext, tile: Hex, card: TileCard) -> float:
 	if not ctx.is_on_station(tile) or card.type != TileCard.TileCardType.INGREDIENT:
 		return 1.0
