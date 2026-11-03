@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/staff/lamination/lamination.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "lamination"
+name = "Lamination"
+description = "Sweets on this Station can hold one more {garnish}, and their {garnish} lasts one more {trigger}"
+rarity = 2

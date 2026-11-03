@@ -1,13 +1,13 @@
 extends StaffCard
 
-## Rewards a mixed station. Kinds are the recipe tags (Vegetable, Fruit, Meat...).
-const FLAVOUR_PER_KIND := 15
+## Rewards a mixed board rather than a mixed row (Blender and Fry already do that).
+const FLAVOUR_PER_TYPE := 15
 
 
 func on_station_started(ctx: StaffContext) -> void:
-	var kinds := {}
-	for card: TileCard in ctx.station_cards(TileCard.TileCardType.INGREDIENT):
-		for tag: StringName in card.ingredient_tags:
-			if tag in TileCard.RECIPE_INGREDIENT_TAGS:
-				kinds[tag] = true
-	ctx.add_flavour(FLAVOUR_PER_KIND * kinds.size())
+	var types: Dictionary = {}
+	for segment in StaffManager.SLOT_COUNT:
+		var type_id := StationManager.get_station_type_id(segment)
+		if not type_id.is_empty():
+			types[type_id] = true
+	ctx.add_flavour(FLAVOUR_PER_TYPE * types.size())

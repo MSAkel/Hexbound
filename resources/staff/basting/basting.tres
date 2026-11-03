@@ -7,4 +7,4 @@ script = ExtResource("1_script")
 id = "basting"
 name = "Basting"
 description = "When an Ingredient on this Station has a {garnish}, add another {garnish} to it"
-rarity = 1
+rarity = 2

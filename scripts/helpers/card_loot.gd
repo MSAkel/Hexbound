@@ -8,8 +8,8 @@ extends RefCounted
 
 # Chance to roll each staff rarity (must sum to 100).
 const RARITY_WEIGHTS := {
-	Card.Rarity.COMMON: 55.0,
-	Card.Rarity.UNCOMMON: 35.0,
+	Card.Rarity.COMMON: 65.0,
+	Card.Rarity.UNCOMMON: 25.0,
 	Card.Rarity.RARE: 10.0,
 }
 const RARITY_ROLL_ORDER: Array[Card.Rarity] = [
