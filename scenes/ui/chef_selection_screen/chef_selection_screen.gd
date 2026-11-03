@@ -8,7 +8,7 @@ const SOUNDTRACK := preload("res://scripts/soundtracks.gd")
 @onready var scene_enter_transition: SceneEnterTransition = $SceneEnterTransition
 @onready var play_button: Button = %PlayButton
 @onready var abandon_run_confirm_panel: AbandonRunConfirmPanel = %AbandonRunConfirmPanel
-@onready var back_button: Button = $SafeArea/Page/UnifiedPanel/Content/Header/HeaderLeft/BackButton
+@onready var back_button: Button = %BackButton
 @onready var prev_selection_button: TextureButton = $SafeArea/Page/PrevSelectionButton
 @onready var next_selection_button: TextureButton = $SafeArea/Page/NextSelectionButton
 

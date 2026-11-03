@@ -2,18 +2,6 @@
 
 [ext_resource type="Script" uid="uid://yv8aveeajv8r" path="res://scenes/ui/labels/challenge_label/round_challenge_name_display.gd" id="1_wdo53"]
 [ext_resource type="Texture2D" uid="uid://yjsyynwlyscq" path="res://assets/gui/map_layouts/challenge_icon.png" id="2_icon"]
-[ext_resource type="Texture2D" uid="uid://c6b8lry1fehy1" path="res://assets/gui/buttons/button_accent_normal.png" id="3_4jgq4"]
-[ext_resource type="Texture2D" uid="uid://di3ktqmd2smbl" path="res://assets/gui/buttons/button_accent_pressed.png" id="4_hghh0"]
-[ext_resource type="Texture2D" uid="uid://ckj7ydre0t2d2" path="res://assets/gui/buttons/button_accent_hover.png" id="5_pjvmc"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cmwxi"]
-texture = ExtResource("3_4jgq4")
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jqd6l"]
-texture = ExtResource("4_hghh0")
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4jgq4"]
-texture = ExtResource("5_pjvmc")
 
 [node name="RoundEventNameDisplay" type="Control" unique_id=1545743304]
 z_index = 40
@@ -69,6 +57,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="KickerLabel" type="Label" parent="Banner/KickerRow" unique_id=302462265]
+theme_type_variation = &"TitleLabel"
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.78, 0.28, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -79,6 +68,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="EventName" type="RichTextLabel" parent="Banner" unique_id=1520100385]
+theme_type_variation = &"TitleRichTextLabel"
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/default_color = Color(1, 0.88, 0.38, 1)
@@ -112,9 +102,6 @@ size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.97, 0.94, 0.82, 1)
 theme_override_colors/font_hover_color = Color(1, 0.97, 0.86, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBoxTexture_cmwxi")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_jqd6l")
-theme_override_styles/hover = SubResource("StyleBoxTexture_4jgq4")
 text = "Continue"
 
 [connection signal="pressed" from="Banner/ContinueButton" to="." method="_on_continue_button_pressed"]

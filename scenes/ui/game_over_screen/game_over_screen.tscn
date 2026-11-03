@@ -21,8 +21,8 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="SystemFont" id="SystemFont_fw22d"]
-subpixel_positioning = 0
+[sub_resource type="Theme" id="Theme_light_text"]
+Label/colors/font_color = Color(0.96, 0.92, 0.85, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftetl"]
 content_margin_left = 8.0
@@ -45,6 +45,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_7pmlo")
 script = ExtResource("1_bfo61")
 
 [node name="RunStatsPanel" type="PanelContainer" parent="." unique_id=1581416748]
+theme = SubResource("Theme_light_text")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -63,11 +64,11 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_8s2gp")
 layout_mode = 2
 
 [node name="GameOverLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=121218275]
+theme_type_variation = &"TitleLabel"
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.8251895, 0.7868922, 0.73176956, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("SystemFont_fw22d")
 theme_override_font_sizes/font_size = 64
 text = "Game Over"
 horizontal_alignment = 1
@@ -165,6 +166,7 @@ custom_minimum_size = Vector2(0, 23)
 layout_mode = 2
 
 [node name="MainMenuButton" type="Button" parent="RunStatsPanel/VBoxContainer" unique_id=1314082620]
+theme_type_variation = &"AccentButton"
 layout_mode = 2
 size_flags_vertical = 8
 text = "Main Menu"

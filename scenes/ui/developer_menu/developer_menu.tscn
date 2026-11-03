@@ -38,6 +38,7 @@ size_flags_vertical = 4
 theme_override_constants/separation = 21
 
 [node name="TitleLabel" type="Label" parent="MenuContainer/MenuItemsContainer"]
+theme_type_variation = &"TitleLabel"
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "DEVELOPER MENU"

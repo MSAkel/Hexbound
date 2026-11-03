@@ -23,9 +23,6 @@ corner_radius_bottom_left = 10
 shadow_color = Color(0.02, 0.07, 0.06, 0.55)
 shadow_size = 12
 
-[sub_resource type="SystemFont" id="SystemFont_title"]
-subpixel_positioning = 0
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_value"]
 content_margin_left = 8.0
 content_margin_top = 1.0
@@ -66,11 +63,11 @@ layout_mode = 2
 theme_override_constants/separation = 4
 
 [node name="VictoryLabel" type="Label" parent="RunStatsPanel/VBoxContainer" unique_id=121218275]
+theme_type_variation = &"TitleLabel"
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
 theme_override_colors/font_outline_color = Color(0.03, 0.12, 0.1, 1)
 theme_override_constants/outline_size = 6
-theme_override_fonts/font = SubResource("SystemFont_title")
 theme_override_font_sizes/font_size = 64
 text = "Victory!"
 horizontal_alignment = 1
@@ -159,6 +156,7 @@ size_flags_vertical = 8
 text = "CONTINUE RUN"
 
 [node name="BackToMenuButton" type="Button" parent="RunStatsPanel/VBoxContainer" unique_id=1647789445]
+theme_type_variation = &"AccentButton"
 layout_mode = 2
 size_flags_vertical = 8
 text = "BACK TO MENU"

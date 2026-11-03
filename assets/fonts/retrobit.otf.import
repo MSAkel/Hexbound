@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://pd08p0wxvy7d"
-path="res://.godot/imported/Gimbot-Regular.otf-fbc9d4b55518c4704b3d52d2319c06a7.fontdata"
+uid="uid://0ehwg4ow5qxq"
+path="res://.godot/imported/retrobit.otf-bf108940b2b645c8c3130909e8fedb00.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/Gimbot-Regular.otf"
-dest_files=["res://.godot/imported/Gimbot-Regular.otf-fbc9d4b55518c4704b3d52d2319c06a7.fontdata"]
+source_file="res://assets/fonts/retrobit.otf"
+dest_files=["res://.godot/imported/retrobit.otf-bf108940b2b645c8c3130909e8fedb00.fontdata"]
 
 [params]
 

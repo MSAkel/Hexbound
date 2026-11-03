@@ -2,17 +2,17 @@ extends Control
 
 signal closed
 
-@onready var master_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/MasterVolume/HSlider
-@onready var music_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/MusicVolume/MusicVolumeSlider
-@onready var sfx_volume_slider: HSlider = $VBoxContainer/ScrollContainer/SettingsContainer/SFXVolume/SFXVolumeSlider
-@onready var game_speed_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton
-@onready var screen_shake_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/ScreenShakeContainer/ScreenShakeCheckBox
-@onready var display_mode_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/DisplayModeContainer/DisplayModeOptionButton
-@onready var resolution_option_button: OptionButton = $VBoxContainer/ScrollContainer/SettingsContainer/ResolutionContainer/ResolutionOptionButton
-@onready var v_sync_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox
-@onready var hints_check_box: CheckBox = $VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/HintsCheckBox
-@onready var reset_hints_button: Button = $VBoxContainer/ScrollContainer/SettingsContainer/ResetHintsContainer/ResetHintsButton
-@onready var back_button: Button = $VBoxContainer/BackButton
+@onready var master_volume_slider: HSlider = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/MasterVolume/HSlider
+@onready var music_volume_slider: HSlider = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/MusicVolume/MusicVolumeSlider
+@onready var sfx_volume_slider: HSlider = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/SFXVolume/SFXVolumeSlider
+@onready var game_speed_option_button: OptionButton = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton
+@onready var screen_shake_check_box: CheckBox = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/ScreenShakeContainer/ScreenShakeCheckBox
+@onready var display_mode_option_button: OptionButton = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/DisplayModeContainer/DisplayModeOptionButton
+@onready var resolution_option_button: OptionButton = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/ResolutionContainer/ResolutionOptionButton
+@onready var v_sync_check_box: CheckBox = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox
+@onready var hints_check_box: CheckBox = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/HintsCheckBox
+@onready var reset_hints_button: Button = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/ResetHintsContainer/ResetHintsButton
+@onready var back_button: Button = $Parchment/VBoxContainer/BackButton
 
 const RESET_HINTS_TEXT := "Reset tips"
 const RESET_HINTS_CONFIRM_TEXT := "Are you sure?"
@@ -31,7 +31,7 @@ func _ready() -> void:
 	_sync_settings_controls()
 	add_to_group(InputManager.MENU_GROUP)
 	# Keeps the focused row on screen while a controller walks down the list.
-	($VBoxContainer/ScrollContainer as ScrollContainer).follow_focus = true
+	($Parchment/VBoxContainer/ScrollContainer as ScrollContainer).follow_focus = true
 	visibility_changed.connect(_on_visibility_changed)
 	
 	# Connect slider signals
@@ -57,7 +57,7 @@ func _focus_settings() -> void:
 	if back_button != null and not back_button.disabled:
 		back_button.grab_focus()
 		return
-	MenuFocus.grab_first($VBoxContainer/ScrollContainer/SettingsContainer)
+	MenuFocus.grab_first($Parchment/VBoxContainer/ScrollContainer/SettingsContainer)
 
 
 func _unhandled_input(event: InputEvent) -> void:

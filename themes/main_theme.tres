@@ -3,25 +3,111 @@
 [ext_resource type="Texture2D" uid="uid://o87ufgsl5oam" path="res://assets/gui/buttons/button_primary_pressed.png" id="1_ydht1"]
 [ext_resource type="Texture2D" uid="uid://dhmbj5ce3c8d0" path="res://assets/gui/buttons/button_primary_hover.png" id="2_8gw6x"]
 [ext_resource type="Texture2D" uid="uid://dftrctp3iuqh8" path="res://assets/gui/buttons/button_primary_normal.png" id="3_g21io"]
-
-[sub_resource type="FontVariation" id="FontVariation_r66gk"]
+[ext_resource type="FontFile" uid="uid://pd08p0wxvy7d" path="res://assets/fonts/gimbot_regular.otf" id="4_gimbt"]
+[ext_resource type="FontFile" uid="uid://0ehwg4ow5qxq" path="res://assets/fonts/retrobit.otf" id="5_rtrbt"]
+[ext_resource type="Texture2D" uid="uid://c6b8lry1fehy1" path="res://assets/gui/buttons/button_accent_normal.png" id="6_acnrm"]
+[ext_resource type="Texture2D" uid="uid://ckj7ydre0t2d2" path="res://assets/gui/buttons/button_accent_hover.png" id="7_achov"]
+[ext_resource type="Texture2D" uid="uid://di3ktqmd2smbl" path="res://assets/gui/buttons/button_accent_pressed.png" id="8_acprs"]
+[ext_resource type="Texture2D" uid="uid://j18ke8kwnfsa" path="res://assets/gui/panels/panel_bordered.png" id="9_parch"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nvml6"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
 texture = ExtResource("1_ydht1")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pvc40"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
 texture = ExtResource("2_8gw6x")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_l6k4t"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
 texture = ExtResource("2_8gw6x")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_2hflq"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
 texture = ExtResource("3_g21io")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r5ka0"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
 texture = ExtResource("1_ydht1")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
 
-[sub_resource type="FontVariation" id="FontVariation_x6eud"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_n"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("6_acnrm")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_h"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("7_achov")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_p"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("8_acprs")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parch"]
+content_margin_left = 112.0
+content_margin_top = 112.0
+content_margin_right = 112.0
+content_margin_bottom = 112.0
+texture = ExtResource("9_parch")
+texture_margin_left = 160.0
+texture_margin_top = 160.0
+texture_margin_right = 160.0
+texture_margin_bottom = 160.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vxwtt"]
 bg_color = Color(0.047058824, 0.09019608, 0.09803922, 1)
@@ -35,23 +121,32 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
-[sub_resource type="FontVariation" id="FontVariation_ayqni"]
-
 [resource]
-default_font = SubResource("FontVariation_ayqni")
+default_font = ExtResource("4_gimbt")
 default_font_size = 18
+AccentButton/base_type = &"Button"
+AccentButton/styles/disabled = SubResource("StyleBoxTexture_acc_p")
+AccentButton/styles/focus = SubResource("StyleBoxTexture_acc_h")
+AccentButton/styles/hover = SubResource("StyleBoxTexture_acc_h")
+AccentButton/styles/normal = SubResource("StyleBoxTexture_acc_n")
+AccentButton/styles/pressed = SubResource("StyleBoxTexture_acc_p")
 Button/font_sizes/font_size = 18
-Button/fonts/font = SubResource("FontVariation_r66gk")
 Button/styles/disabled = SubResource("StyleBoxTexture_nvml6")
 Button/styles/focus = SubResource("StyleBoxTexture_pvc40")
 Button/styles/hover = SubResource("StyleBoxTexture_l6k4t")
 Button/styles/normal = SubResource("StyleBoxTexture_2hflq")
 Button/styles/pressed = SubResource("StyleBoxTexture_r5ka0")
+Label/colors/font_color = Color(0.5882353, 0.03529412, 0.20784314, 1)
 Label/constants/outline_size = 0
 Label/font_sizes/font_size = 16
-Label/fonts/font = SubResource("FontVariation_x6eud")
 MarginContainer/constants/margin_bottom = 16
 MarginContainer/constants/margin_left = 16
 MarginContainer/constants/margin_right = 16
 MarginContainer/constants/margin_top = 16
 Panel/styles/panel = SubResource("StyleBoxFlat_vxwtt")
+ParchmentPanel/base_type = &"PanelContainer"
+ParchmentPanel/styles/panel = SubResource("StyleBoxTexture_parch")
+TitleLabel/base_type = &"Label"
+TitleLabel/fonts/font = ExtResource("5_rtrbt")
+TitleRichTextLabel/base_type = &"RichTextLabel"
+TitleRichTextLabel/fonts/normal_font = ExtResource("5_rtrbt")

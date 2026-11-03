@@ -67,6 +67,7 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer" unique_id=139918839]
+theme_type_variation = &"AccentButton"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 42)
 layout_mode = 2
@@ -75,6 +76,7 @@ theme_override_font_sizes/font_size = 24
 text = "BACK"
 
 [node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer" unique_id=1875228536]
+theme_type_variation = &"TitleLabel"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.87, 0.79, 1)
 theme_override_font_sizes/font_size = 36
