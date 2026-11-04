@@ -2,6 +2,7 @@ extends Resource
 class_name Difficulty
 
 ## Difficulty levels and the rule each one adds. Levels stack: a level keeps every rule below it.
+## Level 1 is the most generous form of the game; some levels bring back a base restriction.
 ## Numbers are untuned.
 
 enum Level {
@@ -11,6 +12,9 @@ enum Level {
 	LEVEL_4,
 	LEVEL_5,
 	LEVEL_6,
+	LEVEL_7,
+	LEVEL_8,
+	LEVEL_9,
 }
 
 const DIFFICULTY_INFO = {
@@ -28,14 +32,26 @@ const DIFFICULTY_INFO = {
 	},
 	Level.LEVEL_4: {
 		"name": "Level 4",
-		"info": "Start with 5 less Gold.",
+		"info": "Merchant rerolls cost 1 more Gold each time.",
 	},
 	Level.LEVEL_5: {
 		"name": "Level 5",
-		"info": "Each Station level needs 1 more Meal served.",
+		"info": "Start with 5 less Gold.",
 	},
 	Level.LEVEL_6: {
 		"name": "Level 6",
+		"info": "2 Stations open their second Meal Slot at level 3.",
+	},
+	Level.LEVEL_7: {
+		"name": "Level 7",
+		"info": "Each Station level needs 1 more Meal served.",
+	},
+	Level.LEVEL_8: {
+		"name": "Level 8",
+		"info": "All Stations open their second Meal Slot at level 3.",
+	},
+	Level.LEVEL_9: {
+		"name": "Level 9",
 		"info": "The Merchant shows 1 fewer card.",
 	},
 }
@@ -51,6 +67,9 @@ static func get_all_levels() -> Array[Level]:
 		Level.LEVEL_4,
 		Level.LEVEL_5,
 		Level.LEVEL_6,
+		Level.LEVEL_7,
+		Level.LEVEL_8,
+		Level.LEVEL_9,
 	]
 
 
@@ -72,17 +91,32 @@ static func get_free_reroll_reduction(level: Level) -> int:
 	return 1 if level >= Level.LEVEL_3 else 0
 
 
-## Level 4. Gold removed from the run's starting Gold (base or chef).
+## Level 4. Gold added to the Merchant reroll price after each reroll in a visit. 0 keeps it flat.
+static func get_merchant_reroll_cost_step(level: Level) -> int:
+	return 1 if level >= Level.LEVEL_4 else 0
+
+
+## Level 5. Gold removed from the run's starting Gold (base or chef).
 static func get_starting_gold_reduction(level: Level) -> int:
-	return 5 if level >= Level.LEVEL_4 else 0
+	return 5 if level >= Level.LEVEL_5 else 0
 
 
-## Level 5. Extra Meals each Station level costs. Applied per step, so the nth level-up
+## Levels 6 and 8. Stations whose second Meal slot stays locked until Station level 3.
+## Which stations is rolled per run (StationManager).
+static func get_locked_meal_slot_station_count(level: Level) -> int:
+	if level >= Level.LEVEL_8:
+		return 4
+	if level >= Level.LEVEL_6:
+		return 2
+	return 0
+
+
+## Level 7. Extra Meals each Station level costs. Applied per step, so the nth level-up
 ## needs n more Meals served in total than it would otherwise.
 static func get_station_level_extra_meals(level: Level) -> int:
-	return 1 if level >= Level.LEVEL_5 else 0
+	return 1 if level >= Level.LEVEL_7 else 0
 
 
-## Level 6. Tile card slots removed from the Merchant shelf. The Technique slot is kept.
+## Level 9. Tile card slots removed from the Merchant shelf. The Technique slot is kept.
 static func get_merchant_tile_slot_reduction(level: Level) -> int:
-	return 1 if level >= Level.LEVEL_6 else 0
+	return 1 if level >= Level.LEVEL_9 else 0

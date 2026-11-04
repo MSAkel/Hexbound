@@ -327,7 +327,7 @@ func _station_level_lines(station_type: StationType, level: int) -> PackedString
 	if not upgrade.is_empty():
 		lines.append(CardKeywordGlossary.to_plain(upgrade))
 	if level == StationManager.MEAL_SLOT_UNLOCK_LEVEL:
-		lines.append("Opens a second %s." % GameTerms.MEAL_SLOT)
+		lines.append("Opens a locked second %s (higher difficulty levels)." % GameTerms.MEAL_SLOT)
 	var options: Array[StationPerk] = []
 	if level == StationManager.CHOICE_LEVEL:
 		options = station_type.choice_options
