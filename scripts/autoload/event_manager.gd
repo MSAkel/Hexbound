@@ -530,7 +530,7 @@ func _pick_sealed_hexes() -> void:
 	var candidates: Array[Vector2i] = []
 	for coords: Vector2i in tile_map.map_data:
 		var hex: Hex = tile_map.map_data[coords]
-		if hex.is_disabled_by_difficulty or tile_map.is_meal_slot(coords):
+		if tile_map.is_meal_slot(coords):
 			continue
 		if hex.active_tile_card != null:
 			continue

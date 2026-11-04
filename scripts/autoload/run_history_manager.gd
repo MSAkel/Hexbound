@@ -115,7 +115,7 @@ func archive_from_save_payload(save_payload: Dictionary, is_win: bool) -> void:
 func _capture_board_snapshot() -> Dictionary:
 	var tile_map := _find_tile_map()
 	if tile_map == null:
-		return {"placed": [], "disabled_coords": []}
+		return {"placed": []}
 
 	var map_state: Dictionary = tile_map.capture_map_state()
 	return _board_snapshot_from_map_state(map_state)
@@ -135,17 +135,7 @@ func _board_snapshot_from_map_state(map_state: Dictionary) -> Dictionary:
 			"coords": coords,
 		})
 
-	var disabled: Array = []
-	for coords_data: Variant in map_state.get("disabled_coords", []):
-		var coords := _coords_pair(coords_data)
-		if coords.is_empty():
-			continue
-		disabled.append(coords)
-
-	return {
-		"placed": placed,
-		"disabled_coords": disabled,
-	}
+	return {"placed": placed}
 
 
 func _coords_pair(coords_data: Variant) -> Array:

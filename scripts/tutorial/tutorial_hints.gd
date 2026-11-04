@@ -7,7 +7,6 @@ extends RefCounted
 ## Body text uses glossary tokens ({flavour}, {mult}, ...) and **double asterisks** for highlights.
 
 const _GameManagerScript := preload("res://scripts/autoload/game_manager.gd")
-const _EconomyManagerScript := preload("res://scripts/autoload/economy_manager.gd")
 const _CondimentManagerScript := preload("res://scripts/autoload/condiment_manager.gd")
 const _StationManagerScript := preload("res://scripts/autoload/station_manager.gd")
 const _SellPanelScript := preload("res://scenes/ui/sell_panel/card_sell_panel.gd")
@@ -75,6 +74,8 @@ const CHAINS := {
 
 ## Shown with the chef's own name and speciality. Seen once per chef.
 const CHEF_HINT := &"chef_speciality"
+## Body holds a %d for the free rerolls per Day, filled in by TutorialManager.get_body.
+const REROLL_HINT := &"card_pick_reroll"
 
 static var _defs: Dictionary = {}
 static var _order: Array[StringName] = []
@@ -120,7 +121,7 @@ static func _static_init() -> void:
 		"After each Hour, pick **1 of 3** cards to add to your hand.",
 		Context.CARD_PICK, [&"card_choices"], PRIORITY_PANEL)
 	_add(&"card_pick_reroll", CATEGORY_CARDS, "Free rerolls",
-		"Not what you need? **Reroll** the choices. You get **%d free rerolls** every Day." % _EconomyManagerScript.STARTING_REROLLS,
+		"Not what you need? **Reroll** the choices. You get **%d free rerolls** every Day.",
 		Context.CARD_PICK, [&"card_reroll"], PRIORITY_PANEL)
 	_add(&"overplay", CATEGORY_CARDS, "Star up and replace",
 		"Play a card onto a **copy of itself** to **Star it up** and make it stronger. Playing a different card on a taken spot **replaces** the card there.",

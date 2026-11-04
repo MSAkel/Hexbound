@@ -52,7 +52,6 @@ static func get_chef_by_id(chef_id: String) -> ChefDefinition:
 
 
 ## Deal the chef's opening hand: its fixed starting_hand, or the default random hand.
-## Difficulty may then remove cards (the flex card first for fixed hands).
 static func get_starting_hand_cards(chef: ChefDefinition) -> Array[TileCard]:
 	var hand: Array[TileCard] = []
 	if chef == null:
@@ -64,8 +63,6 @@ static func get_starting_hand_cards(chef: ChefDefinition) -> Array[TileCard]:
 		hand.append_array(_draw_starters(STARTING_INGREDIENT_COUNT, TileCard.TileCardType.INGREDIENT))
 		hand.append_array(_draw_starters(STARTING_KITCHENWARE_COUNT, TileCard.TileCardType.KITCHENWARE))
 
-	var reduction := Difficulty.get_starting_hand_reduction(GameManager.selected_difficulty)
-	_apply_starting_hand_reduction(hand, reduction, chef)
 	# Fixed hands keep their order so the setup reads left to right. Random hands are shuffled.
 	if not chef.has_fixed_starting_hand():
 		RunRng.shuffle(hand)
@@ -73,11 +70,11 @@ static func get_starting_hand_cards(chef: ChefDefinition) -> Array[TileCard]:
 
 
 ## Opening deal size before mid-run draws and plays shrink the hand.
-static func get_expected_opening_hand_size(difficulty: Difficulty.Level, chef: ChefDefinition = null) -> int:
+static func get_expected_opening_hand_size(chef: ChefDefinition = null) -> int:
 	var size := STARTING_INGREDIENT_COUNT + STARTING_KITCHENWARE_COUNT
 	if chef != null and chef.has_fixed_starting_hand():
 		size = chef.starting_hand.size()
-	return maxi(0, size - Difficulty.get_starting_hand_reduction(difficulty))
+	return size
 
 
 static func _deal_fixed_hand(chef: ChefDefinition) -> Array[TileCard]:
@@ -129,17 +126,3 @@ static func _draw_starters(count: int, card_type: TileCard.TileCardType) -> Arra
 		if card.starting_hand_eligible:
 			pool.append(card)
 	return CardLoot.draw_filtered(count, pool, card_type)
-
-
-## Fixed hands with a flex card lose it first, then cards from the end. Other hands lose
-## Kitchenware before Ingredients.
-static func _apply_starting_hand_reduction(hand: Array[TileCard], reduction: int, chef: ChefDefinition) -> void:
-	var by_order := chef != null and chef.has_fixed_starting_hand() and chef.last_card_is_flex
-	for _i in mini(reduction, hand.size()):
-		var index := hand.size() - 1
-		if not by_order:
-			for candidate in hand.size():
-				if hand[candidate].type == TileCard.TileCardType.KITCHENWARE:
-					index = candidate
-					break
-		hand.remove_at(index)

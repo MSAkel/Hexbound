@@ -21,7 +21,7 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 
 - `--runs=N` seeds per chef (default 8); `--chef=<id>` one chef (ids in `resources/chefs/*.tres`)
 - `--seed=<text>` one seed; `--repeat=N` replays it to check determinism
-- `--difficulty=N` difficulty index (default 0)
+- `--difficulty=N` difficulty level as shown in game, 1 to 6 (default 1)
 - `--power` no day goals, reports raw score per day
 - `--extra-hours` real day flow, but when an Hour is about to meet the goal with Hours to spare, the
   bot also plays those Hours out as a what-if (picks, plays, condiments) and rolls everything back.
@@ -76,9 +76,12 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
 
 ## Design notes
 
-- Difficulty 0 is intentionally easy. Don't treat a 100% win rate there as a balance problem;
-  judge balance at higher difficulties.
-- Baseline (Oct 2026, difficulty 0, 2 runs/chef): all chefs win; Sommelier's late-game
+- Difficulty Level 1 is intentionally easy. Don't treat a 100% win rate there as a balance problem;
+  judge balance at higher levels.
+- Difficulty levels stack, each adding one rule (`scripts/resources/difficulty.gd`): 2 Day targets
+  +15%, 3 one fewer free reroll, 4 −5 starting Gold, 5 each Station level needs 1 more Meal, 6 one
+  fewer Merchant tile card. `Difficulty.Level` is 0-based (`LEVEL_1` = 0); saves store that index.
+- Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
 
 ## Chefs
@@ -93,9 +96,8 @@ Hour/Day start, station level thresholds, taking every station pick, merchant sl
 Add a hook to `ChefPerk` + `ChefRuntime` when a new chef needs one.
 
 `starting_hand` lists card ids or random entries (`random:kitchenware`, `random:ingredient`,
-`random:<ingredient tag>`), dealt in order. With `last_card_is_flex`, a difficulty starting-hand
-reduction removes the last card first so the station setup stays whole. An empty list deals the
-default random 3 Ingredients + 2 Kitchenware.
+`random:<ingredient tag>`), dealt in order. An empty list deals the default random
+3 Ingredients + 2 Kitchenware.
 
 ## Conventions
 

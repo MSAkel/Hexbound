@@ -7,7 +7,7 @@ extends RefCounted
 
 ## How strictly a seated card must qualify before a query returns it.
 enum SeatFilter {
-	## Any occupant, including inactive or difficulty-disabled cards.
+	## Any occupant, including inactive cards.
 	SEATED,
 	## Occupant that can fire from its own fire-order slot.
 	ACTIVE,

@@ -132,7 +132,10 @@ func _show_detail(id: StringName) -> void:
 		_detail_body.text = "Keep playing to find this tip."
 		return
 	_detail_title.text = String(def.get("title", ""))
-	_detail_body.text = TutorialHints.to_bbcode(String(def.get("body", "")))
+	var body := String(def.get("body", ""))
+	if id == TutorialHints.REROLL_HINT:
+		body = TutorialManager.get_body(id)
+	_detail_body.text = TutorialHints.to_bbcode(body)
 
 
 func _build_ui() -> void:

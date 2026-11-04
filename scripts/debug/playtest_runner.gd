@@ -7,7 +7,7 @@ extends Node
 ##   --runs=N          Seeds per chef (default 8). Every chef plays the same seeds.
 ##   --chef=<id>       One chef by id (resources/chefs/), e.g. sous_chef or forager.
 ##   --seed=<text>     Play one seed. --repeat=N plays it N times to check determinism.
-##   --difficulty=N    Difficulty level index (default 0).
+##   --difficulty=N    Difficulty level as shown in game, 1 to 6 (default 1).
 ##   --power           Days have no goal and always play every Hour. Reports raw score per day.
 ##   --extra-hours     Normal days, but when an Hour is about to meet the goal with Hours to spare,
 ##                     also plays those Hours out as a what-if and reports what they would have scored.
@@ -198,7 +198,8 @@ var _chef_ids: Array[String] = []
 var _run_count := DEFAULT_RUN_COUNT
 var _only_seed := ""
 var _repeat := 1
-var _difficulty := 0
+## Difficulty level as shown in game (1-based). Difficulty.Level is this minus 1.
+var _difficulty := 1
 var _fuzz := false
 var _check_sim := false
 var _verbose := false
@@ -263,7 +264,7 @@ func _parse_args() -> void:
 		elif arg.begins_with("--repeat="):
 			_repeat = maxi(1, int(value))
 		elif arg.begins_with("--difficulty="):
-			_difficulty = clampi(int(value), 0, Difficulty.Level.size() - 1)
+			_difficulty = clampi(int(value), 1, Difficulty.Level.size())
 		elif arg.begins_with("--out="):
 			_report_path = value
 		elif arg == "--power":
@@ -326,7 +327,7 @@ func _run_starter_fairness() -> void:
 	for chef_id: String in _chef_ids:
 		var chef := ChefRegistry.get_chef_by_id(chef_id)
 		GameManager.selected_chef = chef
-		GameManager.selected_difficulty = Difficulty.Level.LEVEL_0
+		GameManager.selected_difficulty = Difficulty.Level.LEVEL_1
 		GameManager.bind_chef()
 		for index in STARTER_SEED_COUNT:
 			var seed_text := "ST%s%03d" % [chef_id.substr(0, 3).to_upper(), index]
@@ -371,7 +372,7 @@ func _run_starter_fairness() -> void:
 ## Same stream as Hand.build_starting_hand, so a seed deals the hand a player would see.
 func _deal_starting_hand() -> Array[TileCard]:
 	var dealt: Array[TileCard] = []
-	var stream_name := "starting_hand:%s:%d" % [GameManager.selected_chef.id, int(GameManager.selected_difficulty)]
+	var stream_name := "starting_hand:%s" % GameManager.selected_chef.id
 	RunRng.using_fresh_stream(stream_name, func() -> void:
 		dealt.append_array(ChefRegistry.get_starting_hand_cards(GameManager.selected_chef))
 	)
@@ -464,12 +465,11 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 	_pending_turn_script_errors.clear()
 	SCRIPT_ERROR_TRACKER.mark()
 	GameManager.selected_chef = ChefRegistry.get_chef_by_id(chef_id)
-	GameManager.selected_difficulty = _difficulty as Difficulty.Level
+	GameManager.selected_difficulty = (_difficulty - 1) as Difficulty.Level
 	RunRng.begin_new_run(seed_text)
 	GameManager.reset_for_new_run()
 	_clear_board()
 	map.generate_terrain()
-	map.apply_run_start_randomization()
 	_run_over = false
 	_won = false
 	_day = {}

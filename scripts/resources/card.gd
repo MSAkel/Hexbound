@@ -58,5 +58,4 @@ func get_purchase_block_reason() -> String:
 
 
 func _apply_merchant_discount(base_price: int, discount: float) -> int:
-	var multiplier := Difficulty.get_merchant_price_multiplier(GameManager.selected_difficulty) - discount
-	return maxi(1, int(round(base_price * multiplier)))
+	return maxi(1, int(round(base_price * (1.0 - discount))))

@@ -28,7 +28,7 @@ const ENDLESS_GROWTH_POWER := 1.15
 ## Day target for round_number, scaled by the difficulty's target multiplier.
 static func get_required_score(
 	round_number: int,
-	difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
+	difficulty: Difficulty.Level = Difficulty.Level.LEVEL_1
 ) -> int:
 	var base_score := _get_base_required_score(round_number)
 	var scale := Difficulty.get_score_target_multiplier(difficulty)

@@ -210,7 +210,6 @@ func _chefs() -> Array:
 			"icon": _icon_path(chef.icon),
 			"ingame_icon": _icon_path(chef.get_ingame_portrait()),
 			"starting_hand": chef.starting_hand.duplicate(),
-			"last_card_is_flex": chef.last_card_is_flex,
 			"perk": chef.perk.get_script().resource_path if chef.perk != null else "",
 			"file": chef.resource_path,
 		})
