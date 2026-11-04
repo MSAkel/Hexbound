@@ -50,6 +50,7 @@ size_flags_horizontal = 4
 theme_override_constants/separation = 20
 
 [node name="PrevSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1203913993]
+texture_filter = 1
 custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -62,10 +63,11 @@ stretch_mode = 3
 flip_h = true
 
 [node name="UnifiedPanel" type="PanelContainer" parent="SafeArea/Page" unique_id=1251914286]
-theme_type_variation = &"ParchmentPanel"
+texture_filter = 1
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
+theme_type_variation = &"ParchmentPanel"
 
 [node name="Content" type="VBoxContainer" parent="SafeArea/Page/UnifiedPanel" unique_id=39843696]
 layout_mode = 2
@@ -122,6 +124,7 @@ layout_mode = 2
 
 [node name="PlayButton" type="Button" parent="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn" unique_id=1794758867]
 unique_name_in_owner = true
+texture_filter = 1
 custom_minimum_size = Vector2(280, 76)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -133,6 +136,7 @@ theme_override_font_sizes/font_size = 34
 text = "PLAY"
 
 [node name="NextSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1794269466]
+texture_filter = 1
 custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -145,13 +149,14 @@ stretch_mode = 3
 
 [node name="BackButton" type="Button" parent="." unique_id=1964102202]
 unique_name_in_owner = true
-theme_type_variation = &"AccentButton"
+texture_filter = 1
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 0
 offset_left = 50.0
 offset_top = 30.0
 offset_right = 210.0
 offset_bottom = 78.0
+theme_type_variation = &"AccentButton"
 theme_override_font_sizes/font_size = 24
 text = "BACK"
 
@@ -162,6 +167,6 @@ unique_name_in_owner = true
 layout_mode = 1
 
 [connection signal="pressed" from="SafeArea/Page/PrevSelectionButton" to="." method="_on_prev_selection_pressed"]
-[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="SafeArea/Page/NextSelectionButton" to="." method="_on_next_selection_pressed"]
+[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]

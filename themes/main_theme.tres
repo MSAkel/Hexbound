@@ -10,6 +10,39 @@
 [ext_resource type="Texture2D" uid="uid://di3ktqmd2smbl" path="res://assets/gui/buttons/button_accent_pressed.png" id="8_acprs"]
 [ext_resource type="Texture2D" uid="uid://j18ke8kwnfsa" path="res://assets/gui/panels/panel_bordered.png" id="9_parch"]
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_p"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("8_acprs")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_h"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("7_achov")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_n"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("6_acnrm")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_nvml6"]
 content_margin_left = 20.0
 content_margin_top = 11.0
@@ -65,50 +98,6 @@ texture_margin_top = 12.0
 texture_margin_right = 24.0
 texture_margin_bottom = 12.0
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_n"]
-content_margin_left = 20.0
-content_margin_top = 11.0
-content_margin_right = 20.0
-content_margin_bottom = 12.0
-texture = ExtResource("6_acnrm")
-texture_margin_left = 32.0
-texture_margin_top = 12.0
-texture_margin_right = 24.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_h"]
-content_margin_left = 20.0
-content_margin_top = 11.0
-content_margin_right = 20.0
-content_margin_bottom = 12.0
-texture = ExtResource("7_achov")
-texture_margin_left = 32.0
-texture_margin_top = 12.0
-texture_margin_right = 24.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_p"]
-content_margin_left = 20.0
-content_margin_top = 11.0
-content_margin_right = 20.0
-content_margin_bottom = 12.0
-texture = ExtResource("8_acprs")
-texture_margin_left = 32.0
-texture_margin_top = 12.0
-texture_margin_right = 24.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parch"]
-content_margin_left = 112.0
-content_margin_top = 112.0
-content_margin_right = 112.0
-content_margin_bottom = 112.0
-texture = ExtResource("9_parch")
-texture_margin_left = 160.0
-texture_margin_top = 160.0
-texture_margin_right = 160.0
-texture_margin_bottom = 160.0
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vxwtt"]
 bg_color = Color(0.047058824, 0.09019608, 0.09803922, 1)
 border_width_left = 2
@@ -120,6 +109,17 @@ corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_parch"]
+content_margin_left = 112.0
+content_margin_top = 112.0
+content_margin_right = 112.0
+content_margin_bottom = 112.0
+texture = ExtResource("9_parch")
+texture_margin_left = 160.0
+texture_margin_top = 160.0
+texture_margin_right = 160.0
+texture_margin_bottom = 160.0
 
 [resource]
 default_font = ExtResource("4_gimbt")
