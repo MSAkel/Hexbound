@@ -50,6 +50,8 @@ class Station:
 	var choice := -1
 	var capstone := -1
 	var state: Dictionary = {}
+	## Difficulty lock: the second Meal slot stays shut until MEAL_SLOT_UNLOCK_LEVEL. Set per run.
+	var meal_slot_locked := false
 
 	func to_dict() -> Dictionary:
 		return {
@@ -59,6 +61,7 @@ class Station:
 			"choice": choice,
 			"capstone": capstone,
 			"state": state.duplicate(true),
+			"meal_slot_locked": meal_slot_locked,
 		}
 
 
@@ -101,8 +104,23 @@ func get_board() -> HexTileMap:
 
 func reset_for_new_run() -> void:
 	_reset_stations()
+	_roll_meal_slot_locks()
 	_pending_choices.clear()
 	_emit_all_changed()
+
+
+## Picks which stations lock their second Meal slot for this run. Seeded, so a seed replays it.
+func _roll_meal_slot_locks() -> void:
+	var count := mini(
+		Difficulty.get_locked_meal_slot_station_count(GameManager.selected_difficulty),
+		_stations.size()
+	)
+	var order: Array = range(_stations.size())
+	RunRng.shuffle_with(RunRng.create_rng("meal_slot_locks"), order)
+	for i in _stations.size():
+		_stations[i].meal_slot_locked = false
+	for i in count:
+		_stations[int(order[i])].meal_slot_locked = true
 
 
 func _reset_stations() -> void:
@@ -286,11 +304,19 @@ func get_level_flat_flavour(segment_index: int) -> int:
 	return level_perk.flat_flavour if level_perk != null else 0
 
 
+## True when this station's second Meal slot is locked by difficulty until MEAL_SLOT_UNLOCK_LEVEL.
+func has_meal_slot_lock(segment_index: int) -> bool:
+	var station := _station(segment_index)
+	return station != null and station.meal_slot_locked
+
+
 func is_meal_slot_unlocked(segment_index: int, meal_slot_index: int) -> bool:
-	return meal_slot_index <= 0 or get_level(segment_index) >= MEAL_SLOT_UNLOCK_LEVEL
+	if meal_slot_index <= 0 or not has_meal_slot_lock(segment_index):
+		return true
+	return get_level(segment_index) >= MEAL_SLOT_UNLOCK_LEVEL
 
 
-## True for the second Meal slot of a station below level 3.
+## True for a difficulty-locked second Meal slot on a station below level 3.
 func is_meal_slot_locked(coords: Vector2i) -> bool:
 	if _board == null:
 		return false
@@ -639,7 +665,7 @@ func record_serving(segment_index: int) -> void:
 	while station.level < MAX_LEVEL and station.served >= thresholds[station.level - START_LEVEL]:
 		station.level += 1
 		EventBus.station_leveled_up.emit(segment_index, station.level)
-		if station.level == MEAL_SLOT_UNLOCK_LEVEL:
+		if station.level == MEAL_SLOT_UNLOCK_LEVEL and station.meal_slot_locked:
 			EventBus.meal_slot_unlocked.emit(segment_index)
 		if station.level == CHOICE_LEVEL or station.level == CAPSTONE_LEVEL:
 			_queue_choice(segment_index)
@@ -707,6 +733,8 @@ func apply_run_state(state: Dictionary) -> void:
 	_reset_stations()
 	_pending_choices.clear()
 	var saved: Array = state.get("stations", [])
+	# Saves from before per-station locks get this run's locks rolled from the seed.
+	var has_saved_locks := not saved.is_empty()
 	for i in mini(saved.size(), _stations.size()):
 		var entry: Dictionary = saved[i]
 		var station := _stations[i]
@@ -719,6 +747,12 @@ func apply_run_state(state: Dictionary) -> void:
 		station.capstone = int(entry.get("capstone", -1))
 		var saved_state: Variant = entry.get("state", {})
 		station.state = (saved_state as Dictionary).duplicate(true) if saved_state is Dictionary else {}
+		if entry.has("meal_slot_locked"):
+			station.meal_slot_locked = bool(entry["meal_slot_locked"])
+		else:
+			has_saved_locks = false
+	if not has_saved_locks:
+		_roll_meal_slot_locks()
 	for segment_index in state.get("pending_choices", []):
 		if _station(int(segment_index)) != null:
 			_pending_choices.append(int(segment_index))

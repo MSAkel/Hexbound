@@ -176,7 +176,7 @@ func _on_station_leveled_up(index: int, level: int) -> void:
 	_append_punch(create_tween(), self, PUNCH_SCALE)
 	_append_punch(create_tween(), _level_label, LEVEL_PUNCH_SCALE)
 	_float_text("Level %d" % level, _station_color())
-	if level == StationManager.MEAL_SLOT_UNLOCK_LEVEL:
+	if level == StationManager.MEAL_SLOT_UNLOCK_LEVEL and StationManager.has_meal_slot_lock(index):
 		AudioManager.play_sfx(UISounds.MEAL_SLOT_UNLOCKED)
 
 

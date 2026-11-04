@@ -158,7 +158,7 @@ static func _static_init() -> void:
 		"Use the **lock** on an item to keep it on the shelf for your next visit.",
 		Context.MERCHANT, [&"merchant_cards"], PRIORITY_PANEL)
 	_add(&"merchant_reroll", CATEGORY_MERCHANT, "Restock",
-		"**Reroll** the shelf for %s. The price goes up each time you reroll." % GameTerms.GOLD,
+		"**Reroll** the shelf for %s. On harder difficulty levels the price goes up each time you reroll." % GameTerms.GOLD,
 		Context.MERCHANT, [&"merchant_reroll"], PRIORITY_PANEL)
 	_add(&"merchant_leave", CATEGORY_MERCHANT, "Next Day",
 		"Leave when you're ready to start the next Day.",
@@ -177,12 +177,12 @@ static func _static_init() -> void:
 		"This Station now has a **type**, set by the cards on it. It keeps the type as long as its cards still meet the requirements.",
 		Context.HOUR, [&"typed_station"], PRIORITY_NORMAL)
 	_add(&"station_level", CATEGORY_KITCHEN, "Station level",
-		"Serving **%ss** levels up a Station. At **level %d** it opens a second **%s** and lets you choose a perk." % [
+		"Serving **%ss** levels up a Station. At **level %d** you choose a perk, and a locked second **%s** opens." % [
 			GameTerms.MEAL, _StationManagerScript.CHOICE_LEVEL, GameTerms.MEAL_SLOT,
 		],
 		Context.HOUR, [&"leveled_station"], PRIORITY_NORMAL)
 	_add(&"station_perk", CATEGORY_KITCHEN, "Station perk",
-		"Level %d! Choose a **perk** for this Station. Its second **%s** is open now too." % [
+		"Level %d! Choose a **perk** for this Station. If its second **%s** was locked, it is open now too." % [
 			_StationManagerScript.CHOICE_LEVEL, GameTerms.MEAL_SLOT,
 		],
 		Context.STATION_CHOICE, [], PRIORITY_PANEL)

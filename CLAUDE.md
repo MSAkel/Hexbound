@@ -21,7 +21,7 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 
 - `--runs=N` seeds per chef (default 8); `--chef=<id>` one chef (ids in `resources/chefs/*.tres`)
 - `--seed=<text>` one seed; `--repeat=N` replays it to check determinism
-- `--difficulty=N` difficulty level as shown in game, 1 to 6 (default 1)
+- `--difficulty=N` difficulty level as shown in game, 1 to 9 (default 1)
 - `--power` no day goals, reports raw score per day
 - `--fuzz` random legal actions; fails on invariants and script errors
 - `--no-condiments`, `--no-overplay`, `--check-sim`, `--verbose`
@@ -73,9 +73,12 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
 
 - Difficulty Level 1 is intentionally easy. Don't treat a 100% win rate there as a balance problem;
   judge balance at higher levels.
-- Difficulty levels stack, each adding one rule (`scripts/resources/difficulty.gd`): 2 Day targets
-  +15%, 3 one fewer free reroll, 4 −5 starting Gold, 5 each Station level needs 1 more Meal, 6 one
-  fewer Merchant tile card. `Difficulty.Level` is 0-based (`LEVEL_1` = 0); saves store that index.
+- Difficulty levels stack, each adding one rule (`scripts/resources/difficulty.gd`). Level 1 is the
+  most generous game: every second Meal slot is open and Merchant rerolls cost a flat 5 Gold.
+  2 Day targets +15%, 3 one fewer free reroll, 4 Merchant reroll cost climbs +1 per reroll,
+  5 −5 starting Gold, 6 two random Stations lock their second Meal slot until Station level 3,
+  7 each Station level needs 1 more Meal, 8 all four Stations lock it, 9 one fewer Merchant tile
+  card. `Difficulty.Level` is 0-based (`LEVEL_1` = 0); saves store that index.
 - Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
 

@@ -31,7 +31,7 @@ var _pack_opening: PackOpening = null
 ## Empty when no pack is open. Saved, because the gold is spent when the pack opens.
 var _pending_pack: Dictionary = {}
 var _stock_reroll_count := 0
-## Gold cost for the next merchant reroll. Resets when the shop opens.
+## Gold cost for the next merchant reroll. Climbs per reroll from difficulty Level 4. Resets when the shop opens.
 var _reroll_cost := BASE_REROLL_COST
 ## Rerolls left this visit that cost nothing (Restaurateur). Reset when the shop opens.
 var _free_rerolls_left := 0
@@ -667,7 +667,7 @@ func _on_reroll_button_pressed() -> void:
 		if not EconomyManager.can_afford(_reroll_cost):
 			return
 		EconomyManager.remove(_reroll_cost)
-		_reroll_cost += 1
+		_reroll_cost += Difficulty.get_merchant_reroll_cost_step(GameManager.selected_difficulty)
 
 	AudioManager.play_sfx(UISounds.CLICK)
 	_stock_reroll_count += 1
