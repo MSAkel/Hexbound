@@ -425,7 +425,7 @@ func beverage_source_segments(segment_index: int) -> Array[int]:
 ## Garnishes target from a card's activation, with the usual float. Returns false at the cap.
 ## extra adds more stacks on top (Sunday Roast, Sauce level 3 option B).
 func garnish_from(source_tile: Hex, source_card: TileCard, target: TileCard, stacks: int = 1) -> bool:
-	if target == null or EventManager.are_garnishes_blocked():
+	if target == null:
 		return false
 	var landed := false
 	for _i in maxi(stacks, 1):

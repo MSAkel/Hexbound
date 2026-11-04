@@ -102,7 +102,7 @@ func grow(key: String, amount: float, target: Hex = null) -> void:
 
 ## Queues extra fires that resolve before the fire order moves on. Returns how many were queued.
 func queue_triggers(cards: Array[TileCard]) -> int:
-	if map == null or cards.is_empty() or EventManager.are_retriggers_blocked():
+	if map == null or cards.is_empty():
 		return 0
 	var queued := map.turn_resolver.queue_staff_triggers(cards, slot)
 	if queued > 0:
