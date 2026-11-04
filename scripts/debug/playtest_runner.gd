@@ -9,6 +9,8 @@ extends Node
 ##   --seed=<text>     Play one seed. --repeat=N plays it N times to check determinism.
 ##   --difficulty=N    Difficulty level index (default 0).
 ##   --power           Days have no goal and always play every Hour. Reports raw score per day.
+##   --extra-hours     Normal days, but when an Hour is about to meet the goal with Hours to spare,
+##                     also plays those Hours out as a what-if and reports what they would have scored.
 ##   --fuzz            Chaos bot: random legal actions. Fails on invariants and script errors.
 ##   --no-condiments   The bot never buys or drinks condiments.
 ##   --no-overplay     Cards only go on empty spots (no merging or replacing). A/B baseline.
@@ -28,6 +30,13 @@ const CHAOS_POLICY := preload("res://scripts/debug/playtest/chaos_policy.gd")
 const REPORT_PATH := "user://playtest_report.json"
 const STARTER_SEED_COUNT := 16
 const DEFAULT_RUN_COUNT := 8
+## Events that reroll part of the board or staff at the start of every Hour. EventManager isn't in
+## the sim snapshot, so --extra-hours can't roll those back and skips the probe on those days.
+const PROBE_SKIPPED_EVENTS: Array[int] = [
+	EventManager.Type.BLACKOUT,
+	EventManager.Type.FADING_SECTOR,
+	EventManager.Type.SHORT_STAFFED,
+]
 ## Safety stops for a run or Hour that never finishes.
 const MAX_HOURS_PER_RUN := 120
 const MAX_ACTIONS_PER_HOUR := 30
@@ -178,6 +187,8 @@ var sim: RefCounted
 ## The bot's hand. Every card the game hands out arrives through tile_card_selected.
 var hand: Array[TileCard] = []
 var power_mode := false
+## --extra-hours: probe the Hours a day would skip once its goal is met.
+var extra_hours := false
 var use_condiments := true
 var policy: RefCounted
 ## Step-by-step log for hunting a stuck or runaway run.
@@ -195,6 +206,8 @@ var _report_path := REPORT_PATH
 var _cases: Array[Dictionary] = []
 var _failed := 0
 
+## True while --extra-hours plays out the Hours after the goal. Everything is rolled back after.
+var _probing := false
 var _run_over := false
 var _won := false
 ## Actions and day results for the run in progress. Becomes the report's details.
@@ -213,13 +226,14 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	_parse_args()
 	GameManager.playtest_play_full_day = power_mode
-	print("[playtest] chefs=%s runs=%d seed=%s difficulty=%d mode=%s condiments=%s" % [
+	print("[playtest] chefs=%s runs=%d seed=%s difficulty=%d mode=%s condiments=%s extra_hours=%s" % [
 		",".join(_chef_ids),
 		_run_count,
 		_only_seed if not _only_seed.is_empty() else "-",
 		_difficulty,
 		"fuzz" if _fuzz else ("power" if power_mode else "normal"),
 		"on" if use_condiments else "off",
+		"on" if extra_hours else "off",
 	])
 	map = HEX_MAP_SCENE.instantiate() as HexTileMap
 	add_child(map)
@@ -254,6 +268,8 @@ func _parse_args() -> void:
 			_report_path = value
 		elif arg == "--power":
 			power_mode = true
+		elif arg == "--extra-hours":
+			extra_hours = true
 		elif arg == "--fuzz":
 			_fuzz = true
 		elif arg == "--no-condiments":
@@ -279,6 +295,9 @@ func _parse_args() -> void:
 	# Fuzz keeps playing through all nine days, so it never stops on a missed goal.
 	if _fuzz:
 		power_mode = true
+	# Power days already play every Hour.
+	if power_mode:
+		extra_hours = false
 
 
 func _run_all() -> void:
@@ -428,6 +447,7 @@ func _run_one(suite: String, chef_id: String, seed_text: String, repeat_index: i
 	details["staff"] = StaffManager.owned_ids()
 	details["difficulty"] = _difficulty
 	details["power"] = power_mode
+	details["extra_hours"] = extra_hours
 	details["playtest_condiments"] = use_condiments
 	details["overplay"] = TileCard.overplay_enabled
 	details["repeat_index"] = repeat_index
@@ -496,9 +516,28 @@ func _start_day() -> void:
 
 func _play_hour() -> void:
 	var goal_met_before := GameManager.total_round_score >= GameManager.required_score
+	await _play_hand()
+	trace("before resolve")
+	await policy.before_resolve()
+	if extra_hours and not goal_met_before:
+		await _probe_extra_hours()
+	trace("resolving Hour")
+	_day["hours"] = int(_day["hours"]) + 1
+	if goal_met_before:
+		_day["leftover_hours"] = int(_day["leftover_hours"]) + 1
+	var score_before := GameManager.total_round_score
+	await _resolve_turn()
+	for reason: String in _collect_invariant_failures(score_before):
+		_note_invariant(reason)
+	if _run_over or RoundFlow.is_transitioning():
+		return
+	await _draft_next_hour()
+
+
+## Plays and sells from hand until the Hour ends: once a play or sell leaves fewer than three cards.
+func _play_hand() -> void:
 	if hand.is_empty():
 		_note_invariant("empty hand at the start of an Hour")
-	# The Hour ends once a play or sell leaves fewer than three cards in hand.
 	var removed := 0
 	while not hand.is_empty() and (hand.size() >= 3 or removed == 0):
 		if removed >= MAX_ACTIONS_PER_HOUR:
@@ -510,24 +549,84 @@ func _play_hour() -> void:
 		_apply_hand_action(action)
 		removed += 1
 
-	trace("before resolve")
-	await policy.before_resolve()
-	trace("resolving Hour")
-	_day["hours"] = int(_day["hours"]) + 1
-	if goal_met_before:
-		_day["leftover_hours"] = int(_day["leftover_hours"]) + 1
-	var score_before := GameManager.total_round_score
-	await _resolve_turn()
-	for reason: String in _collect_invariant_failures(score_before):
-		_note_invariant(reason)
-	if _run_over or RoundFlow.is_transitioning():
-		return
 
-	# The day goes on. Every new Hour brings a card pick, rolled before the Hour was used up.
+## The day goes on. Every new Hour brings a card pick, rolled before the Hour was used up.
+func _draft_next_hour() -> void:
 	if EventManager.should_auto_grant_card(false):
 		EventManager.grant_auto_card(false, GameManager.remaining_turns + 1)
 	elif EventManager.get_cards_pack_size(false) > 0:
 		await _draft(false, GameManager.current_round, GameManager.remaining_turns + 1)
+
+
+## --extra-hours. Called just before an Hour resolves. If that Hour meets the goal with Hours to
+## spare, plays the rest of the day as --power would (bot plays, card picks, condiments), records
+## each Hour's score, then rolls the run, hand, log and bot back so the real day ends as usual.
+## The day's last Hour is a what-if, since resolving it for real would end the day.
+func _probe_extra_hours() -> void:
+	if GameManager.remaining_turns <= 1:
+		return
+	var preview: Dictionary = await sim.evaluate(func() -> void: pass)
+	if GameManager.total_round_score + int(preview["score"]) < GameManager.required_score:
+		return
+	if PROBE_SKIPPED_EVENTS.has(EventManager.active_event):
+		_day["extra_hours_skipped"] = EventManager.get_active_event_name()
+		return
+
+	var events_before := JSON.stringify(EventManager.capture_run_state(), "", true)
+	var fingerprint_before: String = sim.fingerprint() if _check_sim else ""
+	var saved_state: Dictionary = sim.snapshot()
+	var saved_hand: Array[TileCard] = hand.duplicate()
+	var saved_log: Dictionary = _log.duplicate(true)
+	var saved_day: Dictionary = _day.duplicate(true)
+	var saved_policy: Dictionary = policy.capture_state()
+	_probing = true
+	GameManager.playtest_play_full_day = true
+
+	var scores: Array[int] = []
+	var score_before := GameManager.total_round_score
+	await _resolve_turn()
+	for reason: String in _collect_invariant_failures(score_before):
+		_note_invariant(reason)
+	var score_at_goal := GameManager.total_round_score
+	while GameManager.remaining_turns >= 1 and not RoundFlow.is_transitioning() and not _run_over:
+		await _draft_next_hour()
+		await _play_hand()
+		await policy.before_resolve()
+		if GameManager.remaining_turns <= 1:
+			var last: Dictionary = await sim.evaluate(func() -> void: pass)
+			scores.append(int(last["score"]))
+			break
+		score_before = GameManager.total_round_score
+		await _resolve_turn()
+		for reason: String in _collect_invariant_failures(score_before):
+			_note_invariant(reason)
+		scores.append(GameManager.total_round_score - score_before)
+
+	var probe_invariants: Array = (_log["invariants"] as Array).slice((saved_log["invariants"] as Array).size())
+	GameManager.playtest_play_full_day = power_mode
+	sim.restore(saved_state)
+	hand.assign(saved_hand)
+	_log = saved_log
+	_day = saved_day
+	policy.restore_state(saved_policy)
+	_probing = false
+	# Let the rolled-back cards' UI free before the real Hour.
+	await get_tree().process_frame
+
+	for reason: String in probe_invariants:
+		# Drop the "day N: " prefix _note_invariant adds, since it adds it again.
+		_note_invariant("extra Hours: %s" % reason.substr(reason.find(": ") + 2))
+	if JSON.stringify(EventManager.capture_run_state(), "", true) != events_before:
+		_note_invariant("extra Hours probe changed EventManager state")
+	if _check_sim:
+		var fingerprint_after: String = sim.fingerprint()
+		if fingerprint_after != fingerprint_before:
+			_note_invariant("extra Hours probe: %s" % sim.describe_difference(fingerprint_before, fingerprint_after))
+	var extra_total := 0
+	for score in scores:
+		extra_total += score
+	_day["extra_hour_scores"] = scores
+	_day["full_day_score"] = score_at_goal + extra_total
 
 
 func _apply_hand_action(action: Dictionary) -> void:
@@ -592,6 +691,9 @@ func _close_day() -> void:
 	_day["score"] = score
 	_day["cleared"] = score >= int(_day["goal"])
 	_day["gold"] = EconomyManager.amount
+	# Gold for the Hours left unused when the goal was met (0 on a day that used every Hour).
+	if bool(_day["cleared"]) and not power_mode:
+		_day["early_gold"] = int(EconomyManager.last_speed_reward.get("early_gold", 0))
 	var stations: Array = []
 	for segment_index in map.get_segment_count():
 		var station_type := StationManager.get_station_type(segment_index)
@@ -602,13 +704,14 @@ func _close_day() -> void:
 	_day["stations"] = stations
 	_log["days"].append(_day)
 	if _verbose:
-		print("[playtest]   day %d %d/%d hours=%d leftover=%d gold=%d" % [
+		print("[playtest]   day %d %d/%d hours=%d leftover=%d gold=%d%s" % [
 			int(_day["round"]),
 			score,
 			int(_day["goal"]),
 			int(_day["hours"]),
 			int(_day["leftover_hours"]),
 			EconomyManager.amount,
+			(" full_day=%d" % int(_day["full_day_score"])) if _day.has("full_day_score") else "",
 		])
 	_day = {}
 

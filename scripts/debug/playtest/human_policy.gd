@@ -87,6 +87,15 @@ func on_run_started() -> void:
 	_market = 0.0
 
 
+func capture_state() -> Dictionary:
+	return {"baseline": _baseline.duplicate(), "market": _market}
+
+
+func restore_state(state: Dictionary) -> void:
+	_baseline = (state["baseline"] as Dictionary).duplicate()
+	_market = float(state["market"])
+
+
 #region Valuation
 
 func _hours_left() -> int:
