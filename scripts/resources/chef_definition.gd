@@ -22,9 +22,6 @@ const RANDOM_INGREDIENT := "ingredient"
 ## Opening hand in deal order: card ids ("deep_fryer") or random entries ("random:fruit").
 ## Empty deals the default random hand (ChefRegistry.STARTING_*_COUNT).
 @export var starting_hand: Array[String] = []
-## True when the last starting_hand entry is the flex card: the first card a difficulty
-## starting-hand reduction removes, so the rest of the hand (a station setup) stays whole.
-@export var last_card_is_flex: bool = true
 
 
 func get_ingame_portrait() -> Texture2D:

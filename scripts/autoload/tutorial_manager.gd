@@ -222,6 +222,8 @@ func get_body(id: StringName) -> String:
 		var chef := GameManager.selected_chef
 		if chef != null and not chef.speciality_description.is_empty():
 			return "**%s**: %s" % [chef.display_name, chef.speciality_description]
+	if id == TutorialHints.REROLL_HINT:
+		return body % EconomyManager.get_free_rerolls_per_day()
 	return body
 
 

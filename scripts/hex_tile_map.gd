@@ -71,7 +71,6 @@ var card_placement_handler: CardPlacementHandler
 var _hand: Hand
 
 var _event_highlighted_coords: Array[Vector2i] = []
-var _disabled_tile_coords: Array[Vector2i] = []
 # Empty tiles locked by the Sealed Hexes event. Shares the disabled overlay layer.
 var _event_sealed_coords: Array[Vector2i] = []
 # Valid placement target while a hand card is selected.
@@ -600,7 +599,7 @@ func is_in_map(coords: Vector2i) -> bool:
 	return map_data.has(coords)
 
 
-## Disabled difficulty tiles and event-sealed tiles exist on the map but cannot be played on.
+## Event-sealed tiles and locked Meal slots exist on the map but cannot be played on.
 func is_tile_interactable(coords: Vector2i) -> bool:
 	if not is_in_map(coords):
 		return false
@@ -627,14 +626,12 @@ func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
 func is_tile_card_active(hex: Hex) -> bool:
 	if hex == null or hex.active_tile_card == null:
 		return false
-	if hex.is_disabled_by_difficulty:
-		return false
 	if StationManager.is_meal_slot_locked(hex.coordinates):
 		return false
 	return hex.active_tile_card.is_active
 
 
-## Inactive and difficulty-disabled runes are skipped instantly during trigger order.
+## Inactive cards are skipped instantly during trigger order.
 func _is_bypassed_in_trigger_order(hex: Hex) -> bool:
 	if hex.active_tile_card == null:
 		return false
@@ -679,7 +676,6 @@ func generate_terrain() -> void:
 	_inspect_gold_highlight_coords.clear()
 	disabled_tile_overlay_layer.clear()
 	fading_sector_overlay_layer.clear()
-	_disabled_tile_coords.clear()
 	card_highlight_overlay_layer.modulate = Color.WHITE
 
 	var cells := HexMapLayout.compute_board_cells(base_layer)
@@ -718,53 +714,11 @@ func notify_tile_card_occupancy_changed(hex: Hex, previous: TileCard, current: T
 	StationManager.queue_type_evaluation()
 
 
-## Apply difficulty-driven map randomization after run RNG setup rolls.
-func apply_run_start_randomization() -> void:
-	if RunSaveManager.should_restore_run():
-		return
-	_apply_difficulty_disabled_tiles()
-
-
-# Randomly disable tiles for higher difficulty. Meal slots are never disabled.
-func _apply_difficulty_disabled_tiles() -> void:
-	var disable_count := Difficulty.get_disabled_tile_count(GameManager.selected_difficulty)
-	if disable_count <= 0:
-		return
-
-	var candidates: Array[Vector2i] = []
-	for coords: Vector2i in map_data:
-		if is_meal_slot(coords):
-			continue
-		candidates.append(coords)
-
-	# Sort first so dictionary iteration order cannot change which tiles are disabled.
-	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
-		if a.x != b.x:
-			return a.x < b.x
-		return a.y < b.y
-	)
-	RunRng.shuffle_with(RunRng.create_rng("map_setup"), candidates)
-	disable_count = mini(disable_count, candidates.size())
-
-	for i in disable_count:
-		var coords := candidates[i]
-		var hex: Hex = map_data[coords]
-		hex.is_disabled_by_difficulty = true
-		disabled_tile_overlay_layer.set_cell(
-			coords,
-			OVERLAY_TILE_SOURCE_ID,
-			OVERLAY_TILE_ATLAS_COORDS
-		)
-		_disabled_tile_coords.append(coords)
-
-
-## Stamps the disabled overlay on empty tiles locked by Sealed Hexes. Skips difficulty tiles.
+## Stamps the disabled overlay on empty tiles locked by Sealed Hexes.
 func set_event_sealed_overlay(coords: Array[Vector2i]) -> void:
 	clear_event_sealed_overlay()
 	for cell: Vector2i in coords:
 		if not is_in_map(cell):
-			continue
-		if cell in _disabled_tile_coords:
 			continue
 		disabled_tile_overlay_layer.set_cell(
 			cell,
@@ -774,11 +728,9 @@ func set_event_sealed_overlay(coords: Array[Vector2i]) -> void:
 		_event_sealed_coords.append(cell)
 
 
-## Removes Sealed Hexes overlay cells without wiping difficulty-disabled tiles.
+## Removes the Sealed Hexes overlay cells.
 func clear_event_sealed_overlay() -> void:
 	for cell: Vector2i in _event_sealed_coords:
-		if cell in _disabled_tile_coords:
-			continue
 		disabled_tile_overlay_layer.set_cell(cell, -1)
 	_event_sealed_coords.clear()
 
@@ -1326,10 +1278,6 @@ func on_turn_ended() -> void:
 #region Run save / load
 
 func capture_map_state() -> Dictionary:
-	var disabled_coords: Array = []
-	for coords: Vector2i in _disabled_tile_coords:
-		disabled_coords.append([coords.x, coords.y])
-
 	var placed_cards: Array = []
 	for coords: Vector2i in map_data:
 		var hex: Hex = map_data[coords]
@@ -1340,14 +1288,13 @@ func capture_map_state() -> Dictionary:
 		placed_cards.append(entry)
 
 	return {
-		"disabled_coords": disabled_coords,
 		"placed_cards": placed_cards,
 		"segment_turn_results": _layout.capture_turn_results(),
 	}
 
 
 func restore_map_state(state: Dictionary) -> void:
-	_restore_disabled_tiles(state.get("disabled_coords", []))
+	_clear_event_sealed_state()
 
 	for entry: Dictionary in state.get("placed_cards", []):
 		var coords_data: Array = entry.get("coords", [])
@@ -1369,30 +1316,10 @@ func refresh_hour_results_ui() -> void:
 	_emit_hour_results_changed(0)
 
 
-func _restore_disabled_tiles(coords_list: Array) -> void:
-	for coords: Vector2i in _disabled_tile_coords:
-		if map_data.has(coords):
-			map_data[coords].is_disabled_by_difficulty = false
-
-	_disabled_tile_coords.clear()
+## The event re-seals its spots after load, so start from a clear overlay.
+func _clear_event_sealed_state() -> void:
 	_event_sealed_coords.clear()
 	disabled_tile_overlay_layer.clear()
-
-	for coords_data: Variant in coords_list:
-		if coords_data is not Array or coords_data.size() < 2:
-			continue
-		var coords := Vector2i(int(coords_data[0]), int(coords_data[1]))
-		if not map_data.has(coords):
-			continue
-
-		var hex: Hex = map_data[coords]
-		hex.is_disabled_by_difficulty = true
-		disabled_tile_overlay_layer.set_cell(
-			coords,
-			OVERLAY_TILE_SOURCE_ID,
-			OVERLAY_TILE_ATLAS_COORDS
-		)
-		_disabled_tile_coords.append(coords)
 
 
 func _serialize_placed_tile_card(tile_card: TileCard) -> Dictionary:

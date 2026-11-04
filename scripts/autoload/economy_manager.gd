@@ -5,10 +5,11 @@ extends Node
 ## Gold is used for card activation and merchant purchases.
 
 
-## Starting gold amount is set in diffculty.gd
+## Base starting Gold is Difficulty.BASE_STARTING_GOLD.
 const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
 const GOLD_PER_UNUSED_TURN := 2
+## Free card-pick rerolls per Day before the difficulty reduction (get_free_rerolls_per_day).
 const STARTING_REROLLS := 3
 
 var _amount: int = 0
@@ -131,9 +132,14 @@ func reset_round_tracking() -> void:
 
 #region Rerolls
 
+## Free rerolls each Day after the difficulty reduction.
+func get_free_rerolls_per_day() -> int:
+	return maxi(0, STARTING_REROLLS - Difficulty.get_free_reroll_reduction(GameManager.selected_difficulty))
+
+
 ## Refill the reroll pool. Runs at the start of every run and every day.
 func reset_rerolls() -> void:
-	_rerolls_remaining = STARTING_REROLLS
+	_rerolls_remaining = get_free_rerolls_per_day()
 	EventBus.rerolls_changed.emit(_rerolls_remaining)
 
 
@@ -169,6 +175,6 @@ func apply_run_state(state: Dictionary) -> void:
 	_earned_this_turn = int(state.get("earned_this_turn", 0))
 	_spent_this_round = int(state.get("spent_this_round", 0))
 	_last_speed_reward = {}
-	_rerolls_remaining = maxi(0, int(state.get("rerolls_remaining", STARTING_REROLLS)))
+	_rerolls_remaining = maxi(0, int(state.get("rerolls_remaining", get_free_rerolls_per_day())))
 	EventBus.gold_changed.emit(_amount)
 	EventBus.rerolls_changed.emit(_rerolls_remaining)

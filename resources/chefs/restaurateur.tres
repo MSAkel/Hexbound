@@ -18,4 +18,3 @@ icon = ExtResource("2_icon")
 speciality_description = "Start with 20 Gold. The merchant shelf has 1 more card, and the first reroll each visit is free."
 perk = SubResource("Perk")
 starting_hand = Array[String]([])
-last_card_is_flex = true

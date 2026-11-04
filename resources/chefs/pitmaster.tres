@@ -19,4 +19,3 @@ icon = ExtResource("2_icon")
 speciality_description = "Grilling Stations level up faster. Meat and Poultry dishes gain +1 {mult} for each level of their Station."
 perk = SubResource("Perk")
 starting_hand = Array[String](["steak", "meat", "salt", "skillet", "black_pepper"])
-last_card_is_flex = true

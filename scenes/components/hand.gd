@@ -96,10 +96,7 @@ func build_starting_hand() -> void:
 	if chef == null:
 		return
 
-	var stream_name := "starting_hand:%s:%d" % [
-		chef.id,
-		int(GameManager.selected_difficulty),
-	]
+	var stream_name := "starting_hand:%s" % chef.id
 	RunRng.using_fresh_stream(stream_name, func() -> void:
 		var starting_cards := ChefRegistry.get_starting_hand_cards(chef)
 		for card in starting_cards:

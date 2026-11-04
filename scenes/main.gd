@@ -74,11 +74,10 @@ func _begin_fresh_run() -> void:
 	EventBus.required_score_changed.emit()
 	EventBus.total_round_score_changed.emit()
 	EventBus.run_state_loaded.emit()
-	tile_map.apply_run_start_randomization()
 	hand.build_starting_hand()
 	if debug_starting_round > 1:
 		GameManager.set_starting_round_for_debug(debug_starting_round)
-	var expected_hand_size := ChefRegistry.get_expected_opening_hand_size(GameManager.selected_difficulty, GameManager.selected_chef)
+	var expected_hand_size := ChefRegistry.get_expected_opening_hand_size(GameManager.selected_chef)
 	if hand.get_hand_card_count() < expected_hand_size:
 		push_error(
 			"Starting hand only dealt %d/%d cards. Delete the run save and start a new run."

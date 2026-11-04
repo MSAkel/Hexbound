@@ -18,4 +18,3 @@ ingame_portrait = ExtResource("3_ingame")
 speciality_description = "Stations get both level 3 and both level 6 options, but every Station levels up slower."
 perk = SubResource("Perk")
 starting_hand = Array[String](["random:meat", "random:vegetable", "random:fruit", "random:sweet", "random:kitchenware"])
-last_card_is_flex = false

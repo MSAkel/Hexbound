@@ -17,4 +17,3 @@ icon = ExtResource("2_icon")
 speciality_description = "Each Dessert served {garnishes} a random Sweet on its Station."
 perk = SubResource("Perk")
 starting_hand = Array[String](["vanilla", "chocolate", "cream", "kitchen_torch", "random:fruit"])
-last_card_is_flex = true

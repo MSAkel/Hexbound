@@ -84,7 +84,7 @@ var turn_stamp: int = 0
 
 ## Chosen on the chef selection screen. Drives the chef's ability and starting hand.
 var selected_chef: ChefDefinition = null
-var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_0
+var selected_difficulty: Difficulty.Level = Difficulty.Level.LEVEL_1
 const ChefRuntimeScript := preload("res://scripts/chef_runtime.gd")
 ## The bound chef. Game systems call its hooks (output scale, starting gold, pool filter...).
 var chef: ChefRuntime = ChefRuntimeScript.new()
