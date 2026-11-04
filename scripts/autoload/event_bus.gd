@@ -63,6 +63,10 @@ signal required_score_changed()
 
 signal merchant_closed
 
+## A Meal fired. served is false when its requirements were missing and it showed Failed.
+## Not emitted for a Meal idle in a locked slot, since that never fires.
+signal meal_fired(meal: MealCard, served: bool)
+
 ## Emitted when a card is played
 signal card_played(card_ui: CardUI)
 ## Emitted when a hand card is sold from the sell panel.

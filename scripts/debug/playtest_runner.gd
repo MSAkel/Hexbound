@@ -244,6 +244,7 @@ func _ready() -> void:
 		sim.trace = trace
 	EventBus.tile_card_selected.connect(_on_card_granted)
 	EventBus.game_ended.connect(_on_game_ended)
+	EventBus.meal_fired.connect(_on_meal_fired)
 	EventBus.station_choice_requested.connect(_on_station_choice_requested)
 	await get_tree().process_frame
 	await _run_all()
@@ -484,6 +485,8 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		"merchant_rerolls": 0,
 		"drinks": [],
 		"perks": [],
+		# Meal id -> [times served, times Failed], real Hours only.
+		"meal_fires": {},
 		"staff_moves": 0,
 		"days": [],
 		"invariants": [],
@@ -720,6 +723,16 @@ func _on_card_granted(card: TileCard) -> void:
 	if sim.is_simulating or card == null:
 		return
 	hand.append(card)
+
+
+## Counts real Meal fires. What-if Hours are skipped. The extra-hours probe restores _log after.
+func _on_meal_fired(meal: MealCard, served: bool) -> void:
+	if sim.is_simulating or meal == null:
+		return
+	var fires: Dictionary = _log["meal_fires"]
+	var counts: Array = fires.get(meal.id, [0, 0])
+	counts[0 if served else 1] = int(counts[0 if served else 1]) + 1
+	fires[meal.id] = counts
 
 
 func _on_game_ended() -> void:
