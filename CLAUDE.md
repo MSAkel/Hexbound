@@ -23,6 +23,11 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 - `--seed=<text>` one seed; `--repeat=N` replays it to check determinism
 - `--difficulty=N` difficulty index (default 0)
 - `--power` no day goals, reports raw score per day
+- `--extra-hours` real day flow, but when an Hour is about to meet the goal with Hours to spare, the
+  bot also plays those Hours out as a what-if (picks, plays, condiments) and rolls everything back.
+  Each day gets `extra_hour_scores`, `full_day_score` and `early_gold`, so you can see what finishing
+  early gives up with the deck and gold of a real run. Skipped on Blackout, Fading Station and
+  Short Staffed days (those reroll part of the board every Hour). Costs roughly +35% run time.
 - `--fuzz` random legal actions; fails on invariants and script errors
 - `--no-condiments`, `--no-overplay`, `--check-sim`, `--verbose`
 - `--out=<path>` report path (default `user://playtest_report.json`)

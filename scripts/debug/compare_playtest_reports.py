@@ -6,6 +6,10 @@ usage: compare_playtest_reports.py base.json new.json [--suite=run|power]
 Per chef: win rate, average day reached, final gold, and average score / goal for each day.
 In --power reports every day plays out in full, so score / goal is the cleanest power measure.
 Then the cards whose take rate moved most.
+
+Run reports made with --extra-hours also show, per day: Hours used to meet the goal, gold paid for
+the unused Hours, and full-day score / goal (the score if the bot had played the unused Hours too).
+Full-day uses the same deck and gold as the real run, so it shows what finishing early gives up.
 """
 
 import sys
@@ -25,6 +29,9 @@ def summarize(cases: list[dict]) -> dict[str, dict]:
             "runs": 0, "wins": 0, "reached": 0, "gold": 0,
             "ratio_sum": defaultdict(float), "ratio_count": Counter(),
             "takes": Counter(),
+            "hours_sum": defaultdict(float), "early_gold_sum": defaultdict(float),
+            "cleared_count": Counter(), "gold_count": Counter(),
+            "full_sum": defaultdict(float), "full_count": Counter(),
         })
         row["runs"] += 1
         row["wins"] += bool(details.get("won"))
@@ -34,6 +41,19 @@ def summarize(cases: list[dict]) -> dict[str, dict]:
             goal = max(1, int(day.get("goal", 1)))
             row["ratio_sum"][int(day["round"])] += float(day.get("score", 0)) / goal
             row["ratio_count"][int(day["round"])] += 1
+            if day.get("cleared") and not details.get("power"):
+                row["hours_sum"][int(day["round"])] += int(day.get("hours", 0))
+                row["cleared_count"][int(day["round"])] += 1
+            if "early_gold" in day:
+                row["early_gold_sum"][int(day["round"])] += int(day["early_gold"])
+                row["gold_count"][int(day["round"])] += 1
+            if "full_day_score" in day:
+                # A day that used every Hour has nothing left to play, so its full day is its score.
+                row["full_sum"][int(day["round"])] += float(day["full_day_score"]) / goal
+                row["full_count"][int(day["round"])] += 1
+            elif day.get("cleared") and details.get("extra_hours") and not day.get("extra_hours_skipped"):
+                row["full_sum"][int(day["round"])] += float(day.get("score", 0)) / goal
+                row["full_count"][int(day["round"])] += 1
         row["takes"].update(set(picked_card_ids(details)))
     return chefs
 
@@ -43,8 +63,29 @@ def ratio(row: dict, day: int) -> float | None:
     return row["ratio_sum"][day] / count if count else None
 
 
+def mean(row: dict, sum_key: str, count_key: str, day: int) -> float | None:
+    count = row[count_key][day]
+    return row[sum_key][day] / count if count else None
+
+
 def fmt(value: float | None) -> str:
     return "-" if value is None else f"{value:.2f}"
+
+
+def print_by_day(title: str, old_row: dict, new_row: dict, sum_key: str, count_key: str) -> None:
+    lines = []
+    for day in range(1, RUN_LENGTH + 1):
+        old_value = mean(old_row, sum_key, count_key, day)
+        new_value = mean(new_row, sum_key, count_key, day)
+        if old_value is None and new_value is None:
+            continue
+        line = f"    day {day}: {fmt(old_value):>6} -> {fmt(new_value):>6}"
+        if old_value is not None and new_value is not None:
+            line += f"  ({new_value - old_value:+.2f})"
+        lines.append(line)
+    if lines:
+        print(f"  {title}")
+        print("\n".join(lines))
 
 
 def main() -> None:
@@ -75,6 +116,9 @@ def main() -> None:
             if old_ratio is not None and new_ratio is not None:
                 line += f"  ({new_ratio - old_ratio:+.2f})"
             print(line)
+        print_by_day("Hours used to meet the goal", old_row, new_row, "hours_sum", "cleared_count")
+        print_by_day("early-finish gold", old_row, new_row, "early_gold_sum", "gold_count")
+        print_by_day("full-day score/goal (--extra-hours)", old_row, new_row, "full_sum", "full_count")
         moves = []
         for card_id in set(old_row["takes"]) | set(new_row["takes"]):
             old_rate = old_row["takes"][card_id] / old_row["runs"]
