@@ -32,6 +32,9 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 - `--no-condiments`, `--no-overplay`, `--check-sim`, `--verbose`
 - `--out=<path>` report path (default `user://playtest_report.json`)
 
+Each run's `details.meal_fires` maps a Meal id to `[times served, times Failed]` from real Hours
+(what-if Hours are not counted), so you can see which Meals the bot completes, not just picks.
+
 A run takes ~50s per seed per chef. Compare reports with `scripts/debug/compare_playtest_reports.py`
 and list picks with `scripts/debug/analyze_pick_report.py`.
 

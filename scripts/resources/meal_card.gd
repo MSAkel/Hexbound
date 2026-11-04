@@ -64,7 +64,9 @@ class Output:
 func _on_activate_tile_card(tile: Hex) -> void:
 	if not is_recipe_ready(tile):
 		failed_tile_card_text(tile)
+		EventBus.meal_fired.emit(self, false)
 		return
+	EventBus.meal_fired.emit(self, true)
 	# activate_tile_card already folded station perks into this fire's output scale.
 	var output := _read_output(tile, false, 1.0)
 	if output.flavour > 0:
