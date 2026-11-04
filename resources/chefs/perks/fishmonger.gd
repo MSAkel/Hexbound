@@ -7,7 +7,7 @@ extends ChefPerk
 
 func on_day_started(_state: Dictionary) -> void:
 	var board := StationManager.get_board()
-	if board == null or EventManager.are_garnishes_blocked():
+	if board == null:
 		return
 	for hex: Hex in board.get_hexes_in_trigger_order():
 		var card := hex.active_tile_card

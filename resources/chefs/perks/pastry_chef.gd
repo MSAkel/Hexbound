@@ -9,8 +9,6 @@ extends ChefPerk
 func on_meal_served(_state: Dictionary, tile: Hex, meal: MealCard) -> void:
 	if meal == null or not StationManager.meal_counts_as(meal, tile, meal_category):
 		return
-	if EventManager.are_garnishes_blocked():
-		return
 	var seg := StationManager.segment_of_tile(tile)
 	if seg < 0:
 		return

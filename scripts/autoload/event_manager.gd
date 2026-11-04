@@ -3,18 +3,16 @@ extends Node
 
 # Manages round events on rounds 3, 6, and 9. Three unique events are picked at run start.
 
+## Values are saved in run saves, so each event keeps its number. Gaps are removed events.
 enum Type {
-	BLACKOUT,
-	RUSH_HOUR,
-	DEALT_HAND,
-	FADING_SECTOR,
-	DRY_WIRE,
-	NULL_CHARGE,
-	SHORT_STAFFED,
-	AUSTERITY,
-	SEALED_HEXES,
-	JAMMED_BELT,
-	RAISED_STAKES,
+	BLACKOUT = 0,
+	RUSH_HOUR = 1,
+	DEALT_HAND = 2,
+	FADING_SECTOR = 3,
+	SHORT_STAFFED = 6,
+	AUSTERITY = 7,
+	SEALED_HEXES = 8,
+	RAISED_STAKES = 10,
 }
 
 const EVENT_ROUNDS := [3, 6, ScoreProgression.RUN_LENGTH_ROUNDS]
@@ -30,12 +28,9 @@ const ALL_EVENTS: Array[Type] = [
 	Type.RUSH_HOUR,
 	Type.DEALT_HAND,
 	Type.FADING_SECTOR,
-	Type.DRY_WIRE,
-	Type.NULL_CHARGE,
 	Type.SHORT_STAFFED,
 	Type.AUSTERITY,
 	Type.SEALED_HEXES,
-	Type.JAMMED_BELT,
 	Type.RAISED_STAKES,
 ]
 
@@ -60,16 +55,6 @@ const EVENT_INFO := {
 		"description": "Every hour, a random Station has its Ingredient output halved.",
 		"rounds": ANY_EVENT_ROUND,
 	},
-	Type.DRY_WIRE: {
-		"name": "Dry Wire",
-		"description": "Extra {trigger} effects do not Occur.",
-		"rounds": LATE_EVENT_ROUNDS,
-	},
-	Type.NULL_CHARGE: {
-		"name": "Null Charge",
-		"description": "{garnish} still stacks, but it does not double output.",
-		"rounds": LATE_EVENT_ROUNDS,
-	},
 	Type.SHORT_STAFFED: {
 		"name": "Rusty Hands",
 		"description": "Every hour, a random Technique is forgotten and has no effect.",
@@ -83,11 +68,6 @@ const EVENT_INFO := {
 	Type.SEALED_HEXES: {
 		"name": "Sealed Spots",
 		"description": "Five empty spots cannot be played on this day.",
-		"rounds": ANY_EVENT_ROUND,
-	},
-	Type.JAMMED_BELT: {
-		"name": "Jammed Belt",
-		"description": "Condiments cannot be used this day.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.RAISED_STAKES: {
@@ -328,16 +308,6 @@ func apply_score_modifier(base_score: int) -> int:
 	return int(round(float(base_score) * RAISED_STAKES_SCORE_SCALE))
 
 
-## Dry Wire. Trigger-order slots still fire. Queued extras do not.
-func are_retriggers_blocked() -> bool:
-	return active_event == Type.DRY_WIRE
-
-
-## Null Charge. Garnish stacks are still cleared so they cannot leak into the next round.
-func are_garnishes_blocked() -> bool:
-	return active_event == Type.NULL_CHARGE
-
-
 ## Short Staffed. StaffManager skips this staff member's effect, including through copy staff.
 func is_staff_off_shift(staff: StaffCard) -> bool:
 	return staff != null and staff == _off_shift_staff
@@ -355,11 +325,6 @@ func clear_off_shift_staff() -> void:
 ## Austerity. Spending gold is still allowed.
 func can_gain_gold() -> bool:
 	return active_event != Type.AUSTERITY
-
-
-## Jammed Belt. Fuses already on tiles keep running.
-func are_condiments_blocked() -> bool:
-	return active_event == Type.JAMMED_BELT
 
 
 ## Sealed Hexes. Empty tiles locked for the rest of the round.
