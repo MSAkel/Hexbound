@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bh6ysb32dx1if"]
 
-[ext_resource type="Texture2D" uid="uid://byod0iyt3xtoq" path="res://assets/gui/panels/panel_bg.png" id="1_327l5"]
+[ext_resource type="Texture2D" uid="uid://bfkrusn35um81" path="res://assets/gui/panels/panel_borderless.png" id="1_327l5"]
 [ext_resource type="Script" uid="uid://ycxqb17pnybc" path="res://scenes/ui/tooltip/tooltip.gd" id="2_327l5"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_327l5"]
