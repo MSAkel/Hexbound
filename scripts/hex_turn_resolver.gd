@@ -554,7 +554,7 @@ func _on_tile_card_garnished(rune: TileCard) -> void:
 	hex.start_garnish_sparks(rune.garnish_stacks)
 
 
-## Unspent Skillet scale ends with the Hour. A Garnish waits until its card triggers or the Day ends.
+## Unspent one-shot scale ends with the Hour. A Garnish waits until its card triggers or the Day ends.
 func _clear_hour_garnish() -> void:
 	for tile: Hex in map.get_all_hexes_with_runes():
 		var card := tile.active_tile_card

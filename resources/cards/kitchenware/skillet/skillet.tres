@@ -13,5 +13,5 @@ starting_hand_eligible = true
 id = "skillet"
 name = "Skillet"
 icon = ExtResource("1_icon")
-description = "+1 {mult}. The {following} 2 Ingredients gain x1.5 {flavour}, x2 if Meat."
+description = "+1 {mult}. {triggers} the {following} 2 Ingredients again, twice if Meat."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

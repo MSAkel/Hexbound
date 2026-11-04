@@ -1,10 +1,11 @@
 extends TileCard
 
-## +2 Mult. The Following Ingredient gains x2 output on its next fire, x3 when it is Potato or Chicken.
+## +2 Mult. Triggers the Following Ingredient again, twice if it is Potato or Chicken
+## (or counts as Potato, e.g. Fry Station's Tempura).
 
 const TARGET_COUNT := 1
-const SCALE := 2.0
-const FAVOURITE_SCALE := 3.0
+const RETRIGGERS := 1
+const FAVOURITE_RETRIGGERS := 2
 const FAVOURITE_IDS: Array[String] = ["potato", "chicken"]
 
 
@@ -15,10 +16,11 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 		return
 	for target: TileCard in targets:
-		# Tempura (Fry Station) lets Seafood and Vegetables count as Potato.
 		var favourite := target.id in FAVOURITE_IDS or StationManager.counts_as_potato(_hex_for(tile, target), target)
-		var factor := FAVOURITE_SCALE if favourite else SCALE
-		if _try_scale_tile_card(tile, target, factor):
+		var queued: Array[TileCard] = []
+		for _i in (FAVOURITE_RETRIGGERS if favourite else RETRIGGERS):
+			queued.append(target)
+		if _try_queue_tile_card_triggers(tile, queued):
 			_create_fired_floating_text(tile, target)
 
 
