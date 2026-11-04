@@ -1,7 +1,7 @@
 extends Node
 
 ## Tracks the run economy: spendable gold, per-turn or per-round gold earnings,
-## and the free-reroll budget shared by the 1-of-3 draft and the merchant stock refresh.
+## and the free-reroll budget for card picks (the Merchant charges Gold for its rerolls).
 ## Gold is used for card activation and merchant purchases.
 
 

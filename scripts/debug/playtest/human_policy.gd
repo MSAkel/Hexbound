@@ -315,7 +315,7 @@ func _should_reroll(best_value: float, is_reward: bool) -> bool:
 		return false
 	if best_value >= _market * REROLL_BELOW_MARKET:
 		return false
-	# Three rerolls a day. Keep one for the day's later picks unless this one matters more.
+	# Keep one free reroll for the Day's later picks unless this one matters more.
 	return is_reward or EconomyManager.rerolls_remaining >= 2 or _shortfall() > 0.0
 
 
