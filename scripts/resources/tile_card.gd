@@ -454,7 +454,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 
 	var output_scale := activation_scale
 	_activation_was_garnished = garnish_stacks > 0
-	if garnish_stacks > 0 and not EventManager.are_garnishes_blocked():
+	if garnish_stacks > 0:
 		output_scale *= pow(GARNISH_OUTPUT_SCALE, garnish_stacks)
 	if tile.map != null:
 		output_scale *= GameManager.chef.output_scale_for(tile, self)
@@ -473,13 +473,12 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	# A card that paid no Flavour this trigger still gets its station bonus, scaled the same way.
 	if _activation_flat_bonus > 0:
 		add_flavour(tile, 0)
-	var garnish_used := _activation_was_garnished and not EventManager.are_garnishes_blocked()
 	_play_trigger_sound()
 	GameManager.chef.after_card_triggered(tile, self)
 	CondimentManager.after_card_activated(tile, self)
 	StaffManager.after_card_activated(tile, self)
 	StationManager.after_card_triggered(tile, self)
-	if garnish_used:
+	if _activation_was_garnished:
 		_use_garnish_trigger()
 	_activation_output_scale = 1.0
 	_activation_star_scale = 1.0
@@ -499,8 +498,6 @@ func _use_garnish_trigger() -> void:
 
 # Queue extra spot card activations to resolve before fire flow continues.
 func queue_tile_card_triggers(source_tile: Hex, tile_cards: Array[TileCard], activation_scales: Array[float] = []) -> void:
-	if EventManager.are_retriggers_blocked():
-		return
 	source_tile.map.queue_tile_card_triggers(tile_cards, activation_scales, source_tile)
 
 
@@ -510,9 +507,6 @@ func _try_queue_tile_card_triggers(
 	tile_cards: Array[TileCard],
 	activation_scales: Array[float] = [],
 ) -> bool:
-	if EventManager.are_retriggers_blocked():
-		failed_tile_card_text(source_tile)
-		return false
 	var triggerable: Array[TileCard] = []
 	var aligned_scales: Array[float] = []
 	for i in range(tile_cards.size()):
@@ -652,10 +646,9 @@ func _create_floating_text(
 	tile.map.create_floating_text(tile_pos, text, color, text_icon, target_icon, garnished)
 
 
-# True when this fire had Garnish stacks and the payout was actually scaled.
-# Null Charge blocks the scale, but those floats stay normal.
+# True when this trigger had Garnish stacks and the payout was actually scaled.
 func _payout_float_is_garnished(scaled: bool = true) -> bool:
-	return scaled and _activation_was_garnished and not EventManager.are_garnishes_blocked()
+	return scaled and _activation_was_garnished
 
 
 ## Kitchenware target feedback as [ability icon] [target card icon].
@@ -780,7 +773,7 @@ func _pay_kitchenware_mult(tile: Hex) -> void:
 ## "Garnished if next to X" cards. Garnishes this card mid-activation so the current fire
 ## already pays double. Later fires this Hour read the stack as usual.
 func _garnish_self_now() -> bool:
-	if garnish_stacks > 0 or EventManager.are_garnishes_blocked():
+	if garnish_stacks > 0:
 		return false
 	if not add_garnish():
 		return false

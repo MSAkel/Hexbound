@@ -101,8 +101,6 @@ func get_targeting_condiment() -> Condiment:
 
 
 func can_drink_now() -> bool:
-	if EventManager.are_condiments_blocked():
-		return false
 	if _consuming:
 		return false
 	if GameManager.is_processing_turn:
@@ -327,8 +325,7 @@ func after_card_activated(tile: Hex, card: TileCard) -> void:
 	_apply_next_trigger_energy_fuse(tile, card)
 	_apply_next_trigger_mult_fuse(tile, card)
 	if _take_activation_fuse(card, Condiment.EffectType.ECHO):
-		if not EventManager.are_retriggers_blocked():
-			card.queue_tile_card_triggers(tile, [card])
+		card.queue_tile_card_triggers(tile, [card])
 	EventBus.condiment_fuses_changed.emit()
 
 

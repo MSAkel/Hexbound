@@ -18,4 +18,3 @@ ingame_portrait = ExtResource("3_ingame")
 speciality_description = "Catch of the Day: at the start of each Day, every Seafood on the board is {garnished}."
 perk = SubResource("Perk")
 starting_hand = Array[String](["shrimp", "salmon", "lemon", "whisk", "random:seasoning"])
-last_card_is_flex = true

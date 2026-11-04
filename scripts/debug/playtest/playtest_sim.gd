@@ -71,7 +71,7 @@ func restore(state: Dictionary) -> void:
 ## Calls change (which may place cards, seat staff, or drink condiments), resolves one Hour,
 ## and returns {score, gold, flavour, mult}. The run is rolled back before returning.
 func evaluate(change: Callable) -> Dictionary:
-	var before_fingerprint := _fingerprint() if check_purity else ""
+	var before_fingerprint := fingerprint() if check_purity else ""
 	var started := Time.get_ticks_usec()
 	var saved := snapshot()
 	var gold_before := EconomyManager.amount
@@ -89,9 +89,9 @@ func evaluate(change: Callable) -> Dictionary:
 	if simulations_run % FRAME_EVERY_SIMULATIONS == 0:
 		await _map.get_tree().process_frame
 	if check_purity:
-		var after_fingerprint := _fingerprint()
+		var after_fingerprint := fingerprint()
 		if after_fingerprint != before_fingerprint:
-			purity_failures.append(_describe_difference(before_fingerprint, after_fingerprint))
+			purity_failures.append(describe_difference(before_fingerprint, after_fingerprint))
 	return result
 
 
@@ -116,14 +116,15 @@ func _resolve_hour() -> Dictionary:
 	}
 
 
-func _fingerprint() -> String:
+## Full state as text, for purity checks. Covers EventManager and RoundFlow too.
+func fingerprint() -> String:
 	var parts: Dictionary = {"map": _map.capture_map_state()}
 	for owner: Variant in _watched_owners():
 		parts[str(owner.name)] = owner.capture_run_state()
 	return JSON.stringify(parts, "", true)
 
 
-func _describe_difference(before: String, after: String) -> String:
+func describe_difference(before: String, after: String) -> String:
 	var a: Dictionary = JSON.parse_string(before)
 	var b: Dictionary = JSON.parse_string(after)
 	var keys: PackedStringArray = []

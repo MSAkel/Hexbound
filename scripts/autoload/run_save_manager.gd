@@ -78,7 +78,7 @@ func request_continue_run() -> void:
 
 	# Map generation reads chef layout rules during _ready, before main.gd restores state.
 	GameManager.selected_chef = chef
-	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
+	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_1)) as Difficulty.Level
 	continue_run_pending = true
 	request_scene_enter_transition()
 
@@ -223,7 +223,7 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	_is_restoring = true
 	_pending_turn_resume = false
 	GameManager.selected_chef = chef
-	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
+	GameManager.selected_difficulty = int(payload.get("difficulty", Difficulty.Level.LEVEL_1)) as Difficulty.Level
 	_apply_run_state_owners(_run_state_owners_before_map(), payload)
 	tile_map.restore_map_state(payload.get("map", {}))
 	_apply_run_state_owners(_run_state_owners_after_map(), payload)
@@ -418,9 +418,8 @@ func _notify_ui_restored() -> void:
 func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:
 	var hand_state: Dictionary = payload.get("hand", {})
 	var saved_count: int = hand_state.get("cards", []).size()
-	var difficulty := int(payload.get("difficulty", Difficulty.Level.LEVEL_0)) as Difficulty.Level
 	var expected := ChefRegistry.get_expected_opening_hand_size(
-		difficulty, ChefRegistry.get_chef_by_id(String(payload.get("chef_id", "")))
+		ChefRegistry.get_chef_by_id(String(payload.get("chef_id", "")))
 	)
 	var map_state: Dictionary = payload.get("map", {})
 	var placed_count: int = map_state.get("placed_cards", []).size()

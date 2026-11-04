@@ -19,7 +19,7 @@ const SHELF_COUNT := 2
 const CARD_COUNT := 4
 ## A tile card pack costs the regular card price of its category plus this.
 const TILE_PACK_PREMIUM := 1
-## Technique pack price before the difficulty multiplier. Flat, whatever rarities it holds.
+## Technique pack price. Flat, whatever rarities it holds.
 const TECHNIQUE_PACK_PRICE := 10
 
 const _IDS: Array[String] = ["produce_basket", "utensil_drawer", "recipe_box", "chefs_notebook"]
@@ -59,11 +59,10 @@ static func tooltip_text(kind: Kind) -> String:
 
 ## Regular card price of the category plus the premium. Techniques cost one flat price.
 static func price(kind: Kind) -> int:
-	var multiplier := Difficulty.get_merchant_price_multiplier(GameManager.selected_difficulty)
 	if kind == Kind.TECHNIQUES:
-		return maxi(1, int(round(float(TECHNIQUE_PACK_PRICE) * multiplier)))
+		return TECHNIQUE_PACK_PRICE
 	var card_price := TileCard.MEAL_SHOP_PRICE if kind == Kind.MEALS else TileCard.SHOP_PRICE
-	return maxi(1, int(round(float(card_price) * multiplier))) + TILE_PACK_PREMIUM
+	return card_price + TILE_PACK_PREMIUM
 
 
 ## Why this pack cannot be bought right now. Empty when it can.

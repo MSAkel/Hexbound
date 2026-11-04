@@ -13,6 +13,15 @@ func on_run_started() -> void:
 	pass
 
 
+## Decision state that changes during play, so --extra-hours can roll the bot back with the run.
+func capture_state() -> Dictionary:
+	return {}
+
+
+func restore_state(_state: Dictionary) -> void:
+	pass
+
+
 ## Start of a day, before the first Hour. Staff can be rearranged here.
 func on_day_started() -> void:
 	pass

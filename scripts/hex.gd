@@ -10,8 +10,6 @@ var _coordinates: Vector2i = Vector2i(0, 0)
 ## The TileCard currently occupying this hex.
 var active_tile_card: TileCard = null
 var card_icon_ui: CardIconUI = null
-# Permanently disabled by difficulty level 5. The tile cannot be used for the run.
-var is_disabled_by_difficulty: bool = false
 
 var map: HexTileMap
 var items_grid: Control
@@ -67,11 +65,9 @@ func _fit_rune_ui(rune_ui_node: CardIconUI) -> void:
 	rune_ui_node.position = (HEX_TILE_SIZE - HEX_RUNE_SIZE) * 0.5
 
 
-## True when this hex cannot receive a new card. Difficulty locks, Sealed Hexes, and a station's
-## second Meal slot before level 3 all count.
+## True when this hex cannot receive a new card. Sealed Hexes and a station's second Meal slot
+## before level 3 both count.
 func is_placement_blocked() -> bool:
-	if is_disabled_by_difficulty:
-		return true
 	if StationManager.is_meal_slot_locked(coordinates):
 		return true
 	return EventManager.is_hex_sealed(coordinates)
@@ -103,7 +99,7 @@ func place_tile_card(rune: TileCard, animate: bool = true) -> void:
 
 # Restore a placed rune from a save file without duplicating the resource again.
 func restore_placed_tile_card(rune: TileCard) -> void:
-	if active_tile_card != null or is_disabled_by_difficulty:
+	if active_tile_card != null:
 		return
 
 	active_tile_card = rune

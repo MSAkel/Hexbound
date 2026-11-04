@@ -22,4 +22,3 @@ ingame_portrait = ExtResource("3_ingame")
 speciality_description = "Never sees Meat or Seafood. Vegetables and Fruits have their effects doubled."
 perk = SubResource("Perk")
 starting_hand = Array[String](["lettuce", "corn", "avocado", "blender", "random:fruit"])
-last_card_is_flex = true

@@ -37,8 +37,7 @@ enum TargetKind {
 
 
 func get_shop_price() -> int:
-	var multiplier := Difficulty.get_merchant_price_multiplier(GameManager.selected_difficulty)
-	return maxi(1, int(round(float(base_price) * multiplier)))
+	return maxi(1, base_price)
 
 
 ## Gold paid when dropped on the sell panel. Half the base price, like staff.
