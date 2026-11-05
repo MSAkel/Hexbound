@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MealCard" format=3]
+
+[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/cards/meals/dishes/skewers/skewers.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+meal_category = 1
+recipe_meat_count = 2
+recipe_seasoning_count = 1
+base_production_amount = 2
+type = 2
+product = 2
+ingredient_tags = Array[StringName]([&"dish"])
+id = "skewers"
+name = "Skewers"
+icon = ExtResource("1_icon")
+description = "+2 {mult}. +1 {mult} for each Meat on its Station."
+metadata/_custom_type_script = "uid://d4h7dishcrd01"
