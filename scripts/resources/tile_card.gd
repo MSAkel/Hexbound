@@ -137,7 +137,7 @@ var is_garnished: bool:
 			garnish_stacks = 0
 ## Short-lived condiment fuses sitting on this placed instance.
 var condiment_fuses: Array[Dictionary] = []
-# One-shot output scale from Skillet. Consumed by the next activation, cleared at Hour end.
+# One-shot output scale (from _try_scale_tile_card; no card uses it since Skillet and Deep Fryer became retriggers). Consumed by the next activation, cleared at Hour end.
 var pending_output_scale: float = 1.0
 # Scales all card output during this activation (Flavour, Gold, and Mult).
 var _activation_output_scale: float = 1.0
@@ -731,7 +731,7 @@ func add_garnish() -> bool:
 	return true
 
 
-## Clears Garnish stacks and any unspent Skillet scale. Runs at the end of the Day.
+## Clears Garnish stacks and any unspent one-shot scale. Runs at the end of the Day.
 func clear_garnish() -> void:
 	pending_output_scale = 1.0
 	garnish_triggers_left = 0
@@ -742,7 +742,7 @@ func clear_garnish() -> void:
 	EventBus.tile_card_garnish_cleared.emit(self)
 
 
-## Hour end: unspent Skillet scale goes. A waiting Garnish stays until the card triggers.
+## Hour end: unspent one-shot scale goes. A waiting Garnish stays until the card triggers.
 func clear_hour_scale() -> void:
 	pending_output_scale = 1.0
 
@@ -795,7 +795,7 @@ func _garnish_targets(tile: Hex, targets: Array[TileCard]) -> bool:
 	return garnished_any
 
 
-## Stacks a one-shot output scale on a later card. Skillet uses this.
+## Stacks a one-shot output scale on a later card (unused since Skillet and Deep Fryer became retriggers).
 func _try_scale_tile_card(source_tile: Hex, target: TileCard, factor: float) -> bool:
 	if not _is_triggerable_tile_card(source_tile, target):
 		return false

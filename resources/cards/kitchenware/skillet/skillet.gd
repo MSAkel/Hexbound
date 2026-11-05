@@ -1,10 +1,10 @@
 extends TileCard
 
-## +1 Mult. The Following 2 Ingredients gain x1.5 output on their next fire, x2 when they are Meat.
+## +1 Mult. Triggers the Following 2 Ingredients again, twice each if Meat.
 
 const TARGET_COUNT := 2
-const SCALE := 1.5
-const MEAT_SCALE := 2.0
+const RETRIGGERS := 1
+const MEAT_RETRIGGERS := 2
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
@@ -13,9 +13,12 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if targets.is_empty():
 		failed_tile_card_text(tile)
 		return
+	var queued: Array[TileCard] = []
 	for target: TileCard in targets:
-		var factor := MEAT_SCALE if target.has_ingredient_tag(TAG_MEAT) else SCALE
-		if _try_scale_tile_card(tile, target, factor):
+		for _i in (MEAT_RETRIGGERS if target.has_ingredient_tag(TAG_MEAT) else RETRIGGERS):
+			queued.append(target)
+	if _try_queue_tile_card_triggers(tile, queued):
+		for target: TileCard in targets:
 			_create_fired_floating_text(tile, target)
 
 
