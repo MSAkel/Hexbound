@@ -1,9 +1,9 @@
 """Fill in Gimbot's blank accented letters (é, û, ç, ñ ...) from its own base letters and accent marks.
 
-Gimbot-Regular.otf maps Latin-1 accented letters to empty glyphs. This writes a copy with them
+gimbot_regular.otf maps Latin-1 accented letters to empty glyphs. This writes a copy with them
 composed, used only by the Meal Collection page (Gimbot-Accented.otf here). Needs fontTools.
 
-    python compose_accents.py assets/fonts/Gimbot-Regular.otf Gimbot-Accented.otf
+    python compose_accents.py assets/fonts/gimbot_regular.otf Gimbot-Accented.otf
 """
 import sys, unicodedata
 from fontTools.ttLib import TTFont
