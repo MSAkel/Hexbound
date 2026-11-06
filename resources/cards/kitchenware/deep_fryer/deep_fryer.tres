@@ -13,5 +13,5 @@ starting_hand_eligible = false
 id = "deep_fryer"
 name = "Deep Fryer"
 icon = ExtResource("1_icon")
-description = "+2 {mult}, +1 {mult} for each extra {trigger} it gives. {triggers} the {following} Ingredient again, twice if Potato or Chicken."
+description = "+2 {mult}, +1 {mult} for each extra {trigger} it gives. {triggers} the Ingredients on both sides of it on its Station again."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

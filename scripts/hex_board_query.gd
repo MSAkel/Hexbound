@@ -408,4 +408,24 @@ func next_ingredients_on_station(tile: Hex, count: int) -> Array[TileCard]:
 		if result.size() >= count:
 			break
 	return result
+
+
+## The nearest count Ingredients before tile in fire order, on tile's own station only, closest first.
+func previous_ingredients_on_station(tile: Hex, count: int) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	var index := trigger_index(tile)
+	if index < 0 or count <= 0 or _map == null:
+		return result
+	var segment := _map.get_segment_index(tile.coordinates)
+	for i in range(index - 1, -1, -1):
+		var hex := _hexes_in_order[i]
+		if _map.get_segment_index(hex.coordinates) != segment:
+			break
+		var card := hex.active_tile_card
+		if card == null or card.type != TileCard.TileCardType.INGREDIENT:
+			continue
+		result.append(card)
+		if result.size() >= count:
+			break
+	return result
 #endregion --- Kitchenware statuses ---
