@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://526xrpf43lem"]
+
+[ext_resource type="Script" uid="uid://2hrhjxtj4rqf" path="res://resources/techniques/double_shot/double_shot.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://wty47evnaxdd" path="res://assets/icons/techniques/double_shot.png" id="1_yk7wc"]
+
+[resource]
+script = ExtResource("1_script")
+id = "double_shot"
+name = "Double Shot"
+icon = ExtResource("1_yk7wc")
+description = "Beverages on this Station have a 1 in 3 chance to {trigger} again"

@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://chu5s0iw8qgb"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/tapenade/tapenade.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://kbpivuusmg3" path="res://assets/icons/food/meals/dishes/tapenade.png" id="1_ccrl5"]
+[ext_resource type="Script" uid="uid://cg61w38oe1tgv" path="res://resources/cards/meals/dishes/tapenade/tapenade.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -14,6 +14,6 @@ product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "tapenade"
 name = "Tapenade"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_ccrl5")
 description = "+2 {mult}. +1 {mult} for each time an Olive on its Station {triggered} this Hour."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

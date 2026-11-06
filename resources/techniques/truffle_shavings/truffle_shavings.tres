@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://nu1fe4ywo51w"]
+
+[ext_resource type="Texture2D" uid="uid://irg4y6walipp" path="res://assets/icons/techniques/truffle_shavings.png" id="1_71dw1"]
+[ext_resource type="Script" uid="uid://db5jk288lcbp8" path="res://resources/techniques/truffle_shavings/truffle_shavings.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "truffle_shavings"
+name = "Truffle Shavings"
+icon = ExtResource("1_71dw1")
+description = "x0.1 {mult} for every 5 Gold you have"
+rarity = 2

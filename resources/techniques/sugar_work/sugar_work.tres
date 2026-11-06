@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" uid="uid://cxfarbvhpeawa" path="res://resources/techniques/sugar_work/sugar_work.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "sugar_work"
+name = "Sugar Work"
+description = "+1 {mult} for each Sweet on this Station, or +3 each if a Dessert was served here this Hour"
+rarity = 0

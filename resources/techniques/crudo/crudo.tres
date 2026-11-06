@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://p2mcxlfe320a"]
+
+[ext_resource type="Texture2D" uid="uid://j8a87j3cyh7x" path="res://assets/icons/techniques/crudo.png" id="1_n1q5n"]
+[ext_resource type="Script" uid="uid://c3o3uc4rx3sky" path="res://resources/techniques/crudo/crudo.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "crudo"
+name = "Crudo"
+icon = ExtResource("1_n1q5n")
+description = "If there is no Kitchenware on this Station, gain +100 {flavour}"

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://dljfhw88vlu5v"]
+
+[ext_resource type="Script" uid="uid://ci1sulg5vek31" path="res://resources/techniques/flambe/flambe.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dh4pi0lqfrj4k" path="res://assets/icons/techniques/flambé.png" id="1_vtloh"]
+
+[resource]
+script = ExtResource("1_script")
+id = "flambe"
+name = "Flambé"
+icon = ExtResource("1_vtloh")
+description = "After a Kitchenware {triggers} on this Station, {trigger} a Kitchenware on another Station (Once per Kitchenware)"
+rarity = 1

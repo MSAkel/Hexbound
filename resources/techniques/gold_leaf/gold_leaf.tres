@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://c6hsuof6srl0"]
+
+[ext_resource type="Texture2D" uid="uid://0rnsjt76o07u" path="res://assets/icons/techniques/gold_leaf.png" id="1_o854h"]
+[ext_resource type="Script" uid="uid://b2r0gpkw6nxxp" path="res://resources/techniques/gold_leaf/gold_leaf.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "gold_leaf"
+name = "Gold Leaf"
+icon = ExtResource("1_o854h")
+description = "+3 {flavour} for every Gold you have"

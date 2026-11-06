@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://biy4783dak72x"]
+
+[ext_resource type="Texture2D" uid="uid://cqwbkeifa02nx" path="res://assets/icons/techniques/mise_en_place.png" id="1_6ut8i"]
+[ext_resource type="Script" uid="uid://bf2rfxmm4w1ef" path="res://resources/techniques/mise_en_place/mise_en_place.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "mise_en_place"
+name = "Mise en Place"
+icon = ExtResource("1_6ut8i")
+description = "Every Dish requires one less Ingredient"
+rarity = 2

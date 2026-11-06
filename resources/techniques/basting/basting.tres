@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://dpjwp5w1nio11"]
+
+[ext_resource type="Texture2D" uid="uid://7f8qvtghd8hg" path="res://assets/icons/techniques/basting.png" id="1_mbmus"]
+[ext_resource type="Script" uid="uid://dp4tvexkdl3yv" path="res://resources/techniques/basting/basting.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "basting"
+name = "Basting"
+icon = ExtResource("1_mbmus")
+description = "When an Ingredient on this Station has a {garnish}, add another {garnish} to it"
+rarity = 2

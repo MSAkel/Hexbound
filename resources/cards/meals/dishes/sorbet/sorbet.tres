@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://cmgi4cewd5of1"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/sorbet/sorbet.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://bijwtlr110wn4" path="res://assets/icons/food/meals/dishes/sorbet.png" id="1_owtpp"]
+[ext_resource type="Script" uid="uid://dj0mu1y1ehp52" path="res://resources/cards/meals/dishes/sorbet/sorbet.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -15,6 +15,6 @@ product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "sorbet"
 name = "Sorbet"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_owtpp")
 description = "+3 {mult}. +1 {mult} for each different meal category being served."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

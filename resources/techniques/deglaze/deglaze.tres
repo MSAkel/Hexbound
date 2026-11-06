@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://bcaj1bwtunbhc"]
+
+[ext_resource type="Script" uid="uid://cmm8x0u1elcvu" path="res://resources/techniques/deglaze/deglaze.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://le2da4tx74dt" path="res://assets/icons/techniques/deglaze.png" id="1_xb04o"]
+
+[resource]
+script = ExtResource("1_script")
+id = "deglaze"
+name = "Deglaze"
+icon = ExtResource("1_xb04o")
+description = "Gains +1 {mult} whenever a card on this Station is {destroyed}"

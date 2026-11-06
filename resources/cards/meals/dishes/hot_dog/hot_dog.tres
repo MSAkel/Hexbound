@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://cig731p44sngl"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/hot_dog/hot_dog.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://dqf3b3sxyccxr" path="res://assets/icons/food/meals/dishes/hot_dog.png" id="1_3tnya"]
+[ext_resource type="Script" uid="uid://chcsi1dl0uaar" path="res://resources/cards/meals/dishes/hot_dog/hot_dog.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -14,6 +14,6 @@ product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "hot_dog"
 name = "Hot Dog"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_3tnya")
 description = "+3 {mult}. +1 Gold when served if a Beverage is on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://cbhkgkkqg2qnn"]
+
+[ext_resource type="Texture2D" uid="uid://dmkcr3bak41bx" path="res://assets/icons/techniques/sourdough_starter.png" id="1_f37e1"]
+[ext_resource type="Script" uid="uid://fyctym277djr" path="res://resources/techniques/sourdough_starter/sourdough_starter.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "sourdough_starter"
+name = "Sourdough Starter"
+icon = ExtResource("1_f37e1")
+description = "Gains +1 {mult} the first time each different Meal is served on this Station"

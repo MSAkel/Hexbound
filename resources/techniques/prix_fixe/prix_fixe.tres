@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://c7j67qa1p5sa"]
+
+[ext_resource type="Texture2D" uid="uid://cas7lwkwa4je0" path="res://assets/icons/techniques/prix_fixe.png" id="1_n6ey7"]
+[ext_resource type="Script" uid="uid://cl44hd5k0wnwj" path="res://resources/techniques/prix_fixe/prix_fixe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "prix_fixe"
+name = "Prix Fixe"
+icon = ExtResource("1_n6ey7")
+description = "Gain 5 Gold at the end of the Day"

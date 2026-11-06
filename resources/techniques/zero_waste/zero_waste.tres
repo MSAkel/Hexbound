@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://c6p5bkx5e865e"]
+
+[ext_resource type="Texture2D" uid="uid://bltjjrniwr30o" path="res://assets/icons/techniques/zero_waste.png" id="1_c782t"]
+[ext_resource type="Script" uid="uid://dyxo8bnp4r216" path="res://resources/techniques/zero_waste/zero_waste.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "zero_waste"
+name = "Zero Waste"
+icon = ExtResource("1_c782t")
+description = "Gain 2 Gold whenever a card on this Station is {destroyed}"
+rarity = 1

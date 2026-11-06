@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://b118xgv533sdl"]
+
+[ext_resource type="Texture2D" uid="uid://cds1o2van3bek" path="res://assets/icons/techniques/double_fry.png" id="1_i00jf"]
+[ext_resource type="Script" uid="uid://bvx0q81d2x0kv" path="res://resources/techniques/double_fry/double_fry.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "double_fry"
+name = "Double Fry"
+icon = ExtResource("1_i00jf")
+description = "The first Ingredient {following} a Deep Fryer on this Station {triggers} twice"

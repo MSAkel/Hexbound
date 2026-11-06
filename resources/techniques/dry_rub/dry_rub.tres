@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://iqoe8nqjxdt2"]
+
+[ext_resource type="Script" uid="uid://c214bdwdrfcc8" path="res://resources/techniques/dry_rub/dry_rub.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dn5ilqup61mbo" path="res://assets/icons/techniques/dry_rub.png" id="1_w3121"]
+
+[resource]
+script = ExtResource("1_script")
+id = "dry_rub"
+name = "Dry Rub"
+icon = ExtResource("1_w3121")
+description = "+0.5 {mult} for every Seasoning {triggered} before this Station"
+rarity = 1

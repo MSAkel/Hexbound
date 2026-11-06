@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://di41sbdmx57do"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/honey_glazed_salmon/honey_glazed_salmon.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://c5ay2jme6k1o1" path="res://assets/icons/food/meals/dishes/honey_glazed_salmon.png" id="1_cs1ks"]
+[ext_resource type="Script" uid="uid://cdpirji62cy2i" path="res://resources/cards/meals/dishes/honey_glazed_salmon/honey_glazed_salmon.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -14,6 +14,6 @@ product = 1
 ingredient_tags = Array[StringName]([&"dish"])
 id = "honey_glazed_salmon"
 name = "Honey-Glazed Salmon"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_cs1ks")
 description = "+60 {flavour}. +20 {flavour} for each Sweet on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

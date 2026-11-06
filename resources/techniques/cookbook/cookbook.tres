@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://cfbecknxhvcqk"]
+
+[ext_resource type="Texture2D" uid="uid://h31e0nfl2rvg" path="res://assets/icons/techniques/cookbook.png" id="1_fdoxp"]
+[ext_resource type="Script" uid="uid://dysi2ypfeou8n" path="res://resources/techniques/cookbook/cookbook.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "cookbook"
+name = "Cookbook"
+icon = ExtResource("1_fdoxp")
+description = "At the end of each Day, gains x0.02 {mult} for each different Meal served that Day"
+rarity = 2

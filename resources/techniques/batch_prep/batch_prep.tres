@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://bw53toph2ham7"]
+
+[ext_resource type="Script" uid="uid://wsc5lk1it3v4" path="res://resources/techniques/batch_prep/batch_prep.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cjkmnmcmww6c" path="res://assets/icons/techniques/batch_prep.png" id="1_ulhmo"]
+
+[resource]
+script = ExtResource("1_script")
+id = "batch_prep"
+name = "Batch Prep"
+icon = ExtResource("1_ulhmo")
+description = "+2 {mult} for each Ingredient on this Station that shares a kind with another Ingredient there"
+rarity = 1

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://d1v3txn6b6xy8"]
+
+[ext_resource type="Texture2D" uid="uid://clt5trplg7krd" path="res://assets/icons/techniques/brine.png" id="1_rcr0h"]
+[ext_resource type="Script" uid="uid://ln03jomm7nuf" path="res://resources/techniques/brine/brine.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "brine"
+name = "Brine"
+icon = ExtResource("1_rcr0h")
+description = "The first Seafood on this Station is {garnished} at the start of each Hour"
+rarity = 1

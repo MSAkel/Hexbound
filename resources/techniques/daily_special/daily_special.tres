@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://ddbj2rjj5pj17"]
+
+[ext_resource type="Script" uid="uid://do24irmrh0h82" path="res://resources/techniques/daily_special/daily_special.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://1r8kg7b1wtpj" path="res://assets/icons/techniques/daily_special.png" id="1_wj08d"]
+
+[resource]
+script = ExtResource("1_script")
+id = "daily_special"
+name = "Daily Special"
+icon = ExtResource("1_wj08d")
+description = "Gain 2 Gold when the first Meal is served on this Station each Hour"

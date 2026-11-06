@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" uid="uid://c5ufg072tqdy0" path="res://resources/techniques/prep_cook/prep_cook.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "prep_cook"
+name = "Prep Cook"
+description = "+15 {flavour} for each Ingredient on this Station while it is level 1 or 2"
+rarity = 0

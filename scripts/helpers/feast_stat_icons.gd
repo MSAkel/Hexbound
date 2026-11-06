@@ -9,7 +9,6 @@ const GOLD := preload("res://assets/icons/stats/gold.png")
 
 const GARNISH := preload("res://assets/icons/stats/garnish.png")
 const FIRE := preload("res://assets/icons/stats/fire.png")
-const PASS := preload("res://assets/icons/stats/pass.png")
 
 ## Fallback for cards and staff that have no icon yet.
 const PLACEHOLDER := preload("res://assets/icons/placeholder.png")
@@ -21,13 +20,11 @@ const LOADING_SPLASH: Array[Texture2D] = [
 	GOLD,
 	GARNISH,
 	FIRE,
-	PASS,
 	preload("uid://c803xrilhj251"),
 	preload("uid://b6mir3nxl7wph"),
 	preload("uid://bt8vbmxevwq3o"),
 	preload("uid://berds0aj0ward"),
 	preload("uid://6h44uxn1am81"),
-	preload("uid://xh37v80eccbf"),
 ]
 
 

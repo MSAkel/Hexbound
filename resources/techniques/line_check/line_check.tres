@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" uid="uid://db26ci0p3lxnm" path="res://resources/techniques/line_check/line_check.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "line_check"
+name = "Line Check"
+description = "+2 {mult} for each Station pick taken on this Station (levels 3 and 6)"
+rarity = 1

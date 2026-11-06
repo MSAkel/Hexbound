@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://bl3ekevqxc2ij"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/chicken_curry/chicken_curry.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://db31i17u3xu07" path="res://assets/icons/food/meals/dishes/chicken_curry.png" id="1_i4lop"]
+[ext_resource type="Script" uid="uid://c6c2siyw51yiw" path="res://resources/cards/meals/dishes/chicken_curry/chicken_curry.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -13,6 +13,6 @@ product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "chicken_curry"
 name = "Chicken Curry"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_i4lop")
 description = "+4 {mult}. +2 {mult} for each different Seasoning on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

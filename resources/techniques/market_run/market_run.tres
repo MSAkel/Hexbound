@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://cr5jyskdlj37g"]
+
+[ext_resource type="Texture2D" uid="uid://dciqvdkduwdx4" path="res://assets/icons/techniques/market_run.png" id="1_oyfc8"]
+[ext_resource type="Script" uid="uid://x16qq5np5063" path="res://resources/techniques/market_run/market_run.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "market_run"
+name = "Market Run"
+icon = ExtResource("1_oyfc8")
+description = "Gains +0.5 {mult} for every 5 Gold you spend"
+rarity = 1

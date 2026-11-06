@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3 uid="uid://d1bbddeuqi2ui"]
+
+[ext_resource type="Texture2D" uid="uid://ml32136nay5f" path="res://assets/icons/techniques/rolling_boil.png" id="1_18ar2"]
+[ext_resource type="Script" uid="uid://bd2wwo0oxxyvv" path="res://resources/techniques/rolling_boil/rolling_boil.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "rolling_boil"
+name = "Rolling Boil"
+icon = ExtResource("1_18ar2")
+description = "After this Station is done, x0.1 {mult} for every {trigger} on it this Hour"
+rarity = 2

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" uid="uid://baigu00jsn1ge" path="res://resources/techniques/resting/resting.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "resting"
+name = "Resting"
+description = "Meat and Poultry dishes served on this Station give +1 {mult} for each earlier Hour this Day"
+rarity = 1
