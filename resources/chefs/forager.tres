@@ -7,9 +7,6 @@
 
 [sub_resource type="Resource" id="Perk"]
 script = ExtResource("4_perk")
-target_tags = Array[StringName]([&"vegetable", &"fruit"])
-scale = 1.25
-ingredients_only = true
 excluded_tags = Array[StringName]([&"meat", &"seafood"])
 excluded_meal_categories = Array[int]([1, 2, 3])
 
@@ -19,6 +16,6 @@ id = "forager"
 display_name = "Forager"
 icon = ExtResource("2_icon")
 ingame_portrait = ExtResource("3_ingame")
-speciality_description = "Never sees Meat or Seafood. Vegetables and Fruits have x1.25 output."
+speciality_description = "Never sees Meat or Seafood."
 perk = SubResource("Perk")
 starting_hand = Array[String](["lettuce", "corn", "avocado", "blender", "random:fruit"])

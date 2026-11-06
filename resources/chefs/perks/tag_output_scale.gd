@@ -1,7 +1,7 @@
 extends ChefPerk
 
-## Cards carrying any of target_tags get x scale output (Sommelier: Beverages x2).
-## Ingredients only when ingredients_only is set (Forager: Vegetable and Fruit Ingredients x2).
+## Cards carrying any of target_tags get x scale output (Sommelier: Beverages x1.5).
+## Ingredients only when ingredients_only is set.
 @export var target_tags: Array[StringName] = []
 @export var scale: float = 2.0
 @export var ingredients_only: bool = false

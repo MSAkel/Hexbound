@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs a Meat, Chili Flakes and Onion. +4 Mult, plus the Flavour of the Meat on its station x1.5.
+## Needs Chili Flakes, a Meat and a Vegetable. +4 Mult, plus the Flavour of the Meat on its station x1.5.
 
 const MEAT_SCALE := 1.5
 

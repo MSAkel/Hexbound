@@ -1,10 +1,10 @@
 extends MealCard
 
-## Needs Potato and Salt. +3 Mult, plus +1 Mult for each extra trigger a Deep Fryer on its station
-## gives this Hour, plus +2 Mult for each Protein dish (Meat, Poultry or Seafood) being served on the
+## Needs Potato and a Seasoning. +4 Mult, plus +1 Mult for each extra trigger a Deep Fryer on its station
+## gives this Hour, plus +3 Mult for each Protein dish (Meat, Poultry or Seafood) being served on the
 ## stations either side of its own.
 
-const MULT_PER_PROTEIN := 2.0
+const MULT_PER_PROTEIN := 3.0
 const MULT_PER_FRY := 1.0
 
 

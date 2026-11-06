@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Cream and Vanilla. +12 Mult.
+## Needs Cream and Vanilla. +15 Mult.
 
 
 func _meal_outputs(_tile: Hex, _preview: bool) -> Dictionary:

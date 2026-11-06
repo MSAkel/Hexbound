@@ -506,6 +506,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	EventBus.tile_card_activated.emit(self)
 	if tile.map != null:
 		StationManager.before_card_triggers(tile, self)
+		_before_trigger(tile)
 
 	var output_scale := activation_scale
 	_activation_was_garnished = garnish_stacks > 0
@@ -540,6 +541,12 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	_activation_star_scale = 1.0
 	_activation_was_garnished = false
 	_activation_flat_bonus = 0
+
+
+## Runs at the start of each trigger, before Garnish and output scales are read, so a card can
+## Garnish itself for this trigger (Grilled Steak). Does nothing by default.
+func _before_trigger(_tile: Hex) -> void:
+	pass
 
 
 ## Hour end. A Garnish that boosted this card this Hour spends one of its Hours (one, two with
