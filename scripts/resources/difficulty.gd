@@ -14,7 +14,6 @@ enum Level {
 	LEVEL_6,
 	LEVEL_7,
 	LEVEL_8,
-	LEVEL_9,
 }
 
 const DIFFICULTY_INFO = {
@@ -28,31 +27,27 @@ const DIFFICULTY_INFO = {
 	},
 	Level.LEVEL_3: {
 		"name": "Level 3",
-		"info": "2 free card rerolls per Day instead of 3.",
+		"info": "Start with 5 less Gold.",
 	},
 	Level.LEVEL_4: {
 		"name": "Level 4",
-		"info": "Merchant rerolls cost 1 more Gold each time.",
+		"info": "2 free card rerolls per Day instead of 3.",
 	},
 	Level.LEVEL_5: {
 		"name": "Level 5",
-		"info": "Start with 5 less Gold.",
+		"info": "2 Stations open their second Meal Slot at level 3.",
 	},
 	Level.LEVEL_6: {
 		"name": "Level 6",
-		"info": "2 Stations open their second Meal Slot at level 3.",
+		"info": "Merchant rerolls cost 1 more Gold each time.",
 	},
 	Level.LEVEL_7: {
 		"name": "Level 7",
-		"info": "Each Station level needs 1 more Meal served.",
+		"info": "All Stations open their second Meal Slot at level 3.",
 	},
 	Level.LEVEL_8: {
 		"name": "Level 8",
-		"info": "All Stations open their second Meal Slot at level 3.",
-	},
-	Level.LEVEL_9: {
-		"name": "Level 9",
-		"info": "The Merchant shows 1 fewer card.",
+		"info": "Each Station level needs 1 more Meal served.",
 	},
 }
 
@@ -69,7 +64,6 @@ static func get_all_levels() -> Array[Level]:
 		Level.LEVEL_6,
 		Level.LEVEL_7,
 		Level.LEVEL_8,
-		Level.LEVEL_9,
 	]
 
 
@@ -86,37 +80,32 @@ static func get_score_target_multiplier(level: Level) -> float:
 	return 1.15 if level >= Level.LEVEL_2 else 1.0
 
 
-## Level 3. Free card-pick rerolls lost each Day.
+## Level 3. Gold removed from the run's starting Gold (base or chef).
+static func get_starting_gold_reduction(level: Level) -> int:
+	return 5 if level >= Level.LEVEL_3 else 0
+
+
+## Level 4. Free card-pick rerolls lost each Day.
 static func get_free_reroll_reduction(level: Level) -> int:
-	return 1 if level >= Level.LEVEL_3 else 0
-
-
-## Level 4. Gold added to the Merchant reroll price after each reroll in a visit. 0 keeps it flat.
-static func get_merchant_reroll_cost_step(level: Level) -> int:
 	return 1 if level >= Level.LEVEL_4 else 0
 
 
-## Level 5. Gold removed from the run's starting Gold (base or chef).
-static func get_starting_gold_reduction(level: Level) -> int:
-	return 5 if level >= Level.LEVEL_5 else 0
-
-
-## Levels 6 and 8. Stations whose second Meal slot stays locked until Station level 3.
+## Levels 5 and 7. Stations whose second Meal slot stays locked until Station level 3.
 ## Which stations is rolled per run (StationManager).
 static func get_locked_meal_slot_station_count(level: Level) -> int:
-	if level >= Level.LEVEL_8:
+	if level >= Level.LEVEL_7:
 		return 4
-	if level >= Level.LEVEL_6:
+	if level >= Level.LEVEL_5:
 		return 2
 	return 0
 
 
-## Level 7. Extra Meals each Station level costs. Applied per step, so the nth level-up
+## Level 6. Gold added to the Merchant reroll price after each reroll in a visit. 0 keeps it flat.
+static func get_merchant_reroll_cost_step(level: Level) -> int:
+	return 1 if level >= Level.LEVEL_6 else 0
+
+
+## Level 8. Extra Meals each Station level costs. Applied per step, so the nth level-up
 ## needs n more Meals served in total than it would otherwise.
 static func get_station_level_extra_meals(level: Level) -> int:
-	return 1 if level >= Level.LEVEL_7 else 0
-
-
-## Level 9. Tile card slots removed from the Merchant shelf. The Technique slot is kept.
-static func get_merchant_tile_slot_reduction(level: Level) -> int:
-	return 1 if level >= Level.LEVEL_9 else 0
+	return 1 if level >= Level.LEVEL_8 else 0

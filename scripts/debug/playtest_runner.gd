@@ -7,7 +7,7 @@ extends Node
 ##   --runs=N          Seeds per chef (default 8). Every chef plays the same seeds.
 ##   --chef=<id>       One chef by id (resources/chefs/), e.g. sous_chef or forager.
 ##   --seed=<text>     Play one seed. --repeat=N plays it N times to check determinism.
-##   --difficulty=N    Difficulty level as shown in game, 1 to 9 (default 1).
+##   --difficulty=N    Difficulty level as shown in game, 1 to 8 (default 1).
 ##   --power           Days have no goal and always play every Hour. Reports raw score per day.
 ##   --extra-hours     Normal days, but when an Hour is about to meet the goal with Hours to spare,
 ##                     also plays those Hours out as a what-if and reports what they would have scored.
