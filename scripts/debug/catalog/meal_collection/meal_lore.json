@@ -91,6 +91,29 @@
         "Salt"
       ]
     },
+    "cheese_sauce": {
+      "origin": "France",
+      "tagline": "A white sauce that met some cheese.",
+      "first_made_by": "Unknown French cooks",
+      "where": "France",
+      "when": "1800s",
+      "certainty": "Uncertain origin.",
+      "certainty_note": "Mornay sauce, the classic French cheese sauce, is sometimes linked to the Mornay family, but the story is not well supported.",
+      "story": "The classic cheese sauce starts as béchamel, milk thickened with butter and flour, with grated cheese stirred in at the end. In French cooking this is sauce Mornay, used over gratins, eggs and vegetables. Cheese sauces turn up in many other dishes too, from macaroni cheese to Welsh rarebit, which is a seasoned cheese sauce poured over toast.",
+      "facts": [
+        "Welsh rarebit is a cheese sauce served on toast.",
+        "Processed cheese melts smoothly because of emulsifying salts such as sodium citrate.",
+        "Adding cheese off the heat helps stop the sauce turning grainy."
+      ],
+      "ingredients": [
+        "Cheese",
+        "Milk",
+        "Butter",
+        "Flour",
+        "Mustard",
+        "Salt"
+      ]
+    },
     "chicken_curry": {
       "origin": "India & Britain",
       "tagline": "A spiced stew that travelled from India to become a British favourite.",
@@ -228,6 +251,28 @@
         "Vanilla"
       ]
     },
+    "custard": {
+      "origin": "Medieval Europe",
+      "tagline": "Milk and eggs, gently set, since the Middle Ages.",
+      "first_made_by": "Unknown medieval cooks",
+      "where": "Europe",
+      "when": "Middle Ages",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Custards baked in pastry are recorded in medieval European cookery; milk-and-egg mixtures are likely older still.",
+      "story": "Medieval cooks baked mixtures of milk or cream and eggs inside pastry cases, and the name is usually traced to “crustade”, a dish with a crust. Over time custard stepped out of the pastry to become a dessert and a pouring sauce in its own right. In 1837 the English chemist Alfred Bird created an egg-free custard powder because his wife was allergic to eggs.",
+      "facts": [
+        "Crème brûlée, flan and crème anglaise are all members of the custard family.",
+        "Custard thickens because egg proteins set as they heat, so it curdles if cooked too hot.",
+        "Bird’s Custard powder is thickened with cornflour instead of eggs."
+      ],
+      "ingredients": [
+        "Milk",
+        "Eggs",
+        "Sugar",
+        "Vanilla",
+        "Cream"
+      ]
+    },
     "french_fries": {
       "origin": "Belgium or France",
       "tagline": "Two countries claim them. Everyone eats them.",
@@ -272,6 +317,29 @@
         "Frying oil"
       ]
     },
+    "fritters": {
+      "origin": "Many cultures",
+      "tagline": "Almost anything, battered and fried.",
+      "first_made_by": "Unknown",
+      "where": "Across Europe, Asia and the Americas",
+      "when": "Ancient times",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Battered and fried foods appear in many cuisines with no single origin.",
+      "story": "A fritter is a piece of food, or a spoonful of batter, deep-fried until crisp. Roman cooks fried dough and sweetened it with honey, and nearly every cuisine has its own version: Indian pakoras, Spanish buñuelos, French beignets and American corn fritters. They can be sweet or savoury, made with vegetables, fruit, seafood or just batter.",
+      "facts": [
+        "The word comes, through French, from the Latin for “to fry”.",
+        "Pakoras are usually made with gram flour, from chickpeas.",
+        "Apple fritters are a classic sweet version."
+      ],
+      "ingredients": [
+        "Vegetables",
+        "Flour",
+        "Eggs",
+        "Milk",
+        "Oil",
+        "Salt"
+      ]
+    },
     "fruit_salad": {
       "origin": "Everywhere",
       "tagline": "A bowl of whatever is ripe and sweet.",
@@ -291,6 +359,30 @@
         "Citrus juice",
         "Honey",
         "Mint"
+      ]
+    },
+    "gazpacho": {
+      "origin": "Spain",
+      "tagline": "A cold soup from the hot south of Spain.",
+      "first_made_by": "Andalusian farm workers (traditionally)",
+      "where": "Andalusia, Spain",
+      "when": "Centuries old; tomato versions from the 1800s",
+      "certainty": "Gradual origin.",
+      "certainty_note": "Early gazpachos were bread, oil, garlic and vinegar; tomatoes and peppers came after they arrived from the Americas.",
+      "story": "Gazpacho began in Andalusia as a simple pounded mix of stale bread, olive oil, garlic, vinegar and water, a cooling meal for people working in the heat. Tomatoes and peppers, brought from the Americas, were added later, and by the 1800s the red version familiar today had taken over. It is still served cold, often in a glass.",
+      "facts": [
+        "Ajoblanco is a white gazpacho made with almonds instead of tomatoes.",
+        "Salmorejo is a thicker cousin of gazpacho from Córdoba.",
+        "Traditional gazpacho was pounded by hand in a mortar."
+      ],
+      "ingredients": [
+        "Tomato",
+        "Pepper",
+        "Cucumber",
+        "Garlic",
+        "Bread",
+        "Olive oil",
+        "Vinegar"
       ]
     },
     "grilled_corn": {
@@ -476,6 +568,30 @@
         "Pepper"
       ]
     },
+    "onion_rings": {
+      "origin": "USA",
+      "tagline": "Sliced onions, battered, fried and stacked.",
+      "first_made_by": "Disputed",
+      "where": "United States",
+      "when": "Early 1900s",
+      "certainty": "Disputed origin.",
+      "certainty_note": "The Pig Stand drive-in chain in Texas claimed to have invented them; fried onion recipes are older, and the claim can’t be confirmed.",
+      "story": "Fried onions in batter go back a long way, but onion rings as a menu item took off in American roadside restaurants in the early 1900s. The Pig Stand, an early Texas drive-in chain, claimed to have invented them. They became a standard side for burgers, and many chains now make theirs from chopped onion pressed into ring shapes.",
+      "facts": [
+        "Sweet onions are often used because they turn soft and mild when fried.",
+        "Some chain onion rings are made from chopped onion shaped into rings.",
+        "Onion rings are often offered as a swap for fries."
+      ],
+      "ingredients": [
+        "Onion",
+        "Flour",
+        "Milk",
+        "Eggs",
+        "Breadcrumbs",
+        "Oil",
+        "Salt"
+      ]
+    },
     "salad": {
       "origin": "Ancient Rome",
       "tagline": "Its name literally means \"salted\".",
@@ -519,6 +635,29 @@
         "Horseradish",
         "Lemon",
         "Lettuce"
+      ]
+    },
+    "skewers": {
+      "origin": "Ancient Mediterranean",
+      "tagline": "Meat on a stick, as old as cooking over a fire.",
+      "first_made_by": "Unknown early cooks",
+      "where": "Around the Mediterranean and the Middle East",
+      "when": "Ancient times",
+      "certainty": "Ancient roots.",
+      "certainty_note": "Cooking meat on spits is far older than written records; no single place or person can be credited.",
+      "story": "Threading meat onto a stick and turning it over a fire is one of the oldest ways of cooking. Homer’s Iliad describes meat roasted on spits, and the idea spread into dishes across the world: Greek souvlaki, Turkish şiş kebab, Japanese yakitori and Southeast Asian satay. Each region settled on its own meat, cut and seasoning, but the stick stayed the same.",
+      "facts": [
+        "“Şiş” is Turkish for skewer, which is where “shish kebab” comes from.",
+        "Yakitori literally means “grilled bird” in Japanese.",
+        "Soaking wooden skewers in water before grilling helps stop them burning."
+      ],
+      "ingredients": [
+        "Meat",
+        "Onion",
+        "Peppers",
+        "Olive oil",
+        "Salt",
+        "Herbs"
       ]
     },
     "sorbet": {
