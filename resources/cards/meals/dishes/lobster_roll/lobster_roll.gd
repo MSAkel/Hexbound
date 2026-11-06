@@ -1,8 +1,8 @@
 extends MealCard
 
 ## Needs Lobster and Butter. +60 Flavour. Doubled when every Seafood on its station is Garnished.
-## A Garnish is used up when its card triggers, so a Seafood that already triggered Garnished this
-## Hour still counts.
+## A Garnish lasts the rest of the Hour once its card triggers; a Seafood that triggered Garnished
+## this Hour still counts.
 
 const GARNISHED_SCALE := 2.0
 

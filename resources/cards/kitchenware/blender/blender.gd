@@ -1,36 +1,42 @@
 extends TileCard
 
-## +1 Mult, plus +1 Mult for each different kind of Ingredient on this Station (Vegetable, Fruit, Meat...).
+## +2 Mult, +1 Mult for each Ingredient it Blends. Blended: the next 2 Ingredients on its Station
+## each also count as the other's kinds, for recipes and "for each" effects (not Station setups).
+## With only one Ingredient after it, nothing is Blended. See KitchenwarePrep.
 
-const PER_KIND := 1.0
+const TARGET_COUNT := 2
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	_pay_effect_amount(tile)
+	var targets := _effect_preview_cards(tile)
+	if targets.size() < TARGET_COUNT:
+		failed_tile_card_text(tile)
+		_pay_kitchenware_mult(tile)
+		return
+	for target: TileCard in targets:
+		_create_targeted_ability_floating_text(tile, ICON_FLAVOUR, target)
+	_pay_kitchenware_mult(tile, targets.size())
 
 
-func _effect_amount(tile: Hex) -> float:
-	if tile == null:
-		return _get_production_amount()
-	return _get_production_amount() + PER_KIND * float(_station_kinds(tile).size())
+func apply_board_prep(tile: Hex, board: HexBoardQuery) -> void:
+	var targets := board.next_ingredients_on_station(tile, TARGET_COUNT)
+	if targets.size() < TARGET_COUNT:
+		return
+	var first_kinds := KitchenwarePrep.printed_recipe_kinds(targets[0])
+	var second_kinds := KitchenwarePrep.printed_recipe_kinds(targets[1])
+	targets[0].grant_kind_tags(second_kinds, KitchenwarePrep.STATUS_BLENDED)
+	targets[1].grant_kind_tags(first_kinds, KitchenwarePrep.STATUS_BLENDED)
+	board.mark_prepped(targets[0])
+	board.mark_prepped(targets[1])
 
 
-func get_board_chip(tile: Hex = null) -> Dictionary:
-	var chip := _amount_board_chip_float(_effect_amount(tile) * star_output_scale(), ICON_MULT)
-	var role_texture := FeastStatIcons.get_support_icon(support_role)
-	if role_texture != null:
-		chip = _compose_board_chip(chip, role_texture)
-	return chip
+func get_planned_preparations(tile: Hex) -> int:
+	var targets := _effect_preview_cards(tile)
+	return targets.size() if targets.size() >= TARGET_COUNT else 0
 
 
 func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
-	return _get_all_tile_cards_on_same_segment(tile, TileCardType.INGREDIENT)
-
-
-func _station_kinds(tile: Hex) -> Dictionary:
-	var kinds := {}
-	for card: TileCard in _effect_preview_cards(tile):
-		for tag: StringName in card.ingredient_tags:
-			if tag in RECIPE_INGREDIENT_TAGS:
-				kinds[tag] = true
-	return kinds
+	var board := _board(tile)
+	if board == null:
+		return []
+	return board.next_ingredients_on_station(tile, TARGET_COUNT)

@@ -1,13 +1,15 @@
 extends MealCard
 
-## Needs Onion and a Deep Fryer. +50 Flavour. Doubled while another Side is being served in the other
-## Meal slot of its own station. Failed Meals and Meals idle in a locked slot do not count.
+## Needs Onion. +50 Flavour, plus +15 Flavour for each extra trigger a Deep Fryer on its station
+## gives this Hour. Doubled while another Side is being served in the other Meal slot of its own
+## station. Failed Meals and Meals idle in a locked slot do not count.
 
 const SIDE_SCALE := 2.0
+const FLAVOUR_PER_FRY := 15.0
 
 
-func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
-	var flavour := _get_production_amount()
+func _meal_outputs(tile: Hex, preview: bool) -> Dictionary:
+	var flavour := _get_production_amount() + FLAVOUR_PER_FRY * float(_deep_fryer_triggers(tile, preview))
 	if not _other_serving_sides(tile).is_empty():
 		flavour *= SIDE_SCALE
 	return {"flavour": int(round(flavour))}

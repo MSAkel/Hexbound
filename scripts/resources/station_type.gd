@@ -119,7 +119,7 @@ func _count_for_tag(cards: Array[TileCard], tag: StringName) -> int:
 		if tag == TAG_ANY_INGREDIENT:
 			if card.type != TileCard.TileCardType.INGREDIENT:
 				continue
-		elif not TileCard.matches_kind_filter(card, tag):
+		elif not TileCard.matches_kind_filter(card, tag, false):
 			continue
 		if tag in distinct_tags:
 			ids[card.id] = true
@@ -137,7 +137,7 @@ func _count_ingredient_kinds(cards: Array[TileCard]) -> int:
 		if card.type != TileCard.TileCardType.INGREDIENT:
 			continue
 		for kind: StringName in INGREDIENT_KIND_TAGS:
-			if card.has_ingredient_tag(kind) and not kinds.has(kind):
+			if card.has_authored_ingredient_tag(kind) and not kinds.has(kind):
 				kinds[kind] = true
 				break
 	return kinds.size()

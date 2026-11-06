@@ -21,7 +21,7 @@ func on_station_started(ctx: StaffContext) -> void:
 
 func _kinds(card: TileCard) -> Array[StringName]:
 	var kinds: Array[StringName] = []
-	for tag: StringName in card.ingredient_tags:
+	for tag: StringName in card.get_kind_tags():
 		if tag in TileCard.RECIPE_INGREDIENT_TAGS and tag not in kinds:
 			kinds.append(tag)
 	return kinds

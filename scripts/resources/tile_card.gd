@@ -90,6 +90,8 @@ const GARNISH_OUTPUT_SCALE := 2.0
 ## Each Garnish stack multiplies output by GARNISH_OUTPUT_SCALE. Two stacks cap at x4.
 ## Staff can raise the cap. Read StaffManager.max_garnish_stacks_for() for a seated card.
 const MAX_GARNISH_STACKS := 2
+## Kitchenware pays its printed Mult plus this much for each Ingredient it prepares (untuned).
+const KITCHENWARE_MULT_PER_PREP := 1.0
 ## Shared chip fill. White numbers stay readable on this purple.
 const CHIP_PANEL_COLOR := Color(0.22, 0.16, 0.28)
 ## Pile icons for floating text and Ingredient output chips.
@@ -118,13 +120,23 @@ var is_active: bool = true
 var star_level: int = 1
 # Activations of this instance during the current run.
 var run_trigger_count: int = 0
-# Garnish stacks wait on the card until it next triggers (across Hours), boost that one trigger and
-# are used up. Whatever is still waiting at the end of the Day is cleared (StationManager.on_day_ended).
+# Garnish stacks wait on the card until it next triggers (across Hours), then boost every trigger
+# of that card for the rest of that Hour and are used up when the Hour ends. Whatever is still
+# waiting at the end of the Day is cleared (StationManager.on_day_ended).
 var garnish_stacks: int = 0
-# Triggers the waiting Garnish still boosts. Set when the first stack lands. Preserving adds one.
-var garnish_triggers_left: int = 0
-# True when a Garnish boosted one of this card's triggers this Hour. Lobster Roll reads it.
+# Hours the Garnish lasts once it starts boosting. Set when the first stack lands. Preserving adds one.
+var garnish_hours_left: int = 0
+# True when a Garnish boosted one of this card's triggers this Hour. Lobster Roll reads it, and
+# end_hour_garnish spends one of garnish_hours_left for it.
 var hour_was_garnished: bool = false
+# Kinds a Kitchenware status lends this seated card (Seasoned, Blended). Runtime only:
+# KitchenwarePrep rebuilds it from the board whenever a seat changes.
+var granted_kind_tags: Array[StringName] = []
+# Kitchenware statuses on this seated card (KitchenwarePrep.STATUS_*). Runtime only, like above.
+var prep_statuses: Array[StringName] = []
+# Ingredients this Kitchenware prepared this Hour, counted each time (a retrigger, a Garnish stack,
+# a status). Fried Meals read the Deep Fryer's count.
+var hour_prepared_count: int = 0
 # Run-long growth station perks store on this card (Seasoned Grill). Saved with the card.
 var perk_growth: Dictionary = {}
 var is_garnished: bool:
@@ -186,23 +198,61 @@ func get_chip_panel_color() -> Color:
 	return CHIP_PANEL_COLOR
 
 
-## True when this card's tags include tag.
+## True when this card's tags include tag, counting kinds a Kitchenware status lends it
+## (Seasoned, Blended). Station setups read has_authored_ingredient_tag instead.
 func has_ingredient_tag(tag: StringName) -> bool:
+	if tag == &"":
+		return false
+	return tag in ingredient_tags or tag in granted_kind_tags
+
+
+## True when the card's own printed tags include tag. Kitchenware statuses do not count.
+func has_authored_ingredient_tag(tag: StringName) -> bool:
 	if tag == &"":
 		return false
 	return tag in ingredient_tags
 
 
+## Printed tags plus kinds lent by Kitchenware statuses, without duplicates.
+func get_kind_tags() -> Array[StringName]:
+	if granted_kind_tags.is_empty():
+		return ingredient_tags
+	var tags: Array[StringName] = ingredient_tags.duplicate()
+	for tag: StringName in granted_kind_tags:
+		if tag not in tags:
+			tags.append(tag)
+	return tags
+
+
+## Lends kinds to this seated card (Seasoned, Blended). KitchenwarePrep clears them on every refresh.
+func grant_kind_tags(tags: Array[StringName], status: StringName) -> void:
+	for tag: StringName in tags:
+		if tag != &"" and tag not in ingredient_tags and tag not in granted_kind_tags:
+			granted_kind_tags.append(tag)
+	add_prep_status(status)
+
+
+func add_prep_status(status: StringName) -> void:
+	if status != &"" and status not in prep_statuses:
+		prep_statuses.append(status)
+
+
+func clear_prep_state() -> void:
+	granted_kind_tags.clear()
+	prep_statuses.clear()
+
+
 ## True when card matches a kind tag, an array of tags, or any tag when filter_kind is null.
 ## TAG_KITCHENWARE matches the Kitchenware card type. Dish and beverage are authored Meal tags.
-static func matches_kind_filter(card: TileCard, filter_kind: Variant) -> bool:
+## include_granted false ignores kinds lent by Kitchenware statuses (station setups).
+static func matches_kind_filter(card: TileCard, filter_kind: Variant, include_granted: bool = true) -> bool:
 	if card == null:
 		return false
 	if filter_kind == null:
 		return true
 	if filter_kind is Array:
 		for entry in filter_kind:
-			if matches_kind_filter(card, entry):
+			if matches_kind_filter(card, entry, include_granted):
 				return true
 		return false
 	var tag := StringName(str(filter_kind))
@@ -210,15 +260,17 @@ static func matches_kind_filter(card: TileCard, filter_kind: Variant) -> bool:
 		return false
 	if tag == TAG_KITCHENWARE:
 		return card.type == TileCardType.KITCHENWARE
-	return card.has_ingredient_tag(tag)
+	if include_granted:
+		return card.has_ingredient_tag(tag)
+	return card.has_authored_ingredient_tag(tag)
 
 
-## Authored tags plus a type-derived Kitchenware tag used by kind queries.
+## Kind tags (printed and lent) plus a type-derived Kitchenware tag used by kind queries.
 static func queryable_kind_tags(card: TileCard) -> Array[StringName]:
 	var tags: Array[StringName] = []
 	if card == null:
 		return tags
-	for tag: StringName in card.ingredient_tags:
+	for tag: StringName in card.get_kind_tags():
 		if tag == &"" or tag in tags:
 			continue
 		tags.append(tag)
@@ -238,11 +290,13 @@ func get_inspect_subtitle() -> String:
 	else:
 		base = "%s  ·  %s" % [type_label, role_label]
 	var tag := get_distinct_recipe_tag_label()
-	if tag.is_empty() or tag.to_lower() == type_label.to_lower():
-		return base
-	if base.is_empty():
-		return tag
-	return "%s  ·  %s" % [base, tag]
+	var subtitle := base
+	if not tag.is_empty() and tag.to_lower() != type_label.to_lower():
+		subtitle = tag if base.is_empty() else "%s  ·  %s" % [base, tag]
+	# Kitchenware statuses on a seated card, such as "Seasoned".
+	for status: StringName in prep_statuses:
+		subtitle = "%s  ·  %s" % [subtitle, String(status).capitalize()] if not subtitle.is_empty() else String(status).capitalize()
+	return subtitle
 
 
 # Ingredient and Meal tags such as Vegetable or Dish · Beverage. Empty when none are set.
@@ -283,12 +337,13 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 		if product == Product.MULTIPLIER:
 			return _amount_board_chip_float(amount)
 		return _amount_board_chip(int(round(amount)))
-	return _stat_board_chip()
+	return _stat_board_chip(tile)
 
 
-func _stat_board_chip() -> Dictionary:
+func _stat_board_chip(tile: Hex = null) -> Dictionary:
 	if type == TileCardType.KITCHENWARE and base_production_amount > 0:
-		var chip := _amount_board_chip_float(_get_production_amount() * star_output_scale(), ICON_MULT)
+		var mult := _get_production_amount() + KITCHENWARE_MULT_PER_PREP * float(get_planned_preparations(tile))
+		var chip := _amount_board_chip_float(mult * star_output_scale(), ICON_MULT)
 		var role_texture := FeastStatIcons.get_support_icon(support_role)
 		if role_texture != null:
 			chip = _compose_board_chip(chip, role_texture)
@@ -479,21 +534,24 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	StaffManager.after_card_activated(tile, self)
 	StationManager.after_card_triggered(tile, self)
 	if _activation_was_garnished:
-		_use_garnish_trigger()
+		# The Garnish keeps boosting this card's triggers until the Hour ends (end_hour_garnish).
+		hour_was_garnished = true
 	_activation_output_scale = 1.0
 	_activation_star_scale = 1.0
 	_activation_was_garnished = false
 	_activation_flat_bonus = 0
 
 
-## The Garnish boosted a trigger. Used up once its triggers run out (one, two with Preserving).
-func _use_garnish_trigger() -> void:
-	hour_was_garnished = true
-	garnish_triggers_left -= 1
-	if garnish_triggers_left > 0 or garnish_stacks <= 0:
+## Hour end. A Garnish that boosted this card this Hour spends one of its Hours (one, two with
+## Preserving) and is used up when none are left. A Garnish that has not boosted anything yet waits.
+func end_hour_garnish() -> void:
+	if not hour_was_garnished or garnish_stacks <= 0:
+		return
+	garnish_hours_left -= 1
+	if garnish_hours_left > 0:
 		return
 	garnish_stacks = 0
-	garnish_triggers_left = 0
+	garnish_hours_left = 0
 	EventBus.tile_card_garnish_cleared.emit(self)
 
 # Queue extra spot card activations to resolve before fire flow continues.
@@ -617,16 +675,19 @@ func _is_triggerable_tile_card(source_tile: Hex, tile_card: TileCard) -> bool:
 
 
 ## Adds one Garnish stack to a triggerable spot card, up to its stack cap.
-func _try_garnish_tile_card(source_tile: Hex, target: TileCard) -> bool:
+## Returns how many stacks landed (0 when none did).
+func _try_garnish_tile_card(source_tile: Hex, target: TileCard) -> int:
 	if not _is_triggerable_tile_card(source_tile, target):
-		return false
+		return 0
 	if not target.add_garnish():
-		return false
+		return 0
+	var landed := 1
 	# Staff can make a Kitchenware Garnish land more than once.
 	if type == TileCardType.KITCHENWARE:
 		for _i in StaffManager.extra_garnish_applications(source_tile, self, target):
-			target.add_garnish()
-	return true
+			if target.add_garnish():
+				landed += 1
+	return landed
 
 
 # Queues a newly created card for the hand reveal animation. Does not use tile_card_selected.
@@ -724,7 +785,7 @@ func add_garnish() -> bool:
 		return false
 
 	if garnish_stacks <= 0:
-		garnish_triggers_left = 1 + StaffManager.extra_garnish_triggers(self)
+		garnish_hours_left = 1 + StaffManager.extra_garnish_hours(self)
 	garnish_stacks += 1
 	EventBus.tile_card_garnished.emit(self)
 	StaffManager.after_card_garnished(self)
@@ -734,7 +795,7 @@ func add_garnish() -> bool:
 ## Clears Garnish stacks and any unspent one-shot scale. Runs at the end of the Day.
 func clear_garnish() -> void:
 	pending_output_scale = 1.0
-	garnish_triggers_left = 0
+	garnish_hours_left = 0
 	if garnish_stacks <= 0:
 		return
 
@@ -763,11 +824,26 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	_pay_effect_amount(tile)
 
 
-## Kitchenware flat Mult printed on the card. Paid before the card's ability.
-func _pay_kitchenware_mult(tile: Hex) -> void:
-	var amount := _get_production_amount()
+## Kitchenware Mult: the flat amount printed on the card plus KITCHENWARE_MULT_PER_PREP for each
+## Ingredient it prepared this trigger (each retrigger, Garnish stack or status counts). Paid after
+## the card's ability so the count is known.
+func _pay_kitchenware_mult(tile: Hex, prepared: int = 0) -> void:
+	hour_prepared_count += maxi(prepared, 0)
+	var amount := _get_production_amount() + KITCHENWARE_MULT_PER_PREP * float(maxi(prepared, 0))
 	if amount > 0.0:
 		add_additive_mult(tile, amount)
+
+
+## Ingredients this Kitchenware would prepare if it triggered now. Board chips and fried Meal
+## previews read it. Kitchenware scripts override it.
+func get_planned_preparations(_tile: Hex) -> int:
+	return 0
+
+
+## Board-position statuses this seated Kitchenware lends (Seasoned, Blended, Passed). Called by
+## HexBoardQuery.refresh_kitchenware_prep in fire order whenever a seat changes. See KitchenwarePrep.
+func apply_board_prep(_tile: Hex, _board: HexBoardQuery) -> void:
+	pass
 
 
 ## "Garnished if next to X" cards. Garnishes this card mid-activation so the current fire
@@ -783,16 +859,18 @@ func _garnish_self_now() -> bool:
 
 
 ## Garnishes each target that can take another stack, floating the Garnish icon for each.
-## Shows Failed and returns false when none of them took it. Whisk and Kitchen Torch use this.
-func _garnish_targets(tile: Hex, targets: Array[TileCard]) -> bool:
-	var garnished_any := false
+## Shows Failed when none of them took it. Returns the Garnish stacks that landed, which
+## Whisk and Kitchen Torch count as prepared Ingredients for their Mult.
+func _garnish_targets(tile: Hex, targets: Array[TileCard]) -> int:
+	var landed := 0
 	for target: TileCard in targets:
-		if _try_garnish_tile_card(tile, target):
+		var stacks := _try_garnish_tile_card(tile, target)
+		if stacks > 0:
 			_create_garnish_floating_text(tile, target)
-			garnished_any = true
-	if not garnished_any:
+			landed += stacks
+	if landed <= 0:
 		failed_tile_card_text(tile)
-	return garnished_any
+	return landed
 
 
 ## Stacks a one-shot output scale on a later card (unused since Skillet and Deep Fryer became retriggers).
@@ -836,7 +914,7 @@ func _get_next_tile_cards_in_trigger_order(
 	return board.cards_relative_to_trigger_order(tile, count, false, filter_type)
 
 
-## Fire-order seats right before this one. Mortar & Pestle reads these.
+## Fire-order seats right before this one.
 func _get_immediately_previous_hexes(tile: Hex, count: int) -> Array[Hex]:
 	var board := _board(tile)
 	if board == null:
@@ -856,6 +934,7 @@ func _get_tile_cards_on_immediately_previous_hexes(tile: Hex, count: int) -> Arr
 ## Clears Hour Flavour and Mult snapshots before this Hour's fire order starts.
 func reset_hour_product_snapshot() -> void:
 	hour_was_garnished = false
+	hour_prepared_count = 0
 	hour_flavour_produced = 0
 	hour_additive_mult_produced = 0.0
 

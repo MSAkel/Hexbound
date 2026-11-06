@@ -7,7 +7,6 @@
 script = ExtResource("2_script")
 meal_category = 5
 recipe_sweet_count = 1
-recipe_kitchenware_count = 1
 recipe_required_card_ids = Array[String](["chocolate"])
 type = 2
 product = 2

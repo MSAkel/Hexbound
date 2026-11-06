@@ -7,6 +7,7 @@ extends TileCard
 ## Subclasses describe their output in _meal_outputs so the chip and the payout share one formula.
 
 const SERVING_GOLD := 1
+const DEEP_FRYER_ID := "deep_fryer"
 
 ## Menu category, named after the Meal's main ingredient or course. Separate from ingredient_tags
 ## on purpose. Kind queries such as "per Meat on the station" read those tags and count Meals too,
@@ -26,7 +27,7 @@ enum MealCategory {
 
 @export var meal_category: MealCategory = MealCategory.NONE
 
-## Station requirements, counted across the station's regular spots.
+## Station requirements, counted across the station's regular spots (plus Passed Ingredients).
 @export var recipe_vegetable_count: int = 0
 @export var recipe_fruit_count: int = 0
 @export var recipe_meat_count: int = 0
@@ -34,6 +35,7 @@ enum MealCategory {
 @export var recipe_dairy_count: int = 0
 @export var recipe_sweet_count: int = 0
 @export var recipe_seasoning_count: int = 0
+## No Meal asks for Kitchenware since Kitchenware left recipes (Nov 2026). Kept so old content loads.
 @export var recipe_kitchenware_count: int = 0
 ## Specific cards that must sit on the station, by id. Wine needs Grape.
 @export var recipe_required_card_ids: Array[String] = []
@@ -240,11 +242,29 @@ func get_requirement_icons() -> Array[Dictionary]:
 	return entries
 
 
-## Cards on this Meal's station regular spots. Meals never fill requirements.
+## Cards on this Meal's station regular spots, plus Ingredients a Cutting Board on the station
+## above passed down to it (Passed). Requirements and "for each" effects read these.
+## Meals never fill requirements.
 func _station_cards(tile: Hex) -> Array[TileCard]:
+	var cards := _own_station_cards(tile)
+	cards.append_array(_passed_in_cards(tile))
+	return cards
+
+
+## Cards seated on this Meal's station regular spots only. Flavour reads use these, since a
+## Passed Ingredient counts on this station but does not pay its Flavour here.
+func _own_station_cards(tile: Hex) -> Array[TileCard]:
 	if tile == null or tile.map == null:
 		return []
 	return tile.map.get_regular_tile_cards(_get_segment_index(tile))
+
+
+## Ingredients passed down to this Meal's station by a Cutting Board on the station above.
+func _passed_in_cards(tile: Hex) -> Array[TileCard]:
+	var board := _board(tile)
+	if board == null:
+		return []
+	return board.passed_into_segment(_get_segment_index(tile))
 
 
 func _matching_station_cards(tile: Hex) -> Array[TileCard]:
@@ -324,15 +344,17 @@ func _recipe_bag_text() -> String:
 
 
 #region --- Station reads for dish formulas ---
-## Station cards with a kind tag, Meals included. Used by "per Fruit on the station" style effects.
+## Station cards with a kind tag, Meals and Passed Ingredients included. Used by "per Fruit on
+## the station" style effects.
 func _count_station_cards_by_kind(tile: Hex, kind: StringName) -> int:
-	return _cards_by_kind(tile, kind, QueryScope.SAME_SEGMENT).size()
+	return _cards_by_kind(tile, kind, QueryScope.SAME_SEGMENT).size() + _filter_tile_cards_by_kind(_passed_in_cards(tile), kind).size()
 
 
 ## Flavour paid this Hour by station cards of a kind. Before they fire, their chips stand in.
+## Passed Ingredients are left out: they count on this station but pay their Flavour at home.
 func _station_flavour_for_kind(tile: Hex, kind: StringName, preview: bool) -> int:
 	var total := 0
-	for card: TileCard in _station_cards(tile):
+	for card: TileCard in _own_station_cards(tile):
 		if not matches_kind_filter(card, kind):
 			continue
 		if card.hour_flavour_produced != 0 or not preview:
@@ -341,6 +363,23 @@ func _station_flavour_for_kind(tile: Hex, kind: StringName, preview: bool) -> in
 		var chip: Dictionary = card.get_board_chip(_hex_for(tile, card))
 		if int(chip.get("mode", BoardChipMode.HIDDEN)) == BoardChipMode.AMOUNT and card.product == Product.FLAVOUR:
 			total += int(round(float(chip.get("amount", 0.0))))
+	return total
+
+
+## Extra triggers the Deep Fryers on this Meal's station gave this Hour. Fried Meals read it,
+## which keeps them tied to Fry now that their recipes no longer name the Deep Fryer.
+## Before the Deep Fryers have triggered, a preview counts what they would give.
+func _deep_fryer_triggers(tile: Hex, preview: bool) -> int:
+	var total := 0
+	if tile == null or tile.map == null:
+		return total
+	for card: TileCard in _own_station_cards(tile):
+		if card.id != DEEP_FRYER_ID:
+			continue
+		if preview and card.hour_prepared_count == 0:
+			total += card.get_planned_preparations(_hex_for(tile, card))
+		else:
+			total += card.hour_prepared_count
 	return total
 
 

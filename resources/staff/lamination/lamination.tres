@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "lamination"
 name = "Lamination"
-description = "Sweets on this Station can hold one more {garnish}, and their {garnish} lasts one more {trigger}"
+description = "Sweets on this Station can hold one more {garnish}, and their {garnish} lasts one more Hour"
 rarity = 2

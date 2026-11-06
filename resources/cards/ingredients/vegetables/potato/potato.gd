@@ -18,7 +18,7 @@ func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
 func _adjacent_kinds(tile: Hex) -> Dictionary:
 	var kinds := {}
 	for card: TileCard in _effect_preview_cards(tile):
-		for tag: StringName in card.ingredient_tags:
+		for tag: StringName in card.get_kind_tags():
 			if tag in RECIPE_INGREDIENT_TAGS:
 				kinds[tag] = true
 	return kinds

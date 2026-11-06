@@ -1,13 +1,16 @@
 extends MealCard
 
-## Needs Potato, Salt and a Deep Fryer. +3 Mult, plus +2 Mult for each Protein dish (Meat, Poultry
-## or Seafood) being served on the stations either side of its own.
+## Needs Potato and Salt. +3 Mult, plus +1 Mult for each extra trigger a Deep Fryer on its station
+## gives this Hour, plus +2 Mult for each Protein dish (Meat, Poultry or Seafood) being served on the
+## stations either side of its own.
 
 const MULT_PER_PROTEIN := 2.0
+const MULT_PER_FRY := 1.0
 
 
-func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
-	return {"additive_mult": _get_production_amount() + MULT_PER_PROTEIN * float(_serving_neighbour_proteins(tile).size())}
+func _meal_outputs(tile: Hex, preview: bool) -> Dictionary:
+	var mult := _get_production_amount() + MULT_PER_FRY * float(_deep_fryer_triggers(tile, preview))
+	return {"additive_mult": mult + MULT_PER_PROTEIN * float(_serving_neighbour_proteins(tile).size())}
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

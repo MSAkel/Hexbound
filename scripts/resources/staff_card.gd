@@ -109,8 +109,8 @@ func extra_garnish_applications(
 	return 0
 
 
-## Extra triggers a Garnish on this card boosts before it is used up.
-func extra_garnish_triggers(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> int:
+## Extra Hours a Garnish on this card keeps boosting before it is used up.
+func extra_garnish_hours(_ctx: StaffContext, _tile: Hex, _card: TileCard) -> int:
 	return 0
 
 
