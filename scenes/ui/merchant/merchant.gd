@@ -3,7 +3,7 @@ extends Control
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CONDIMENT_ITEM_SCENE := preload("res://scenes/ui/condiments/condiment_shop_item.tscn")
-## Tile cards on the shelf before the chef's extra slots and the difficulty cut (tile_card_count).
+## Tile cards on the shelf before the chef's extra slots (tile_card_count).
 const MERCHANT_TILE_CARD_COUNT := 3
 ## Extra shelf slot that always offers a staff member the player does not own.
 const MERCHANT_STAFF_COUNT := 1
@@ -319,12 +319,9 @@ func _roll_pack_stock() -> Array[int]:
 	return stock
 
 
-## Tile cards on the shelf: the base count plus the chef's extra slots (Restaurateur),
-## less the difficulty cut.
+## Tile cards on the shelf: the base count plus the chef's extra slots (Restaurateur).
 static func tile_card_count() -> int:
-	var count := MERCHANT_TILE_CARD_COUNT + GameManager.chef.extra_merchant_tile_slots()
-	count -= Difficulty.get_merchant_tile_slot_reduction(GameManager.selected_difficulty)
-	return maxi(1, count)
+	return MERCHANT_TILE_CARD_COUNT + GameManager.chef.extra_merchant_tile_slots()
 
 
 ## Stock rolls are static so the headless playtest bot shops the same shelves.
