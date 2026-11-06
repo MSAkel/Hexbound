@@ -28,6 +28,12 @@ var _neighbors_by_coords: Dictionary = {}
 var _edge_by_coords: Dictionary = {}
 ## Per-station hex lists in fire order, aligned with HexMapLayout.build_segments().
 var _hexes_by_segment: Array = []
+## Kitchenware statuses that depend on board position (Seasoned, Blended, Passed). Rebuilt by
+## refresh_kitchenware_prep whenever a seat changes. Station index to Ingredients passed down into it.
+var _passed_into_segment: Dictionary = {}
+## Cards currently holding lent kinds or statuses, so the next refresh can clear them.
+var _prepped_cards: Array[TileCard] = []
+var _refreshing_prep := false
 
 
 func setup(map: HexTileMap) -> void:
@@ -36,6 +42,7 @@ func setup(map: HexTileMap) -> void:
 
 ## Drops every cache. Call when map_data itself is being thrown away.
 func clear() -> void:
+	_clear_kitchenware_prep()
 	_hex_by_card.clear()
 	_trigger_index_by_coords.clear()
 	_hexes_in_order.clear()
@@ -75,6 +82,7 @@ func set_occupancy(hex: Hex, previous: TileCard, current: TileCard) -> void:
 		_hex_by_card.erase(previous)
 	if current != null and hex != null:
 		_hex_by_card[current] = hex
+	refresh_kitchenware_prep()
 
 
 func get_hex_for_card(card: TileCard) -> Hex:
@@ -326,3 +334,98 @@ func _rebuild_occupancy_from_map() -> void:
 	for hex: Hex in _map.map_data.values():
 		if hex.active_tile_card != null:
 			_hex_by_card[hex.active_tile_card] = hex
+	refresh_kitchenware_prep()
+
+
+#region --- Kitchenware statuses ---
+## Re-applies every seated Kitchenware's board status (Seasoned, Blended, Passed) in fire order.
+## These depend only on where cards sit, so recipes and chips see them before the Hour starts.
+func refresh_kitchenware_prep() -> void:
+	if _refreshing_prep or _map == null:
+		return
+	_refreshing_prep = true
+	_clear_kitchenware_prep()
+	for hex: Hex in _hexes_in_order:
+		var card := hex.active_tile_card
+		if card != null and card.type == TileCard.TileCardType.KITCHENWARE:
+			card.apply_board_prep(hex, self)
+	_refreshing_prep = false
+
+
+func _clear_kitchenware_prep() -> void:
+	for card: TileCard in _prepped_cards:
+		card.clear_prep_state()
+	_prepped_cards.clear()
+	_passed_into_segment.clear()
+
+
+## Kitchenware calls this for each card it lends a kind or status to, so the next refresh clears it.
+func mark_prepped(card: TileCard) -> void:
+	if card != null and card not in _prepped_cards:
+		_prepped_cards.append(card)
+
+
+## Records an Ingredient passed from its station to the next one down. Returns false when its
+## station is the bottom one.
+func pass_card_down(from_tile: Hex, card: TileCard) -> bool:
+	if from_tile == null or card == null or _map == null:
+		return false
+	var target := _map.get_segment_index(from_tile.coordinates) + 1
+	if target <= 0 or target >= _map.get_segment_count():
+		return false
+	var passed: Array = _passed_into_segment.get(target, [])
+	if card not in passed:
+		passed.append(card)
+	_passed_into_segment[target] = passed
+	card.add_prep_status(KitchenwarePrep.STATUS_PASSED)
+	mark_prepped(card)
+	return true
+
+
+## Ingredients passed down into this station by a Cutting Board on the station above.
+func passed_into_segment(segment_index: int) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	for card: TileCard in _passed_into_segment.get(segment_index, []):
+		result.append(card)
+	return result
+
+
+## The next count Ingredients after tile in fire order, on tile's own station only.
+func next_ingredients_on_station(tile: Hex, count: int) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	var index := trigger_index(tile)
+	if index < 0 or count <= 0 or _map == null:
+		return result
+	var segment := _map.get_segment_index(tile.coordinates)
+	for i in range(index + 1, _hexes_in_order.size()):
+		var hex := _hexes_in_order[i]
+		if _map.get_segment_index(hex.coordinates) != segment:
+			break
+		var card := hex.active_tile_card
+		if card == null or card.type != TileCard.TileCardType.INGREDIENT:
+			continue
+		result.append(card)
+		if result.size() >= count:
+			break
+	return result
+
+
+## The nearest count Ingredients before tile in fire order, on tile's own station only, closest first.
+func previous_ingredients_on_station(tile: Hex, count: int) -> Array[TileCard]:
+	var result: Array[TileCard] = []
+	var index := trigger_index(tile)
+	if index < 0 or count <= 0 or _map == null:
+		return result
+	var segment := _map.get_segment_index(tile.coordinates)
+	for i in range(index - 1, -1, -1):
+		var hex := _hexes_in_order[i]
+		if _map.get_segment_index(hex.coordinates) != segment:
+			break
+		var card := hex.active_tile_card
+		if card == null or card.type != TileCard.TileCardType.INGREDIENT:
+			continue
+		result.append(card)
+		if result.size() >= count:
+			break
+	return result
+#endregion --- Kitchenware statuses ---

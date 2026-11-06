@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs a Fruit, a Sweet and a Blender. +3 Mult, plus +1 Mult for each different meal category
+## Needs a Fruit and a Sweet. +3 Mult, plus +1 Mult for each different meal category
 ## being served on the board, its own Dessert included.
 
 const MULT_PER_CATEGORY := 1.0

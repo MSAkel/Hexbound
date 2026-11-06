@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Salmon, Honey and a Kitchenware. +60 Flavour, plus +20 Flavour for each Sweet on its station.
+## Needs Salmon and Honey. +60 Flavour, plus +20 Flavour for each Sweet on its station.
 
 const FLAVOUR_PER_SWEET := 20.0
 

@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "preserving"
 name = "Preserving"
-description = "{garnish} on cards on this Station lasts for one more {trigger}"
+description = "{garnish} on cards on this Station lasts for one more Hour"
 rarity = 2

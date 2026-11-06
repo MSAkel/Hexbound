@@ -1,7 +1,7 @@
 extends StationPerk
 
-## Tempura: matching Ingredients on this station count as Potato for the Deep Fryer.
+## Tempura: the Deep Fryer triggers matching Ingredients on this station once more.
 
 
-func counts_as_potato(_seg: int, card: TileCard) -> bool:
+func gets_extra_fryer_trigger(_seg: int, card: TileCard) -> bool:
 	return card.type == TileCard.TileCardType.INGREDIENT and matches(card)

@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Avocado, Chili and a Kitchenware. +2 Mult, plus +2 Mult for each Meal being served on the
+## Needs Avocado and Chili Pepper. +2 Mult, plus +2 Mult for each Meal being served on the
 ## stations either side of its own.
 
 const MULT_PER_NEIGHBOUR_MEAL := 2.0

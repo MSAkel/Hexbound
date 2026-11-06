@@ -113,8 +113,8 @@ func meal_counts_as(_seg: int, _meal: MealCard, _category: int) -> bool:
 	return false
 
 
-## True when an Ingredient on this station counts as Potato for the Deep Fryer (Tempura).
-func counts_as_potato(_seg: int, _card: TileCard) -> bool:
+## True when the Deep Fryer triggers this Ingredient on this station once more (Tempura).
+func gets_extra_fryer_trigger(_seg: int, _card: TileCard) -> bool:
 	return false
 
 

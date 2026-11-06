@@ -1,49 +1,38 @@
 extends TileCard
-## Adds a random Ingredient to your hand. Destroyed after 3 triggers.
 
-const MAX_TRIGGERS := 3
+## +2 Mult, +1 Mult if it Passes an Ingredient. Passed: the next Ingredient on its Station also
+## counts on the next Station down, for that Station's Meals (recipes and their effects). Its
+## Flavour is only paid at home, and it does not count toward the lower Station's setup.
+## The bottom Station has nowhere to pass. See KitchenwarePrep.
+
+const TARGET_COUNT := 1
 
 
 func _on_activate_tile_card(tile: Hex) -> void:
-	activation_count += 1
-	_add_random_ingredient_to_hand(tile)
-
-	if activation_count >= MAX_TRIGGERS:
-		_destroy_placed_tile_card(tile, self)
-
-
-func get_board_chip(_tile: Hex = null) -> Dictionary:
-	return _make_board_chip(
-		BoardChipMode.PROGRESS,
-		"%d/%d" % [activation_count, MAX_TRIGGERS],
-		null,
-		get_chip_panel_color(),
-		CardKeywordGlossary.to_plain("{triggers} until this card is {destroyed}")
-	)
-
-
-func capture_placed_save_state() -> Dictionary:
-	return {"activation_count": activation_count}
-
-
-func apply_placed_save_state(data: Dictionary) -> void:
-	activation_count = int(data.get("activation_count", 0))
-
-
-func _add_random_ingredient_to_hand(tile: Hex) -> void:
-	var drafted := CardLoot.draw_filtered(
-		1,
-		GameManager.get_draw_pool(),
-		TileCardType.INGREDIENT,
-		null,
-		true,
-		RunRng.create_card_effect_rng(tile, self, "replicate")
-	)
-	if drafted.is_empty():
+	var passed := _passed_cards(tile)
+	if passed.is_empty():
 		failed_tile_card_text(tile)
-		return
+	for target: TileCard in passed:
+		_create_targeted_ability_floating_text(tile, ICON_FLAVOUR, target)
+	_pay_kitchenware_mult(tile, passed.size())
 
-	# Fresh copy so the hand does not share the pool template.
-	var hand_copy: TileCard = drafted[0].duplicate(true)
-	_add_generated_card_to_hand(hand_copy)
-	_create_floating_text(tile, "+ %s" % hand_copy.name)
+
+func apply_board_prep(tile: Hex, board: HexBoardQuery) -> void:
+	for target: TileCard in board.next_ingredients_on_station(tile, TARGET_COUNT):
+		board.pass_card_down(tile, target)
+
+
+func get_planned_preparations(tile: Hex) -> int:
+	return _passed_cards(tile).size()
+
+
+func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:
+	return _coords_for_placed_tile_cards(hover_tile, _passed_cards(hover_tile))
+
+
+## The Ingredient it passes, or nothing on the bottom Station.
+func _passed_cards(tile: Hex) -> Array[TileCard]:
+	var board := _board(tile)
+	if board == null or _get_next_segment_index(tile) < 0:
+		return []
+	return board.next_ingredients_on_station(tile, TARGET_COUNT)

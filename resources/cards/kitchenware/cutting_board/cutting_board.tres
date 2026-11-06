@@ -5,11 +5,12 @@
 
 [resource]
 script = ExtResource("2_script")
+base_production_amount = 2
 type = 1
-product = 4
+product = 2
 starting_hand_eligible = false
 id = "cutting_board"
 name = "Cutting Board"
 icon = ExtResource("1_icon")
-description = "Add a random Ingredient to your hand. {destroyed} after 3 {triggers}."
+description = "+2 {mult}, +1 {mult} if it Passes an Ingredient. Passed: the next Ingredient on its Station also counts for Meals on the next Station down."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

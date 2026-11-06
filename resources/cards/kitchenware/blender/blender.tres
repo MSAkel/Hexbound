@@ -5,12 +5,12 @@
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 1
+base_production_amount = 2
 type = 1
 product = 2
 starting_hand_eligible = true
 id = "blender"
 name = "Blender"
 icon = ExtResource("1_icon")
-description = "+1 {mult}, plus +1 {mult} for each different kind of Ingredient on this Station."
+description = "+2 {mult}, +2 {mult} if it Blends. Blended: the next 2 Ingredients on its Station each also count as the other's kinds."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

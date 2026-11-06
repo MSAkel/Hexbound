@@ -5,12 +5,12 @@
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 1
+base_production_amount = 2
 type = 1
 product = 2
 starting_hand_eligible = true
 id = "mortar_and_pestle"
 name = "Mortar & Pestle"
 icon = ExtResource("1_icon")
-description = "+1 {mult}. Copies the base {flavour} of the 2 Ingredients directly before it."
+description = "+2 {mult}, +1 {mult} if it Seasons an Ingredient. Seasoned: the next Ingredient on its Station also counts as a Seasoning."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

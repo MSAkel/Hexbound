@@ -13,5 +13,5 @@ starting_hand_eligible = true
 id = "kitchen_torch"
 name = "Kitchen Torch"
 icon = ExtResource("1_icon")
-description = "+2 {mult}. {garnishes} adjacent Ingredients and Meals."
+description = "+2 {mult}, +1 {mult} for each {garnish} it gives. {garnishes} adjacent Ingredients and Meals."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
