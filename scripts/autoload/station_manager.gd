@@ -426,13 +426,13 @@ func meal_counts_as(meal: MealCard, tile: Hex, category: int) -> bool:
 	return false
 
 
-## True when a perk on the card's station makes it count as Potato for the Deep Fryer.
-func counts_as_potato(tile: Hex, card: TileCard) -> bool:
+## True when a perk on the card's station makes the Deep Fryer trigger it once more (Tempura).
+func gets_extra_fryer_trigger(tile: Hex, card: TileCard) -> bool:
 	var seg := segment_of_tile(tile)
 	if seg < 0:
 		return false
 	for perk: StationPerk in get_active_perks(seg):
-		if perk.counts_as_potato(seg, card):
+		if perk.gets_extra_fryer_trigger(seg, card):
 			return true
 	return false
 

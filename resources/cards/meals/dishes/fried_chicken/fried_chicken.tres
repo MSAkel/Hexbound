@@ -7,13 +7,13 @@
 script = ExtResource("2_script")
 meal_category = 2
 recipe_seasoning_count = 1
-recipe_required_card_ids = Array[String](["chicken", "deep_fryer"])
+recipe_required_card_ids = Array[String](["chicken"])
 base_production_amount = 60
 type = 2
 product = 1
 ingredient_tags = Array[StringName]([&"dish"])
 id = "fried_chicken"
 name = "Fried Chicken"
-icon = ExtResource("1_xkfjh")
-description = "+60 {flavour}. Doubled if a Side is served on the Station on either side."
+icon = ExtResource("1_icon")
+description = "+60 {flavour}, +20 {flavour} for each extra {trigger} a Deep Fryer on its Station gives. Doubled if a Side is served on the Station on either side."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

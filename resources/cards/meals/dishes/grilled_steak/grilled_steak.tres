@@ -6,13 +6,13 @@
 [resource]
 script = ExtResource("2_script")
 meal_category = 1
-recipe_required_card_ids = Array[String](["steak", "salt", "black_pepper"])
-base_production_amount = 80
+recipe_required_card_ids = Array[String](["steak"])
+base_production_amount = 60
 type = 2
 product = 1
 ingredient_tags = Array[StringName]([&"dish"])
 id = "grilled_steak"
 name = "Grilled Steak"
 icon = ExtResource("1_icon")
-description = "+80 {flavour}. Doubled if a Wine is served on any Station."
+description = "+60 {flavour}. Gains a {garnish} for each of these, up to 2: Salt on its Station, Black Pepper on its Station, a Wine served on any Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

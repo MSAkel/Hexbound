@@ -9,7 +9,6 @@ meal_category = 1
 recipe_vegetable_count = 1
 recipe_meat_count = 1
 recipe_seasoning_count = 1
-recipe_kitchenware_count = 1
 base_production_amount = 4
 type = 2
 product = 2

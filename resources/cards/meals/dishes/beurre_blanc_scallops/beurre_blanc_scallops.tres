@@ -6,13 +6,13 @@
 [resource]
 script = ExtResource("2_script")
 meal_category = 3
-recipe_required_card_ids = Array[String](["scallop", "butter", "lemon"])
-base_production_amount = 70
+recipe_fruit_count = 1
+recipe_required_card_ids = Array[String](["scallop", "butter"])
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "beurre_blanc_scallops"
 name = "Beurre Blanc Scallops"
 icon = ExtResource("1_v8apg")
-description = "+70 {flavour}. Doubled if Wine is served on its Station."
+description = "x2 {mult}. x2.5 {mult} instead if a Sauce & Dip is served on the Station on either side."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

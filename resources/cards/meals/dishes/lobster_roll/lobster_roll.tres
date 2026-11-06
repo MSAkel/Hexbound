@@ -6,14 +6,13 @@
 [resource]
 script = ExtResource("2_script")
 meal_category = 3
-recipe_kitchenware_count = 1
 recipe_required_card_ids = Array[String](["lobster", "butter"])
-base_production_amount = 60
+base_production_amount = 40
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "lobster_roll"
 name = "Lobster Roll"
 icon = ExtResource("1_biois")
-description = "+60 {flavour}. Doubled if every Seafood on its Station is {garnished}."
+description = "+40 {flavour}. +25 {flavour} for each {garnished} Ingredient on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

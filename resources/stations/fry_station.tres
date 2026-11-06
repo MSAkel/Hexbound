@@ -65,7 +65,7 @@ description = "Hot Oil: the first Ingredient to {trigger} here each Hour trigger
 
 [sub_resource type="Resource" id="choice_1"]
 script = ExtResource("s_tempura")
-description = "Tempura: Seafood and Vegetables on this station count as Potato for the Deep Fryer"
+description = "Tempura: the Deep Fryer triggers Seafood and Vegetables on this station once more"
 target_tags = Array[StringName]([&"seafood", &"vegetable"])
 
 [sub_resource type="Resource" id="capstone_0"]

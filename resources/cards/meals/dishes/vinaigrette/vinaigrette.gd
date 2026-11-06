@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs a Vegetable and a Seasoning. +2 Mult. While it is being served, Salads on the stations
+## Needs 2 Seasonings. +2 Mult. While it is being served, Salads on the stations
 ## either side of its own gain x1.5 output. Read through StationManager.output_scale_for, so a
 ## Salad's chip and payout both include it whichever fires first.
 

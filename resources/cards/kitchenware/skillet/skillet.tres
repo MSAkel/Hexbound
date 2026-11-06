@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("2_script")
 support_role = 2
-base_production_amount = 1
+base_production_amount = 2
 type = 1
 product = 2
 starting_hand_eligible = true
 id = "skillet"
 name = "Skillet"
 icon = ExtResource("1_icon")
-description = "+1 {mult}. {triggers} the {following} 2 Ingredients again, twice if Meat."
+description = "+2 {mult}, +1 {mult} for each extra {trigger} it gives. {triggers} the {following} 2 Ingredients again."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

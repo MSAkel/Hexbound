@@ -1,8 +1,8 @@
 extends MealCard
 
-## Needs Potato and Butter. +3 Mult, plus +1 Mult for each different kind of Ingredient on its station.
+## Needs Potato and Butter. +5 Mult, plus +3 Mult for each different kind of Ingredient on its station.
 
-const MULT_PER_KIND := 1.0
+const MULT_PER_KIND := 3.0
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
@@ -12,7 +12,7 @@ func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
 func _station_kinds(tile: Hex) -> Dictionary:
 	var kinds := {}
 	for card: TileCard in _station_cards(tile):
-		for tag: StringName in card.ingredient_tags:
+		for tag: StringName in card.get_kind_tags():
 			if tag in RECIPE_INGREDIENT_TAGS:
 				kinds[tag] = true
 	return kinds

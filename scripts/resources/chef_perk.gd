@@ -25,7 +25,7 @@ func allows_card(_card: TileCard) -> bool:
 
 #region --- Triggers ---
 
-## Multiplies a card's whole output for one trigger, like a station perk (Sommelier: Beverages x2).
+## Multiplies a card's whole output for one trigger, like a station perk (Sommelier: Beverages x1.5).
 func output_scale_for(_state: Dictionary, _tile: Hex, _card: TileCard) -> float:
 	return 1.0
 

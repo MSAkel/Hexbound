@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Apple, Butter and Sugar. +5 Mult. +1 extra Gold when served with Coffee on its station.
+## Needs Apple and Sugar. +7 Mult. +1 extra Gold when served while a Coffee is placed on any station.
 
 const COFFEE_ID := "coffee"
 const BONUS_GOLD := 1
@@ -29,7 +29,9 @@ func _has_coffee(tile: Hex) -> bool:
 
 func _coffees(tile: Hex) -> Array[TileCard]:
 	var coffees: Array[TileCard] = []
-	for card: TileCard in _cards_on_beverage_stations(tile):
+	if tile == null or tile.map == null:
+		return coffees
+	for card: TileCard in _get_all_placed_tile_cards(tile, TileCardType.MEAL):
 		if card.id == COFFEE_ID:
 			coffees.append(card)
 	return coffees

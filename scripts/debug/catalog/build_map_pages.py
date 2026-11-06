@@ -46,7 +46,7 @@ def main() -> None:
     out_dir = Path(args[1])
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    font = base64.b64encode((ROOT / "assets/fonts/Gimbot-Regular.otf").read_bytes()).decode()
+    font = base64.b64encode((ROOT / "assets/fonts/gimbot_regular.otf").read_bytes()).decode()
     stat_icons = {key: icon_data_uri(path, 40) for key, path in STAT_ICONS.items()}
     for page, (template, fills, groups) in PAGES.items():
         html = (HERE / template).read_text(encoding="utf-8")

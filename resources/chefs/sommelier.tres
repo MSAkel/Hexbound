@@ -8,6 +8,7 @@
 [sub_resource type="Resource" id="Perk"]
 script = ExtResource("4_perk")
 target_tags = Array[StringName]([&"beverage"])
+scale = 1.5
 
 [resource]
 script = ExtResource("1_script")
@@ -15,6 +16,6 @@ id = "sommelier"
 display_name = "Sommelier"
 icon = ExtResource("1_2tc56")
 ingame_portrait = ExtResource("3_ingame")
-speciality_description = "Beverages have their effects doubled."
+speciality_description = "Beverages have x1.5 output."
 perk = SubResource("Perk")
 starting_hand = Array[String](["grape", "apple", "honey", "blender", "random:ingredient"])

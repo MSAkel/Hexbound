@@ -52,7 +52,7 @@ def main() -> None:
                 icons[path] = icon_data_uri(path, size)
     stat_icons = {key: icon_data_uri(path, 40) for key, path in STAT_ICONS.items()}
 
-    font = base64.b64encode((ROOT / "assets/fonts/Gimbot-Regular.otf").read_bytes()).decode()
+    font = base64.b64encode((ROOT / "assets/fonts/gimbot_regular.otf").read_bytes()).decode()
     html = (
         TEMPLATE.read_text(encoding="utf-8")
         .replace("/*__FONT__*/", font)
