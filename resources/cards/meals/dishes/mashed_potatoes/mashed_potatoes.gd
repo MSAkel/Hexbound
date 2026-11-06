@@ -1,8 +1,8 @@
 extends MealCard
 
-## Needs Potato and Butter. +3 Mult, plus +1 Mult for each different kind of Ingredient on its station.
+## Needs Potato and Butter. +5 Mult, plus +3 Mult for each different kind of Ingredient on its station.
 
-const MULT_PER_KIND := 1.0
+const MULT_PER_KIND := 3.0
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:

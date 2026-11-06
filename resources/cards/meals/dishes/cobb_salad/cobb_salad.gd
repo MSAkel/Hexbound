@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Chicken, Avocado and Lettuce. Starts at x1 Mult and gains x0.25 for each different kind
+## Needs Chicken, Avocado and a Vegetable. Starts at x1 Mult and gains x0.25 for each different kind
 ## of Ingredient on its station.
 
 const XMULT_PER_KIND := 0.25

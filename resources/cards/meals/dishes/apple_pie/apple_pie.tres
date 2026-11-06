@@ -6,13 +6,13 @@
 [resource]
 script = ExtResource("2_script")
 meal_category = 5
-recipe_required_card_ids = Array[String](["apple", "butter", "sugar"])
-base_production_amount = 5
+recipe_required_card_ids = Array[String](["apple", "sugar"])
+base_production_amount = 7
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "apple_pie"
 name = "Apple Pie"
 icon = ExtResource("1_81ddt")
-description = "+5 {mult}. +1 Gold when served if Coffee is on its Station."
+description = "+7 {mult}. +1 Gold when served if Coffee is on any Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

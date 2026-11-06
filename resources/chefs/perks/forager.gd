@@ -1,7 +1,7 @@
-extends "res://resources/chefs/perks/tag_output_scale.gd"
+extends ChefPerk
 
 ## Forager: never offered cards with excluded_tags, Meals in excluded_meal_categories, or Meals whose
-## recipe needs an excluded kind or card. Vegetable and Fruit Ingredients get x scale output.
+## recipe needs an excluded kind or card. No output bonus: the smaller pool is the upside.
 @export var excluded_tags: Array[StringName] = [TileCard.TAG_MEAT, TileCard.TAG_SEAFOOD]
 @export var excluded_meal_categories: Array[int] = [
 	MealCard.MealCategory.MEAT, MealCard.MealCategory.POULTRY, MealCard.MealCategory.SEAFOOD,

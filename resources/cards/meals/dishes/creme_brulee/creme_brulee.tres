@@ -7,12 +7,12 @@
 script = ExtResource("2_script")
 meal_category = 5
 recipe_required_card_ids = Array[String](["cream", "vanilla"])
-base_production_amount = 12
+base_production_amount = 15
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "creme_brulee"
 name = "Crème Brûlée"
 icon = ExtResource("1_76vw1")
-description = "+12 {mult}."
+description = "+15 {mult}."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"
