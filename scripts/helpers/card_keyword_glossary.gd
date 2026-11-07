@@ -53,9 +53,11 @@ static func _static_init() -> void:
 	register(
 		"garnish",
 		{"garnish": GameTerms.GARNISH, "garnishes": "Garnishes", "garnished": "Garnished"},
-		"A {garnished} card has x%d output for the rest of the Hour. Stacks up to %d times." % [
-			int(TileCard.GARNISH_OUTPUT_SCALE),
+		"A {garnished} card makes +%d%% {flavour} and +Mult for the rest of the Hour; each extra stack adds another +%d%% (up to %d). On xMult, only the part above x1 is boosted: x2 becomes x%s." % [
+			int(round(TileCard.GARNISH_SCALE_PER_STACK * 100.0)),
+			int(round(TileCard.GARNISH_SCALE_PER_STACK * 100.0)),
 			TileCard.MAX_GARNISH_STACKS,
+			String.num(TileCard.scale_multiplicative_mult(2.0, TileCard.garnish_scale_for(1)), 2),
 		]
 	)
 	register(

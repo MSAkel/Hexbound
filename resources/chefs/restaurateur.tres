@@ -7,7 +7,6 @@
 [sub_resource type="Resource" id="Perk"]
 script = ExtResource("4_perk")
 starting_gold_amount = 20
-extra_tile_slots = 1
 free_rerolls = 1
 
 [resource]
@@ -15,6 +14,6 @@ script = ExtResource("1_script")
 id = "restaurateur"
 display_name = "Restaurateur"
 icon = ExtResource("2_icon")
-speciality_description = "Start with 20 Gold. The merchant shelf has 1 more card, and the first reroll each visit is free."
+speciality_description = "Start with 20 Gold and the first merchant reroll each visit is free."
 perk = SubResource("Perk")
 starting_hand = Array[String]([])
