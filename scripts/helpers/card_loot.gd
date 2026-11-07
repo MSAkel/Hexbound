@@ -2,8 +2,8 @@ class_name CardLoot
 extends RefCounted
 
 ## Shared drafting for the card pick, merchant, events and card effects.
-## Card picks and the auto-granted card use lane_draw (by card type, with station draw boosts).
-## The merchant uses station_weighted_draw over the whole pool. Card effects still draw uniformly.
+## Card picks and the auto-granted card use lane_draw (by card type). Stations at level 2 add one
+## extra card to card picks (station_extra_card). The merchant, packs and card effects draw uniformly.
 ## Staff still roll a rarity bucket first.
 
 # Chance to roll each staff rarity (must sum to 100).
@@ -118,8 +118,7 @@ static func has_typed_station() -> bool:
 	return false
 
 
-## Draw `count` unique cards, slot i from lanes[i], weighted by station draw boosts within the lane
-## (Fish Station level 2 makes Seafood twice as likely among Ingredients). When count does not match
+## Draw `count` unique cards, slot i from lanes[i], uniformly within the rolled type. When count does not match
 ## the lane count (Dealt Hand grants one card), every slot uses the lanes' combined mix instead.
 ## A lane whose types are used up falls back to any type left. exclude_ids never appear.
 static func lane_draw(
@@ -150,7 +149,7 @@ static func lane_draw(
 		if card_type == null:
 			break
 		var candidates: Array[TileCard] = by_type[card_type]
-		var index := _weighted_index(candidates, rng)
+		var index := _randi_range(rng, 0, candidates.size() - 1)
 		result.append(candidates[index].duplicate(true))
 		candidates.remove_at(index)
 	return result
@@ -184,51 +183,25 @@ static func _roll_lane_type(lane: Dictionary, by_type: Dictionary, rng: RandomNu
 	return last
 
 
-## One card from candidates, weighted by StationManager.draw_weight_for.
-static func _weighted_index(candidates: Array[TileCard], rng: RandomNumberGenerator) -> int:
-	var weights: Array[float] = []
-	var total := 0.0
-	for card: TileCard in candidates:
-		var weight := StationManager.draw_weight_for(card)
-		weights.append(weight)
-		total += weight
-	var roll := _randf(rng) * total
-	for i in weights.size():
-		roll -= weights[i]
-		if roll < 0.0:
-			return i
-	return candidates.size() - 1
-
 #endregion
 
 
-## Merchant draw: unique cards from the whole pool, weighted by station draw boosts (Fish Station level 2
-## makes Seafood twice as likely). With no boost active it is the same uniform draw as card_draw.
-static func station_weighted_draw(
-	count: int,
-	pool: Array[TileCard] = [],
-	rng: RandomNumberGenerator = null
+## The extra card-pick card from stations at level 2: one card, drawn uniformly from every kind a
+## level 2+ station boosts (Fish Station: Seafood). One extra card in total, however many stations
+## qualify. Empty when no station boosts anything, or every boosted card is already offered.
+static func station_extra_card(
+	pool: Array[TileCard],
+	rng: RandomNumberGenerator,
+	exclude_ids: Array[String] = []
 ) -> Array[TileCard]:
-	var source_pool := pool if not pool.is_empty() else GameManager.get_draw_pool()
-	var available := _sorted_by_id(_filter_cards(source_pool, null, null))
-	var weights: Array[float] = []
-	var any_boost := false
-	for card: TileCard in available:
-		var weight := StationManager.draw_weight_for(card)
-		weights.append(weight)
-		if not is_equal_approx(weight, 1.0):
-			any_boost = true
-	if not any_boost:
-		return draw_filtered(count, pool, null, null, true, rng)
-	# Weighted draw without replacement: each card gets the key u^(1/weight); highest keys win.
-	var keyed: Array = []
-	for i in available.size():
-		var u := maxf(_randf(rng), 0.000001)
-		keyed.append([pow(u, 1.0 / weights[i]), i])
-	keyed.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) > float(b[0]))
 	var result: Array[TileCard] = []
-	for k in mini(count, keyed.size()):
-		result.append(available[int(keyed[k][1])].duplicate(true))
+	var candidates: Array[TileCard] = []
+	for card: TileCard in _sorted_by_id(pool):
+		if card.id not in exclude_ids and StationManager.is_extra_card_kind(card):
+			candidates.append(card)
+	if candidates.is_empty():
+		return result
+	result.append(candidates[_randi_range(rng, 0, candidates.size() - 1)].duplicate(true))
 	return result
 
 

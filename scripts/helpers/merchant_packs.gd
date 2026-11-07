@@ -118,7 +118,7 @@ static func draw_contents(
 	# An empty pool would fall back to the whole card pool and break the category.
 	if pool.is_empty():
 		return cards
-	for tile_card in CardLoot.station_weighted_draw(CARD_COUNT, pool, rng):
+	for tile_card in CardLoot.draw_filtered(CARD_COUNT, pool, null, null, true, rng):
 		cards.append(tile_card)
 	return cards
 

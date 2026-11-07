@@ -15,7 +15,7 @@ flat_flavour = 5
 
 [sub_resource type="Resource" id="level_2"]
 script = ExtResource("2_perk")
-description = "Seasonings and Dairy on this station gain +5 {flavour}. Seasonings and Dairy appear twice as often in card picks and at the merchant."
+description = "Seasonings and Dairy on this station gain +5 {flavour}. Card picks show one extra card: a Seasoning or Dairy."
 target_tags = Array[StringName]([&"seasoning", &"dairy"])
 flat_flavour = 5
 draw_tags = Array[StringName]([&"seasoning", &"dairy"])
@@ -24,7 +24,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_3"]
 script = ExtResource("2_perk")
-description = "Seasonings and Dairy on this station gain +5 {flavour}. Seasonings and Dairy appear twice as often in card picks and at the merchant."
+description = "Seasonings and Dairy on this station gain +5 {flavour}. Card picks show one extra card: a Seasoning or Dairy."
 target_tags = Array[StringName]([&"seasoning", &"dairy"])
 flat_flavour = 5
 draw_tags = Array[StringName]([&"seasoning", &"dairy"])
@@ -33,7 +33,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_4"]
 script = ExtResource("2_perk")
-description = "Seasonings and Dairy on this station gain +10 {flavour}. Seasonings and Dairy appear twice as often in card picks and at the merchant."
+description = "Seasonings and Dairy on this station gain +10 {flavour}. Card picks show one extra card: a Seasoning or Dairy."
 target_tags = Array[StringName]([&"seasoning", &"dairy"])
 flat_flavour = 10
 draw_tags = Array[StringName]([&"seasoning", &"dairy"])
@@ -42,7 +42,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_5"]
 script = ExtResource("2_perk")
-description = "Seasonings and Dairy on this station gain +12 {flavour}. Seasonings and Dairy appear twice as often in card picks and at the merchant."
+description = "Seasonings and Dairy on this station gain +12 {flavour}. Card picks show one extra card: a Seasoning or Dairy."
 target_tags = Array[StringName]([&"seasoning", &"dairy"])
 flat_flavour = 12
 draw_tags = Array[StringName]([&"seasoning", &"dairy"])
@@ -51,7 +51,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_6"]
 script = ExtResource("2_perk")
-description = "Seasonings and Dairy on this station gain +12 {flavour}. Seasonings and Dairy appear twice as often in card picks and at the merchant."
+description = "Seasonings and Dairy on this station gain +12 {flavour}. Card picks show one extra card: a Seasoning or Dairy."
 target_tags = Array[StringName]([&"seasoning", &"dairy"])
 flat_flavour = 12
 draw_tags = Array[StringName]([&"seasoning", &"dairy"])

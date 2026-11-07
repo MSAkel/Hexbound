@@ -17,8 +17,8 @@ extends Resource
 @export var flat_flavour: int = 0
 ## Multiplies a matching card's output for the whole activation. 1.0 means no change.
 @export var output_scale: float = 1.0
-## Card picks and the merchant draw cards with these tags (or Meals in these categories)
-## draw_weight times as often while this perk is active. 1.0 means no change.
+## While this perk is active, card picks show one extra card drawn from these tags (or Meals in
+## these categories). draw_weight above 1.0 switches it on; its exact value no longer matters.
 @export var draw_tags: Array[StringName] = []
 @export var draw_meal_categories: Array[int] = []
 @export var draw_weight: float = 1.0

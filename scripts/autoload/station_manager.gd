@@ -285,14 +285,14 @@ func get_active_perks(segment_index: int) -> Array[StationPerk]:
 	return perks
 
 
-## How much more often card picks and the merchant offer this card. The highest boost from any
-## station counts once, so two stations of a type do not stack.
-func draw_weight_for(card: TileCard) -> float:
-	var weight := 1.0
+## True when a station at level 2 or higher names this card's kind for the extra card-pick card
+## (CardLoot.station_extra_card). The perk's draw_tags / draw_meal_categories define the kind.
+func is_extra_card_kind(card: TileCard) -> bool:
 	for seg in _stations.size():
 		for perk: StationPerk in get_active_perks(seg):
-			weight = maxf(weight, perk.draw_weight_for(card))
-	return weight
+			if perk.draw_weight_for(card) > 1.0:
+				return true
+	return false
 
 
 ## Flat Flavour of this station's current level perk. Spill-over perks (Charred Vegetables) lend it.
