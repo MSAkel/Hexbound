@@ -14,6 +14,6 @@ product = 1
 ingredient_tags = Array[StringName]([&"dish"])
 id = "fried_chicken"
 name = "Fried Chicken"
-icon = ExtResource("1_icon")
+icon = ExtResource("1_xkfjh")
 description = "+60 {flavour}, +20 {flavour} for each extra {trigger} a Deep Fryer on its Station gives. Doubled if a Side is served on the Station on either side."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"
