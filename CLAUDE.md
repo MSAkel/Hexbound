@@ -29,11 +29,21 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
   early gives up with the deck and gold of a real run. Skipped on Blackout, Fading Station and
   Short Staffed days (those reroll part of the board every Hour). Costs roughly +35% run time.
 - `--fuzz` random legal actions; fails on invariants and script errors
+- `--ledger` also log every Flavour, +Mult, xMult and Gold event of each real Hour in
+  `details.hour_ledger` (`HourLedger`, `scripts/helpers/hour_ledger.gd`): the card that paid it and its
+  scales `[garnish, star, chef, station, queued]`. Replaying the events rebuilds the Hour score exactly.
+  Off by default, since it makes reports much larger. It does not change gameplay.
 - `--no-condiments`, `--no-overplay`, `--check-sim`, `--verbose`
 - `--out=<path>` report path (default `user://playtest_report.json`)
 
 Each run's `details.meal_fires` maps a Meal id to `[times served, times Failed]` from real Hours
 (what-if Hours are not counted), so you can see which Meals the bot completes, not just picks.
+`details.replace_detail` lists every replacement (day, Hour, old and new card with kinds, stars lost) and
+`details.offers` every card offer as `round:id|id|id>chosen`.
+
+`scripts/debug/analyze_score_ledger.py report.json` reads these: score by source card, how much of the
+score xMult adds, the same boards re-scored with Garnish, stars, chef or Station scales taken out, the top
+Hours, what the bot replaces and when, and take rate per card when offered. The first four need `--ledger`.
 
 A run takes ~50s per seed per chef. Compare reports with `scripts/debug/compare_playtest_reports.py`
 and list picks with `scripts/debug/analyze_pick_report.py`.
