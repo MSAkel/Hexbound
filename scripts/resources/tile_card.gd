@@ -86,8 +86,9 @@ enum QueryScope {
 	PLACED,
 }
 
-const GARNISH_OUTPUT_SCALE := 2.0
-## Each Garnish stack multiplies output by GARNISH_OUTPUT_SCALE. Two stacks cap at x4.
+## Each Garnish stack adds this much output scale (untuned): 1 stack x1.75, 2 stacks x2.5.
+## Stacks add, they do not multiply. Use garnish_scale_for(). Garnish never scales Gold.
+const GARNISH_SCALE_PER_STACK := 0.75
 ## Staff can raise the cap. Read StaffManager.max_garnish_stacks_for() for a seated card.
 const MAX_GARNISH_STACKS := 2
 ## Kitchenware pays its printed Mult plus this much for each Ingredient it prepares (untuned).
@@ -151,10 +152,12 @@ var is_garnished: bool:
 var condiment_fuses: Array[Dictionary] = []
 # One-shot output scale (from _try_scale_tile_card; no card uses it since Skillet and Deep Fryer became retriggers). Consumed by the next activation, cleared at Hour end.
 var pending_output_scale: float = 1.0
-# Scales all card output during this activation (Flavour, Gold, and Mult).
+# Scales all card output during this activation: the product of Garnish, chef, Station, star,
+# neighbour and queued scales. Flavour and +Mult take it whole. xMult takes it as
+# 1 + (factor - 1) x scale, so only the part above x1 grows. Gold takes it without the Garnish part.
 var _activation_output_scale: float = 1.0
-# Star part of _activation_output_scale. Taken back out for xMult.
-var _activation_star_scale: float = 1.0
+# Garnish part of _activation_output_scale. Divided back out for Gold.
+var _activation_garnish_scale: float = 1.0
 # True when this activation had at least one Garnish stack. Checked by cards that pay extra on Garnish.
 var _activation_was_garnished: bool = false
 # Station flat Flavour still to fold into this activation's first Flavour payout (before scaling).
@@ -492,6 +495,16 @@ func star_output_scale() -> float:
 	return 1.0 + STAR_SCALE_STEP * float(star_level - 1)
 
 
+## Output scale from Garnish stacks. Each stack adds GARNISH_SCALE_PER_STACK (x1.75, x2.5, ...).
+static func garnish_scale_for(stacks: int) -> float:
+	return 1.0 + GARNISH_SCALE_PER_STACK * float(maxi(stacks, 0))
+
+
+## xMult under an output scale: only the part above x1 is boosted. x2 at scale 1.75 is x2.75.
+static func scale_multiplicative_mult(factor: float, scale: float) -> float:
+	return 1.0 + (factor - 1.0) * scale
+
+
 static func star_text(level: int) -> String:
 	return "★%d" % level
 
@@ -510,13 +523,12 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 
 	var output_scale := activation_scale
 	_activation_was_garnished = garnish_stacks > 0
-	if garnish_stacks > 0:
-		output_scale *= pow(GARNISH_OUTPUT_SCALE, garnish_stacks)
+	_activation_garnish_scale = garnish_scale_for(garnish_stacks)
+	output_scale *= _activation_garnish_scale
 	if tile.map != null:
 		output_scale *= GameManager.chef.output_scale_for(tile, self)
 		output_scale *= StationManager.output_scale_for(tile, self)
-	_activation_star_scale = star_output_scale()
-	output_scale *= _activation_star_scale
+	output_scale *= star_output_scale()
 	if not is_equal_approx(pending_output_scale, 1.0):
 		output_scale *= pending_output_scale
 		pending_output_scale = 1.0
@@ -538,7 +550,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		# The Garnish keeps boosting this card's triggers until the Hour ends (end_hour_garnish).
 		hour_was_garnished = true
 	_activation_output_scale = 1.0
-	_activation_star_scale = 1.0
+	_activation_garnish_scale = 1.0
 	_activation_was_garnished = false
 	_activation_flat_bonus = 0
 
@@ -630,9 +642,11 @@ func add_flavour(tile: Hex, base_points: Variant) -> void:
 func add_gold(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
 	if not EventManager.can_gain_gold():
 		return
-	var amount := int(round(float(base_amount) * (_activation_output_scale if scaled else 1.0)))
+	# Garnish does not scale Gold. Every other scale still does.
+	var gold_scale := _activation_output_scale / _activation_garnish_scale
+	var amount := int(round(float(base_amount) * (gold_scale if scaled else 1.0)))
 	tile.map.add_turn_gold_for_tile(tile, amount)
-	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD, null, _payout_float_is_garnished())
+	_create_floating_text(tile, "+%d" % amount, Color(1.0, 0.85, 0.2, 1.0), ICON_GOLD, null, false)
 
 func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
 	var amount := float(base_amount)
@@ -653,7 +667,8 @@ func add_additive_mult(tile: Hex, base_amount: Variant, scaled: bool = true) -> 
 func multiply_multiplicative_mult(tile: Hex, factor: Variant, scaled: bool = true) -> void:
 	var amount := float(factor)
 	if scaled:
-		amount *= _activation_output_scale / _activation_star_scale
+		# Only the part above x1 is boosted, by the whole output scale (Garnish, stars, chef, Station).
+		amount = scale_multiplicative_mult(amount, _activation_output_scale)
 	tile.map.multiply_turn_multiplicative_mult_for_tile(tile, amount)
 	_create_floating_text(
 		tile,
@@ -854,13 +869,15 @@ func apply_board_prep(_tile: Hex, _board: HexBoardQuery) -> void:
 
 
 ## "Garnished if next to X" cards. Garnishes this card mid-activation so the current fire
-## already pays double. Later fires this Hour read the stack as usual.
+## already pays the Garnish boost. Later fires this Hour read the stack as usual.
 func _garnish_self_now() -> bool:
 	if garnish_stacks > 0:
 		return false
 	if not add_garnish():
 		return false
-	_activation_output_scale *= GARNISH_OUTPUT_SCALE
+	var boost := garnish_scale_for(garnish_stacks)
+	_activation_output_scale *= boost
+	_activation_garnish_scale *= boost
 	_activation_was_garnished = true
 	return true
 

@@ -766,7 +766,7 @@ func _refresh_garnish_stack_label(stacks: int) -> void:
 		return
 
 	_ensure_garnish_stack_label()
-	_garnish_stack_label.text = "x%d" % int(pow(TileCard.GARNISH_OUTPUT_SCALE, stacks))
+	_garnish_stack_label.text = "x%s" % String.num(TileCard.garnish_scale_for(stacks), 2)
 	_garnish_stack_label.show()
 
 

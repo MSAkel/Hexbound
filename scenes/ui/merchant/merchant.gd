@@ -319,7 +319,7 @@ func _roll_pack_stock() -> Array[int]:
 	return stock
 
 
-## Tile cards on the shelf: the base count plus the chef's extra slots (Restaurateur).
+## Tile cards on the shelf: the base count plus the chef's extra slots (no chef has any right now).
 static func tile_card_count() -> int:
 	return MERCHANT_TILE_CARD_COUNT + GameManager.chef.extra_merchant_tile_slots()
 

@@ -86,18 +86,20 @@ func _meal_outputs(_tile: Hex, _preview: bool) -> Dictionary:
 	return {}
 
 
-## _meal_outputs as an Output. scale multiplies every present part, the way an activation scale does.
-## star_scale multiplies Flavour and +Mult only, matching multiply_multiplicative_mult.
+## _meal_outputs as an Output. scale multiplies Flavour and +Mult, the way an activation scale does.
+## On xMult it boosts only the part above x1, matching multiply_multiplicative_mult.
+## star_scale joins scale: stars follow the same rule.
 func _read_output(tile: Hex, preview: bool, scale: float, star_scale: float = 1.0) -> Output:
 	var raw := _meal_outputs(tile, preview)
+	var total_scale := scale * star_scale
 	var output := Output.new()
-	output.flavour = int(round(float(raw.get("flavour", 0)) * scale * star_scale))
+	output.flavour = int(round(float(raw.get("flavour", 0)) * total_scale))
 	# The chef's Meal bonus (Pitmaster) joins the Meal's own +Mult before every multiplier.
 	var additive := float(raw.get("additive_mult", 0.0)) + GameManager.chef.meal_extra_mult(tile, self)
-	output.additive_mult = additive * scale * star_scale
+	output.additive_mult = additive * total_scale
 	output.multiplicative_mult = float(raw.get("multiplicative_mult", 1.0))
 	if output.has_multiplicative_mult():
-		output.multiplicative_mult *= scale
+		output.multiplicative_mult = scale_multiplicative_mult(output.multiplicative_mult, total_scale)
 	return output
 
 

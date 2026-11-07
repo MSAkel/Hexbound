@@ -28,7 +28,7 @@ const CHEF_PROFILES := {
 	"restaurateur": {
 		"kitchenware_pick_bias": 1.0,
 		"beverage_pick_bias": 1.0,
-		## Builds from the shop (big starting purse, extra shelf card, free reroll), so spend freely.
+		## Builds from the shop (big starting purse, free reroll), so spend freely.
 		"gold_weight": 0.7,
 		"shop_reserve": 0,
 	},

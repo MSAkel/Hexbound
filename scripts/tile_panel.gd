@@ -194,7 +194,7 @@ func _get_rarity_display_name(rarity: int) -> String:
 func _set_bonus_line(card: TileCard) -> void:
 	var lines: Array[String] = []
 	if card.star_level > 1:
-		lines.append("%s: x%s Flavour, Gold, +Mult" % [TileCard.star_text(card.star_level), String.num(card.star_output_scale(), 2)])
+		lines.append("%s: x%s Flavour, Gold, +Mult, xMult (above x1)" % [TileCard.star_text(card.star_level), String.num(card.star_output_scale(), 2)])
 	if lines.is_empty():
 		card_bonus_line.hide()
 		return
