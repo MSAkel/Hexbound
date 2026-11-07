@@ -28,6 +28,10 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
   Each day gets `extra_hour_scores`, `full_day_score` and `early_gold`, so you can see what finishing
   early gives up with the deck and gold of a real run. Skipped on Blackout, Fading Station and
   Short Staffed days (those reroll part of the board every Hour). Costs roughly +35% run time.
+- `--after-goal=stop|continue|continue:<N>` what the bot does once a Day's goal is met with Hours to
+  spare: `stop` (default) ends the Day for the early-finish gold, `continue` plays every Hour of every
+  Day, `continue:N` plays on through Day N. Each Day records `continued`, and `leftover_hours` counts
+  the Hours played after the goal. Use it to compare ending early with playing on over whole runs.
 - `--fuzz` random legal actions; fails on invariants and script errors
 - `--bot=<name>` who plays: `human` (default, the careful bot) or a player still learning the game:
   `novice` (skill 0.25), `casual` (0.55) or `slip` (0.85), from `novice_policy.gd`. Same what-if eyes as

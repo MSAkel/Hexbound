@@ -14,6 +14,10 @@ extends Node
 ##   --fuzz            Chaos bot: random legal actions. Fails on invariants and script errors.
 ##   --no-condiments   The bot never buys or drinks condiments.
 ##   --no-overplay     Cards only go on empty spots (no merging or replacing). A/B baseline.
+##   --after-goal=<rule>  What the bot does once a Day's goal is met with Hours to spare: stop (default,
+##                     ends the Day for the early-finish gold), continue (plays every Hour of every Day)
+##                     or continue:<N> (plays on through Day N, then stops). Each Day records
+##                     "continued" and the Hours played after the goal in leftover_hours.
 ##   --bot=<name>      Who plays: human (default, careful), or novice / casual / slip, which misjudge,
 ##                     miss mechanics and slip like a player still learning. See novice_policy.gd.
 ##                     --skill=0..1 and --learning=<per Day> override the profile.
@@ -212,6 +216,10 @@ var _fuzz := false
 var _check_sim := false
 ## --ledger: record every score event of each real Hour (see HourLedger).
 var _ledger := false
+## --after-goal: keep playing the Hours after a Day's goal is met, through this Day (0 = stop at once).
+var _after_goal_days := 0
+## True on a Day where the bot keeps playing after the goal. Set when the Day starts.
+var _play_on_today := false
 ## --bot: who plays. "human" is the careful bot, the rest are NovicePolicy profiles.
 var _bot := "human"
 ## --skill and --learning override a NovicePolicy profile. Negative keeps the profile's value.
@@ -297,6 +305,17 @@ func _parse_args() -> void:
 			_check_sim = true
 		elif arg == "--ledger":
 			_ledger = true
+		elif arg.begins_with("--after-goal="):
+			# stop | continue | continue:<last Day to keep playing on>
+			var rule := value.to_lower()
+			if rule == "stop":
+				_after_goal_days = 0
+			elif rule == "continue":
+				_after_goal_days = ScoreProgression.RUN_LENGTH_ROUNDS
+			elif rule.begins_with("continue:"):
+				_after_goal_days = maxi(0, int(rule.get_slice(":", 1)))
+			else:
+				push_error("PlaytestRunner: --after-goal is stop, continue or continue:<Day>")
 		elif arg.begins_with("--bot="):
 			_bot = value.to_lower()
 			if not BOTS.has(_bot):
@@ -481,6 +500,7 @@ func _run_one(suite: String, chef_id: String, seed_text: String, repeat_index: i
 	details["gold"] = EconomyManager.amount
 	details["staff"] = StaffManager.owned_ids()
 	details["difficulty"] = _difficulty
+	details["after_goal_days"] = _after_goal_days
 	details["power"] = power_mode
 	details["extra_hours"] = extra_hours
 	details["playtest_condiments"] = use_condiments
@@ -554,6 +574,10 @@ func _start_day() -> void:
 	if power_mode:
 		# The goal above is kept for the report. Zero lets every Hour of the day play out.
 		GameManager.required_score = 0
+	# A player who plays on after the goal keeps every Hour of the Day and gives up the early-finish gold.
+	_play_on_today = _after_goal_days > 0 and int(_day["round"]) <= _after_goal_days
+	_day["continued"] = _play_on_today
+	GameManager.playtest_play_full_day = power_mode or _play_on_today
 	await policy.on_day_started()
 
 
@@ -562,7 +586,7 @@ func _play_hour() -> void:
 	await _play_hand()
 	trace("before resolve")
 	await policy.before_resolve()
-	if extra_hours and not goal_met_before:
+	if extra_hours and not goal_met_before and not _play_on_today:
 		await _probe_extra_hours()
 	trace("resolving Hour")
 	_day["hours"] = int(_day["hours"]) + 1
@@ -657,7 +681,7 @@ func _probe_extra_hours() -> void:
 		scores.append(GameManager.total_round_score - score_before)
 
 	var probe_invariants: Array = (_log["invariants"] as Array).slice((saved_log["invariants"] as Array).size())
-	GameManager.playtest_play_full_day = power_mode
+	GameManager.playtest_play_full_day = power_mode or _play_on_today
 	sim.restore(saved_state)
 	hand.assign(saved_hand)
 	_log = saved_log
