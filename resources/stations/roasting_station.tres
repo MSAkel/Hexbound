@@ -17,7 +17,7 @@ per_hour = 3
 
 [sub_resource type="Resource" id="level_2"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +3 {flavour} for each Hour played today. Meats and Vegetables appear twice as often in card picks and at the merchant."
+description = "Meats and Vegetables on this station gain +3 {flavour} for each Hour played today. Card picks show one extra card: a Meat or Vegetable."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 3
 draw_tags = Array[StringName]([&"meat", &"vegetable"])
@@ -26,7 +26,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_3"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +3 {flavour} for each Hour played today. Meats and Vegetables appear twice as often in card picks and at the merchant."
+description = "Meats and Vegetables on this station gain +3 {flavour} for each Hour played today. Card picks show one extra card: a Meat or Vegetable."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 3
 draw_tags = Array[StringName]([&"meat", &"vegetable"])
@@ -35,7 +35,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_4"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +5 {flavour} for each Hour played today. Meats and Vegetables appear twice as often in card picks and at the merchant."
+description = "Meats and Vegetables on this station gain +5 {flavour} for each Hour played today. Card picks show one extra card: a Meat or Vegetable."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 5
 draw_tags = Array[StringName]([&"meat", &"vegetable"])
@@ -44,7 +44,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_5"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today. Meats and Vegetables appear twice as often in card picks and at the merchant."
+description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today. Card picks show one extra card: a Meat or Vegetable."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 6
 draw_tags = Array[StringName]([&"meat", &"vegetable"])
@@ -53,7 +53,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_6"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today. Meats and Vegetables appear twice as often in card picks and at the merchant."
+description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today. Card picks show one extra card: a Meat or Vegetable."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 6
 draw_tags = Array[StringName]([&"meat", &"vegetable"])

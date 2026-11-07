@@ -335,9 +335,12 @@ static func draw_tile_card_stock(
 		stock_reroll_count
 	)
 	var tile_slots := tile_card_count()
-	var drawn := CardLoot.station_weighted_draw(
+	var drawn := CardLoot.draw_filtered(
 		tile_slots + exclude_ids.size(),
 		GameManager.get_draw_pool(),
+		null,
+		null,
+		true,
 		RunRng.create_rng(stream_name)
 	)
 	var stock: Array[TileCard] = []

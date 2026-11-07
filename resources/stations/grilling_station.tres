@@ -16,7 +16,7 @@ flat_flavour = 10
 
 [sub_resource type="Resource" id="level_2"]
 script = ExtResource("2_perk")
-description = "Meats on this station gain +10 {flavour}. Meats appear twice as often in card picks and at the merchant."
+description = "Meats on this station gain +10 {flavour}. Card picks show one extra card: a Meat."
 target_tags = Array[StringName]([&"meat"])
 flat_flavour = 10
 draw_tags = Array[StringName]([&"meat"])
@@ -25,7 +25,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_3"]
 script = ExtResource("2_perk")
-description = "Meats on this station gain +10 {flavour}. Meats appear twice as often in card picks and at the merchant."
+description = "Meats on this station gain +10 {flavour}. Card picks show one extra card: a Meat."
 target_tags = Array[StringName]([&"meat"])
 flat_flavour = 10
 draw_tags = Array[StringName]([&"meat"])
@@ -34,7 +34,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_4"]
 script = ExtResource("2_perk")
-description = "Meats on this station gain +20 {flavour}. Meats appear twice as often in card picks and at the merchant."
+description = "Meats on this station gain +20 {flavour}. Card picks show one extra card: a Meat."
 target_tags = Array[StringName]([&"meat"])
 flat_flavour = 20
 draw_tags = Array[StringName]([&"meat"])
@@ -43,7 +43,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_5"]
 script = ExtResource("2_perk")
-description = "Meats on this station gain +25 {flavour}. Meats appear twice as often in card picks and at the merchant."
+description = "Meats on this station gain +25 {flavour}. Card picks show one extra card: a Meat."
 target_tags = Array[StringName]([&"meat"])
 flat_flavour = 25
 draw_tags = Array[StringName]([&"meat"])
@@ -52,7 +52,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_6"]
 script = ExtResource("2_perk")
-description = "Meats on this station gain +25 {flavour}. Meats appear twice as often in card picks and at the merchant."
+description = "Meats on this station gain +25 {flavour}. Card picks show one extra card: a Meat."
 target_tags = Array[StringName]([&"meat"])
 flat_flavour = 25
 draw_tags = Array[StringName]([&"meat"])

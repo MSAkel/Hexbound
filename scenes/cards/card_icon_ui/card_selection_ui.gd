@@ -285,12 +285,19 @@ static func draw_offer(
 		reroll_index
 	)
 	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	return CardLoot.lane_draw(
+	var offer := CardLoot.lane_draw(
 		CardLoot.lanes_for_round(round_number),
 		pack_size,
 		GameManager.get_draw_pool(),
 		loot_rng
 	)
+	# Stations at level 2 add one extra card of their kind to a normal pick (not Dealt Hand).
+	if pack_size == GameManager.CARDS_PACK_SIZE:
+		var offered: Array[String] = []
+		for card: TileCard in offer:
+			offered.append(card.id)
+		offer.append_array(CardLoot.station_extra_card(GameManager.get_draw_pool(), loot_rng, offered))
+	return offer
 
 
 func _get_offer_round_number() -> int:

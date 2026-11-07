@@ -15,7 +15,7 @@ flat_flavour = 10
 
 [sub_resource type="Resource" id="level_2"]
 script = ExtResource("2_perk")
-description = "Vegetables on this station gain +10 {flavour}. Vegetables appear twice as often in card picks and at the merchant."
+description = "Vegetables on this station gain +10 {flavour}. Card picks show one extra card: a Vegetable."
 target_tags = Array[StringName]([&"vegetable"])
 flat_flavour = 10
 draw_tags = Array[StringName]([&"vegetable"])
@@ -24,7 +24,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_3"]
 script = ExtResource("2_perk")
-description = "Vegetables on this station gain +10 {flavour}. Vegetables appear twice as often in card picks and at the merchant."
+description = "Vegetables on this station gain +10 {flavour}. Card picks show one extra card: a Vegetable."
 target_tags = Array[StringName]([&"vegetable"])
 flat_flavour = 10
 draw_tags = Array[StringName]([&"vegetable"])
@@ -33,7 +33,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_4"]
 script = ExtResource("2_perk")
-description = "Vegetables on this station gain +20 {flavour}. Vegetables appear twice as often in card picks and at the merchant."
+description = "Vegetables on this station gain +20 {flavour}. Card picks show one extra card: a Vegetable."
 target_tags = Array[StringName]([&"vegetable"])
 flat_flavour = 20
 draw_tags = Array[StringName]([&"vegetable"])
@@ -42,7 +42,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_5"]
 script = ExtResource("2_perk")
-description = "Vegetables on this station gain +25 {flavour}. Vegetables appear twice as often in card picks and at the merchant."
+description = "Vegetables on this station gain +25 {flavour}. Card picks show one extra card: a Vegetable."
 target_tags = Array[StringName]([&"vegetable"])
 flat_flavour = 25
 draw_tags = Array[StringName]([&"vegetable"])
@@ -51,7 +51,7 @@ draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_6"]
 script = ExtResource("2_perk")
-description = "Vegetables on this station gain +25 {flavour}. Vegetables appear twice as often in card picks and at the merchant."
+description = "Vegetables on this station gain +25 {flavour}. Card picks show one extra card: a Vegetable."
 target_tags = Array[StringName]([&"vegetable"])
 flat_flavour = 25
 draw_tags = Array[StringName]([&"vegetable"])
