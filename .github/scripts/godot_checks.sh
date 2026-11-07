@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Headless health checks for Flavour Pass. Used by CI and runnable locally:
 #   GODOT=/path/to/godot .github/scripts/godot_checks.sh
-# Fails if the project doesn't import or boot cleanly, or if a playtest/fuzz case fails.
+# Fails if the project doesn't import or boot cleanly, if content a shop needs loads empty,
+# or if a playtest/fuzz case fails.
 set -uo pipefail
 
 GODOT="${GODOT:-godot}"
@@ -58,6 +59,16 @@ code=$?
 cat "$LOG_DIR/boot.log"
 [ $code -ne 0 ] && { echo "::error title=Boot::Godot exited with $code"; failed=1; }
 check_log "Boot" "$LOG_DIR/boot.log"
+endstep
+
+step "Content catalogs are not empty"
+# Empty content raises no error, so the log scan above can't see it (a moved Technique
+# folder once left the merchant with no Technique). This runner exits 1 on an empty source.
+timeout 120 "$GODOT" --headless --path . res://scenes/debug/content_check.tscn > "$LOG_DIR/content.log" 2>&1
+code=$?
+grep -E '^\[content\]' "$LOG_DIR/content.log"
+[ $code -ne 0 ] && { echo "::error title=Content::Content check failed (exit $code), see the [content] FAIL lines above"; failed=1; }
+check_log "Content" "$LOG_DIR/content.log"
 endstep
 
 run_playtest() {  # $1 = name, rest = runner flags
