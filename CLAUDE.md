@@ -108,7 +108,7 @@ Add a hook to `ChefPerk` + `ChefRuntime` when a new chef needs one.
 ## Conventions
 
 - Autoloads live in `scripts/autoload/` (registered in `project.godot`).
-- Card definitions: `resources/cards/**` (`.tres` + optional `.gd` behaviour); staff in `resources/staff/`,
+- Card definitions: `resources/cards/**` (`.tres` + optional `.gd` behaviour); Techniques in `resources/techniques/`,
   condiments in `resources/condiments/`, stations in `resources/stations/`.
 - GDScript warnings are treated as errors in this project — keep types explicit
   (e.g. avoid constants inferred from Variant).
