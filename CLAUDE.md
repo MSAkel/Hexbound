@@ -29,6 +29,13 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
   early gives up with the deck and gold of a real run. Skipped on Blackout, Fading Station and
   Short Staffed days (those reroll part of the board every Hour). Costs roughly +35% run time.
 - `--fuzz` random legal actions; fails on invariants and script errors
+- `--bot=<name>` who plays: `human` (default, the careful bot) or a player still learning the game:
+  `novice` (skill 0.25), `casual` (0.55) or `slip` (0.85), from `novice_policy.gd`. Same what-if eyes as
+  `human`, but it misjudges values (noise), does not use merging, replacing, rerolls, the condiment belt
+  or staff moves until a random discovery day, and slips now and then (grabs or drops a card without
+  weighing it, walks out of the merchant, picks a station perk blind). Skill grows by `--learning` per
+  Day. `--skill=0..1` and `--learning=<per Day>` override the profile. Seeded, so a seed replays the
+  same. `details.bot_profile` has the discovery days and the slips taken. All numbers are untuned.
 - `--ledger` also log every Flavour, +Mult, xMult and Gold event of each real Hour in
   `details.hour_ledger` (`HourLedger`, `scripts/helpers/hour_ledger.gd`): the card that paid it and its
   scales `[garnish, star, chef, station, queued]`. Replaying the events rebuilds the Hour score exactly.
@@ -38,6 +45,11 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 
 Each run's `details.meal_fires` maps a Meal id to `[times served, times Failed]` from real Hours
 (what-if Hours are not counted), so you can see which Meals the bot completes, not just picks.
+`details.station_picks` has every Level 3 and 6 station perk pick (station, level, all options, what was
+taken) and each Day's `stations` now carry the perk index held. `scripts/debug/analyze_station_picks.py
+report.json [--vs=other.json]` reads them, with a second report beside it to compare bots. The `human`
+bot values a perk only by flat Flavour or output scale, so behavioural perks tie at zero and it takes
+option #0 every time; read its pick rates with that in mind.
 `details.replace_detail` lists every replacement (day, Hour, old and new card with kinds, stars lost) and
 `details.offers` every card offer as `round:id|id|id>chosen`.
 

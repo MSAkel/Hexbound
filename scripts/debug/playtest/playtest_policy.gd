@@ -13,6 +13,11 @@ func on_run_started() -> void:
 	pass
 
 
+## Extra facts about this bot's run for the report (details.bot_profile).
+func describe() -> Dictionary:
+	return {}
+
+
 ## Decision state that changes during play, so --extra-hours can roll the bot back with the run.
 func capture_state() -> Dictionary:
 	return {}
