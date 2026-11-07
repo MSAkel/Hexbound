@@ -873,6 +873,7 @@ func add_turn_flavour_for_segment(segment_index: int, amount: int) -> void:
 		return
 
 	_layout.add_segment_turn_flavour(segment_index, amount)
+	HourLedger.record("f", segment_index, amount)
 	_emit_hour_results_changed(segment_index)
 
 
@@ -887,6 +888,7 @@ func add_turn_additive_mult_for_segment(segment_index: int, amount: float) -> vo
 		return
 
 	_layout.add_segment_additive_mult(segment_index, amount)
+	HourLedger.record("a", segment_index, amount)
 	_emit_hour_results_changed(segment_index)
 
 
@@ -901,6 +903,7 @@ func multiply_turn_multiplicative_mult_for_segment(segment_index: int, factor: f
 		return
 
 	_layout.multiply_segment_multiplicative_mult(segment_index, factor)
+	HourLedger.record("x", segment_index, factor)
 	_emit_hour_results_changed(segment_index)
 
 
@@ -914,6 +917,7 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
+	HourLedger.record("g", segment_index, amount)
 	EconomyManager.add(amount)
 	_emit_hour_results_changed(segment_index)
 
@@ -925,6 +929,7 @@ func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 	if not EventManager.can_gain_gold():
 		return
 	_layout.add_segment_turn_gold(segment_index, amount)
+	HourLedger.record("g", segment_index, amount)
 	EconomyManager.add(amount)
 	_emit_hour_results_changed(segment_index)
 

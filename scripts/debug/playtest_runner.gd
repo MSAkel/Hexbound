@@ -14,6 +14,9 @@ extends Node
 ##   --fuzz            Chaos bot: random legal actions. Fails on invariants and script errors.
 ##   --no-condiments   The bot never buys or drinks condiments.
 ##   --no-overplay     Cards only go on empty spots (no merging or replacing). A/B baseline.
+##   --ledger          Log every Flavour, +Mult, xMult and Gold event of each real Hour with the card
+##                     that paid it and the scales on it (details.hour_ledger). Read it with
+##                     scripts/debug/analyze_score_ledger.py. Makes reports much larger.
 ##   --check-sim       Compare full state before and after every what-if Hour.
 ##   --verbose         One line per day.
 ##   --out=<path>      Report path (default user://playtest_report.json).
@@ -202,6 +205,8 @@ var _repeat := 1
 var _difficulty := 1
 var _fuzz := false
 var _check_sim := false
+## --ledger: record every score event of each real Hour (see HourLedger).
+var _ledger := false
 var _verbose := false
 var _report_path := REPORT_PATH
 var _cases: Array[Dictionary] = []
@@ -280,6 +285,8 @@ func _parse_args() -> void:
 			TileCard.overplay_enabled = false
 		elif arg == "--check-sim":
 			_check_sim = true
+		elif arg == "--ledger":
+			_ledger = true
 		elif arg == "--verbose":
 			_verbose = true
 		elif arg == "--trace":
@@ -481,6 +488,11 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		"plays": 0,
 		"merges": [],
 		"replaces": [],
+		# Same replacements as "replaces" with the card kinds and the Hour, for the analysis scripts.
+		"replace_detail": [],
+		# "round:id|id|id>chosen" for every card offer, rerolled ones included ("rerolled" if none taken).
+		"offers": [],
+		"hour_ledger": [],
 		"rerolls": 0,
 		"merchant_rerolls": 0,
 		"drinks": [],
@@ -529,7 +541,18 @@ func _play_hour() -> void:
 	if goal_met_before:
 		_day["leftover_hours"] = int(_day["leftover_hours"]) + 1
 	var score_before := GameManager.total_round_score
+	var ledger_day := int(_day["round"])
+	var ledger_hour := int(_day["hours"])
+	if _ledger:
+		HourLedger.begin_hour()
 	await _resolve_turn()
+	if _ledger:
+		(_log["hour_ledger"] as Array).append({
+			"day": ledger_day,
+			"hour": ledger_hour,
+			"score": GameManager.total_round_score - score_before,
+			"events": HourLedger.end_hour(),
+		})
 	for reason: String in _collect_invariant_failures(score_before):
 		_note_invariant(reason)
 	if _run_over or RoundFlow.is_transitioning():
@@ -652,7 +675,17 @@ func _apply_hand_action(action: Dictionary) -> void:
 		TileCard.Overplay.MERGE:
 			_log["merges"].append("%d:%s>%d" % [GameManager.current_round, card.id, hex.active_tile_card.star_level + 1])
 		TileCard.Overplay.REPLACE:
-			_log["replaces"].append("%d:%s>%s" % [GameManager.current_round, hex.active_tile_card.id, card.id])
+			var old_card := hex.active_tile_card
+			_log["replaces"].append("%d:%s>%s" % [GameManager.current_round, old_card.id, card.id])
+			(_log["replace_detail"] as Array).append({
+				"day": GameManager.current_round,
+				"hour": int(_day.get("hours", 0)) + 1,
+				"old": old_card.id,
+				"old_kind": old_card.get_card_kind_label(),
+				"old_stars": old_card.star_level,
+				"new": card.id,
+				"new_kind": card.get_card_kind_label(),
+			})
 	card.play_on(hex)
 	StationManager.evaluate_station_types()
 	_log["plays"] = int(_log["plays"]) + 1
@@ -667,11 +700,17 @@ func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> v
 		if offer.is_empty():
 			return
 		var choice: int = await policy.choose_offer(offer, is_reward)
+		var offered_ids: Array[String] = []
+		for offered: TileCard in offer:
+			offered_ids.append(String(offered.id))
+		var offer_text := "%s%d:%s" % ["reward" if is_reward else "", round_number, "|".join(offered_ids)]
 		if choice < 0 and EconomyManager.use_reroll():
 			reroll_index += 1
 			_log["rerolls"] = int(_log["rerolls"]) + 1
+			(_log["offers"] as Array).append(offer_text + ">rerolled")
 			continue
 		var card := offer[clampi(choice, 0, offer.size() - 1)]
+		(_log["offers"] as Array).append("%s>%s" % [offer_text, card.id])
 		_log["picks"].append("%s%d:%s" % ["reward" if is_reward else "", round_number, card.id])
 		EventBus.tile_card_selected.emit(card)
 		return
