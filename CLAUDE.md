@@ -43,7 +43,7 @@ After gameplay or balance changes, run at least `--runs=2` and a `--fuzz` pass b
 ## Push checks (CI)
 
 `.github/workflows/checks.yml` runs on every push to `main` and every pull request:
-import, boot, 1 bot playtest per chef and 8 fuzz runs per chef (8 chefs, ~8 min). It fails on any
+import, boot, a content check (`scenes/debug/content_check.tscn`: fails when the Technique or condiment catalog or a card category loads empty, which raises no error), 1 bot playtest per chef and 8 fuzz runs per chef (8 chefs, ~8 min). It fails on any
 `SCRIPT ERROR` / `Parse Error` / `ERROR:` line, since Godot often exits 0 when scripts fail to
 compile. Run the same checks locally (Git Bash on Windows) with:
 
@@ -108,7 +108,7 @@ Add a hook to `ChefPerk` + `ChefRuntime` when a new chef needs one.
 ## Conventions
 
 - Autoloads live in `scripts/autoload/` (registered in `project.godot`).
-- Card definitions: `resources/cards/**` (`.tres` + optional `.gd` behaviour); staff in `resources/staff/`,
+- Card definitions: `resources/cards/**` (`.tres` + optional `.gd` behaviour); Techniques in `resources/techniques/`,
   condiments in `resources/condiments/`, stations in `resources/stations/`.
 - GDScript warnings are treated as errors in this project — keep types explicit
   (e.g. avoid constants inferred from Variant).

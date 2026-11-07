@@ -6,7 +6,7 @@ const _StaffCardScript := preload("res://scripts/resources/staff_card.gd")
 
 ## Loads staff resources once and drafts merchant offers from that pool.
 
-const STAFF_DIR := "res://resources/staff/"
+const STAFF_DIR := "res://resources/techniques/"
 
 static var _pool: Array[StaffCard] = []
 static var _by_id: Dictionary = {}
