@@ -6,9 +6,9 @@ extends Card
 ## Station-bound staff read ctx.slot as their station. Global staff ignore it.
 
 const BASE_PRICE_BY_RARITY := {
-	Rarity.COMMON: 5,
-	Rarity.UNCOMMON: 8,
-	Rarity.RARE: 11,
+	Rarity.COMMON: 4,
+	Rarity.UNCOMMON: 7,
+	Rarity.RARE: 10,
 }
 
 ## Run-long counters for staff that grow. Saved with the slot. Not exported, so a fresh seat starts empty.
