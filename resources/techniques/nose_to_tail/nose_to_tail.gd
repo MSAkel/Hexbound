@@ -20,21 +20,19 @@ func on_day_ended(ctx: StaffContext) -> void:
 		ctx.grow("mult", MULT_PER_DESTROY, tile)
 
 
+## The first Ingredient on the station that its setup does not need.
 func _target(ctx: StaffContext) -> TileCard:
 	var station_type := StationManager.get_station_type(ctx.slot)
 	var all_cards := ctx.station_cards()
-	var best: TileCard = null
 	for card: TileCard in ctx.station_cards(TileCard.TileCardType.INGREDIENT):
-		if best != null and card.base_production_amount >= best.base_production_amount:
-			continue
 		if station_type != null:
 			var rest: Array[TileCard] = []
 			rest.assign(all_cards)
 			rest.erase(card)
 			if not station_type.is_satisfied_by(rest):
 				continue
-		best = card
-	return best
+		return card
+	return null
 
 
 func get_progress_text() -> String:

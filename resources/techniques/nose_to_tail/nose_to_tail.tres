@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "nose_to_tail"
 name = "Nose to Tail"
-description = "At the end of each Day, {destroys} the Ingredient with the lowest base {flavour} on this Station (never one its setup needs) and gains +2 {mult}"
+description = "At the end of each Day, {destroys} the first Ingredient on this Station that its setup doesn't need and gains +2 {mult}"
 rarity = 1
