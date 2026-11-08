@@ -2,11 +2,10 @@ class_name MealCard
 extends TileCard
 
 ## Seated in a Meal slot at the end of a station. Its requirements count the cards on that
-## station's regular spots. A served Meal pays its own output, adds SERVING_GOLD to the total,
-## and counts toward the station's level. A Meal whose requirements are missing shows Failed.
+## station's regular spots. A served Meal pays its own output and counts toward the station's level.
+## Serving itself pays no Gold; only Meals whose own text says so do. A Meal whose requirements are missing shows Failed.
 ## Subclasses describe their output in _meal_outputs so the chip and the payout share one formula.
 
-const SERVING_GOLD := 1
 const DEEP_FRYER_ID := "deep_fryer"
 
 ## Menu category, named after the Meal's main ingredient or course. Separate from ingredient_tags
@@ -103,9 +102,8 @@ func _read_output(tile: Hex, preview: bool, scale: float, star_scale: float = 1.
 	return output
 
 
-## Every served Meal adds Gold and a serving for its station.
+## Every served Meal adds a serving for its station. Gold only comes from a Meal's own effect.
 func _serve(tile: Hex) -> void:
-	_add_quiet_gold(tile, SERVING_GOLD)
 	RunLedger.record_dish_plated()
 	if _missing_ingredient_count(tile) > 0:
 		StaffManager.notify_dish_discount_used(tile)

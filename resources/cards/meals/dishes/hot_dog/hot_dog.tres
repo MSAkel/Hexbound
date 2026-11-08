@@ -15,5 +15,5 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "hot_dog"
 name = "Hot Dog"
 icon = ExtResource("1_3tnya")
-description = "+3 {mult}. +1 Gold when served if a Beverage is on its Station."
+description = "+3 {mult}. +1 Gold when served while {garnished}."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

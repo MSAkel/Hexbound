@@ -8,7 +8,7 @@ extends Node
 ## Base starting Gold is Difficulty.BASE_STARTING_GOLD.
 const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
-const GOLD_PER_UNUSED_TURN := 2
+const GOLD_PER_UNUSED_TURN := 3
 ## Free card-pick rerolls per Day before the difficulty reduction (get_free_rerolls_per_day).
 const STARTING_REROLLS := 3
 
