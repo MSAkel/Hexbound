@@ -418,6 +418,8 @@ func _placement_failure_message(hex: Hex) -> String:
 	var tile_card := _get_selected_tile_card()
 	if tile_card == null:
 		return "Can't place here"
+	if tile_card is MealCard and (tile_card as MealCard).is_repeat_on_station(hex):
+		return "Already on this %s" % GameTerms.STATION
 	if not tile_card.can_place_on_tile(hex):
 		return _meal_slot_rule_message(tile_card)
 	if hex.active_tile_card != null and hex.active_tile_card.id == tile_card.id:
