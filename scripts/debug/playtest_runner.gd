@@ -14,6 +14,16 @@ extends Node
 ##   --fuzz            Chaos bot: random legal actions. Fails on invariants and script errors.
 ##   --no-condiments   The bot never buys or drinks condiments.
 ##   --no-overplay     Cards only go on empty spots (no merging or replacing). A/B baseline.
+##   --after-goal=<rule>  What the bot does once a Day's goal is met with Hours to spare: stop (default,
+##                     ends the Day for the early-finish gold), continue (plays every Hour of every Day)
+##                     or continue:<N> (plays on through Day N, then stops). Each Day records
+##                     "continued" and the Hours played after the goal in leftover_hours.
+##   --bot=<name>      Who plays: human (default, careful), or novice / casual / slip, which misjudge,
+##                     miss mechanics and slip like a player still learning. See novice_policy.gd.
+##                     --skill=0..1 and --learning=<per Day> override the profile.
+##   --ledger          Log every Flavour, +Mult, xMult and Gold event of each real Hour with the card
+##                     that paid it and the scales on it (details.hour_ledger). Read it with
+##                     scripts/debug/analyze_score_ledger.py. Makes reports much larger.
 ##   --check-sim       Compare full state before and after every what-if Hour.
 ##   --verbose         One line per day.
 ##   --out=<path>      Report path (default user://playtest_report.json).
@@ -27,6 +37,8 @@ const SCRIPT_ERROR_TRACKER := preload("res://scripts/debug/playtest_script_error
 const PLAYTEST_SIM := preload("res://scripts/debug/playtest/playtest_sim.gd")
 const HUMAN_POLICY := preload("res://scripts/debug/playtest/human_policy.gd")
 const CHAOS_POLICY := preload("res://scripts/debug/playtest/chaos_policy.gd")
+const NOVICE_POLICY := preload("res://scripts/debug/playtest/novice_policy.gd")
+const BOTS: Array[String] = ["human", "novice", "casual", "slip"]
 const REPORT_PATH := "user://playtest_report.json"
 const STARTER_SEED_COUNT := 16
 const DEFAULT_RUN_COUNT := 8
@@ -202,6 +214,17 @@ var _repeat := 1
 var _difficulty := 1
 var _fuzz := false
 var _check_sim := false
+## --ledger: record every score event of each real Hour (see HourLedger).
+var _ledger := false
+## --after-goal: keep playing the Hours after a Day's goal is met, through this Day (0 = stop at once).
+var _after_goal_days := 0
+## True on a Day where the bot keeps playing after the goal. Set when the Day starts.
+var _play_on_today := false
+## --bot: who plays. "human" is the careful bot, the rest are NovicePolicy profiles.
+var _bot := "human"
+## --skill and --learning override a NovicePolicy profile. Negative keeps the profile's value.
+var _skill := -1.0
+var _learning := -1.0
 var _verbose := false
 var _report_path := REPORT_PATH
 var _cases: Array[Dictionary] = []
@@ -280,6 +303,28 @@ func _parse_args() -> void:
 			TileCard.overplay_enabled = false
 		elif arg == "--check-sim":
 			_check_sim = true
+		elif arg == "--ledger":
+			_ledger = true
+		elif arg.begins_with("--after-goal="):
+			# stop | continue | continue:<last Day to keep playing on>
+			var rule := value.to_lower()
+			if rule == "stop":
+				_after_goal_days = 0
+			elif rule == "continue":
+				_after_goal_days = ScoreProgression.RUN_LENGTH_ROUNDS
+			elif rule.begins_with("continue:"):
+				_after_goal_days = maxi(0, int(rule.get_slice(":", 1)))
+			else:
+				push_error("PlaytestRunner: --after-goal is stop, continue or continue:<Day>")
+		elif arg.begins_with("--bot="):
+			_bot = value.to_lower()
+			if not BOTS.has(_bot):
+				push_error("PlaytestRunner: unknown bot %s (%s)" % [_bot, ", ".join(BOTS)])
+				_bot = "human"
+		elif arg.begins_with("--skill="):
+			_skill = clampf(float(value), 0.0, 1.0)
+		elif arg.begins_with("--learning="):
+			_learning = maxf(0.0, float(value))
 		elif arg == "--verbose":
 			_verbose = true
 		elif arg == "--trace":
@@ -389,7 +434,13 @@ func _run_one(suite: String, chef_id: String, seed_text: String, repeat_index: i
 	sim.resolve_msec = 0.0
 	sim.evaluate_msec = 0.0
 	sim.slowest_resolve_msec = 0.0
-	policy = (CHAOS_POLICY if _fuzz else HUMAN_POLICY).new()
+	if _fuzz:
+		policy = CHAOS_POLICY.new()
+	elif _bot == "human":
+		policy = HUMAN_POLICY.new()
+	else:
+		policy = NOVICE_POLICY.new()
+		policy.configure(_bot, _skill, _learning)
 	policy.runner = self
 	_begin_run(chef_id, seed_text)
 	policy.on_run_started()
@@ -443,11 +494,13 @@ func _run_one(suite: String, chef_id: String, seed_text: String, repeat_index: i
 	var details := _log.duplicate()
 	details.erase("invariants")
 	details["bot"] = policy.id
+	details["bot_profile"] = policy.describe()
 	details["won"] = _won
 	details["reached_round"] = ScoreProgression.RUN_LENGTH_ROUNDS if _won else GameManager.current_round
 	details["gold"] = EconomyManager.amount
 	details["staff"] = StaffManager.owned_ids()
 	details["difficulty"] = _difficulty
+	details["after_goal_days"] = _after_goal_days
 	details["power"] = power_mode
 	details["extra_hours"] = extra_hours
 	details["playtest_condiments"] = use_condiments
@@ -481,6 +534,13 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		"plays": 0,
 		"merges": [],
 		"replaces": [],
+		# Same replacements as "replaces" with the card kinds and the Hour, for the analysis scripts.
+		"replace_detail": [],
+		# "round:id|id|id>chosen" for every card offer, rerolled ones included ("rerolled" if none taken).
+		"offers": [],
+		"hour_ledger": [],
+		# One record per Level 3 or 6 station pick: station, level, every option and what was taken.
+		"station_picks": [],
 		"rerolls": 0,
 		"merchant_rerolls": 0,
 		"drinks": [],
@@ -514,6 +574,10 @@ func _start_day() -> void:
 	if power_mode:
 		# The goal above is kept for the report. Zero lets every Hour of the day play out.
 		GameManager.required_score = 0
+	# A player who plays on after the goal keeps every Hour of the Day and gives up the early-finish gold.
+	_play_on_today = _after_goal_days > 0 and int(_day["round"]) <= _after_goal_days
+	_day["continued"] = _play_on_today
+	GameManager.playtest_play_full_day = power_mode or _play_on_today
 	await policy.on_day_started()
 
 
@@ -522,14 +586,25 @@ func _play_hour() -> void:
 	await _play_hand()
 	trace("before resolve")
 	await policy.before_resolve()
-	if extra_hours and not goal_met_before:
+	if extra_hours and not goal_met_before and not _play_on_today:
 		await _probe_extra_hours()
 	trace("resolving Hour")
 	_day["hours"] = int(_day["hours"]) + 1
 	if goal_met_before:
 		_day["leftover_hours"] = int(_day["leftover_hours"]) + 1
 	var score_before := GameManager.total_round_score
+	var ledger_day := int(_day["round"])
+	var ledger_hour := int(_day["hours"])
+	if _ledger:
+		HourLedger.begin_hour()
 	await _resolve_turn()
+	if _ledger:
+		(_log["hour_ledger"] as Array).append({
+			"day": ledger_day,
+			"hour": ledger_hour,
+			"score": GameManager.total_round_score - score_before,
+			"events": HourLedger.end_hour(),
+		})
 	for reason: String in _collect_invariant_failures(score_before):
 		_note_invariant(reason)
 	if _run_over or RoundFlow.is_transitioning():
@@ -606,7 +681,7 @@ func _probe_extra_hours() -> void:
 		scores.append(GameManager.total_round_score - score_before)
 
 	var probe_invariants: Array = (_log["invariants"] as Array).slice((saved_log["invariants"] as Array).size())
-	GameManager.playtest_play_full_day = power_mode
+	GameManager.playtest_play_full_day = power_mode or _play_on_today
 	sim.restore(saved_state)
 	hand.assign(saved_hand)
 	_log = saved_log
@@ -652,7 +727,17 @@ func _apply_hand_action(action: Dictionary) -> void:
 		TileCard.Overplay.MERGE:
 			_log["merges"].append("%d:%s>%d" % [GameManager.current_round, card.id, hex.active_tile_card.star_level + 1])
 		TileCard.Overplay.REPLACE:
-			_log["replaces"].append("%d:%s>%s" % [GameManager.current_round, hex.active_tile_card.id, card.id])
+			var old_card := hex.active_tile_card
+			_log["replaces"].append("%d:%s>%s" % [GameManager.current_round, old_card.id, card.id])
+			(_log["replace_detail"] as Array).append({
+				"day": GameManager.current_round,
+				"hour": int(_day.get("hours", 0)) + 1,
+				"old": old_card.id,
+				"old_kind": old_card.get_card_kind_label(),
+				"old_stars": old_card.star_level,
+				"new": card.id,
+				"new_kind": card.get_card_kind_label(),
+			})
 	card.play_on(hex)
 	StationManager.evaluate_station_types()
 	_log["plays"] = int(_log["plays"]) + 1
@@ -667,11 +752,17 @@ func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> v
 		if offer.is_empty():
 			return
 		var choice: int = await policy.choose_offer(offer, is_reward)
+		var offered_ids: Array[String] = []
+		for offered: TileCard in offer:
+			offered_ids.append(String(offered.id))
+		var offer_text := "%s%d:%s" % ["reward" if is_reward else "", round_number, "|".join(offered_ids)]
 		if choice < 0 and EconomyManager.use_reroll():
 			reroll_index += 1
 			_log["rerolls"] = int(_log["rerolls"]) + 1
+			(_log["offers"] as Array).append(offer_text + ">rerolled")
 			continue
 		var card := offer[clampi(choice, 0, offer.size() - 1)]
+		(_log["offers"] as Array).append("%s>%s" % [offer_text, card.id])
 		_log["picks"].append("%s%d:%s" % ["reward" if is_reward else "", round_number, card.id])
 		EventBus.tile_card_selected.emit(card)
 		return
@@ -703,6 +794,9 @@ func _close_day() -> void:
 		stations.append({
 			"type": station_type.id if station_type != null else "",
 			"level": StationManager.get_level(segment_index),
+			# Index of the Level 3 and Level 6 perk this station holds, -1 when none yet.
+			"choice": StationManager.get_choice(segment_index),
+			"capstone": StationManager.get_capstone_choice(segment_index),
 		})
 	_day["stations"] = stations
 	_log["days"].append(_day)
@@ -743,10 +837,39 @@ func _on_game_ended() -> void:
 
 
 func _on_station_choice_requested(segment_index: int) -> void:
+	# Read the pick before it resolves: which station, which level, what was on offer and on the board.
+	var level := StationManager.get_pending_choice_level(segment_index)
+	var station_id := StationManager.get_station_type_id(segment_index)
+	var options := StationManager.get_choice_options(segment_index)
+	var seated: Array[String] = []
+	for hex: Hex in map.get_hexes_in_segment(segment_index):
+		if hex.active_tile_card != null:
+			seated.append(String(hex.active_tile_card.id))
+	var option_texts: Array[String] = []
+	var matching: Array[int] = []
+	for perk: StationPerk in options:
+		option_texts.append(perk.description)
+		var count := 0
+		for hex: Hex in map.get_hexes_in_segment(segment_index):
+			if perk.matches(hex.active_tile_card):
+				count += 1
+		matching.append(count)
 	var choice: int = policy.choose_station_perk(segment_index) if policy != null else 0
 	StationManager.resolve_choice(segment_index, choice)
 	if not sim.is_simulating:
 		_log["perks"].append("%d:%d:%d" % [GameManager.current_round, segment_index, choice])
+		(_log["station_picks"] as Array).append({
+			"day": GameManager.current_round,
+			"hour": int(_day.get("hours", 0)) + 1,
+			"segment": segment_index,
+			"station": station_id,
+			"level": level,
+			"options": option_texts,
+			# Cards on the station each option applies to when it was offered.
+			"matching": matching,
+			"chosen": choice,
+			"cards": seated,
+		})
 
 #endregion
 
