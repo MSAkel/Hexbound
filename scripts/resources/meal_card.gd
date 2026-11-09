@@ -49,6 +49,35 @@ func get_distinct_recipe_tag_label() -> String:
 	return label
 
 
+## A Station can't hold the same Meal in both of its Meal slots (Nov 2026, untuned). Merging onto
+## the same Meal in this slot is still allowed, since it adds no second copy.
+func can_place_on_tile(tile: Hex) -> bool:
+	if not super.can_place_on_tile(tile):
+		return false
+	return not is_repeat_on_station(tile)
+
+
+## True when the station's other Meal slot already holds this Meal. A card being moved (swapped)
+## is ignored, so it doesn't block itself.
+func is_repeat_on_station(tile: Hex) -> bool:
+	if tile == null or tile.map == null or not tile.map.is_meal_slot(tile.coordinates):
+		return false
+	var seated_here := tile.active_tile_card
+	if seated_here != null and seated_here != self and seated_here.id == id:
+		return false
+	var segment := tile.map.get_segment_index(tile.coordinates)
+	if segment < 0:
+		return false
+	for coords: Vector2i in tile.map.get_meal_slot_coords(segment):
+		if coords == tile.coordinates or not tile.map.map_data.has(coords):
+			continue
+		var other: Hex = tile.map.map_data[coords]
+		var seated := other.active_tile_card
+		if seated != null and seated != self and seated.id == id:
+			return true
+	return false
+
+
 ## What one fire of this Meal produces. multiplicative_mult of 1.0 means none.
 class Output:
 	var flavour := 0

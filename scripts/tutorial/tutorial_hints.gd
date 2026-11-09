@@ -130,8 +130,8 @@ static func _static_init() -> void:
 		"Coloured words like {garnish} and {trigger} are **keywords**. Hover a card to see what they mean.",
 		Context.HOUR, [&"hand"], PRIORITY_LOW)
 	_add(&"meal_cards", CATEGORY_CARDS, "%ss" % GameTerms.MEAL,
-		"This is a **%s**. %ss only go in **%ss**, the last 2 spots of a Station. Its **recipe** must be on that Station's spots, or it fails. A served Meal pays **%s** and counts toward its Station's level." % [
-			GameTerms.MEAL, GameTerms.MEAL, GameTerms.MEAL_SLOT, GameTerms.GOLD,
+		"This is a **%s**. %ss only go in **%ss**, the last 2 spots of a Station, and a Station can't hold **the same %s twice**. Its **recipe** must be on that Station's spots, or it fails. A served Meal counts toward its Station's level." % [
+			GameTerms.MEAL, GameTerms.MEAL, GameTerms.MEAL_SLOT, GameTerms.MEAL,
 		],
 		Context.ANY_CARD_SCREEN, [&"meal_card", &"meal_slot"], PRIORITY_NORMAL)
 	_add(&"sell", CATEGORY_CARDS, "Selling",
