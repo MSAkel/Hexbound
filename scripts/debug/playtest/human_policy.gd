@@ -475,8 +475,15 @@ func shop(visit: RefCounted) -> void:
 		var after_reroll: int = EconomyManager.amount - visit.next_reroll_cost()
 		if after_reroll < reserve + 2 * TileCard.SHOP_PRICE:
 			break
+		if not _may_reroll_shop():
+			break
 		visit.reroll()
 		rerolls += 1
+
+
+## Whether this bot thinks of rerolling the shelf. A subclass can say no.
+func _may_reroll_shop() -> bool:
+	return true
 
 
 ## Best affordable item by value per coin, among those worth their price.

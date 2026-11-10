@@ -522,18 +522,26 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 		_before_trigger(tile)
 
 	var output_scale := activation_scale
+	var queued_scale := activation_scale
 	_activation_was_garnished = garnish_stacks > 0
 	_activation_garnish_scale = garnish_scale_for(garnish_stacks)
 	output_scale *= _activation_garnish_scale
+	var chef_scale := 1.0
+	var station_scale := 1.0
 	if tile.map != null:
-		output_scale *= GameManager.chef.output_scale_for(tile, self)
-		output_scale *= StationManager.output_scale_for(tile, self)
-	output_scale *= star_output_scale()
+		chef_scale = GameManager.chef.output_scale_for(tile, self)
+		station_scale = StationManager.output_scale_for(tile, self)
+		output_scale *= chef_scale
+		output_scale *= station_scale
+	var star_scale := star_output_scale()
+	output_scale *= star_scale
 	if not is_equal_approx(pending_output_scale, 1.0):
 		output_scale *= pending_output_scale
+		queued_scale *= pending_output_scale
 		pending_output_scale = 1.0
 
 	_activation_output_scale = output_scale
+	HourLedger.push_activation(id, [_activation_garnish_scale, star_scale, chef_scale, station_scale, queued_scale])
 	_activation_flat_bonus = StationManager.flat_flavour_bonus_for(tile, self)
 	# Count this activation before the card resolves so "triggers so far" includes the current one.
 	tile.map.record_segment_trigger_for_tile(tile)
@@ -549,6 +557,7 @@ func activate_tile_card(tile: Hex, activation_scale: float = 1.0) -> void:
 	if _activation_was_garnished:
 		# The Garnish keeps boosting this card's triggers until the Hour ends (end_hour_garnish).
 		hour_was_garnished = true
+	HourLedger.pop_activation()
 	_activation_output_scale = 1.0
 	_activation_garnish_scale = 1.0
 	_activation_was_garnished = false
