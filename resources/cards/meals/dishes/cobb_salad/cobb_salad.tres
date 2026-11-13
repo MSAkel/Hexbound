@@ -6,13 +6,14 @@
 [resource]
 script = ExtResource("2_script")
 meal_category = 4
-recipe_vegetable_count = 1
-recipe_required_card_ids = Array[String](["chicken", "avocado"])
+recipe_fruit_count = 1
+recipe_meat_count = 1
+recipe_required_card_ids = Array[String](["lettuce"])
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "cobb_salad"
 name = "Cobb Salad"
 icon = ExtResource("1_cp86h")
-description = "Starts at x1 {mult}. Gains x0.25 {mult} for each different kind of Ingredient on its Station."
+description = "Starts at x1 {mult}. Gains x0.3 {mult} for each different kind of Ingredient on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

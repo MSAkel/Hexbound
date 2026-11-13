@@ -14,6 +14,7 @@ enum Level {
 	LEVEL_6,
 	LEVEL_7,
 	LEVEL_8,
+	LEVEL_9,
 }
 
 const DIFFICULTY_INFO = {
@@ -23,7 +24,7 @@ const DIFFICULTY_INFO = {
 	},
 	Level.LEVEL_2: {
 		"name": "Level 2",
-		"info": "Day targets are 15% higher.",
+		"info": "Day targets grow 2% more each Day after Day 1.",
 	},
 	Level.LEVEL_3: {
 		"name": "Level 3",
@@ -39,14 +40,18 @@ const DIFFICULTY_INFO = {
 	},
 	Level.LEVEL_6: {
 		"name": "Level 6",
-		"info": "Merchant rerolls cost 1 more Gold each time.",
+		"info": "Day targets grow another 3% each Day after Day 1.",
 	},
 	Level.LEVEL_7: {
 		"name": "Level 7",
-		"info": "All Stations open their second Meal Slot at level 3.",
+		"info": "Merchant rerolls cost 1 more Gold each time.",
 	},
 	Level.LEVEL_8: {
 		"name": "Level 8",
+		"info": "All Stations open their second Meal Slot at level 3.",
+	},
+	Level.LEVEL_9: {
+		"name": "Level 9",
 		"info": "Each Station level needs 1 more Meal served.",
 	},
 }
@@ -64,6 +69,7 @@ static func get_all_levels() -> Array[Level]:
 		Level.LEVEL_6,
 		Level.LEVEL_7,
 		Level.LEVEL_8,
+		Level.LEVEL_9,
 	]
 
 
@@ -75,9 +81,23 @@ static func get_level_info(level: Level) -> String:
 	return DIFFICULTY_INFO[level]["info"]
 
 
-## Level 2. Day target multiplier, applied to authored and Endless targets alike.
-static func get_score_target_multiplier(level: Level) -> float:
-	return 1.15 if level >= Level.LEVEL_2 else 1.0
+## Day target growth per Day after Day 1, added by Level 2 and again by Level 6. Day 1 is the same
+## at every level so no one loses the first Day to difficulty. Untuned.
+const LEVEL_2_TARGET_GROWTH_PER_DAY := 0.02
+const LEVEL_6_TARGET_GROWTH_PER_DAY := 0.03
+
+
+## Levels 2 and 6. Day target multiplier for round_number. Ramps by Day: Day 1 x1, then each later
+## Day adds the growth of every unlocked level (Level 9 Day 9: x1.16 x x1.24). Endless rounds keep
+## the Day 9 multiplier.
+static func get_score_target_multiplier(level: Level, round_number: int = 1) -> float:
+	var days_after_first := clampi(round_number, 1, ScoreProgression.RUN_LENGTH_ROUNDS) - 1
+	var multiplier := 1.0
+	if level >= Level.LEVEL_2:
+		multiplier *= 1.0 + LEVEL_2_TARGET_GROWTH_PER_DAY * float(days_after_first)
+	if level >= Level.LEVEL_6:
+		multiplier *= 1.0 + LEVEL_6_TARGET_GROWTH_PER_DAY * float(days_after_first)
+	return multiplier
 
 
 ## Level 3. Gold removed from the run's starting Gold (base or chef).
@@ -90,22 +110,22 @@ static func get_free_reroll_reduction(level: Level) -> int:
 	return 1 if level >= Level.LEVEL_4 else 0
 
 
-## Levels 5 and 7. Stations whose second Meal slot stays locked until Station level 3.
+## Levels 5 and 8. Stations whose second Meal slot stays locked until Station level 3.
 ## Which stations is rolled per run (StationManager).
 static func get_locked_meal_slot_station_count(level: Level) -> int:
-	if level >= Level.LEVEL_7:
+	if level >= Level.LEVEL_8:
 		return 4
 	if level >= Level.LEVEL_5:
 		return 2
 	return 0
 
 
-## Level 6. Gold added to the Merchant reroll price after each reroll in a visit. 0 keeps it flat.
+## Level 7. Gold added to the Merchant reroll price after each reroll in a visit. 0 keeps it flat.
 static func get_merchant_reroll_cost_step(level: Level) -> int:
-	return 1 if level >= Level.LEVEL_6 else 0
+	return 1 if level >= Level.LEVEL_7 else 0
 
 
-## Level 8. Extra Meals each Station level costs. Applied per step, so the nth level-up
+## Level 9. Extra Meals each Station level costs. Applied per step, so the nth level-up
 ## needs n more Meals served in total than it would otherwise.
 static func get_station_level_extra_meals(level: Level) -> int:
-	return 1 if level >= Level.LEVEL_8 else 0
+	return 1 if level >= Level.LEVEL_9 else 0

@@ -8,18 +8,20 @@ const RUN_LENGTH_ROUNDS := 9
 const ENDLESS_MODE_START_ROUND := RUN_LENGTH_ROUNDS + 1
 const MAX_SCORE := 9223372036854775807
 ## One entry per round of a standard run, indexed as AUTHORED_ROUND_SCORES[round - 1].
-## Raised Nov 2026 (untuned) after Deep Fryer and Skillet became retriggers: each target is about
-## the median full-Day bot score / 2.5 at Level 1, so a typical run needs 2-3 Hours instead of 1.
+## These are the Level 1 (practice) targets; Levels 2 and 6 ramp them up by Day.
+## Nov 2026 (untuned): Day 1 475 and Day 2 2400 (approved) so Days 1-2 are for building the board,
+## then Days 2-9 about 15% below the earlier 3200/8500/18k/34k/47k/92k/135k/150k table so Level 1
+## works as a practice and learning level.
 const AUTHORED_ROUND_SCORES: Array[int] = [
-	700,
-	3200,
-	8500,
-	18000,
-	34000,
-	47000,
-	92000,
-	135000,
-	150000,
+	475,
+	2040,
+	7200,
+	15300,
+	28900,
+	40000,
+	78000,
+	115000,
+	127500,
 ]
 ## Multiplier used by the endless curve. Values above 1 increase the target every round.
 const ENDLESS_GROWTH_FACTOR := 1.5
@@ -33,7 +35,7 @@ static func get_required_score(
 	difficulty: Difficulty.Level = Difficulty.Level.LEVEL_1
 ) -> int:
 	var base_score := _get_base_required_score(round_number)
-	var scale := Difficulty.get_score_target_multiplier(difficulty)
+	var scale := Difficulty.get_score_target_multiplier(difficulty, round_number)
 	if is_equal_approx(scale, 1.0) or base_score >= MAX_SCORE:
 		return base_score
 	var scaled_score := float(base_score) * scale
