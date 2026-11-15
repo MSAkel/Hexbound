@@ -11,7 +11,8 @@ const MAX_SCORE := 9223372036854775807
 ## These are the Level 1 (practice) targets; Levels 2 and 6 ramp them up by Day.
 ## Nov 2026 (untuned): Day 1 475 and Day 2 2400 (approved) so Days 1-2 are for building the board,
 ## then Days 2-9 about 15% below the earlier 3200/8500/18k/34k/47k/92k/135k/150k table so Level 1
-## works as a practice and learning level.
+## works as a practice and learning level. Day 7 smoothed from 78k to 65k (untuned): Day 6 -> 7 was
+## the steepest step (x1.95, now x1.63).
 const AUTHORED_ROUND_SCORES: Array[int] = [
 	475,
 	2040,
@@ -19,7 +20,7 @@ const AUTHORED_ROUND_SCORES: Array[int] = [
 	15300,
 	28900,
 	40000,
-	78000,
+	65000,
 	115000,
 	127500,
 ]

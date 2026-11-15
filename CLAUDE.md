@@ -36,9 +36,9 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 - `--bot=<name>` who plays: `human` (default, the careful bot) or a player still learning the game:
   `novice` (skill 0.25), `casual` (0.55) or `slip` (0.85), from `novice_policy.gd`. Same what-if eyes as
   `human`, but it misjudges values (noise), does not use merging, replacing, rerolls, the condiment belt
-  or staff moves until a random discovery day, and slips now and then (grabs or drops a card without
-  weighing it, walks out of the merchant, picks a station perk blind). Skill grows by `--learning` per
-  Day. `--skill=0..1` and `--learning=<per Day>` override the profile. Seeded, so a seed replays the
+  or staff moves until a random discovery day, and slips now and then (grabs a card, plays one without
+  comparing the hand on one of its 3 best-looking spots and never by selling it, walks out of the
+  merchant, picks a station perk blind). Skill grows by `--learning` per Day. `--skill=0..1` and `--learning=<per Day>` override the profile. Seeded, so a seed replays the
   same. `details.bot_profile` has the discovery days and the slips taken. All numbers are untuned.
 - `--ledger` also log every Flavour, +Mult, xMult and Gold event of each real Hour in
   `details.hour_ledger` (`HourLedger`, `scripts/helpers/hour_ledger.gd`): the card that paid it and its
