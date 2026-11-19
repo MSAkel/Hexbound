@@ -8,9 +8,9 @@ extends "res://scripts/debug/playtest/human_policy.gd"
 ##                   Each run draws the day it notices each one. The lower the skill, the later.
 ##   Misjudgment     Every what-if value is perceived with noise, so it mis-ranks cards, spots,
 ##                   shop items and drinks, and buys things a careful player would skip.
-##   Slips           Now and then it acts without weighing anything: grabs a card, drops one on
-##                   a random spot, sells the wrong one, walks out of the merchant, forgets the belt
-##                   or picks a station perk blind.
+##   Slips           Now and then it acts without weighing things up: grabs a card, plays one
+##                   without comparing the hand (on one of the spots that look best, never a sale),
+##                   walks out of the merchant, forgets the belt or picks a station perk blind.
 ##
 ## Skill grows by `learning` each Day, which shrinks the noise and the slips. Profiles:
 ##   novice  starts low and learns quickly   casual  middling   slip  knows the game, makes mistakes
@@ -22,8 +22,11 @@ const PROFILES := {
 	"casual": {"skill": 0.55, "learning": 0.03},
 	"slip": {"skill": 0.85, "learning": 0.0},
 }
-## Share of decisions that slip at skill 0. Falls to 0 at skill 1.
-const MAX_SLIP_RATE := 0.5
+## Share of decisions that slip at skill 0. Falls to 0 at skill 1. 0.27 puts the novice (skill 0.25)
+## at about 20% on Day 1 (was 0.5, about 37%). Untuned.
+const MAX_SLIP_RATE := 0.27
+## A placement slip picks at random among this many of the best-looking spots for the card. Untuned.
+const SLIP_GOOD_SPOTS := 3
 ## Spread of the value noise at skill 0 (log-normal sigma). Falls to 0 at skill 1.
 const MAX_NOISE := 1.0
 ## Discovery days run from Day 1 to Day 1 + (1 - skill) x this.
@@ -159,12 +162,31 @@ func _candidate_hexes(card: TileCard) -> Array[Hex]:
 
 func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
 	if _slip("place"):
-		var card: TileCard = hand[_rng().randi_range(0, hand.size() - 1)]
-		var hexes := _filter_known(runner.legal_hexes(card), card)
-		if hexes.is_empty() or _rng().randf() < 0.15:
-			return {"card": card, "sell": true}
-		return {"card": card, "hex": hexes[_rng().randi_range(0, hexes.size() - 1)]}
+		var slipped := await _slip_placement(hand[_rng().randi_range(0, hand.size() - 1)])
+		if not slipped.is_empty():
+			return slipped
 	return await super.choose_hand_action(hand)
+
+
+## A placement slip: plays the card without comparing it to the rest of the hand, on one of the
+## spots that look best to this player. It never sells, since no real player sells by accident.
+## Empty when the card has nowhere to go, so the normal choice runs instead.
+func _slip_placement(card: TileCard) -> Dictionary:
+	await _refresh_baseline()
+	var slot_cost := _slot_cost()
+	var ranked: Array[Dictionary] = []
+	for hex: Hex in _candidate_hexes(card):
+		var cost := slot_cost if hex.active_tile_card == null else 0.0
+		var value := await _evaluate(func() -> void: card.play_on(hex, false))
+		value += _station_progress_bonus(card, hex) + _meal_potential(card, hex) - cost
+		ranked.append({"hex": hex, "net": value})
+	if ranked.is_empty():
+		return {}
+	ranked.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a["net"]) > float(b["net"])
+	)
+	var pick: Dictionary = ranked[_rng().randi_range(0, mini(SLIP_GOOD_SPOTS, ranked.size()) - 1)]
+	return {"card": card, "hex": pick["hex"]}
 
 
 func before_resolve() -> void:

@@ -21,7 +21,7 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 
 - `--runs=N` seeds per chef (default 8); `--chef=<id>` one chef (ids in `resources/chefs/*.tres`)
 - `--seed=<text>` one seed; `--repeat=N` replays it to check determinism
-- `--difficulty=N` difficulty level as shown in game, 1 to 8 (default 1)
+- `--difficulty=N` difficulty level as shown in game, 1 to 9 (default 1)
 - `--power` no day goals, reports raw score per day
 - `--extra-hours` real day flow, but when an Hour is about to meet the goal with Hours to spare, the
   bot also plays those Hours out as a what-if (picks, plays, condiments) and rolls everything back.
@@ -36,9 +36,9 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 - `--bot=<name>` who plays: `human` (default, the careful bot) or a player still learning the game:
   `novice` (skill 0.25), `casual` (0.55) or `slip` (0.85), from `novice_policy.gd`. Same what-if eyes as
   `human`, but it misjudges values (noise), does not use merging, replacing, rerolls, the condiment belt
-  or staff moves until a random discovery day, and slips now and then (grabs or drops a card without
-  weighing it, walks out of the merchant, picks a station perk blind). Skill grows by `--learning` per
-  Day. `--skill=0..1` and `--learning=<per Day>` override the profile. Seeded, so a seed replays the
+  or staff moves until a random discovery day, and slips now and then (grabs a card, plays one without
+  comparing the hand on one of its 3 best-looking spots and never by selling it, walks out of the
+  merchant, picks a station perk blind). Skill grows by `--learning` per Day. `--skill=0..1` and `--learning=<per Day>` override the profile. Seeded, so a seed replays the
   same. `details.bot_profile` has the discovery days and the slips taken. All numbers are untuned.
 - `--ledger` also log every Flavour, +Mult, xMult and Gold event of each real Hour in
   `details.hour_ledger` (`HourLedger`, `scripts/helpers/hour_ledger.gd`): the card that paid it and its
@@ -108,10 +108,12 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
 - Difficulty Level 1 is intentionally easy. Don't treat a 100% win rate there as a balance problem;
   judge balance at higher levels.
 - Difficulty levels stack, each adding one rule (`scripts/resources/difficulty.gd`). Level 1 is the
-  most generous game: every second Meal slot is open and Merchant rerolls cost a flat 5 Gold.
-  2 Day targets +15%, 3 −5 starting Gold, 4 one fewer free reroll, 5 two random Stations lock
-  their second Meal slot until Station level 3, 6 Merchant reroll cost climbs +1 per reroll,
-  7 all four Stations lock it, 8 each Station level needs 1 more Meal.
+  practice and learning level: the lowest Day targets (`ScoreProgression.AUTHORED_ROUND_SCORES`), every
+  second Meal slot open and Merchant rerolls at a flat 5 Gold. 2 Day targets grow +2% per Day after
+  Day 1, 3 −5 starting Gold, 4 one fewer free reroll, 5 two random Stations lock their second Meal slot
+  until Station level 3, 6 Day targets grow another +3% per Day after Day 1, 7 Merchant reroll cost
+  climbs +1 per reroll, 8 all four Stations lock it, 9 each Station level needs 1 more Meal.
+  Day 1's target is the same at every level: no one should lose Day 1. Ramp values are untuned.
   `Difficulty.Level` is 0-based (`LEVEL_1` = 0); saves store that index.
 - Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
