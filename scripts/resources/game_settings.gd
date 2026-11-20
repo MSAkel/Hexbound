@@ -27,11 +27,15 @@ const RESOLUTIONS := [
 ## loop keeps the GPU at full load (fan noise, battery drain on a Steam Deck or laptop).
 const FRAME_RATE_LIMITS: Array[int] = [30, 60, 120, 144, 0]
 const DEFAULT_FRAME_RATE_LIMIT := 60
+## Cap while the game window is not focused (alt-tabbed, Steam overlay open). Saves power.
+const BACKGROUND_FRAME_RATE_LIMIT := 30
 
 static var screen_shake_enabled: bool = true
 static var game_speed: float = 1.0
 static var vsync_enabled: bool = true
 static var frame_rate_limit: int = DEFAULT_FRAME_RATE_LIMIT
+static var _window_has_focus: bool = true
+static var _window_focus_connected: bool = false
 static var music_volume: float = 0.20
 static var sfx_volume: float = 0.35
 static var display_mode: int = DISPLAY_MODE_BORDERLESS
@@ -203,12 +207,44 @@ static func set_frame_rate_limit(value: int) -> void:
 	_save()
 
 
-## Caps the main loop. Skipped on the headless display server so the playtest bot and CI
-## (which wait on frames) are not slowed down.
+## Caps the main loop: the player's limit while the window has focus, at most
+## BACKGROUND_FRAME_RATE_LIMIT while it doesn't. Skipped on the headless display server so the
+## playtest bot and CI (which wait on frames) are not slowed down.
 static func _apply_frame_rate_limit() -> void:
 	if DisplayServer.get_name() == "headless":
 		return
-	Engine.max_fps = frame_rate_limit
+	_connect_window_focus()
+	Engine.max_fps = effective_frame_rate_limit(frame_rate_limit, _window_has_focus)
+
+
+## The cap to use for a chosen limit. Out of focus it never goes above the background cap,
+## and a lower chosen limit (30) is kept. 0 means no cap.
+static func effective_frame_rate_limit(limit: int, has_focus: bool) -> int:
+	if has_focus:
+		return limit
+	if limit <= 0:
+		return BACKGROUND_FRAME_RATE_LIMIT
+	return mini(limit, BACKGROUND_FRAME_RATE_LIMIT)
+
+
+static func _connect_window_focus() -> void:
+	if _window_focus_connected:
+		return
+	var tree := Engine.get_main_loop()
+	if not tree is SceneTree:
+		return
+	var window: Window = (tree as SceneTree).root
+	if window == null:
+		return
+	_window_focus_connected = true
+	_window_has_focus = window.has_focus()
+	window.focus_entered.connect(_on_window_focus_changed.bind(true))
+	window.focus_exited.connect(_on_window_focus_changed.bind(false))
+
+
+static func _on_window_focus_changed(has_focus: bool) -> void:
+	_window_has_focus = has_focus
+	_apply_frame_rate_limit()
 
 
 static func set_display_mode(value: int) -> void:
