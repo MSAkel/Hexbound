@@ -5,14 +5,25 @@ extends Control
 @onready var card_name_label: Label = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RuneName
 @onready var rarity_badge: PanelContainer = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge
 @onready var rarity_label: Label = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge/RarityLabel
-@onready var card_subtitle: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
+@onready var card_subtitle: RichTextLabel = $VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
 @onready var card_chip_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneChipLine
 @onready var card_recipe_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneRecipeLine
 @onready var card_description: RichTextLabel = $VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
 @onready var card_bonus_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneBonusLine
 @onready var condiment_fuse_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/CondimentFuseLine
+@onready var icon_box: PanelContainer = $VBoxContainer/RunePanelContainer/RuneIconPanel
 
 const EMPTY_SPOT_TEXTURE: Texture2D = preload("res://assets/gui/panels/box_tile.png")
+const SUBTITLE_DOT_TEXTURE: Texture2D = preload("res://assets/gui/dividers/dot.png")
+## The tooltip art is pixel art drawn at twice its file size, like the design mockup.
+const PIXEL_ART_SCALE := 2
+## Card picture size inside the icon box.
+const ICON_SIZE := Vector2(80, 80)
+## Keywords in this panel use the design's teal, not the card face green.
+const KEYWORD_COLOR := Color(0.1764706, 0.49019608, 0.50980395, 1)
+const SUBTITLE_COLOR := Color(0.4509804, 0.18039216, 0.24313726, 1)
+## Spaces either side of the dot between subtitle parts.
+const SUBTITLE_GAP := "  "
 const RARITY_BG_COLORS := {
 	Card.Rarity.COMMON: Color(0.7473333, 0.7472968, 0.77322227, 1),
 	Card.Rarity.UNCOMMON: Color(0.72, 0.86, 0.96, 1),
@@ -20,6 +31,7 @@ const RARITY_BG_COLORS := {
 }
 
 var _rarity_badge_styles: Dictionary = {}
+var _subtitle_dot: Texture2D = null
 
 # Gap between the hovered spot and the panel edge.
 const OFFSET := Vector2(12, 12)
@@ -33,6 +45,7 @@ var target_rect: Rect2 = Rect2()
 
 func _ready() -> void:
 	_build_rarity_badge_styles()
+	_apply_pixel_art_styles()
 	EventBus.turn_ended.connect(_on_turn_ended)
 	EventBus.condiment_fuses_changed.connect(_on_condiment_fuses_changed)
 	hide()
@@ -65,11 +78,11 @@ func show_card(card: Card, anchor_rect: Rect2) -> void:
 	card_icon.setup(card)
 	card_name_label.text = card.name
 	_set_rarity_badge(card)
-	card_subtitle.hide()
+	_set_subtitle("")
 	card_chip_line.hide()
 	card_recipe_line.hide()
 	condiment_fuse_line.hide()
-	card_description.text = CardKeywordGlossary.to_bbcode(card.get_description_text())
+	card_description.text = CardKeywordGlossary.to_bbcode(card.get_description_text(), KEYWORD_COLOR)
 	card_bonus_line.hide()
 	show()
 	call_deferred("_fit_and_position")
@@ -96,11 +109,10 @@ func _refresh_spot_card() -> void:
 		card_name_label.text = card.name
 		# Spot cards have no rarity. Only staff show the badge.
 		_hide_rarity_badge()
-		card_subtitle.text = card.get_inspect_subtitle()
-		card_subtitle.visible = not card_subtitle.text.is_empty()
+		_set_subtitle(card.get_inspect_subtitle())
 		_set_chip_line(card)
 		_set_recipe_line(card)
-		var description_bbcode := CardKeywordGlossary.to_bbcode(card.get_description_text())
+		var description_bbcode := CardKeywordGlossary.to_bbcode(card.get_description_text(), KEYWORD_COLOR)
 		card_description.text = description_bbcode
 		_set_bonus_line(card)
 		_set_condiment_fuse_line(card)
@@ -108,13 +120,71 @@ func _refresh_spot_card() -> void:
 		card_icon.show_empty(EMPTY_SPOT_TEXTURE)
 		card_name_label.text = "Empty %s" % GameTerms.SPOT
 		_hide_rarity_badge()
-		card_subtitle.text = ""
-		card_subtitle.hide()
+		_set_subtitle("")
 		card_chip_line.hide()
 		card_recipe_line.hide()
 		card_description.text = ""
 		card_bonus_line.hide()
 		condiment_fuse_line.hide()
+
+
+## Subtitle parts such as "Kitchenware  ·  Mult" are split by a dot image.
+## Parts that are keywords (Mult, Flavour, Garnish...) take the keyword colour.
+func _set_subtitle(text: String) -> void:
+	card_subtitle.clear()
+	var parts: Array[String] = []
+	for raw: String in text.split("·", false):
+		var part := raw.strip_edges()
+		if not part.is_empty():
+			parts.append(part)
+	if parts.is_empty():
+		card_subtitle.hide()
+		return
+	for i in parts.size():
+		if i > 0:
+			card_subtitle.add_text(SUBTITLE_GAP)
+			card_subtitle.add_image(_subtitle_dot, 0, 0, Color.WHITE, INLINE_ALIGNMENT_CENTER)
+			card_subtitle.add_text(SUBTITLE_GAP)
+		var is_keyword := CardKeywordGlossary.find_keyword(parts[i].to_lower()) != null
+		card_subtitle.push_color(KEYWORD_COLOR if is_keyword else SUBTITLE_COLOR)
+		card_subtitle.add_text(parts[i])
+		card_subtitle.pop()
+	card_subtitle.show()
+
+
+## The panel, icon box and dot are drawn at PIXEL_ART_SCALE with crisp pixels.
+## StyleBoxTexture has no scale, so the textures are enlarged once here.
+func _apply_pixel_art_styles() -> void:
+	var panel_style := get_theme_stylebox("panel") as StyleBoxTexture
+	if panel_style != null:
+		add_theme_stylebox_override("panel", _pixel_scaled_style(panel_style, PIXEL_ART_SCALE))
+	var box_style := icon_box.get_theme_stylebox("panel") as StyleBoxTexture
+	if box_style != null:
+		icon_box.add_theme_stylebox_override("panel", _pixel_scaled_style(box_style, PIXEL_ART_SCALE))
+	_subtitle_dot = _pixel_scaled_texture(SUBTITLE_DOT_TEXTURE, PIXEL_ART_SCALE)
+
+
+## Same nine-slice with the texture and its texture margins enlarged. Content margins stay as authored.
+static func _pixel_scaled_style(style: StyleBoxTexture, factor: int) -> StyleBoxTexture:
+	var scaled := style.duplicate() as StyleBoxTexture
+	scaled.texture = _pixel_scaled_texture(style.texture, factor)
+	scaled.texture_margin_left = style.texture_margin_left * factor
+	scaled.texture_margin_top = style.texture_margin_top * factor
+	scaled.texture_margin_right = style.texture_margin_right * factor
+	scaled.texture_margin_bottom = style.texture_margin_bottom * factor
+	return scaled
+
+
+static func _pixel_scaled_texture(texture: Texture2D, factor: int) -> Texture2D:
+	if texture == null or factor <= 1:
+		return texture
+	var image := texture.get_image()
+	if image == null:
+		return texture
+	if image.is_compressed():
+		image.decompress()
+	image.resize(image.get_width() * factor, image.get_height() * factor, Image.INTERPOLATE_NEAREST)
+	return ImageTexture.create_from_image(image)
 
 
 func _set_chip_line(card: TileCard) -> void:
@@ -228,15 +298,15 @@ func _pin_content_sized_layout() -> void:
 
 
 ## CardIcon.tscn is authored at 256px and scales with its host.
-## In this panel it must stay a 100px thumbnail, or the paper stretches with it.
+## In this panel it must stay an ICON_SIZE thumbnail inside the icon box.
 func _pin_rune_icon_size() -> void:
 	card_icon.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	card_icon.anchor_right = 0.0
 	card_icon.anchor_bottom = 0.0
-	card_icon.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	card_icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	card_icon.custom_minimum_size = Vector2(100, 100)
-	card_icon.size = Vector2(100, 100)
+	card_icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	card_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	card_icon.custom_minimum_size = ICON_SIZE
+	card_icon.size = ICON_SIZE
 	card_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
