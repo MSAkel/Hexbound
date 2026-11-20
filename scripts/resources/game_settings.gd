@@ -22,9 +22,20 @@ const RESOLUTIONS := [
 	Vector2i(3840, 2160),
 ]
 
+## Frame rate caps offered in settings, in frames per second. 0 means no cap.
+## A turn-based game gains nothing above the display's refresh rate, and an uncapped
+## loop keeps the GPU at full load (fan noise, battery drain on a Steam Deck or laptop).
+const FRAME_RATE_LIMITS: Array[int] = [30, 60, 120, 144, 0]
+const DEFAULT_FRAME_RATE_LIMIT := 60
+## Cap while the game window is not focused (alt-tabbed, Steam overlay open). Saves power.
+const BACKGROUND_FRAME_RATE_LIMIT := 30
+
 static var screen_shake_enabled: bool = true
 static var game_speed: float = 1.0
-static var vsync_enabled: bool = false
+static var vsync_enabled: bool = true
+static var frame_rate_limit: int = DEFAULT_FRAME_RATE_LIMIT
+static var _window_has_focus: bool = true
+static var _window_focus_connected: bool = false
 static var music_volume: float = 0.20
 static var sfx_volume: float = 0.35
 static var display_mode: int = DISPLAY_MODE_BORDERLESS
@@ -68,6 +79,7 @@ static func ensure_loaded() -> void:
 		display_mode = DISPLAY_MODE_BORDERLESS
 		_apply_display_settings()
 		_apply_vsync()
+		_apply_frame_rate_limit()
 		_save()
 		return
 	var save_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
@@ -77,7 +89,10 @@ static func ensure_loaded() -> void:
 	if settings is Dictionary:
 		screen_shake_enabled = bool(settings.get("screen_shake_enabled", true))
 		game_speed = normalize_game_speed(float(settings.get("game_speed", 1.0)))
-		vsync_enabled = bool(settings.get("vsync_enabled", false))
+		vsync_enabled = bool(settings.get("vsync_enabled", true))
+		frame_rate_limit = normalize_frame_rate_limit(
+			int(settings.get("frame_rate_limit", DEFAULT_FRAME_RATE_LIMIT))
+		)
 		music_volume = clampf(float(settings.get("music_volume", 0.20)), 0.0, 1.0)
 		sfx_volume = clampf(float(settings.get("sfx_volume", 0.35)), 0.0, 1.0)
 		display_mode = clampi(
@@ -96,11 +111,13 @@ static func ensure_loaded() -> void:
 		last_chef_selection_id = String(settings.get("last_chef_selection_id", ""))
 		_apply_display_settings()
 		_apply_vsync()
+		_apply_frame_rate_limit()
 		if snapped_resolution != loaded_resolution:
 			_save()
 		return
 	_apply_display_settings()
 	_apply_vsync()
+	_apply_frame_rate_limit()
 
 
 static func set_screen_shake_enabled(value: bool) -> void:
@@ -173,6 +190,61 @@ static func _apply_vsync() -> void:
 	DisplayServer.window_set_vsync_mode(
 		DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED
 	)
+
+
+## Snaps a saved value onto one of FRAME_RATE_LIMITS. Unknown values fall back to the default.
+static func normalize_frame_rate_limit(value: int) -> int:
+	return value if FRAME_RATE_LIMITS.has(value) else DEFAULT_FRAME_RATE_LIMIT
+
+
+static func set_frame_rate_limit(value: int) -> void:
+	ensure_loaded()
+	var new_limit := normalize_frame_rate_limit(value)
+	if frame_rate_limit == new_limit:
+		return
+	frame_rate_limit = new_limit
+	_apply_frame_rate_limit()
+	_save()
+
+
+## Caps the main loop: the player's limit while the window has focus, at most
+## BACKGROUND_FRAME_RATE_LIMIT while it doesn't. Skipped on the headless display server so the
+## playtest bot and CI (which wait on frames) are not slowed down.
+static func _apply_frame_rate_limit() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	_connect_window_focus()
+	Engine.max_fps = effective_frame_rate_limit(frame_rate_limit, _window_has_focus)
+
+
+## The cap to use for a chosen limit. Out of focus it never goes above the background cap,
+## and a lower chosen limit (30) is kept. 0 means no cap.
+static func effective_frame_rate_limit(limit: int, has_focus: bool) -> int:
+	if has_focus:
+		return limit
+	if limit <= 0:
+		return BACKGROUND_FRAME_RATE_LIMIT
+	return mini(limit, BACKGROUND_FRAME_RATE_LIMIT)
+
+
+static func _connect_window_focus() -> void:
+	if _window_focus_connected:
+		return
+	var tree := Engine.get_main_loop()
+	if not tree is SceneTree:
+		return
+	var window: Window = (tree as SceneTree).root
+	if window == null:
+		return
+	_window_focus_connected = true
+	_window_has_focus = window.has_focus()
+	window.focus_entered.connect(_on_window_focus_changed.bind(true))
+	window.focus_exited.connect(_on_window_focus_changed.bind(false))
+
+
+static func _on_window_focus_changed(has_focus: bool) -> void:
+	_window_has_focus = has_focus
+	_apply_frame_rate_limit()
 
 
 static func set_display_mode(value: int) -> void:
@@ -289,6 +361,7 @@ static func _save() -> void:
 		"screen_shake_enabled": screen_shake_enabled,
 		"game_speed": game_speed,
 		"vsync_enabled": vsync_enabled,
+		"frame_rate_limit": frame_rate_limit,
 		"music_volume": music_volume,
 		"sfx_volume": sfx_volume,
 		"display_mode": display_mode,
