@@ -10,6 +10,7 @@ signal closed
 @onready var display_mode_option_button: OptionButton = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/DisplayModeContainer/DisplayModeOptionButton
 @onready var resolution_option_button: OptionButton = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/ResolutionContainer/ResolutionOptionButton
 @onready var v_sync_check_box: CheckBox = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox
+@onready var frame_rate_option_button: OptionButton = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/FrameRateContainer/FrameRateOptionButton
 @onready var hints_check_box: CheckBox = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/HintsCheckBox
 @onready var reset_hints_button: Button = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/ResetHintsContainer/ResetHintsButton
 @onready var back_button: Button = $Parchment/VBoxContainer/BackButton
@@ -28,6 +29,7 @@ func _ready() -> void:
 	music_volume_slider.value = AudioManager.music_volume
 	sfx_volume_slider.value = AudioManager.sfx_volume
 	_populate_resolution_options()
+	_populate_frame_rate_options()
 	_sync_settings_controls()
 	add_to_group(InputManager.MENU_GROUP)
 	# Keeps the focused row on screen while a controller walks down the list.
@@ -38,6 +40,7 @@ func _ready() -> void:
 	master_volume_slider.value_changed.connect(_on_master_volume_changed)
 	music_volume_slider.value_changed.connect(_on_music_volume_changed)
 	sfx_volume_slider.value_changed.connect(_on_sfx_volume_changed)
+	frame_rate_option_button.item_selected.connect(_on_frame_rate_option_button_item_selected)
 
 
 func _on_visibility_changed() -> void:
@@ -78,11 +81,19 @@ func _populate_resolution_options() -> void:
 		resolution_option_button.add_item("%dx%d" % [resolution.x, resolution.y])
 
 
+func _populate_frame_rate_options() -> void:
+	frame_rate_option_button.clear()
+	for limit in GameSettings.FRAME_RATE_LIMITS:
+		frame_rate_option_button.add_item("Unlimited" if limit <= 0 else "%d FPS" % limit)
+
+
 func _sync_settings_controls() -> void:
 	GameSettings.ensure_loaded()
 	game_speed_option_button.select(GameSettings.preset_index_for_speed(GameSettings.game_speed))
 	screen_shake_check_box.set_pressed_no_signal(GameSettings.screen_shake_enabled)
 	v_sync_check_box.set_pressed_no_signal(GameSettings.vsync_enabled)
+	var frame_rate_index := GameSettings.FRAME_RATE_LIMITS.find(GameSettings.frame_rate_limit)
+	frame_rate_option_button.select(maxi(frame_rate_index, 0))
 	display_mode_option_button.select(GameSettings.display_mode)
 	var resolution_index := _resolution_options.find(GameSettings.resolution)
 	resolution_option_button.select(resolution_index if resolution_index >= 0 else 0)
@@ -118,6 +129,12 @@ func _on_back_button_mouse_entered() -> void:
 
 func _on_v_sync_check_box_toggled(toggled_on: bool) -> void:
 	GameSettings.set_vsync_enabled(toggled_on)
+
+
+func _on_frame_rate_option_button_item_selected(index: int) -> void:
+	var limits := GameSettings.FRAME_RATE_LIMITS
+	if index >= 0 and index < limits.size():
+		GameSettings.set_frame_rate_limit(limits[index])
 
 
 func _on_screen_shake_check_box_toggled(toggled_on: bool) -> void:

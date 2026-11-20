@@ -211,6 +211,21 @@ size_flags_horizontal = 10
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
 
+[node name="FrameRateContainer" type="HBoxContainer" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1739204518]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="FrameRateLabel" type="Label" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer/FrameRateContainer" unique_id=1739204519]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Frame Rate Limit"
+
+[node name="FrameRateOptionButton" type="OptionButton" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer/FrameRateContainer" unique_id=1739204520]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+size_flags_stretch_ratio = 2.0
+
 [node name="TutorialContainer" type="HBoxContainer" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1844229101]
 layout_mode = 2
 theme_override_constants/separation = 50
