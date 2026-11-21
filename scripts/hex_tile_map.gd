@@ -98,6 +98,9 @@ var _inspect_highlight_coords: Array[Vector2i] = []
 var _inspect_gold_highlight_coords: Array[Vector2i] = []
 # Placement and inspect seats currently stamped on dish_recipe_gold_layer.
 var _dish_recipe_gold_coords: Array[Vector2i] = []
+# True while the centre-screen event reveal is up. Board hover stays off so the
+# inspect panel can't cover the event text or its Continue button.
+var _event_reveal_open: bool = false
 
 
 func _ready() -> void:
@@ -123,6 +126,9 @@ func _ready() -> void:
 	StaffManager.bind_board(self)
 	StationManager.bind_board(self)
 	EventBus.station_state_changed.connect(_on_station_state_changed)
+	EventBus.event_banner_shown.connect(_on_event_banner_shown)
+	EventBus.event_banner_hidden.connect(_on_event_reveal_closed)
+	EventBus.event_reveal_finished.connect(_on_event_reveal_closed)
 
 	card_placement_handler = CardPlacementHandler.new()
 	card_placement_handler.tile_map = self
@@ -207,8 +213,19 @@ func _sync_tileset_atlas_regions(tile_set: TileSet) -> void:
 				atlas.texture_region_size = HEX_TEXTURE_SIZE
 
 
+func _on_event_banner_shown(_event_name: String, dock_immediately: bool) -> void:
+	if dock_immediately:
+		return
+	_event_reveal_open = true
+	dismiss_hover_feedback()
+
+
+func _on_event_reveal_closed() -> void:
+	_event_reveal_open = false
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if GameManager.is_processing_turn:
+	if GameManager.is_processing_turn or _event_reveal_open:
 		dismiss_hover_feedback()
 		return
 
