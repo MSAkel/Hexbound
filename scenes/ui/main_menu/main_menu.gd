@@ -2,11 +2,11 @@ extends Control
 
 const SOUNDTRACK = preload("res://scripts/soundtracks.gd")
 
-# Subtle hover pop: slight grow + warm brighten
+# Subtle hover pop: slight grow. The highlight pill itself is the focus style.
 const HOVER_SCALE := Vector2(1.06, 1.06)
-const HOVER_MODULATE := Color(1.2, 1.15, 1.05, 1.0)
 const HOVER_DURATION := 0.12
 
+@onready var background_material: ShaderMaterial = %Background.material
 @onready var game_version: Label = $TopRightContainer/GameVersion
 @onready var developer_menu_button: Button = $TopRightContainer/DeveloperMenuButton
 @onready var menu_container: MarginContainer = $MenuContainer
@@ -31,8 +31,8 @@ func _ready() -> void:
 	if music:
 		AudioManager.play_music(music)
 	
-	# Connect button hover/focus signals and scale from beyond the left edge so
-	# the left-aligned label shifts noticeably to the right as it grows.
+	# Connect button hover/focus signals. Hovering moves focus so only one
+	# highlight pill shows at a time.
 	for button in menu_items_container.get_children():
 		if button is Button:
 			_set_button_pivot(button)
@@ -51,6 +51,11 @@ func _ready() -> void:
 	
 	settings_container.closed.connect(_on_settings_closed)
 	tips_archive.closed.connect(_on_tips_closed)
+
+
+func _process(_delta: float) -> void:
+	# Pan the cover art on the same clock as the shared menu backdrop.
+	background_material.set_shader_parameter("motion_time", MenuBackground.get_motion_time())
 
 
 ## InputManager menu hook.
@@ -78,16 +83,20 @@ func _on_button_resized(button: Button) -> void:
 
 
 func _set_button_pivot(button: Button) -> void:
-	# Mirroring the former centered pivot gives the same travel in reverse.
-	button.pivot_offset = Vector2(-button.size.x / 2.0, button.size.y / 2.0)
+	button.pivot_offset = button.size / 2.0
 
 
 func _on_button_hover(button: Button) -> void:
+	if button.focus_mode != Control.FOCUS_NONE and not button.disabled:
+		button.grab_focus()
+		return
 	AudioManager.play_ui_hover()
 	_animate_button_hover(button, true)
 
 
 func _on_button_unhover(button: Button) -> void:
+	if button.has_focus():
+		return
 	_animate_button_hover(button, false)
 
 
@@ -102,9 +111,7 @@ func _animate_button_hover(button: Button, hovered: bool) -> void:
 	var tween := create_tween()
 	tween.set_ease(Tween.EASE_OUT)
 	tween.set_trans(Tween.TRANS_QUAD)
-	tween.set_parallel(true)
 	tween.tween_property(button, "scale", HOVER_SCALE if hovered else Vector2.ONE, HOVER_DURATION)
-	tween.tween_property(button, "modulate", HOVER_MODULATE if hovered else Color.WHITE, HOVER_DURATION)
 	_hover_tweens[button] = tween
 
 

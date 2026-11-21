@@ -53,6 +53,11 @@ func _process(delta: float) -> void:
 	_drift_material.set_shader_parameter("motion_time", _motion_time)
 
 
+## Shared drift clock, so scene-owned backdrops pan in step with this one.
+func get_motion_time() -> float:
+	return _motion_time
+
+
 func _on_scene_changed() -> void:
 	call_deferred("_refresh_visibility")
 

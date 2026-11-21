@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="ChefDefinition" format=3]
+[gd_resource type="Resource" script_class="ChefDefinition" format=3 uid="uid://cmq7r7tdtlsp5"]
 
 [ext_resource type="Script" uid="uid://dxnk4xyhv1vai" path="res://scripts/resources/chef_definition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/characters/the_columnist.png" id="2_icon"]
-[ext_resource type="Script" path="res://resources/chefs/perks/restaurateur.gd" id="4_perk"]
+[ext_resource type="Texture2D" uid="uid://sw31sp5kvjvm" path="res://assets/characters/the_columnist.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://db1f6pmtt0juj" path="res://resources/chefs/perks/restaurateur.gd" id="4_perk"]
 
 [sub_resource type="Resource" id="Perk"]
 script = ExtResource("4_perk")
-starting_gold_amount = 20
-free_rerolls = 1
 
 [resource]
 script = ExtResource("1_script")
@@ -16,4 +14,3 @@ display_name = "Restaurateur"
 icon = ExtResource("2_icon")
 speciality_description = "Start with 20 Gold and the first merchant reroll each visit is free."
 perk = SubResource("Perk")
-starting_hand = Array[String]([])

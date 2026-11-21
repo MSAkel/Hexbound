@@ -124,15 +124,14 @@ layout_mode = 2
 
 [node name="PlayButton" type="Button" parent="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn" unique_id=1794758867]
 unique_name_in_owner = true
-texture_filter = 1
-custom_minimum_size = Vector2(280, 76)
+custom_minimum_size = Vector2(280, 70)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 6
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 28
 text = "PLAY"
 
 [node name="NextSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1794269466]
