@@ -139,11 +139,11 @@ func refresh_own_visuals() -> void:
 	card_icon_ui.apply_resting_modulate(target_modulate)
 	card_icon_ui.refresh_output_chip(active_tile_card)
 	card_icon_ui.refresh_condiment_badges(active_tile_card, coordinates)
-	# Restore overcharge sparks after load or chip refresh. The strike itself is not replayed.
+	# Restore the garnish badge after load or chip refresh. Its intro is not replayed.
 	if active_tile_card.is_garnished:
-		card_icon_ui.start_garnish_sparks(active_tile_card.garnish_stacks)
+		card_icon_ui.start_garnish_badge(active_tile_card.garnish_stacks)
 	else:
-		card_icon_ui.stop_garnish_sparks()
+		card_icon_ui.stop_garnish_badge()
 
 
 ## Own visuals plus every board-dependent chip. Dishes and steak-style cards read other seats.
@@ -221,16 +221,17 @@ func apply_tile_card_activation(activation_scale: float = 1.0) -> void:
 	refresh_tile_card_visual_state()
 
 
-func start_garnish_sparks(stacks: int = 1) -> void:
+## Shows the garnish badge. With [param animate] it plays the intro and returns its length.
+func start_garnish_badge(stacks: int = 1, animate: bool = false) -> float:
 	if card_icon_ui == null:
-		return
-	card_icon_ui.start_garnish_sparks(stacks)
+		return 0.0
+	return card_icon_ui.start_garnish_badge(stacks, animate)
 
 
-func stop_garnish_sparks() -> void:
+func stop_garnish_badge() -> void:
 	if card_icon_ui == null:
 		return
-	card_icon_ui.stop_garnish_sparks()
+	card_icon_ui.stop_garnish_badge()
 
 
 func start_trigger_link_flash() -> void:

@@ -539,19 +539,17 @@ func _on_tile_card_garnished(rune: TileCard) -> void:
 		AudioManager.play_sfx(UISounds.GARNISH)
 		return
 
+	if not hex.is_on_map() or hex.active_tile_card != rune or not rune.is_garnished:
+		return
 	if GameManager.skip_presentation:
-		if hex != null and hex.is_on_map() and hex.active_tile_card == rune and rune.is_garnished:
-			hex.start_garnish_sparks(rune.garnish_stacks)
+		hex.start_garnish_badge(rune.garnish_stacks)
 		return
 
-	# Strike first, then the looping overcharge. Same beat as a retrigger bolt landing.
-	var strike_travel := map.trigger_link_overlay.play_garnish_strike(hex)
-	await _wait_pace(strike_travel)
-	if hex == null or not hex.is_on_map() or hex.active_tile_card != rune or not rune.is_garnished:
-		return
-
+	# The icon pops up over the card and shrinks into its corner badge. Wait until it lands.
 	AudioManager.play_sfx(UISounds.GARNISH)
-	hex.start_garnish_sparks(rune.garnish_stacks)
+	var intro := hex.start_garnish_badge(rune.garnish_stacks, true)
+	# _wait_pace divides by game speed; the intro length already has.
+	await _wait_pace(intro * GameManager.game_speed)
 
 
 ## Unspent one-shot scale ends with the Hour. A Garnish that boosted its card this Hour spends an
@@ -565,10 +563,10 @@ func _clear_hour_garnish() -> void:
 		card.clear_hour_scale()
 		card.end_hour_garnish()
 		if card.is_garnished:
-			tile.start_garnish_sparks(card.garnish_stacks)
+			tile.start_garnish_badge(card.garnish_stacks)
 
 
 func _on_tile_card_garnish_cleared(rune: TileCard) -> void:
 	var hex := map.get_hex_for_tile_card(rune)
 	if hex != null:
-		hex.stop_garnish_sparks()
+		hex.stop_garnish_badge()

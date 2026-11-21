@@ -6,7 +6,7 @@
 [ext_resource type="Shader" uid="uid://bqk4n2wdustfx" path="res://scenes/cards/card_icon_ui/placement_dust.gdshader" id="4_ujyvh"]
 [ext_resource type="Texture2D" uid="uid://b0io1cfe8fqo" path="res://assets/particles/smoke/smoke_08.png" id="5_b01h6"]
 [ext_resource type="Texture2D" uid="uid://ckkj012xvfaf4" path="res://assets/particles/slash/slash_01.png" id="6_2n4xw"]
-[ext_resource type="Texture2D" uid="uid://cdm36d1lebdgh" path="res://assets/particles/spark/spark_03.png" id="7_8l3cu"]
+[ext_resource type="Texture2D" uid="uid://b7o3wmx04suuu" path="res://assets/icons/stats/garnish.png" id="7_8l3cu"]
 [ext_resource type="Script" uid="uid://oseck4kpvgh2" path="res://scenes/cards/card_icon_ui/hex_stroke.gd" id="8_qx4s6"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qvrl4"]
@@ -143,43 +143,6 @@ scale_min = 0.06
 scale_max = 0.12
 scale_curve = SubResource("CurveTexture_placement_slash_scale")
 color_ramp = SubResource("GradientTexture1D_placement_slash")
-
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_garnish_sparks"]
-blend_mode = 1
-
-[sub_resource type="Gradient" id="Gradient_garnish_sparks"]
-offsets = PackedFloat32Array(0, 0.08, 0.82, 1)
-colors = PackedColorArray(1.25, 1.12, 0.5, 0.45, 1.3, 1.15, 0.48, 0.95, 1.15, 1.18, 0.85, 0.85, 1.05, 0.95, 0.45, 0)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_garnish_sparks"]
-gradient = SubResource("Gradient_garnish_sparks")
-
-[sub_resource type="Curve" id="Curve_garnish_sparks_scale"]
-_data = [Vector2(0, 0.85), 0.0, 0.0, 0, 0, Vector2(0.5, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.75), 0.0, 0.0, 0, 0]
-point_count = 3
-
-[sub_resource type="CurveTexture" id="CurveTexture_garnish_sparks_scale"]
-curve = SubResource("Curve_garnish_sparks_scale")
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_garnish_sparks"]
-particle_flag_align_y = true
-particle_flag_disable_z = true
-emission_shape = 3
-emission_box_extents = Vector3(34, 36, 1)
-angle_min = -180.0
-angle_max = 180.0
-direction = Vector3(0, -1, 0)
-spread = 180.0
-initial_velocity_min = 8.0
-initial_velocity_max = 17.0
-gravity = Vector3(0, 0, 0)
-damping_min = 2.0
-damping_max = 8.0
-scale_min = 0.06
-scale_max = 0.11
-scale_curve = SubResource("CurveTexture_garnish_sparks_scale")
-color = Color(1.25, 1.12, 0.52, 1)
-color_ramp = SubResource("GradientTexture1D_garnish_sparks")
 
 [node name="CardIconUI" type="Control" unique_id=957735592]
 custom_minimum_size = Vector2(112, 112)
@@ -337,21 +300,46 @@ visibility_rect = Rect2(-158, -140, 316, 280)
 local_coords = true
 process_material = SubResource("ParticleProcessMaterial_placement_slash")
 
-[node name="GarnishSparks" type="GPUParticles2D" parent="." unique_id=65415751]
+[node name="GarnishBadge" type="Control" parent="." unique_id=730214695]
 visible = false
-self_modulate = Color(1.22, 1.08, 0.55, 1)
-z_index = 3
-material = SubResource("CanvasItemMaterial_garnish_sparks")
-position = Vector2(56, 56)
-emitting = false
-amount = 22
+z_index = 7
+layout_mode = 3
+anchors_preset = 0
+offset_left = 70.0
+offset_top = 14.0
+offset_right = 96.0
+offset_bottom = 40.0
+pivot_offset = Vector2(13, 13)
+mouse_filter = 2
+
+[node name="GarnishBadgeIcon" type="TextureRect" parent="GarnishBadge" unique_id=1904417360]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("7_8l3cu")
-lifetime = 1.5
-preprocess = 0.7
-randomness = 0.45
-visibility_rect = Rect2(-84, -84, 168, 168)
-local_coords = true
-process_material = SubResource("ParticleProcessMaterial_garnish_sparks")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GarnishStackLabel" type="Label" parent="." unique_id=588120417]
+visible = false
+z_index = 7
+layout_mode = 0
+offset_left = 34.0
+offset_top = 21.0
+offset_right = 69.0
+offset_bottom = 33.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.55, 1)
+theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "x1.5"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="HexStroke" type="Line2D" parent="." unique_id=1184104513]
 z_index = 6

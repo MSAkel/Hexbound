@@ -4,7 +4,7 @@ extends Control
 ## Visual representation of a [TileCard] on the hex map.
 ##
 ## This scene wraps [CardIcon] with board-only presentation: the output chip,
-## condiment fuse badges, a token outline, particle effects, and placement/resolution
+## condiment fuse badges, a token outline, a garnish badge, particle effects, and placement/resolution
 ## animations. Both placed cards and card-placement ghosts instantiate this class;
 ## call [method prepare_placement_ghost] to make a copy display-only.
 ##
@@ -20,9 +20,11 @@ extends Control
 @onready var placement_smoke: GPUParticles2D = $PlacementSmoke
 @onready var placement_dust: GPUParticles2D = $PlacementDust
 @onready var placement_slash: GPUParticles2D = $PlacementSlash
-@onready var garnish_sparks: GPUParticles2D = $GarnishSparks
+@onready var garnish_badge: Control = $GarnishBadge
+@onready var _garnish_stack_label: Label = $GarnishStackLabel
 
-var _garnish_stack_label: Label = null
+var _garnish_badge_tween: Tween = null
+var _garnish_badge_rest_position := Vector2.ZERO
 var _star_label: Label = null
 @onready var hex_stroke: HexStroke = $HexStroke
 @onready var output_chip: PanelContainer = $Container/OutputChip
@@ -100,6 +102,16 @@ const OUTPUT_CHIP_GAP := 2.0
 # Star level sits inside the token's top-left corner, clear of its border.
 const STAR_LABEL_POSITION := Vector2(16, 12)
 const STAR_LABEL_FONT_SIZE := 15
+# Garnish badge intro: pops up this many times its resting size over the card, then shrinks
+# into its corner. Durations are at game speed 1.
+const GARNISH_BADGE_INTRO_SCALE := 2.8
+const GARNISH_BADGE_POP_DURATION := 0.14
+const GARNISH_BADGE_HOLD_DURATION := 0.16
+const GARNISH_BADGE_SHRINK_DURATION := 0.24
+const GARNISH_BADGE_LAND_BUMP := 1.18
+# Above the card art and hex stroke while flying in; the scene's resting z after.
+const GARNISH_BADGE_INTRO_Z := 12
+const GARNISH_BADGE_REST_Z := 7
 
 #endregion
 
@@ -107,9 +119,11 @@ const STAR_LABEL_FONT_SIZE := 15
 
 func _ready() -> void:
 	var center := size * 0.5
-	for emitter in [placement_smoke, placement_dust, placement_slash, garnish_sparks]:
+	for emitter in [placement_smoke, placement_dust, placement_slash]:
 		if emitter != null:
 			emitter.position = center
+	if garnish_badge != null:
+		_garnish_badge_rest_position = garnish_badge.position
 
 
 ## Binds [param rune] to the embedded icon and builds its board-specific overlays.
@@ -173,7 +187,6 @@ func _silence_particle_emitters() -> void:
 	_silence_emitter(placement_smoke)
 	_silence_emitter(placement_dust)
 	_silence_emitter(placement_slash)
-	_silence_emitter(garnish_sparks)
 
 
 func _silence_emitter(emitter: GPUParticles2D) -> void:
@@ -542,10 +555,10 @@ func _clear_inspect_hover_state() -> void:
 #region Activation presentation
 
 ## Plays the primary activation pop used when this card fires during turn resolution.
-## Existing activation feedback is replaced, garnish sparks stop, and map-inspection
+## Existing activation feedback is replaced, the garnish badge hides, and map-inspection
 ## hover yields to the animation. The card restores its latest resting tint afterward.
 func play_activation_animation() -> void:
-	stop_garnish_sparks()
+	stop_garnish_badge()
 	_clear_inspect_hover_state()
 	
 	if _activation_tween != null and _activation_tween.is_valid():
@@ -616,7 +629,7 @@ func play_activation_animation() -> void:
 ## If the source-card trigger-link flash is also active, that looping flash retains
 ## ownership of the card color while this animation changes only the scale.
 func play_chained_activation_animation() -> void:
-	stop_garnish_sparks()
+	stop_garnish_badge()
 
 	if _activation_tween != null and _activation_tween.is_valid():
 		_activation_tween.kill()
@@ -738,60 +751,96 @@ func play_segment_result_animation() -> void:
 
 #region Ongoing resolution effects
 
-## Starts the persistent sparks that show this card is garnished.
-## Repeated calls refresh the stack label. Sparks sit above the card art and under the chip so the board output remains readable.
-func start_garnish_sparks(stacks: int = 1) -> void:
+## Shows the garnish badge in the token's top-right corner, with the stack scale beside it once
+## stacked. With [param animate] the icon first pops up large over the card centre, then shrinks
+## into its corner. Returns how long until the badge has landed (0 without animation).
+func start_garnish_badge(stacks: int = 1, animate: bool = false) -> float:
+	if garnish_badge == null:
+		return 0.0
 	_refresh_garnish_stack_label(stacks)
-	if garnish_sparks == null:
+	if not animate:
+		# A refresh mid-intro keeps the intro running; it lands in the same spot.
+		if _garnish_badge_tween == null or not _garnish_badge_tween.is_valid():
+			_rest_garnish_badge()
+		garnish_badge.show()
+		return 0.0
+	return _play_garnish_badge_intro()
+
+
+## Hides the garnish badge and stops its intro.
+func stop_garnish_badge() -> void:
+	if _garnish_stack_label != null:
+		_garnish_stack_label.hide()
+	if garnish_badge == null:
 		return
-	if garnish_sparks.emitting:
-		return
-
-	garnish_sparks.visible = true
-	garnish_sparks.restart()
-	garnish_sparks.emitting = true
+	_kill_garnish_badge_tween()
+	_rest_garnish_badge()
+	garnish_badge.hide()
 
 
-## Stops and hides the garnished-state sparks.
-func stop_garnish_sparks() -> void:
-	_hide_garnish_stack_label()
-	if garnish_sparks != null:
-		garnish_sparks.emitting = false
-		garnish_sparks.visible = false
+func _play_garnish_badge_intro() -> float:
+	_kill_garnish_badge_tween()
+	var speed := GameManager.game_speed
+	var pop := GARNISH_BADGE_POP_DURATION / speed
+	var hold := GARNISH_BADGE_HOLD_DURATION / speed
+	var shrink := GARNISH_BADGE_SHRINK_DURATION / speed
+
+	# Start with the badge's pivot on the token centre, then fly it back to its corner.
+	garnish_badge.position = size * 0.5 - garnish_badge.pivot_offset
+	garnish_badge.scale = Vector2.ONE * GARNISH_BADGE_INTRO_SCALE * 0.6
+	garnish_badge.modulate = Color(1, 1, 1, 0)
+	garnish_badge.z_index = GARNISH_BADGE_INTRO_Z
+	garnish_badge.show()
+
+	_garnish_badge_tween = create_tween()
+	_garnish_badge_tween.set_parallel(true)
+	_garnish_badge_tween.tween_property(
+		garnish_badge, "scale", Vector2.ONE * GARNISH_BADGE_INTRO_SCALE, pop
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_garnish_badge_tween.tween_property(garnish_badge, "modulate", Color.WHITE, pop * 0.6)
+	_garnish_badge_tween.set_parallel(false)
+	_garnish_badge_tween.tween_interval(hold)
+	_garnish_badge_tween.tween_property(
+		garnish_badge, "position", _garnish_badge_rest_position, shrink
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_garnish_badge_tween.parallel().tween_property(
+		garnish_badge, "scale", Vector2.ONE, shrink
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	# Small settle bump once it lands in the corner.
+	_garnish_badge_tween.tween_property(
+		garnish_badge, "scale", Vector2.ONE * GARNISH_BADGE_LAND_BUMP, shrink * 0.3
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_garnish_badge_tween.tween_property(
+		garnish_badge, "scale", Vector2.ONE, shrink * 0.4
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_garnish_badge_tween.tween_callback(func() -> void:
+		_garnish_badge_tween = null
+		_rest_garnish_badge()
+	)
+	return pop + hold + shrink
+
+
+func _kill_garnish_badge_tween() -> void:
+	if _garnish_badge_tween != null and _garnish_badge_tween.is_valid():
+		_garnish_badge_tween.kill()
+	_garnish_badge_tween = null
+
+
+func _rest_garnish_badge() -> void:
+	garnish_badge.position = _garnish_badge_rest_position
+	garnish_badge.scale = Vector2.ONE
+	garnish_badge.modulate = Color.WHITE
+	garnish_badge.z_index = GARNISH_BADGE_REST_Z
 
 
 func _refresh_garnish_stack_label(stacks: int) -> void:
-	if stacks <= 1:
-		_hide_garnish_stack_label()
+	if _garnish_stack_label == null:
 		return
-
-	_ensure_garnish_stack_label()
+	if stacks <= 1:
+		_garnish_stack_label.hide()
+		return
 	_garnish_stack_label.text = "x%s" % String.num(TileCard.garnish_scale_for(stacks), 2)
 	_garnish_stack_label.show()
-
-
-func _hide_garnish_stack_label() -> void:
-	if _garnish_stack_label != null:
-		_garnish_stack_label.hide()
-
-
-func _ensure_garnish_stack_label() -> void:
-	if _garnish_stack_label != null:
-		return
-
-	_garnish_stack_label = Label.new()
-	_garnish_stack_label.name = "GarnishStackLabel"
-	_garnish_stack_label.z_index = 5
-	_garnish_stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_garnish_stack_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_garnish_stack_label.add_theme_font_size_override("font_size", 10)
-	_garnish_stack_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.55, 1.0))
-	_garnish_stack_label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.04, 1.0))
-	_garnish_stack_label.add_theme_constant_override("outline_size", 3)
-	_garnish_stack_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_garnish_stack_label.position = Vector2(38, 8)
-	_garnish_stack_label.size = Vector2(35, 12)
-	add_child(_garnish_stack_label)
 
 
 # Merged cards show their star level in the top-left corner, opposite the Garnish label.
