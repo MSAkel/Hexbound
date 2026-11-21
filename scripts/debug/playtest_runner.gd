@@ -543,6 +543,8 @@ func _run_one(suite: String, chef_id: String, seed_text: String, repeat_index: i
 	details["difficulty"] = _difficulty
 	details["after_goal_days"] = _after_goal_days
 	details["power"] = power_mode
+	details["station_summary"] = _station_summary(details.get("days", []))
+	details["meals_served"] = _meals_served(details.get("meal_fires", {}))
 	details["extra_hours"] = extra_hours
 	details["playtest_condiments"] = use_condiments
 	details["overplay"] = TileCard.overplay_enabled
@@ -589,6 +591,8 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		# One record per Level 3 or 6 station pick: station, level, every option and what was taken.
 		"station_picks": [],
 		"rerolls": 0,
+		# "round@price" for each card-pick reroll paid with Gold.
+		"paid_rerolls": [],
 		"merchant_rerolls": 0,
 		"drinks": [],
 		"perks": [],
@@ -660,9 +664,6 @@ func _play_hour() -> void:
 		})
 	for reason: String in _collect_invariant_failures(score_before):
 		_note_invariant(reason)
-	if _run_over or RoundFlow.is_transitioning():
-		return
-	await _draft_next_hour()
 
 
 ## Plays from hand until the Hour ends: after DeckManager.PLAYS_PER_HOUR plays, an empty hand,
@@ -682,14 +683,6 @@ func _play_hand() -> void:
 		if not _apply_hand_action(action):
 			_log["passes"] = int(_log["passes"]) + 1
 			break
-
-
-## The day goes on. Every new Hour brings a card pick, rolled before the Hour was used up.
-## The Hour's draw waits for it (GameManager held it), so the picked card is drawn now.
-func _draft_next_hour() -> void:
-	if EventManager.get_cards_pack_size(false) > 0:
-		await _draft(false, GameManager.current_round, GameManager.remaining_turns + 1)
-	DeckManager.release_draw()
 
 
 ## --extra-hours. Called just before an Hour resolves. If that Hour meets the goal with Hours to
@@ -722,7 +715,6 @@ func _probe_extra_hours() -> void:
 		_note_invariant(reason)
 	var score_at_goal := GameManager.total_round_score
 	while GameManager.remaining_turns >= 1 and not RoundFlow.is_transitioning() and not _run_over:
-		await _draft_next_hour()
 		await _play_hand()
 		await policy.before_resolve()
 		if GameManager.remaining_turns <= 1:
@@ -815,9 +807,12 @@ func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> v
 			(_log["offers"] as Array).append(offer_text + ">skipped")
 			(_log["skips"] as Array).append("%s%d" % ["reward" if is_reward else "", round_number])
 			return
+		var reroll_cost := EconomyManager.get_reroll_cost()
 		if choice < 0 and EconomyManager.use_reroll():
 			reroll_index += 1
 			_log["rerolls"] = int(_log["rerolls"]) + 1
+			if reroll_cost > 0:
+				(_log["paid_rerolls"] as Array).append("%d@%d" % [round_number, reroll_cost])
 			(_log["offers"] as Array).append(offer_text + ">rerolled")
 			continue
 		var card := offer[clampi(choice, 0, offer.size() - 1)]
@@ -1091,6 +1086,11 @@ func _record(suite: String, chef_id: String, seed_text: String, reasons: Array[S
 			print("[playtest] FAIL starter_fairness %s %s — %s" % [chef_id, seed_text, ", ".join(reasons)])
 		return
 	var outcome := "won" if bool(details.get("won", false)) else "lost day %d" % int(details.get("reached_round", 0))
+	if details.has("station_summary"):
+		outcome += " stations=%s meals=%d" % [
+			station_summary_text(details["station_summary"]),
+			(details.get("meals_served", {}) as Dictionary).size(),
+		]
 	if suite != "run":
 		outcome = "reached day %d" % int(details.get("reached_round", 0))
 	print("[playtest] %s %s/%s %s %s: %s gold=%d %.1fs%s" % [
@@ -1104,6 +1104,54 @@ func _record(suite: String, chef_id: String, seed_text: String, reasons: Array[S
 		float(details.get("seconds", 0.0)),
 		"" if passed else " — %s" % ", ".join(reasons),
 	])
+
+
+## Every Station type a run formed, from its end-of-Day snapshots: best level, first Day it stood at
+## the end of a Day, how many Days it stood, and the most rows it held at once.
+## {"fish_station": {"best_level": 4, "first_day": 2, "days": 8, "rows": 1}}.
+static func _station_summary(days: Array) -> Dictionary:
+	var summary: Dictionary = {}
+	for day: Dictionary in days:
+		var rows_this_day: Dictionary = {}
+		for station: Dictionary in day.get("stations", []):
+			var type_id := String(station.get("type", ""))
+			if type_id.is_empty():
+				continue
+			rows_this_day[type_id] = int(rows_this_day.get(type_id, 0)) + 1
+			var entry: Dictionary = summary.get(type_id, {"best_level": 0, "first_day": int(day["round"]), "days": 0, "rows": 0})
+			entry["best_level"] = maxi(int(entry["best_level"]), int(station.get("level", 1)))
+			summary[type_id] = entry
+		for type_id: String in rows_this_day:
+			var entry: Dictionary = summary[type_id]
+			entry["days"] = int(entry["days"]) + 1
+			entry["rows"] = maxi(int(entry["rows"]), int(rows_this_day[type_id]))
+	return summary
+
+
+## "fish L4 (day 2), bar L2 (day 5)", best level first. "none" when no Station formed.
+static func station_summary_text(summary: Dictionary) -> String:
+	var parts: Array[String] = []
+	var types: Array = summary.keys()
+	types.sort_custom(func(a: String, b: String) -> bool:
+		return int(summary[a]["best_level"]) > int(summary[b]["best_level"])
+	)
+	for type_id: String in types:
+		var entry: Dictionary = summary[type_id]
+		parts.append("%s L%d (day %d%s)" % [
+			type_id.trim_suffix("_station"), int(entry["best_level"]), int(entry["first_day"]),
+			", %d rows" % int(entry["rows"]) if int(entry["rows"]) > 1 else "",
+		])
+	return ", ".join(parts) if not parts.is_empty() else "none"
+
+
+## Meal id -> times served, for Meals served at least once (from meal_fires).
+static func _meals_served(meal_fires: Dictionary) -> Dictionary:
+	var served: Dictionary = {}
+	for meal_id: String in meal_fires:
+		var fires: Array = meal_fires[meal_id]
+		if not fires.is_empty() and int(fires[0]) > 0:
+			served[meal_id] = int(fires[0])
+	return served
 
 
 func _print_summary(suite: String) -> void:

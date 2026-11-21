@@ -10,7 +10,12 @@ const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
 const GOLD_PER_UNUSED_TURN := 3
 ## Free card-pick rerolls per Day before the difficulty reduction (get_free_rerolls_per_day).
-const STARTING_REROLLS := 3
+## Untuned. With one card pick a Day (at the end of it), 2 free rerolls show up to 9 cards.
+const STARTING_REROLLS := 2
+## Once the free rerolls are used, a card-pick reroll costs Gold: this much for the first paid one,
+## then PAID_REROLL_STEP more for each paid reroll after it. The price never resets during a run.
+const PAID_REROLL_BASE_COST := 1
+const PAID_REROLL_STEP := 1
 
 var _amount: int = 0
 ## Gross gold gained during the run. Starting gold and spending do not affect this total.
@@ -22,6 +27,8 @@ var _spent_this_round: int = 0
 ## Breakdown from the most recent round-completion reward, for the summary UI.
 var _last_speed_reward: Dictionary = {}
 var _rerolls_remaining: int = STARTING_REROLLS
+## Paid card-pick rerolls bought this run. Sets the next paid reroll's price.
+var _paid_rerolls := 0
 
 
 var amount: int:
@@ -143,18 +150,36 @@ func reset_rerolls() -> void:
 	EventBus.rerolls_changed.emit(_rerolls_remaining)
 
 
+## Gold the next card-pick reroll costs: 0 while free rerolls are left.
+func get_reroll_cost() -> int:
+	if _rerolls_remaining > 0:
+		return 0
+	return PAID_REROLL_BASE_COST + PAID_REROLL_STEP * _paid_rerolls
+
+
 func can_reroll() -> bool:
-	return _rerolls_remaining > 0
+	return _rerolls_remaining > 0 or can_afford(get_reroll_cost())
 
 
-## Spend one reroll when a panel successfully refreshes its offer.
+## Spend one reroll when a panel successfully refreshes its offer: a free one if any are left,
+## otherwise pay its Gold price, which then goes up for the rest of the run.
 func use_reroll() -> bool:
-	if not can_reroll():
+	if _rerolls_remaining > 0:
+		_rerolls_remaining -= 1
+		EventBus.rerolls_changed.emit(_rerolls_remaining)
+		return true
+	var cost := get_reroll_cost()
+	if not can_afford(cost):
 		return false
-
-	_rerolls_remaining -= 1
+	remove(cost)
+	_paid_rerolls += 1
 	EventBus.rerolls_changed.emit(_rerolls_remaining)
 	return true
+
+
+## Paid rerolls only count toward the run's climbing price, so a new run starts at the base price.
+func reset_paid_rerolls() -> void:
+	_paid_rerolls = 0
 
 #endregion
 
@@ -166,6 +191,7 @@ func capture_run_state() -> Dictionary:
 		"earned_this_turn": _earned_this_turn,
 		"spent_this_round": _spent_this_round,
 		"rerolls_remaining": _rerolls_remaining,
+		"paid_rerolls": _paid_rerolls,
 	}
 
 
@@ -176,5 +202,6 @@ func apply_run_state(state: Dictionary) -> void:
 	_spent_this_round = int(state.get("spent_this_round", 0))
 	_last_speed_reward = {}
 	_rerolls_remaining = maxi(0, int(state.get("rerolls_remaining", get_free_rerolls_per_day())))
+	_paid_rerolls = maxi(0, int(state.get("paid_rerolls", 0)))
 	EventBus.gold_changed.emit(_amount)
 	EventBus.rerolls_changed.emit(_rerolls_remaining)

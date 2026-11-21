@@ -57,9 +57,15 @@ bot values a perk only by flat Flavour or output scale, so behavioural perks tie
 option #0 every time; read its pick rates with that in mind.
 Deck fields: `details.starting_deck` (card ids) and `kitchen` (Station kits it was built from),
 `passes` (Hours ended with plays left), `skips` (card picks skipped) and `removals` (removal service,
-`round:id@price`). The bot values a pick by playing it next Hour (picks go on top of the draw pile),
+`round:id@price`), `paid_rerolls` (`round@price`). The bot values a pick by playing it on the next
+Day (picks go on top of the draw pile),
 discounts Merchant cards by how often a shuffled-in card is drawn, skips weak picks once the deck is
 18+ cards and removes its weakest cards above that size. All of those numbers are untuned.
+`details.station_summary` lists every Station type the run formed (`best_level`, `first_day`, `days`
+it stood at a Day's end, most `rows` at once) and `details.meals_served` the Meals served at least once
+(id -> serves). Each run's log line prints both (`stations=pastry L5 (day 2, 2 rows) meals=2`), and
+`compare_playtest_reports.py` shows Stations per run, different Meals served per run and each Station's
+share of runs, average best level and first Day.
 `details.replace_detail` lists every replacement (day, Hour, old and new card with kinds, stars lost) and
 `details.offers` every card offer as `round:id|id|id>chosen`.
 
@@ -116,7 +122,7 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
 - Difficulty levels stack, each adding one rule (`scripts/resources/difficulty.gd`). Level 1 is the
   practice and learning level: the lowest Day targets (`ScoreProgression.AUTHORED_ROUND_SCORES`), every
   second Meal slot open and Merchant rerolls at a flat 5 Gold. 2 Day targets grow +2% per Day after
-  Day 1, 3 −5 starting Gold, 4 one fewer free reroll, 5 two random Stations lock their second Meal slot
+  Day 1, 3 −5 starting Gold, 4 one fewer free card-pick reroll (1 instead of 2; then Gold), 5 two random Stations lock their second Meal slot
   until Station level 3, 6 Day targets grow another +3% per Day after Day 1, 7 Merchant reroll cost
   climbs +1 per reroll, 8 all four Stations lock it, 9 each Station level needs 1 more Meal.
   Day 1's target is the same at every level: no one should lose Day 1. Ramp values are untuned.
@@ -140,8 +146,10 @@ and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All n
   card and picks the pile: card picks go on top of the draw pile (an end-of-Day pick after the Day's
   reshuffle), Merchant buys, packs and Duplicate Order are shuffled in, Send Back goes to the discard
   pile. It then emits `EventBus.tile_card_selected` (save and tutorial listeners).
-- A card pick holds the Hour's draw (`hold_draw` / `release_draw`) so the picked card is in the new hand.
-  Picks can be skipped.
+- Card picks only come at the end of a Day (RoundFlow's CARD_PICK step), not between Hours. Picks can
+  be skipped. Each Day has `EconomyManager.STARTING_REROLLS` (2) free card-pick rerolls (1 from
+  difficulty level 4). After those a reroll costs Gold: `PAID_REROLL_BASE_COST` (1), +1 per paid
+  reroll, and that price never resets during a run (`paid_rerolls` in the save). Untuned.
 - Discard (move to the discard pile) and destroy (remove completely) are different words: Throw Out
   destroys the board card only, Send Back discards it with its stars, the Merchant removal service
   (3 Gold, +1 per use in a visit) destroys a deck card. The service is paid up front

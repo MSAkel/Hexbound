@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("2_c2ivn")
+base_price = 3
 id = "cloche_dome"
 display_name = "Cloche Dome"
 description = "Ignore next {destroy}"

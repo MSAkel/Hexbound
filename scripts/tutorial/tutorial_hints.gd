@@ -117,10 +117,10 @@ static func _static_init() -> void:
 
 	# Cards.
 	_add(&"card_pick_choose", CATEGORY_CARDS, "New card",
-		"After each Hour, pick **1 of 3** cards to add to your deck. It goes on **top of your draw pile**, so you draw it next Hour. Or **skip** it to keep your deck lean.",
+		"At the end of each Day, pick **1 of 3** cards to add to your deck. It goes on **top of your draw pile**, so you draw it first the next Day. Or **skip** it to keep your deck lean.",
 		Context.CARD_PICK, [&"card_choices"], PRIORITY_PANEL)
-	_add(&"card_pick_reroll", CATEGORY_CARDS, "Free rerolls",
-		"Not what you need? **Reroll** the choices. You get **%d free rerolls** every Day.",
+	_add(&"card_pick_reroll", CATEGORY_CARDS, "Rerolls",
+		"Not what you need? **Reroll** the choices. You get **%d free rerolls** every Day. After that a reroll costs Gold, starting at 1 and going up by 1 each time for the rest of the run.",
 		Context.CARD_PICK, [&"card_reroll"], PRIORITY_PANEL)
 	_add(&"overplay", CATEGORY_CARDS, "Star up and replace",
 		"Play a card onto a **copy of itself** to **Star it up** and make it stronger. Playing a different card on a taken spot **replaces** the card there.",

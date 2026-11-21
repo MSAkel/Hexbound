@@ -64,9 +64,6 @@ var kitchen_station_ids: Array[String] = []
 ## Each shuffle or random insert uses its own keyed RNG, so saves and what-ifs replay the same.
 var _rng_ops := 0
 var _day_reshuffle_pending := false
-## A card pick is open. The Hour's draw waits for it, so the picked card is in the new hand.
-var _draw_held := false
-var _draw_pending := false
 ## False until a run's deck is dealt. Turn signals before that draw nothing.
 var _run_active := false
 ## Removal service uses this visit. The price climbs within a visit and resets on the next.
@@ -94,8 +91,6 @@ func reset_for_new_run() -> void:
 	plays_this_hour = 0
 	_rng_ops = 0
 	_day_reshuffle_pending = false
-	_draw_held = false
-	_draw_pending = false
 	_run_active = false
 	removals_this_visit = 0
 	piles_changed.emit()
@@ -118,14 +113,10 @@ func start_day() -> void:
 	_day_reshuffle_pending = true
 
 
-## Draws the Hour's hand. A held draw (a card pick is open) waits for release_draw().
+## Draws the Hour's hand.
 func begin_hour() -> void:
 	if not _run_active:
 		return
-	if _draw_held:
-		_draw_pending = true
-		return
-	_draw_pending = false
 	plays_this_hour = 0
 	if _day_reshuffle_pending:
 		_reshuffle_for_day()
@@ -140,23 +131,6 @@ func begin_hour() -> void:
 	piles_changed.emit()
 	if not drawn.is_empty():
 		cards_drawn.emit(drawn)
-
-
-## Holds the next Hour's draw while a card pick is open.
-func hold_draw() -> void:
-	if _run_active:
-		_draw_held = true
-
-
-## Ends a hold. Draws now if the Hour already started.
-func release_draw() -> void:
-	_draw_held = false
-	if _draw_pending:
-		begin_hour()
-
-
-func is_draw_pending() -> bool:
-	return _draw_held or _draw_pending
 
 
 ## Moves the hand to the discard pile. Runs when the Hour ends.
@@ -377,7 +351,6 @@ func capture_run_state() -> Dictionary:
 		"plays_this_hour": plays_this_hour,
 		"rng_ops": _rng_ops,
 		"day_reshuffle_pending": _day_reshuffle_pending,
-		"draw_pending": _draw_held or _draw_pending,
 		"kitchen": kitchen_station_ids.duplicate(),
 		"removals_this_visit": removals_this_visit,
 		"run_active": _run_active,
@@ -393,10 +366,10 @@ func apply_run_state(state: Dictionary) -> void:
 	plays_this_hour = int(state.get("plays_this_hour", 0))
 	_rng_ops = int(state.get("rng_ops", 0))
 	_day_reshuffle_pending = bool(state.get("day_reshuffle_pending", false))
-	# A pick that was open when the run was saved reopens and holds the draw again.
-	_draw_pending = bool(state.get("draw_pending", false))
-	_draw_held = _draw_pending
 	kitchen_station_ids.assign(state.get("kitchen", []))
+	# Saves from when every Hour had a card pick: the Hour's draw waited for that pick. Draw it now.
+	if bool(state.get("draw_pending", false)) and hand.is_empty():
+		begin_hour.call_deferred()
 	removals_this_visit = int(state.get("removals_this_visit", 0))
 	_run_active = bool(state.get("run_active", not state.is_empty()))
 	piles_changed.emit()
@@ -413,8 +386,6 @@ func capture_snapshot() -> Dictionary:
 		"plays_this_hour": plays_this_hour,
 		"rng_ops": _rng_ops,
 		"day_reshuffle_pending": _day_reshuffle_pending,
-		"draw_held": _draw_held,
-		"draw_pending": _draw_pending,
 		"removals_this_visit": removals_this_visit,
 	}
 
@@ -428,8 +399,6 @@ func restore_snapshot(state: Dictionary) -> void:
 	plays_this_hour = int(state["plays_this_hour"])
 	_rng_ops = int(state["rng_ops"])
 	_day_reshuffle_pending = bool(state["day_reshuffle_pending"])
-	_draw_held = bool(state["draw_held"])
-	_draw_pending = bool(state["draw_pending"])
 	removals_this_visit = int(state["removals_this_visit"])
 	piles_changed.emit()
 

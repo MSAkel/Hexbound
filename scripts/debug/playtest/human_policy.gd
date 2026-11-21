@@ -80,6 +80,8 @@ const REMOVE_BELOW_MARKET := 0.1
 const REMOVAL_DECK_TARGET := 18
 const MAX_REMOVALS_PER_VISIT := 2
 const REMOVAL_CANDIDATES := 8
+## Pay for a card-pick reroll only when the best card is worth less than this share of a typical pick.
+const PAID_REROLL_BELOW_MARKET := 0.3
 
 var _profile: Dictionary = DEFAULT_PROFILE
 ## What-if result for the board as it stands. Refreshed before each group of decisions.
@@ -339,8 +341,14 @@ func _should_reroll(best_value: float, is_reward: bool) -> bool:
 		return false
 	if best_value >= _market * REROLL_BELOW_MARKET:
 		return false
-	# Keep one free reroll for the Day's later picks unless this one matters more.
-	return is_reward or EconomyManager.rerolls_remaining >= 2 or _shortfall() > 0.0
+	# Picks only come at the end of the Day, so free rerolls are always worth using.
+	var cost := EconomyManager.get_reroll_cost()
+	if cost == 0:
+		return true
+	# A paid reroll's price climbs for the rest of the run: pay only for a weak offer,
+	# and keep enough Gold for the Merchant.
+	return is_reward and best_value < _market * PAID_REROLL_BELOW_MARKET \
+		and EconomyManager.amount - cost >= int(_profile["shop_reserve"]) + TileCard.SHOP_PRICE
 
 
 func choose_hand_action(hand: Array[TileCard]) -> Dictionary:

@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("1_script")
+base_price = 3
 id = "throw_out"
 display_name = "Throw Out"
 description = "{destroy} target card"
