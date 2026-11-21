@@ -16,4 +16,5 @@ icon = ExtResource("2_icon")
 ingame_portrait = ExtResource("3_ingame")
 speciality_description = "Every 3rd Kitchenware {trigger} each Hour repeats."
 perk = SubResource("Perk")
-starting_hand = Array[String](["deep_fryer", "potato", "chicken", "cheese", "random:kitchenware"])
+deck_stations = Array[String](["fry_station:full", "roasting_station:small"])
+kit_swaps = Array[String](["fry_station:6=chicken", "fry_station:9=cheese"])

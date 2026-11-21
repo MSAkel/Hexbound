@@ -268,9 +268,6 @@ func _tile_drop_failure_message_at_coords(tile_map: HexTileMap, coords: Vector2i
 		return "Needs an occupied spot"
 	if _pending_target_hex != null and hex == _pending_target_hex:
 		return "Pick a different spot"
-	var condiment := get_targeting_condiment()
-	if condiment != null and condiment.effect_type == Condiment.EffectType.STAR_UP 			and hex.active_tile_card.star_level >= TileCard.MAX_STAR_LEVEL:
-		return "Already %s" % TileCard.star_text(TileCard.MAX_STAR_LEVEL)
 	return "Can't use here"
 
 
@@ -623,13 +620,9 @@ func _tick_two_turn_fuses() -> void:
 		tile_map.refresh_board_output_chips()
 
 
-## condiment defaults to the one being aimed. Star Up skips cards already at max stars.
-func _is_valid_tile_target(hex: Hex, condiment: Condiment = null) -> bool:
+## condiment defaults to the one being aimed.
+func _is_valid_tile_target(hex: Hex, _condiment: Condiment = null) -> bool:
 	if hex == null or hex.active_tile_card == null:
-		return false
-	if condiment == null:
-		condiment = get_targeting_condiment()
-	if condiment != null and condiment.effect_type == Condiment.EffectType.STAR_UP 			and hex.active_tile_card.star_level >= TileCard.MAX_STAR_LEVEL:
 		return false
 	var tile_map := hex.map
 	if tile_map == null:

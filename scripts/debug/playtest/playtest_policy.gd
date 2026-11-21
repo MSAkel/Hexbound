@@ -32,18 +32,19 @@ func on_day_started() -> void:
 	pass
 
 
-## Index of the card to take, or -1 to spend a reroll.
+## Index of the card to take, -1 to spend a reroll, or runner.SKIP_PICK (-2) to skip the pick.
+## A picked card goes on top of the draw pile, so it is in the next Hour's hand.
 func choose_offer(_offer: Array[TileCard], _is_reward: bool) -> int:
 	return 0
 
 
-## {"card": TileCard, "hex": Hex} to play, or {"card": TileCard, "sell": true}.
+## {"card": TileCard, "hex": Hex} to play, or {"end": true} to end the Hour with plays left.
 func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
 	for card: TileCard in hand:
 		var hexes: Array[Hex] = runner.legal_hexes(card)
 		if not hexes.is_empty():
 			return {"card": card, "hex": hexes[0]}
-	return {"card": hand[0], "sell": true}
+	return {"end": true}
 
 
 ## Belt drinks before the Hour resolves. Call runner.drink_condiment().

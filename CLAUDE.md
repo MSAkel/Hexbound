@@ -32,7 +32,8 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
   spare: `stop` (default) ends the Day for the early-finish gold, `continue` plays every Hour of every
   Day, `continue:N` plays on through Day N. Each Day records `continued`, and `leftover_hours` counts
   the Hours played after the goal. Use it to compare ending early with playing on over whole runs.
-- `--fuzz` random legal actions; fails on invariants and script errors
+- `--fuzz` random legal actions (plays, End Hour, skipped picks, the removal service); fails on
+  invariants and script errors
 - `--bot=<name>` who plays: `human` (default, the careful bot) or a player still learning the game:
   `novice` (skill 0.25), `casual` (0.55) or `slip` (0.85), from `novice_policy.gd`. Same what-if eyes as
   `human`, but it misjudges values (noise), does not use merging, replacing, rerolls, the condiment belt
@@ -54,6 +55,11 @@ taken) and each Day's `stations` now carry the perk index held. `scripts/debug/a
 report.json [--vs=other.json]` reads them, with a second report beside it to compare bots. The `human`
 bot values a perk only by flat Flavour or output scale, so behavioural perks tie at zero and it takes
 option #0 every time; read its pick rates with that in mind.
+Deck fields: `details.starting_deck` (card ids) and `kitchen` (Station kits it was built from),
+`passes` (Hours ended with plays left), `skips` (card picks skipped) and `removals` (removal service,
+`round:id@price`). The bot values a pick by playing it next Hour (picks go on top of the draw pile),
+discounts Merchant cards by how often a shuffled-in card is drawn, skips weak picks once the deck is
+18+ cards and removes its weakest cards above that size. All of those numbers are untuned.
 `details.replace_detail` lists every replacement (day, Hour, old and new card with kinds, stars lost) and
 `details.offers` every card offer as `round:id|id|id>chosen`.
 
@@ -69,7 +75,7 @@ After gameplay or balance changes, run at least `--runs=2` and a `--fuzz` pass b
 ## Push checks (CI)
 
 `.github/workflows/checks.yml` runs on every push to `main` and every pull request:
-import, boot, a content check (`scenes/debug/content_check.tscn`: fails when the Technique or condiment catalog or a card category loads empty, which raises no error), 1 bot playtest per chef and 8 fuzz runs per chef (8 chefs, ~8 min). It fails on any
+import, boot, a content check (`scenes/debug/content_check.tscn`: fails when the Technique or condiment catalog or a card category loads empty, which raises no error), a deck flow check on the real run screen (`scenes/debug/deck_flow_check.tscn`: draw, plays, picks, End Hour, Skip, the Day reshuffle, the removal service, save and Continue), 1 bot playtest per chef and 8 fuzz runs per chef (8 chefs, ~8 min). It fails on any
 `SCRIPT ERROR` / `Parse Error` / `ERROR:` line, since Godot often exits 0 when scripts fail to
 compile. Run the same checks locally (Git Bash on Windows) with:
 
@@ -118,20 +124,51 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
 - Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
 
+## Deck and draw
+
+`DeckManager` (`scripts/autoload/deck_manager.gd`) owns the run's deck: draw pile, hand, discard pile
+and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All numbers untuned.
+
+- Every Hour draws `HOUR_DRAW` (4). An Hour ends after `PLAYS_PER_HOUR` (2) plays or the End Hour
+  button. Cards left in the hand are discarded. When the draw pile runs out mid-draw the discard pile
+  is shuffled in. Each new Day (`RoundFlow._finish_transition` → `DeckManager.start_day`) shuffles
+  every pile, including the played pile, back into the draw pile.
+- A played card is placed on the board and its deck card goes to the played pile. The board copies
+  the card (`Hex.place_tile_card`), so board card and deck card are separate once played. A redraw on a
+  later Day can merge onto its own board copy, go on an empty spot, or replace another card.
+- Every card joining the deck goes through `DeckManager.gain_card(card, source)`, which copies the
+  card and picks the pile: card picks go on top of the draw pile (an end-of-Day pick after the Day's
+  reshuffle), Merchant buys, packs and Duplicate Order are shuffled in, Send Back goes to the discard
+  pile. It then emits `EventBus.tile_card_selected` (save and tutorial listeners).
+- A card pick holds the Hour's draw (`hold_draw` / `release_draw`) so the picked card is in the new hand.
+  Picks can be skipped.
+- Discard (move to the discard pile) and destroy (remove completely) are different words: Throw Out
+  destroys the board card only, Send Back discards it with its stars, the Merchant removal service
+  (3 Gold, +1 per use in a visit) destroys a deck card. The deck can't go below `MIN_DECK_SIZE` (10).
+- Hand cards can't be sold. `Hand` (scenes/components/hand.gd) only shows DeckManager's hand.
+  `DeckHud` (pile counts, End Hour, Deck button) and `DeckViewer` (deck list, removal service) are
+  built in code in `scenes/ui/deck/` as a first-pass layout.
+- Stars have no cap and add `TileCard.STAR_SCALE_STEP` (+10%) each.
+- Saves (version 7) store every pile in order. Version 6 runs can't be continued.
+
 ## Chefs
 
 Each chef is a `ChefDefinition` in `resources/chefs/<id>.tres`, listed in `ChefRegistry.CHEF_PATHS`:
 name, selection portrait (`icon`), in-game portrait (shown above the gold panel), ability text,
-`starting_hand` and a `perk`. The perk is a script in `resources/chefs/perks/` extending `ChefPerk`;
+a starting deck (`deck_stations`, `kit_swaps`) and a `perk`. The perk is a script in `resources/chefs/perks/` extending `ChefPerk`;
 its tunable numbers are `@export` fields set in the chef's `.tres`. Game systems call the bound chef
 through `GameManager.chef` (`ChefRuntime`), which forwards to the perk's hooks: starting gold, card
 pool filter (`GameManager.get_draw_pool()`), output scale, after-trigger, Meal +Mult, Meal served,
 Hour/Day start, station level thresholds, taking every station pick, merchant slots and free rerolls.
 Add a hook to `ChefPerk` + `ChefRuntime` when a new chef needs one.
 
-`starting_hand` lists card ids or random entries (`random:kitchenware`, `random:ingredient`,
-`random:<ingredient tag>`), dealt in order. An empty list deals the default random
-3 Ingredients + 2 Kitchenware.
+Starting decks are built from Station kits (`resources/station_kits/*.tres`, `StationKit`): one ordered
+list of 9 card ids or random entries (`random:kitchenware`, `random:ingredient`, `random:<ingredient tag>`)
+per Station type, used as a mini (first 5), small (first 6) or full (all 9) kit. `deck_stations` lists
+`"<choice>:<size>"` entries, home Station first: a Station id, ids split by `|` to roll one, or `any`.
+`kit_swaps` (`"<station id>:<slot>=<card id>"`) replace kit slots with a chef's signature cards.
+`ChefRegistry.build_starting_deck` builds it in the `starting_deck:<chef id>` RNG stream, so a seed
+deals the same deck. An empty `deck_stations` deals the default random 11 Ingredients + 4 Kitchenware.
 
 ## Conventions
 

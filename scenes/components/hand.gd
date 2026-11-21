@@ -1,8 +1,13 @@
 class_name Hand
 extends HBoxContainer
 
-# In a single turn
-var cards_played := 0
+## The hand on screen. DeckManager owns the cards: this shows what it draws and frees the cards
+## it discards. Plays go back to DeckManager, which ends the Hour after its plays are used up.
+
+## Plays this Hour (DeckManager.plays_this_hour).
+var cards_played: int:
+	get:
+		return DeckManager.plays_this_hour
 
 const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
 ## Slide the hand off-screen between turns. Only the visual pose moves, so layout is untouched.
@@ -24,7 +29,7 @@ const HOVER_SPREAD_MAX_ROTATION_DEG := 3.5
 ## Fallback width before a card has been laid out.
 const DEFAULT_CARD_WIDTH := 214.0
 
-## Debug-only cards appended to the opening hand.
+## Debug-only cards added to the opening hand.
 @export_group("Debug Starting Hand")
 @export var debug_starting_runes: Array[TileCard] = []
 
@@ -56,12 +61,17 @@ var _siblings_hidden_for_placement := false
 var _sibling_slide_tween: Tween = null
 ## Bumped to drop stale deferred sibling restores after a new drag starts.
 var _sibling_restore_generation := 0
+## Cards on screen when DeckManager discarded the hand. They go once the hand has slid away.
+var _discarded_cards: Array[CardUI] = []
+var _discard_pending: bool:
+	get:
+		return not _discarded_cards.is_empty()
 
 func _ready() -> void:
 	_base_separation = get_theme_constant("separation")
 	EventBus.card_played.connect(_on_card_played)
-	EventBus.card_sold.connect(_on_card_sold)
-	EventBus.tile_card_selected.connect(_add_tile_card)
+	DeckManager.cards_drawn.connect(_on_cards_drawn)
+	DeckManager.hand_discarded.connect(_on_hand_discarded)
 	EventBus.card_drag_started.connect(_on_card_drag_started)
 	EventBus.card_drag_ended.connect(_on_card_drag_ended)
 	EventBus.turn_ended.connect(_hide_hand)
@@ -87,7 +97,7 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Deal the opening hand after run RNG has been seeded and setup rolls have finished.
+## Build the starting deck and draw the first hand, after run RNG has been seeded.
 func build_starting_hand() -> void:
 	if RunSaveManager.should_restore_run():
 		return
@@ -96,11 +106,14 @@ func build_starting_hand() -> void:
 	if chef == null:
 		return
 
-	var stream_name := "starting_hand:%s" % chef.id
+	var stream_name := "starting_deck:%s" % chef.id
 	RunRng.using_fresh_stream(stream_name, func() -> void:
-		var starting_cards := ChefRegistry.get_starting_hand_cards(chef)
-		for card in starting_cards:
-			_add_tile_card(card)
+		var deck := ChefRegistry.build_starting_deck(chef)
+		var cards: Array[TileCard] = []
+		cards.assign(deck["cards"])
+		var stations: Array[String] = []
+		stations.assign(deck["stations"])
+		DeckManager.start_run(cards, stations)
 
 		_add_debug_starting_cards()
 
@@ -121,14 +134,20 @@ func _add_debug_starting_cards() -> void:
 
 	for rune in debug_starting_runes:
 		if rune != null:
-			_add_tile_card(rune)
+			DeckManager.gain_card(rune, DeckManager.Source.DEBUG)
 
 
-func _add_tile_card(rune: TileCard) -> void:
-	_add_card(rune)
+func _on_cards_drawn(cards: Array[TileCard]) -> void:
+	# A new hand replaces whatever the last Hour left on screen.
+	_free_discarded_cards()
+	for card: TileCard in cards:
+		_add_card(card)
 
 
+## The generated-card reveal adds its card here once it lands.
 func create_hand_card(data: Card) -> CardUI:
+	if data is TileCard and not DeckManager.hand.has(data as TileCard):
+		DeckManager.hand.append(data as TileCard)
 	return _add_card(data)
 
 
@@ -150,9 +169,9 @@ func get_hand_card_count() -> int:
 
 
 ## True after a play that should auto-end the turn, before resolve starts.
-## Saving here would persist a 2-card hand with no draft and no resolve.
+## Saving here would persist a finished hand with no draft and no resolve.
 func has_pending_auto_end() -> bool:
-	return cards_played > 0 and get_hand_card_count() < 3
+	return DeckManager.plays_this_hour > 0 and DeckManager.is_hour_finished()
 
 
 func _get_hand_cards() -> Array[CardUI]:
@@ -423,22 +442,37 @@ func _compute_card_spread_rotation(card_index: int, featured_index: int) -> floa
 	return deg_to_rad(direction * HOVER_SPREAD_MAX_ROTATION_DEG * weight)
 
 
-func _on_card_played(_card_ui: CardUI) -> void:
-	cards_played += 1
+func _on_card_played(card_ui: CardUI) -> void:
+	if card_ui != null and card_ui.card is TileCard:
+		DeckManager.play(card_ui.card as TileCard)
 	await _check_auto_end_turn_after_card_removed()
 
 
-func _on_card_sold(_card_ui: CardUI) -> void:
-	await _check_auto_end_turn_after_card_removed()
-
-
-## Ends the turn when fewer than three cards remain after a play or a sell.
+## Ends the Hour once its plays are used up or the hand is empty.
 func _check_auto_end_turn_after_card_removed() -> void:
-	# Wait for the removed card's queue_free() before counting the hand.
+	# Let the played card's queue_free() and landing settle first.
 	await get_tree().create_timer(0.1).timeout
-	if get_hand_card_count() < 3:
-		EventBus.turn_ended.emit()
-		AudioManager.play_end_turn_bell()
+	if DeckManager.is_hour_finished() and not GameManager.is_processing_turn:
+		end_hour()
+
+
+## The End Hour button and the last play of an Hour both land here.
+func end_hour() -> void:
+	if GameManager.is_processing_turn or RoundFlow.is_transitioning() or _hand_hidden:
+		return
+	EventBus.turn_ended.emit()
+	AudioManager.play_end_turn_bell()
+
+
+## True while the player can end the Hour: the hand is up and nothing is resolving.
+func can_end_hour() -> bool:
+	return (
+		not _awaiting_intro
+		and not _hand_hidden
+		and not GameManager.is_processing_turn
+		and not RoundFlow.is_transitioning()
+		and _placement_focus_card == null
+	)
 
 
 func _on_card_drag_started(card: CardUI) -> void:
@@ -490,9 +524,9 @@ func _restore_siblings_if_needed(generation: int) -> void:
 	_animate_siblings_slide(null, false)
 
 
-## The removed card is still in the hand when this runs, so look one card ahead.
+## DeckManager already counted the play when this runs.
 func _will_have_playable_hand_after_card_removed() -> bool:
-	return get_hand_card_count() - 1 >= 3
+	return not DeckManager.is_hour_finished()
 
 
 func _hide_hand() -> void:
@@ -501,14 +535,32 @@ func _hide_hand() -> void:
 	_peeking = false
 	_generated_reveal.interrupt()
 	_animate_hand_slide(true)
+	if not _discard_pending:
+		return
+	if _hand_slide_tween != null and _hand_slide_tween.is_valid():
+		_hand_slide_tween.finished.connect(_free_discarded_cards)
+	else:
+		_free_discarded_cards()
+
+
+func _on_hand_discarded() -> void:
+	_discarded_cards.append_array(_get_hand_cards())
+
+
+## Frees the cards the last Hour discarded. They are already gone from DeckManager.hand.
+func _free_discarded_cards() -> void:
+	var cards := _discarded_cards.duplicate()
+	_discarded_cards.clear()
+	for card: CardUI in cards:
+		if is_instance_valid(card) and card.get_parent() == self:
+			remove_child(card)
+			card.queue_free()
 
 
 func _show_hand() -> void:
 	## Don't fight the run-start entrance if a turn signal fires early.
 	if _awaiting_intro:
 		return
-	# cards_played only counts plays in the current turn.
-	cards_played = 0
 	_hand_hidden = false
 	_peeking = false
 	_siblings_hidden_for_placement = false
@@ -684,18 +736,8 @@ func _get_hand_slide_distance() -> float:
 
 
 func capture_hand_state() -> Dictionary:
-	var cards: Array = []
-	for child in get_children():
-		if not child is CardUI:
-			continue
-		var card_ui := child as CardUI
-		if card_ui.card == null:
-			continue
-		cards.append({"kind": card_ui.card.get_save_kind(), "id": card_ui.card.id})
-
+	# The cards themselves are saved by DeckManager.
 	return {
-		"cards": cards,
-		"cards_played": cards_played,
 		"pending_generated_cards": _generated_reveal.capture_pending(),
 	}
 
@@ -704,29 +746,14 @@ func restore_hand_state(state: Dictionary) -> void:
 	# Park restored cards off-screen, main.gd replays the hand intro afterward.
 	_awaiting_intro = true
 	_hand_hidden = true
+	_discarded_cards.clear()
 
 	for child in get_children():
 		if child is CardUI:
 			remove_child(child)
 			child.free()
 
-	cards_played = int(state.get("cards_played", 0))
-	var saved_count := 0
-	var restored_count := 0
-	for entry: Dictionary in state.get("cards", []):
-		saved_count += 1
-		var kind: String = entry.get("kind", "")
-		var card_id: String = entry.get("id", "")
-		if kind == "tile_card":
-			var tile_card := GameManager.get_tile_card_by_id(card_id)
-			if tile_card != null:
-				_add_tile_card(tile_card)
-				restored_count += 1
-
-	if restored_count < saved_count:
-		push_warning(
-			"Hand restore dropped %d/%d cards. Missing ids are not in the pool."
-			% [saved_count - restored_count, saved_count]
-		)
+	for card: TileCard in DeckManager.hand:
+		_add_card(card)
 
 	_generated_reveal.restore_pending(state.get("pending_generated_cards", []))

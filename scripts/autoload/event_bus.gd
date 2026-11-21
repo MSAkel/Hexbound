@@ -69,9 +69,7 @@ signal meal_fired(meal: MealCard, served: bool)
 
 ## Emitted when a card is played
 signal card_played(card_ui: CardUI)
-## Emitted when a hand card is sold from the sell panel.
-signal card_sold(card_ui: CardUI)
-
+## A card joined the deck (DeckManager.gain_card): a pick, a buy, a pack or a condiment copy.
 signal tile_card_selected(tile_card: TileCard)
 ## Emitted when a tile card successfully triggers its effect
 signal tile_card_activated(tile_card: TileCard)

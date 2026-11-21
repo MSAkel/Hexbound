@@ -33,6 +33,9 @@ var _pending_pack: Dictionary = {}
 var _stock_reroll_count := 0
 ## Gold cost for the next merchant reroll. Climbs per reroll from difficulty Level 4. Resets when the shop opens.
 var _reroll_cost := BASE_REROLL_COST
+## Removal service: opens the deck viewer to take a card out of the deck for Gold. Built in code
+## from the reroll button so it matches the shop's style.
+var _removal_button: Button = null
 ## Rerolls left this visit that cost nothing (Restaurateur). Reset when the shop opens.
 var _free_rerolls_left := 0
 ## Pending shop snapshot applied the next time open() runs after a continue.
@@ -53,6 +56,7 @@ func _ready() -> void:
 	hide()
 	reroll_button.pressed.connect(_on_reroll_button_pressed)
 	leave_button.pressed.connect(_on_leave_button_pressed)
+	_build_removal_button()
 	_show_board_button.pressed.connect(_on_show_board_button_pressed)
 	_show_merchant_button.pressed.connect(_on_show_merchant_button_pressed)
 	_pack_opening = PackOpening.new()
@@ -547,7 +551,8 @@ func _complete_purchase() -> void:
 	_hide_purchased_stock(_selected_card_ui)
 
 	if card is TileCard:
-		EventBus.tile_card_selected.emit(card as TileCard)
+		# Bought cards are shuffled into the draw pile.
+		DeckManager.gain_card(card as TileCard, DeckManager.Source.MERCHANT)
 	elif card is StaffCard:
 		_seat_purchased_staff(card as StaffCard, shelf_rect)
 
@@ -618,7 +623,7 @@ func _resume_pending_pack(entry: Dictionary) -> void:
 func _on_pack_card_kept(card: Card, shelf_rect: Rect2) -> void:
 	_pending_pack.clear()
 	if card is TileCard:
-		EventBus.tile_card_selected.emit(card as TileCard)
+		DeckManager.gain_card(card as TileCard, DeckManager.Source.PACK)
 	elif card is StaffCard:
 		_seat_purchased_staff(card as StaffCard, shelf_rect)
 	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
@@ -737,12 +742,43 @@ func _update_currency_display() -> void:
 
 
 func _update_reroll_button() -> void:
+	_update_removal_button()
 	if _free_rerolls_left > 0:
 		reroll_button.text = "REROLL - FREE"
 		reroll_button.disabled = false
 		return
 	reroll_button.text = "REROLL - %d" % _reroll_cost
 	reroll_button.disabled = not EconomyManager.can_afford(_reroll_cost)
+
+
+func _build_removal_button() -> void:
+	_removal_button = reroll_button.duplicate() as Button
+	_removal_button.name = "RemovalButton"
+	_removal_button.icon = null
+	_removal_button.tooltip_text = "Take a card out of your deck for good. Each removal this visit costs 1 Gold more."
+	var parent := reroll_button.get_parent()
+	parent.add_child(_removal_button)
+	parent.move_child(_removal_button, reroll_button.get_index() + 1)
+	_removal_button.pressed.connect(_on_removal_button_pressed)
+	DeckManager.piles_changed.connect(_update_removal_button)
+
+
+func _update_removal_button() -> void:
+	if _removal_button == null:
+		return
+	_removal_button.text = "REMOVE A CARD - %d" % DeckManager.removal_price()
+	_removal_button.disabled = (
+		not DeckManager.can_remove_card()
+		or not EconomyManager.can_afford(DeckManager.removal_price())
+	)
+
+
+func _on_removal_button_pressed() -> void:
+	var viewer := get_tree().get_first_node_in_group("deck_viewer") as DeckViewer
+	if viewer == null:
+		return
+	AudioManager.play_sfx(UISounds.CLICK)
+	viewer.open_removal()
 
 
 func capture_shop_state() -> Dictionary:

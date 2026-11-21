@@ -18,4 +18,5 @@ icon = ExtResource("2_icon")
 ingame_portrait = ExtResource("3_ingame")
 speciality_description = "Never sees Meat or Seafood."
 perk = SubResource("Perk")
-starting_hand = Array[String](["lettuce", "corn", "avocado", "blender", "random:fruit"])
+deck_stations = Array[String](["cold_station:full", "bar_station:small"])
+kit_swaps = Array[String](["cold_station:6=corn", "cold_station:9=avocado"])

@@ -80,6 +80,8 @@ func place_tile_card(rune: TileCard, animate: bool = true) -> void:
 	
 	# Each tile needs its own rune instance. hand/pool cards often share one .tres reference.
 	active_tile_card = rune.duplicate(true)
+	# Stars are not a stored property, so duplicate() drops them. A sent-back deck card keeps its stars.
+	active_tile_card.star_level = maxi(1, rune.star_level)
 	# Index this occupant before chip refresh walks the board.
 	_notify_occupancy_changed(null, active_tile_card)
 	var new_rune_instance: CardIconUI = CARD_ICON_UI.instantiate()

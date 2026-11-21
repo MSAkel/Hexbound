@@ -160,8 +160,15 @@ func finish_turn_processing() -> void:
 	total_round_score += turn_score
 	turn_score = 0
 	if not skip_presentation:
+		# Listen before asking: an Hour that scored 0 finishes the count inside the emit, and an
+		# await started after it would wait forever.
+		var count := {"done": false}
+		var on_count_finished := func() -> void: count.done = true
+		EventBus.round_score_count_finished.connect(on_count_finished)
 		EventBus.round_score_commit_animation_requested.emit(committed_turn_score, round_score_before)
-		await _wait_for_round_score_count_finished()
+		while not count.done and is_inside_tree():
+			await get_tree().process_frame
+		EventBus.round_score_count_finished.disconnect(on_count_finished)
 		await GameManager.create_pauseable_timer(POST_ROUND_SCORE_PANEL_DELAY / game_speed).timeout
 
 	var goal_met := _has_met_round_goal()
@@ -177,11 +184,11 @@ func finish_turn_processing() -> void:
 		else:
 			_complete_current_round()
 	else:
-		# Every new hour gets a card pick.
-		if not skip_presentation:
-			if EventManager.should_auto_grant_card(false):
-				EventManager.grant_auto_card(false, remaining_turns)
-			elif EventManager.get_cards_pack_size(false) > 0:
+		# Every new hour gets a card pick. The picked card goes on top of the draw pile,
+		# so the Hour's draw waits for the pick (DeckManager.release_draw).
+		if EventManager.get_cards_pack_size(false) > 0 and (not skip_presentation or playtest_real_day_flow):
+			DeckManager.hold_draw()
+			if not skip_presentation:
 				UiManager.show_cards_choice_panel.emit()
 		EventBus.turn_started.emit()
 
@@ -194,10 +201,6 @@ func finish_turn_processing() -> void:
 	_is_processing_turn = false
 	# Committed turn boundary. Card plays themselves are not checkpoints.
 	RunSaveManager.request_autosave()
-
-
-func _wait_for_round_score_count_finished() -> void:
-	await EventBus.round_score_count_finished
 
 
 func _on_turn_started() -> void:
@@ -266,7 +269,8 @@ func advance_round() -> void:
 	current_round += 1
 	# Round-spend counters reset before the round bonus so cards start fresh.
 	EconomyManager.reset_round_tracking()
-	EconomyManager.reset_rerolls()
+	# Card-pick rerolls refill when the new Day starts (RoundFlow._on_merchant_closed), not here:
+	# the end-of-Day card pick runs after this advance and still spends the old Day's rerolls.
 	total_round_score = 0
 	_apply_round_state()
 
@@ -430,6 +434,7 @@ func reset_for_new_run() -> void:
 	if selected_chef != null:
 		bind_chef()
 	CondimentManager.reset_for_new_run()
+	DeckManager.reset_for_new_run()
 	StaffManager.reset_for_new_run()
 	StationManager.reset_for_new_run()
 	RunLedger.reset_for_new_run()

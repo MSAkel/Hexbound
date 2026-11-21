@@ -16,48 +16,33 @@ flat_flavour = 10
 
 [sub_resource type="Resource" id="level_2"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +10 {flavour}. Card picks show one extra card: a Seafood."
+description = "Seafood on this station gain +15 {flavour}."
 target_tags = Array[StringName]([&"seafood"])
-flat_flavour = 10
-draw_tags = Array[StringName]([&"seafood"])
-draw_meal_categories = Array[int]([])
-draw_weight = 2.0
+flat_flavour = 15
 
 [sub_resource type="Resource" id="level_3"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +10 {flavour}. Card picks show one extra card: a Seafood."
+description = "Seafood on this station gain +15 {flavour}."
 target_tags = Array[StringName]([&"seafood"])
-flat_flavour = 10
-draw_tags = Array[StringName]([&"seafood"])
-draw_meal_categories = Array[int]([])
-draw_weight = 2.0
+flat_flavour = 15
 
 [sub_resource type="Resource" id="level_4"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +20 {flavour}. Card picks show one extra card: a Seafood."
+description = "Seafood on this station gain +20 {flavour}."
 target_tags = Array[StringName]([&"seafood"])
 flat_flavour = 20
-draw_tags = Array[StringName]([&"seafood"])
-draw_meal_categories = Array[int]([])
-draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_5"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +25 {flavour}. Card picks show one extra card: a Seafood."
+description = "Seafood on this station gain +25 {flavour}."
 target_tags = Array[StringName]([&"seafood"])
 flat_flavour = 25
-draw_tags = Array[StringName]([&"seafood"])
-draw_meal_categories = Array[int]([])
-draw_weight = 2.0
 
 [sub_resource type="Resource" id="level_6"]
 script = ExtResource("2_perk")
-description = "Seafood on this station gain +25 {flavour}. Card picks show one extra card: a Seafood."
+description = "Seafood on this station gain +25 {flavour}."
 target_tags = Array[StringName]([&"seafood"])
 flat_flavour = 25
-draw_tags = Array[StringName]([&"seafood"])
-draw_meal_categories = Array[int]([])
-draw_weight = 2.0
 
 [sub_resource type="Resource" id="choice_0"]
 script = ExtResource("s_seafood_platter")

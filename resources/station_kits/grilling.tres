@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="StationKit" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/station_kit.gd" id="1_kit"]
+
+[resource]
+script = ExtResource("1_kit")
+station_id = "grilling_station"
+cards = Array[String](["skillet", "steak", "random:meat", "random:seasoning", "skewers", "random:meat", "grilled_steak", "chef_knife", "random:seasoning"])

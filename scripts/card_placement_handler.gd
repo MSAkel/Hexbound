@@ -298,25 +298,6 @@ func try_place_from_gamepad() -> void:
 	_try_place_card()
 
 
-## The controller's Sell button. Sells card, or the picked-up card when card is null.
-func sell_card_from_gamepad(card: CardUI = null) -> bool:
-	if _is_placing:
-		return false
-	var sell_panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
-	if card == null:
-		card = selected_card
-	if sell_panel == null or card == null:
-		return false
-	if selected_card != card:
-		_begin_selection(card, false)
-		_awaiting_pointer_release = false
-		# The cursor is hidden on a controller. Start the ghost on the hand card instead.
-		_kill_ghost_tweens()
-		_rune_preview.global_position = (
-			_control_center_in_world(card) - HexTileMap.HEX_RUNE_SIZE / 2.0
-		)
-	_sell_selected_card(sell_panel)
-	return true
 
 #endregion
 
@@ -327,10 +308,6 @@ func _drop_at_cursor() -> void:
 	if _is_cursor_over_hand_slot():
 		_cancel_selection()
 		return
-	var sell_panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
-	if sell_panel != null and sell_panel.is_cursor_over():
-		_sell_selected_card(sell_panel)
-		return
 	_try_place_card()
 
 
@@ -340,22 +317,6 @@ func _is_cursor_over_hand_slot() -> bool:
 	if tile_map.is_in_map(map_coords) and tile_map.is_tile_interactable(map_coords):
 		return false
 	return selected_card.is_mouse_over()
-
-
-func _sell_selected_card(sell_panel: CardSellPanel) -> void:
-	var card := selected_card
-	sell_panel.sell_card()
-	_end_selection(DragOutcome.SOLD)
-	EventBus.card_sold.emit(card)
-	card.queue_free()
-	if not _rune_preview.visible or GameManager.skip_presentation:
-		_hide_ghost()
-		sell_panel.play_sell_pulse()
-		return
-	_fly_ghost_to(_control_center_in_world(sell_panel), GHOST_SELL_DURATION, func() -> void:
-		if is_instance_valid(sell_panel):
-			sell_panel.play_sell_pulse()
-	)
 
 
 func _try_place_card() -> void:
@@ -422,8 +383,6 @@ func _placement_failure_message(hex: Hex) -> String:
 		return "Already on this %s" % GameTerms.STATION
 	if not tile_card.can_place_on_tile(hex):
 		return _meal_slot_rule_message(tile_card)
-	if hex.active_tile_card != null and hex.active_tile_card.id == tile_card.id:
-		return "Already %s" % TileCard.star_text(TileCard.MAX_STAR_LEVEL)
 	return "Can't place here"
 
 

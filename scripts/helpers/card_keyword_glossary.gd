@@ -68,7 +68,12 @@ static func _static_init() -> void:
 	register(
 		"destroy",
 		{"destroy": GameTerms.DESTROY, "destroys": "Destroys", "destroyed": "Destroyed"},
-		"Remove the card."
+		"Remove the card completely."
+	)
+	register(
+		"discard",
+		{"discard": GameTerms.DISCARD, "discards": "Discards", "discarded": "Discarded"},
+		"Move the card to your discard pile. It comes back through the normal draw."
 	)
 	register(
 		"trigger",

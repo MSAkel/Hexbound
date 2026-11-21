@@ -2,8 +2,7 @@ class_name CardLoot
 extends RefCounted
 
 ## Shared drafting for the card pick, merchant, events and card effects.
-## Card picks and the auto-granted card use lane_draw (by card type). Stations at level 2 add one
-## extra card to card picks (station_extra_card). The merchant, packs and card effects draw uniformly.
+## Card picks use lane_draw (by card type). The merchant, packs and card effects draw uniformly.
 ## Staff still roll a rarity bucket first.
 
 # Chance to roll each staff rarity (must sum to 100).
@@ -57,22 +56,16 @@ static func card_draw(
 
 ## Card picks fill each slot from a lane: the slot first rolls a card type, then draws one card of
 ## that type. Ingredient odds no longer drop as Meals are added. The lane mix moves from building
-## (Prep) to serving (Service) as the run goes on. All weights untuned.
-enum DraftPhase { PREP, OPENING, SERVICE }
+## (Opening) to serving (Service) as the run goes on. All weights untuned.
+## There is no Prep phase: the starting deck already forms the first Station.
+enum DraftPhase { OPENING, SERVICE }
 
 const _INGREDIENT := TileCard.TileCardType.INGREDIENT
 const _KITCHENWARE := TileCard.TileCardType.KITCHENWARE
 const _MEAL := TileCard.TileCardType.MEAL
 const LANE_TYPE_ORDER: Array[TileCard.TileCardType] = [_INGREDIENT, _KITCHENWARE, _MEAL]
 
-## Prep: Day 1 before any typed station. Two Ingredients, then a Meal or (less often) Kitchenware.
-## The starting hand already holds Kitchenware, so early picks offer less of it than the old draw.
-const PREP_LANES: Array[Dictionary] = [
-	{_INGREDIENT: 1.0},
-	{_INGREDIENT: 1.0},
-	{_KITCHENWARE: 0.3, _MEAL: 0.7},
-]
-## Opening: Day 1 once a station is typed, or Day 2 before one is.
+## Opening: Day 1, until a station is typed.
 const OPENING_LANES: Array[Dictionary] = [
 	{_INGREDIENT: 1.0},
 	{_INGREDIENT: 0.7, _KITCHENWARE: 0.3},
@@ -86,24 +79,19 @@ const SERVICE_LANES: Array[Dictionary] = [
 ]
 
 
-## Day 1 starts in Prep; each later Day and the first typed station each move one phase on.
+## Day 1 starts in Opening; the next Day or the first typed station moves picks to Service.
 static func draft_phase(round_number: int) -> DraftPhase:
 	var stage := maxi(0, round_number - 1)
 	if has_typed_station():
 		stage += 1
 	if stage <= 0:
-		return DraftPhase.PREP
-	if stage == 1:
 		return DraftPhase.OPENING
 	return DraftPhase.SERVICE
 
 
 static func lanes_for_phase(phase: DraftPhase) -> Array[Dictionary]:
-	match phase:
-		DraftPhase.PREP:
-			return PREP_LANES
-		DraftPhase.OPENING:
-			return OPENING_LANES
+	if phase == DraftPhase.OPENING:
+		return OPENING_LANES
 	return SERVICE_LANES
 
 
@@ -119,7 +107,7 @@ static func has_typed_station() -> bool:
 
 
 ## Draw `count` unique cards, slot i from lanes[i], uniformly within the rolled type. When count does not match
-## the lane count (Dealt Hand grants one card), every slot uses the lanes' combined mix instead.
+## the lane count, every slot uses the lanes' combined mix instead.
 ## A lane whose types are used up falls back to any type left. exclude_ids never appear.
 static func lane_draw(
 	lanes: Array[Dictionary],
@@ -184,25 +172,6 @@ static func _roll_lane_type(lane: Dictionary, by_type: Dictionary, rng: RandomNu
 
 
 #endregion
-
-
-## The extra card-pick card from stations at level 2: one card, drawn uniformly from every kind a
-## level 2+ station boosts (Fish Station: Seafood). One extra card in total, however many stations
-## qualify. Empty when no station boosts anything, or every boosted card is already offered.
-static func station_extra_card(
-	pool: Array[TileCard],
-	rng: RandomNumberGenerator,
-	exclude_ids: Array[String] = []
-) -> Array[TileCard]:
-	var result: Array[TileCard] = []
-	var candidates: Array[TileCard] = []
-	for card: TileCard in _sorted_by_id(pool):
-		if card.id not in exclude_ids and StationManager.is_extra_card_kind(card):
-			candidates.append(card)
-	if candidates.is_empty():
-		return result
-	result.append(candidates[_randi_range(rng, 0, candidates.size() - 1)].duplicate(true))
-	return result
 
 
 ## Uniform draw, optionally filtered by card type and/or product.

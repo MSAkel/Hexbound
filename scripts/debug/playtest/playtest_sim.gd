@@ -41,14 +41,20 @@ func _owners() -> Array:
 
 
 func _watched_owners() -> Array:
-	return _owners() + [EventManager, RoundFlow]
+	return _owners() + [EventManager, RoundFlow, DeckManager]
 
 
 func snapshot() -> Dictionary:
 	var managers: Array = []
 	for owner: Variant in _owners():
 		managers.append(owner.capture_run_state())
-	return {"managers": managers, "map": _map.capture_playtest_snapshot()}
+	# The deck keeps its card instances (the bot holds references to its hand), so it is copied
+	# shallowly rather than through its save state.
+	return {
+		"managers": managers,
+		"map": _map.capture_playtest_snapshot(),
+		"deck": DeckManager.capture_snapshot(),
+	}
 
 
 func restore(state: Dictionary) -> void:
@@ -63,6 +69,7 @@ func restore(state: Dictionary) -> void:
 			continue
 		owners[index].apply_run_state(managers[index])
 	_map.restore_playtest_snapshot(state["map"])
+	DeckManager.restore_snapshot(state["deck"])
 	for index in owners.size():
 		if owners[index] == CondimentManager or owners[index] == RunLedger:
 			owners[index].apply_run_state(managers[index])

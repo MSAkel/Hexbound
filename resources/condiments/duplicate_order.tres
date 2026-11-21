@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "duplicate_order"
 display_name = "Duplicate Order"
-description = "Clone the targeted seated card into hand"
+description = "Copy the targeted seated card into your draw pile"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.82, 0.58, 0.92, 1)
 base_price = 5

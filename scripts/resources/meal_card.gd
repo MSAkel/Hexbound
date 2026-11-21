@@ -310,6 +310,11 @@ func _matching_station_cards(tile: Hex) -> Array[TileCard]:
 	return matching
 
 
+## Kind tag -> how many cards of that kind the recipe asks for (named cards not included).
+func get_recipe_kind_counts() -> Dictionary:
+	return _recipe_slot_counts()
+
+
 func _recipe_slot_counts() -> Dictionary:
 	return {
 		TAG_VEGETABLE: recipe_vegetable_count,

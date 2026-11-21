@@ -128,6 +128,9 @@ func _on_merchant_closed() -> void:
 		GameManager.advance_round()
 		_arm_event_reveal()
 
+	# The new Day starts here: the end-of-Day card pick and the merchant are behind us.
+	EconomyManager.reset_rerolls()
+
 	if GameManager.skip_presentation:
 		EventBus.day_intro_landed.emit(GameManager.current_round)
 		_continue_after_day_intro()
@@ -180,11 +183,7 @@ func _enter_step(step: Step) -> void:
 				_transition_card_pick_round = GameManager.current_round
 			else:
 				_transition_card_pick_round = maxi(1, GameManager.current_round - 1)
-			if EventManager.should_auto_grant_card(true):
-				EventManager.grant_auto_card(true)
-				notify_card_picked()
-			else:
-				UiManager.show_cards_choice_panel.emit()
+			UiManager.show_cards_choice_panel.emit()
 		Step.MERCHANT:
 			UiManager.show_merchant_panel.emit()
 		Step.EVENT_REVEAL:
@@ -207,6 +206,8 @@ func _finish_transition() -> void:
 	StaffManager.on_day_started()
 	StationManager.on_day_started()
 	GameManager.chef.on_day_started()
+	# The new Day's first draw shuffles every pile back together.
+	DeckManager.start_day()
 	EventBus.turn_started.emit()
 	RunSaveManager.request_autosave()
 

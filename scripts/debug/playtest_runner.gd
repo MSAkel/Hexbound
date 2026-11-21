@@ -52,6 +52,8 @@ const PROBE_SKIPPED_EVENTS: Array[int] = [
 ## Safety stops for a run or Hour that never finishes.
 const MAX_HOURS_PER_RUN := 120
 const MAX_ACTIONS_PER_HOUR := 30
+## choose_offer result that skips the pick (-1 asks for a reroll).
+const SKIP_PICK := -2
 
 
 ## One merchant visit with the same shelves, prices and reroll costs as the Merchant panel.
@@ -129,7 +131,7 @@ class MerchantVisit:
 	func keep_from_pack(card: Card, staff_slot: int) -> void:
 		if card is TileCard:
 			_runner.note_buy("", card.id, 0)
-			EventBus.tile_card_selected.emit(card as TileCard)
+			DeckManager.gain_card(card as TileCard, DeckManager.Source.PACK)
 		elif card is StaffCard:
 			var seated := StaffManager.add_staff(card as StaffCard)
 			if staff_slot >= 0 and seated >= 0 and staff_slot != seated:
@@ -144,7 +146,15 @@ class MerchantVisit:
 		EconomyManager.remove(price)
 		cards[index] = null
 		_runner.note_buy("", card.id, price)
-		EventBus.tile_card_selected.emit(card)
+		DeckManager.gain_card(card, DeckManager.Source.MERCHANT)
+		return true
+
+	## Removal service: pays and takes a deck card out of the run, as on the Merchant panel.
+	func remove_deck_card(card: TileCard) -> bool:
+		var price := DeckManager.removal_price()
+		if not DeckManager.buy_removal(card):
+			return false
+		_runner.note_removal(card.id, price)
 		return true
 
 	## Seats the new staff member in the first free slot, as the shop does, then moves it.
@@ -196,8 +206,10 @@ class MerchantVisit:
 
 var map: HexTileMap
 var sim: RefCounted
-## The bot's hand. Every card the game hands out arrives through tile_card_selected.
-var hand: Array[TileCard] = []
+## The bot's hand: DeckManager draws it, as for a player.
+var hand: Array[TileCard]:
+	get:
+		return DeckManager.hand
 var power_mode := false
 ## --extra-hours: probe the Hours a day would skip once its goal is met.
 var extra_hours := false
@@ -265,7 +277,6 @@ func _ready() -> void:
 	sim.check_purity = _check_sim
 	if trace_enabled:
 		sim.trace = trace
-	EventBus.tile_card_selected.connect(_on_card_granted)
 	EventBus.game_ended.connect(_on_game_ended)
 	EventBus.meal_fired.connect(_on_meal_fired)
 	EventBus.station_choice_requested.connect(_on_station_choice_requested)
@@ -365,10 +376,10 @@ func _run_all() -> void:
 	_print_summary(suite)
 
 
-#region Starter hand
+#region Starter deck
 
-## Chefs without a fixed hand open with 3 Ingredients and 2 Kitchenware, all tagged
-## starting_hand_eligible. Fixed hands deal every fixed card, and random entries stay eligible.
+## Every chef's starting deck has the expected size, only cards the chef can see (named kit cards
+## excepted), the Station kits it names, and every Meal it deals can be completed from its own cards.
 func _run_starter_fairness() -> void:
 	for chef_id: String in _chef_ids:
 		var chef := ChefRegistry.get_chef_by_id(chef_id)
@@ -379,50 +390,80 @@ func _run_starter_fairness() -> void:
 			var seed_text := "ST%s%03d" % [chef_id.substr(0, 3).to_upper(), index]
 			RunRng.begin_new_run(seed_text)
 			var ids: Array[String] = []
-			var ingredients := 0
-			var kitchenware := 0
 			var reasons: Array[String] = []
-			var hand := _deal_starting_hand()
-			for card: TileCard in hand:
+			var deck := _build_starting_deck()
+			var cards: Array[TileCard] = deck["cards"]
+			var stations: Array[String] = deck["stations"]
+			var expected := ChefRegistry.get_expected_deck_size(chef)
+			if cards.size() != expected:
+				reasons.append("expected %d cards, got %d" % [expected, cards.size()])
+			for card: TileCard in cards:
 				ids.append(card.id)
-				if not GameManager.chef.allows_card(card):
+				if not GameManager.chef.allows_card(card) and not _is_named_in_deck(chef, stations, card.id):
 					reasons.append("%s is hidden from this chef" % card.id)
-				match card.type:
-					TileCard.TileCardType.INGREDIENT:
-						ingredients += 1
-					TileCard.TileCardType.KITCHENWARE:
-						kitchenware += 1
-					_:
-						reasons.append("unexpected Meal %s" % card.id)
-			if chef.has_fixed_starting_hand():
-				if hand.size() != chef.starting_hand.size():
-					reasons.append("expected %d cards, got %d" % [chef.starting_hand.size(), hand.size()])
-				for i in mini(hand.size(), chef.starting_hand.size()):
-					var entry := chef.starting_hand[i]
-					if entry.begins_with(ChefDefinition.RANDOM_PREFIX):
-						if not hand[i].starting_hand_eligible:
-							reasons.append("%s (for %s) is not starting_hand_eligible" % [hand[i].id, entry])
-					elif hand[i].id != entry:
-						reasons.append("slot %d: expected %s, got %s" % [i, entry, hand[i].id])
-			else:
-				for card: TileCard in hand:
-					if not card.starting_hand_eligible:
-						reasons.append("%s is not starting_hand_eligible" % card.id)
-				if ingredients != ChefRegistry.STARTING_INGREDIENT_COUNT:
-					reasons.append("expected %d Ingredients, got %d" % [ChefRegistry.STARTING_INGREDIENT_COUNT, ingredients])
-				if kitchenware != ChefRegistry.STARTING_KITCHENWARE_COUNT:
-					reasons.append("expected %d Kitchenware, got %d" % [ChefRegistry.STARTING_KITCHENWARE_COUNT, kitchenware])
-			_record("starter_fairness", chef_id, seed_text, reasons, {"hand": ids})
+			if chef.has_station_deck() and stations.size() != chef.deck_stations.size():
+				reasons.append("expected %d Station kits, got %d" % [chef.deck_stations.size(), stations.size()])
+			for card: TileCard in cards:
+				var meal := card as MealCard
+				if meal != null and not _deck_can_complete(meal, cards):
+					reasons.append("%s can't be completed from the starting deck" % meal.id)
+			_record("starter_fairness", chef_id, seed_text, reasons, {"deck": ids, "stations": stations})
 
 
-## Same stream as Hand.build_starting_hand, so a seed deals the hand a player would see.
-func _deal_starting_hand() -> Array[TileCard]:
-	var dealt: Array[TileCard] = []
-	var stream_name := "starting_hand:%s" % GameManager.selected_chef.id
-	RunRng.using_fresh_stream(stream_name, func() -> void:
-		dealt.append_array(ChefRegistry.get_starting_hand_cards(GameManager.selected_chef))
+## A card the chef's kits or swaps name directly (a named card skips the chef's filter).
+func _is_named_in_deck(chef: ChefDefinition, stations: Array[String], card_id: String) -> bool:
+	for swap: String in chef.kit_swaps:
+		if swap.ends_with("=%s" % card_id):
+			return true
+	for station_id: String in stations:
+		var kit := ChefRegistry.get_station_kit(station_id)
+		if kit != null and card_id in kit.cards:
+			return true
+	return false
+
+
+## True when the deck's non-Meal cards cover the Meal's named cards and kind counts.
+func _deck_can_complete(meal: MealCard, cards: Array[TileCard]) -> bool:
+	var spare: Array[TileCard] = []
+	for card: TileCard in cards:
+		if card.type != TileCard.TileCardType.MEAL:
+			spare.append(card)
+	for required_id: String in meal.recipe_required_card_ids:
+		var found := -1
+		for i in spare.size():
+			if spare[i].id == required_id:
+				found = i
+				break
+		if found < 0:
+			return false
+		spare.remove_at(found)
+	var kinds := meal.get_recipe_kind_counts()
+	for tag: StringName in kinds:
+		var need := int(kinds[tag])
+		for i in range(spare.size() - 1, -1, -1):
+			if need <= 0:
+				break
+			if TileCard.matches_kind_filter(spare[i], tag):
+				spare.remove_at(i)
+				need -= 1
+		if need > 0:
+			return false
+	return true
+
+
+## Same stream as Hand.build_starting_hand, so a seed deals the deck a player would see.
+func _build_starting_deck() -> Dictionary:
+	var chef := GameManager.selected_chef
+	var stream_name := "starting_deck:%s" % chef.id
+	# Lambdas capture by value, so the deck comes back as the stream's return value.
+	var built: Dictionary = RunRng.using_fresh_stream(stream_name, func() -> Dictionary:
+		return ChefRegistry.build_starting_deck(chef)
 	)
-	return dealt
+	var cards: Array[TileCard] = []
+	cards.assign(built["cards"])
+	var stations: Array[String] = []
+	stations.assign(built["stations"])
+	return {"cards": cards, "stations": stations}
 
 #endregion
 
@@ -532,6 +573,12 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		"buys": [],
 		"sells": [],
 		"plays": 0,
+		# Hours the bot ended with plays left (End Hour).
+		"passes": 0,
+		# "round" of each card pick skipped ("reward3" for an end-of-Day pick).
+		"skips": [],
+		# "round:id@price" for each card the removal service took out.
+		"removals": [],
 		"merges": [],
 		"replaces": [],
 		# Same replacements as "replaces" with the card kinds and the Hour, for the analysis scripts.
@@ -551,9 +598,15 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		"days": [],
 		"invariants": [],
 	}
-	hand.clear()
+	# DeckManager was reset with the run, so this turn signal draws nothing.
 	EventBus.turn_started.emit()
-	hand.append_array(_deal_starting_hand())
+	var deck := _build_starting_deck()
+	DeckManager.start_run(deck["cards"], deck["stations"])
+	var deck_ids: Array[String] = []
+	for card: TileCard in DeckManager.all_cards():
+		deck_ids.append(String(card.id))
+	_log["starting_deck"] = deck_ids
+	_log["kitchen"] = deck["stations"]
 
 
 func _clear_board() -> void:
@@ -612,28 +665,31 @@ func _play_hour() -> void:
 	await _draft_next_hour()
 
 
-## Plays and sells from hand until the Hour ends: once a play or sell leaves fewer than three cards.
+## Plays from hand until the Hour ends: after DeckManager.PLAYS_PER_HOUR plays, an empty hand,
+## or the bot ending the Hour early.
 func _play_hand() -> void:
 	if hand.is_empty():
 		_note_invariant("empty hand at the start of an Hour")
-	var removed := 0
-	while not hand.is_empty() and (hand.size() >= 3 or removed == 0):
-		if removed >= MAX_ACTIONS_PER_HOUR:
+	var actions := 0
+	while not DeckManager.is_hour_finished():
+		if actions >= MAX_ACTIONS_PER_HOUR:
 			_note_invariant("Hour needed more than %d hand actions" % MAX_ACTIONS_PER_HOUR)
 			break
 		trace("choosing hand action")
 		var action: Dictionary = await policy.choose_hand_action(hand)
-		trace("hand action %s %s" % [action.get("card").id if action.get("card") else "?", "sell" if action.get("sell", false) else str(action.get("hex").coordinates if action.get("hex") else "")])
-		_apply_hand_action(action)
-		removed += 1
+		trace("hand action %s %s" % [action.get("card").id if action.get("card") else "?", "end" if action.get("end", false) else str(action.get("hex").coordinates if action.get("hex") else "")])
+		actions += 1
+		if not _apply_hand_action(action):
+			_log["passes"] = int(_log["passes"]) + 1
+			break
 
 
 ## The day goes on. Every new Hour brings a card pick, rolled before the Hour was used up.
+## The Hour's draw waits for it (GameManager held it), so the picked card is drawn now.
 func _draft_next_hour() -> void:
-	if EventManager.should_auto_grant_card(false):
-		EventManager.grant_auto_card(false, GameManager.remaining_turns + 1)
-	elif EventManager.get_cards_pack_size(false) > 0:
+	if EventManager.get_cards_pack_size(false) > 0:
 		await _draft(false, GameManager.current_round, GameManager.remaining_turns + 1)
+	DeckManager.release_draw()
 
 
 ## --extra-hours. Called just before an Hour resolves. If that Hour meets the goal with Hours to
@@ -653,7 +709,6 @@ func _probe_extra_hours() -> void:
 	var events_before := JSON.stringify(EventManager.capture_run_state(), "", true)
 	var fingerprint_before: String = sim.fingerprint() if _check_sim else ""
 	var saved_state: Dictionary = sim.snapshot()
-	var saved_hand: Array[TileCard] = hand.duplicate()
 	var saved_log: Dictionary = _log.duplicate(true)
 	var saved_day: Dictionary = _day.duplicate(true)
 	var saved_policy: Dictionary = policy.capture_state()
@@ -683,7 +738,6 @@ func _probe_extra_hours() -> void:
 	var probe_invariants: Array = (_log["invariants"] as Array).slice((saved_log["invariants"] as Array).size())
 	GameManager.playtest_play_full_day = power_mode or _play_on_today
 	sim.restore(saved_state)
-	hand.assign(saved_hand)
 	_log = saved_log
 	_day = saved_day
 	policy.restore_state(saved_policy)
@@ -707,22 +761,21 @@ func _probe_extra_hours() -> void:
 	_day["full_day_score"] = score_at_goal + extra_total
 
 
-func _apply_hand_action(action: Dictionary) -> void:
+## Plays the chosen card. False when the bot ends the Hour instead (or had nothing legal).
+func _apply_hand_action(action: Dictionary) -> bool:
+	if bool(action.get("end", false)):
+		return false
 	var card: TileCard = action.get("card")
 	if card == null or not hand.has(card):
 		_note_invariant("bot chose a card that is not in hand")
-		card = hand[0]
-		action = {"card": card, "sell": true}
+		return false
 	var hex: Hex = action.get("hex")
-	if not bool(action.get("sell", false)) and (hex == null or not card.can_play_on(hex)):
+	if hex == null or not card.can_play_on(hex):
 		_note_invariant("bot chose an illegal spot for %s" % card.id)
 		var legal := legal_hexes(card)
-		hex = legal[0] if not legal.is_empty() else null
-	hand.erase(card)
-	if bool(action.get("sell", false)) or hex == null:
-		EconomyManager.add(CardSellPanel.SELL_VALUE)
-		_log["sells"].append("%d:%s" % [GameManager.current_round, card.id])
-		return
+		if legal.is_empty():
+			return false
+		hex = legal[0]
 	match card.get_overplay(hex):
 		TileCard.Overplay.MERGE:
 			_log["merges"].append("%d:%s>%d" % [GameManager.current_round, card.id, hex.active_tile_card.star_level + 1])
@@ -738,9 +791,11 @@ func _apply_hand_action(action: Dictionary) -> void:
 				"new": card.id,
 				"new_kind": card.get_card_kind_label(),
 			})
+	DeckManager.play(card)
 	card.play_on(hex)
 	StationManager.evaluate_station_types()
 	_log["plays"] = int(_log["plays"]) + 1
+	return true
 
 
 func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> void:
@@ -756,6 +811,10 @@ func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> v
 		for offered: TileCard in offer:
 			offered_ids.append(String(offered.id))
 		var offer_text := "%s%d:%s" % ["reward" if is_reward else "", round_number, "|".join(offered_ids)]
+		if choice == SKIP_PICK:
+			(_log["offers"] as Array).append(offer_text + ">skipped")
+			(_log["skips"] as Array).append("%s%d" % ["reward" if is_reward else "", round_number])
+			return
 		if choice < 0 and EconomyManager.use_reroll():
 			reroll_index += 1
 			_log["rerolls"] = int(_log["rerolls"]) + 1
@@ -764,7 +823,7 @@ func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> v
 		var card := offer[clampi(choice, 0, offer.size() - 1)]
 		(_log["offers"] as Array).append("%s>%s" % [offer_text, card.id])
 		_log["picks"].append("%s%d:%s" % ["reward" if is_reward else "", round_number, card.id])
-		EventBus.tile_card_selected.emit(card)
+		DeckManager.gain_card(card, DeckManager.Source.PICK)
 		return
 
 
@@ -811,12 +870,6 @@ func _close_day() -> void:
 			(" full_day=%d" % int(_day["full_day_score"])) if _day.has("full_day_score") else "",
 		])
 	_day = {}
-
-
-func _on_card_granted(card: TileCard) -> void:
-	if sim.is_simulating or card == null:
-		return
-	hand.append(card)
 
 
 ## Counts real Meal fires. What-if Hours are skipped. The extra-hours probe restores _log after.
@@ -943,6 +996,10 @@ func sell_staff(slot: int) -> bool:
 
 func note_buy(kind: String, item_id: String, price: int) -> void:
 	_log["buys"].append("%d:%s%s@%d" % [GameManager.current_round, kind, item_id, price])
+
+
+func note_removal(card_id: String, price: int) -> void:
+	(_log["removals"] as Array).append("%d:%s@%d" % [GameManager.current_round, card_id, price])
 
 
 func note_merchant_reroll() -> void:
