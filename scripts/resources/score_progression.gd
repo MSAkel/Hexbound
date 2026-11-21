@@ -22,11 +22,12 @@ const MAX_SCORE := 9223372036854775807
 ## Nov 22 2026 (user): the overtuned set (618/20000/52000/165000/320000/400000/500000/750000/900000)
 ## is undone, back to the last step before it, so the deck and end-of-Day pick changes can be judged
 ## against the earlier targets.
+## Nov 22 2026 (user): Day 2 3315 -> 11000, Day 3 11700 -> 20000, Day 4 28688 -> 30000.
 const AUTHORED_ROUND_SCORES: Array[int] = [
 	618,
-	3315,
-	11700,
-	28688,
+	11000,
+	20000,
+	30000,
 	54188,
 	75000,
 	140156,
