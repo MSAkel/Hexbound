@@ -8,7 +8,7 @@
 [sub_resource type="Resource" id="Perk"]
 script = ExtResource("4_perk")
 target_tags = Array[StringName]([&"beverage"])
-scale = 1.5
+scale = 1.25
 
 [resource]
 script = ExtResource("1_script")
@@ -16,7 +16,7 @@ id = "sommelier"
 display_name = "Sommelier"
 icon = ExtResource("1_2tc56")
 ingame_portrait = ExtResource("3_ingame")
-speciality_description = "Beverages have x1.25W output."
+speciality_description = "Beverages have x1.25 output."
 perk = SubResource("Perk")
 deck_stations = Array[String](["bar_station:full", "pastry_station:small"])
 kit_swaps = Array[String](["bar_station:3=apple", "bar_station:4=honey", "pastry_station:6=sugar"])
