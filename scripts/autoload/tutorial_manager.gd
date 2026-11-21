@@ -218,10 +218,6 @@ func suspend_active() -> void:
 ## Body text for a hint, with run-specific details filled in.
 func get_body(id: StringName) -> String:
 	var body := String(TutorialHints.get_def(id).get("body", ""))
-	if id == TutorialHints.CHEF_HINT:
-		var chef := GameManager.selected_chef
-		if chef != null and not chef.speciality_description.is_empty():
-			return "**%s**: %s" % [chef.display_name, chef.speciality_description]
 	if id == TutorialHints.REROLL_HINT:
 		return body % EconomyManager.get_free_rerolls_per_day()
 	return body
@@ -296,7 +292,6 @@ func _check_run_start_hints() -> void:
 	if _overlay == null:
 		return
 	request(&"basics")
-	request(TutorialHints.CHEF_HINT)
 	_check_state_hints()
 
 
@@ -308,10 +303,6 @@ func _check_state_hints() -> void:
 	var board := _board()
 	if _hand_matches_board(board):
 		request(&"overplay")
-	if _hand_has_keyword():
-		request(&"keywords")
-	if _meal_card_visible():
-		request(&"meal_cards")
 	if GameManager.current_round >= 2:
 		request(&"sell")
 		request(&"event_preview")
@@ -362,20 +353,6 @@ func _hand_matches_board(board: HexTileMap) -> bool:
 		if seated_ids.has(card.id):
 			return true
 	return false
-
-
-func _hand_has_keyword() -> bool:
-	for card: TileCard in _hand_cards():
-		var text := card.get_description_text()
-		for token: String in ["{garnish", "{trigger", "{retrigger", "{destroy", "{following"]:
-			if text.contains(token):
-				return true
-	return false
-
-
-## A Meal in the hand, the card pick or the Merchant shelf.
-func _meal_card_visible() -> bool:
-	return _overlay != null and _overlay.find_visible_meal_card() != null
 
 
 func _has_staff() -> bool:
@@ -447,12 +424,8 @@ func _is_still_relevant(id: StringName) -> bool:
 			return _has_staff()
 		&"condiments":
 			return _belt_has_condiment()
-		&"meal_cards":
-			return _meal_card_visible()
 		&"overplay":
 			return _hand_matches_board(_board())
-		&"keywords":
-			return _hand_has_keyword()
 	return true
 
 
@@ -494,10 +467,8 @@ func _first_unseen_step(chain_id: StringName) -> StringName:
 	return &""
 
 
-## Per-chef hints save under their own key so each chef's speciality is explained once.
+## Save key for a hint. Old saves also hold per-chef keys (chef_speciality:<chef>) from a removed hint.
 func _seen_key(id: StringName) -> StringName:
-	if id == TutorialHints.CHEF_HINT and GameManager.selected_chef != null:
-		return StringName("%s:%s" % [id, GameManager.selected_chef.id])
 	return id
 
 

@@ -6,10 +6,9 @@ extends RefCounted
 ##
 ## Body text uses glossary tokens ({flavour}, {mult}, ...) and **double asterisks** for highlights.
 
-const _GameManagerScript := preload("res://scripts/autoload/game_manager.gd")
 const _CondimentManagerScript := preload("res://scripts/autoload/condiment_manager.gd")
 const _StationManagerScript := preload("res://scripts/autoload/station_manager.gd")
-## Example type for the basics. Requirements and bonus are read from it so the copy stays true.
+## Example type for the basics. Its requirements are read from it so the copy stays true.
 const EXAMPLE_STATION_PATH := "res://resources/stations/cold_station.tres"
 
 ## Which screen must be up before the hint can show. Hints wait in the queue until it is.
@@ -25,7 +24,6 @@ enum Context {
 
 const CATEGORY_BASICS := "Basics"
 const CATEGORY_CARDS := "Cards"
-const CATEGORY_DAYS := "Days & Gold"
 const CATEGORY_MERCHANT := "Merchant"
 const CATEGORY_KITCHEN := "Stations"
 const CATEGORY_EVENTS := "Events"
@@ -33,7 +31,6 @@ const CATEGORY_EVENTS := "Events"
 const CATEGORIES: Array[String] = [
 	CATEGORY_BASICS,
 	CATEGORY_CARDS,
-	CATEGORY_DAYS,
 	CATEGORY_MERCHANT,
 	CATEGORY_KITCHEN,
 	CATEGORY_EVENTS,
@@ -58,7 +55,6 @@ const CHAINS := {
 		&"basics_stations",
 		&"basics_station_types",
 		&"basics_score",
-		&"basics_goal",
 		&"basics_hour_end",
 	],
 	&"card_pick": [&"card_pick_choose", &"card_pick_reroll"],
@@ -71,8 +67,6 @@ const CHAINS := {
 	],
 }
 
-## Shown with the chef's own name and speciality. Seen once per chef.
-const CHEF_HINT := &"chef_speciality"
 ## Body holds a %d for the free rerolls per Day, filled in by TutorialManager.get_body.
 const REROLL_HINT := &"card_pick_reroll"
 
@@ -82,23 +76,20 @@ static var _highlight_regex: RegEx = null
 
 
 static func _static_init() -> void:
-	var hours: int = _GameManagerScript.MAX_TURNS_PER_ROUND
-	var days: int = ScoreProgression.RUN_LENGTH_ROUNDS
-
 	# Basics: first run, Day 1, walks through one Hour.
 	_add(&"basics_welcome", CATEGORY_BASICS, "Welcome to the kitchen!",
-		"Let's learn the basics. Every tip can be read again later from **Tips** in the pause menu.",
+		"Let's learn the basics. Reread any tip from **Tips** in the pause menu.",
 		Context.HOUR, [], PRIORITY_CHAIN)
 	_add(&"basics_hand", CATEGORY_BASICS, "Your hand",
-		"These are your cards, drawn from your **deck**. **%ss** make {flavour} or {mult}. **%s** supports the cards around it. Each Hour you draw **%d** cards." % [
-			GameTerms.INGREDIENT, GameTerms.KITCHENWARE, DeckManager.HOUR_DRAW,
+		"You draw **%d** cards from your **deck** each Hour. **%ss** make {flavour} or {mult}. **%s** boosts the %ss after it. Click the deck to see what's left." % [
+			DeckManager.HOUR_DRAW, GameTerms.INGREDIENT, GameTerms.KITCHENWARE, GameTerms.INGREDIENT,
 		],
-		Context.HOUR, [&"hand"], PRIORITY_CHAIN)
+		Context.HOUR, [&"hand", &"deck_pile"], PRIORITY_CHAIN)
 	_add(&"basics_place", CATEGORY_BASICS, "Place a card",
-		"Drag a card from your hand onto an empty **spot**, like this one.",
+		"Drag a card onto an empty **spot**, like this one.",
 		Context.HOUR, [&"board_spot", &"hand"], PRIORITY_CHAIN, &"card_played")
 	_add(&"basics_stations", CATEGORY_BASICS, "Stations",
-		"Each row is a **Station**. Its first **6 spots** hold **%ss** and **%s**. The last **2** are **%ss** for **%ss**. Each Hour, cards trigger Station by Station." % [
+		"Each row is a **Station**: **6 spots** for %ss and %s, then **2 %ss** for **%ss**. Stations trigger top to bottom." % [
 			GameTerms.INGREDIENT, GameTerms.KITCHENWARE, GameTerms.MEAL_SLOT, GameTerms.MEAL,
 		],
 		Context.HOUR, [&"board_station"], PRIORITY_CHAIN)
@@ -106,105 +97,86 @@ static func _static_init() -> void:
 		_station_types_body(),
 		Context.HOUR, [&"board_station"], PRIORITY_CHAIN)
 	_add(&"basics_score", CATEGORY_BASICS, "Hour Rating",
-		"Each card shows what it adds: {flavour} or {mult}. When the Hour ends, the whole kitchen's **{flavour} × {mult}** becomes the Hour's **%s**." % GameTerms.RATING,
+		"Cards add {flavour} and {mult}. At the end of the Hour, **{flavour} × {mult}** is its **%s**." % GameTerms.RATING,
 		Context.HOUR, [&"hand"], PRIORITY_CHAIN)
-	_add(&"basics_goal", CATEGORY_BASICS, "The Day's target",
-		"Every Hour's Rating adds to the Day. Reach the **target** within **%d Hours** to finish the Day. Run out of Hours first and the **run ends**. Survive **%d Days** to win." % [hours, days],
-		Context.HOUR, [&"day_score", &"hours_left"], PRIORITY_CHAIN)
 	_add(&"basics_hour_end", CATEGORY_BASICS, "Ending the Hour",
-		"You can play **%d cards** each Hour. The Hour ends after your second play, or press **End Hour** to stop early. Cards left in your hand go to the **discard pile**. Each new Day shuffles every card, even the ones you played, back into your deck." % DeckManager.PLAYS_PER_HOUR,
+		"You can play **%d cards** each Hour. Cards left in your hand go to the **discard pile**. Each new Day shuffles every card, even the ones you played, back into your deck." % DeckManager.PLAYS_PER_HOUR,
 		Context.HOUR, [&"hand"], PRIORITY_CHAIN)
 
 	# Cards.
 	_add(&"card_pick_choose", CATEGORY_CARDS, "New card",
-		"At the end of each Day, pick **1 of 3** cards to add to your deck. It goes on **top of your draw pile**, so you draw it first the next Day. Or **skip** it to keep your deck lean.",
+		"At the end of each Day, pick **1** card for your deck. It goes on **top**, so you draw it first next Day. Or **skip** to keep your deck lean.",
 		Context.CARD_PICK, [&"card_choices"], PRIORITY_PANEL)
 	_add(&"card_pick_reroll", CATEGORY_CARDS, "Rerolls",
-		"Not what you need? **Reroll** the choices. You get **%d free rerolls** every Day. After that a reroll costs Gold, starting at 1 and going up by 1 each time for the rest of the run.",
+		"Not what you need? **Reroll**. You get **%d free** each Day. After that, each reroll costs more Gold.",
 		Context.CARD_PICK, [&"card_reroll"], PRIORITY_PANEL)
 	_add(&"overplay", CATEGORY_CARDS, "Star up and replace",
-		"Play a card onto a **copy of itself** to **Star it up** and make it stronger. Playing a different card on a taken spot **replaces** the card there.",
+		"Play a card onto **its own copy** to **Star it up** (+%d%% each). A different card **replaces** it." % roundi(TileCard.STAR_SCALE_STEP * 100.0),
 		Context.HOUR, [&"hand"], PRIORITY_NORMAL)
-	_add(&"keywords", CATEGORY_CARDS, "Keywords",
-		"Coloured words like {garnish} and {trigger} are **keywords**. Hover a card to see what they mean.",
-		Context.HOUR, [&"hand"], PRIORITY_LOW)
-	_add(&"meal_cards", CATEGORY_CARDS, "%ss" % GameTerms.MEAL,
-		"This is a **%s**. %ss only go in **%ss**, the last 2 spots of a Station, and a Station can't hold **the same %s twice**. Its **recipe** must be on that Station's spots, or it fails. A served Meal counts toward its Station's level." % [
-			GameTerms.MEAL, GameTerms.MEAL, GameTerms.MEAL_SLOT, GameTerms.MEAL,
-		],
-		Context.ANY_CARD_SCREEN, [&"meal_card", &"meal_slot"], PRIORITY_NORMAL)
 	_add(&"sell", CATEGORY_CARDS, "Selling",
-		"Drag %s and %s here to **sell** them for %s. To take a card out of your deck, visit the Merchant's **removal service**." % [
-			GameTerms.TECHNIQUES, GameTerms.CONDIMENTS, GameTerms.GOLD,
+		"Drag %s and %s here to **sell** them. Deck cards can't be sold, but the Merchant can **remove** them." % [
+			GameTerms.TECHNIQUES, GameTerms.CONDIMENTS,
 		],
 		Context.HOUR, [&"sell_panel"], PRIORITY_LOW)
 
-	# Days and Gold.
-	_add(CHEF_HINT, CATEGORY_DAYS, "Chef speciality",
-		"Each chef has a **speciality** that lasts the whole run. Build around it!",
-		Context.HOUR, [], PRIORITY_LOW)
-
 	# Merchant.
 	_add(&"merchant_intro", CATEGORY_MERCHANT, "The Merchant",
-		"Between Days, spend **%s** on new cards and **%s**. Bought cards are shuffled into your deck. For a few %s you can also **remove** a card from your deck." % [GameTerms.GOLD, GameTerms.TECHNIQUES, GameTerms.GOLD],
+		"Spend **%s** on cards and **%s** between Days. Bought cards shuffle into your deck." % [GameTerms.GOLD, GameTerms.TECHNIQUES],
 		Context.MERCHANT, [&"merchant_cards"], PRIORITY_PANEL)
 	_add(&"merchant_condiments", CATEGORY_MERCHANT, GameTerms.CONDIMENTS,
-		"**%s** are one-use boosts. You can carry **%d** at a time." % [
+		"**%s** are one-use boosts. Carry up to **%d**." % [
 			GameTerms.CONDIMENTS, _CondimentManagerScript.BELT_SIZE,
 		],
 		Context.MERCHANT, [&"merchant_condiments"], PRIORITY_PANEL)
 	_add(&"merchant_lock", CATEGORY_MERCHANT, "Locking",
-		"Use the **lock** on an item to keep it on the shelf for your next visit.",
+		"**Lock** an item to keep it for your next visit.",
 		Context.MERCHANT, [&"merchant_cards"], PRIORITY_PANEL)
 	_add(&"merchant_reroll", CATEGORY_MERCHANT, "Restock",
-		"**Reroll** the shelf for %s. On harder difficulty levels the price goes up each time you reroll." % GameTerms.GOLD,
+		"**Reroll** the shelf for %s." % GameTerms.GOLD,
 		Context.MERCHANT, [&"merchant_reroll"], PRIORITY_PANEL)
 	_add(&"merchant_leave", CATEGORY_MERCHANT, "Next Day",
-		"Leave when you're ready to start the next Day.",
+		"Leave to start the next Day.",
 		Context.MERCHANT, [&"merchant_leave"], PRIORITY_PANEL)
 	_add(&"staff", CATEGORY_MERCHANT, GameTerms.TECHNIQUES,
-		"**%s** sit beside a Station. Each one has its own condition for when it helps, so hover one to see what it does. Drag a %s to swap Stations, or onto the sell spot to sell it." % [
+		"**%s** sit beside a Station. Drag a %s to swap Stations, or onto the sell spot to sell it." % [
 			GameTerms.TECHNIQUES, GameTerms.TECHNIQUE,
 		],
 		Context.HOUR, [&"staff_slot"], PRIORITY_NORMAL)
 	_add(&"condiments", CATEGORY_MERCHANT, "Using %s" % GameTerms.CONDIMENTS,
-		"Your **%s** wait here. **Drag** one out to use it. Some need a target spot. Drag one onto the sell spot to **sell** it." % GameTerms.CONDIMENTS,
+		"**Drag** a Condiment out to use it. Some need a target. Drop one on the sell spot to sell it.",
 		Context.HOUR, [&"condiment_belt"], PRIORITY_NORMAL)
 
 	# Stations.
 	_add(&"station_type", CATEGORY_KITCHEN, "Station type",
-		"This Station now has a **type**, set by the cards on it. It keeps the type as long as its cards still meet the requirements.",
+		"This Station has a **type** now. Lose the cards it needs and it loses the type and its level.",
 		Context.HOUR, [&"typed_station"], PRIORITY_NORMAL)
 	_add(&"station_level", CATEGORY_KITCHEN, "Station level",
-		"Serving **%ss** levels up a Station. At **level %d** you choose a perk, and a locked second **%s** opens." % [
-			GameTerms.MEAL, _StationManagerScript.CHOICE_LEVEL, GameTerms.MEAL_SLOT,
+		"Serving **%ss** levels up a Station. At levels **%d** and **%d** you choose a **perk**." % [
+			GameTerms.MEAL, _StationManagerScript.CHOICE_LEVEL, _StationManagerScript.CAPSTONE_LEVEL,
 		],
 		Context.HOUR, [&"leveled_station"], PRIORITY_NORMAL)
 	_add(&"station_perk", CATEGORY_KITCHEN, "Station perk",
-		"Level %d! Choose a **perk** for this Station. If its second **%s** was locked, it is open now too." % [
+		"Pick a **perk** for this Station. At level %d, a locked **%s** opens too." % [
 			_StationManagerScript.CHOICE_LEVEL, GameTerms.MEAL_SLOT,
 		],
 		Context.STATION_CHOICE, [], PRIORITY_PANEL)
 
 	# Events.
 	_add(&"event_preview", CATEGORY_EVENTS, "Events",
-		"Some Days bring an **event** that changes the rules. Hover this icon to preview the next one and plan ahead.",
+		"Some Days bring an **event** that changes the rules. Hover here to preview the next one.",
 		Context.HOUR, [&"event_icon"], PRIORITY_NORMAL)
 	_add(&"event_active", CATEGORY_EVENTS, "Event active",
-		"Today's **event** is in effect until the Day ends. Hover the icon to check what it does.",
+		"Today's **event** lasts until the Day ends. Hover to check it.",
 		Context.HOUR, [&"event_icon"], PRIORITY_URGENT)
 
 
 static func _station_types_body() -> String:
-	var lead := "Fill a Station's first 6 spots with the right cards and it becomes a **type**, with its own bonus."
+	var lead := "The right cards on a Station's 6 spots give it a **type** and a bonus."
 	var example := load(EXAMPLE_STATION_PATH) as StationType
 	if example == null:
 		return lead
-	var text := "%s For example, a **%s** needs **%s**." % [lead, example.display_name, example.get_requirements_text()]
-	var perk := example.perk_for_level(1)
-	if perk != null and not perk.description.is_empty():
-		text += " Its bonus: %s." % perk.description
-	return text + " Every type is listed in the **Collection**."
+	var text := "%s A **%s** needs **%s**." % [lead, example.display_name, example.get_requirements_text()]
+	return text + " All types are in the **Collection**."
 
 
 static func _add(

@@ -17,7 +17,9 @@ const ANCHOR_PATHS := {
 	&"day_score": "RunInfoUI/DayScoreColumn/DayScoreStack",
 	&"hours_left": "RunInfoUI/RunInfoColumn/HBoxContainer/RunStatus/HBoxContainer/TurnsContainer",
 	&"event_icon": "RunInfoUI/RunInfoColumn/HBoxContainer/ChallengeContainer",
-	&"sell_panel": "CardSellPanel",
+	&"deck_pile": "DeckHud/PileButton",
+	## Portrait and gold only: the End Hour button below them is not a sell target.
+	&"sell_panel": ["CardSellPanel/Stack/Art", "CardSellPanel/Stack/GoldPanel"],
 	&"condiment_belt": "CondimentBelt/SlotsColumn",
 	&"card_choices": "CardSelectionUI/Panel/VBoxContainer/MarginPanel/ChoicesContainer",
 	&"card_reroll": "CardSelectionUI/Panel/VBoxContainer/RerollButton",
