@@ -61,6 +61,11 @@ Deck fields: `details.starting_deck` (card ids) and `kitchen` (Station kits it w
 Day (picks go on top of the draw pile),
 discounts Merchant cards by how often a shuffled-in card is drawn, skips weak picks once the deck is
 18+ cards and removes its weakest cards above that size. All of those numbers are untuned.
+`details.station_summary` lists every Station type the run formed (`best_level`, `first_day`, `days`
+it stood at a Day's end, most `rows` at once) and `details.meals_served` the Meals served at least once
+(id -> serves). Each run's log line prints both (`stations=pastry L5 (day 2, 2 rows) meals=2`), and
+`compare_playtest_reports.py` shows Stations per run, different Meals served per run and each Station's
+share of runs, average best level and first Day.
 `details.replace_detail` lists every replacement (day, Hour, old and new card with kinds, stars lost) and
 `details.offers` every card offer as `round:id|id|id>chosen`.
 

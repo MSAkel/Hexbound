@@ -543,6 +543,8 @@ func _run_one(suite: String, chef_id: String, seed_text: String, repeat_index: i
 	details["difficulty"] = _difficulty
 	details["after_goal_days"] = _after_goal_days
 	details["power"] = power_mode
+	details["station_summary"] = _station_summary(details.get("days", []))
+	details["meals_served"] = _meals_served(details.get("meal_fires", {}))
 	details["extra_hours"] = extra_hours
 	details["playtest_condiments"] = use_condiments
 	details["overplay"] = TileCard.overplay_enabled
@@ -1084,6 +1086,11 @@ func _record(suite: String, chef_id: String, seed_text: String, reasons: Array[S
 			print("[playtest] FAIL starter_fairness %s %s — %s" % [chef_id, seed_text, ", ".join(reasons)])
 		return
 	var outcome := "won" if bool(details.get("won", false)) else "lost day %d" % int(details.get("reached_round", 0))
+	if details.has("station_summary"):
+		outcome += " stations=%s meals=%d" % [
+			station_summary_text(details["station_summary"]),
+			(details.get("meals_served", {}) as Dictionary).size(),
+		]
 	if suite != "run":
 		outcome = "reached day %d" % int(details.get("reached_round", 0))
 	print("[playtest] %s %s/%s %s %s: %s gold=%d %.1fs%s" % [
@@ -1097,6 +1104,54 @@ func _record(suite: String, chef_id: String, seed_text: String, reasons: Array[S
 		float(details.get("seconds", 0.0)),
 		"" if passed else " — %s" % ", ".join(reasons),
 	])
+
+
+## Every Station type a run formed, from its end-of-Day snapshots: best level, first Day it stood at
+## the end of a Day, how many Days it stood, and the most rows it held at once.
+## {"fish_station": {"best_level": 4, "first_day": 2, "days": 8, "rows": 1}}.
+static func _station_summary(days: Array) -> Dictionary:
+	var summary: Dictionary = {}
+	for day: Dictionary in days:
+		var rows_this_day: Dictionary = {}
+		for station: Dictionary in day.get("stations", []):
+			var type_id := String(station.get("type", ""))
+			if type_id.is_empty():
+				continue
+			rows_this_day[type_id] = int(rows_this_day.get(type_id, 0)) + 1
+			var entry: Dictionary = summary.get(type_id, {"best_level": 0, "first_day": int(day["round"]), "days": 0, "rows": 0})
+			entry["best_level"] = maxi(int(entry["best_level"]), int(station.get("level", 1)))
+			summary[type_id] = entry
+		for type_id: String in rows_this_day:
+			var entry: Dictionary = summary[type_id]
+			entry["days"] = int(entry["days"]) + 1
+			entry["rows"] = maxi(int(entry["rows"]), int(rows_this_day[type_id]))
+	return summary
+
+
+## "fish L4 (day 2), bar L2 (day 5)", best level first. "none" when no Station formed.
+static func station_summary_text(summary: Dictionary) -> String:
+	var parts: Array[String] = []
+	var types: Array = summary.keys()
+	types.sort_custom(func(a: String, b: String) -> bool:
+		return int(summary[a]["best_level"]) > int(summary[b]["best_level"])
+	)
+	for type_id: String in types:
+		var entry: Dictionary = summary[type_id]
+		parts.append("%s L%d (day %d%s)" % [
+			type_id.trim_suffix("_station"), int(entry["best_level"]), int(entry["first_day"]),
+			", %d rows" % int(entry["rows"]) if int(entry["rows"]) > 1 else "",
+		])
+	return ", ".join(parts) if not parts.is_empty() else "none"
+
+
+## Meal id -> times served, for Meals served at least once (from meal_fires).
+static func _meals_served(meal_fires: Dictionary) -> Dictionary:
+	var served: Dictionary = {}
+	for meal_id: String in meal_fires:
+		var fires: Array = meal_fires[meal_id]
+		if not fires.is_empty() and int(fires[0]) > 0:
+			served[meal_id] = int(fires[0])
+	return served
 
 
 func _print_summary(suite: String) -> void:

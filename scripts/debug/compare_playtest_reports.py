@@ -5,7 +5,8 @@ usage: compare_playtest_reports.py base.json new.json [--suite=run|power]
 
 Per chef: win rate, average day reached, final gold, and average score / goal for each day.
 In --power reports every day plays out in full, so score / goal is the cleanest power measure.
-Then the cards whose take rate moved most.
+Then the Stations each chef formed (share of runs, average best level, average first Day), how
+many different Meals were served per run, and the cards whose take rate moved most.
 
 Run reports made with --extra-hours also show, per day: Hours used to meet the goal, gold paid for
 the unused Hours, and full-day score / goal (the score if the bot had played the unused Hours too).
@@ -32,6 +33,9 @@ def summarize(cases: list[dict]) -> dict[str, dict]:
             "hours_sum": defaultdict(float), "early_gold_sum": defaultdict(float),
             "cleared_count": Counter(), "gold_count": Counter(),
             "full_sum": defaultdict(float), "full_count": Counter(),
+            "station_runs": Counter(), "station_level_sum": defaultdict(float),
+            "station_first_day_sum": defaultdict(float), "stations_per_run": 0,
+            "meals_served_kinds": 0, "meals_served_total": 0,
         })
         row["runs"] += 1
         row["wins"] += bool(details.get("won"))
@@ -55,7 +59,48 @@ def summarize(cases: list[dict]) -> dict[str, dict]:
                 row["full_sum"][int(day["round"])] += float(day.get("score", 0)) / goal
                 row["full_count"][int(day["round"])] += 1
         row["takes"].update(set(picked_card_ids(details)))
+        summary = details.get("station_summary") or station_summary_from_days(details.get("days", []))
+        row["stations_per_run"] += len(summary)
+        for station_id, entry in summary.items():
+            row["station_runs"][station_id] += 1
+            row["station_level_sum"][station_id] += int(entry.get("best_level", 1))
+            row["station_first_day_sum"][station_id] += int(entry.get("first_day", 0))
+        served = {meal: int(fires[0]) for meal, fires in details.get("meal_fires", {}).items() if fires and int(fires[0]) > 0}
+        row["meals_served_kinds"] += len(served)
+        row["meals_served_total"] += sum(served.values())
     return chefs
+
+
+def station_summary_from_days(days: list[dict]) -> dict:
+    """Older reports have no station_summary: rebuild best level and first Day from the Day snapshots."""
+    summary: dict[str, dict] = {}
+    for day in days:
+        for station in day.get("stations", []):
+            station_id = station.get("type") or ""
+            if not station_id:
+                continue
+            entry = summary.setdefault(station_id, {"best_level": 0, "first_day": int(day.get("round", 0))})
+            entry["best_level"] = max(entry["best_level"], int(station.get("level", 1)))
+    return summary
+
+
+def print_stations(old_row: dict, new_row: dict) -> None:
+    """Share of runs that formed each Station, its average best level and first Day."""
+    print(f"  Stations per run {old_row['stations_per_run'] / old_row['runs']:5.2f} -> "
+          f"{new_row['stations_per_run'] / new_row['runs']:5.2f}")
+    print(f"  different Meals served per run {old_row['meals_served_kinds'] / old_row['runs']:5.2f} -> "
+          f"{new_row['meals_served_kinds'] / new_row['runs']:5.2f}  "
+          f"(serves {old_row['meals_served_total'] / old_row['runs']:.1f} -> {new_row['meals_served_total'] / new_row['runs']:.1f})")
+    print("  Stations formed: share of runs, avg best level, avg first Day")
+    for station_id in sorted(set(old_row["station_runs"]) | set(new_row["station_runs"])):
+        cells = []
+        for row in (old_row, new_row):
+            runs = row["station_runs"][station_id]
+            if runs:
+                cells.append(f"{100 * runs / row['runs']:4.0f}% L{row['station_level_sum'][station_id] / runs:.1f} d{row['station_first_day_sum'][station_id] / runs:.1f}")
+            else:
+                cells.append(f"{'-':>14}")
+        print(f"    {station_id.removesuffix('_station'):10} {cells[0]:>14} -> {cells[1]:>14}")
 
 
 def ratio(row: dict, day: int) -> float | None:
@@ -119,6 +164,7 @@ def main() -> None:
         print_by_day("Hours used to meet the goal", old_row, new_row, "hours_sum", "cleared_count")
         print_by_day("early-finish gold", old_row, new_row, "early_gold_sum", "gold_count")
         print_by_day("full-day score/goal (--extra-hours)", old_row, new_row, "full_sum", "full_count")
+        print_stations(old_row, new_row)
         moves = []
         for card_id in set(old_row["takes"]) | set(new_row["takes"]):
             old_rate = old_row["takes"][card_id] / old_row["runs"]
