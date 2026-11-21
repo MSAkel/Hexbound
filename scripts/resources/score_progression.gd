@@ -19,18 +19,19 @@ const MAX_SCORE := 9223372036854775807
 ## in the nightly playtest): Days 2-9 set near the 10th-15th percentile of full-Day scores from
 ## casual + novice bot runs (4 chefs x 6 seeds, Level 1). Replaying those runs' scores against
 ## these targets: careful bot loses 1/9, casual 5/24, novice 13/24. Endless Mode grows from Day 9.
-## Nov 22 2026: Day 2 20000 -> 15000 (untuned). The careful bot's Day 2 scores were 11.6k-35k, with
-## four chefs only just over 20k and Restaurateur at 18k.
+## Nov 22 2026 (user): the overtuned set (618/20000/52000/165000/320000/400000/500000/750000/900000)
+## is undone, back to the last step before it, so the deck and end-of-Day pick changes can be judged
+## against the earlier targets.
 const AUTHORED_ROUND_SCORES: Array[int] = [
 	618,
-	15000,
-	52000,
-	165000,
-	320000,
-	400000,
-	500000,
-	750000,
-	900000,
+	3315,
+	11700,
+	28688,
+	54188,
+	75000,
+	140156,
+	258750,
+	286875,
 ]
 ## Multiplier used by the endless curve. Values above 1 increase the target every round.
 const ENDLESS_GROWTH_FACTOR := 1.5
