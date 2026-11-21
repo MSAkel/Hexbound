@@ -184,12 +184,7 @@ func finish_turn_processing() -> void:
 		else:
 			_complete_current_round()
 	else:
-		# Every new hour gets a card pick. The picked card goes on top of the draw pile,
-		# so the Hour's draw waits for the pick (DeckManager.release_draw).
-		if EventManager.get_cards_pack_size(false) > 0 and (not skip_presentation or playtest_real_day_flow):
-			DeckManager.hold_draw()
-			if not skip_presentation:
-				UiManager.show_cards_choice_panel.emit()
+		# Card picks only come at the end of the Day (RoundFlow). The deck covers the Hours between.
 		EventBus.turn_started.emit()
 
 	if should_consume_turn:
@@ -440,6 +435,7 @@ func reset_for_new_run() -> void:
 	RunLedger.reset_for_new_run()
 	EconomyManager.set_run_starting_gold(selected_difficulty)
 	EconomyManager.reset_rerolls()
+	EconomyManager.reset_paid_rerolls()
 	EventManager.init_run()
 
 

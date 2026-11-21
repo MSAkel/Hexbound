@@ -20,7 +20,7 @@ const CARD_COUNT := 4
 ## A tile card pack costs the regular card price of its category plus this.
 const TILE_PACK_PREMIUM := 1
 ## Technique pack price. Flat, whatever rarities it holds.
-const TECHNIQUE_PACK_PRICE := 10
+const TECHNIQUE_PACK_PRICE := 7
 
 const _IDS: Array[String] = ["produce_basket", "utensil_drawer", "recipe_box", "chefs_notebook"]
 const _NAMES: Array[String] = ["Produce Basket", "Utensil Drawer", "Recipe Box", "Chef's Notebook"]

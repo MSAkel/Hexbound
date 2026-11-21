@@ -7,8 +7,8 @@ extends Card
 
 const BASE_PRICE_BY_RARITY := {
 	Rarity.COMMON: 4,
-	Rarity.UNCOMMON: 7,
-	Rarity.RARE: 10,
+	Rarity.UNCOMMON: 6,
+	Rarity.RARE: 8,
 }
 
 ## Run-long counters for staff that grow. Saved with the slot. Not exported, so a fresh seat starts empty.

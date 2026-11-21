@@ -10,6 +10,6 @@ display_name = "Second Pass"
 description = "{trigger} again after next {trigger}"
 icon = ExtResource("1_ucjx5")
 liquid_color = Color(0.95, 0.82, 0.28, 1)
-base_price = 3
+base_price = 2
 effect_type = 3
 target_kind = 1

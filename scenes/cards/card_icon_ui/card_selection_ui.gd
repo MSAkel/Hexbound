@@ -57,6 +57,8 @@ func _ready() -> void:
 	PadPrompt.attach(_show_board_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
 	PadPrompt.attach(_show_options_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
 	EventBus.rerolls_changed.connect(_on_rerolls_changed)
+	# Paid rerolls depend on Gold.
+	EventBus.gold_changed.connect(func(_amount: int) -> void: _update_reroll_button())
 	_build_skip_button()
 	_update_reroll_button()
 	set_process(false)
@@ -97,9 +99,6 @@ func _apply_card_float(float_wrapper: Control, index: int) -> void:
 
 func _on_show_panel() -> void:
 	_awaiting_pick = true
-	if not RoundFlow.is_transition_card_pick():
-		# The Hour's draw waits for this pick, so the picked card is in the new hand.
-		DeckManager.hold_draw()
 	_set_board_view(false)
 	UiManager.show_panel(self)
 	set_process(true)
@@ -219,13 +218,13 @@ func _on_rerolls_changed(_remaining: int) -> void:
 	_update_reroll_button()
 
 
-## Keep reroll label and disabled state in sync with the shared run budget.
+## Keep reroll label and disabled state in sync: free rerolls first, then a Gold price that climbs.
 func _update_reroll_button() -> void:
 	var remaining := EconomyManager.rerolls_remaining
-	if remaining <= 0:
-		reroll_button.text = "0 rerolls"
+	if remaining > 0:
+		reroll_button.text = "Reroll (%d free)" % remaining
 	else:
-		reroll_button.text = "Reroll (%d left)" % remaining
+		reroll_button.text = "Reroll - %d %s" % [EconomyManager.get_reroll_cost(), GameTerms.GOLD]
 	reroll_button.disabled = not EconomyManager.can_reroll()
 
 func instantiate_card_choices() -> void:
@@ -296,7 +295,6 @@ func _finish_pick() -> void:
 	set_process(false)
 	## Report the pick here rather than on tile_card_selected, which merchant purchases also emit.
 	RoundFlow.notify_card_picked()
-	DeckManager.release_draw()
 
 
 ## Flies a copy of the picked card from its spot on the panel into the deck pile.

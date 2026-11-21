@@ -589,6 +589,8 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		# One record per Level 3 or 6 station pick: station, level, every option and what was taken.
 		"station_picks": [],
 		"rerolls": 0,
+		# "round@price" for each card-pick reroll paid with Gold.
+		"paid_rerolls": [],
 		"merchant_rerolls": 0,
 		"drinks": [],
 		"perks": [],
@@ -660,9 +662,6 @@ func _play_hour() -> void:
 		})
 	for reason: String in _collect_invariant_failures(score_before):
 		_note_invariant(reason)
-	if _run_over or RoundFlow.is_transitioning():
-		return
-	await _draft_next_hour()
 
 
 ## Plays from hand until the Hour ends: after DeckManager.PLAYS_PER_HOUR plays, an empty hand,
@@ -682,14 +681,6 @@ func _play_hand() -> void:
 		if not _apply_hand_action(action):
 			_log["passes"] = int(_log["passes"]) + 1
 			break
-
-
-## The day goes on. Every new Hour brings a card pick, rolled before the Hour was used up.
-## The Hour's draw waits for it (GameManager held it), so the picked card is drawn now.
-func _draft_next_hour() -> void:
-	if EventManager.get_cards_pack_size(false) > 0:
-		await _draft(false, GameManager.current_round, GameManager.remaining_turns + 1)
-	DeckManager.release_draw()
 
 
 ## --extra-hours. Called just before an Hour resolves. If that Hour meets the goal with Hours to
@@ -722,7 +713,6 @@ func _probe_extra_hours() -> void:
 		_note_invariant(reason)
 	var score_at_goal := GameManager.total_round_score
 	while GameManager.remaining_turns >= 1 and not RoundFlow.is_transitioning() and not _run_over:
-		await _draft_next_hour()
 		await _play_hand()
 		await policy.before_resolve()
 		if GameManager.remaining_turns <= 1:
@@ -815,9 +805,12 @@ func _draft(is_reward: bool, round_number: int, first_remaining_turns: int) -> v
 			(_log["offers"] as Array).append(offer_text + ">skipped")
 			(_log["skips"] as Array).append("%s%d" % ["reward" if is_reward else "", round_number])
 			return
+		var reroll_cost := EconomyManager.get_reroll_cost()
 		if choice < 0 and EconomyManager.use_reroll():
 			reroll_index += 1
 			_log["rerolls"] = int(_log["rerolls"]) + 1
+			if reroll_cost > 0:
+				(_log["paid_rerolls"] as Array).append("%d@%d" % [round_number, reroll_cost])
 			(_log["offers"] as Array).append(offer_text + ">rerolled")
 			continue
 		var card := offer[clampi(choice, 0, offer.size() - 1)]

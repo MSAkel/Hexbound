@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("1_script")
+base_price = 3
 id = "swap_spots"
 display_name = "Swap Spots"
 description = "Swap two seated cards"

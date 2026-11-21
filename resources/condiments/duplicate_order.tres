@@ -10,6 +10,6 @@ display_name = "Duplicate Order"
 description = "Copy the targeted seated card into your draw pile"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.82, 0.58, 0.92, 1)
-base_price = 5
+base_price = 3
 effect_type = 11
 target_kind = 1
