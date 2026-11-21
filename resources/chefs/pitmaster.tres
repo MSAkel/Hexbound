@@ -18,4 +18,5 @@ display_name = "Pitmaster"
 icon = ExtResource("2_icon")
 speciality_description = "Grilling Stations level up faster. Meat and Poultry dishes gain +1 {mult} for each level of their Station."
 perk = SubResource("Perk")
-starting_hand = Array[String](["steak", "meat", "salt", "skillet", "black_pepper"])
+deck_stations = Array[String](["grilling_station:full", "roasting_station:small"])
+kit_swaps = Array[String](["grilling_station:3=meat", "grilling_station:4=salt", "grilling_station:9=black_pepper"])

@@ -17,4 +17,5 @@ icon = ExtResource("2_icon")
 ingame_portrait = ExtResource("3_ingame")
 speciality_description = "Catch of the Day: at the start of each Day, every Seafood on the board is {garnished}."
 perk = SubResource("Perk")
-starting_hand = Array[String](["shrimp", "salmon", "lemon", "whisk", "random:seasoning"])
+deck_stations = Array[String](["fish_station:full", "sauce_station:small"])
+kit_swaps = Array[String](["fish_station:3=salmon"])

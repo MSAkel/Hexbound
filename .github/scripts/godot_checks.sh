@@ -71,6 +71,22 @@ grep -E '^\[content\]' "$LOG_DIR/content.log"
 check_log "Content" "$LOG_DIR/content.log"
 endstep
 
+step "Deck rules on the run screen"
+# The playtest bot skips the run screen (Hand, card picks, Merchant, saves). This drives them:
+# draw, two plays, a pick on top of the draw pile, End Hour, Skip, the Day reshuffle, the removal
+# service and a save and Continue. Only script errors are scanned here: the run screen also logs
+# a missing art file (assets/map/empty_map.png in collection.tscn) that is not a script problem.
+timeout 300 "$GODOT" --headless --path . res://scenes/debug/deck_flow_check.tscn > "$LOG_DIR/deck-flow.log" 2>&1
+code=$?
+grep -E '^\[deck_flow\]' "$LOG_DIR/deck-flow.log"
+[ $code -ne 0 ] && { echo "::error title=Deck flow::Deck flow check failed (exit $code), see the [deck_flow] lines above"; failed=1; }
+if grep -qE 'SCRIPT ERROR' "$LOG_DIR/deck-flow.log"; then
+  echo "::error title=Deck flow::Script errors in the deck flow check"
+  grep -E 'SCRIPT ERROR' -A2 "$LOG_DIR/deck-flow.log" | head -40
+  failed=1
+fi
+endstep
+
 run_playtest() {  # $1 = name, rest = runner flags
   local name="$1"; shift
   step "Playtest: $name"

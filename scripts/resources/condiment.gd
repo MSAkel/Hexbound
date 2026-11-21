@@ -77,13 +77,13 @@ func _get_fuse_summary_source() -> String:
 		EffectType.MINT_SIP:
 			return "Mint Sip"
 		EffectType.THROW_OUT:
-			return "{destroy} seated card, gain random card"
+			return "{destroy} seated card"
 		EffectType.STAR_UP:
 			return "+1 star on seated card"
 		EffectType.SEND_BACK:
-			return "Return a copy per star to hand"
+			return "{discard} seated card, stars kept"
 		EffectType.DUPLICATE_ORDER:
-			return "Copy seated card to hand"
+			return "Copy seated card into your deck"
 		EffectType.SWAP_SPOTS:
 			return "Swap two seated cards"
 		_:

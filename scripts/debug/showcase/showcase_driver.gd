@@ -95,7 +95,7 @@ func _stage() -> void:
 		card_ui.queue_free()
 	await get_tree().process_frame
 	for id: String in HAND:
-		EventBus.tile_card_selected.emit(GameManager.get_tile_card_by_id(id))
+		DeckManager.gain_card(GameManager.get_tile_card_by_id(id), DeckManager.Source.DEBUG)
 	GameManager.remaining_turns = 2
 	GameManager.total_round_score = BANKED_RATING
 	EventBus.turn_changed.emit()

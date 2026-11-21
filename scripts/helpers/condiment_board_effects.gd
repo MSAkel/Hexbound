@@ -4,42 +4,37 @@ extends RefCounted
 ## Instant board edits that used to live on Utility hand cards.
 
 
-static func throw_out(tile: Hex, rng: RandomNumberGenerator) -> bool:
+## Destroys the placed card and gives nothing back. Its deck card is not touched, so it still comes
+## back with the Day reshuffle. Counts as a destroy (Zero Waste, Deglaze) and a Ward stops it.
+static func throw_out(tile: Hex, _rng: RandomNumberGenerator = null) -> bool:
 	var target := tile.active_tile_card
 	if target == null:
 		return false
-
-	destroy_placed_at(tile, target)
-
-	var drafted := CardLoot.card_draw(1, [], true, rng)
-	if drafted.is_empty():
-		_show_failure(tile)
+	if not destroy_placed_at(tile, target):
 		return false
-
-	var hand_copy: TileCard = drafted[0].duplicate(true)
-	EventBus.generated_hand_card.emit(hand_copy)
-	_show_text(tile, "+ %s" % hand_copy.name)
+	_show_text(tile, "Thrown out")
 	return true
 
 
-## Returns one ★1 copy per star, so a ★3 card comes back as three copies.
+## Discards the placed card with its stars: it leaves the board (not a destroy) and goes to the
+## discard pile as a deck card, so the deck gains it on top of the card the Day reshuffle brings back.
 static func send_back(tile: Hex) -> bool:
 	var target := tile.active_tile_card
 	if target == null:
 		return false
 
-	for _copy in target.star_level:
-		copy_placed_to_hand(target)
+	DeckManager.gain_card(target, DeckManager.Source.SEND_BACK)
 	tile.remove_tile_card()
-	_show_text(tile, "Returned!")
+	_show_text(tile, "Sent back %s" % TileCard.star_text(target.star_level) if target.star_level > 1 else "Sent back")
 	return true
 
 
+## Copies the placed card (at ★1) into the draw pile, shuffled in.
 static func duplicate_order(tile: Hex) -> bool:
 	if tile.active_tile_card == null:
 		return false
 
-	copy_placed_to_hand(tile.active_tile_card)
+	copy_placed_to_deck(tile.active_tile_card)
 	_show_text(tile, "Copied!")
 	return true
 
@@ -59,13 +54,10 @@ static func swap_spots(hex_a: Hex, hex_b: Hex) -> bool:
 	return true
 
 
-static func copy_placed_to_hand(source_card: TileCard) -> void:
-	var hand_copy: TileCard = source_card.duplicate(true)
-	hand_copy.activation_count = 0
-	hand_copy.is_garnished = false
-	hand_copy.is_active = true
-	hand_copy.star_level = 1
-	EventBus.tile_card_selected.emit(hand_copy)
+static func copy_placed_to_deck(source_card: TileCard) -> void:
+	var deck_copy := DeckManager.make_deck_card(source_card)
+	deck_copy.star_level = 1
+	DeckManager.gain_card(deck_copy, DeckManager.Source.COPY)
 
 
 ## A duplicate played onto its own card, or Star Up. The seated instance keeps its state and gains a star.
@@ -73,7 +65,7 @@ static func star_up_placed_at(tile: Hex) -> void:
 	var target := tile.active_tile_card
 	if target == null:
 		return
-	target.star_level = mini(target.star_level + 1, TileCard.MAX_STAR_LEVEL)
+	target.star_level += 1
 	tile.refresh_tile_card_visual_state()
 	_show_text(tile, "%s!" % TileCard.star_text(target.star_level), Color(1.0, 0.85, 0.2, 1.0))
 

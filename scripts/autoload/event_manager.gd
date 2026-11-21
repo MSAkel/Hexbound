@@ -7,7 +7,6 @@ extends Node
 enum Type {
 	BLACKOUT = 0,
 	RUSH_HOUR = 1,
-	DEALT_HAND = 2,
 	FADING_SECTOR = 3,
 	SHORT_STAFFED = 6,
 	AUSTERITY = 7,
@@ -26,7 +25,6 @@ const RAISED_STAKES_SCORE_SCALE := 1.25
 const ALL_EVENTS: Array[Type] = [
 	Type.BLACKOUT,
 	Type.RUSH_HOUR,
-	Type.DEALT_HAND,
 	Type.FADING_SECTOR,
 	Type.SHORT_STAFFED,
 	Type.AUSTERITY,
@@ -43,11 +41,6 @@ const EVENT_INFO := {
 	Type.RUSH_HOUR: {
 		"name": "Rush Hour",
 		"description": "You have 1 less hour to complete the day.",
-		"rounds": ANY_EVENT_ROUND,
-	},
-	Type.DEALT_HAND: {
-		"name": "Dealt Hand",
-		"description": "At the end of each hour, you are dealt a random card instead of choosing one.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.FADING_SECTOR: {
@@ -237,55 +230,8 @@ func get_max_turns_per_round() -> int:
 
 
 ## Pack size for the current offer.
-func get_cards_pack_size(is_round_reward: Variant = null) -> int:
-	var reward := bool(is_round_reward) if is_round_reward != null else RoundFlow.is_transitioning()
-	if _get_governing_event(reward) == Type.DEALT_HAND:
-		return 1
+func get_cards_pack_size(_is_round_reward: Variant = null) -> int:
 	return GameManager.CARDS_PACK_SIZE
-
-
-## Dealt Hand skips the draft overlay and grants the lone card immediately.
-func should_auto_grant_card(is_round_reward: bool = false) -> bool:
-	return _get_governing_event(is_round_reward) == Type.DEALT_HAND
-
-
-## Draws one card from the same stream as the draft panel and adds it to the hand.
-func grant_auto_card(is_round_reward: bool, fail_remaining_turns: int = -1) -> bool:
-	if not should_auto_grant_card(is_round_reward):
-		return false
-	if GameManager.tile_cards_pool.is_empty():
-		push_error("EventManager: cannot auto-grant card, pool is empty.")
-		return false
-
-	var round_number := GameManager.current_round
-	if is_round_reward and RoundFlow.is_transitioning():
-		round_number = RoundFlow.get_transition_card_pick_round()
-	var remaining_turns := fail_remaining_turns if fail_remaining_turns >= 0 else GameManager.remaining_turns
-	var stream_name := RunRng.build_card_offer_stream_name(
-		round_number,
-		remaining_turns,
-		is_round_reward,
-		0
-	)
-	var loot_rng := RunRng.create_rng(stream_name)
-	var pack := CardLoot.lane_draw(
-		CardLoot.lanes_for_round(round_number),
-		1,
-		GameManager.get_draw_pool(),
-		loot_rng
-	)
-	if pack.is_empty():
-		return false
-
-	EventBus.tile_card_selected.emit(pack[0])
-	return true
-
-
-func _get_governing_event(is_round_reward: bool) -> int:
-	var governing_event := active_event
-	if is_round_reward and RoundFlow.is_transitioning():
-		governing_event = RoundFlow.get_outgoing_event()
-	return governing_event
 
 
 func get_producer_output_multiplier(tile: Hex) -> float:

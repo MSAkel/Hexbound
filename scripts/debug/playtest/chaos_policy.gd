@@ -46,6 +46,8 @@ func _weighted_index(cards: Array[TileCard]) -> int:
 func choose_offer(offer: Array[TileCard], _is_reward: bool) -> int:
 	if EconomyManager.can_reroll() and _rng().randf() < 0.2:
 		return -1
+	if _rng().randf() < 0.1:
+		return runner.SKIP_PICK
 	return _weighted_index(offer)
 
 
@@ -53,7 +55,7 @@ func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
 	var card: TileCard = hand[_weighted_index(hand)]
 	var hexes: Array[Hex] = runner.legal_hexes(card)
 	if hexes.is_empty() or _rng().randf() < 0.1:
-		return {"card": card, "sell": true}
+		return {"end": true}
 	return {"card": card, "hex": hexes[_rng().randi_range(0, hexes.size() - 1)]}
 
 
@@ -112,6 +114,10 @@ func shop(visit: RefCounted) -> void:
 					if not contents.is_empty() and _rng().randf() < 0.85:
 						var kept: Card = contents[_rng().randi_range(0, contents.size() - 1)]
 						visit.keep_from_pack(kept, StaffManager.first_free_slot())
+	# Now and then use the removal service on a random deck card.
+	if _rng().randf() < 0.3 and DeckManager.can_remove_card():
+		var deck := DeckManager.all_cards()
+		visit.remove_deck_card(deck[_rng().randi_range(0, deck.size() - 1)])
 	if EconomyManager.can_afford(visit.next_reroll_cost()) and _rng().randf() < 0.3:
 		visit.reroll()
 

@@ -16,4 +16,5 @@ display_name = "Pastry Chef"
 icon = ExtResource("2_icon")
 speciality_description = "Each Dessert served {garnishes} a random Sweet on its Station."
 perk = SubResource("Perk")
-starting_hand = Array[String](["vanilla", "chocolate", "cream", "kitchen_torch", "random:fruit"])
+deck_stations = Array[String](["pastry_station:full", "bar_station:small"])
+kit_swaps = Array[String](["pastry_station:3=vanilla", "pastry_station:7=creme_brulee", "pastry_station:9=cream", "bar_station:6=lemon"])

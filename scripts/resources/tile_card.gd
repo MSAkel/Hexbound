@@ -106,9 +106,9 @@ const ICON_FIRE := FeastStatIcons.FIRE
 const SHOP_PRICE := 3
 const MEAL_SHOP_PRICE := 4
 ## Playing a copy onto the same card merges it up one star. Each star past the first adds this much
-## Flavour, Gold and +Mult scale. xMult is never star-scaled, so starred Mult cards do not compound.
-const MAX_STAR_LEVEL := 5
-const STAR_SCALE_STEP := 0.25
+## output scale: Flavour, Gold, +Mult, and xMult above x1 (see _activation_output_scale).
+## Stars have no cap. Untuned.
+const STAR_SCALE_STEP := 0.10
 
 ## What playing a hand card onto a hex would do.
 enum Overplay { NONE, PLACE, MERGE, REPLACE }
@@ -117,7 +117,8 @@ static var overplay_enabled := true
 
 var activation_count: int = 0
 var is_active: bool = true
-# Merge level of this placed instance. Scales all output. Hand and shop cards are always 1.
+# Merge level of this placed instance. Scales all output. A deck card keeps the stars it was sent
+# back with (Send Back) and places at that level.
 var star_level: int = 1
 # Activations of this instance during the current run.
 var run_trigger_count: int = 0
@@ -474,9 +475,7 @@ func get_overplay(hex: Hex) -> Overplay:
 		if CondimentManager.is_warded(occupant):
 			return Overplay.NONE
 		return Overplay.REPLACE
-	if occupant.star_level < MAX_STAR_LEVEL:
-		return Overplay.MERGE
-	return Overplay.NONE
+	return Overplay.MERGE
 
 
 # Empty spot: place. Same card: merge up a star. Different card: destroy the occupant with no refund.
@@ -721,9 +720,10 @@ func _try_garnish_tile_card(source_tile: Hex, target: TileCard) -> int:
 	return landed
 
 
-# Queues a newly created card for the hand reveal animation. Does not use tile_card_selected.
+# A newly created card joins the deck, shuffled into the draw pile.
 func _add_generated_card_to_hand(card: Card) -> void:
-	EventBus.generated_hand_card.emit(card)
+	if card is TileCard:
+		DeckManager.gain_card(card as TileCard, DeckManager.Source.COPY)
 
 
 func _create_floating_text(

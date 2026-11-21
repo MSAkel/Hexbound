@@ -13,8 +13,6 @@ func on_station_started(ctx: StaffContext) -> void:
 
 func on_day_ended(ctx: StaffContext) -> void:
 	for card: TileCard in ctx.station_cards():
-		if card.star_level >= TileCard.MAX_STAR_LEVEL:
-			continue
 		card.star_level += 1
 		var tile := ctx.map.get_hex_for_tile_card(card)
 		if tile != null:

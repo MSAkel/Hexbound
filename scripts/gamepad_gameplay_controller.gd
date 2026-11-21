@@ -32,6 +32,8 @@ var _placement_handler: CardPlacementHandler
 var _nav := NavRepeater.new()
 ## The first Sell press aims here and the second sells it. Empty when nothing is armed.
 var _sell_armed: Dictionary = {}
+## The hand's Sell press asked to end the Hour. A second press ends it.
+var _end_hour_armed := false
 var _station_info_shown := false
 var _hint_bar: ControllerHintBar
 
@@ -281,7 +283,7 @@ func _handle_confirm() -> void:
 
 
 func _handle_back() -> void:
-	if not _sell_armed.is_empty():
+	if not _sell_armed.is_empty() or _end_hour_armed:
 		_disarm_sell()
 		return
 	if CondimentManager.is_targeting():
@@ -338,9 +340,13 @@ func _hide_station_info() -> void:
 func _handle_sell() -> void:
 	_hide_station_info()
 	var target := _sell_target()
+	if target.is_empty() and _area == Area.HAND and not _is_card_selected():
+		_handle_end_hour()
+		return
 	if target.is_empty():
 		_disarm_sell()
 		return
+	_end_hour_armed = false
 	if not _sell_armed.is_empty() and _sell_armed["item"] == target["item"]:
 		_commit_sell(target)
 		return
@@ -357,17 +363,34 @@ func _handle_sell() -> void:
 	)
 
 
+## Hand cards can't be sold, so in the hand Sell ends the Hour: one press asks, a second confirms.
+func _handle_end_hour() -> void:
+	if not hand.can_end_hour():
+		_disarm_sell()
+		return
+	if _end_hour_armed:
+		_disarm_sell()
+		hand.end_hour()
+		return
+	_disarm_sell()
+	_end_hour_armed = true
+	AudioManager.play_ui_hover()
+	EventBus.toggle_tooltip.emit(
+		true,
+		"End the Hour? Cards left in your hand are discarded.\nPress %s again to end it." % [
+			InputManager.get_button_name(InputManager.ACTION_SELL),
+		],
+		hand.get_global_rect()
+	)
+
+
 ## What Sell acts on right now: {kind, item, name, value}, or empty.
 func _sell_target() -> Dictionary:
 	if CondimentManager.is_targeting():
 		return {}
-	var card: CardUI = null
+	# Hand cards can't be sold. The Merchant's removal service takes cards out of the deck.
 	if _is_card_selected():
-		card = _placement_handler.selected_card
-	elif _area == Area.HAND:
-		card = hand.get_controller_focused_card()
-	if card != null and card.card != null:
-		return {"kind": Area.HAND, "item": card, "name": card.card.name, "value": CardSellPanel.SELL_VALUE}
+		return {}
 	match _area:
 		Area.CONDIMENTS:
 			var slot := condiment_belt.get_controller_focus_index()
@@ -389,8 +412,6 @@ func _sell_target() -> Dictionary:
 func _commit_sell(target: Dictionary) -> void:
 	_disarm_sell()
 	match target["kind"]:
-		Area.HAND:
-			_placement_handler.sell_card_from_gamepad(target["item"] as CardUI)
 		Area.CONDIMENTS:
 			condiment_belt.sell_controller_focused_slot()
 		Area.STAFF:
@@ -398,9 +419,10 @@ func _commit_sell(target: Dictionary) -> void:
 
 
 func _disarm_sell() -> void:
-	if _sell_armed.is_empty():
+	if _sell_armed.is_empty() and not _end_hour_armed:
 		return
 	_sell_armed = {}
+	_end_hour_armed = false
 	EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 #endregion
@@ -413,7 +435,10 @@ func _refresh_hints() -> void:
 	var area_name := _area_name()
 	# In a board view the overlay takes Y to return, so Station info is not offered there.
 	var board_view := _board_view_overlay() != null
-	if not _sell_armed.is_empty():
+	if _end_hour_armed:
+		_add_hint(hints, InputManager.ACTION_SELL, "Confirm End Hour")
+		_add_hint(hints, InputManager.ACTION_BACK, "Keep playing")
+	elif not _sell_armed.is_empty():
 		_add_hint(hints, InputManager.ACTION_SELL, "Confirm sell")
 		_add_hint(hints, InputManager.ACTION_BACK, "Keep")
 	elif CondimentManager.is_targeting():
@@ -423,7 +448,6 @@ func _refresh_hints() -> void:
 	elif _is_card_selected():
 		area_name = "Placing"
 		_add_hint(hints, InputManager.ACTION_CONFIRM, "Place")
-		_add_hint(hints, InputManager.ACTION_SELL, "Sell")
 		if not board_view:
 			_add_hint(hints, InputManager.ACTION_ALT, "Station")
 		_add_hint(hints, InputManager.ACTION_BACK, "Cancel")
@@ -431,7 +455,7 @@ func _refresh_hints() -> void:
 		match _area:
 			Area.HAND:
 				_add_hint(hints, InputManager.ACTION_CONFIRM, "Pick up")
-				_add_hint(hints, InputManager.ACTION_SELL, "Sell")
+				_add_hint(hints, InputManager.ACTION_SELL, "End Hour")
 			Area.BOARD:
 				if not board_view:
 					_add_hint(hints, InputManager.ACTION_ALT, "Station info")

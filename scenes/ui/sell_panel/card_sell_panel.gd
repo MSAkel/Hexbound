@@ -2,11 +2,10 @@ class_name CardSellPanel
 extends PanelContainer
 
 ## Bottom-left corner of the run screen: the current chef's portrait above the gold panel.
-## The gold panel shows the player's gold. While a hand card, staff member or condiment is dragged
-## over the corner it shows that item's sell price instead. Release there to sell it.
+## The gold panel shows the player's gold. While a staff member or condiment is dragged over the
+## corner it shows that item's sell price instead. Release there to sell it. Hand cards can't be
+## sold: the Merchant's removal service takes a card out of the deck.
 ## Hovering the portrait shows the chef's name and ability.
-
-const SELL_VALUE := 2
 
 ## Resting panel sits back so it does not compete with the board.
 const IDLE_MODULATE := Color(1, 1, 1, 0.88)
@@ -25,9 +24,7 @@ const SELL_PULSE_SETTLE := 0.22
 ## Text colour for the sell price, so it reads as a gain rather than the wallet.
 const SELL_PRICE_COLOR := Color(0.62, 1.0, 0.55)
 
-## True while a hand card is picked up.
-var _card_dragged := false
-## Staff slot being dragged, or -1. Staff sell for their own value, not SELL_VALUE.
+## Staff slot being dragged, or -1. Staff sell for their own value.
 var _drag_staff_slot := -1
 ## True while a belt condiment is held. Condiments sell for their own value too.
 var _condiment_dragged := false
@@ -50,8 +47,6 @@ func _ready() -> void:
 	_art.mouse_exited.connect(_on_art_mouse_exited)
 	EventBus.gold_changed.connect(_on_gold_changed)
 	EventBus.run_state_loaded.connect(_on_run_state_loaded)
-	EventBus.card_drag_started.connect(_on_card_drag_started)
-	EventBus.card_drag_ended.connect(_on_card_drag_ended)
 	EventBus.staff_drag_started.connect(_on_staff_drag_started)
 	EventBus.staff_drag_ended.connect(_on_staff_drag_ended)
 	EventBus.condiment_drag_started.connect(_on_condiment_drag_started)
@@ -62,16 +57,6 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if not _is_armed():
 		return
-	_refresh_state()
-
-
-func _on_card_drag_started(_card: CardUI) -> void:
-	_card_dragged = true
-	_refresh_state()
-
-
-func _on_card_drag_ended(_card: CardUI, _outcome: int) -> void:
-	_card_dragged = false
 	_refresh_state()
 
 
@@ -135,8 +120,6 @@ func _on_run_state_loaded() -> void:
 
 ## Gold the dragged item sells for, or -1 when nothing sellable is held.
 func _held_sell_price() -> int:
-	if _card_dragged:
-		return SELL_VALUE
 	if _drag_staff_slot >= 0:
 		var staff := StaffManager.get_staff(_drag_staff_slot)
 		return staff.get_sell_value() if staff != null else -1
@@ -190,13 +173,7 @@ func sell_staff(slot: int) -> bool:
 
 
 func _is_armed() -> bool:
-	return _card_dragged or _drag_staff_slot >= 0 or _condiment_dragged
-
-
-## Pays out for a hand card dropped on the panel. CardPlacementHandler removes the card.
-func sell_card() -> void:
-	EconomyManager.add(SELL_VALUE)
-	AudioManager.play_sfx(UISounds.GOLD_GAINED)
+	return _drag_staff_slot >= 0 or _condiment_dragged
 
 
 ## Pops the gold panel as the sold card's ghost lands on it.

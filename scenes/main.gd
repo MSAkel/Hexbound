@@ -21,7 +21,12 @@ var _restart_hold_time := 0.0
 var _is_restarting := false
 
 
+const DECK_HUD := preload("res://scenes/ui/deck/deck_hud.gd")
+const DECK_VIEWER := preload("res://scenes/ui/deck/deck_viewer.gd")
+
+
 func _ready() -> void:
+	_add_deck_ui()
 	var play_entry_transition := RunSaveManager.consume_scene_enter_transition_request()
 
 	if play_entry_transition:
@@ -56,6 +61,19 @@ func _ready() -> void:
 			AudioManager.play_music(music)
 
 
+## Pile counters, End Hour and the deck viewer (built in code, first-pass layout).
+func _add_deck_ui() -> void:
+	var main_ui := get_node_or_null("MainUI")
+	if main_ui == null:
+		return
+	var hud: Control = DECK_HUD.new()
+	main_ui.add_child(hud)
+	# Below the end-of-Day screens and pause menu, above the board UI.
+	main_ui.move_child(hud, main_ui.get_node("CardsHand").get_index() + 1)
+	var viewer: Control = DECK_VIEWER.new()
+	main_ui.add_child(viewer)
+
+
 ## Chef-select Play, hold-R, and a failed Continue all share this path.
 func _begin_fresh_run() -> void:
 	var pending_run := RunSaveManager.consume_pending_run_seed()
@@ -77,11 +95,11 @@ func _begin_fresh_run() -> void:
 	hand.build_starting_hand()
 	if debug_starting_round > 1:
 		GameManager.set_starting_round_for_debug(debug_starting_round)
-	var expected_hand_size := ChefRegistry.get_expected_opening_hand_size(GameManager.selected_chef)
-	if hand.get_hand_card_count() < expected_hand_size:
+	var expected_deck_size := ChefRegistry.get_expected_deck_size(GameManager.selected_chef)
+	if DeckManager.deck_size() < expected_deck_size:
 		push_error(
-			"Starting hand only dealt %d/%d cards. Delete the run save and start a new run."
-			% [hand.get_hand_card_count(), expected_hand_size]
+			"Starting deck only dealt %d/%d cards. Delete the run save and start a new run."
+			% [DeckManager.deck_size(), expected_deck_size]
 		)
 	else:
 		RunSaveManager.request_autosave()

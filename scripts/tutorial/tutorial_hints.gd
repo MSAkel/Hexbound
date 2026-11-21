@@ -9,7 +9,6 @@ extends RefCounted
 const _GameManagerScript := preload("res://scripts/autoload/game_manager.gd")
 const _CondimentManagerScript := preload("res://scripts/autoload/condiment_manager.gd")
 const _StationManagerScript := preload("res://scripts/autoload/station_manager.gd")
-const _SellPanelScript := preload("res://scenes/ui/sell_panel/card_sell_panel.gd")
 ## Example type for the basics. Requirements and bonus are read from it so the copy stays true.
 const EXAMPLE_STATION_PATH := "res://resources/stations/cold_station.tres"
 
@@ -91,8 +90,8 @@ static func _static_init() -> void:
 		"Let's learn the basics. Every tip can be read again later from **Tips** in the pause menu.",
 		Context.HOUR, [], PRIORITY_CHAIN)
 	_add(&"basics_hand", CATEGORY_BASICS, "Your hand",
-		"These are your cards. **%ss** make {flavour} or {mult}. **%s** supports the cards around it." % [
-			GameTerms.INGREDIENT, GameTerms.KITCHENWARE,
+		"These are your cards, drawn from your **deck**. **%ss** make {flavour} or {mult}. **%s** supports the cards around it. Each Hour you draw **%d** cards." % [
+			GameTerms.INGREDIENT, GameTerms.KITCHENWARE, DeckManager.HOUR_DRAW,
 		],
 		Context.HOUR, [&"hand"], PRIORITY_CHAIN)
 	_add(&"basics_place", CATEGORY_BASICS, "Place a card",
@@ -113,12 +112,12 @@ static func _static_init() -> void:
 		"Every Hour's Rating adds to the Day. Reach the **target** within **%d Hours** to finish the Day. Run out of Hours first and the **run ends**. Survive **%d Days** to win." % [hours, days],
 		Context.HOUR, [&"day_score", &"hours_left"], PRIORITY_CHAIN)
 	_add(&"basics_hour_end", CATEGORY_BASICS, "Ending the Hour",
-		"There is no end-turn button. The Hour ends on its own when only **2 cards** are left in your hand.",
+		"You can play **%d cards** each Hour. The Hour ends after your second play, or press **End Hour** to stop early. Cards left in your hand go to the **discard pile**. Each new Day shuffles every card, even the ones you played, back into your deck." % DeckManager.PLAYS_PER_HOUR,
 		Context.HOUR, [&"hand"], PRIORITY_CHAIN)
 
 	# Cards.
 	_add(&"card_pick_choose", CATEGORY_CARDS, "New card",
-		"After each Hour, pick **1 of 3** cards to add to your hand.",
+		"After each Hour, pick **1 of 3** cards to add to your deck. It goes on **top of your draw pile**, so you draw it next Hour. Or **skip** it to keep your deck lean.",
 		Context.CARD_PICK, [&"card_choices"], PRIORITY_PANEL)
 	_add(&"card_pick_reroll", CATEGORY_CARDS, "Free rerolls",
 		"Not what you need? **Reroll** the choices. You get **%d free rerolls** every Day.",
@@ -135,8 +134,8 @@ static func _static_init() -> void:
 		],
 		Context.ANY_CARD_SCREEN, [&"meal_card", &"meal_slot"], PRIORITY_NORMAL)
 	_add(&"sell", CATEGORY_CARDS, "Selling",
-		"Don't need a card? Drag it here to **sell** it for **%d %s**. %s and %s can be sold here too. A sold card leaves your hand, so it can end the Hour." % [
-			_SellPanelScript.SELL_VALUE, GameTerms.GOLD, GameTerms.TECHNIQUES, GameTerms.CONDIMENTS,
+		"Drag %s and %s here to **sell** them for %s. To take a card out of your deck, visit the Merchant's **removal service**." % [
+			GameTerms.TECHNIQUES, GameTerms.CONDIMENTS, GameTerms.GOLD,
 		],
 		Context.HOUR, [&"sell_panel"], PRIORITY_LOW)
 
@@ -147,7 +146,7 @@ static func _static_init() -> void:
 
 	# Merchant.
 	_add(&"merchant_intro", CATEGORY_MERCHANT, "The Merchant",
-		"Between Days, spend **%s** on new cards and **%s**. Bought cards go to your hand." % [GameTerms.GOLD, GameTerms.TECHNIQUES],
+		"Between Days, spend **%s** on new cards and **%s**. Bought cards are shuffled into your deck. For a few %s you can also **remove** a card from your deck." % [GameTerms.GOLD, GameTerms.TECHNIQUES, GameTerms.GOLD],
 		Context.MERCHANT, [&"merchant_cards"], PRIORITY_PANEL)
 	_add(&"merchant_condiments", CATEGORY_MERCHANT, GameTerms.CONDIMENTS,
 		"**%s** are one-use boosts. You can carry **%d** at a time." % [

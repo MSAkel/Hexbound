@@ -14,3 +14,4 @@ display_name = "Restaurateur"
 icon = ExtResource("2_icon")
 speciality_description = "Start with 20 Gold and the first merchant reroll each visit is free."
 perk = SubResource("Perk")
+deck_stations = Array[String](["grilling_station|cold_station|fish_station|sauce_station|roasting_station|fry_station:full", "pastry_station|bar_station:small"])

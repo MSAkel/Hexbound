@@ -69,6 +69,17 @@ const GOLD_COMFORT := 12
 const BUY_FLOOR_SHARE := 0.3
 ## Estimated activations of one card in an Hour, for Mint Sip gold.
 const MINT_SIP_TRIGGERS := 3.0
+## Deck rules (untuned). Cards a Day draws, for how often a shuffled-in card comes up.
+const DRAWS_PER_DAY := 16
+## Skip a pick worth less than this share of a typical pick once the deck is this big.
+const SKIP_BELOW_MARKET := 0.2
+const SKIP_DECK_SIZE := 18
+## Use the removal service on cards worth less than this share of a typical pick while the deck
+## is above REMOVAL_DECK_TARGET. At most MAX_REMOVALS_PER_VISIT per visit.
+const REMOVE_BELOW_MARKET := 0.1
+const REMOVAL_DECK_TARGET := 18
+const MAX_REMOVALS_PER_VISIT := 2
+const REMOVAL_CANDIDATES := 8
 
 var _profile: Dictionary = DEFAULT_PROFILE
 ## What-if result for the board as it stands. Refreshed before each group of decisions.
@@ -291,8 +302,9 @@ func _slot_cost() -> float:
 	return _market * SLOT_COST_SHARE * float(occupied) / float(total)
 
 
-func _sell_value() -> float:
-	return float(CardSellPanel.SELL_VALUE) * _gold_value()
+## A shuffled-in card is drawn about this often a Day: 1 while the deck is small, less as it grows.
+func _deck_draw_share() -> float:
+	return clampf(float(DRAWS_PER_DAY) / float(maxi(1, DeckManager.deck_size() + 1)), 0.25, 1.0)
 
 #endregion
 
@@ -305,7 +317,7 @@ func choose_offer(offer: Array[TileCard], is_reward: bool) -> int:
 	for index in offer.size():
 		var card := offer[index]
 		var placement := await _best_placement(card)
-		var value := _sell_value()
+		var value := 0.0
 		if placement["hex"] != null:
 			value = maxf(value, float(placement["value"]))
 		if value > 0.0:
@@ -316,6 +328,9 @@ func choose_offer(offer: Array[TileCard], is_reward: bool) -> int:
 	_note_market(best_value)
 	if _should_reroll(best_value, is_reward):
 		return -1
+	# A weak card only thins the deck's draws, so pass on it once the deck is big enough.
+	if best_value <= 0.0 or (DeckManager.deck_size() >= SKIP_DECK_SIZE and best_value < _market * SKIP_BELOW_MARKET):
+		return runner.SKIP_PICK
 	return best_index
 
 
@@ -332,22 +347,17 @@ func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
 	await _refresh_baseline()
 	var best: Dictionary = {}
 	var best_value := -INF
-	var weakest: TileCard = null
-	var weakest_value := INF
 	for card: TileCard in hand:
 		var placement := await _best_placement(card)
 		var value := float(placement["net"]) if placement["hex"] != null else -INF
 		if placement["hex"] != null and value > best_value:
 			best_value = value
 			best = {"card": card, "hex": placement["hex"]}
-		if value < weakest_value:
-			weakest_value = value
-			weakest = card
 	if _market <= 0.0:
 		_note_market(best_value)
-	# Holding a card costs nothing, so sell only when nothing in hand is worth a spot.
+	# Unplayed cards are only discarded, so end the Hour when nothing in hand is worth a spot.
 	if best.is_empty() or best_value <= 0.0:
-		return {"card": weakest if weakest != null else hand[0], "sell": true}
+		return {"end": true}
 	return best
 
 
@@ -442,6 +452,7 @@ func _measure_day_hooks(change: Callable) -> Dictionary:
 func shop(visit: RefCounted) -> void:
 	await _refresh_baseline()
 	var reserve := int(_profile["shop_reserve"]) if _merchants_left() > 1 else 0
+	await _use_removal_service(visit, reserve)
 	var rerolls := 0
 	while true:
 		var card_values: Dictionary = {}
@@ -481,6 +492,50 @@ func shop(visit: RefCounted) -> void:
 		rerolls += 1
 
 
+## Takes the weakest deck cards out while the deck is big and gold allows. The weakest card is the
+## one whose best play now is worth least.
+func _use_removal_service(visit: RefCounted, reserve: int) -> void:
+	for _removal in MAX_REMOVALS_PER_VISIT:
+		if DeckManager.deck_size() <= REMOVAL_DECK_TARGET or not DeckManager.can_remove_card():
+			return
+		if EconomyManager.amount - DeckManager.removal_price() < reserve + TileCard.SHOP_PRICE:
+			return
+		var weakest: TileCard = null
+		var weakest_value := INF
+		for card: TileCard in _removal_candidates():
+			var placement := await _best_placement(card)
+			var value := float(placement["net"]) if placement["hex"] != null else -INF
+			if value < weakest_value:
+				weakest_value = value
+				weakest = card
+		if weakest == null or weakest_value >= _market * REMOVE_BELOW_MARKET:
+			return
+		if not visit.remove_deck_card(weakest):
+			return
+
+
+## One deck card per id, those with no copy on the board first (a copy there can still merge),
+## at most REMOVAL_CANDIDATES of them so a visit stays cheap.
+func _removal_candidates() -> Array[TileCard]:
+	var on_board: Array[String] = []
+	for hex: Hex in runner.map.get_hexes_in_trigger_order():
+		if hex.active_tile_card != null:
+			on_board.append(String(hex.active_tile_card.id))
+	var loose: Array[TileCard] = []
+	var placed: Array[TileCard] = []
+	var seen: Array[String] = []
+	for card: TileCard in DeckManager.all_cards():
+		if String(card.id) in seen:
+			continue
+		seen.append(String(card.id))
+		if String(card.id) in on_board:
+			placed.append(card)
+		else:
+			loose.append(card)
+	loose.append_array(placed)
+	return loose.slice(0, REMOVAL_CANDIDATES)
+
+
 ## Whether this bot thinks of rerolling the shelf. A subclass can say no.
 func _may_reroll_shop() -> bool:
 	return true
@@ -500,6 +555,8 @@ func _best_shop_item(visit: RefCounted, reserve: int, card_values: Dictionary) -
 		if not card_values.has(index):
 			var placement := await _best_placement(card)
 			var value := float(placement["value"]) if placement["hex"] != null else 0.0
+			# Bought cards are shuffled into the deck, so they come up less often than a pick.
+			value *= _deck_draw_share()
 			card_values[index] = value * _pick_bias(card) if value > 0.0 else value
 		var ratio := _buy_ratio(float(card_values[index]), visit.price_of(card))
 		if ratio > best_ratio:
@@ -563,9 +620,9 @@ func _kept_card_choice(card: Card) -> Dictionary:
 		return {"value": float(choice["value"]), "slot": int(choice["slot"])}
 	var tile_card := card as TileCard
 	var placement := await _best_placement(tile_card)
-	var value := _sell_value()
+	var value := 0.0
 	if placement["hex"] != null:
-		value = maxf(value, float(placement["value"]))
+		value = maxf(value, float(placement["value"])) * _deck_draw_share()
 	if value > 0.0:
 		value *= _pick_bias(tile_card)
 	return {"value": value, "slot": -1}
@@ -711,10 +768,10 @@ func _try_drink(slot: int, condiment: Condiment) -> bool:
 				return false
 			return runner.drink_condiment(slot, top[0])
 		Condiment.EffectType.STAR_UP:
-			for hex: Hex in _placed_by_contribution(true):
-				if hex.active_tile_card.star_level < TileCard.MAX_STAR_LEVEL:
-					return runner.drink_condiment(slot, hex)
-			return false
+			var starred := _placed_by_contribution(true)
+			if starred.is_empty():
+				return false
+			return runner.drink_condiment(slot, starred[0])
 		Condiment.EffectType.THROW_OUT, Condiment.EffectType.SEND_BACK:
 			if CondimentManager.empty_slot_count() > 0 and runner.board_has_room():
 				return false

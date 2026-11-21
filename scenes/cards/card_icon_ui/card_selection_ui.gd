@@ -26,8 +26,10 @@ var _offer_reroll_count := 0
 var _pack_display_token := 0
 ## Pending offer snapshot applied the next time the panel opens after a continue.
 var _restore_state: Dictionary = {}
-## True from the moment an offer is shown until the player picks a card.
+## True from the moment an offer is shown until the player picks a card or skips.
 var _awaiting_pick := false
+## Skips the pick. Built in code beside the reroll button.
+var _skip_button: Button = null
 
 
 func _ready() -> void:
@@ -43,8 +45,24 @@ func _ready() -> void:
 	PadPrompt.attach(_show_board_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
 	PadPrompt.attach(_show_options_button, InputManager.ACTION_ALT, PadPrompt.Side.LEFT)
 	EventBus.rerolls_changed.connect(_on_rerolls_changed)
+	_build_skip_button()
 	_update_reroll_button()
 	set_process(false)
+
+
+## Picks are optional: a card that would only fill the deck can be passed.
+func _build_skip_button() -> void:
+	_skip_button = Button.new()
+	_skip_button.name = "SkipButton"
+	_skip_button.text = "Skip"
+	_skip_button.tooltip_text = "Take no card. Picked cards go on top of your draw pile."
+	_skip_button.theme = reroll_button.theme
+	_skip_button.size_flags_horizontal = reroll_button.size_flags_horizontal
+	_skip_button.custom_minimum_size = reroll_button.custom_minimum_size
+	var parent := reroll_button.get_parent()
+	parent.add_child(_skip_button)
+	parent.move_child(_skip_button, reroll_button.get_index() + 1)
+	_skip_button.pressed.connect(_on_skip_button_pressed)
 
 
 func _process(delta: float) -> void:
@@ -66,9 +84,10 @@ func _apply_card_float(float_wrapper: Control, index: int) -> void:
 
 
 func _on_show_panel() -> void:
-	if not RoundFlow.is_transition_card_pick() and EventManager.should_auto_grant_card(false):
-		return
 	_awaiting_pick = true
+	if not RoundFlow.is_transition_card_pick():
+		# The Hour's draw waits for this pick, so the picked card is in the new hand.
+		DeckManager.hold_draw()
 	_set_board_view(false)
 	UiManager.show_panel(self)
 	set_process(true)
@@ -243,15 +262,28 @@ func _create_choice_card(card: TileCard) -> void:
 
 func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
 	var card := card_ui.card as TileCard
-	## Selecting a card consumes the pack so a new one can be offered later.
+	# The picked card goes on top of the draw pile (after the Day reshuffle for an end-of-Day pick).
+	DeckManager.gain_card(card, DeckManager.Source.PICK)
+	_finish_pick()
+
+
+func _on_skip_button_pressed() -> void:
+	if not _awaiting_pick:
+		return
+	AudioManager.play_sfx(UISounds.CLICK)
+	_finish_pick()
+
+
+## Selecting or skipping consumes the pack so a new one can be offered later.
+func _finish_pick() -> void:
 	_awaiting_pick = false
 	cards_pack.clear()
 	_set_board_view(false)
 	hide()
 	set_process(false)
-	EventBus.tile_card_selected.emit(card)
 	## Report the pick here rather than on tile_card_selected, which merchant purchases also emit.
 	RoundFlow.notify_card_picked()
+	DeckManager.release_draw()
 
 
 ## Pick random cards for the selection panel from the shared pool.
@@ -285,19 +317,12 @@ static func draw_offer(
 		reroll_index
 	)
 	var loot_rng: RandomNumberGenerator = RunRng.create_rng(stream_name)
-	var offer := CardLoot.lane_draw(
+	return CardLoot.lane_draw(
 		CardLoot.lanes_for_round(round_number),
 		pack_size,
 		GameManager.get_draw_pool(),
 		loot_rng
 	)
-	# Stations at level 2 add one extra card of their kind to a normal pick (not Dealt Hand).
-	if pack_size == GameManager.CARDS_PACK_SIZE:
-		var offered: Array[String] = []
-		for card: TileCard in offer:
-			offered.append(card.id)
-		offer.append_array(CardLoot.station_extra_card(GameManager.get_draw_pool(), loot_rng, offered))
-	return offer
 
 
 func _get_offer_round_number() -> int:
@@ -353,10 +378,5 @@ func restore_open_if_needed() -> void:
 		_restore_state.clear()
 		return
 	if RoundFlow.is_transition_card_pick():
-		return
-	if EventManager.should_auto_grant_card(false):
-		_restore_state.clear()
-		_awaiting_pick = false
-		EventManager.grant_auto_card(false)
 		return
 	_on_show_panel()

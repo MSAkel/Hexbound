@@ -209,7 +209,9 @@ func _chefs() -> Array:
 			"speciality": _text(chef.speciality_description),
 			"icon": _icon_path(chef.icon),
 			"ingame_icon": _icon_path(chef.get_ingame_portrait()),
-			"starting_hand": chef.starting_hand.duplicate(),
+			# Starting deck: Station kits ("<station or choice>:<mini|small|full>") and signature swaps.
+			"deck_stations": chef.deck_stations.duplicate(),
+			"kit_swaps": chef.kit_swaps.duplicate(),
 			"perk": chef.perk.get_script().resource_path if chef.perk != null else "",
 			"file": chef.resource_path,
 		})

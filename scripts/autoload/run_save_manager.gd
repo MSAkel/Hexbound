@@ -6,8 +6,9 @@ extends Node
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const SAVE_PATH := "user://run_save.json"
 # 6: 8-spot stations with Meal slots, station types and levels, new card pool.
-const SAVE_VERSION := 6
-const MIN_SUPPORTED_SAVE_VERSION := 6
+# 7: deck and draw piles (DeckManager). Older runs had no deck, so they can't be continued.
+const SAVE_VERSION := 7
+const MIN_SUPPORTED_SAVE_VERSION := 7
 const HAND_GROUP := "run_hand"
 const MERCHANT_GROUP := "run_merchant"
 const CARD_SELECTION_GROUP := "run_card_selection"
@@ -228,7 +229,6 @@ func restore_run(hand: Hand, tile_map: HexTileMap) -> bool:
 	tile_map.restore_map_state(payload.get("map", {}))
 	_apply_run_state_owners(_run_state_owners_after_map(), payload)
 	hand.restore_hand_state(payload.get("hand", {}))
-	_warn_if_save_hand_is_incomplete(hand, payload)
 	_apply_offer_ui_state(payload)
 	EventManager.refresh_event_visuals()
 	EventManager.restore_banner_after_load()
@@ -259,6 +259,8 @@ func _run_state_owners_before_map() -> Array:
 		["staff", StaffManager],
 		# Stations before the map. Meal slot locks and station perks read them while cards restore.
 		["stations", StationManager],
+		# The deck before the hand, which shows DeckManager's hand.
+		["deck", DeckManager],
 	]
 
 
@@ -413,25 +415,3 @@ func _notify_ui_restored() -> void:
 	EventBus.event_schedule_changed.emit()
 	EventBus.event_changed.emit()
 	EventBus.run_state_loaded.emit()
-
-
-func _warn_if_save_hand_is_incomplete(hand: Hand, payload: Dictionary) -> void:
-	var hand_state: Dictionary = payload.get("hand", {})
-	var saved_count: int = hand_state.get("cards", []).size()
-	var expected := ChefRegistry.get_expected_opening_hand_size(
-		ChefRegistry.get_chef_by_id(String(payload.get("chef_id", "")))
-	)
-	var map_state: Dictionary = payload.get("map", {})
-	var placed_count: int = map_state.get("placed_cards", []).size()
-	var round_num := int(payload.get("game_manager", {}).get("current_round", 1))
-	if round_num > 1 or placed_count > 0:
-		return
-	if hand.get_hand_card_count() >= expected:
-		return
-	push_warning(
-		"Loaded run has %d/%d hand cards and an empty board. "
-		% [hand.get_hand_card_count(), expected]
-		+ "This save was written while the opening deal was broken. Start a new run or delete user://run_save.json."
-	)
-	if saved_count < expected:
-		push_warning("Save file recorded %d hand cards before restore." % saved_count)
