@@ -19,9 +19,11 @@ const MAX_SCORE := 9223372036854775807
 ## in the nightly playtest): Days 2-9 set near the 10th-15th percentile of full-Day scores from
 ## casual + novice bot runs (4 chefs x 6 seeds, Level 1). Replaying those runs' scores against
 ## these targets: careful bot loses 1/9, casual 5/24, novice 13/24. Endless Mode grows from Day 9.
+## Nov 22 2026: Day 2 20000 -> 15000 (untuned). The careful bot's Day 2 scores were 11.6k-35k, with
+## four chefs only just over 20k and Restaurateur at 18k.
 const AUTHORED_ROUND_SCORES: Array[int] = [
 	618,
-	20000,
+	15000,
 	52000,
 	165000,
 	320000,
