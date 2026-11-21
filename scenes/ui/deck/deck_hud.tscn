@@ -1,0 +1,136 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://rsqe0wcpnnkb" path="res://scenes/ui/deck/deck_hud.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c1iwjaikk22iy" path="res://assets/card/card_bg.png" id="2_card_bg"]
+[ext_resource type="Texture2D" uid="uid://o4ohey6hgcwq" path="res://assets/card/card_inside_border.png" id="3_inside"]
+[ext_resource type="Texture2D" uid="uid://ckuh5wl3h5jn2" path="res://assets/card/card_inside_design_details.png" id="4_details"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pile"]
+
+[node name="DeckHud" type="VBoxContainer" unique_id=1950117301]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -184.0
+offset_top = -264.0
+offset_right = -28.0
+offset_bottom = -28.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
+script = ExtResource("1_script")
+
+[node name="KitchenLabel" type="Label" parent="." unique_id=1950117302]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(156, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.16, 0.09, 0.03, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 16
+text = "Your kitchen: Fry + Bar"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="PileButton" type="Button" parent="." unique_id=1950117303]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 186)
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = ""
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_pile")
+flat = true
+
+[node name="Cards" type="Control" parent="PileButton" unique_id=1950117304]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BackCard" type="TextureRect" parent="PileButton/Cards" unique_id=1950117305]
+texture_filter = 1
+modulate = Color(0.7, 0.6, 0.55, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_card_bg")
+expand_mode = 1
+
+[node name="TopCard" type="TextureRect" parent="PileButton/Cards" unique_id=1950117306]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_card_bg")
+expand_mode = 1
+
+[node name="InsideBorder" type="TextureRect" parent="PileButton/Cards/TopCard" unique_id=1950117307]
+texture_filter = 1
+self_modulate = Color(0.45, 0.27, 0.2, 1)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.077
+anchor_top = 0.031
+anchor_right = 0.923
+anchor_bottom = 0.969
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_inside")
+expand_mode = 1
+
+[node name="DesignDetails" type="TextureRect" parent="PileButton/Cards/TopCard" unique_id=1950117308]
+texture_filter = 1
+self_modulate = Color(0.34, 0.19, 0.14, 1)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.105
+anchor_top = 0.047
+anchor_right = 0.895
+anchor_bottom = 0.953
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_details")
+expand_mode = 1
+
+[node name="CountLabel" type="Label" parent="." unique_id=1950117309]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.16, 0.09, 0.03, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 30
+text = "20"
+horizontal_alignment = 1
+vertical_alignment = 1

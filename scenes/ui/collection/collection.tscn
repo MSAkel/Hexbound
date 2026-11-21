@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://duvvd2s4kriyg"]
 
-[ext_resource type="Texture2D" uid="uid://jshatvpube4d" path="res://assets/map/empty_map.png" id="1_6w68x"]
 [ext_resource type="Script" uid="uid://dy2gqsj6wlkur" path="res://scenes/ui/collection/collection.gd" id="1_wnhp0"]
 [ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image_pixel_ar.png" id="2_g1foq"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
@@ -62,17 +61,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = SubResource("GradientTexture1D_3h1o3")
-
-[node name="Background" type="TextureRect" parent="." unique_id=104295522]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("1_6w68x")
-expand_mode = 1
 
 [node name="Foreground" type="TextureRect" parent="." unique_id=1168488758]
 visible = false

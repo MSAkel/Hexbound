@@ -12,17 +12,23 @@ const MAX_SCORE := 9223372036854775807
 ## Nov 2026 (untuned): Day 1 475 and Day 2 2400 (approved) so Days 1-2 are for building the board,
 ## then Days 2-9 about 15% below the earlier 3200/8500/18k/34k/47k/92k/135k/150k table so Level 1
 ## works as a practice and learning level. Day 7 smoothed from 78k to 65k (untuned): Day 6 -> 7 was
-## the steepest step (x1.95, now x1.63).
+## the steepest step (x1.95, now x1.63). Nov 21 2026: Days 1-3 raised 30% (from 475/2040/7200) and
+## Days 4-9 raised 50% (from 15300/28900/40000/65000/115000/127500). Then Days 2-9 raised
+## another 25% (from 2652/9360/22950/43350/60000/97500/172500/191250). Then Day 7 +15% (from 121875)
+## and Days 8-9 +20% (from 215625/239063). Nov 21 2026 (deliberately overtuned, to see losses
+## in the nightly playtest): Days 2-9 set near the 10th-15th percentile of full-Day scores from
+## casual + novice bot runs (4 chefs x 6 seeds, Level 1). Replaying those runs' scores against
+## these targets: careful bot loses 1/9, casual 5/24, novice 13/24. Endless Mode grows from Day 9.
 const AUTHORED_ROUND_SCORES: Array[int] = [
-	475,
-	2040,
-	7200,
-	15300,
-	28900,
-	40000,
-	65000,
-	115000,
-	127500,
+	618,
+	20000,
+	52000,
+	165000,
+	320000,
+	400000,
+	500000,
+	750000,
+	900000,
 ]
 ## Multiplier used by the endless curve. Values above 1 increase the target every round.
 const ENDLESS_GROWTH_FACTOR := 1.5

@@ -15,7 +15,7 @@ const RARITY_NAME_COLORS := {
 # Warm highlight so the selected card reads clearly above its neighbors.
 const SELECTED_TINT := Color(1.15, 1.1, 0.75, 1.0)
 # Text starts at the size authored in the scene and shrinks toward these until it fits.
-const NAME_MIN_FONT_SIZE := 9
+const NAME_MIN_FONT_SIZE := 11
 const NAME_MAX_WIDTH := 150.0
 const TYPE_LABEL_MIN_FONT_SIZE := 12
 const DESCRIPTION_MIN_FONT_SIZE := 10

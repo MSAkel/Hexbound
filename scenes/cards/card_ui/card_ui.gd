@@ -72,6 +72,11 @@ var slot_offset := Vector2.ZERO:
 	set(value):
 		slot_offset = value
 		_apply_pose()
+## Extra rotation from the owner, in radians. The hand's deal and discard flights tilt it.
+var slot_rotation := 0.0:
+	set(value):
+		slot_rotation = value
+		_apply_pose()
 ## Extra scale from the owner. The generated-card showcase uses it.
 var slot_scale := Vector2.ONE:
 	set(value):
@@ -459,7 +464,7 @@ func _apply_pose() -> void:
 
 	offset_transform_enabled = true
 	offset_transform_position = pose_position
-	offset_transform_rotation = _hover_rotation + _lean_rotation
+	offset_transform_rotation = slot_rotation + _hover_rotation + _lean_rotation
 	offset_transform_scale = slot_scale * _hover_scale
 
 

@@ -4,17 +4,18 @@
 [ext_resource type="Texture2D" uid="uid://hsm65o42e3km" path="res://assets/characters/sous_chef_ingame.png" id="2_i166s"]
 [ext_resource type="Texture2D" uid="uid://cfyi20417t01c" path="res://assets/gui/panels/gold_panel.png" id="3_gold_panel"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="4_gold_icon"]
+[ext_resource type="Script" path="res://scenes/ui/sell_panel/end_hour_button.gd" id="5_end_hour"]
 
 [sub_resource type="StyleBoxEmpty" id="EmptyPanel"]
 
 [node name="CardSellPanel" type="PanelContainer" unique_id=647209591]
 z_index = 6
-custom_minimum_size = Vector2(254, 272)
+custom_minimum_size = Vector2(254, 330)
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 28.0
-offset_top = -300.0
+offset_top = -358.0
 offset_right = 282.0
 offset_bottom = -28.0
 grow_vertical = 0
@@ -78,3 +79,12 @@ theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 30
 text = "0"
 vertical_alignment = 1
+
+[node name="EndHourButton" type="Button" parent="Stack" unique_id=1846188201]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(254, 54)
+layout_mode = 2
+tooltip_text = "End the Hour now. Cards left in your hand are discarded."
+theme_override_font_sizes/font_size = 22
+text = "End Hour"
+script = ExtResource("5_end_hour")

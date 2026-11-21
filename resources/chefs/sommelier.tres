@@ -16,7 +16,7 @@ id = "sommelier"
 display_name = "Sommelier"
 icon = ExtResource("1_2tc56")
 ingame_portrait = ExtResource("3_ingame")
-speciality_description = "Beverages have x1.5 output."
+speciality_description = "Beverages have x1.25W output."
 perk = SubResource("Perk")
 deck_stations = Array[String](["bar_station:full", "pastry_station:small"])
 kit_swaps = Array[String](["bar_station:3=apple", "bar_station:4=honey", "pastry_station:6=sugar"])

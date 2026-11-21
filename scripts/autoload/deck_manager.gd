@@ -265,6 +265,14 @@ func deck_size() -> int:
 	return _top_queue.size() + draw_pile.size() + hand.size() + discard_pile.size() + played_pile.size()
 
 
+## The cards still to draw this Day, cards queued for the top included. Order is not meaningful.
+func draw_pile_cards() -> Array[TileCard]:
+	var cards: Array[TileCard] = []
+	cards.append_array(_top_queue)
+	cards.append_array(draw_pile)
+	return cards
+
+
 func draw_pile_size() -> int:
 	return _top_queue.size() + draw_pile.size()
 
@@ -277,16 +285,23 @@ func removal_price() -> int:
 	return REMOVAL_BASE_PRICE + REMOVAL_PRICE_STEP * removals_this_visit
 
 
-## Merchant removal service: pays and destroys a deck card for good. False when it can't.
-func buy_removal(card: TileCard) -> bool:
+## Merchant removal service, step 1: pays for one removal. The player then picks a card or skips,
+## and skipping does not refund the Gold. False when the deck is at its minimum or Gold is short.
+func pay_for_removal() -> bool:
 	if not can_remove_card() or not EconomyManager.can_afford(removal_price()):
 		return false
 	var price := removal_price()
-	if not remove_card(card):
-		return false
-	EconomyManager.remove(price)
+	# Count it first, so the gold_changed refresh already shows the next price.
 	removals_this_visit += 1
+	EconomyManager.remove(price)
 	return true
+
+
+## Merchant removal service in one go: pays and destroys a deck card for good. The bots use it.
+func buy_removal(card: TileCard) -> bool:
+	if not all_cards().has(card) or not pay_for_removal():
+		return false
+	return remove_card(card)
 
 
 ## Destroys a deck card (takes it out of the run). Board copies are not touched.

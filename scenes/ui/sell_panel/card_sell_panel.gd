@@ -1,7 +1,8 @@
 class_name CardSellPanel
 extends PanelContainer
 
-## Bottom-left corner of the run screen: the current chef's portrait above the gold panel.
+## Bottom-left corner of the run screen: the current chef's portrait above the gold panel, with the
+## End Hour button under them.
 ## The gold panel shows the player's gold. While a staff member or condiment is dragged over the
 ## corner it shows that item's sell price instead. Release there to sell it. Hand cards can't be
 ## sold: the Merchant's removal service takes a card out of the deck.
@@ -194,8 +195,15 @@ func play_sell_pulse() -> void:
 
 
 ## True when a card or staff released now would land on the panel.
+## Screen rect of the chef portrait, where discarded cards fly into.
+func get_portrait_rect() -> Rect2:
+	return _art.get_global_rect()
+
+
+## The End Hour button below them is not a sell target.
 func is_cursor_over() -> bool:
-	return get_global_rect().has_point(get_global_mouse_position())
+	var target := _art.get_global_rect().merge(_gold_panel.get_global_rect())
+	return target.has_point(get_global_mouse_position())
 
 
 ## Idle, armed while a card is dragged, and hover while it sits over the panel.

@@ -21,8 +21,8 @@ var _restart_hold_time := 0.0
 var _is_restarting := false
 
 
-const DECK_HUD := preload("res://scenes/ui/deck/deck_hud.gd")
-const DECK_VIEWER := preload("res://scenes/ui/deck/deck_viewer.gd")
+const DECK_HUD := preload("res://scenes/ui/deck/deck_hud.tscn")
+const DECK_VIEWER := preload("res://scenes/ui/deck/deck_viewer.tscn")
 
 
 func _ready() -> void:
@@ -61,16 +61,16 @@ func _ready() -> void:
 			AudioManager.play_music(music)
 
 
-## Pile counters, End Hour and the deck viewer (built in code, first-pass layout).
+## The deck pile (bottom-right) and the deck viewer it opens. End Hour sits under the chef portrait.
 func _add_deck_ui() -> void:
 	var main_ui := get_node_or_null("MainUI")
 	if main_ui == null:
 		return
-	var hud: Control = DECK_HUD.new()
+	var hud: Control = DECK_HUD.instantiate()
 	main_ui.add_child(hud)
 	# Below the end-of-Day screens and pause menu, above the board UI.
 	main_ui.move_child(hud, main_ui.get_node("CardsHand").get_index() + 1)
-	var viewer: Control = DECK_VIEWER.new()
+	var viewer: Control = DECK_VIEWER.instantiate()
 	main_ui.add_child(viewer)
 
 

@@ -16,6 +16,18 @@ const CARD_FLOAT_ROTATION := 0.0045
 const CARD_FLOAT_SPEED := 1.4
 const CARD_FLOAT_PHASE_OFFSET := 1.85
 
+## The picked card flies into the deck pile: up first, then down onto the pile, tilted and shrinking.
+const PICK_FLIGHT_DURATION := 0.6
+## How far above the higher end of the path the flight peaks, in pixels.
+const PICK_FLIGHT_RISE := 220.0
+## Tilt the card takes on over the first PICK_FLIGHT_TILT_IN of the flight, in degrees.
+const PICK_FLIGHT_TILT_DEG := 14.0
+const PICK_FLIGHT_TILT_IN := 0.15
+## Share of the flight at the end spent fading into the pile.
+const PICK_FLIGHT_FADE_OUT := 0.12
+## The flying copy joins this group. The hand holds its deal until the copy has landed.
+const PICK_FLIGHT_GROUP := &"pick_flight"
+
 var _float_time := 0.0
 var _float_wrappers: Array[Control] = []
 
@@ -262,6 +274,7 @@ func _create_choice_card(card: TileCard) -> void:
 
 func _on_tile_card_choice_selected(card_ui: CardUI) -> void:
 	var card := card_ui.card as TileCard
+	_fly_pick_to_deck(card_ui)
 	# The picked card goes on top of the draw pile (after the Day reshuffle for an end-of-Day pick).
 	DeckManager.gain_card(card, DeckManager.Source.PICK)
 	_finish_pick()
@@ -284,6 +297,59 @@ func _finish_pick() -> void:
 	## Report the pick here rather than on tile_card_selected, which merchant purchases also emit.
 	RoundFlow.notify_card_picked()
 	DeckManager.release_draw()
+
+
+## Flies a copy of the picked card from its spot on the panel into the deck pile.
+func _fly_pick_to_deck(card_ui: CardUI) -> void:
+	if GameManager.skip_presentation or card_ui == null or card_ui.card == null:
+		return
+	var hud := get_tree().get_first_node_in_group("deck_hud") as DeckHud
+	if hud == null or not hud.is_visible_in_tree():
+		return
+	var start_rect := card_ui.get_global_rect()
+	var end_rect := hud.get_pile_rect()
+
+	# A plain wrapper carries the pose, so the card face keeps its own layout.
+	var ghost := Control.new()
+	ghost.name = "PickFlight"
+	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost.z_index = z_index + 5
+	ghost.size = CHOICE_CARD_BASE_SIZE
+	ghost.pivot_offset = CHOICE_CARD_BASE_SIZE * 0.5
+	ghost.add_to_group(PICK_FLIGHT_GROUP)
+	hud.get_parent().add_child(ghost)
+	var face: CardUI = CARD_UI_SCENE.instantiate()
+	face.configure_interaction(CardUI.InteractionMode.PREVIEW)
+	ghost.add_child(face)
+	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	face.set_card(card_ui.card)
+
+	var start_scale := start_rect.size.x / CHOICE_CARD_BASE_SIZE.x
+	var end_scale := end_rect.size.x / CHOICE_CARD_BASE_SIZE.x
+	var start := start_rect.get_center()
+	var end := end_rect.get_center()
+	var peak := Vector2(lerpf(start.x, end.x, 0.35), minf(start.y, end.y) - PICK_FLIGHT_RISE)
+	_set_pick_flight_pose(0.0, ghost, start, peak, end, start_scale, end_scale)
+	var tween := ghost.create_tween()
+	tween.tween_method(
+		_set_pick_flight_pose.bind(ghost, start, peak, end, start_scale, end_scale),
+		0.0, 1.0, PICK_FLIGHT_DURATION / GameManager.game_speed
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_callback(ghost.queue_free)
+
+
+func _set_pick_flight_pose(
+	t: float, ghost: Control, start: Vector2, peak: Vector2, end: Vector2,
+	start_scale: float, end_scale: float
+) -> void:
+	if not is_instance_valid(ghost):
+		return
+	# Quadratic curve through the peak: up first, then down onto the pile.
+	var center := start.lerp(peak, t).lerp(peak.lerp(end, t), t)
+	ghost.position = center - ghost.pivot_offset
+	ghost.rotation = deg_to_rad(PICK_FLIGHT_TILT_DEG) * smoothstep(0.0, PICK_FLIGHT_TILT_IN, t)
+	ghost.scale = Vector2.ONE * lerpf(start_scale, end_scale, t)
+	ghost.modulate.a = 1.0 - smoothstep(1.0 - PICK_FLIGHT_FADE_OUT, 1.0, t)
 
 
 ## Pick random cards for the selection panel from the shared pool.

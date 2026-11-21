@@ -1,81 +1,42 @@
 class_name DeckHud
-extends PanelContainer
+extends VBoxContainer
 
-## Bottom-right of the run screen: draw and discard pile counts, the plays left this Hour, the
-## End Hour button and a button that opens the deck viewer. Built in code, so the layout is a first
-## pass for the user's art and layout pass. The kitchen line names the Stations the starting deck was
-## built from, for chefs whose kitchen is rolled.
+## Bottom-right of the run screen: the deck pile, a card with the number of cards left to draw under
+## it. Clicking the pile opens the deck viewer, and hovering it shows the draw and discard counts.
+## On Day 1 the kitchen line above the pile names the Stations the starting deck was built from, for
+## chefs whose kitchen is rolled. The layout and art live in deck_hud.tscn.
 
-const MARGIN := 24.0
-const WIDTH := 236.0
+const HOVER_SCALE := 1.06
+const HOVER_TIME := 0.08
 
-var _kitchen_label: Label
-var _piles_label: Label
-var _plays_label: Label
-var _deck_button: Button
-var _end_hour_button: Button
+@onready var _kitchen_label: Label = %KitchenLabel
+@onready var _pile_button: Button = %PileButton
+@onready var _cards: Control = %Cards
+@onready var _count_label: Label = %CountLabel
+
+var _hover_tween: Tween
 
 
 func _ready() -> void:
 	add_to_group("deck_hud")
-	name = "DeckHud"
-	set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	grow_vertical = Control.GROW_DIRECTION_BEGIN
-	custom_minimum_size = Vector2(WIDTH, 0)
-	offset_right = -MARGIN
-	offset_bottom = -MARGIN
-	offset_left = -MARGIN - WIDTH
-
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 6)
-	add_child(box)
-
-	_kitchen_label = Label.new()
-	_kitchen_label.add_theme_font_size_override("font_size", 16)
-	_kitchen_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(_kitchen_label)
-
-	_piles_label = Label.new()
-	_piles_label.add_theme_font_size_override("font_size", 18)
-	box.add_child(_piles_label)
-
-	_plays_label = Label.new()
-	_plays_label.add_theme_font_size_override("font_size", 18)
-	box.add_child(_plays_label)
-
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	box.add_child(row)
-
-	_deck_button = Button.new()
-	_deck_button.text = "Deck"
-	_deck_button.tooltip_text = "See every card in your deck."
-	_deck_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_deck_button.pressed.connect(_on_deck_pressed)
-	row.add_child(_deck_button)
-
-	_end_hour_button = Button.new()
-	_end_hour_button.text = "End Hour"
-	_end_hour_button.tooltip_text = "End the Hour now. Cards left in your hand are discarded."
-	_end_hour_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_end_hour_button.pressed.connect(_on_end_hour_pressed)
-	row.add_child(_end_hour_button)
-
+	_pile_button.pressed.connect(_on_pile_pressed)
+	_pile_button.mouse_entered.connect(_on_pile_mouse_entered)
+	_pile_button.mouse_exited.connect(_on_pile_mouse_exited)
+	_pile_button.resized.connect(_update_pivot)
+	_update_pivot()
 	DeckManager.piles_changed.connect(_refresh)
 	EventBus.run_state_loaded.connect(_refresh)
 	EventBus.round_changed.connect(func(_round: int) -> void: _refresh())
 	_refresh()
 
 
-func _process(_delta: float) -> void:
-	var hand := _find_hand()
-	_end_hour_button.disabled = hand == null or not hand.can_end_hour()
+## Screen rect of the top card, where drawn cards fly out from.
+func get_pile_rect() -> Rect2:
+	return _cards.get_global_rect()
 
 
 func _refresh() -> void:
-	_piles_label.text = "Draw %d · Discard %d" % [DeckManager.draw_pile_size(), DeckManager.discard_pile.size()]
-	_plays_label.text = "Plays left: %d" % DeckManager.plays_left()
+	_count_label.text = str(DeckManager.draw_pile_size())
 	var kitchen := kitchen_text()
 	_kitchen_label.text = kitchen
 	_kitchen_label.visible = not kitchen.is_empty() and GameManager.current_round <= 1
@@ -100,18 +61,33 @@ static func kitchen_text() -> String:
 	return "Your kitchen: %s" % " + ".join(names)
 
 
-func _on_deck_pressed() -> void:
+func _on_pile_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
+	EventBus.toggle_tooltip.emit(false, "", Rect2())
 	var viewer := get_tree().get_first_node_in_group("deck_viewer") as DeckViewer
 	if viewer != null:
 		viewer.open_view()
 
 
-func _on_end_hour_pressed() -> void:
-	var hand := _find_hand()
-	if hand != null and hand.can_end_hour():
-		hand.end_hour()
+func _on_pile_mouse_entered() -> void:
+	_tween_scale(HOVER_SCALE)
+	var text := "Deck: %d cards\nDraw pile %d · Discard %d\nClick to see your deck." % [
+		DeckManager.deck_size(), DeckManager.draw_pile_size(), DeckManager.discard_pile.size(),
+	]
+	EventBus.show_tooltip_above.emit(text, _pile_button.get_global_rect())
 
 
-func _find_hand() -> Hand:
-	return get_tree().get_first_node_in_group("run_hand") as Hand
+func _on_pile_mouse_exited() -> void:
+	_tween_scale(1.0)
+	EventBus.toggle_tooltip.emit(false, "", Rect2())
+
+
+func _tween_scale(target: float) -> void:
+	if _hover_tween != null and _hover_tween.is_valid():
+		_hover_tween.kill()
+	_hover_tween = create_tween()
+	_hover_tween.tween_property(_cards, "scale", Vector2.ONE * target, HOVER_TIME)
+
+
+func _update_pivot() -> void:
+	_cards.pivot_offset = _cards.size * 0.5

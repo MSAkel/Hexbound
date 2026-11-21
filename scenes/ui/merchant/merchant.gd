@@ -777,7 +777,11 @@ func _on_removal_button_pressed() -> void:
 	var viewer := get_tree().get_first_node_in_group("deck_viewer") as DeckViewer
 	if viewer == null:
 		return
-	AudioManager.play_sfx(UISounds.CLICK)
+	# The service is paid up front. Skipping the pick does not refund it.
+	if not DeckManager.pay_for_removal():
+		return
+	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
+	RunSaveManager.request_autosave()
 	viewer.open_removal()
 
 

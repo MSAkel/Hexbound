@@ -9,6 +9,11 @@
 [ext_resource type="Texture2D" uid="uid://ckj7ydre0t2d2" path="res://assets/gui/buttons/button_accent_hover.png" id="7_achov"]
 [ext_resource type="Texture2D" uid="uid://di3ktqmd2smbl" path="res://assets/gui/buttons/button_accent_pressed.png" id="8_acprs"]
 [ext_resource type="Texture2D" uid="uid://j18ke8kwnfsa" path="res://assets/gui/panels/panel_bordered.png" id="9_parch"]
+[ext_resource type="Texture2D" uid="uid://dumw8c651bcla" path="res://assets/gui/buttons/button_cancel_default.png" id="10_cnnrm"]
+[ext_resource type="Texture2D" uid="uid://blbvf1vu7m0br" path="res://assets/gui/buttons/button_cancel_hover.png" id="11_cnhov"]
+[ext_resource type="Texture2D" uid="uid://d4bvdu23rp8sf" path="res://assets/gui/buttons/button_cancel_pressed.png" id="12_cnprs"]
+[ext_resource type="Texture2D" uid="uid://wvyfd0eq2tcu" path="res://assets/gui/buttons/button_confirm_default.png" id="13_cfnrm"]
+[ext_resource type="Texture2D" uid="uid://bewabpk6kwypq" path="res://assets/gui/buttons/button_confirm_hover.png" id="14_cfhov"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_p"]
 content_margin_left = 20.0
@@ -98,6 +103,72 @@ texture_margin_top = 12.0
 texture_margin_right = 24.0
 texture_margin_bottom = 12.0
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cnl_p"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("12_cnprs")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cnl_h"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("11_cnhov")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cnl_n"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("10_cnnrm")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cfm_p"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("1_ydht1")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cfm_h"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("14_cfhov")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cfm_n"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("13_cfnrm")
+texture_margin_left = 32.0
+texture_margin_top = 12.0
+texture_margin_right = 24.0
+texture_margin_bottom = 12.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vxwtt"]
 bg_color = Color(0.047058824, 0.09019608, 0.09803922, 1)
 border_width_left = 2
@@ -136,6 +207,18 @@ Button/styles/focus = SubResource("StyleBoxTexture_pvc40")
 Button/styles/hover = SubResource("StyleBoxTexture_l6k4t")
 Button/styles/normal = SubResource("StyleBoxTexture_2hflq")
 Button/styles/pressed = SubResource("StyleBoxTexture_r5ka0")
+CancelButton/base_type = &"Button"
+CancelButton/styles/disabled = SubResource("StyleBoxTexture_cnl_p")
+CancelButton/styles/focus = SubResource("StyleBoxTexture_cnl_h")
+CancelButton/styles/hover = SubResource("StyleBoxTexture_cnl_h")
+CancelButton/styles/normal = SubResource("StyleBoxTexture_cnl_n")
+CancelButton/styles/pressed = SubResource("StyleBoxTexture_cnl_p")
+ConfirmButton/base_type = &"Button"
+ConfirmButton/styles/disabled = SubResource("StyleBoxTexture_cfm_p")
+ConfirmButton/styles/focus = SubResource("StyleBoxTexture_cfm_h")
+ConfirmButton/styles/hover = SubResource("StyleBoxTexture_cfm_h")
+ConfirmButton/styles/normal = SubResource("StyleBoxTexture_cfm_n")
+ConfirmButton/styles/pressed = SubResource("StyleBoxTexture_cfm_p")
 Label/colors/font_color = Color(0.5882353, 0.03529412, 0.20784314, 1)
 Label/constants/outline_size = 0
 Label/font_sizes/font_size = 16

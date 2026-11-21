@@ -12,8 +12,6 @@ var cards_played: int:
 const CARD_UI_SCENE = preload("uid://dt0t3awb0mejg")
 ## Slide the hand off-screen between turns. Only the visual pose moves, so layout is untouched.
 const HAND_SLIDE_DURATION := 0.35
-## Stagger between each card during the run-start entrance from below.
-const INTRO_CARD_STAGGER := 0.07
 ## Hands larger than this pack tighter toward a five-card footprint.
 const SPACED_HAND_COUNT := 5
 ## Negative separation for small hands so the fan overlaps like a full grip.
@@ -28,6 +26,41 @@ const HOVER_SPREAD_FALLOFF_POWER := 0.85
 const HOVER_SPREAD_MAX_ROTATION_DEG := 3.5
 ## Fallback width before a card has been laid out.
 const DEFAULT_CARD_WIDTH := 214.0
+
+## Drawn cards fly out of the deck pile and arc into their slots, tilted at a fixed angle.
+const DEAL_DURATION := 0.55
+## Delay between one drawn card leaving the pile and the next.
+const DEAL_STAGGER := 0.1
+## Tilt a drawn card holds in flight, in degrees. It straightens out over DEAL_SETTLE as it lands.
+const DEAL_TILT_DEG := -14.0
+## Share of the flight at the end spent straightening.
+const DEAL_SETTLE := 0.2
+## How far the flight path bows up above a straight line, in pixels.
+const DEAL_ARC_HEIGHT := 160.0
+## Drawn cards leave the pile at this size and grow to full size in the hand.
+const DEAL_START_SCALE := 0.55
+## Share of the flight spent fading in from the pile.
+const DEAL_FADE_IN := 0.2
+
+## Longest the deal waits for a picked card to land on the pile.
+const PICK_FLIGHT_WAIT_CAP := 1.5
+
+## Discarded cards fling into the chef portrait. Short and fast.
+const DISCARD_DURATION := 0.26
+const DISCARD_STAGGER := 0.04
+## Tilt a discarded card takes on over the first DISCARD_TILT_IN of its flight and then holds.
+const DISCARD_TILT_DEG := -18.0
+const DISCARD_TILT_IN := 0.2
+const DISCARD_ARC_HEIGHT := 70.0
+const DISCARD_END_SCALE := 0.25
+## Share of the flight at the end spent fading out.
+const DISCARD_FADE_OUT := 0.35
+## Share of the flight at the start spent fading in, for cards that were slid below the screen.
+const DISCARD_FADE_IN := 0.25
+
+## Flights tilt cards around their middle. At rest the hand pivots them on the bottom edge.
+const FLIGHT_PIVOT := Vector2(0.5, 0.5)
+const REST_PIVOT := Vector2(0.5, 1.0)
 
 ## Debug-only cards added to the opening hand.
 @export_group("Debug Starting Hand")
@@ -66,6 +99,11 @@ var _discarded_cards: Array[CardUI] = []
 var _discard_pending: bool:
 	get:
 		return not _discarded_cards.is_empty()
+var _discard_tween: Tween = null
+## Drawn cards waiting to fly in from the deck pile or still on the way. The hand slide and
+## interaction restore leave them alone until they land.
+var _deal_queue: Array[CardUI] = []
+var _deal_tween: Tween = null
 
 func _ready() -> void:
 	_base_separation = get_theme_constant("separation")
@@ -140,8 +178,17 @@ func _add_debug_starting_cards() -> void:
 func _on_cards_drawn(cards: Array[TileCard]) -> void:
 	# A new hand replaces whatever the last Hour left on screen.
 	_free_discarded_cards()
+	var added: Array[CardUI] = []
 	for card: TileCard in cards:
-		_add_card(card)
+		added.append(_add_card(card))
+	# The run-start entrance deals the opening hand itself.
+	if _awaiting_intro or GameManager.skip_presentation:
+		return
+	if _hand_hidden:
+		# Dealt when the hand comes back up for the Hour.
+		_deal_queue.append_array(added)
+		return
+	_deal_cards(added)
 
 
 ## The generated-card reveal adds its card here once it lands.
@@ -534,13 +581,11 @@ func _hide_hand() -> void:
 	_hand_hidden = true
 	_peeking = false
 	_generated_reveal.interrupt()
+	_cancel_deal()
+	# Discarded cards fly to the chef portrait instead of sliding down with the rest.
 	_animate_hand_slide(true)
-	if not _discard_pending:
-		return
-	if _hand_slide_tween != null and _hand_slide_tween.is_valid():
-		_hand_slide_tween.finished.connect(_free_discarded_cards)
-	else:
-		_free_discarded_cards()
+	if _discard_pending:
+		_fling_discarded_cards()
 
 
 func _on_hand_discarded() -> void:
@@ -549,6 +594,9 @@ func _on_hand_discarded() -> void:
 
 ## Frees the cards the last Hour discarded. They are already gone from DeckManager.hand.
 func _free_discarded_cards() -> void:
+	if _discard_tween != null and _discard_tween.is_valid():
+		_discard_tween.kill()
+	_discard_tween = null
 	var cards := _discarded_cards.duplicate()
 	_discarded_cards.clear()
 	for card: CardUI in cards:
@@ -565,8 +613,10 @@ func _show_hand() -> void:
 	_peeking = false
 	_siblings_hidden_for_placement = false
 	_animate_hand_slide(false)
-	if _hand_slide_tween != null and _hand_slide_tween.is_valid():
-		await _hand_slide_tween.finished
+	var slide := _hand_slide_tween
+	if not _deal_queue.is_empty():
+		await _deal_cards(_deal_queue.duplicate())
+	await TweenWait.finished(self, slide)
 	_generated_reveal.try_play_next()
 
 
@@ -602,16 +652,13 @@ func play_intro_entrance() -> void:
 	## Cards rise from here on, so stop parking new ones below the screen.
 	_awaiting_intro = false
 
-	var cards := _get_hand_cards()
+	var cards: Array[CardUI] = []
+	for card in _get_hand_cards():
+		if not _is_reveal_card(card):
+			cards.append(card)
 	if not cards.is_empty():
-		_hand_slide_tween = create_tween().set_parallel(true)
-		_hand_slide_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
-		for i in cards.size():
-			_hand_slide_tween.tween_property(
-				cards[i], "slot_offset", Vector2.ZERO, HAND_SLIDE_DURATION
-			).set_delay(i * INTRO_CARD_STAGGER)
-		await _hand_slide_tween.finished
-		_hand_slide_tween = null
+		# The opening hand is drawn from the deck pile like every other Hour.
+		await _deal_cards(cards)
 
 	_hand_hidden = false
 	_restore_card_interaction()
@@ -634,7 +681,7 @@ func _snap_card_offscreen(card: CardUI) -> void:
 ## Makes settled cards clickable again. Hover picks them up on the next frame.
 func _restore_card_interaction() -> void:
 	for card in _get_hand_cards():
-		if _is_reveal_card(card) or card.is_held_for_placement():
+		if _is_reveal_card(card) or card.is_held_for_placement() or _deal_queue.has(card):
 			continue
 		card.mouse_filter = Control.MOUSE_FILTER_STOP
 		card.hover_enabled = true
@@ -707,7 +754,7 @@ func _animate_hand_slide(should_hide: bool, restore_interaction: bool = true) ->
 
 	var cards: Array[CardUI] = []
 	for card in _get_hand_cards():
-		if not _is_reveal_card(card):
+		if not _is_reveal_card(card) and not _deal_queue.has(card) and not _discarded_cards.has(card):
 			cards.append(card)
 	if cards.is_empty():
 		return
@@ -735,6 +782,157 @@ func _get_hand_slide_distance() -> float:
 	return get_viewport().get_visible_rect().size.y
 
 
+#region Deal and discard flights
+
+## Flies cards from the deck pile into their hand slots on a tilted arc. Returns once they land.
+func _deal_cards(cards: Array[CardUI]) -> void:
+	for card in cards:
+		if not _deal_queue.has(card):
+			_deal_queue.append(card)
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.modulate.a = 0.0
+	# New cards only get their slots once the container lays them out.
+	await get_tree().process_frame
+	# A picked card flying into the pile lands first, so it is visibly dealt from the top.
+	var waited := 0.0
+	while is_inside_tree() and waited < PICK_FLIGHT_WAIT_CAP 			and get_tree().get_first_node_in_group(CardSelectionUI.PICK_FLIGHT_GROUP) != null:
+		await get_tree().process_frame
+		waited += get_process_delta_time()
+	if not is_inside_tree():
+		return
+	var landing: Array[CardUI] = []
+	for card in cards:
+		if is_instance_valid(card) and card.get_parent() == self and _deal_queue.has(card):
+			landing.append(card)
+	if landing.is_empty():
+		return
+	if GameManager.skip_presentation:
+		for card in landing:
+			_land_dealt_card(card, true)
+		return
+
+	var from := _deal_origin()
+	var speed := GameManager.game_speed
+	var duration := DEAL_DURATION / speed
+	var tween := create_tween().set_parallel(true)
+	_deal_tween = tween
+	for i in landing.size():
+		var card := landing[i]
+		card.reset_hand_pose()
+		card.offset_transform_pivot_ratio = FLIGHT_PIVOT
+		var start := from - card.get_global_rect().get_center()
+		_set_deal_pose(0.0, card, start)
+		var delay := i * DEAL_STAGGER / speed
+		tween.tween_method(_set_deal_pose.bind(card, start), 0.0, 1.0, duration).set_delay(delay) \
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(card, "modulate:a", 1.0, duration * DEAL_FADE_IN).set_delay(delay)
+		tween.tween_callback(_land_dealt_card.bind(card, false)).set_delay(delay + duration)
+	await TweenWait.finished(self, tween)
+
+
+func _set_deal_pose(t: float, card: CardUI, start: Vector2) -> void:
+	if not is_instance_valid(card):
+		return
+	var arc := Vector2(0.0, -DEAL_ARC_HEIGHT * 4.0 * t * (1.0 - t))
+	card.slot_offset = start.lerp(Vector2.ZERO, t) + arc
+	card.slot_rotation = deg_to_rad(DEAL_TILT_DEG) * (1.0 - smoothstep(1.0 - DEAL_SETTLE, 1.0, t))
+	card.slot_scale = Vector2.ONE * lerpf(DEAL_START_SCALE, 1.0, t)
+
+
+## Settles a dealt card in its slot. It becomes playable once the hand is up.
+func _land_dealt_card(card: CardUI, snap: bool) -> void:
+	_deal_queue.erase(card)
+	if not is_instance_valid(card):
+		return
+	_clear_flight_pose(card)
+	if snap:
+		card.slot_offset = Vector2.ZERO
+	if not _hand_hidden and not _awaiting_intro:
+		_restore_card_interaction()
+
+
+## Drops any deal in progress. Cards keep their slot offset so the hand slide can take over.
+func _cancel_deal() -> void:
+	if _deal_tween != null and _deal_tween.is_valid():
+		_deal_tween.kill()
+	_deal_tween = null
+	for card in _deal_queue:
+		if is_instance_valid(card):
+			_clear_flight_pose(card)
+	_deal_queue.clear()
+
+
+func _clear_flight_pose(card: CardUI) -> void:
+	card.slot_rotation = 0.0
+	card.slot_scale = Vector2.ONE
+	card.modulate.a = 1.0
+	card.offset_transform_pivot_ratio = REST_PIVOT
+
+
+## Centre of the deck pile, or the bottom-right corner when the pile is not on screen.
+func _deal_origin() -> Vector2:
+	var hud := get_tree().get_first_node_in_group("deck_hud") as DeckHud
+	if hud != null and hud.is_visible_in_tree():
+		return hud.get_pile_rect().get_center()
+	return get_viewport().get_visible_rect().size
+
+
+## Flings the discarded cards into the chef portrait, then frees them.
+func _fling_discarded_cards() -> void:
+	var cards: Array[CardUI] = []
+	for card in _discarded_cards:
+		if is_instance_valid(card) and card.get_parent() == self:
+			cards.append(card)
+	if cards.is_empty() or GameManager.skip_presentation:
+		_free_discarded_cards()
+		return
+
+	var target := _discard_target()
+	var speed := GameManager.game_speed
+	var duration := DISCARD_DURATION / speed
+	if _discard_tween != null and _discard_tween.is_valid():
+		_discard_tween.kill()
+	_discard_tween = create_tween().set_parallel(true)
+	for i in cards.size():
+		var card := cards[i]
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.reset_hand_pose()
+		card.offset_transform_pivot_ratio = FLIGHT_PIVOT
+		# Placing a card slides the rest of the hand below the screen, and the last play of an Hour
+		# leaves them there. Those start from their slot instead, fading in so they don't pop.
+		var start := card.slot_offset
+		var delay := i * DISCARD_STAGGER / speed
+		if start.y > 0.0:
+			start.y = 0.0
+			card.modulate.a = 0.0
+			_discard_tween.tween_property(card, "modulate:a", 1.0, duration * DISCARD_FADE_IN).set_delay(delay)
+		var end := target - card.get_global_rect().get_center()
+		_discard_tween.tween_method(_set_discard_pose.bind(card, start, end), 0.0, 1.0, duration) \
+			.set_delay(delay).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		_discard_tween.tween_property(card, "modulate:a", 0.0, duration * DISCARD_FADE_OUT) \
+			.set_delay(delay + duration * (1.0 - DISCARD_FADE_OUT))
+	_discard_tween.finished.connect(_free_discarded_cards)
+
+
+func _set_discard_pose(t: float, card: CardUI, start: Vector2, end: Vector2) -> void:
+	if not is_instance_valid(card):
+		return
+	var arc := Vector2(0.0, -DISCARD_ARC_HEIGHT * 4.0 * t * (1.0 - t))
+	card.slot_offset = start.lerp(end, t) + arc
+	card.slot_rotation = deg_to_rad(DISCARD_TILT_DEG) * smoothstep(0.0, DISCARD_TILT_IN, t)
+	card.slot_scale = Vector2.ONE * lerpf(1.0, DISCARD_END_SCALE, t)
+
+
+## Centre of the chef portrait, or the bottom-left corner when it is not on screen.
+func _discard_target() -> Vector2:
+	var panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
+	if panel != null and panel.is_visible_in_tree():
+		return panel.get_portrait_rect().get_center()
+	return Vector2(0.0, get_viewport().get_visible_rect().size.y)
+
+#endregion
+
+
 func capture_hand_state() -> Dictionary:
 	# The cards themselves are saved by DeckManager.
 	return {
@@ -746,7 +944,8 @@ func restore_hand_state(state: Dictionary) -> void:
 	# Park restored cards off-screen, main.gd replays the hand intro afterward.
 	_awaiting_intro = true
 	_hand_hidden = true
-	_discarded_cards.clear()
+	_cancel_deal()
+	_free_discarded_cards()
 
 	for child in get_children():
 		if child is CardUI:

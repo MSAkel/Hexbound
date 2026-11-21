@@ -144,10 +144,14 @@ and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All n
   Picks can be skipped.
 - Discard (move to the discard pile) and destroy (remove completely) are different words: Throw Out
   destroys the board card only, Send Back discards it with its stars, the Merchant removal service
-  (3 Gold, +1 per use in a visit) destroys a deck card. The deck can't go below `MIN_DECK_SIZE` (10).
-- Hand cards can't be sold. `Hand` (scenes/components/hand.gd) only shows DeckManager's hand.
-  `DeckHud` (pile counts, End Hour, Deck button) and `DeckViewer` (deck list, removal service) are
-  built in code in `scenes/ui/deck/` as a first-pass layout.
+  (3 Gold, +1 per use in a visit) destroys a deck card. The service is paid up front
+  (`DeckManager.pay_for_removal`); skipping the pick keeps the Gold spent. The deck can't go below
+  `MIN_DECK_SIZE` (10).
+- Hand cards can't be sold. `Hand` (scenes/components/hand.gd) only shows DeckManager's hand. It deals
+  drawn cards from the deck pile and flings discarded ones into the chef portrait (`DEAL_*` and
+  `DISCARD_*` constants). `DeckHud` (`scenes/ui/deck/deck_hud.tscn`, the draw pile bottom-right) opens
+  `DeckViewer` (`deck_viewer.tscn`: the draw pile, or the whole deck for the removal service). End Hour
+  sits under the chef portrait in `card_sell_panel.tscn`.
 - Stars have no cap and add `TileCard.STAR_SCALE_STEP` (+10%) each.
 - Saves (version 7) store every pile in order. Version 6 runs can't be continued.
 

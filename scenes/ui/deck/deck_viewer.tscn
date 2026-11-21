@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://dp2vce48rgwed"]
+
+[ext_resource type="Script" uid="uid://rc5lhqjpc1lg" path="res://scenes/ui/deck/deck_viewer.gd" id="1_script"]
+
+[node name="DeckViewer" type="Control" unique_id=1733500101]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 70
+script = ExtResource("1_script")
+
+[node name="Dim" type="ColorRect" parent="." unique_id=1733500102]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=1733500103]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 100.0
+offset_top = 50.0
+offset_right = -100.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ParchmentPanel"
+
+[node name="Box" type="VBoxContainer" parent="Panel" unique_id=1733500104]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Panel/Box" unique_id=1733500105]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 40
+text = "Draw pile (11 cards)"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/Box" unique_id=1733500107]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ScrollContent" type="VBoxContainer" parent="Panel/Box/Scroll" unique_id=1733500108]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CardGrid" type="GridContainer" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500109]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 8
+
+[node name="EmptyLabel" type="Label" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500110]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 24
+text = "Your draw pile is empty. A new Day shuffles every card back in."
+horizontal_alignment = 1
+
+[node name="Footer" type="HBoxContainer" parent="Panel/Box" unique_id=1733500111]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SkipButton" type="Button" parent="Panel/Box/Footer" unique_id=1733500115]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(160, 52)
+layout_mode = 2
+size_flags_horizontal = 10
+tooltip_text = "Keep every card. The Gold paid for the service is not refunded."
+text = "Skip"
+
+[node name="RemoveButton" type="Button" parent="Panel/Box/Footer" unique_id=1733500113]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(260, 52)
+layout_mode = 2
+disabled = true
+text = "Remove card"
+
+[node name="CloseButton" type="Button" parent="Panel/Box/Footer" unique_id=1733500114]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 52)
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Close"
