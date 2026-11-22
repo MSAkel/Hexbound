@@ -23,6 +23,11 @@ func get_description_text() -> String:
 	return description
 
 
+## Description for the tooltip and catalog. Cards whose face shows less than the tooltip extend it.
+func get_tooltip_description_text() -> String:
+	return get_description_text()
+
+
 # Full placement validity, including tile occupancy and restrictions.
 func can_play_on(_hex: Hex) -> bool:
 	return false

@@ -1,13 +1,10 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://dia2wi5j18o8g"]
 
 [ext_resource type="Texture2D" uid="uid://ceyoiojgowjxv" path="res://assets/icons/food/ingredients/meats/sausage.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/shared/bonus_per_nearby_kind.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-bonus_kind = &"seasoning"
-bonus_scope = 0
-bonus_per_card = 5.0
 base_production_amount = 15
 product = 1
 ingredient_tags = Array[StringName]([&"meat"])
@@ -15,5 +12,5 @@ starting_hand_eligible = true
 id = "sausage"
 name = "Sausage"
 icon = ExtResource("1_icon")
-description = "+15 {flavour}. +5 {flavour} per adjacent Seasoning."
+description = "+15 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -1,17 +1,16 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://cf2c0mp3yhgg7"]
 
 [ext_resource type="Texture2D" uid="uid://dudey74frbe45" path="res://assets/icons/food/ingredients/seafood/shrimp.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/shared/garnished_when_adjacent.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-neighbour_kind = &"seasoning"
-base_production_amount = 10
+base_production_amount = 15
 product = 1
 ingredient_tags = Array[StringName]([&"seafood"])
 starting_hand_eligible = true
 id = "shrimp"
 name = "Shrimp"
 icon = ExtResource("1_icon")
-description = "+10 {flavour}. {garnished} if next to a Seasoning."
+description = "+15 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

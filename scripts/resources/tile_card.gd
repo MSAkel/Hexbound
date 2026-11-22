@@ -139,6 +139,8 @@ var prep_statuses: Array[StringName] = []
 # Ingredients this Kitchenware prepared this Hour, counted each time (a retrigger, a Garnish stack,
 # a status). Fried Meals read the Deep Fryer's count.
 var hour_prepared_count: int = 0
+## Times a Kitchenware prepared this card this Hour (retriggers and Garnish it gave). Dairy reads it.
+var hour_times_prepared: int = 0
 # Run-long growth station perks store on this card (Seasoned Grill). Saved with the card.
 var perk_growth: Dictionary = {}
 var is_garnished: bool:
@@ -281,6 +283,14 @@ static func queryable_kind_tags(card: TileCard) -> Array[StringName]:
 	if card.type == TileCardType.KITCHENWARE and TAG_KITCHENWARE not in tags:
 		tags.append(TAG_KITCHENWARE)
 	return tags
+
+
+## Description for the tooltip: the card's own text, plus its kind rule for Ingredients.
+func get_tooltip_description_text() -> String:
+	var rule := IngredientKindRules.rule_text(IngredientKindRules.rule_kind(self))
+	if rule.is_empty():
+		return get_description_text()
+	return get_description_text() + " " + rule
 
 
 func get_inspect_subtitle() -> String:
@@ -608,6 +618,9 @@ func _try_queue_tile_card_triggers(
 		failed_tile_card_text(source_tile)
 		return false
 
+	if type == TileCardType.KITCHENWARE:
+		for prepared: TileCard in triggerable:
+			prepared.hour_times_prepared += 1
 	queue_tile_card_triggers(source_tile, triggerable, aligned_scales)
 	return true
 
@@ -717,6 +730,7 @@ func _try_garnish_tile_card(source_tile: Hex, target: TileCard) -> int:
 		for _i in StaffManager.extra_garnish_applications(source_tile, self, target):
 			if target.add_garnish():
 				landed += 1
+		target.hour_times_prepared += landed
 	return landed
 
 
@@ -777,13 +791,13 @@ func _get_production_amount() -> float:
 
 
 ## Amount this card should pay and show. Override instead of duplicating chip and activate math.
-func _effect_amount(_tile: Hex) -> float:
-	return _get_production_amount()
+func _effect_amount(tile: Hex) -> float:
+	return _get_production_amount() + IngredientKindRules.flavour_bonus(self, tile)
 
 
 ## Placed cards this effect cares about. Default preview maps these to coordinates.
-func _effect_preview_cards(_tile: Hex) -> Array[TileCard]:
-	return []
+func _effect_preview_cards(tile: Hex) -> Array[TileCard]:
+	return IngredientKindRules.preview_cards(self, tile)
 
 
 ## Pays _effect_amount using this card's product. Silent when the amount is empty.
@@ -968,6 +982,7 @@ func _get_tile_cards_on_immediately_previous_hexes(tile: Hex, count: int) -> Arr
 func reset_hour_product_snapshot() -> void:
 	hour_was_garnished = false
 	hour_prepared_count = 0
+	hour_times_prepared = 0
 	hour_flavour_produced = 0
 	hour_additive_mult_produced = 0.0
 

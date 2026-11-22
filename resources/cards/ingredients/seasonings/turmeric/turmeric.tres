@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://6vhls8qf0vdi"]
 
 [ext_resource type="Texture2D" uid="uid://m6ty3kui7xmg" path="res://assets/icons/food/ingredients/seasonings/turmeric.png" id="1_icon"]
-[ext_resource type="Script" path="res://scripts/resources/tile_card.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
