@@ -82,7 +82,7 @@ func show_card(card: Card, anchor_rect: Rect2) -> void:
 	card_chip_line.hide()
 	card_recipe_line.hide()
 	condiment_fuse_line.hide()
-	card_description.text = CardKeywordGlossary.to_bbcode(card.get_description_text(), KEYWORD_COLOR)
+	card_description.text = CardKeywordGlossary.to_bbcode(card.get_tooltip_description_text(), KEYWORD_COLOR)
 	card_bonus_line.hide()
 	show()
 	call_deferred("_fit_and_position")
@@ -112,7 +112,7 @@ func _refresh_spot_card() -> void:
 		_set_subtitle(card.get_inspect_subtitle())
 		_set_chip_line(card)
 		_set_recipe_line(card)
-		var description_bbcode := CardKeywordGlossary.to_bbcode(card.get_description_text(), KEYWORD_COLOR)
+		var description_bbcode := CardKeywordGlossary.to_bbcode(card.get_tooltip_description_text(), KEYWORD_COLOR)
 		card_description.text = description_bbcode
 		_set_bonus_line(card)
 		_set_condiment_fuse_line(card)

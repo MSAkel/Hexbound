@@ -5,12 +5,12 @@
 
 [resource]
 script = ExtResource("2_script")
-base_production_amount = 25
+base_production_amount = 15
 product = 1
 ingredient_tags = Array[StringName]([&"sweet"])
 starting_hand_eligible = true
 id = "chocolate"
 name = "Chocolate"
 icon = ExtResource("1_88vp8")
-description = "+25 {flavour}."
+description = "+15 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

@@ -122,8 +122,10 @@ func _read_output(tile: Hex, preview: bool, scale: float, star_scale: float = 1.
 	var total_scale := scale * star_scale
 	var output := Output.new()
 	output.flavour = int(round(float(raw.get("flavour", 0)) * total_scale))
-	# The chef's Meal bonus (Pitmaster) joins the Meal's own +Mult before every multiplier.
+	# The chef's Meal bonus (Pitmaster) and the Sweets on the station (kind rule) join the Meal's own +Mult
+	# before every multiplier.
 	var additive := float(raw.get("additive_mult", 0.0)) + GameManager.chef.meal_extra_mult(tile, self)
+	additive += IngredientKindRules.sweet_meal_mult(self, tile)
 	output.additive_mult = additive * total_scale
 	output.multiplicative_mult = float(raw.get("multiplicative_mult", 1.0))
 	if output.has_multiplicative_mult():

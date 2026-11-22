@@ -81,7 +81,7 @@ func _cards() -> Array:
 			"price": card.get_shop_price(),
 			"starting_hand": card.starting_hand_eligible,
 			"once_per_hour": card.single_activation_per_turn,
-			"description": _text(card.description),
+			"description": _text(card.get_tooltip_description_text()),
 			"icon": _icon_path(card.icon),
 			"file": card.resource_path,
 			"script": _script_name(card),

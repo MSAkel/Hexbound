@@ -1,17 +1,16 @@
 [gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://lujnlq33gvj4"]
 
 [ext_resource type="Texture2D" uid="uid://ctmlqfppkdxgx" path="res://assets/icons/food/ingredients/seasonings/black_pepper.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/shared/adjacent_partner_bonus.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-partner_id = "salt"
-base_production_amount = 10
+base_production_amount = 15
 product = 1
 ingredient_tags = Array[StringName]([&"seasoning"])
 starting_hand_eligible = true
 id = "black_pepper"
 name = "Black Pepper"
 icon = ExtResource("1_icon")
-description = "+10 {flavour}. +10 {flavour} if next to Salt."
+description = "+15 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
