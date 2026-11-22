@@ -1,6 +1,6 @@
 extends MealCard
 
-## +4 Mult, plus the Flavour of the Vegetables on its station x1.5.
+## +3 Mult, plus the Flavour of the Vegetables on its station x1.5.
 
 const VEGETABLE_SCALE := 1.5
 

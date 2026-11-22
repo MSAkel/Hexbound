@@ -7,12 +7,12 @@
 script = ExtResource("2_script")
 meal_category = 7
 recipe_required_card_ids = Array[String](["avocado", "chili_pepper"])
-base_production_amount = 2
+base_production_amount = 5
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "guacamole"
 name = "Guacamole"
 icon = ExtResource("1_75uuh")
-description = "+2 {mult}. +2 {mult} for each Meal served on the Station on either side."
+description = "+5 {mult}. +2 {mult} for each Meal served on the Station on either side."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

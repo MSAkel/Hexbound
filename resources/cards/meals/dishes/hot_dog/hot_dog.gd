@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Sausage and a Vegetable. +3 Mult. +1 extra Gold when served while garnished.
+## Needs Sausage and a Vegetable. +4 Mult. +1 extra Gold when served while garnished.
 
 const BONUS_GOLD := 1
 

@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("2_script")
 meal_category = 8
-base_production_amount = 3
+base_production_amount = 1
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"beverage"])
 id = "coffee"
 name = "Coffee"
 icon = ExtResource("1_icon")
-description = "+3 {mult}. +1 Gold every 5th time it is served."
+description = "+1 {mult}. +1 Gold every 5th time it is served."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

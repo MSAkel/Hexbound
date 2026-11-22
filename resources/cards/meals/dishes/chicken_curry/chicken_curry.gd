@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Chicken and Turmeric. +4 Mult, plus +2 Mult for each different Seasoning on its station.
+## Needs Chicken and Turmeric. +5 Mult, plus +2 Mult for each different Seasoning on its station.
 
 const MULT_PER_SEASONING := 2.0
 

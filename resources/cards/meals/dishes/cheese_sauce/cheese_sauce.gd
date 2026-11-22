@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Cheese and a Seasoning. +3 Mult, plus +2 Mult for each Side being served on
+## Needs Cheese and a Seasoning. +4 Mult, plus +2 Mult for each Side being served on
 ## the stations either side of its own.
 
 const MULT_PER_SIDE := 2.0

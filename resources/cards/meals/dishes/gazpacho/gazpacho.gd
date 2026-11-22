@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Chili Pepper, a Vegetable and a Fruit. +3 Mult, plus +1 Mult for each different Vegetable
+## Needs Chili Pepper, a Vegetable and a Fruit. +5 Mult, plus +1 Mult for each different Vegetable
 ## or Fruit on its station. Copies of the same card count once.
 
 const MULT_PER_PRODUCE := 1.0

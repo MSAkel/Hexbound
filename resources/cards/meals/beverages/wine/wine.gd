@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Grape on its station. +4 Mult, then x1 Mult that gains x0.25 for each station
+## Needs Grape on its station. +3 Mult, then x1 Mult that gains x0.25 for each station
 ## serving a Meat dish. A Meat dish is a Meal in the Meat category. Poultry does not count.
 
 const XMULT_PER_MEAT_STATION := 0.25

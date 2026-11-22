@@ -1,6 +1,6 @@
 extends MealCard
 
-## +2 Mult, then x1 Mult that gains x0.1 for every earlier trigger this Day. Resets each Day.
+## +1 Mult, then x1 Mult that gains x0.1 for every earlier trigger this Day. Resets each Day.
 
 const XMULT_PER_TRIGGER := 0.1
 

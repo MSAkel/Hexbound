@@ -7,12 +7,12 @@
 script = ExtResource("2_script")
 meal_category = 2
 recipe_required_card_ids = Array[String](["chicken", "turmeric"])
-base_production_amount = 4
+base_production_amount = 5
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "chicken_curry"
 name = "Chicken Curry"
 icon = ExtResource("1_i4lop")
-description = "+4 {mult}. +2 {mult} for each different Seasoning on its Station."
+description = "+5 {mult}. +2 {mult} for each different Seasoning on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

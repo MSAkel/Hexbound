@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Milk and a Sweet. +2 Mult, plus +1 Mult for each Sweet or Dairy on its station.
+## Needs Milk and a Sweet. +4 Mult, plus +1 Mult for each Sweet or Dairy on its station.
 
 const MULT_PER_CARD := 1.0
 

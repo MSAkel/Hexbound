@@ -7,12 +7,12 @@
 script = ExtResource("2_script")
 meal_category = 8
 recipe_required_card_ids = Array[String](["grape"])
-base_production_amount = 4
+base_production_amount = 3
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"beverage"])
 id = "wine"
 name = "Wine"
 icon = ExtResource("1_icon")
-description = "+4 {mult}. Gains x0.25 {mult} for each Station serving a Meat dish."
+description = "+3 {mult}. Gains x0.25 {mult} for each Station serving a Meat dish."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

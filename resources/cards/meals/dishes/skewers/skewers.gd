@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs 2 Meats and a Seasoning. +2 Mult, plus +1 Mult for each Meat on its station.
+## Needs 2 Meats and a Seasoning. +4 Mult, plus +1 Mult for each Meat on its station.
 
 const MULT_PER_MEAT := 1.0
 
