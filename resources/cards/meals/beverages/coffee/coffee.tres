@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3 uid="uid://c1pr04kg1netg"]
+[gd_resource type="Resource" format=3 uid="uid://c1pr04kg1netg"]
 
 [ext_resource type="Texture2D" uid="uid://berds0aj0ward" path="res://assets/icons/food/meals/beverage/coffee.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/beverages/coffee/coffee.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bge12uosu7hts" path="res://resources/cards/meals/beverages/coffee/coffee.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
