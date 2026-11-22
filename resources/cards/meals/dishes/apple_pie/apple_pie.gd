@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Apple and Sugar. +7 Mult. +1 extra Gold when served while a Coffee is placed on any station.
+## Needs Apple and Sugar. +5 Mult. +1 extra Gold when served while a Coffee is placed on any station.
 
 const COFFEE_ID := "coffee"
 const BONUS_GOLD := 1

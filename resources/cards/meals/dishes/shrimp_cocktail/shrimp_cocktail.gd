@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Shrimp. +2 Mult, plus +2 Mult for each Seafood on the stations either side of its own.
+## Needs Shrimp. +4 Mult, plus +2 Mult for each Seafood on the stations either side of its own.
 
 const MULT_PER_NEIGHBOUR_SEAFOOD := 2.0
 

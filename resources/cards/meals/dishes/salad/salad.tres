@@ -7,12 +7,12 @@
 script = ExtResource("2_script")
 meal_category = 4
 recipe_vegetable_count = 2
-base_production_amount = 4
+base_production_amount = 3
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "salad"
 name = "Salad"
 icon = ExtResource("1_icon")
-description = "+4 {mult}. Gains the {flavour} of the Vegetables on its Station x1.5."
+description = "+3 {mult}. Gains the {flavour} of the Vegetables on its Station x1.5."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

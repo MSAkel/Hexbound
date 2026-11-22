@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Olive and a Seasoning. +2 Mult, plus +1 Mult for each time an Olive on its station has
+## Needs Olive and a Seasoning. +4 Mult, plus +1 Mult for each time an Olive on its station has
 ## fired this Hour.
 
 const OLIVE_ID := "olive"
