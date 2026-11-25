@@ -196,9 +196,9 @@ Hour/Day start, station level thresholds, taking every station pick, merchant sl
 Add a hook to `ChefPerk` + `ChefRuntime` when a new chef needs one.
 
 Starting decks hold one copy of every Ingredient and Kitchenware the chef can see
-(`GameManager.get_draw_pool`) plus `ChefRegistry.STARTING_MEAL_COUNT` (4) different Meals:
+(`GameManager.get_draw_pool`) plus `ChefRegistry.STARTING_MEAL_COUNT` (5) different Meals:
 `SPECIALITY_MEAL_COUNT` (2) from the home Station's kit (kit order, swaps applied) and the rest random
-from the chef's pool. Chefs whose home Station is rolled (Restaurateur, Chef de Cuisine) get all 4
+from the chef's pool. Chefs whose home Station is rolled (Restaurateur, Chef de Cuisine) get all 5
 random. The kits' Ingredient, Kitchenware and random entries are no longer dealt. Station kits (`resources/station_kits/*.tres`, `StationKit`): one ordered
 list of 9 card ids or random entries (`random:kitchenware`, `random:ingredient`, `random:<ingredient tag>`)
 per Station type, used as a mini (first 5), small (first 6) or full (all 9) kit. `deck_stations` lists

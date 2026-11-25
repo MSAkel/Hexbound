@@ -15,8 +15,8 @@ const CHEF_PATHS: Array[String] = [
 ]
 
 ## Meals in every starting deck (user, Nov 24: raised from the 3 most kits gave, since Meals were
-## too hard to get without the end-of-Day card pick). Untuned.
-const STARTING_MEAL_COUNT := 4
+## too hard to get without the end-of-Day card pick; Nov 26: 4 -> 5, the extra one random). Untuned.
+const STARTING_MEAL_COUNT := 5
 ## Of those, how many come from the chef's speciality (the home Station's kit, kit order). The rest
 ## are random Meals from the chef's pool. A chef whose home Station is rolled ("any" or "a|b"), such
 ## as Restaurateur and Chef de Cuisine, has no speciality and gets all random (user, Nov 24).
