@@ -977,6 +977,11 @@ func trace(message: String) -> void:
 		])
 
 
+## A policy's hand discard taken to look for cards its Meal plans lack (details.search_discards).
+func note_search_discard() -> void:
+	_log["search_discards"] = int(_log.get("search_discards", 0)) + 1
+
+
 func legal_hexes(card: TileCard) -> Array[Hex]:
 	var hexes: Array[Hex] = []
 	for hex: Hex in map.get_hexes_in_trigger_order():

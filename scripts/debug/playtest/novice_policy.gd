@@ -183,8 +183,8 @@ func _slip_placement(card: TileCard) -> Dictionary:
 	for hex: Hex in _candidate_hexes(card):
 		var cost := slot_cost if hex.active_tile_card == null else 0.0
 		var value := await _evaluate(func() -> void: card.play_on(hex, false), [_segment_of(hex)] as Array[int])
-		value += _station_progress_bonus(card, hex) + _meal_potential(card, hex) - cost
-		value += _recipe_progress_bonus(card, hex) + _unique_meal_gold(card)
+		value += _station_progress_bonus(card, hex) + _unique_meal_gold(card) - cost
+		value += await _plan_bonus(card, hex)
 		ranked.append({"hex": hex, "net": value})
 	if ranked.is_empty():
 		return {}
