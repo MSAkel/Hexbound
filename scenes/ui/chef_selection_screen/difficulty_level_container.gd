@@ -30,7 +30,8 @@ func display_difficulty(level: Difficulty.Level) -> void:
 # Refresh the name and description labels for the current difficulty.
 func _update_display() -> void:
 	var level := _difficulties[_current_index]
-	difficulty_level.text = Difficulty.get_level_name(level)
+	# The number box shows the level number only ("Level 3" -> "3").
+	difficulty_level.text = str(_current_index + 1)
 	difficulty_info.text = Difficulty.get_level_info(level)
 
 

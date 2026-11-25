@@ -75,7 +75,10 @@ class MerchantVisit:
 		_runner = runner
 		free_rerolls = GameManager.chef.free_merchant_rerolls()
 		_roll_stock()
+		for kind in MerchantPacks.draw_kinds(_reroll_count):
+			packs.append(kind)
 
+	## Rerolls change cards and condiments only. Packs stay for the whole visit.
 	func _roll_stock() -> void:
 		# One shelf of weighted slots, split the way the policies read it.
 		cards.clear()
@@ -86,9 +89,6 @@ class MerchantVisit:
 			elif item is TileCard:
 				cards.append(item as TileCard)
 		condiments = Merchant.draw_condiment_stock(_reroll_count)
-		packs.clear()
-		for kind in MerchantPacks.draw_kinds(_reroll_count):
-			packs.append(kind)
 
 	func price_of(item: Resource) -> int:
 		return item.get_shop_price()
@@ -114,7 +114,7 @@ class MerchantVisit:
 	func preview_pack(index: int) -> Array[Card]:
 		return MerchantPacks.draw_contents(
 			packs[index] as MerchantPacks.Kind,
-			_reroll_count,
+			0,
 			index,
 			MerchantPacks.PREVIEW_STREAM_TAG
 		)
@@ -124,7 +124,7 @@ class MerchantVisit:
 		if not can_open_pack(index):
 			return []
 		var kind := packs[index] as MerchantPacks.Kind
-		var contents := MerchantPacks.draw_contents(kind, _reroll_count, index)
+		var contents := MerchantPacks.draw_contents(kind, 0, index)
 		if contents.is_empty():
 			return []
 		var price := pack_price(index)

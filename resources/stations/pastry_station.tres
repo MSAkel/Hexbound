@@ -2,11 +2,33 @@
 
 [ext_resource type="Script" uid="uid://rpgwnpjas3xh" path="res://scripts/resources/station_type.gd" id="1_type"]
 [ext_resource type="Script" uid="uid://dsqcvvw2je1ns" path="res://scripts/resources/station_perk.gd" id="2_perk"]
-[ext_resource type="Texture2D" path="res://assets/icons/placeholder.png" id="3_icon"]
-[ext_resource type="Script" path="res://resources/stations/perks/morning_bake.gd" id="s_morning_bake"]
-[ext_resource type="Script" path="res://resources/stations/perks/serve_bonus.gd" id="s_serve_bonus"]
-[ext_resource type="Script" path="res://resources/stations/perks/cafe.gd" id="s_cafe"]
-[ext_resource type="Script" path="res://resources/stations/perks/level_spill.gd" id="s_level_spill"]
+[ext_resource type="Texture2D" uid="uid://bnoo2clovtw5" path="res://assets/icons/food/meals/dishes/chocolate_cake.png" id="6_eqdh8"]
+[ext_resource type="Script" uid="uid://tbte6bmt8p0j" path="res://resources/stations/perks/cafe.gd" id="s_cafe"]
+[ext_resource type="Script" uid="uid://cau5jid5wtwv1" path="res://resources/stations/perks/level_spill.gd" id="s_level_spill"]
+[ext_resource type="Script" uid="uid://duocnc0h8osaj" path="res://resources/stations/perks/morning_bake.gd" id="s_morning_bake"]
+[ext_resource type="Script" uid="uid://b7r1y5uvte50v" path="res://resources/stations/perks/serve_bonus.gd" id="s_serve_bonus"]
+
+[sub_resource type="Resource" id="capstone_0"]
+script = ExtResource("s_cafe")
+description = "Café: Desserts served here gain +2 {mult} for each Beverage being served at a Bar"
+
+[sub_resource type="Resource" id="capstone_1"]
+script = ExtResource("s_level_spill")
+partner_type_id = "bar_station"
+description = "Fruit Tart: Fruits on an adjacent Bar also gain this station's level {flavour}"
+target_tags = Array[StringName]([&"fruit"])
+
+[sub_resource type="Resource" id="choice_0"]
+script = ExtResource("s_morning_bake")
+description = "Morning Bake: Desserts on this station start each Day at x2 output and lose x0.2 each Turn"
+target_meal_categories = Array[int]([5])
+output_scale = 2.0
+
+[sub_resource type="Resource" id="choice_1"]
+script = ExtResource("s_serve_bonus")
+bonus_gold = 1
+description = "Desserts served on this station give +1 Gold"
+target_meal_categories = Array[int]([5])
 
 [sub_resource type="Resource" id="level_1"]
 script = ExtResource("2_perk")
@@ -44,43 +66,18 @@ description = "Sweets on this station gain +25 {flavour}."
 target_tags = Array[StringName]([&"sweet"])
 flat_flavour = 25
 
-[sub_resource type="Resource" id="choice_0"]
-script = ExtResource("s_morning_bake")
-description = "Morning Bake: Desserts on this station start each Day at x2 output and lose x0.2 each Turn"
-target_meal_categories = Array[int]([5])
-output_scale = 2.0
-decay_per_hour = 0.2
-
-[sub_resource type="Resource" id="choice_1"]
-script = ExtResource("s_serve_bonus")
-description = "Desserts served on this station give +1 Gold"
-target_meal_categories = Array[int]([5])
-bonus_gold = 1
-
-[sub_resource type="Resource" id="capstone_0"]
-script = ExtResource("s_cafe")
-description = "Café: Desserts served here gain +2 {mult} for each Beverage being served at a Bar"
-mult_per_beverage = 2.0
-
-[sub_resource type="Resource" id="capstone_1"]
-script = ExtResource("s_level_spill")
-description = "Fruit Tart: Fruits on an adjacent Bar also gain this station's level {flavour}"
-target_tags = Array[StringName]([&"fruit"])
-partner_type_id = "bar_station"
-
 [resource]
 script = ExtResource("1_type")
 id = "pastry_station"
 display_name = "Pastry Station"
-icon = ExtResource("3_icon")
+icon = ExtResource("6_eqdh8")
 color = Color(1, 0.55, 0.78, 1)
 required_counts = {
-&"sweet": 2,
 &"dairy": 1,
-&"kitchenware": 1
+&"kitchenware": 1,
+&"sweet": 2
 }
 distinct_tags = Array[StringName]([&"sweet"])
-required_card_ids = Array[String]([])
 level_perks = Array[ExtResource("2_perk")]([SubResource("level_1"), SubResource("level_2"), SubResource("level_3"), SubResource("level_4"), SubResource("level_5"), SubResource("level_6")])
 choice_options = Array[ExtResource("2_perk")]([SubResource("choice_0"), SubResource("choice_1")])
 capstone_options = Array[ExtResource("2_perk")]([SubResource("capstone_0"), SubResource("capstone_1")])

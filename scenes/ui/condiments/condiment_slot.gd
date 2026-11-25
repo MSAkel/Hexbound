@@ -5,6 +5,8 @@ extends Control
 ## Layout lives in condiment_slot.tscn.
 
 signal drag_started(slot_index: int)
+## Pressed and released before a drag began. CondimentBelt opens the Sell button.
+signal clicked(slot_index: int)
 
 const SLOT_SIZE := Vector2(60, 60)
 const HOLD_SELECT_SEC := 0.18
@@ -26,6 +28,8 @@ var targeting := false
 var controller_focused := false
 
 var _lifted := false
+## False while a panel other than the merchant is open over the belt.
+var _interactive := true
 var _hold_token := 0
 var _press_held := false
 var _press_screen_pos := Vector2.ZERO
@@ -38,7 +42,6 @@ func _ready() -> void:
 	pivot_offset = SLOT_SIZE * 0.5
 	_empty_icon.texture = EMPTY_ICON
 	_empty_icon.modulate = EMPTY_ICON_TINT
-	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	gui_input.connect(_on_gui_input)
@@ -61,6 +64,18 @@ func set_lifted(lifted: bool) -> void:
 	_refresh()
 	if lifted:
 		EventBus.toggle_tooltip.emit(false, "", Rect2())
+
+
+func set_interactive(enabled: bool) -> void:
+	_interactive = enabled
+	if not enabled:
+		clear_press()
+	_refresh()
+
+
+## Where the last left press landed, in screen space.
+func get_press_position() -> Vector2:
+	return _press_screen_pos
 
 
 func clear_press() -> void:
@@ -86,6 +101,7 @@ func play_consume_animation() -> void:
 
 
 func _refresh() -> void:
+	mouse_filter = Control.MOUSE_FILTER_STOP if _interactive else Control.MOUSE_FILTER_IGNORE
 	var highlighted := targeting or controller_focused
 	_well.add_theme_stylebox_override("panel", well_selected_style if highlighted else well_idle_style)
 	var filled := condiment != null
@@ -110,8 +126,11 @@ func _on_gui_input(event: InputEvent) -> void:
 				_begin_hold_drag()
 			get_viewport().set_input_as_handled()
 		else:
+			var was_click := _press_held
 			_press_held = false
 			_cancel_hold_drag()
+			if was_click:
+				clicked.emit(slot_index)
 
 
 func _input(event: InputEvent) -> void:
@@ -136,6 +155,8 @@ func _begin_hold_drag() -> void:
 		return
 	if _lifted or condiment == null:
 		return
+	# A held press is a drag now, so its release is not a click.
+	_press_held = false
 	drag_started.emit(slot_index)
 
 

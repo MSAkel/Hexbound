@@ -84,14 +84,25 @@ func get_requirements_text(separator: String = " · ") -> String:
 	return separator.join(parts)
 
 
+## Text and backing of a requirement the cards already cover, and of the "1/2" on one partly covered.
+const COVERED_TEXT_COLOR := Color(0.12, 0.42, 0.14, 1)
+const COVERED_BG_COLOR := Color(0.45, 0.75, 0.35, 0.35)
+
+
 ## get_requirements_text as BBCode with each item's icon on its left: a named card shows its own
 ## icon, a kind shows the kind icon. "Any Ingredient" has no icon. icon_size is in pixels.
-func get_requirements_bbcode(icon_size: int, separator: String = "   ") -> String:
+## With covered_by (a station's regular-spot cards), requirements those cards already meet are
+## highlighted, and a count they meet in part shows how many are there ("1/2").
+func get_requirements_bbcode(
+	icon_size: int, separator: String = "   ", check: bool = false, covered_by: Array[TileCard] = []
+) -> String:
+	var missing := missing_counts(covered_by) if check else {}
 	var parts: PackedStringArray = []
 	for card_id: String in required_card_ids:
 		var template := GameManager.get_tile_card_by_id(card_id)
 		var name_text := template.name if template != null else card_id.capitalize()
-		parts.append(FeastStatIcons.inline_bbcode(template.icon if template != null else null, icon_size) + name_text)
+		var part := FeastStatIcons.inline_bbcode(template.icon if template != null else null, icon_size) + name_text
+		parts.append(_covered_bbcode(part) if check and not missing.has(StringName(card_id)) else part)
 	for tag: StringName in required_counts:
 		var count := int(required_counts[tag])
 		var label := "Ingredient" if tag == TAG_ANY_INGREDIENT else GameTerms.get_ingredient_kind_label(tag)
@@ -104,8 +115,20 @@ func get_requirements_bbcode(icon_size: int, separator: String = "   ") -> Strin
 		elif tag in distinct_tags and count > 1:
 			label = "different %s" % label
 		var icon: Texture2D = null if tag == TAG_ANY_INGREDIENT else FeastStatIcons.get_ingredient_kind_icon(tag)
-		parts.append(FeastStatIcons.inline_bbcode(icon, icon_size) + "%d %s" % [count, label])
+		var part := FeastStatIcons.inline_bbcode(icon, icon_size) + "%d %s" % [count, label]
+		var short := int(missing.get(tag, 0))
+		if check and short <= 0:
+			part = _covered_bbcode(part)
+		elif check and short < count:
+			part += " [color=#%s](%d/%d)[/color]" % [COVERED_TEXT_COLOR.to_html(false), count - short, count]
+		parts.append(part)
 	return separator.join(parts)
+
+
+func _covered_bbcode(part: String) -> String:
+	return "[bgcolor=#%s][color=#%s] %s [/color][/bgcolor]" % [
+		COVERED_BG_COLOR.to_html(true), COVERED_TEXT_COLOR.to_html(false), part,
+	]
 
 
 ## Perk for a level, or null below level 1.

@@ -1,8 +1,8 @@
 extends Node
 
-# Audio bus indices matching default_bus_layout (Master, Music, SFX).
-const MUSIC_BUS = 1
-const SFX_BUS = 2
+# Audio bus names from default_bus_layout.tres (Master, Music, SFX).
+const MUSIC_BUS: StringName = &"Music"
+const SFX_BUS: StringName = &"SFX"
 
 # Audio players
 var music_player: AudioStreamPlayer
@@ -199,7 +199,7 @@ func get_available_sfx_player() -> AudioStreamPlayer:
 func set_music_volume(volume: float) -> void:
 	music_volume = clamp(volume, 0.0, 1.0)
 	music_player.volume_db = linear_to_db(music_volume)
-	AudioServer.set_bus_volume_db(MUSIC_BUS, linear_to_db(music_volume))
+	_set_bus_volume(MUSIC_BUS, music_volume)
 	GameSettings.set_music_volume(music_volume)
 
 
@@ -213,8 +213,17 @@ func set_sfx_volume(volume: float) -> void:
 		_condiment_hover_player.volume_db = linear_to_db(sfx_volume)
 	if _ui_hover_player != null:
 		_ui_hover_player.volume_db = linear_to_db(sfx_volume)
-	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
+	_set_bus_volume(SFX_BUS, sfx_volume)
 	GameSettings.set_sfx_volume(sfx_volume)
+
+
+## Skips a bus the layout doesn't have (e.g. the layout failed to load).
+func _set_bus_volume(bus_name: StringName, volume: float) -> void:
+	var bus_index: int = AudioServer.get_bus_index(bus_name)
+	if bus_index == -1:
+		push_warning("AudioManager: no audio bus named %s" % bus_name)
+		return
+	AudioServer.set_bus_volume_db(bus_index, linear_to_db(volume))
 
 
 func load_volume_settings() -> void:
@@ -222,11 +231,11 @@ func load_volume_settings() -> void:
 	music_volume = GameSettings.music_volume
 	sfx_volume = GameSettings.sfx_volume
 	music_player.volume_db = linear_to_db(music_volume)
-	AudioServer.set_bus_volume_db(MUSIC_BUS, linear_to_db(music_volume))
+	_set_bus_volume(MUSIC_BUS, music_volume)
 	for player in sfx_players:
 		player.volume_db = linear_to_db(sfx_volume)
 	if _condiment_hover_player != null:
 		_condiment_hover_player.volume_db = linear_to_db(sfx_volume)
 	if _ui_hover_player != null:
 		_ui_hover_player.volume_db = linear_to_db(sfx_volume)
-	AudioServer.set_bus_volume_db(SFX_BUS, linear_to_db(sfx_volume))
+	_set_bus_volume(SFX_BUS, sfx_volume)

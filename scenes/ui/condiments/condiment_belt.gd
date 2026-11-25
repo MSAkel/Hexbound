@@ -1,19 +1,27 @@
 class_name CondimentBelt
 extends Control
 
-## Three square slots on the right. Drag a condiment out to drink it, or onto the sell panel to sell it.
-## Slot cells come from condiment_slot.tscn. The drag ghost is authored in this scene.
+## Three square slots on the right. Drag a condiment out to drink it. Click one to open its Sell button.
+## Slot cells come from condiment_slot.tscn. The drag ghost and Sell button are authored in this scene.
+## Sits after the merchant in the tree, and takes the merchant's z_index while the shop is open,
+## so the belt is drawn on the shop's layer and stays usable there.
 
 const SLOT_SCENE := preload("res://scenes/ui/condiments/condiment_slot.tscn")
 const GHOST_SIZE := Vector2(48, 48)
 
 @onready var _slots_column: VBoxContainer = $SlotsColumn
 @onready var _ghost: TextureRect = %DragGhost
+@onready var _sell_prompt: SellPrompt = %SellPrompt
+@onready var _merchant: Control = get_node_or_null("../Merchant")
+## z_index from the scene, used whenever the merchant is not open.
+@onready var _rest_z_index := z_index
 
 var _slots: Array[CondimentSlot] = []
 var _drag_index := -1
 var _awaiting_consume := false
 var _controller_focus_index := -1
+## Where the press that began the drag landed. Released there, a drag counts as a click.
+var _drag_press_position := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -21,14 +29,17 @@ func _ready() -> void:
 		var slot: CondimentSlot = SLOT_SCENE.instantiate()
 		slot.slot_index = i
 		slot.drag_started.connect(_on_slot_drag_started)
+		slot.clicked.connect(_on_slot_clicked)
 		_slots_column.add_child(slot)
 		_slots.append(slot)
 	_ghost.size = GHOST_SIZE
-	EventBus.condiment_belt_changed.connect(_refresh)
+	_sell_prompt.sell_requested.connect(_on_sell_requested)
+	EventBus.condiment_belt_changed.connect(_on_belt_changed)
 	EventBus.condiment_targeting_changed.connect(_on_targeting_changed)
 	EventBus.condiment_consume_started.connect(_on_consume_started)
 	EventBus.condiment_use_failed.connect(_on_use_failed)
 	EventBus.turn_started.connect(_on_turn_started)
+	UiManager.active_panel_changed.connect(_on_active_panel_changed)
 	_refresh()
 
 
@@ -75,6 +86,8 @@ func _on_slot_drag_started(index: int) -> void:
 	if condiment == null:
 		return
 	_drag_index = index
+	_drag_press_position = _slots[index].get_press_position()
+	_sell_prompt.close()
 	AudioManager.play_sfx(UISounds.CONDIMENT_GRAB)
 	_show_ghost(condiment)
 	_refresh()
@@ -113,7 +126,56 @@ func _on_use_failed(condiment: Condiment) -> void:
 	)
 
 
+func _on_belt_changed() -> void:
+	_sell_prompt.close()
+	_refresh()
+
+
+## The belt is usable in the run and the merchant. In the merchant it shares the shop's z_index.
+## Being after the merchant in the tree, it would take clicks meant for any other panel, so its
+## slots stop taking input while one is open.
+func _on_active_panel_changed(panel: Control) -> void:
+	_sell_prompt.close()
+	var open_panel := panel if panel != null and is_instance_valid(panel) else null
+	var over_merchant := open_panel != null and open_panel == _merchant
+	z_index = _merchant.z_index if over_merchant else _rest_z_index
+	var interactive := open_panel == null or over_merchant
+	if not interactive:
+		_cancel_drag()
+	for slot: CondimentSlot in _slots:
+		slot.set_interactive(interactive)
+
+
+## A click opens the Sell button beside the condiment. A second click on it closes the button.
+func _on_slot_clicked(index: int) -> void:
+	if _drag_index >= 0:
+		return
+	_toggle_sell_prompt(index)
+
+
+func _toggle_sell_prompt(index: int) -> void:
+	var condiment := CondimentManager.belt[index]
+	if condiment == null:
+		return
+	if _sell_prompt.shown_index() == index:
+		_sell_prompt.close()
+		return
+	if not CondimentManager.can_sell_now():
+		return
+	_sell_prompt.show_for(
+		index, _slots[index].get_global_rect(), condiment.get_sell_value(), SellPrompt.Placement.LEFT
+	)
+
+
+func _on_sell_requested(index: int) -> void:
+	if CondimentManager.sell_slot(index) < 0:
+		return
+	AudioManager.play_sfx(UISounds.GOLD_GAINED)
+	EventBus.toggle_tooltip.emit(false, "", Rect2())
+
+
 func _on_turn_started() -> void:
+	_sell_prompt.close()
 	if _drag_index >= 0 and not _awaiting_consume:
 		_cancel_drag()
 
@@ -170,15 +232,15 @@ func _finish_drop() -> void:
 		return
 	var index := _drag_index
 	var condiment := CondimentManager.belt[index]
+	var mouse := get_global_mouse_position()
 	# Releasing over the rack puts the bottle back. Same as a right-click cancel.
-	if get_global_rect().has_point(get_global_mouse_position()):
+	if get_global_rect().has_point(mouse):
 		_cancel_drag()
+		# A long press that never moved began a drag by holding. It still opens the Sell button.
+		if mouse.distance_to(_drag_press_position) < CondimentSlot.DRAG_START_THRESHOLD_PX:
+			_toggle_sell_prompt(index)
 		return
 	if condiment == null:
-		_cancel_drag()
-		return
-	var sell_panel := get_tree().get_first_node_in_group("card_sell_panel") as CardSellPanel
-	if sell_panel != null and sell_panel.try_sell_condiment(index):
 		_cancel_drag()
 		return
 	if not CondimentManager.can_use(condiment):

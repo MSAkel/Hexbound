@@ -43,6 +43,7 @@ stretch_mode = 5
 [node name="GoldPanel" type="TextureRect" parent="Stack" unique_id=1878181627]
 unique_name_in_owner = true
 texture_filter = 1
+modulate = Color(1, 1, 1, 0.88)
 custom_minimum_size = Vector2(254, 62)
 layout_mode = 2
 mouse_filter = 2

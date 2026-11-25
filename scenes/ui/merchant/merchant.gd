@@ -246,18 +246,21 @@ func _on_condiment_targeting_changed(slot_index: int) -> void:
 
 
 ## Restored stock is shown as saved. Otherwise a fresh roll fills every unlocked slot.
+## A reroll (include_packs false) leaves the packs as they are: only cards and condiments change.
 func _refresh_merchant_stock(
 	restored_cards: Array[Card] = [],
 	restored_condiments: Array[Condiment] = [],
-	restored_packs: Array[int] = []
+	restored_packs: Array[int] = [],
+	include_packs: bool = true
 ) -> void:
 	_clear_selection()
 	await _display_merchant_cards(
 		restored_cards if not restored_cards.is_empty() else _roll_card_stock()
 	)
-	await _display_merchant_packs(
-		restored_packs if not restored_packs.is_empty() else _roll_pack_stock()
-	)
+	if include_packs:
+		await _display_merchant_packs(
+			restored_packs if not restored_packs.is_empty() else _roll_pack_stock()
+		)
 	await _display_merchant_condiments(
 		restored_condiments if not restored_condiments.is_empty() else _roll_condiment_stock()
 	)
@@ -631,7 +634,8 @@ func _complete_pack_purchase() -> void:
 	if not EconomyManager.can_afford(pack.price):
 		return
 	var slot := _displayed_packs.find(pack)
-	var contents := MerchantPacks.draw_contents(pack.kind, _stock_reroll_count, slot)
+	# Packs survive rerolls, so their contents are seeded by the visit, not the reroll count.
+	var contents := MerchantPacks.draw_contents(pack.kind, 0, slot)
 	# Nothing to open means nothing to charge for.
 	if contents.is_empty():
 		return
@@ -726,7 +730,7 @@ func _on_reroll_button_pressed() -> void:
 
 	AudioManager.play_sfx(UISounds.CLICK)
 	_stock_reroll_count += 1
-	await _refresh_merchant_stock()
+	await _refresh_merchant_stock([], [], [], false)
 	_update_reroll_button()
 	# Fresh stock replaced the focused card, so re-seat the ring on the new grid.
 	_queue_focus()

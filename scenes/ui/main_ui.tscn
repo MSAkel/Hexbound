@@ -38,8 +38,6 @@ rotation = 0.0016232448
 
 [node name="CardSellPanel" parent="." unique_id=1404687552 instance=ExtResource("22_sell_panel")]
 
-[node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
-
 [node name="CardSelectionUI" parent="." unique_id=330773291 instance=ExtResource("6_aa6wj")]
 visible = false
 z_index = 60
@@ -68,6 +66,8 @@ z_index = 90
 visible = false
 z_index = 60
 rotation = -0.00022035485
+
+[node name="CondimentBelt" parent="." unique_id=955320291 instance=ExtResource("19_condiment_belt")]
 
 [node name="StaffRail" parent="." unique_id=511277284 instance=ExtResource("24_staff_rail")]
 

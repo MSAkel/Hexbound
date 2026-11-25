@@ -95,7 +95,13 @@ func _show_menu(focus_page: int = CollectionPage.CARDS) -> void:
 	page_body.visible = false
 	var buttons := collection_menu.get_children().filter(func(node: Node) -> bool: return node is Button)
 	var target := buttons[clampi(focus_page, 0, buttons.size() - 1)] as Button
-	target.grab_focus.call_deferred()
+	# Only a pad starts on a focused entry; with the mouse, nothing is highlighted until hovered.
+	if InputManager.is_using_gamepad():
+		target.grab_focus.call_deferred()
+	else:
+		var focus_owner := get_viewport().gui_get_focus_owner()
+		if focus_owner != null and is_ancestor_of(focus_owner):
+			focus_owner.release_focus()
 
 
 ## Opens the page for one collection type, with its first entry selected.

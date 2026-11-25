@@ -3,8 +3,9 @@ extends Control
 
 ## Staff column left of the pass. One square per station, sized like a spot and seated on its
 ## station's row.
-## Drag a staff member onto another slot to move or swap it, or onto the Sell panel to sell it.
-## Sits above the merchant in the tree so staff stay usable while the shop is open.
+## Drag a staff member onto another slot to move or swap it. Click one to open its Sell button.
+## Sits after the merchant in the tree, and takes the merchant's z_index while the shop is open,
+## so staff are drawn on the shop's layer and stay usable there.
 ## The slots and the drag ghost live in staff_rail.tscn. Their positions there are the layout
 ## used when there is no board. With a board, each slot moves onto its station's row.
 
@@ -18,6 +19,9 @@ const LOCKED_MESSAGE := GameTerms.TECHNIQUES + " are locked"
 @onready var _merchant: Control = get_node_or_null("../Merchant")
 @onready var _slot_column: Control = %Slots
 @onready var _ghost: StaffSlot = %Ghost
+@onready var _sell_prompt: SellPrompt = %SellPrompt
+## z_index from the scene, used whenever the merchant is not open.
+@onready var _rest_z_index := z_index
 
 var _slots: Array[StaffSlot] = []
 # Positions from the scene, restored when there is no board to follow.
@@ -47,14 +51,16 @@ func _ready() -> void:
 			continue
 		assert(slot.slot_index == _slots.size(), "Staff slots must be in slot_index order")
 		slot.drag_started.connect(_on_slot_drag_started)
+		slot.clicked.connect(_on_slot_clicked)
 		slot.hover_changed.connect(_on_slot_hover_changed)
 		_slots.append(slot)
 		_authored_rects.append(Rect2(slot.position, slot.size))
 	if _slots.size() != StaffManager.SLOT_COUNT:
 		push_error("StaffRail has %d slots, StaffManager expects %d" % [_slots.size(), StaffManager.SLOT_COUNT])
 	_ghost.configure_as_ghost()
+	_sell_prompt.sell_requested.connect(_on_sell_requested)
 
-	EventBus.staff_roster_changed.connect(_refresh)
+	EventBus.staff_roster_changed.connect(_on_roster_changed)
 	EventBus.staff_added.connect(_on_staff_added)
 	EventBus.staff_moved.connect(_on_staff_moved)
 	EventBus.staff_effect_triggered.connect(_on_staff_effect_triggered)
@@ -127,6 +133,8 @@ func _board_slot_rects() -> Array[Rect2]:
 
 
 func _layout() -> void:
+	# The slots may move, so a Sell button beside one would be left behind.
+	_sell_prompt.close()
 	if not is_instance_valid(_tile_map):
 		_tile_map = _find_tile_map()
 	var board_rects := _board_slot_rects()
@@ -147,7 +155,11 @@ func _layout() -> void:
 
 
 ## Staff stay up for the run, the merchant and the card pick. Every other overlay hides them.
+## In the merchant they share its z_index. Being after it in the tree, they draw over its backdrop.
 func _on_active_panel_changed(panel: Control) -> void:
+	_sell_prompt.close()
+	var over_merchant := panel != null and is_instance_valid(panel) and panel == _merchant
+	z_index = _merchant.z_index if over_merchant else _rest_z_index
 	var shown := panel == null or not is_instance_valid(panel) or panel == _merchant or panel is CardSelectionUI
 	if shown == _shown:
 		return
@@ -182,6 +194,7 @@ func _on_slot_drag_started(index: int) -> void:
 		_show_message(index, LOCKED_MESSAGE)
 		return
 	_drag_slot = index
+	_sell_prompt.close()
 	_hide_inspect()
 	AudioManager.play_sfx(UISounds.CONDIMENT_GRAB)
 	_ghost.set_staff(staff)
@@ -230,11 +243,6 @@ func _finish_drop() -> void:
 			_slots[source].play_travel_from(_drop_origin)
 		return
 
-	var sell_panel := _find_sell_panel()
-	if target < 0 and sell_panel != null and sell_panel.try_sell_staff(source):
-		_finish_sell_drag(sell_panel)
-		return
-
 	# Released over its own hex or over nothing. Glide back home.
 	_end_drag()
 	_slots[source].play_travel_from(_drop_origin)
@@ -261,24 +269,59 @@ func _end_drag() -> void:
 	EventBus.tooltip_hover_refresh_requested.emit()
 
 
-## The staff member is already sold. The ghost shrinks into the panel before it disappears.
-func _finish_sell_drag(sell_panel: CardSellPanel) -> void:
-	if _drag_slot >= 0 and _drag_slot < _slots.size():
-		_slots[_drag_slot].clear_press()
-	_drag_slot = -1
-	_clear_drop_targets()
-	_refresh()
-	EventBus.staff_drag_ended.emit()
-	var target := sell_panel.get_global_rect().get_center()
-	_ghost.play_sell_into(target, func() -> void:
+#endregion --- Drag and drop ---
+
+
+#region --- Selling ---
+
+## A click opens the Sell button beside the staff member. A second click on it closes the button.
+func _on_slot_clicked(index: int) -> void:
+	if _drag_slot >= 0 or not _shown:
+		return
+	var staff := StaffManager.get_staff(index)
+	if staff == null:
+		return
+	if _sell_prompt.shown_index() == index:
+		_sell_prompt.close()
+		return
+	if not StaffManager.can_rearrange():
+		_slots[index].play_reject()
+		_show_message(index, LOCKED_MESSAGE)
+		return
+	_sell_prompt.show_for(
+		index, _slots[index].get_global_rect(), staff.get_sell_value(), SellPrompt.Placement.RIGHT
+	)
+
+
+func _on_sell_requested(index: int) -> void:
+	var staff := StaffManager.get_staff(index)
+	if staff == null:
+		return
+	if StaffManager.sell_staff(index) < 0:
+		_slots[index].play_reject()
+		_show_message(index, LOCKED_MESSAGE)
+		return
+	AudioManager.play_sfx(UISounds.GOLD_GAINED)
+	_hide_inspect()
+	# The hex is empty now. A ghost of the sold staff member shrinks away where it sat.
+	_ghost.set_staff(staff)
+	_ghost.modulate = Color.WHITE
+	_ghost.global_position = _slots[index].global_position
+	_ghost.show()
+	_ghost.play_sell_into(_slots[index].get_global_center(), func() -> void:
 		_ghost.hide()
 		EventBus.tooltip_hover_refresh_requested.emit()
 	)
 
-#endregion --- Drag and drop ---
+#endregion --- Selling ---
 
 
 #region --- Roster feedback ---
+
+func _on_roster_changed() -> void:
+	_sell_prompt.close()
+	_refresh()
+
 
 func _on_staff_added(slot: int) -> void:
 	_refresh()
@@ -313,6 +356,7 @@ func _on_staff_effect_triggered(slot: int) -> void:
 
 
 func _on_turn_ended() -> void:
+	_sell_prompt.close()
 	_cancel_drag()
 	_cancel_controller_hold()
 	_hide_inspect()

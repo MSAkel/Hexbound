@@ -1,10 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://dv2sg044kf00u"]
 
 [ext_resource type="Script" uid="uid://ls0xrxf26ly6" path="res://resources/techniques/street_food/street_food.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://lh2i7j3v4yfj" path="res://assets/icons/techniques/street_food.png" id="1_xtd5t"]
 
 [resource]
 script = ExtResource("1_script")
 id = "street_food"
 name = "Street Food"
+icon = ExtResource("1_xtd5t")
 description = "While this Station has no type: +40 {flavour} and +2 {mult} each Turn. Once it has one: +1 {mult}"
-rarity = 0

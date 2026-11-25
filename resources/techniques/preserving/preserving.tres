@@ -1,10 +1,12 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://rugalddl0112"]
 
+[ext_resource type="Texture2D" uid="uid://dmncx6u5ttmrr" path="res://assets/icons/techniques/preserving.png" id="1_5fmdw"]
 [ext_resource type="Script" uid="uid://bbl8kf4xofnpf" path="res://resources/techniques/preserving/preserving.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "preserving"
 name = "Preserving"
+icon = ExtResource("1_5fmdw")
 description = "{garnish} on cards on this Station lasts for one more Turn"
 rarity = 2

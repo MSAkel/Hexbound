@@ -42,7 +42,7 @@ func get_shop_price() -> int:
 	return maxi(1, base_price)
 
 
-## Gold paid when dropped on the sell panel. Half the base price, like staff.
+## Gold paid when sold from its Sell button. Half the base price, like staff.
 func get_sell_value() -> int:
 	return maxi(1, floori(base_price / 2.0))
 

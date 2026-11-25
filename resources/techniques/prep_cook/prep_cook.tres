@@ -1,10 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://d3vrfwv0ur2ep"]
 
+[ext_resource type="Texture2D" uid="uid://bdiy34hvpul1s" path="res://assets/icons/techniques/prep_cook.png" id="1_hw7bs"]
 [ext_resource type="Script" uid="uid://c5ufg072tqdy0" path="res://resources/techniques/prep_cook/prep_cook.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "prep_cook"
 name = "Prep Cook"
+icon = ExtResource("1_hw7bs")
 description = "+15 {flavour} for each Ingredient on this Station while it is level 1 or 2"
-rarity = 0

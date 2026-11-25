@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wi2vunqcosak" path="res://scenes/ui/staff/staff_rail.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/staff/staff_slot.tscn" id="2_slot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/sell_panel/sell_prompt.tscn" id="3_sell_prompt"]
 
 [node name="StaffRail" type="Control" unique_id=110724735]
 layout_mode = 3
@@ -61,3 +62,7 @@ z_index = 30
 layout_mode = 0
 offset_right = 104.0
 offset_bottom = 104.0
+
+[node name="SellPrompt" parent="." instance=ExtResource("3_sell_prompt")]
+unique_name_in_owner = true
+layout_mode = 0

@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TileCard" format=3 uid="uid://bffu5k1xj6gm7"]
+[gd_resource type="Resource" script_class="TileCard" format=3]
 
-[ext_resource type="Texture2D" uid="uid://c4xuydytx3y35" path="res://assets/icons/food/ingredients/meats/meat.png" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://cbigoek7x8xkg" path="res://assets/icons/food/ingredients/meats/bacon.png" id="1_icon"]
 [ext_resource type="Script" uid="uid://bxkqr45fqowe7" path="res://scripts/resources/tile_card.gd" id="2_script"]
 
 [resource]
@@ -9,8 +9,8 @@ base_production_amount = 15
 product = 1
 ingredient_tags = Array[StringName]([&"meat"])
 starting_hand_eligible = true
-id = "meat"
-name = "Meat"
+id = "bacon"
+name = "Bacon"
 icon = ExtResource("1_icon")
 description = "+15 {flavour}."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"
