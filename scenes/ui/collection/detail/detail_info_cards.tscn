@@ -1,0 +1,98 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/detail_info_cards.gd" id="1_info"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.9843, 0.9608, 0.902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8902, 0.8235, 0.6745, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="DetailInfoCards" type="HBoxContainer"]
+theme_override_constants/separation = 12
+script = ExtResource("1_info")
+
+[node name="WhoCard" type="PanelContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="Column" type="VBoxContainer" parent="WhoCard"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Caption" type="Label" parent="WhoCard/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 12
+text = "FIRST MADE BY"
+
+[node name="WhoValue" type="Label" parent="WhoCard/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_font_sizes/font_size = 18
+text = "Harry Perry"
+autowrap_mode = 3
+
+[node name="WhereCard" type="PanelContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="Column" type="VBoxContainer" parent="WhereCard"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Caption" type="Label" parent="WhereCard/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 12
+text = "WHERE"
+
+[node name="WhereValue" type="Label" parent="WhereCard/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_font_sizes/font_size = 18
+text = "Milford, Connecticut"
+autowrap_mode = 3
+
+[node name="WhenCard" type="PanelContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="Column" type="VBoxContainer" parent="WhenCard"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Caption" type="Label" parent="WhenCard/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 12
+text = "WHEN"
+
+[node name="WhenValue" type="Label" parent="WhenCard/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_font_sizes/font_size = 18
+text = "1929"
+autowrap_mode = 3

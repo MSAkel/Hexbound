@@ -52,6 +52,7 @@ func archive_finished_run(is_win: bool) -> void:
 		return
 	_archived_this_run = true
 	ensure_loaded()
+	CollectionStats.finish_run(is_win)
 
 	var chef_id := ""
 	if GameManager.selected_chef != null:

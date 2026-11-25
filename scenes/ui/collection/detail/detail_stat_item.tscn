@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[node name="DetailStatItem" type="VBoxContainer"]
+theme_override_constants/separation = 0
+
+[node name="Value" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_font_sizes/font_size = 28
+text = "0"
+
+[node name="Caption" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 12
+text = "PICKED"

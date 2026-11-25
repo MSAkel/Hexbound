@@ -3,12 +3,12 @@
     godot --headless --path . res://scenes/debug/export_catalog.tscn -- --out=catalog.json
     python scripts/debug/catalog/build_meal_collection.py catalog.json meal_collection.html [--commit=<sha>]
 
-History, fun facts and traditional ingredients come from meal_collection/meal_lore.json (draft
-lore, keyed by meal id; not used by the game). Effect text, category, icon and recipe come from
+History, fun facts and traditional ingredients come from resources/meal_lore.json (draft lore,
+keyed by meal id), the same file the game's Collection screen reads. Effect text, category, icon and recipe come from
 the export, so they always match the build. A Meal with no lore entry still appears, marked as
 "still to write", and is listed when the page is built.
-Headings use meal_collection/Gimbot-Accented.otf, a copy of the game font with its blank
-accented letters filled in (see compose_accents.py). Needs Pillow (pip install pillow).
+Headings use the game font, assets/fonts/gimbot_regular.otf (its accented letters were filled in
+with meal_collection/compose_accents.py). Needs Pillow (pip install pillow).
 """
 
 import base64
@@ -30,7 +30,7 @@ def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     commit = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--commit=")), "")
     data = json.loads(Path(args[0]).read_text(encoding="utf-8"))
-    lore = json.loads((HERE / "meal_lore.json").read_text(encoding="utf-8"))["meals"]
+    lore = json.loads((ROOT / "resources" / "meal_lore.json").read_text(encoding="utf-8"))["meals"]
     names = {card["id"]: card["name"] for card in data["cards"]}
 
     icons = {key: icon_data_uri(path, 40) for key, path in STAT_ICONS.items()}
@@ -51,7 +51,7 @@ def main() -> None:
             "lore": lore.get(card["id"]),
         })
 
-    font = base64.b64encode((HERE / "Gimbot-Accented.otf").read_bytes()).decode()
+    font = base64.b64encode((ROOT / "assets" / "fonts" / "gimbot_regular.otf").read_bytes()).decode()
     html = (
         (HERE / "template.html").read_text(encoding="utf-8")
         .replace("/*__FONT__*/", font)

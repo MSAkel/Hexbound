@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/detail_kitchen.gd" id="1_kitchen"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kitchen"]
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+bg_color = Color(0.09412, 0.1686, 0.1882, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+
+[node name="DetailKitchen" type="PanelContainer"]
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_kitchen")
+script = ExtResource("1_kitchen")
+
+[node name="Column" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Heading" type="Label" parent="Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7608, 0.6039, 0.3373, 1)
+theme_override_font_sizes/font_size = 24
+text = "In the kitchen"
+
+[node name="Effect" type="RichTextLabel" parent="Column"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.9098, 0.8745, 0.7882, 1)
+theme_override_constants/line_separation = 8
+theme_override_font_sizes/normal_font_size = 18
+theme_override_font_sizes/bold_font_size = 18
+bbcode_enabled = true
+text = "+15 Flavour."
+fit_content = true
+
+[node name="RecipeCaption" type="Label" parent="Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6824, 0.7255, 0.702, 1)
+theme_override_font_sizes/font_size = 13
+text = "RECIPE"
+
+[node name="Recipe" type="HFlowContainer" parent="Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="NoRecipe" type="Label" parent="Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6824, 0.7255, 0.702, 1)
+theme_override_font_sizes/font_size = 16
+text = "No recipe: always ready to serve"

@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/detail_tag.gd" id="1_tag"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kind"]
+content_margin_left = 11.0
+content_margin_top = 4.0
+content_margin_right = 11.0
+content_margin_bottom = 5.0
+bg_color = Color(0.09412, 0.1686, 0.1882, 1)
+corner_radius_top_left = 99
+corner_radius_top_right = 99
+corner_radius_bottom_right = 99
+corner_radius_bottom_left = 99
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_place"]
+content_margin_left = 11.0
+content_margin_top = 4.0
+content_margin_right = 11.0
+content_margin_bottom = 5.0
+bg_color = Color(0.9059, 0.8235, 0.651, 1)
+corner_radius_top_left = 99
+corner_radius_top_right = 99
+corner_radius_bottom_right = 99
+corner_radius_bottom_left = 99
+
+[node name="DetailTag" type="PanelContainer"]
+size_flags_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_kind")
+script = ExtResource("1_tag")
+kind_style = SubResource("StyleBoxFlat_kind")
+kind_font_color = Color(0.9098, 0.8745, 0.7882, 1)
+place_style = SubResource("StyleBoxFlat_place")
+place_font_color = Color(0.3686, 0.2706, 0.1255, 1)
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9098, 0.8745, 0.7882, 1)
+theme_override_font_sizes/font_size = 13
+text = "DISH"

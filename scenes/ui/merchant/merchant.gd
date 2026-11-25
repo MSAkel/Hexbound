@@ -617,6 +617,7 @@ func _seat_purchased_staff(staff: StaffCard, shelf_rect: Rect2) -> void:
 	if rail != null:
 		rail.set_next_arrival_origin(shelf_rect)
 	StaffManager.add_staff(staff)
+	CollectionStats.record_pick(CollectionStats.GROUP_TECHNIQUE, staff.id)
 
 
 ## Gold is spent when the pack opens. Its cards come from a draw seeded by the shelf slot,
@@ -701,6 +702,7 @@ func _complete_condiment_purchase() -> void:
 	EconomyManager.remove(gold_price)
 	if not CondimentManager.add_condiment(_selected_condiment_ui.condiment):
 		return
+	CollectionStats.record_pick(CollectionStats.GROUP_CONDIMENT, _selected_condiment_ui.condiment.id)
 	_locked_condiments.erase(_displayed_condiments.find(_selected_condiment_ui))
 	_selected_condiment_ui.mark_sold()
 	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)

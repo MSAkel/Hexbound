@@ -122,6 +122,28 @@ static func _starting_meal_ids(chef: ChefDefinition, stations: Array[String]) ->
 	return picked
 
 
+## The Meals every starting deck of this chef holds: the first SPECIALITY_MEAL_COUNT Meals of the
+## home Station's kit, with kit_swaps applied. Empty for chefs whose home Station is rolled, since
+## all their starting Meals are random. Rolls nothing, so it is safe outside a run (Collection).
+static func get_signature_meal_ids(chef: ChefDefinition) -> Array[String]:
+	var picked: Array[String] = []
+	if not _has_meal_speciality(chef):
+		return picked
+	# Not filtered by GameManager.get_draw_pool, which follows the chef bound for the run.
+	var home := chef.deck_stations[0].split(":")[0].strip_edges()
+	for meal_id: String in _meal_entries("%s:full" % home, home, _parse_swaps(chef)):
+		if picked.size() >= mini(SPECIALITY_MEAL_COUNT, STARTING_MEAL_COUNT):
+			break
+		if meal_id not in picked:
+			picked.append(meal_id)
+	return picked
+
+
+## Station ids a deck_stations entry can roll (the "|" choices), or ["any"].
+static func get_deck_station_choices(entry: String) -> PackedStringArray:
+	return entry.split(":")[0].strip_edges().split("|")
+
+
 ## True when the chef's home Station (first deck_stations entry) is one fixed Station, not a roll.
 static func _has_meal_speciality(chef: ChefDefinition) -> bool:
 	if chef == null or chef.deck_stations.is_empty():

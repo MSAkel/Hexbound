@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/gui/collection/star.png" id="1_star"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_star"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.7608, 0.6039, 0.3373, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="DetailFactRow" type="HBoxContainer"]
+theme_override_constants/separation = 12
+
+[node name="Star" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_star")
+
+[node name="Icon" type="TextureRect" parent="Star"]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("1_star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="."]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.2431, 0.2039, 0.149, 1)
+theme_override_font_sizes/font_size = 17
+text = "A fun fact."
+autowrap_mode = 3

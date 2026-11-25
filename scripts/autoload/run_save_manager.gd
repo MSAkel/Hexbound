@@ -156,6 +156,7 @@ func _record_abandoned_run_from_save(payload: Dictionary) -> void:
 	}
 	MetaProgressionManager.record_run_snapshot(snapshot)
 	RunHistoryManager.archive_from_save_payload(payload, false)
+	CollectionStats.finish_abandoned_run(payload)
 
 
 ## Queue a checkpoint after Hand and other listeners have finished this frame.
@@ -269,6 +270,8 @@ func _run_state_owners_after_map() -> Array:
 	return [
 		["condiments", CondimentManager],
 		["run_ledger", RunLedger],
+		# This run's pending Collection stats, merged into the lifetime file when the run ends.
+		["collection_stats", CollectionStats],
 	]
 
 

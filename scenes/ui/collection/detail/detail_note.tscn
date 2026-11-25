@@ -1,0 +1,30 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/detail_note.gd" id="1_note"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_note"]
+content_margin_left = 14.0
+content_margin_top = 11.0
+content_margin_right = 14.0
+content_margin_bottom = 11.0
+bg_color = Color(0.8941, 0.9255, 0.9098, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="DetailNote" type="PanelContainer"]
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_note")
+script = ExtResource("1_note")
+
+[node name="Body" type="RichTextLabel" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.1333, 0.251, 0.2275, 1)
+theme_override_constants/line_separation = 4
+theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/bold_font_size = 16
+bbcode_enabled = true
+text = "[b]Well attributed.[/b] Note."
+fit_content = true
