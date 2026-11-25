@@ -48,10 +48,26 @@ const MARKET_SMOOTHING := 0.3
 const MAX_HEXES_PER_STATION := 2
 ## Weakest seated cards tried as replacement targets once a card has no empty spot left.
 const MAX_REPLACE_CANDIDATES := 3
-## A Meal waiting on its recipe is worth this share of a typical pick, less per missing card.
-const MEAL_POTENTIAL_SHARE := 0.8
 ## Moving a base station one card closer to a type is worth this share of a typical pick.
 const STATION_PROGRESS_SHARE := 0.15
+## Meal plans (untuned). A plan is a Meal on a Station plus the cards its recipe still needs. Its
+## worth = what the Station scores with the recipe complete (a what-if Hour) x the chance those
+## cards are drawn and played before the Station cooks (from the deck the player can see) x the
+## times it then cooks. A Meal or Ingredient that makes a plan likelier gets the difference, so the
+## bot builds Stations that cook later instead of only feeding the one cooking now.
+## Share of a plan's worth a placement is credited with: plays compete with other plans.
+const PLAN_SHARE := 0.7
+## Throw the hand away (Discard button) when its best play is worth less than this share of a
+## typical pick and the Day has discards left (untuned).
+const DISCARD_BELOW_MARKET := 0.35
+## A card drawn at random is worth about this share of a typical pick: what a discard's new hand
+## is worth before counting the plan cards it may find (untuned).
+const DISCARD_FILLER_SHARE := 0.35
+## Missing today's goal ends the run, so each point that closes the gap counts this many times over
+## the run-long value (untuned). With one Station cooking per Turn, a card on a Station that has
+## already cooked today scores only from tomorrow; this keeps a short Day's plays on the Stations
+## still to cook.
+const URGENCY_WEIGHT := 4.0
 ## A spot on a full board costs up to this share of a typical pick.
 const SLOT_COST_SHARE := 0.25
 ## Cards tried as a target for a one-shot drink.
@@ -72,8 +88,9 @@ const GOLD_COMFORT := 12
 const BUY_FLOOR_SHARE := 0.3
 ## Estimated activations of one card in an Hour, for Mint Sip gold.
 const MINT_SIP_TRIGGERS := 3.0
-## Deck rules (untuned). Cards a Day draws, for how often a shuffled-in card comes up.
-const DRAWS_PER_DAY := 16
+## Deck rules (untuned). Cards a Day draws, for how often a shuffled-in card comes up: 4 Hours of
+## DeckManager.HOUR_DRAW, before any hand discards.
+const DRAWS_PER_DAY := 20
 ## Skip a pick worth less than this share of a typical pick once the deck is this big.
 const SKIP_BELOW_MARKET := 0.2
 const SKIP_DECK_SIZE := 18
@@ -87,10 +104,22 @@ const REMOVAL_CANDIDATES := 8
 const PAID_REROLL_BELOW_MARKET := 0.3
 
 var _profile: Dictionary = DEFAULT_PROFILE
-## What-if result for the board as it stands. Refreshed before each group of decisions.
+## What-if result for the board as it stands, one per Station (segment index): only one Station
+## cooks an Hour (HexTileMap.get_cooking_segment), so each is resolved on its own. Refreshed before
+## each group of decisions.
+var _baselines: Array[Dictionary] = []
+## The cooking Station's baseline (this Hour's Station), for the one-Hour estimates.
 var _baseline: Dictionary = {"score": 0, "gold": 0, "flavour": 0, "mult": 1.0}
-## Running value of the best card in an offer. The yardstick for gold and rerolls.
+## Hex coordinates -> score a placed card added the last time its Station was resolved.
+var _contributions: Dictionary = {}
+## Running value of the best card in an offer or hand, run-long value only (today's urgency left
+## out, or Day 1's first hand would set the yardstick for gold and Meal bonuses at many times a
+## card's real worth). The yardstick for gold and rerolls.
 var _market := 0.0
+## Urgency counted by _value_of since the last reset, so a placement can report its share.
+var _urgency_seen := 0.0
+## Meal plans for the board as it stands, built lazily per decision ("<segment>|<meal id>" -> plan).
+var _plans: Dictionary = {}
 
 
 func _init() -> void:
@@ -101,14 +130,28 @@ func on_run_started() -> void:
 	var chef_id := GameManager.selected_chef.id if GameManager.selected_chef != null else ""
 	_profile = CHEF_PROFILES.get(chef_id, DEFAULT_PROFILE)
 	_market = 0.0
+	_baselines.clear()
+	_contributions.clear()
 
 
 func capture_state() -> Dictionary:
-	return {"baseline": _baseline.duplicate(), "market": _market}
+	var baselines: Array = []
+	for baseline: Dictionary in _baselines:
+		baselines.append(baseline.duplicate())
+	return {
+		"baseline": _baseline.duplicate(),
+		"baselines": baselines,
+		"contributions": _contributions.duplicate(),
+		"market": _market,
+	}
 
 
 func restore_state(state: Dictionary) -> void:
 	_baseline = (state["baseline"] as Dictionary).duplicate()
+	_baselines.clear()
+	for baseline: Dictionary in state.get("baselines", []):
+		_baselines.append(baseline.duplicate())
+	_contributions = (state.get("contributions", {}) as Dictionary).duplicate()
 	_market = float(state["market"])
 
 
@@ -121,6 +164,43 @@ func _hours_left() -> int:
 
 func _merchants_left() -> int:
 	return maxi(0, ScoreProgression.RUN_LENGTH_ROUNDS - GameManager.current_round)
+
+
+func _segment_count() -> int:
+	return maxi(1, runner.map.get_segment_count())
+
+
+## The Station this Hour cooks.
+func _cooking_segment() -> int:
+	return runner.map.get_cooking_segment_for_hour(GameManager.get_turn_number())
+
+
+## True when the Station still cooks today: this Hour's Station or one a later Hour of the Day
+## cooks (Rush Hour's 3 Hours never reach the bottom Station). A Day that meets its goal early
+## ends before the rest cook; the bot does not guess that.
+func _cooks_today(segment: int) -> bool:
+	var last_hour := GameManager.get_max_turns_per_round()
+	for hour in range(GameManager.get_turn_number(), last_hour + 1):
+		if runner.map.get_cooking_segment_for_hour(hour) == segment:
+			return true
+	return false
+
+
+## Times the Station still cooks this run: today if it has not cooked yet, then once each later Day.
+func _cooks_left(segment: int) -> float:
+	var later_days := maxi(0, ScoreProgression.RUN_LENGTH_ROUNDS - GameManager.current_round)
+	return float(later_days) + (1.0 if _cooks_today(segment) else 0.0)
+
+
+func _all_segments() -> Array[int]:
+	var segments: Array[int] = []
+	for segment in _segment_count():
+		segments.append(segment)
+	return segments
+
+
+func _segment_of(hex: Hex) -> int:
+	return runner.map.get_segment_index(hex.coordinates)
 
 
 ## Run-score value of one coin. Half of what a typical merchant card buys per coin,
@@ -140,26 +220,63 @@ func _gold_scarcity() -> float:
 	return clampf(float(GOLD_COMFORT) / float(maxi(1, EconomyManager.amount)), 0.0, 1.0)
 
 
+## Resolves every Station as the board stands (one what-if Hour each) and notes what each placed
+## card added.
 func _refresh_baseline() -> void:
-	_baseline = await runner.sim.evaluate(func() -> void: pass)
+	_baselines.clear()
+	_contributions.clear()
+	_plans.clear()
+	for segment in _segment_count():
+		var produced: Dictionary = {}
+		var read := func() -> void:
+			for hex: Hex in runner.map.get_hexes_in_segment(segment):
+				var card := hex.active_tile_card
+				if card != null:
+					produced[hex.coordinates] = [float(card.hour_flavour_produced), float(card.hour_additive_mult_produced)]
+		var result: Dictionary = await runner.sim.evaluate(func() -> void: pass, segment, read)
+		_baselines.append(result)
+		for coords: Vector2i in produced:
+			var pair: Array = produced[coords]
+			_contributions[coords] = float(pair[0]) * float(result["mult"]) + float(pair[1]) * float(result["flavour"])
+	var current := clampi(_cooking_segment(), 0, _baselines.size() - 1)
+	_baseline = _baselines[current]
 
 
-func _evaluate(change: Callable) -> float:
-	var result: Dictionary = await runner.sim.evaluate(change)
-	return _value_of(result)
+func _baseline_for(segment: int) -> Dictionary:
+	if segment < 0 or segment >= _baselines.size():
+		return _baseline
+	return _baselines[segment]
 
 
-func _value_of(result: Dictionary) -> float:
-	var score_delta := float(int(result["score"]) - int(_baseline["score"]))
-	var gold_delta := float(int(result["gold"]) - int(_baseline["gold"]))
-	var hours := float(_hours_left())
-	return score_delta * hours + gold_delta * hours * _gold_value() + _urgency(score_delta)
+## Value of a change over the rest of the run. segments are the Stations it can touch (a placement:
+## its own Station); empty means every Station (staff, swaps). Each is resolved as its own Hour and
+## counted once for every time that Station still cooks.
+func _evaluate(change: Callable, segments: Array[int] = []) -> float:
+	var targets := segments if not segments.is_empty() else _all_segments()
+	var total := 0.0
+	for segment: int in targets:
+		var result: Dictionary = await runner.sim.evaluate(change, segment)
+		total += _value_of(result, segment)
+	return total
 
 
-## Score today still needs if the board keeps scoring like the baseline.
+func _value_of(result: Dictionary, segment: int) -> float:
+	var base := _baseline_for(segment)
+	var score_delta := float(int(result["score"]) - int(base["score"]))
+	var gold_delta := float(int(result["gold"]) - int(base["gold"]))
+	var cooks := _cooks_left(segment)
+	var urgency := _urgency(score_delta) if _cooks_today(segment) else 0.0
+	_urgency_seen += urgency
+	return score_delta * cooks + gold_delta * cooks * _gold_value() + urgency
+
+
+## Score today still needs if every Station still to cook scores like its baseline.
 func _shortfall() -> float:
-	var projected := GameManager.total_round_score + int(_baseline["score"]) * GameManager.remaining_turns
-	return maxf(0.0, float(GameManager.required_score - projected))
+	var projected := float(GameManager.total_round_score)
+	for segment in _baselines.size():
+		if _cooks_today(segment):
+			projected += float(int(_baselines[segment]["score"]))
+	return maxf(0.0, float(GameManager.required_score) - projected)
 
 
 ## Missing the goal ends the run, so closing today's gap outweighs long-term value.
@@ -167,8 +284,8 @@ func _urgency(score_delta: float) -> float:
 	var shortfall := _shortfall()
 	if shortfall <= 0.0 or score_delta <= 0.0:
 		return 0.0
-	var closes := minf(score_delta * float(GameManager.remaining_turns), shortfall)
-	return closes * float(_hours_left())
+	var closes := minf(score_delta, shortfall)
+	return closes * float(_hours_left()) * URGENCY_WEIGHT
 
 
 func _note_market(value: float) -> void:
@@ -177,17 +294,21 @@ func _note_market(value: float) -> void:
 	_market = value if _market <= 0.0 else lerpf(_market, value, MARKET_SMOOTHING)
 
 
-## Score one placed card added last Hour, from its own Flavour and Mult.
-func _contribution(card: TileCard) -> float:
-	return (
-		float(card.hour_flavour_produced) * float(_baseline["mult"])
-		+ card.hour_additive_mult_produced * float(_baseline["flavour"])
-	)
+## Score the card on this hex added the last time its Station was resolved, from its own Flavour
+## and Mult.
+func _contribution(hex: Hex) -> float:
+	return float(_contributions.get(hex.coordinates, 0.0))
 
 
 func _one_shot_worth() -> float:
 	# One Hour of a strong drink, counted again because it is saved for a day that needs it.
-	return float(_baseline["score"]) * 1.5
+	# A typical Station's Hour, since a drink can be saved for whichever Station cooks.
+	if _baselines.is_empty():
+		return float(_baseline["score"]) * 1.5
+	var total := 0.0
+	for baseline: Dictionary in _baselines:
+		total += float(int(baseline["score"]))
+	return total / float(_baselines.size()) * 1.5
 
 
 func _pick_bias(card: TileCard) -> float:
@@ -207,17 +328,22 @@ func _best_placement(card: TileCard) -> Dictionary:
 	var best_hex: Hex = null
 	var best_value := -INF
 	var best_net := -INF
+	var best_urgency := 0.0
 	var slot_cost := _slot_cost()
 	for hex: Hex in _candidate_hexes(card):
 		# Only an empty spot gives up board room. A merge or replacement's what-if already prices its cost.
 		var cost := slot_cost if hex.active_tile_card == null else 0.0
-		var value := await _evaluate(func() -> void: card.play_on(hex, false))
-		value += _station_progress_bonus(card, hex) + _meal_potential(card, hex)
+		_urgency_seen = 0.0
+		var value := await _evaluate(func() -> void: card.play_on(hex, false), [_segment_of(hex)] as Array[int])
+		var urgency := _urgency_seen
+		value += _station_progress_bonus(card, hex) + _unique_meal_gold(card)
+		value += await _plan_bonus(card, hex)
 		if value - cost > best_net:
 			best_net = value - cost
 			best_value = value
 			best_hex = hex
-	return {"hex": best_hex, "value": best_value, "net": best_net}
+			best_urgency = urgency
+	return {"hex": best_hex, "value": best_value, "net": best_net, "urgency": best_urgency}
 
 
 func _candidate_hexes(card: TileCard) -> Array[Hex]:
@@ -235,7 +361,7 @@ func _candidate_hexes(card: TileCard) -> Array[Hex]:
 	picked.append_array(_spread_by_station(empty))
 	if empty.is_empty():
 		replaceable.sort_custom(func(a: Hex, b: Hex) -> bool:
-			return _contribution(a.active_tile_card) < _contribution(b.active_tile_card)
+			return _contribution(a) < _contribution(b)
 		)
 		picked.append_array(replaceable.slice(0, MAX_REPLACE_CANDIDATES))
 	return picked
@@ -259,12 +385,291 @@ func _spread_by_station(hexes_in_order: Array[Hex]) -> Array[Hex]:
 	return picked
 
 
-func _meal_potential(card: TileCard, hex: Hex) -> float:
+#region Meal plans
+
+## Plan bonus for placing card on hex: for a Meal, the worth of its plan on that Station; for an
+## Ingredient or Kitchenware, how much likelier it makes the plans of the Station's waiting Meals
+## and of the Meals in hand that could go there. A recipe it completes on the spot is left to the
+## what-if Hour, which already serves the Meal.
+func _plan_bonus(card: TileCard, hex: Hex) -> float:
+	var segment := _segment_of(hex)
 	var meal := card as MealCard
-	if meal == null or meal.is_recipe_ready(hex):
+	if meal != null:
+		if not runner.map.is_meal_slot(hex.coordinates) or meal.is_recipe_ready(hex):
+			return 0.0
+		var plan: Dictionary = await _plan_for(segment, meal, hex)
+		return PLAN_SHARE * _plan_ev(plan, _scenario_now(), [])
+	if runner.map.is_meal_slot(hex.coordinates) or hex.active_tile_card != null:
 		return 0.0
-	var missing := meal.get_missing_card_count(hex)
-	return _market * MEAL_POTENTIAL_SHARE / float(1 + missing) * _pick_bias(card)
+	var bonus := 0.0
+	for plan: Dictionary in await _plans_on(segment):
+		var before := _plan_ev(plan, _scenario_now(), [])
+		var after := _plan_ev(plan, _scenario_now(), [card])
+		bonus += maxf(0.0, after - before)
+	return PLAN_SHARE * bonus
+
+
+## Plans a Station can hold: its own Meals still short of their recipe, and each Meal in hand that
+## has a free Meal slot there.
+func _plans_on(segment: int) -> Array[Dictionary]:
+	var plans: Array[Dictionary] = []
+	var seen: Dictionary = {}
+	for meal_hex: Hex in runner.map.get_hexes_in_segment(segment):
+		var meal := meal_hex.active_tile_card as MealCard
+		if meal != null and not meal.is_recipe_ready(meal_hex):
+			seen[meal.id] = true
+			plans.append(await _plan_for(segment, meal, meal_hex))
+	for card: TileCard in DeckManager.hand:
+		var meal := card as MealCard
+		if meal == null or seen.has(meal.id):
+			continue
+		var slot := _free_meal_slot(meal, segment)
+		if slot == null:
+			continue
+		seen[meal.id] = true
+		plans.append(await _plan_for(segment, meal, slot))
+	return plans
+
+
+func _free_meal_slot(meal: MealCard, segment: int) -> Hex:
+	for hex: Hex in runner.map.get_hexes_in_segment(segment):
+		if runner.map.is_meal_slot(hex.coordinates) and hex.active_tile_card == null and meal.can_play_on(hex):
+			return hex
+	return null
+
+
+## {segment, meal_id, placed (Meal already on its slot), needs: Array of {"id"} or {"tag"},
+## worth: score (and gold) the Station adds when it cooks with the recipe complete}. worth 0 when the
+## Station has no room for the missing cards or nothing in the deck can fill them.
+func _plan_for(segment: int, meal: MealCard, slot: Hex) -> Dictionary:
+	var key := "%d|%s" % [segment, meal.id]
+	if _plans.has(key):
+		return _plans[key]
+	var plan := {"segment": segment, "meal_id": meal.id, "placed": slot.active_tile_card != null,
+		"needs": _recipe_needs(meal, segment), "worth": 0.0}
+	var empty: Array[Hex] = []
+	for hex: Hex in runner.map.get_hexes_in_segment(segment):
+		if not runner.map.is_meal_slot(hex.coordinates) and hex.active_tile_card == null and not hex.is_placement_blocked():
+			empty.append(hex)
+	var fillers := _filler_cards(plan["needs"])
+	if fillers.size() == (plan["needs"] as Array).size() and fillers.size() <= empty.size():
+		var placed: bool = plan["placed"]
+		var change := func() -> void:
+			if not placed:
+				meal.play_on(slot, false)
+			for index in fillers.size():
+				fillers[index].play_on(empty[index], false)
+		var result: Dictionary = await runner.sim.evaluate(change, segment)
+		var base := _baseline_for(segment)
+		plan["worth"] = maxf(0.0, float(int(result["score"]) - int(base["score"]))
+			+ float(int(result["gold"]) - int(base["gold"])) * _gold_value())
+	_plans[key] = plan
+	return plan
+
+
+## What the recipe still lacks on this Station, by printed cards: named cards first, then kinds.
+## Kinds a Kitchenware lends are not counted on, so a plan never relies on a status.
+func _recipe_needs(meal: MealCard, segment: int) -> Array[Dictionary]:
+	var cards: Array[TileCard] = runner.map.get_regular_tile_cards(segment)
+	var needs: Array[Dictionary] = []
+	for card_id: String in meal.recipe_required_card_ids:
+		if not cards.any(func(card: TileCard) -> bool: return card.id == card_id):
+			needs.append({"id": card_id})
+	var counts: Dictionary = meal.get_recipe_kind_counts()
+	for tag: StringName in counts:
+		var missing: int = meal._missing_for_tag(cards, tag)
+		for i in missing:
+			needs.append({"tag": tag})
+	return needs
+
+
+func _fills(card: TileCard, need: Dictionary) -> bool:
+	if need.has("id"):
+		return card.id == String(need["id"])
+	return TileCard.matches_kind_filter(card, need["tag"], false)
+
+
+## One deck card for each need (hand first, then the draw pile, then the rest of the deck), for the
+## what-if that prices the complete recipe. Fewer than the needs when the deck can't fill them.
+func _filler_cards(needs: Array) -> Array[TileCard]:
+	var pool: Array[TileCard] = []
+	pool.append_array(DeckManager.hand)
+	pool.append_array(DeckManager.draw_pile)
+	pool.append_array(DeckManager.discard_pile)
+	pool.append_array(DeckManager.played_pile)
+	var used: Dictionary = {}
+	var picked: Array[TileCard] = []
+	for need: Dictionary in needs:
+		for card: TileCard in pool:
+			if not used.has(card) and card.type != TileCard.TileCardType.MEAL and _fills(card, need):
+				used[card] = true
+				picked.append(card)
+				break
+	return picked
+
+
+## Draws and plays the player still has, as one dictionary: the hand, the draw pile, plays left this
+## Hour and the Day's hand discards. A discard what-if empties the hand and draws again.
+func _scenario_now() -> Dictionary:
+	return {
+		"hand": DeckManager.hand.duplicate(),
+		"pile": DeckManager.draw_pile.duplicate(),
+		"plays_left": DeckManager.plays_left(),
+		"discards_left": DeckManager.discards_left,
+		"extra_draws": 0,
+	}
+
+
+func _scenario_after_discard() -> Dictionary:
+	var scenario := _scenario_now()
+	var hand_size: int = (scenario["hand"] as Array).size()
+	scenario["hand"] = [] as Array[TileCard]
+	scenario["discards_left"] = maxi(0, int(scenario["discards_left"]) - 1)
+	scenario["extra_draws"] = hand_size
+	return scenario
+
+
+## Expected worth of a plan over the rest of the run. placed_now: cards assumed played this Hour
+## (the card being valued), which fill needs for free (their play is already being spent).
+func _plan_ev(plan: Dictionary, scenario: Dictionary, placed_now: Array) -> float:
+	var worth := float(plan["worth"])
+	if worth <= 0.0:
+		return 0.0
+	var segment: int = plan["segment"]
+	var needs: Array = (plan["needs"] as Array).duplicate()
+	for card: TileCard in placed_now:
+		for i in needs.size():
+			if _fills(card, needs[i]):
+				needs.remove_at(i)
+				break
+	var meal_play := 0 if bool(plan["placed"]) else 1
+	var today := _cooks_today(segment)
+	var cooks := _cooks_left(segment)
+	var p_today := 0.0
+	if today:
+		p_today = _p_complete_today(plan, needs, meal_play, segment, scenario, placed_now.size())
+	var p_later := _p_complete_tomorrow(plan, needs, meal_play, segment)
+	var later_cooks := maxf(0.0, cooks - (1.0 if today else 0.0))
+	var ev := p_today * worth * cooks + (1.0 - p_today) * p_later * worth * later_cooks
+	if today:
+		ev += _urgency(p_today * worth)
+	return ev
+
+
+## Chance every need is drawn and played on this Station before it cooks today.
+func _p_complete_today(plan: Dictionary, needs: Array, meal_play: int, segment: int, scenario: Dictionary, used_plays: int) -> float:
+	var hours_after := segment + 1 - GameManager.get_turn_number()
+	var plays := int(scenario["plays_left"]) - used_plays + hours_after * DeckManager.PLAYS_PER_HOUR
+	if meal_play > 0 and not _hand_has(scenario, String(plan["meal_id"])):
+		return 0.0
+	if needs.size() + meal_play > plays:
+		return 0.0
+	var draws := hours_after * DeckManager.HOUR_DRAW + int(scenario["extra_draws"]) \
+		+ int(scenario["discards_left"]) * DeckManager.HOUR_DRAW / 2
+	var pile: Array = scenario["pile"]
+	var hand: Array = (scenario["hand"] as Array).duplicate()
+	var chance := 1.0
+	var taken: Dictionary = {}
+	for need: Dictionary in needs:
+		var in_hand := -1
+		for i in hand.size():
+			if _fills(hand[i], need):
+				in_hand = i
+				break
+		if in_hand >= 0:
+			hand.remove_at(in_hand)
+			continue
+		var copies := 0
+		for card: TileCard in pile:
+			if not taken.has(card) and _fills(card, need):
+				copies += 1
+		if copies == 0:
+			return 0.0
+		chance *= _p_drawn(copies, draws, pile.size())
+		# Leave one copy for this need, so a second need of the same kind sees one fewer.
+		for card: TileCard in pile:
+			if not taken.has(card) and _fills(card, need):
+				taken[card] = true
+				break
+	return chance
+
+
+## Chance every need (and the Meal, if it isn't placed) turns up before the Station cooks on a
+## later Day, from the whole reshuffled deck.
+func _p_complete_tomorrow(plan: Dictionary, needs: Array, meal_play: int, segment: int) -> float:
+	if _merchants_left() <= 0:
+		return 0.0
+	var hours := segment + 1
+	if needs.size() + meal_play > hours * DeckManager.PLAYS_PER_HOUR:
+		return 0.0
+	var deck := DeckManager.all_cards()
+	var draws := hours * DeckManager.HOUR_DRAW + DeckManager.HAND_DISCARDS_PER_DAY * DeckManager.HOUR_DRAW / 2
+	var chance := 1.0
+	var all_needs: Array = needs.duplicate()
+	if meal_play > 0:
+		all_needs.append({"id": plan["meal_id"]})
+	var taken: Dictionary = {}
+	for need: Dictionary in all_needs:
+		var copies := 0
+		for card: TileCard in deck:
+			if not taken.has(card) and _fills(card, need):
+				copies += 1
+		if copies == 0:
+			return 0.0
+		chance *= _p_drawn(copies, draws, deck.size())
+		for card: TileCard in deck:
+			if not taken.has(card) and _fills(card, need):
+				taken[card] = true
+				break
+	return chance
+
+
+func _hand_has(scenario: Dictionary, card_id: String) -> bool:
+	for card: TileCard in scenario["hand"]:
+		if card.id == card_id:
+			return true
+	return false
+
+
+## Chance at least one of copies cards is among draws cards taken from a pile of pile_size.
+func _p_drawn(copies: int, draws: int, pile_size: int) -> float:
+	if copies <= 0 or draws <= 0 or pile_size <= 0:
+		return 0.0
+	if draws >= pile_size:
+		return 1.0
+	var miss := 1.0
+	for i in draws:
+		var left := pile_size - i
+		miss *= float(maxi(0, left - copies)) / float(left)
+		if miss <= 0.0:
+			return 1.0
+	return 1.0 - miss
+
+
+## What a discard is worth for the Day's plans: the extra draws it buys, less the hand it throws
+## away. Every plan on the board and in hand is counted.
+func _discard_plan_gain() -> float:
+	var gain := 0.0
+	var now := _scenario_now()
+	var after := _scenario_after_discard()
+	for segment in _segment_count():
+		for plan: Dictionary in await _plans_on(segment):
+			gain += _plan_ev(plan, after, []) - _plan_ev(plan, now, [])
+	return gain
+
+#endregion
+
+
+## Day-end Gold for each different Meal on the board (EconomyManager.GOLD_PER_UNIQUE_MEAL): a Meal
+## whose id is not on the board yet pays it every Day it stays, today included.
+func _unique_meal_gold(card: TileCard) -> float:
+	if card.type != TileCard.TileCardType.MEAL:
+		return 0.0
+	for hex: Hex in runner.map.get_hexes_in_trigger_order():
+		if hex.active_tile_card != null and hex.active_tile_card.id == card.id:
+			return 0.0
+	var days := float(_merchants_left() + 1)
+	return float(EconomyManager.GOLD_PER_UNIQUE_MEAL) * days * _gold_value()
 
 
 func _station_progress_bonus(card: TileCard, hex: Hex) -> float:
@@ -358,21 +763,49 @@ func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
 	await _refresh_baseline()
 	var best: Dictionary = {}
 	var best_value := -INF
+	var best_long_value := 0.0
+	var nets: Array[float] = []
 	for card: TileCard in hand:
 		var placement := await _best_placement(card)
 		var value := float(placement["net"]) if placement["hex"] != null else -INF
+		nets.append(maxf(0.0, value))
 		if placement["hex"] != null and value > best_value:
 			best_value = value
+			best_long_value = float(placement["value"]) - float(placement["urgency"])
 			best = {"card": card, "hex": placement["hex"]}
-	if _market <= 0.0:
-		_note_market(best_value)
-	# Nothing in hand is worth a spot: throw the hand away for a new one while the Day has discards
-	# (untuned rule), else end the Hour, since unplayed cards are only discarded.
-	if best.is_empty() or best_value <= 0.0:
-		if DeckManager.can_discard_hand():
+	# With no card picks the hand is where the bot sees cards, so it keeps the yardstick current.
+	_note_market(best_long_value)
+	# A weak hand: throw it away for a new one while the Day has discards (no play used), else end
+	# the Hour when nothing is worth a spot, since unplayed cards are only discarded. Untuned.
+	var weak := best.is_empty() or best_value <= 0.0 or best_value < _market * DISCARD_BELOW_MARKET
+	if _may_discard() and DeckManager.can_discard_hand():
+		if weak:
 			return {"discard": true}
+		# Searching: a new hand is worth a few ordinary cards plus the better odds of drawing what
+		# the Day's Meal plans still lack; keep the hand when its best plays are worth more.
+		nets.sort()
+		nets.reverse()
+		var keep := 0.0
+		for i in mini(DeckManager.plays_left(), nets.size()):
+			keep += nets[i]
+		var search := float(DeckManager.plays_left()) * _market * DISCARD_FILLER_SHARE
+		search += await _discard_plan_gain()
+		if search > keep:
+			_log_search_discard()
+			return {"discard": true}
+	if best.is_empty() or best_value <= 0.0:
 		return {"end": true}
 	return best
+
+
+## Counts discards taken to search for plan cards (details.search_discards).
+func _log_search_discard() -> void:
+	runner.note_search_discard()
+
+
+## Whether this bot thinks of the Discard button. A subclass can say no.
+func _may_discard() -> bool:
+	return true
 
 
 func choose_station_perk(segment_index: int) -> int:
@@ -386,8 +819,8 @@ func choose_station_perk(segment_index: int) -> int:
 			var card := hex.active_tile_card
 			if card == null or not perk.matches(card):
 				continue
-			value += (perk.output_scale - 1.0) * _contribution(card)
-			value += float(perk.flat_flavour) * float(_baseline["mult"])
+			value += (perk.output_scale - 1.0) * _contribution(hex)
+			value += float(perk.flat_flavour) * float(_baseline_for(segment_index)["mult"])
 		if value > best_value:
 			best_value = value
 			best_index = index
@@ -812,7 +1245,12 @@ func _should_spend_one_shot() -> bool:
 func _drink_on_best_target(slot: int) -> bool:
 	var best_hex: Hex = null
 	var best_value := 0.0
-	var targets := _placed_by_contribution(false)
+	# A drink lasts one Hour and only the cooking Station scores in it, so only its cards are targets.
+	var cooking := _cooking_segment()
+	var targets: Array[Hex] = []
+	for hex: Hex in _placed_by_contribution(false):
+		if _segment_of(hex) == cooking:
+			targets.append(hex)
 	for index in mini(DRINK_TARGETS, targets.size()):
 		var hex: Hex = targets[index]
 		var result: Dictionary = await runner.sim.evaluate(
@@ -859,7 +1297,7 @@ func _placed_by_contribution(producers_only: bool) -> Array[Hex]:
 			continue
 		hexes.append(hex)
 	hexes.sort_custom(func(a: Hex, b: Hex) -> bool:
-		return _contribution(a.active_tile_card) > _contribution(b.active_tile_card)
+		return _contribution(a) > _contribution(b)
 	)
 	return hexes
 

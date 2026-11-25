@@ -581,6 +581,7 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 		"buys": [],
 		"sells": [],
 		"plays": 0,
+		"play_log": [],
 		# Hours the bot ended with plays left (End Hour).
 		"passes": 0,
 		# "round" of each card pick skipped ("reward3" for an end-of-Day pick).
@@ -796,6 +797,12 @@ func _apply_hand_action(action: Dictionary) -> bool:
 				"new": card.id,
 				"new_kind": card.get_card_kind_label(),
 			})
+	# "day:hour:card id@station row" for every play (merges marked +), to see where cards go now
+	# that one Station cooks per Hour.
+	(_log["play_log"] as Array).append("%d:%d:%s@%d%s" % [
+		GameManager.current_round, int(_day.get("hours", 0)) + 1, card.id,
+		map.get_segment_index(hex.coordinates), "+" if card.get_overplay(hex) == TileCard.Overplay.MERGE else "",
+	])
 	DeckManager.play(card)
 	card.play_on(hex)
 	StationManager.evaluate_station_types()
@@ -867,6 +874,12 @@ func _close_day() -> void:
 			"capstone": StationManager.get_capstone_choice(segment_index),
 		})
 	_day["stations"] = stations
+	# Techniques seated at the Day's end, by slot ("" for an empty slot).
+	var seated: Array[String] = []
+	for slot in StaffManager.SLOT_COUNT:
+		var staff: StaffCard = StaffManager.get_staff(slot)
+		seated.append(String(staff.id) if staff != null else "")
+	_day["staff"] = seated
 	_log["days"].append(_day)
 	if _verbose:
 		print("[playtest]   day %d %d/%d hours=%d leftover=%d gold=%d%s" % [
@@ -962,6 +975,11 @@ func trace(message: String) -> void:
 			Performance.get_monitor(Performance.OBJECT_NODE_COUNT),
 			Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT),
 		])
+
+
+## A policy's hand discard taken to look for cards its Meal plans lack (details.search_discards).
+func note_search_discard() -> void:
+	_log["search_discards"] = int(_log.get("search_discards", 0)) + 1
 
 
 func legal_hexes(card: TileCard) -> Array[Hex]:
