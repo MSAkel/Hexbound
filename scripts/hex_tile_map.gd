@@ -104,6 +104,9 @@ var _event_reveal_open: bool = false
 ## Station (segment index) that cooks while an Hour resolves, -1 outside resolution. Only its cards
 ## fire, are retriggered or score. Set by HexTurnResolver.resolve_turn.
 var cooking_segment: int = -1
+## Playtest bot only: a what-if Hour cooks this Station instead of the Hour's own (-1 = off).
+## PlaytestSim sets it so the bot can value a card on a Station that cooks later in the Day.
+var playtest_cooking_override: int = -1
 
 
 func _ready() -> void:
@@ -668,6 +671,8 @@ func get_cooking_segment_for_hour(hour_number: int) -> int:
 
 ## The Station that cooks this Hour.
 func get_cooking_segment() -> int:
+	if playtest_cooking_override >= 0:
+		return playtest_cooking_override
 	return get_cooking_segment_for_hour(GameManager.get_turn_number())
 
 

@@ -66,6 +66,13 @@ it stood at a Day's end, most `rows` at once) and `details.meals_served` the Mea
 (id -> serves). Each run's log line prints both (`stations=pastry L5 (day 2, 2 rows) meals=2`), and
 `compare_playtest_reports.py` shows Stations per run, different Meals served per run and each Station's
 share of runs, average best level and first Day.
+One Station cooks per Hour, so the bots value a play by resolving a what-if Hour for the Station the card
+sits on (`PlaytestSim.evaluate(change, segment)`, via `HexTileMap.playtest_cooking_override`) and count it once for
+every time that Station still cooks (today if it hasn't yet, then once a Day); today's shortfall weighs
+`URGENCY_WEIGHT` (4) times. They also value a new Meal's Day-end Gold, Ingredients that bring a waiting Meal
+closer to its recipe, and use Discard on a weak hand (the novice-family bots only after their discovery Day).
+`details.play_log` lists every play as `day:hour:card@station row` (`+` = merge) and each Day records the
+Techniques seated at its end (`staff`). All of these numbers are untuned.
 `details.replace_detail` lists every replacement (day, Hour, old and new card with kinds, stars lost) and
 `details.offers` every card offer as `round:id|id|id>chosen`.
 

@@ -4,7 +4,8 @@ extends "res://scripts/debug/playtest/human_policy.gd"
 ## as a what-if Hour with the real rules) but three things keep it from playing well:
 ##
 ##   Knowledge gaps  Before its "discovery day" it does not use a mechanic at all: merging a card
-##                   onto its copy, replacing a card, rerolling, drinking condiments, moving staff.
+##                   onto its copy, replacing a card, rerolling, drinking condiments, moving staff,
+##                   the Discard button.
 ##                   Each run draws the day it notices each one. The lower the skill, the later.
 ##   Misjudgment     Every what-if value is perceived with noise, so it mis-ranks cards, spots,
 ##                   shop items and drinks, and buys things a careful player would skip.
@@ -33,7 +34,7 @@ const MAX_NOISE := 1.0
 const DISCOVERY_SPAN := 9.0
 ## Chance of acting on a reroll idea at skill 0, rising to 1 at skill 1.
 const REROLL_NERVE_MIN := 0.4
-const MECHANICS: Array[String] = ["merge", "replace", "reroll", "condiments", "staff"]
+const MECHANICS: Array[String] = ["merge", "replace", "reroll", "condiments", "staff", "discard"]
 
 var _profile_name := "novice"
 var _skill_start := 0.25
@@ -113,8 +114,8 @@ func _slip(kind: String, weight := 1.0) -> bool:
 
 
 ## The human bot's what-if value as this player perceives it.
-func _evaluate(change: Callable) -> float:
-	var value: float = await super._evaluate(change)
+func _evaluate(change: Callable, segments: Array[int] = []) -> float:
+	var value: float = await super._evaluate(change, segments)
 	var sigma := MAX_NOISE * (1.0 - _skill())
 	if sigma <= 0.0:
 		return value
@@ -156,6 +157,10 @@ func _may_reroll_shop() -> bool:
 	return _knows("reroll")
 
 
+func _may_discard() -> bool:
+	return _knows("discard")
+
+
 func _candidate_hexes(card: TileCard) -> Array[Hex]:
 	return _filter_known(super._candidate_hexes(card), card)
 
@@ -177,8 +182,9 @@ func _slip_placement(card: TileCard) -> Dictionary:
 	var ranked: Array[Dictionary] = []
 	for hex: Hex in _candidate_hexes(card):
 		var cost := slot_cost if hex.active_tile_card == null else 0.0
-		var value := await _evaluate(func() -> void: card.play_on(hex, false))
+		var value := await _evaluate(func() -> void: card.play_on(hex, false), [_segment_of(hex)] as Array[int])
 		value += _station_progress_bonus(card, hex) + _meal_potential(card, hex) - cost
+		value += _recipe_progress_bonus(card, hex) + _unique_meal_gold(card)
 		ranked.append({"hex": hex, "net": value})
 	if ranked.is_empty():
 		return {}

@@ -77,7 +77,10 @@ func restore(state: Dictionary) -> void:
 
 ## Calls change (which may place cards, seat staff, or drink condiments), resolves one Hour,
 ## and returns {score, gold, flavour, mult}. The run is rolled back before returning.
-func evaluate(change: Callable) -> Dictionary:
+## One Station cooks per Hour (HexTileMap.get_cooking_segment). segment picks the Station this
+## what-if Hour cooks; -1 cooks the Hour's own Station, as the real Hour would. after (optional)
+## runs once the Hour has resolved, before the rollback, so a caller can read what each card made.
+func evaluate(change: Callable, segment := -1, after := Callable()) -> Dictionary:
 	var before_fingerprint := fingerprint() if check_purity else ""
 	var started := Time.get_ticks_usec()
 	var saved := snapshot()
@@ -85,7 +88,12 @@ func evaluate(change: Callable) -> Dictionary:
 	is_simulating = true
 	change.call()
 	StationManager.evaluate_station_types()
+	_map.playtest_cooking_override = segment
 	var result := await _resolve_hour()
+	_map.playtest_cooking_override = -1
+	if after.is_valid():
+		after.call()
+	result["segment"] = segment if segment >= 0 else _map.get_cooking_segment()
 	result["gold"] = EconomyManager.amount - gold_before
 	restore(saved)
 	is_simulating = false
