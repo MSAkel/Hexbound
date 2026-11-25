@@ -107,7 +107,23 @@ func queue_triggers(cards: Array[TileCard]) -> int:
 	var queued := map.turn_resolver.queue_staff_triggers(cards, slot)
 	if queued > 0:
 		pulse()
+		for card: TileCard in cards:
+			_fly_effect(TileCard.ICON_FIRE, map.get_hex_for_tile_card(card))
 	return queued
+
+
+## A Garnish this Technique just gave: the activation beat plus the Garnish icon flying from the
+## Technique's slot to the card.
+func garnish_landed(target: Hex) -> void:
+	pulse(target)
+	_fly_effect(TileCard.ICON_GARNISH, target)
+
+
+## Flies an effect icon from this slot to target (Garnish and Retrigger feedback).
+func _fly_effect(icon: Texture2D, target: Hex) -> void:
+	if map == null or target == null or GameManager.skip_presentation:
+		return
+	map.create_effect_flight(map.get_staff_anchor_global(slot), map.floating_text_position_for_hex(target.coordinates), icon)
 
 
 ## Plays this slot's activation beat. Pass the affected spot to draw a bolt to it.

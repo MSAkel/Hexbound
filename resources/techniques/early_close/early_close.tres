@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "early_close"
 name = "Early Close"
-description = "When the Day's goal is met, gain 1 Gold for each Hour left"
+description = "When the Day's goal is met, gain 1 Gold for each Turn left"
 rarity = 0

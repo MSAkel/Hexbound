@@ -52,6 +52,8 @@ func choose_offer(offer: Array[TileCard], _is_reward: bool) -> int:
 
 
 func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
+	if DeckManager.can_discard_hand() and _rng().randf() < 0.1:
+		return {"discard": true}
 	var card: TileCard = hand[_weighted_index(hand)]
 	var hexes: Array[Hex] = runner.legal_hexes(card)
 	if hexes.is_empty() or _rng().randf() < 0.1:
@@ -92,15 +94,19 @@ func shop(visit: RefCounted) -> void:
 		var choice := _rng().randi_range(0, 3)
 		match choice:
 			0:
-				var index := _rng().randi_range(0, visit.cards.size() - 1)
-				if visit.cards[index] != null and EconomyManager.can_afford(visit.price_of(visit.cards[index])):
-					visit.buy_card(index)
+				# A shelf can roll no tile cards at all (every slot a Technique).
+				if not visit.cards.is_empty():
+					var index := _rng().randi_range(0, visit.cards.size() - 1)
+					if visit.cards[index] != null and EconomyManager.can_afford(visit.price_of(visit.cards[index])):
+						visit.buy_card(index)
 			1:
-				if not visit.staff.is_empty() and visit.staff[0] != null:
-					if not StaffManager.has_free_slot():
-						runner.sell_staff(_rng().randi_range(0, StaffManager.SLOT_COUNT - 1))
-					if EconomyManager.can_afford(visit.price_of(visit.staff[0])):
-						visit.buy_staff(0, StaffManager.first_free_slot())
+				if not visit.staff.is_empty():
+					var index := _rng().randi_range(0, visit.staff.size() - 1)
+					if visit.staff[index] != null:
+						if not StaffManager.has_free_slot():
+							runner.sell_staff(_rng().randi_range(0, StaffManager.SLOT_COUNT - 1))
+						if EconomyManager.can_afford(visit.price_of(visit.staff[index])):
+							visit.buy_staff(index, StaffManager.first_free_slot())
 			2:
 				if runner.use_condiments and CondimentManager.can_add():
 					var index := _rng().randi_range(0, visit.condiments.size() - 1)

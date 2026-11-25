@@ -7,8 +7,9 @@
 script = ExtResource("2_n35xu")
 id = "tip"
 display_name = "Tip"
-description = "+15 Gold"
+description = "+2 Gold for each different Meal on the board"
 icon = ExtResource("1_032u1")
 liquid_color = Color(0.95, 0.78, 0.22, 1)
 base_price = 3
-effect_value = 15.0
+effect_type = 13
+effect_value = 2.0

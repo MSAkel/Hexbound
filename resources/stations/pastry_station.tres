@@ -46,16 +46,16 @@ flat_flavour = 25
 
 [sub_resource type="Resource" id="choice_0"]
 script = ExtResource("s_morning_bake")
-description = "Morning Bake: Desserts on this station start each Day at x2 output and lose x0.2 each Hour (minimum x1)"
+description = "Morning Bake: Desserts on this station start each Day at x2 output and lose x0.2 each Turn"
 target_meal_categories = Array[int]([5])
 output_scale = 2.0
 decay_per_hour = 0.2
 
 [sub_resource type="Resource" id="choice_1"]
 script = ExtResource("s_serve_bonus")
-description = "Desserts served on this station give +2 Gold"
+description = "Desserts served on this station give +1 Gold"
 target_meal_categories = Array[int]([5])
-bonus_gold = 2
+bonus_gold = 1
 
 [sub_resource type="Resource" id="capstone_0"]
 script = ExtResource("s_cafe")

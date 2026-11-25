@@ -1,10 +1,12 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://ryxjaqkejsve"]
 
+[ext_resource type="Texture2D" uid="uid://bruaybv5vamk" path="res://assets/icons/techniques/stock_pot.png" id="1_irkw6"]
 [ext_resource type="Script" uid="uid://dfsfw70wtcnal" path="res://resources/techniques/stock_pot/stock_pot.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "stock_pot"
 name = "Stock Pot"
-description = "At the end of each Day, gains +5 {flavour} for each different Meal served that Day. Adds its total each Hour"
+icon = ExtResource("1_irkw6")
+description = "At the end of each Day, gains +5 {flavour} for each different Meal served that Day. Adds its total each Turn"
 rarity = 1

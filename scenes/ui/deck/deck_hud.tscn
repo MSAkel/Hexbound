@@ -33,7 +33,6 @@ theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0.16, 0.09, 0.03, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 16
-text = "Your kitchen: Fry + Bar"
 horizontal_alignment = 1
 autowrap_mode = 3
 

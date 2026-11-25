@@ -13,5 +13,6 @@ ingredient_tags = Array[StringName]([&"beverage"])
 id = "beer"
 name = "Beer"
 icon = ExtResource("1_icon")
-description = "+1 {mult}. Gains x0.1 {mult} each time it {triggers}. Resets at the end of the Day."
+description = "+1 {mult}.
+Gains +0.5 {mult} each time it {triggers}. Resets at the end of the Day."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -9,4 +9,4 @@ func on_station_started(ctx: StaffContext) -> void:
 		return
 	var first: TileCard = cards[0]
 	if first.add_garnish():
-		ctx.pulse(ctx.map.get_hex_for_tile_card(first))
+		ctx.garnish_landed(ctx.map.get_hex_for_tile_card(first))

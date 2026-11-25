@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://cfyi20417t01c" path="res://assets/gui/panels/gold_panel.png" id="3_gold_panel"]
 [ext_resource type="Texture2D" uid="uid://b7as20l2555su" path="res://assets/icons/stats/gold.png" id="4_gold_icon"]
 [ext_resource type="Script" uid="uid://0iebw3vfp00h" path="res://scenes/ui/sell_panel/end_hour_button.gd" id="5_end_hour"]
+[ext_resource type="Script" path="res://scenes/ui/sell_panel/discard_button.gd" id="6_discard"]
 
 [sub_resource type="StyleBoxEmpty" id="EmptyPanel"]
 
@@ -83,7 +84,16 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(254, 54)
 layout_mode = 2
-tooltip_text = "End the Hour now. Cards left in your hand are discarded."
+tooltip_text = "End the Turn now. Cards left in your hand are discarded."
 theme_override_font_sizes/font_size = 22
-text = "End Hour"
+text = "End Turn"
 script = ExtResource("5_end_hour")
+
+[node name="DiscardButton" type="Button" parent="Stack"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(254, 46)
+layout_mode = 2
+tooltip_text = "Throw away your whole hand and draw that many new cards. Doesn't use a play. 4 per Day."
+theme_override_font_sizes/font_size = 20
+text = "Discard (4)"
+script = ExtResource("6_discard")

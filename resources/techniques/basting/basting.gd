@@ -23,4 +23,4 @@ func _add_garnish(ctx: StaffContext, tile: Hex, card: TileCard) -> void:
 	# Mark first. The extra Garnish re-enters on_card_garnished for this same card.
 	boosted.append(card)
 	if card.add_garnish():
-		ctx.pulse(tile)
+		ctx.garnish_landed(tile)

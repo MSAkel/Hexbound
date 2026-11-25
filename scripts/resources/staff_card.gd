@@ -11,6 +11,10 @@ const BASE_PRICE_BY_RARITY := {
 	Rarity.RARE: 8,
 }
 
+## Merchant price for this Technique when above 0, in place of its rarity price (Leftovers: 2).
+## Untuned.
+@export var price_override: int = 0
+
 ## Run-long counters for staff that grow. Saved with the slot. Not exported, so a fresh seat starts empty.
 var run_state: Dictionary = {}
 
@@ -49,6 +53,8 @@ static func format_total(value: float) -> String:
 
 
 func get_base_price() -> int:
+	if price_override > 0:
+		return price_override
 	return BASE_PRICE_BY_RARITY.get(rarity, DEFAULT_PRICE)
 
 

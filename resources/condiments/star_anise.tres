@@ -7,9 +7,10 @@
 script = ExtResource("1_script")
 id = "star_anise"
 display_name = "Star Anise"
-description = "Seated card gains +1 star"
+description = "Seated card gains +2 star"
 icon = ExtResource("2_icon")
 liquid_color = Color(0.92, 0.72, 0.22, 1)
 base_price = 3
 effect_type = 9
+effect_value = 2.0
 target_kind = 1

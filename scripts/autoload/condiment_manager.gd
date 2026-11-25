@@ -452,6 +452,11 @@ func _apply_instant(condiment: Condiment) -> void:
 			AudioManager.play_sfx(UISounds.GOLD_GAINED)
 		Condiment.EffectType.CONDIMENT_PACK:
 			_grant_pack()
+		Condiment.EffectType.GOLD_PER_UNIQUE_MEAL:
+			var gold := int(condiment.effect_value) * EconomyManager.count_unique_board_meals()
+			if gold > 0:
+				EconomyManager.add(gold)
+				AudioManager.play_sfx(UISounds.GOLD_GAINED)
 		_:
 			pass
 
@@ -462,7 +467,9 @@ func _apply_to_card(condiment: Condiment, hex: Hex) -> void:
 		return
 	match condiment.effect_type:
 		Condiment.EffectType.GARNISH:
-			card.add_garnish()
+			# 2 stacks (effect_value), up to the card's Garnish cap.
+			for _stack in maxi(1, int(condiment.effect_value)):
+				card.add_garnish()
 			_add_fuse(card, condiment, 0, 1)
 		Condiment.EffectType.ECHO, Condiment.EffectType.WARD, Condiment.EffectType.NEXT_TRIGGER_ENERGY, Condiment.EffectType.NEXT_TRIGGER_MULT:
 			_add_fuse(card, condiment, 0, 1)
@@ -479,7 +486,7 @@ func _apply_board_effect(condiment: Condiment, hex: Hex, hex_b: Hex = null) -> v
 		Condiment.EffectType.THROW_OUT:
 			CondimentBoardEffects.throw_out(hex, _board_effect_rng(condiment, hex))
 		Condiment.EffectType.STAR_UP:
-			CondimentBoardEffects.star_up_placed_at(hex)
+			CondimentBoardEffects.star_up_placed_at(hex, maxi(1, int(condiment.effect_value)))
 		Condiment.EffectType.SEND_BACK:
 			CondimentBoardEffects.send_back(hex)
 		Condiment.EffectType.DUPLICATE_ORDER:
@@ -653,7 +660,7 @@ func _clear_map_target_highlights() -> void:
 func _fuse_inspect_text(condiment: Condiment, fuse: Dictionary) -> String:
 	var turns := int(fuse.get("remaining_turns", 0))
 	if turns > 0:
-		var hour_word := "hour" if turns == 1 else "hours"
+		var hour_word := "turn" if turns == 1 else "turns"
 		return "%s · %d %s left" % [condiment.display_name, turns, hour_word]
 	return condiment.get_fuse_summary()
 

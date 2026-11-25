@@ -21,7 +21,7 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 
 - `--runs=N` seeds per chef (default 8); `--chef=<id>` one chef (ids in `resources/chefs/*.tres`)
 - `--seed=<text>` one seed; `--repeat=N` replays it to check determinism
-- `--difficulty=N` difficulty level as shown in game, 1 to 9 (default 1)
+- `--difficulty=N` difficulty level as shown in game, 1 to 8 (default 1)
 - `--power` no day goals, reports raw score per day
 - `--extra-hours` real day flow, but when an Hour is about to meet the goal with Hours to spare, the
   bot also plays those Hours out as a what-if (picks, plays, condiments) and rolls everything back.
@@ -121,10 +121,12 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
   judge balance at higher levels.
 - Difficulty levels stack, each adding one rule (`scripts/resources/difficulty.gd`). Level 1 is the
   practice and learning level: the lowest Day targets (`ScoreProgression.AUTHORED_ROUND_SCORES`), every
-  second Meal slot open and Merchant rerolls at a flat 5 Gold. 2 Day targets grow +2% per Day after
-  Day 1, 3 −5 starting Gold, 4 one fewer free card-pick reroll (1 instead of 2; then Gold), 5 two random Stations lock their second Meal slot
-  until Station level 3, 6 Day targets grow another +3% per Day after Day 1, 7 Merchant reroll cost
-  climbs +1 per reroll, 8 all four Stations lock it, 9 each Station level needs 1 more Meal.
+  second Meal slot open and Merchant rerolls at a flat 5 Gold. There are 8 levels (the old −5 starting
+  Gold level was removed): 2 Day targets grow +2% per Day after Day 1, 3 one fewer hand discard a Day
+  (3 instead of 4), 4 two random Stations lock their second Meal slot until Station level 3, 5 Day
+  targets grow another +3% per Day after Day 1, 6 Merchant reroll cost climbs +1 per reroll, 7 all
+  four Stations lock it, 8 each Station level needs 1 more Meal. Levels 4, 7 and 8 only act while
+  Station levelling is on (`StationManager.LEVELING_ENABLED`).
   Day 1's target is the same at every level: no one should lose Day 1. Ramp values are untuned.
   `Difficulty.Level` is 0-based (`LEVEL_1` = 0); saves store that index.
 - Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
@@ -132,24 +134,39 @@ used by the game) plus effect, category and recipe from the export. A new Meal s
 
 ## Deck and draw
 
+Player-facing text calls an Hour a **Turn** (`GameTerms.HOUR` is "Turn"; card, Technique, Station,
+event and UI text say Turn). Code, save keys and these notes still say Hour. The event name Rush Hour
+is kept.
+
 `DeckManager` (`scripts/autoload/deck_manager.gd`) owns the run's deck: draw pile, hand, discard pile
 and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All numbers untuned.
 
-- Every Hour draws `HOUR_DRAW` (4). An Hour ends after `PLAYS_PER_HOUR` (2) plays or the End Hour
-  button. Cards left in the hand are discarded. When the draw pile runs out mid-draw the discard pile
+- Every Hour draws `HOUR_DRAW` (5). An Hour ends after `PLAYS_PER_HOUR` (3) plays or the End Hour
+  button. Cards left in the hand are discarded. The Discard button (`discard_button.gd`, under End Hour)
+  calls `DeckManager.discard_hand`: the whole hand goes to the discard pile and as many cards are drawn,
+  using no play, `HAND_DISCARDS_PER_DAY` (4) times a Day. The bots send `{"discard": true}`. When the draw pile runs out mid-draw the discard pile
   is shuffled in. Each new Day (`RoundFlow._finish_transition` → `DeckManager.start_day`) shuffles
   every pile, including the played pile, back into the draw pile.
+- One Station cooks per Hour, top to bottom (`HexTileMap.get_cooking_segment`, Hour N cooks
+  Station N; a Day has 4 Hours and the board 4 Stations). While an Hour resolves,
+  `HexTileMap.cooking_segment` makes every other Station's cards inactive: they don't fire, can't be
+  retriggered and don't score, and their Meals aren't served. Ending the Day early leaves the later
+  Stations uncooked. Rush Hour (3 Hours) never cooks the bottom Station.
 - A played card is placed on the board and its deck card goes to the played pile. The board copies
   the card (`Hex.place_tile_card`), so board card and deck card are separate once played. A redraw on a
-  later Day can merge onto its own board copy, go on an empty spot, or replace another card.
+  later Day can merge onto its own board copy or go on an empty spot. Playing a different card onto a
+  placed one (replacing it) is off (`TileCard.REPLACE_ENABLED` false), so the bots never replace.
 - Every card joining the deck goes through `DeckManager.gain_card(card, source)`, which copies the
-  card and picks the pile: card picks go on top of the draw pile (an end-of-Day pick after the Day's
-  reshuffle), Merchant buys, packs and Duplicate Order are shuffled in, Send Back goes to the discard
+  card and picks the pile: card picks (off for now) go on top of the draw pile, Merchant buys, packs and Duplicate Order are shuffled in, Send Back goes to the discard
   pile. It then emits `EventBus.tile_card_selected` (save and tutorial listeners).
-- Card picks only come at the end of a Day (RoundFlow's CARD_PICK step), not between Hours. Picks can
-  be skipped. Each Day has `EconomyManager.STARTING_REROLLS` (2) free card-pick rerolls (1 from
-  difficulty level 4). After those a reroll costs Gold: `PAID_REROLL_BASE_COST` (1), +1 per paid
-  reroll, and that price never resets during a run (`paid_rerolls` in the save). Untuned.
+- There is no end-of-Day card pick: the Day summary leads straight to the Merchant
+  (`RoundFlow.CARD_PICK_ENABLED` false; the CARD_PICK step and its reroll code are kept, unused). New
+  cards come only from the Merchant and packs.
+- Day-end Gold (`EconomyManager.apply_round_speed_rewards`): `ROUND_COMPLETION_GOLD` (3), plus
+  `GOLD_PER_UNUSED_TURN` (3) per Hour left, plus `GOLD_PER_UNIQUE_MEAL` (1) for each different Meal on
+  the board. The Day Complete screen shows each part. Untuned.
+- Techniques cost 4/6/8 by rarity (`StaffCard.BASE_PRICE_BY_RARITY`); a Technique's `price_override`
+  above 0 replaces that (Leftovers, a Common at 2).
 - Discard (move to the discard pile) and destroy (remove completely) are different words: Throw Out
   destroys the board card only, Send Back discards it with its stars, the Merchant removal service
   (3 Gold, +1 per use in a visit) destroys a deck card. The service is paid up front
@@ -159,8 +176,12 @@ and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All n
   drawn cards from the deck pile and flings discarded ones into the chef portrait (`DEAL_*` and
   `DISCARD_*` constants). `DeckHud` (`scenes/ui/deck/deck_hud.tscn`, the draw pile bottom-right) opens
   `DeckViewer` (`deck_viewer.tscn`: the draw pile, or the whole deck for the removal service). End Hour
-  sits under the chef portrait in `card_sell_panel.tscn`.
-- Stars have no cap and add `TileCard.STAR_SCALE_STEP` (+10%) each.
+  and Discard sit under the chef portrait in `card_sell_panel.tscn`.
+- Merchant shelf: `Merchant.MERCHANT_SHELF_CARD_COUNT` (3) cards, each slot rolling its kind by
+  `MerchantPacks.SHELF_KIND_WEIGHTS` (Technique 50%, Meal 40%, Ingredient 5%, Kitchenware 5%); there is
+  no guaranteed Technique slot. Ingredients and Kitchenware cost 1 Gold, Meals 3 (`TileCard.SHOP_PRICE`,
+  `MEAL_SHOP_PRICE`); packs 3/3/4/4 (`MerchantPacks.PRICES`), pack kinds by `KIND_WEIGHTS`.
+- Stars have no cap and add `TileCard.STAR_SCALE_STEP` (+20%) each.
 - Saves (version 7) store every pile in order. Version 6 runs can't be continued.
 
 ## Chefs
@@ -174,13 +195,17 @@ pool filter (`GameManager.get_draw_pool()`), output scale, after-trigger, Meal +
 Hour/Day start, station level thresholds, taking every station pick, merchant slots and free rerolls.
 Add a hook to `ChefPerk` + `ChefRuntime` when a new chef needs one.
 
-Starting decks are built from Station kits (`resources/station_kits/*.tres`, `StationKit`): one ordered
+Starting decks hold one copy of every Ingredient and Kitchenware the chef can see
+(`GameManager.get_draw_pool`) plus `ChefRegistry.STARTING_MEAL_COUNT` (4) different Meals:
+`SPECIALITY_MEAL_COUNT` (2) from the home Station's kit (kit order, swaps applied) and the rest random
+from the chef's pool. Chefs whose home Station is rolled (Restaurateur, Chef de Cuisine) get all 4
+random. The kits' Ingredient, Kitchenware and random entries are no longer dealt. Station kits (`resources/station_kits/*.tres`, `StationKit`): one ordered
 list of 9 card ids or random entries (`random:kitchenware`, `random:ingredient`, `random:<ingredient tag>`)
 per Station type, used as a mini (first 5), small (first 6) or full (all 9) kit. `deck_stations` lists
 `"<choice>:<size>"` entries, home Station first: a Station id, ids split by `|` to roll one, or `any`.
 `kit_swaps` (`"<station id>:<slot>=<card id>"`) replace kit slots with a chef's signature cards.
 `ChefRegistry.build_starting_deck` builds it in the `starting_deck:<chef id>` RNG stream, so a seed
-deals the same deck. An empty `deck_stations` deals the default random 11 Ingredients + 4 Kitchenware.
+deals the same deck. An empty `deck_stations` deals the full set with no Meals.
 
 ## Conventions
 

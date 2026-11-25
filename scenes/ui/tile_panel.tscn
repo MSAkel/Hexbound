@@ -123,14 +123,18 @@ theme_override_colors/font_color = Color(0.32, 0.28, 0.2, 1)
 theme_override_font_sizes/font_size = 22
 text = "15"
 
-[node name="RuneRecipeLine" type="Label" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1745057159]
+[node name="RuneRecipeLine" type="RichTextLabel" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1745057159]
 visible = false
 custom_minimum_size = Vector2(486, 0)
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.38, 0.3, 0.18, 1)
-theme_override_font_sizes/font_size = 22
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.38, 0.3, 0.18, 1)
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
 text = "Recipe"
+fit_content = true
+scroll_active = false
 autowrap_mode = 3
 
 [node name="RuneDescription" type="RichTextLabel" parent="VBoxContainer/RunePanelContainer/RuneVBox" unique_id=1551846723]

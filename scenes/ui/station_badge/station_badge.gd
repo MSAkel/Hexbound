@@ -207,9 +207,38 @@ func _float_text(text: String, color: Color) -> void:
 
 #region --- Tooltip ---
 
+## Icon height in the Station list (Station icons and requirement icons).
+const TOOLTIP_ICON_SIZE := 22
+const TOOLTIP_STATION_ICON_SIZE := 26
+
+
 func show_tooltip() -> void:
 	var screen_rect := get_global_transform_with_canvas() * Rect2(Vector2.ZERO, size)
-	EventBus.toggle_tooltip.emit(true, get_tooltip_body(), screen_rect)
+	EventBus.toggle_tooltip.emit(true, get_tooltip_bbcode(), screen_rect)
+
+
+## This Station's state (get_tooltip_body), then every Station type with its icon and the cards it
+## needs, each with its icon. This row's type is marked. Ready-made BBCode for the tooltip.
+func get_tooltip_bbcode() -> String:
+	var body := get_tooltip_body().split("\n")
+	var out: PackedStringArray = [Tooltip.RAW_BBCODE_PREFIX + Tooltip.header_bbcode(body[0])]
+	for i in range(1, body.size()):
+		out.append(Tooltip.body_bbcode(body[i].replace("[", "[lb]")))
+	out.append("")
+	out.append(Tooltip.header_bbcode("Station types"))
+	var current := StationManager.get_station_type(segment_index)
+	for station_type: StationType in StationManager.get_station_types():
+		var name_text := station_type.display_name
+		if current != null and current.id == station_type.id:
+			name_text += "  (this Station)"
+		out.append("[font_size=%d][color=#%s]%s%s[/color][/font_size]" % [
+			Tooltip.BODY_FONT_SIZE + 1,
+			station_type.color.darkened(0.5).to_html(false),
+			FeastStatIcons.inline_bbcode(station_type.icon, TOOLTIP_STATION_ICON_SIZE),
+			name_text,
+		])
+		out.append(Tooltip.body_bbcode("      " + station_type.get_requirements_bbcode(TOOLTIP_ICON_SIZE)))
+	return "\n".join(out)
 
 
 func hide_tooltip() -> void:

@@ -8,5 +8,5 @@ func on_station_started(ctx: StaffContext) -> void:
 		if not card.has_ingredient_tag(TileCard.TAG_SEAFOOD):
 			continue
 		if card.add_garnish():
-			ctx.pulse(ctx.map.get_hex_for_tile_card(card))
+			ctx.garnish_landed(ctx.map.get_hex_for_tile_card(card))
 		return

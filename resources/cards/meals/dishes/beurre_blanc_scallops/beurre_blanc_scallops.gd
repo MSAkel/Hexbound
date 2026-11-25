@@ -1,14 +1,19 @@
 extends MealCard
 
-## Needs Scallop, Butter and a Fruit. x2 Mult, or x2.5 Mult while a Sauce & Dip Meal is being
-## served on the station above or below its own.
+## Needs Scallop, Butter and a Fruit. +60 Flavour and +3 Mult, and +60 Flavour more while a
+## Sauce & Dip Meal is being served on the station above or below its own. No xMult (Meals no
+## longer give it). Untuned.
 
-const BASE_XMULT := 2.0
-const SAUCE_XMULT := 2.5
+const BASE_FLAVOUR := 60
+const SAUCE_FLAVOUR := 60
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
-	return {"multiplicative_mult": SAUCE_XMULT if not _serving_neighbour_sauces(tile).is_empty() else BASE_XMULT}
+	var sauce := SAUCE_FLAVOUR if not _serving_neighbour_sauces(tile).is_empty() else 0
+	return {
+		"additive_mult": _get_production_amount(),
+		"flavour": BASE_FLAVOUR + sauce,
+	}
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

@@ -16,7 +16,7 @@ id = "forager"
 display_name = "Forager"
 icon = ExtResource("2_icon")
 ingame_portrait = ExtResource("3_ingame")
-speciality_description = "Never sees Meat or Seafood."
+speciality_description = "Does not have or roll Meat or Seafood cards."
 perk = SubResource("Perk")
 deck_stations = Array[String](["cold_station:full", "bar_station:small"])
 kit_swaps = Array[String](["cold_station:6=corn", "cold_station:9=avocado"])

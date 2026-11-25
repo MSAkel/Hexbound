@@ -2,7 +2,8 @@ extends Node
 
 ## The run's deck: draw pile, hand, discard pile and played pile.
 ##
-## Each chef starts with a deck built from Station kits (ChefRegistry.build_starting_deck). Every
+## Each chef starts with every Ingredient and Kitchenware plus their kit Meals
+## (ChefRegistry.build_starting_deck). Every
 ## Hour draws HOUR_DRAW cards. Playing a card puts it on the board and its deck card on the played
 ## pile. The Hour ends after PLAYS_PER_HOUR plays or when the player ends it, and the cards left in
 ## the hand are discarded. Each new Day shuffles every pile back into the draw pile, so a card on the
@@ -21,10 +22,13 @@ signal hand_discarded
 ## Any pile changed size. The deck counters listen to this.
 signal piles_changed
 
-const HOUR_DRAW := 4
-const PLAYS_PER_HOUR := 2
-## The removal service can't take the deck below this, so a Day never runs out of cards.
-## A 4-Hour Day plays 6 cards before its last Hour, and that Hour still draws 4.
+const HOUR_DRAW := 5
+const PLAYS_PER_HOUR := 3
+## Hand discards per Day (reset each Day). One discard throws away the whole hand and draws as many
+## new cards. It does not use a play. Untuned.
+const HAND_DISCARDS_PER_DAY := 4
+## The removal service can't take the deck below this. A Day can play 12 cards, and a draw with
+## both piles empty comes up short rather than failing. Untuned.
 const MIN_DECK_SIZE := 10
 
 ## Where a card that joins the deck goes.
@@ -59,6 +63,10 @@ var played_pile: Array[TileCard] = []
 ## Latest first, so the card picked last is drawn first.
 var _top_queue: Array[TileCard] = []
 var plays_this_hour := 0
+## Hand discards left this Day (discard_hand).
+var discards_left := HAND_DISCARDS_PER_DAY
+## True while discard_hand redraws, so the Hand flings the old cards instead of dropping them.
+var is_redrawing := false
 ## Station kit ids the starting deck was built from (shown for random kitchens).
 var kitchen_station_ids: Array[String] = []
 ## Each shuffle or random insert uses its own keyed RNG, so saves and what-ifs replay the same.
@@ -89,6 +97,7 @@ func reset_for_new_run() -> void:
 	_top_queue.clear()
 	kitchen_station_ids.clear()
 	plays_this_hour = 0
+	discards_left = discards_per_day()
 	_rng_ops = 0
 	_day_reshuffle_pending = false
 	_run_active = false
@@ -108,9 +117,16 @@ func start_run(cards: Array[TileCard], station_ids: Array[String] = []) -> void:
 	begin_hour()
 
 
+## Hand discards each Day: HAND_DISCARDS_PER_DAY less the difficulty's cut (Level 3 and up).
+func discards_per_day() -> int:
+	return maxi(0, HAND_DISCARDS_PER_DAY - Difficulty.get_hand_discard_reduction(GameManager.selected_difficulty))
+
+
 ## The new Day's first draw reshuffles every pile (RoundFlow calls this as the Day starts).
 func start_day() -> void:
 	_day_reshuffle_pending = true
+	discards_left = discards_per_day()
+	piles_changed.emit()
 
 
 ## Draws the Hour's hand.
@@ -163,6 +179,37 @@ func is_hour_finished() -> bool:
 
 func plays_left() -> int:
 	return maxi(0, PLAYS_PER_HOUR - plays_this_hour)
+
+
+## True when a discard is left this Day and there is a hand to throw away.
+func can_discard_hand() -> bool:
+	return _run_active and discards_left > 0 and not hand.is_empty()
+
+
+## Throws the whole hand on the discard pile and draws as many new cards (the draw pile reshuffles
+## the discard pile in when it runs out, so the new hand can hold cards just thrown away). Uses one
+## of the Day's discards, not a play. Returns false when no discard is left.
+func discard_hand() -> bool:
+	if not can_discard_hand():
+		return false
+	discards_left -= 1
+	var count := hand.size()
+	discard_pile.append_array(hand)
+	hand.clear()
+	is_redrawing = true
+	hand_discarded.emit()
+	var drawn: Array[TileCard] = []
+	for _i in count:
+		var card := _draw_one()
+		if card == null:
+			break
+		hand.append(card)
+		drawn.append(card)
+	piles_changed.emit()
+	if not drawn.is_empty():
+		cards_drawn.emit(drawn)
+	is_redrawing = false
+	return true
 
 
 func _on_turn_ended() -> void:
@@ -351,6 +398,7 @@ func capture_run_state() -> Dictionary:
 		"plays_this_hour": plays_this_hour,
 		"rng_ops": _rng_ops,
 		"day_reshuffle_pending": _day_reshuffle_pending,
+		"discards_left": discards_left,
 		"kitchen": kitchen_station_ids.duplicate(),
 		"removals_this_visit": removals_this_visit,
 		"run_active": _run_active,
@@ -366,6 +414,7 @@ func apply_run_state(state: Dictionary) -> void:
 	plays_this_hour = int(state.get("plays_this_hour", 0))
 	_rng_ops = int(state.get("rng_ops", 0))
 	_day_reshuffle_pending = bool(state.get("day_reshuffle_pending", false))
+	discards_left = int(state.get("discards_left", discards_per_day()))
 	kitchen_station_ids.assign(state.get("kitchen", []))
 	# Saves from when every Hour had a card pick: the Hour's draw waited for that pick. Draw it now.
 	if bool(state.get("draw_pending", false)) and hand.is_empty():

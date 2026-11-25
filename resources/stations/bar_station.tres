@@ -50,12 +50,12 @@ description = "Pairing: Beverages on this station also count as on the stations 
 
 [sub_resource type="Resource" id="choice_1"]
 script = ExtResource("s_lemon_wedge")
-description = "Lemon Wedge: the first Fruit to {trigger} here each Hour gives a {garnish} to a Beverage here"
+description = "Lemon Wedge: the first Fruit to {trigger} here each Turn gives a {garnish} to a Beverage here"
 target_tags = Array[StringName]([&"fruit"])
 
 [sub_resource type="Resource" id="capstone_0"]
 script = ExtResource("s_round_for_the_kitchen")
-description = "Round for the Kitchen: the first Beverage served here each Hour gives a {garnish} to an Ingredient on each station either side"
+description = "Round for the Kitchen: the first Beverage served here each Turn gives a {garnish} to an Ingredient on each station either side"
 
 [sub_resource type="Resource" id="capstone_1"]
 script = ExtResource("s_digestif")

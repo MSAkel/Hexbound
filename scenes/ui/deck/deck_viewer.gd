@@ -4,8 +4,9 @@ extends Control
 ## Full-screen overlay of cards. Clicking the deck pile opens it on the draw pile: the cards still to
 ## come this Day, shown sorted since the pile's order is hidden. The Merchant opens it in removal mode
 ## on the whole deck once the service is paid for (DeckManager.pay_for_removal): pick a card to take
-## it out of the deck for good, or skip. Skipping keeps the Gold spent. The layout lives in
-## deck_viewer.tscn.
+## it out of the deck for good, or skip. Skipping keeps the Gold spent. Cards are grouped into
+## Ingredients, Kitchenware and Meals, each with a header and its own grid; an empty group hides.
+## The layout lives in deck_viewer.tscn.
 
 signal closed
 
@@ -20,7 +21,15 @@ var _selected: TileCard = null
 var _selected_ui: CardUI = null
 
 @onready var _title: Label = %Title
-@onready var _grid: GridContainer = %CardGrid
+@onready var _ingredient_header: Label = %IngredientHeader
+@onready var _ingredient_grid: GridContainer = %IngredientGrid
+@onready var _ingredient_gap: Control = %IngredientGap
+@onready var _kitchenware_header: Label = %KitchenwareHeader
+@onready var _kitchenware_grid: GridContainer = %KitchenwareGrid
+@onready var _kitchenware_gap: Control = %KitchenwareGap
+@onready var _meal_header: Label = %MealHeader
+@onready var _meal_grid: GridContainer = %MealGrid
+@onready var _meal_gap: Control = %MealGap
 @onready var _empty_label: Label = %EmptyLabel
 @onready var _remove_button: Button = %RemoveButton
 @onready var _skip_button: Button = %SkipButton
@@ -92,9 +101,10 @@ func _open(mode: Mode) -> void:
 
 
 func _rebuild() -> void:
-	for child in _grid.get_children():
-		_grid.remove_child(child)
-		child.queue_free()
+	for grid: GridContainer in [_ingredient_grid, _kitchenware_grid, _meal_grid]:
+		for child in grid.get_children():
+			grid.remove_child(child)
+			child.queue_free()
 	_selected_ui = null
 	var removing := _mode == Mode.REMOVE
 	_remove_button.visible = removing
@@ -120,11 +130,20 @@ func _add_cards(cards: Array[TileCard]) -> void:
 		return String(a.name) < String(b.name)
 	)
 	_empty_label.visible = sorted.is_empty()
+	var counts := {}
+	for card: TileCard in sorted:
+		counts[card.type] = int(counts.get(card.type, 0)) + 1
+	_show_group(_ingredient_header, _ingredient_grid, _ingredient_gap, "Ingredients",
+		int(counts.get(TileCard.TileCardType.INGREDIENT, 0)))
+	_show_group(_kitchenware_header, _kitchenware_grid, _kitchenware_gap, "Kitchenware",
+		int(counts.get(TileCard.TileCardType.KITCHENWARE, 0)))
+	_show_group(_meal_header, _meal_grid, _meal_gap, "Meals",
+		int(counts.get(TileCard.TileCardType.MEAL, 0)))
 	for card: TileCard in sorted:
 		var slot := Control.new()
 		slot.custom_minimum_size = CARD_BASE_SIZE * CARD_SCALE
 		slot.mouse_filter = Control.MOUSE_FILTER_PASS
-		_grid.add_child(slot)
+		_grid_for(card).add_child(slot)
 		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
 		slot.add_child(card_ui)
 		card_ui.scale = Vector2.ONE * CARD_SCALE
@@ -152,3 +171,20 @@ func _on_remove_pressed() -> void:
 		RunSaveManager.request_autosave()
 	# One removal per payment.
 	close()
+
+
+## Header text with the group's count. A group with no cards hides its header, grid and gap.
+func _show_group(header: Label, grid: GridContainer, gap: Control, label: String, count: int) -> void:
+	header.text = "%s (%d)" % [label, count]
+	header.visible = count > 0
+	grid.visible = count > 0
+	gap.visible = count > 0
+
+
+func _grid_for(card: TileCard) -> GridContainer:
+	match card.type:
+		TileCard.TileCardType.KITCHENWARE:
+			return _kitchenware_grid
+		TileCard.TileCardType.MEAL:
+			return _meal_grid
+	return _ingredient_grid

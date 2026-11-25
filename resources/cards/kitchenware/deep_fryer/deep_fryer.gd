@@ -1,6 +1,6 @@
 extends TileCard
 
-## +2 Mult, +1 Mult for each extra trigger it gives. Triggers the Ingredients on both sides of it on
+## +10 Flavour. Triggers the Ingredients on both sides of it on
 ## its Station again: the nearest one before it and the nearest one after it. Tempura (Fry Station)
 ## adds one more trigger for Seafood and Vegetables.
 ## Fried Meals (Fried Chicken, French Fries, Fritters, Onion Rings) read how many triggers the Deep
@@ -13,7 +13,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	var targets := _effect_preview_cards(tile)
 	if targets.is_empty():
 		failed_tile_card_text(tile)
-		_pay_kitchenware_mult(tile)
+		_pay_kitchenware_output(tile)
 		return
 	var given := 0
 	for target: TileCard in targets:
@@ -23,7 +23,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		if _try_queue_tile_card_triggers(tile, queued):
 			_create_fired_floating_text(tile, target)
 			given += queued.size()
-	_pay_kitchenware_mult(tile, given)
+	_pay_kitchenware_output(tile, given)
 
 
 func get_planned_preparations(tile: Hex) -> int:

@@ -14,5 +14,6 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "grilled_steak"
 name = "Grilled Steak"
 icon = ExtResource("1_icon")
-description = "+60 {flavour}. Gains a {garnish} for each of these, up to 2: Salt on its Station, Black Pepper on its Station, a Wine served on any Station."
+description = "+60 {flavour}.
+Gains a {garnish} for each of Salt or Black Pepper on its Station, a Wine served on any Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

@@ -63,6 +63,9 @@ const SWAP_CANDIDATES := 6
 const MIN_MERCHANT_REROLLS := 3
 const MAX_MERCHANT_REROLLS := 12
 const GOLD_VALUE_SHARE := 0.5
+## Gold a typical shelf card cost before the $1 card prices (untuned). The bot prices one coin from it,
+## so cheaper cards do not triple what it thinks a coin is worth.
+const GOLD_UNIT_PRICE := 3.0
 ## Gold up to about two visits of buying. Past this, each coin is worth less.
 const GOLD_COMFORT := 12
 ## Buy a shelf item worth at least this share of a typical pick per merchant card price.
@@ -124,7 +127,7 @@ func _merchants_left() -> int:
 ## less as gold piles up past what a visit can spend.
 func _gold_value() -> float:
 	return (
-		_market / float(TileCard.SHOP_PRICE) * GOLD_VALUE_SHARE
+		_market / GOLD_UNIT_PRICE * GOLD_VALUE_SHARE
 		* float(_profile["gold_weight"]) * _gold_scarcity()
 	)
 
@@ -363,8 +366,11 @@ func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
 			best = {"card": card, "hex": placement["hex"]}
 	if _market <= 0.0:
 		_note_market(best_value)
-	# Unplayed cards are only discarded, so end the Hour when nothing in hand is worth a spot.
+	# Nothing in hand is worth a spot: throw the hand away for a new one while the Day has discards
+	# (untuned rule), else end the Hour, since unplayed cards are only discarded.
 	if best.is_empty() or best_value <= 0.0:
+		if DeckManager.can_discard_hand():
+			return {"discard": true}
 		return {"end": true}
 	return best
 
@@ -660,7 +666,7 @@ func _buy_ratio(value: float, price: int) -> float:
 	var cost := float(maxi(1, price))
 	if value <= 0.0:
 		return 0.0
-	if value < BUY_FLOOR_SHARE * _market * cost / float(TileCard.SHOP_PRICE) * _gold_scarcity():
+	if value < BUY_FLOOR_SHARE * _market * cost / GOLD_UNIT_PRICE * _gold_scarcity():
 		return 0.0
 	return value / cost
 
@@ -707,6 +713,8 @@ func _condiment_value(condiment: Condiment) -> float:
 	match condiment.effect_type:
 		Condiment.EffectType.GOLD_DROP:
 			return condiment.effect_value * _gold_value()
+		Condiment.EffectType.GOLD_PER_UNIQUE_MEAL:
+			return condiment.effect_value * float(EconomyManager.count_unique_board_meals()) * _gold_value()
 		Condiment.EffectType.CONDIMENT_PACK:
 			return 3.0 * _one_shot_worth() * 0.8
 		Condiment.EffectType.GARNISH, Condiment.EffectType.ECHO, \
@@ -746,6 +754,10 @@ func before_resolve() -> void:
 func _try_drink(slot: int, condiment: Condiment) -> bool:
 	match condiment.effect_type:
 		Condiment.EffectType.GOLD_DROP:
+			return runner.drink_condiment(slot)
+		Condiment.EffectType.GOLD_PER_UNIQUE_MEAL:
+			if EconomyManager.count_unique_board_meals() <= 0:
+				return false
 			return runner.drink_condiment(slot)
 		Condiment.EffectType.CONDIMENT_PACK:
 			# Three new bottles need the whole belt.

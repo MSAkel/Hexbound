@@ -101,6 +101,9 @@ var _dish_recipe_gold_coords: Array[Vector2i] = []
 # True while the centre-screen event reveal is up. Board hover stays off so the
 # inspect panel can't cover the event text or its Continue button.
 var _event_reveal_open: bool = false
+## Station (segment index) that cooks while an Hour resolves, -1 outside resolution. Only its cards
+## fire, are retriggered or score. Set by HexTurnResolver.resolve_turn.
+var cooking_segment: int = -1
 
 
 func _ready() -> void:
@@ -366,6 +369,8 @@ func _on_station_state_changed(segment_index: int) -> void:
 
 ## Badges sit in one column right of the board, centered on each station row.
 func _ensure_station_badges() -> void:
+	if not StationManager.SHOW_STATION_UI:
+		return
 	var segment_count := get_segment_count()
 	if segment_count <= 0:
 		return
@@ -640,12 +645,30 @@ func get_all_placed_tile_cards(rune_type: Variant = null) -> Array[TileCard]:
 
 ## True when a placed rune can fire during its own trigger-order slot this turn.
 ## A Meal left in a station's second slot after the station drops below level 3 sits idle.
+## While an Hour resolves, only the cooking Station's cards fire (see cooking_segment).
 func is_tile_card_active(hex: Hex) -> bool:
 	if hex == null or hex.active_tile_card == null:
 		return false
 	if StationManager.is_meal_slot_locked(hex.coordinates):
 		return false
+	if cooking_segment >= 0 and get_segment_index(hex.coordinates) != cooking_segment:
+		return false
 	return hex.active_tile_card.is_active
+
+
+## The Station that cooks in the given Hour of the Day (1-based): one Station per Hour, top to bottom,
+## so each cooks once a Day. Hours past the last Station wrap to the top (untuned; a Day has 4 Hours
+## and the board 4 Stations, so this only matters if either changes).
+func get_cooking_segment_for_hour(hour_number: int) -> int:
+	var count := get_segment_count()
+	if count <= 0:
+		return -1
+	return posmod(hour_number - 1, count)
+
+
+## The Station that cooks this Hour.
+func get_cooking_segment() -> int:
+	return get_cooking_segment_for_hour(GameManager.get_turn_number())
 
 
 ## Inactive cards are skipped instantly during trigger order.
@@ -1285,6 +1308,11 @@ func create_floating_text(
 	garnished: bool = false
 ) -> void:
 	turn_resolver.create_floating_text(pos, text, color, icon, target_icon, garnished)
+
+
+## Flies an effect icon (Garnish, Retrigger) from one scene-global position to another.
+func create_effect_flight(from_pos: Vector2, to_pos: Vector2, icon: Texture2D) -> void:
+	turn_resolver.create_effect_flight(from_pos, to_pos, icon)
 
 
 ## True while a hand card is snapping onto a hex and has not committed yet.

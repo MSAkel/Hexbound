@@ -35,6 +35,12 @@ const CHOICE_LEVEL := 3
 const CAPSTONE_LEVEL := 6
 const MEAL_SLOT_UNLOCK_LEVEL := 3
 const BASE_STATION_NAME := "Station"
+## Station levelling. Off: Stations stay at level 1 (served Meals are still counted), there are no
+## level 3 and 6 picks, and a difficulty-locked second Meal slot is open.
+const LEVELING_ENABLED := true
+## Station badges, type tints and Station info (HexTileMap, StationBoardOverlay). Off hides them;
+## Meal slot fills stay and Station types still form.
+const SHOW_STATION_UI := true
 
 ## Fired when a pending pick is made, or dropped because the station lost its type.
 ## HexTurnResolver waits on this mid-Hour.
@@ -309,7 +315,7 @@ func has_meal_slot_lock(segment_index: int) -> bool:
 
 
 func is_meal_slot_unlocked(segment_index: int, meal_slot_index: int) -> bool:
-	if meal_slot_index <= 0 or not has_meal_slot_lock(segment_index):
+	if meal_slot_index <= 0 or not has_meal_slot_lock(segment_index) or not LEVELING_ENABLED:
 		return true
 	return get_level(segment_index) >= MEAL_SLOT_UNLOCK_LEVEL
 
@@ -659,6 +665,9 @@ func record_serving(segment_index: int) -> void:
 	if station == null or station.type == null:
 		return
 	station.served += 1
+	if not LEVELING_ENABLED:
+		EventBus.station_state_changed.emit(segment_index)
+		return
 	var thresholds := get_level_thresholds(station.type)
 	while station.level < MAX_LEVEL and station.served >= thresholds[station.level - START_LEVEL]:
 		station.level += 1

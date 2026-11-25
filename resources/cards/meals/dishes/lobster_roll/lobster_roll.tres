@@ -14,5 +14,6 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "lobster_roll"
 name = "Lobster Roll"
 icon = ExtResource("1_biois")
-description = "+40 {flavour}. +25 {flavour} for each {garnished} Ingredient on its Station."
+description = "+40 {flavour}.
++25 {flavour} for each {garnished} Ingredient on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

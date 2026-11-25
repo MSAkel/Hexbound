@@ -91,8 +91,6 @@ enum QueryScope {
 const GARNISH_SCALE_PER_STACK := 0.75
 ## Staff can raise the cap. Read StaffManager.max_garnish_stacks_for() for a seated card.
 const MAX_GARNISH_STACKS := 2
-## Kitchenware pays its printed Mult plus this much for each Ingredient it prepares (untuned).
-const KITCHENWARE_MULT_PER_PREP := 1.0
 ## Shared chip fill. White numbers stay readable on this purple.
 const CHIP_PANEL_COLOR := Color(0.22, 0.16, 0.28)
 ## Pile icons for floating text and Ingredient output chips.
@@ -103,17 +101,22 @@ const ICON_GARNISH := FeastStatIcons.GARNISH
 const ICON_FIRE := FeastStatIcons.FIRE
 
 ## Spot cards have no rarity. Ingredients and Kitchenware share one merchant price, Meals cost more.
-const SHOP_PRICE := 3
-const MEAL_SHOP_PRICE := 4
+## Untuned. The starting deck is meant to hold every Ingredient and Kitchenware, so these buy duplicates.
+const SHOP_PRICE := 1
+const MEAL_SHOP_PRICE := 3
 ## Playing a copy onto the same card merges it up one star. Each star past the first adds this much
 ## output scale: Flavour, Gold, +Mult, and xMult above x1 (see _activation_output_scale).
 ## Stars have no cap. Untuned.
-const STAR_SCALE_STEP := 0.10
+const STAR_SCALE_STEP := 0.20
 
 ## What playing a hand card onto a hex would do.
 enum Overplay { NONE, PLACE, MERGE, REPLACE }
 ## Debug A/B switch for the playtest runner. False keeps cards to empty spots.
 static var overplay_enabled := true
+## Playing a different card onto a placed one used to destroy it and take the spot. Off (user, Nov 25):
+## a placed card can only be starred up by its own copy. REPLACE stays in Overplay so the code that
+## reads it keeps compiling; nothing returns it while this is false.
+const REPLACE_ENABLED := false
 
 var activation_count: int = 0
 var is_active: bool = true
@@ -285,12 +288,13 @@ static func queryable_kind_tags(card: TileCard) -> Array[StringName]:
 	return tags
 
 
-## Description for the tooltip: the card's own text, plus its kind rule for Ingredients.
-func get_tooltip_description_text() -> String:
+## Description on the card face and tooltip: the card's own text, plus its kind rule on its own
+## line for Ingredients.
+func get_description_text() -> String:
 	var rule := IngredientKindRules.rule_text(IngredientKindRules.rule_kind(self))
 	if rule.is_empty():
-		return get_description_text()
-	return get_description_text() + " " + rule
+		return description
+	return description + String.chr(10) + rule
 
 
 func get_inspect_subtitle() -> String:
@@ -338,7 +342,7 @@ func _get_role_label() -> String:
 	return GameTerms.get_role_label(product, support_role)
 
 
-# Default chip: Ingredients show amount plus any station perk. Kitchenware shows flat Mult and role icon.
+# Default chip: Ingredients show amount plus any station perk. Kitchenware shows its Flavour and role icon.
 # Uses _effect_amount so chips stay honest when a card scales from the board.
 func get_board_chip(tile: Hex = null) -> Dictionary:
 	if is_producer_type(type):
@@ -356,8 +360,9 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 
 func _stat_board_chip(tile: Hex = null) -> Dictionary:
 	if type == TileCardType.KITCHENWARE and base_production_amount > 0:
-		var mult := _get_production_amount() + KITCHENWARE_MULT_PER_PREP * float(get_planned_preparations(tile))
-		var chip := _amount_board_chip_float(mult * star_output_scale(), ICON_MULT)
+		var flavour := _get_production_amount() + float(StationManager.flat_flavour_bonus_for(tile, self))
+		var scaled := flavour * StationManager.output_scale_for(tile, self) * star_output_scale()
+		var chip := _amount_board_chip(int(round(scaled)), ICON_FLAVOUR)
 		var role_texture := FeastStatIcons.get_support_icon(support_role)
 		if role_texture != null:
 			chip = _compose_board_chip(chip, role_texture)
@@ -461,7 +466,7 @@ func get_shop_price(discount: float = 0.0) -> int:
 	return _apply_merchant_discount(base_price, discount)
 
 
-# Empty spot, or an occupied spot to merge into or replace, plus placement restrictions.
+# Empty spot, or an occupied spot holding the same card to merge into, plus placement restrictions.
 func can_play_on(hex: Hex) -> bool:
 	return get_overplay(hex) != Overplay.NONE
 
@@ -481,6 +486,8 @@ func get_overplay(hex: Hex) -> Overplay:
 	if not overplay_enabled:
 		return Overplay.NONE
 	if occupant.id != id:
+		if not REPLACE_ENABLED:
+			return Overplay.NONE
 		# Replacing destroys the occupant, and a Ward forbids that.
 		if CondimentManager.is_warded(occupant):
 			return Overplay.NONE
@@ -488,7 +495,8 @@ func get_overplay(hex: Hex) -> Overplay:
 	return Overplay.MERGE
 
 
-# Empty spot: place. Same card: merge up a star. Different card: destroy the occupant with no refund.
+# Empty spot: place. Same card: merge up a star. Different card (only with REPLACE_ENABLED): destroy the
+# occupant with no refund.
 func play_on(hex: Hex, animate: bool = true) -> void:
 	match get_overplay(hex):
 		Overplay.PLACE:
@@ -502,6 +510,23 @@ func play_on(hex: Hex, animate: bool = true) -> void:
 
 func star_output_scale() -> float:
 	return 1.0 + STAR_SCALE_STEP * float(star_level - 1)
+
+
+## What this card's stars add to one trigger right now, on tile (null off the board):
+## {"flavour": int, "mult": float}. Zero below 2 stars. The tooltip shows it. Meals override it.
+func get_star_bonus(tile: Hex = null) -> Dictionary:
+	var bonus := {"flavour": 0, "mult": 0.0}
+	if star_level <= 1:
+		return bonus
+	var base := _effect_amount(tile) if is_producer_type(type) else _get_production_amount()
+	base += float(StationManager.flat_flavour_bonus_for(tile, self))
+	var extra := base * StationManager.output_scale_for(tile, self) * (star_output_scale() - 1.0)
+	match product:
+		Product.FLAVOUR:
+			bonus["flavour"] = int(round(extra))
+		Product.MULTIPLIER:
+			bonus["mult"] = extra
+	return bonus
 
 
 ## Output scale from Garnish stacks. Each stack adds GARNISH_SCALE_PER_STACK (x1.75, x2.5, ...).
@@ -768,14 +793,30 @@ func _create_targeted_ability_floating_text(
 	_create_floating_text(tile, "", Color.WHITE, ability_icon, target.icon)
 
 
-## Kitchenware garnish feedback.
+## Garnish feedback: the Garnish icon flies from this card to the target.
 func _create_garnish_floating_text(tile: Hex, target: TileCard) -> void:
-	_create_targeted_ability_floating_text(tile, ICON_GARNISH, target)
+	_create_effect_flight(tile, ICON_GARNISH, target)
 
 
-## Kitchenware fire feedback.
+## Retrigger feedback: the fire icon flies from this card to the target.
 func _create_fired_floating_text(tile: Hex, target: TileCard) -> void:
-	_create_targeted_ability_floating_text(tile, ICON_FIRE, target)
+	_create_effect_flight(tile, ICON_FIRE, target)
+
+
+## One icon per target, from the source card's spot to the target card's centre. Falls back to the
+## old [icon][target] float when the target is not on the board.
+func _create_effect_flight(tile: Hex, icon: Texture2D, target: TileCard) -> void:
+	if tile == null or tile.map == null:
+		return
+	var target_tile := tile.map.get_hex_for_tile_card(target)
+	if target_tile == null:
+		_create_targeted_ability_floating_text(tile, icon, target)
+		return
+	tile.map.create_effect_flight(
+		tile.map.floating_text_position_for_hex(tile.coordinates),
+		tile.map.floating_text_position_for_hex(target_tile.coordinates),
+		icon
+	)
 
 
 ## Shared activation blip for every fire, including misses with no float text.
@@ -869,14 +910,14 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	_pay_effect_amount(tile)
 
 
-## Kitchenware Mult: the flat amount printed on the card plus KITCHENWARE_MULT_PER_PREP for each
-## Ingredient it prepared this trigger (each retrigger, Garnish stack or status counts). Paid after
-## the card's ability so the count is known.
-func _pay_kitchenware_mult(tile: Hex, prepared: int = 0) -> void:
+## Kitchenware output: the flat Flavour printed on the card. Kitchenware gives no Mult (untuned).
+## prepared is the Ingredients it prepared this trigger (each retrigger, Garnish stack or status
+## counts). It no longer pays anything, but hour_prepared_count keeps it for fried Meals and Dairy.
+func _pay_kitchenware_output(tile: Hex, prepared: int = 0) -> void:
 	hour_prepared_count += maxi(prepared, 0)
-	var amount := _get_production_amount() + KITCHENWARE_MULT_PER_PREP * float(maxi(prepared, 0))
+	var amount := _get_production_amount()
 	if amount > 0.0:
-		add_additive_mult(tile, amount)
+		add_flavour(tile, amount)
 
 
 ## Ingredients this Kitchenware would prepare if it triggered now. Board chips and fried Meal

@@ -17,10 +17,14 @@ enum Kind {
 const SHELF_COUNT := 2
 ## Cards shown when a pack opens. The buyer keeps one.
 const CARD_COUNT := 4
-## A tile card pack costs the regular card price of its category plus this.
-const TILE_PACK_PREMIUM := 1
-## Technique pack price. Flat, whatever rarities it holds.
-const TECHNIQUE_PACK_PRICE := 7
+## Pack price per Kind (Produce Basket, Utensil Drawer, Recipe Box, Chef's Notebook). Flat, whatever
+## the pack holds. Untuned.
+const PRICES: Array[int] = [3, 3, 4, 4]
+## How likely each Kind is for a pack slot, per Kind: Recipe Box and Chef's Notebook most. Untuned.
+const KIND_WEIGHTS: Array[float] = [1.0, 1.0, 3.0, 3.0]
+## How likely each Kind is for each Merchant shelf card, per Kind: Ingredient 5%, Kitchenware 5%,
+## Meal 40%, Technique 50% (Merchant.draw_shelf_stock).
+const SHELF_KIND_WEIGHTS: Array[float] = [0.05, 0.05, 0.40, 0.50]
 
 const _IDS: Array[String] = ["produce_basket", "utensil_drawer", "recipe_box", "chefs_notebook"]
 const _NAMES: Array[String] = ["Produce Basket", "Utensil Drawer", "Recipe Box", "Chef's Notebook"]
@@ -57,12 +61,29 @@ static func tooltip_text(kind: Kind) -> String:
 	return "%s\nOpen to see %d %s. Keep 1." % [display_name(kind), CARD_COUNT, contents_label(kind)]
 
 
-## Regular card price of the category plus the premium. Techniques cost one flat price.
 static func price(kind: Kind) -> int:
-	if kind == Kind.TECHNIQUES:
-		return TECHNIQUE_PACK_PRICE
-	var card_price := TileCard.MEAL_SHOP_PRICE if kind == Kind.MEALS else TileCard.SHOP_PRICE
-	return card_price + TILE_PACK_PREMIUM
+	return PRICES[kind]
+
+
+## One Kind from candidates, by weights (per Kind; KIND_WEIGHTS when empty). -1 when there are none.
+## A Kind missing from candidates (sold out) gives its share to the rest.
+static func pick_weighted_kind(
+	candidates: Array[Kind],
+	rng: RandomNumberGenerator,
+	weights: Array[float] = []
+) -> int:
+	var table := weights if not weights.is_empty() else KIND_WEIGHTS
+	var total := 0.0
+	for kind in candidates:
+		total += table[kind]
+	if candidates.is_empty() or total <= 0.0:
+		return -1
+	var roll := rng.randf() * total
+	for kind in candidates:
+		roll -= table[kind]
+		if roll < 0.0:
+			return kind
+	return candidates[candidates.size() - 1]
 
 
 ## Why this pack cannot be bought right now. Empty when it can.
@@ -83,7 +104,7 @@ static func available_kinds() -> Array[Kind]:
 	return kinds
 
 
-## Up to SHELF_COUNT distinct kinds for the shelf, skipping the exclude kinds (locked packs).
+## Up to SHELF_COUNT distinct kinds for the shelf by KIND_WEIGHTS, skipping the exclude kinds (locked packs).
 static func draw_kinds(stock_reroll_count: int, exclude: Array[int] = []) -> Array[Kind]:
 	var rng := RunRng.create_rng(
 		"merchant_packs:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
@@ -94,7 +115,9 @@ static func draw_kinds(stock_reroll_count: int, exclude: Array[int] = []) -> Arr
 			candidates.append(kind)
 	var picked: Array[Kind] = []
 	while picked.size() < SHELF_COUNT and not candidates.is_empty():
-		picked.append(candidates.pop_at(rng.randi_range(0, candidates.size() - 1)))
+		var kind := pick_weighted_kind(candidates, rng) as Kind
+		candidates.erase(kind)
+		picked.append(kind)
 	return picked
 
 
@@ -114,7 +137,7 @@ static func draw_contents(
 		for staff in StaffCatalog.draw(CARD_COUNT, rng, StaffManager.owned_ids()):
 			cards.append(staff)
 		return cards
-	var pool := _tile_pool(kind)
+	var pool := tile_pool(kind)
 	# An empty pool would fall back to the whole card pool and break the category.
 	if pool.is_empty():
 		return cards
@@ -127,11 +150,13 @@ static func _has_stock(kind: Kind) -> bool:
 	if kind == Kind.TECHNIQUES:
 		var probe := StaffCatalog.draw(1, RandomNumberGenerator.new(), StaffManager.owned_ids())
 		return not probe.is_empty()
-	return not _tile_pool(kind).is_empty()
+	return not tile_pool(kind).is_empty()
 
 
-## The chef-filtered draw pool, narrowed to one card type.
-static func _tile_pool(kind: Kind) -> Array[TileCard]:
+## The chef-filtered draw pool, narrowed to one card type. Empty for Kind.TECHNIQUES.
+static func tile_pool(kind: Kind) -> Array[TileCard]:
+	if kind == Kind.TECHNIQUES:
+		return []
 	var wanted := TileCard.TileCardType.INGREDIENT
 	if kind == Kind.KITCHENWARE:
 		wanted = TileCard.TileCardType.KITCHENWARE

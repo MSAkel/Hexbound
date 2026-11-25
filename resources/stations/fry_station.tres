@@ -46,7 +46,7 @@ flat_flavour = 10
 
 [sub_resource type="Resource" id="choice_0"]
 script = ExtResource("s_hot_oil")
-description = "Hot Oil: the first Ingredient to {trigger} here each Hour triggers again"
+description = "Hot Oil: the first Ingredient to {trigger} here each Turn triggers again"
 
 [sub_resource type="Resource" id="choice_1"]
 script = ExtResource("s_tempura")
@@ -59,8 +59,8 @@ description = "Fish & Chips: while a Fish Station is adjacent, Seafood Meals on 
 
 [sub_resource type="Resource" id="capstone_1"]
 script = ExtResource("s_pub_grub")
-description = "Pub Grub: each Ingredient {trigger} here gives every Beer on a Bar +x0.05 {mult} for the rest of the Day"
-xmult_per_trigger = 0.05
+description = "Pub Grub: each Ingredient {trigger} here gives every Beer on a Bar +0.5 {mult} for the rest of the Day"
+mult_per_trigger = 0.5
 
 [resource]
 script = ExtResource("1_type")

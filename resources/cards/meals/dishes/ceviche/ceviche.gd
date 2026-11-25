@@ -1,6 +1,7 @@
 extends MealCard
 
-## Needs a Seafood and a Seasoning. +3 Mult, plus the Flavour of the Seafood on its station x1.5.
+## Needs a Seafood and Lemon (the citrus that "cooks" the fish). +5 Mult, plus the Flavour of the
+## Seafood on its station x1.5. Untuned.
 
 const SEAFOOD_SCALE := 1.5
 

@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "line_check"
 name = "Line Check"
-description = "+2 {mult} for each Station pick taken on this Station (levels 3 and 6)"
+description = "+2 {mult} for each Station perk taken across all stations"
 rarity = 1

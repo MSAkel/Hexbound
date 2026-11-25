@@ -42,8 +42,16 @@ func setup(tile_map: HexTileMap) -> void:
 	EventBus.tile_card_garnish_cleared.connect(_on_tile_card_garnish_cleared)
 
 
-## Resolves every placed rune in trigger order when the player ends the turn.
+## Resolves the cooking Station's runes in trigger order when the player ends the turn.
+## One Station cooks per Hour, top to bottom (HexTileMap.get_cooking_segment). The other Stations'
+## cards do not fire, are not retriggered and do not score this Hour.
 func resolve_turn() -> void:
+	map.cooking_segment = map.get_cooking_segment()
+	await _resolve_cooking_station()
+	map.cooking_segment = -1
+
+
+func _resolve_cooking_station() -> void:
 	map.dismiss_hover_feedback()
 	map.reset_hour_results()
 	aborted_retrigger_storm = false
@@ -65,6 +73,8 @@ func resolve_turn() -> void:
 	var active_segment := -1
 	for tile: Hex in hexes:
 		var segment_index := map.get_segment_index(tile.coordinates)
+		if segment_index != map.cooking_segment:
+			continue
 		if segment_index != active_segment:
 			active_segment = segment_index
 			await _start_station_staff(segment_index)
@@ -491,13 +501,44 @@ func create_floating_text(
 ) -> void:
 	if GameManager.skip_presentation:
 		return
-	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon, garnished)
 	var readout := HourScoreReadout.find_accepting(get_tree())
 	var product := HourScoreReadout.product_for_float(icon, target_icon)
-	if readout != null and product != HourScoreReadout.Product.NONE:
+	var flies_to_score := readout != null and product != HourScoreReadout.Product.NONE
+	# A float that flies into the score shows only its number (the icon only picks the readout).
+	var floating_text := _spawn_floating_text(pos, text, color, icon, target_icon, garnished, flies_to_score)
+	if flies_to_score:
 		floating_text.play_float_and_absorb(readout, product, readout.reserve(product))
 	else:
 		floating_text.play_float_and_free()
+
+
+## Garnish and Retrigger feedback: the effect icon flies from the source card to the centre of
+## the target card, shrinks a little on the way, then fades out. Cosmetic only: it never delays
+## the trigger order. Values untuned.
+const EFFECT_FLY_DURATION := 0.35
+const EFFECT_FLY_END_SCALE := 0.8
+const EFFECT_FLY_FADE := 0.12
+const EFFECT_FLY_ICON_SIZE := 44.0
+
+
+func create_effect_flight(from_world: Vector2, to_world: Vector2, icon: Texture2D) -> void:
+	if GameManager.skip_presentation or icon == null:
+		return
+	var sprite := Sprite2D.new()
+	sprite.texture = icon
+	var base_scale := EFFECT_FLY_ICON_SIZE / maxf(1.0, float(maxi(icon.get_width(), icon.get_height())))
+	sprite.scale = Vector2.ONE * base_scale
+	sprite.position = _world_to_floating_text_screen(from_world)
+	_get_floating_text_layer().add_child(sprite)
+	var speed := maxf(0.01, GameManager.game_speed)
+	var tween := sprite.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(sprite, "position", _world_to_floating_text_screen(to_world), EFFECT_FLY_DURATION / speed)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(sprite, "scale", Vector2.ONE * base_scale * EFFECT_FLY_END_SCALE, EFFECT_FLY_DURATION / speed)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.chain().tween_property(sprite, "modulate:a", 0.0, EFFECT_FLY_FADE / speed)
+	tween.chain().tween_callback(sprite.queue_free)
 
 
 func _spawn_floating_text(
@@ -506,12 +547,13 @@ func _spawn_floating_text(
 	color: Color,
 	icon: Texture2D = null,
 	target_icon: Texture2D = null,
-	garnished: bool = false
+	garnished: bool = false,
+	number_only: bool = false
 ) -> FloatingText:
 	var floating_text := FLOATING_TEXT_SCENE.instantiate() as FloatingText
 	floating_text.position = _world_to_floating_text_screen(pos)
 	_get_floating_text_layer().add_child(floating_text)
-	floating_text.set_text(text, color, icon, target_icon, garnished)
+	floating_text.set_text(text, color, icon, target_icon, garnished, number_only)
 	return floating_text
 
 

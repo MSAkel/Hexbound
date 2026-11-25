@@ -14,5 +14,6 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "honey_glazed_salmon"
 name = "Honey-Glazed Salmon"
 icon = ExtResource("1_cs1ks")
-description = "+60 {flavour}. Starts at x1 {mult}. Gains x0.25 {mult} for each time a Honey on its Station {triggered} this Hour."
+description = "+60 {flavour}.
++2 {mult} each time a Honey on its Station {triggered} this Turn."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

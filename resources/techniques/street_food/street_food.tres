@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "street_food"
 name = "Street Food"
-description = "While this Station has no type: +40 {flavour} and +2 {mult} each Hour. Once it has one: +1 {mult}"
+description = "While this Station has no type: +40 {flavour} and +2 {mult} each Turn. Once it has one: +1 {mult}"
 rarity = 0

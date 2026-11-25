@@ -1,17 +1,17 @@
-[gd_resource type="Resource" script_class="TileCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://cm0vslvv2x51r"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/kitchenware/deep_fryer/deep_fryer.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://6ymhhdxin6yr" path="res://assets/icons/kitchenware/deep_fryer.png" id="1_0b2w3"]
+[ext_resource type="Script" uid="uid://d3qgq0jwq76w8" path="res://resources/cards/kitchenware/deep_fryer/deep_fryer.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
-support_role = 2
-base_production_amount = 2
+base_production_amount = 10
 type = 1
-product = 2
-starting_hand_eligible = false
+product = 1
+support_role = 2
 id = "deep_fryer"
 name = "Deep Fryer"
-icon = ExtResource("1_icon")
-description = "+2 {mult}, +1 {mult} for each extra {trigger} it gives. {triggers} the Ingredients on both sides of it on its Station again."
+icon = ExtResource("1_0b2w3")
+description = "+10 {flavour}.
+{triggers} the Ingredients on both of its sides again."
 metadata/_custom_type_script = "uid://bxkqr45fqowe7"

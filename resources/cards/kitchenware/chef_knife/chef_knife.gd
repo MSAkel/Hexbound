@@ -1,6 +1,6 @@
 extends TileCard
 
-## +2 Mult, +1 Mult for each extra trigger it gives. Triggers the Following Ingredient twice.
+## +10 Flavour. Triggers the Following Ingredient twice.
 
 const TRIGGERS := 2
 
@@ -9,7 +9,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	var next_cards := _effect_preview_cards(tile)
 	if next_cards.is_empty():
 		failed_tile_card_text(tile)
-		_pay_kitchenware_mult(tile)
+		_pay_kitchenware_output(tile)
 		return
 	var target := next_cards[0]
 	var queued: Array[TileCard] = []
@@ -19,7 +19,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	if _try_queue_tile_card_triggers(tile, queued):
 		_create_fired_floating_text(tile, target)
 		given = queued.size()
-	_pay_kitchenware_mult(tile, given)
+	_pay_kitchenware_output(tile, given)
 
 
 func get_planned_preparations(tile: Hex) -> int:

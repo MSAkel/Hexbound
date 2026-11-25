@@ -45,7 +45,7 @@ flat_flavour = 25
 
 [sub_resource type="Resource" id="choice_0"]
 script = ExtResource("s_salad_growth")
-description = "Vegetables on this station gain +2 {flavour} for every Salad served on any station, for the rest of the run"
+description = "Vegetables on this station gain +2 {flavour} for every Salad served on any station"
 target_tags = Array[StringName]([&"vegetable"])
 flat_flavour = 2
 
@@ -63,7 +63,7 @@ output_scale = 2.0
 
 [sub_resource type="Resource" id="capstone_1"]
 script = ExtResource("s_amuse_bouche")
-description = "Amuse-bouche: at the start of each Hour, the first Meal on the next station gets a {garnish}"
+description = "Amuse-bouche: at the start of each Turn, the first Meal on the next station gets a {garnish}"
 
 [resource]
 script = ExtResource("1_type")

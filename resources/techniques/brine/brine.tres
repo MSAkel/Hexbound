@@ -8,5 +8,5 @@ script = ExtResource("1_script")
 id = "brine"
 name = "Brine"
 icon = ExtResource("1_rcr0h")
-description = "The first Seafood on this Station is {garnished} at the start of each Hour"
+description = "The first Seafood on this Station is {garnished} at the start of each Turn"
 rarity = 1

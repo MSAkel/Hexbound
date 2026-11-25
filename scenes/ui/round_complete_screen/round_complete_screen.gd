@@ -7,6 +7,9 @@ extends Panel
 @onready var early_gold_row: HBoxContainer = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow
 @onready var early_gold_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow/EarlyGoldValue
 @onready var early_gold_title: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/EarlyGoldRow/EarlyGoldTitle
+@onready var meal_gold_row: HBoxContainer = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/MealGoldRow
+@onready var meal_gold_label: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/MealGoldRow/MealGoldValue
+@onready var meal_gold_title: Label = $PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/MealGoldRow/MealGoldTitle
 
 
 func _ready() -> void:
@@ -34,6 +37,13 @@ func _on_show_panel() -> void:
 	if has_early_bonus:
 		early_gold_title.text = "Early finish (x%d per turn)" % EconomyManager.GOLD_PER_UNUSED_TURN
 		early_gold_label.text = "+%d" % reward.get("early_gold", 0)
+
+	# Gold for each different Meal on the board at the end of the Day.
+	var unique_meals: int = reward.get("unique_meals", 0)
+	meal_gold_row.visible = unique_meals > 0
+	if unique_meals > 0:
+		meal_gold_title.text = "Different Meals (x%d each)" % EconomyManager.GOLD_PER_UNIQUE_MEAL
+		meal_gold_label.text = "+%d" % reward.get("meal_gold", 0)
 
 	# Deferred so the panel is laid out and visible before the button takes focus.
 	call_deferred("_focus_continue")

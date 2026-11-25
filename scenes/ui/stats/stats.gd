@@ -39,8 +39,8 @@ func _populate_lifetime() -> void:
 		["Highest win difficulty", _format_difficulty_level(int(stats.get("highest_win_difficulty", 0)) - 1)],
 		["Peak gold held", CountingNumber.format_int(int(stats.get("peak_gold_held", 0)))],
 		["Peak gold earned in a run", CountingNumber.format_int(int(stats.get("peak_gold_earned_in_run", 0)))],
-		["Peak %s in one hour" % GameTerms.RATING.to_lower(), CountingNumber.format_int(int(stats.get("peak_segment_score_single_turn", 0)))],
-		[CardKeywordGlossary.to_plain("Peak {triggers} in one hour"),CountingNumber.format_int(int(stats.get("peak_triggers_single_turn", 0)))],
+		["Peak %s in one turn" % GameTerms.RATING.to_lower(), CountingNumber.format_int(int(stats.get("peak_segment_score_single_turn", 0)))],
+		[CardKeywordGlossary.to_plain("Peak {triggers} in one turn"),CountingNumber.format_int(int(stats.get("peak_triggers_single_turn", 0)))],
 		[CardKeywordGlossary.to_plain("Lifetime card {triggers}"),CountingNumber.format_int(int(stats.get("total_triggers", 0)))],
 	]
 	for row: Array in rows:

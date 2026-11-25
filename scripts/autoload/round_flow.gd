@@ -1,8 +1,11 @@
 extends Node
 
 ## Owns the ordered round-transition sequence so no single screen decides what comes next.
-## Round goal met -> summary -> card pick -> merchant -> day intro -> event reveal -> first hour.
-## Mid-hour card picks also use card_selection_ui outside this transition.
+## Round goal met -> summary -> merchant -> day intro -> event reveal -> first hour.
+## There is no end-of-Day card pick any more (user, Nov 23): new cards come only from the Merchant
+## and packs. CARD_PICK stays in Step so the code that reads it keeps compiling; nothing enters it,
+## and a save sitting on it resumes at the Merchant. CARD_PICK_ENABLED brings the step back.
+const CARD_PICK_ENABLED := false
 
 enum Step {
 	## Normal play. No transition is running.
@@ -101,14 +104,14 @@ func notify_summary_confirmed() -> void:
 	# The round bonus has to land before the merchant so the player can spend it there.
 	GameManager.advance_round()
 	_arm_event_reveal()
-	_enter_step(Step.CARD_PICK)
+	_enter_step(Step.CARD_PICK if CARD_PICK_ENABLED else Step.MERCHANT)
 
 
 func notify_victory_continue() -> void:
 	if _step != Step.VICTORY:
 		return
 
-	_enter_step(Step.CARD_PICK)
+	_enter_step(Step.CARD_PICK if CARD_PICK_ENABLED else Step.MERCHANT)
 
 
 func notify_card_picked() -> void:
@@ -292,6 +295,9 @@ func restore_after_load() -> void:
 	if _step == Step.DAY_INTRO:
 		_continue_after_day_intro()
 		return
+
+	if _step == Step.CARD_PICK and not CARD_PICK_ENABLED:
+		_step = Step.MERCHANT
 
 	_enter_step(_step)
 

@@ -40,6 +40,13 @@ static func get_product_icon(product: TileCard.Product) -> Texture2D:
 			return null
 
 
+## BBCode for a texture drawn inline at icon_size pixels high, then a space. Empty for no texture.
+static func inline_bbcode(texture: Texture2D, icon_size: int) -> String:
+	if texture == null or texture.resource_path.is_empty():
+		return ""
+	return "[img height=%d]%s[/img] " % [icon_size, texture.resource_path]
+
+
 ## Stand-in art for "any card of this kind" in Meal requirement rows. Borrowed from a typical card of the kind.
 static func get_ingredient_kind_icon(kind: StringName) -> Texture2D:
 	match kind:

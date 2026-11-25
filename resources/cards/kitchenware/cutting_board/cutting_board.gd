@@ -1,6 +1,6 @@
 extends TileCard
 
-## +2 Mult, +1 Mult if it Passes an Ingredient. Passed: the next Ingredient on its Station also
+## +10 Flavour. Passed: the next Ingredient on its Station also
 ## counts on the next Station down, for that Station's Meals (recipes and their effects). Its
 ## Flavour is only paid at home, and it does not count toward the lower Station's setup.
 ## The bottom Station has nowhere to pass. See KitchenwarePrep.
@@ -14,7 +14,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 		failed_tile_card_text(tile)
 	for target: TileCard in passed:
 		_create_targeted_ability_floating_text(tile, ICON_FLAVOUR, target)
-	_pay_kitchenware_mult(tile, passed.size())
+	_pay_kitchenware_output(tile, passed.size())
 
 
 func apply_board_prep(tile: Hex, board: HexBoardQuery) -> void:

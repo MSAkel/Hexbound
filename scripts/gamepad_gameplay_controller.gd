@@ -377,7 +377,7 @@ func _handle_end_hour() -> void:
 	AudioManager.play_ui_hover()
 	EventBus.toggle_tooltip.emit(
 		true,
-		"End the Hour? Cards left in your hand are discarded.\nPress %s again to end it." % [
+		"End the Turn? Cards left in your hand are discarded.\nPress %s again to end it." % [
 			InputManager.get_button_name(InputManager.ACTION_SELL),
 		],
 		hand.get_global_rect()
@@ -436,7 +436,7 @@ func _refresh_hints() -> void:
 	# In a board view the overlay takes Y to return, so Station info is not offered there.
 	var board_view := _board_view_overlay() != null
 	if _end_hour_armed:
-		_add_hint(hints, InputManager.ACTION_SELL, "Confirm End Hour")
+		_add_hint(hints, InputManager.ACTION_SELL, "Confirm End Turn")
 		_add_hint(hints, InputManager.ACTION_BACK, "Keep playing")
 	elif not _sell_armed.is_empty():
 		_add_hint(hints, InputManager.ACTION_SELL, "Confirm sell")
@@ -455,7 +455,7 @@ func _refresh_hints() -> void:
 		match _area:
 			Area.HAND:
 				_add_hint(hints, InputManager.ACTION_CONFIRM, "Pick up")
-				_add_hint(hints, InputManager.ACTION_SELL, "End Hour")
+				_add_hint(hints, InputManager.ACTION_SELL, "End Turn")
 			Area.BOARD:
 				if not board_view:
 					_add_hint(hints, InputManager.ACTION_ALT, "Station info")

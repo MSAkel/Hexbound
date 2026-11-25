@@ -1,15 +1,14 @@
 extends MealCard
 
-## Needs Grape on its station. +3 Mult, then x1 Mult that gains x0.25 for each station
-## serving a Meat dish. A Meat dish is a Meal in the Meat category. Poultry does not count.
+## Needs Grape on its station. +3 Mult, +1 Mult for each station serving a Meat dish. A Meat dish
+## is a Meal in the Meat category. Poultry does not count. No xMult (Meals no longer give it). Untuned.
 
-const XMULT_PER_MEAT_STATION := 0.25
+const MULT_PER_MEAT_STATION := 1.0
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
 	return {
-		"additive_mult": _get_production_amount(),
-		"multiplicative_mult": 1.0 + XMULT_PER_MEAT_STATION * float(_meat_dish_station_count(tile)),
+		"additive_mult": _get_production_amount() + MULT_PER_MEAT_STATION * float(_meat_dish_station_count(tile)),
 	}
 
 

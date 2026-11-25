@@ -7,9 +7,10 @@
 script = ExtResource("1_script")
 id = "garnish"
 display_name = "Garnish"
-description = "{garnish}"
+description = "Applies 2 stacks of {garnish}"
 icon = ExtResource("2_icon")
 liquid_color = Color(1, 0.62, 0.18, 1)
 base_price = 2
 effect_type = 2
+effect_value = 2.0
 target_kind = 1

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://resources/techniques/leftovers/leftovers.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "leftovers"
+name = "Leftovers"
+description = "Gain 1 Gold for each unused hand discard at the end of the Day"
+rarity = 0
+price_override = 2

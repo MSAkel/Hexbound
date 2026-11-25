@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "michelin_star"
 name = "Michelin Star"
-description = "Gains x0.1 {mult} each time a Day's goal is met with 2 or more Hours left"
+description = "Gains x0.1 {mult} each time a Day's goal is met with 2 or more Turns left"
 rarity = 2

@@ -7,7 +7,7 @@ extends Node
 ##   --runs=N          Seeds per chef (default 8). Every chef plays the same seeds.
 ##   --chef=<id>       One chef by id (resources/chefs/), e.g. sous_chef or forager.
 ##   --seed=<text>     Play one seed. --repeat=N plays it N times to check determinism.
-##   --difficulty=N    Difficulty level as shown in game, 1 to 9 (default 1).
+##   --difficulty=N    Difficulty level as shown in game, 1 to 8 (default 1).
 ##   --power           Days have no goal and always play every Hour. Reports raw score per day.
 ##   --extra-hours     Normal days, but when an Hour is about to meet the goal with Hours to spare,
 ##                     also plays those Hours out as a what-if and reports what they would have scored.
@@ -77,8 +77,14 @@ class MerchantVisit:
 		_roll_stock()
 
 	func _roll_stock() -> void:
-		cards = Merchant.draw_tile_card_stock(_reroll_count)
-		staff = Merchant.draw_staff_stock(_reroll_count, StaffManager.owned_ids())
+		# One shelf of weighted slots, split the way the policies read it.
+		cards.clear()
+		staff.clear()
+		for item in Merchant.draw_shelf_stock(_reroll_count, [] as Array[String], StaffManager.owned_ids()):
+			if item is StaffCard:
+				staff.append(item as StaffCard)
+			elif item is TileCard:
+				cards.append(item as TileCard)
 		condiments = Merchant.draw_condiment_stock(_reroll_count)
 		packs.clear()
 		for kind in MerchantPacks.draw_kinds(_reroll_count):
@@ -394,7 +400,7 @@ func _run_starter_fairness() -> void:
 			var deck := _build_starting_deck()
 			var cards: Array[TileCard] = deck["cards"]
 			var stations: Array[String] = deck["stations"]
-			var expected := ChefRegistry.get_expected_deck_size(chef)
+			var expected := ChefRegistry.get_expected_deck_size(chef, stations)
 			if cards.size() != expected:
 				reasons.append("expected %d cards, got %d" % [expected, cards.size()])
 			for card: TileCard in cards:
@@ -757,6 +763,13 @@ func _probe_extra_hours() -> void:
 func _apply_hand_action(action: Dictionary) -> bool:
 	if bool(action.get("end", false)):
 		return false
+	# The Discard button: a new hand of the same size, no play used.
+	if bool(action.get("discard", false)):
+		if not DeckManager.discard_hand():
+			_note_invariant("bot discarded with no discard left")
+			return false
+		_log["discards"] = int(_log.get("discards", 0)) + 1
+		return true
 	var card: TileCard = action.get("card")
 	if card == null or not hand.has(card):
 		_note_invariant("bot chose a card that is not in hand")
@@ -842,6 +855,7 @@ func _close_day() -> void:
 	# Gold for the Hours left unused when the goal was met (0 on a day that used every Hour).
 	if bool(_day["cleared"]) and not power_mode:
 		_day["early_gold"] = int(EconomyManager.last_speed_reward.get("early_gold", 0))
+		_day["meal_gold"] = int(EconomyManager.last_speed_reward.get("meal_gold", 0))
 	var stations: Array = []
 	for segment_index in map.get_segment_count():
 		var station_type := StationManager.get_station_type(segment_index)

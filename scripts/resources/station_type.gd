@@ -84,6 +84,30 @@ func get_requirements_text(separator: String = " · ") -> String:
 	return separator.join(parts)
 
 
+## get_requirements_text as BBCode with each item's icon on its left: a named card shows its own
+## icon, a kind shows the kind icon. "Any Ingredient" has no icon. icon_size is in pixels.
+func get_requirements_bbcode(icon_size: int, separator: String = "   ") -> String:
+	var parts: PackedStringArray = []
+	for card_id: String in required_card_ids:
+		var template := GameManager.get_tile_card_by_id(card_id)
+		var name_text := template.name if template != null else card_id.capitalize()
+		parts.append(FeastStatIcons.inline_bbcode(template.icon if template != null else null, icon_size) + name_text)
+	for tag: StringName in required_counts:
+		var count := int(required_counts[tag])
+		var label := "Ingredient" if tag == TAG_ANY_INGREDIENT else GameTerms.get_ingredient_kind_label(tag)
+		if label.is_empty():
+			label = String(tag).capitalize()
+		if count > 1 and not label in UNCOUNTABLE_LABELS:
+			label += "s"
+		if tag == TAG_ANY_INGREDIENT:
+			label = "different kinds of Ingredient" if tag in distinct_tags else "any %s" % label
+		elif tag in distinct_tags and count > 1:
+			label = "different %s" % label
+		var icon: Texture2D = null if tag == TAG_ANY_INGREDIENT else FeastStatIcons.get_ingredient_kind_icon(tag)
+		parts.append(FeastStatIcons.inline_bbcode(icon, icon_size) + "%d %s" % [count, label])
+	return separator.join(parts)
+
+
 ## Perk for a level, or null below level 1.
 func perk_for_level(level: int) -> StationPerk:
 	if level <= 0 or level_perks.is_empty():

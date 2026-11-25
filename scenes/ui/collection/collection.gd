@@ -1,10 +1,16 @@
 extends Panel
 
-## Collection screen for browsing cards, condiments, staff, stations, chefs, and events.
+## Collection screen. Opens on a vertical menu of collection types; each entry opens a page that
+## lists only that type (cards, Techniques, Stations, Chefs, Condiments, events). Back on a page
+## returns to the menu, back on the menu leaves the Collection.
 
 signal closed
 
-@onready var tab_bar: TabBar = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar
+const CONTENT := "PanelContainer/VBoxContainer/PanelContainer/VBoxContainer"
+
+@onready var menu_center: CenterContainer = get_node(CONTENT + "/MenuCenter")
+@onready var collection_menu: VBoxContainer = get_node(CONTENT + "/MenuCenter/CollectionMenu")
+@onready var page_title: Label = get_node(CONTENT + "/PageTitle")
 @onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
 @onready var collection_scroll: ScrollContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer
 
@@ -17,48 +23,54 @@ const ACCENT := Color("c29a56")
 const ITEM_BACKGROUND := Color("182b30e8")
 const ITEM_BORDER := Color("617575")
 
-enum CollectionTab {
+## Menu order. Each menu button passes its index (the scene's pressed binds).
+enum CollectionPage {
 	CARDS,
-	CONDIMENTS,
 	STAFF,
 	STATIONS,
 	CHEFS,
+	CONDIMENTS,
 	EVENTS,
 }
+
+const NO_PAGE := -1
+
+## Page on screen, or NO_PAGE while the menu shows.
+var _page: int = NO_PAGE
 
 
 func _ready() -> void:
 	add_to_group(InputManager.MENU_GROUP)
 	collection_scroll.follow_focus = true
-	PadPrompt.attach(tab_bar, InputManager.ACTION_PAGE_PREV, PadPrompt.Side.LEFT)
-	PadPrompt.attach(tab_bar, InputManager.ACTION_PAGE_NEXT, PadPrompt.Side.RIGHT)
-	_configure_tabs()
-	_show_tab(tab_bar.current_tab)
-	call_deferred("_focus_collection")
+	# Game terms can be renamed, so these two read GameTerms rather than the scene text.
+	(collection_menu.get_node("TechniquesButton") as Button).text = GameTerms.TECHNIQUES
+	(collection_menu.get_node("CondimentsButton") as Button).text = GameTerms.CONDIMENTS
+	visibility_changed.connect(_on_visibility_changed)
+	_show_menu()
+
+
+## The pause menu reuses one Collection: each time it opens, it starts on the menu again.
+func _on_visibility_changed() -> void:
+	if visible and _page != NO_PAGE:
+		_show_menu(_page)
 
 
 ## InputManager menu hook.
 func focus_default() -> void:
-	_focus_collection()
+	_focus_current()
 
 
-func _focus_collection() -> void:
-	if tab_bar != null:
-		tab_bar.grab_focus()
+func _focus_current() -> void:
+	if _page == NO_PAGE:
+		var first := collection_menu.get_node("CardsButton") as Button
+		first.grab_focus()
 		return
-	MenuFocus.grab_first(self)
+	if MenuFocus.grab_first(collection_grid_container) == null:
+		MenuFocus.grab_first(self)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_visible_in_tree():
-		return
-	if event.is_action_pressed(InputManager.ACTION_PAGE_PREV):
-		_page_tab(-1)
-		get_viewport().set_input_as_handled()
-		return
-	if event.is_action_pressed(InputManager.ACTION_PAGE_NEXT):
-		_page_tab(1)
-		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("ui_cancel"):
 		var viewport := get_viewport()
@@ -67,50 +79,61 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_back_button_pressed()
 
 
-## Steps tabs with wrap-around. Focus inside the old grid moves to the new grid's first entry.
-func _page_tab(step: int) -> void:
-	var focus := get_viewport().gui_get_focus_owner()
-	var focus_in_grid := focus != null and collection_grid_container.is_ancestor_of(focus)
-	tab_bar.current_tab = posmod(tab_bar.current_tab + step, tab_bar.tab_count)
-	AudioManager.play_sfx(UISounds.SELECT)
-	if focus_in_grid:
-		_focus_first_entry.call_deferred()
-
-
-func _focus_first_entry() -> void:
-	collection_scroll.scroll_vertical = 0
-	if MenuFocus.grab_first(collection_grid_container) == null:
-		tab_bar.grab_focus()
-
-
-func _configure_tabs() -> void:
-	var titles := PackedStringArray([
-		"Cards",
-		GameTerms.CONDIMENTS,
-		GameTerms.TECHNIQUES,
-		"Stations",
-		"Chefs",
-		"Events",
-	])
-	tab_bar.tab_count = titles.size()
-	for i: int in titles.size():
-		tab_bar.set_tab_title(i, titles[i])
-
-
-func _show_tab(tab: int) -> void:
+## Shows the menu of collection types and hides any page.
+func _show_menu(focus_page: int = CollectionPage.CARDS) -> void:
 	_clear_collection()
-	match tab:
-		CollectionTab.CARDS:
+	_page = NO_PAGE
+	menu_center.visible = true
+	page_title.visible = false
+	collection_scroll.visible = false
+	var buttons := collection_menu.get_children().filter(func(node: Node) -> bool: return node is Button)
+	var target := buttons[clampi(focus_page, 0, buttons.size() - 1)] as Button
+	target.grab_focus.call_deferred()
+
+
+## Opens the page for one collection type.
+func _show_page(page: int) -> void:
+	_page = page
+	menu_center.visible = false
+	page_title.visible = true
+	collection_scroll.visible = true
+	collection_scroll.scroll_vertical = 0
+	page_title.text = _page_title(page)
+	_show_tab(page)
+	_focus_current.call_deferred()
+
+
+func _page_title(page: int) -> String:
+	match page:
+		CollectionPage.CARDS:
+			return "Cards"
+		CollectionPage.STAFF:
+			return GameTerms.TECHNIQUES
+		CollectionPage.STATIONS:
+			return "Stations"
+		CollectionPage.CHEFS:
+			return "Chefs"
+		CollectionPage.CONDIMENTS:
+			return GameTerms.CONDIMENTS
+		CollectionPage.EVENTS:
+			return "Events"
+	return ""
+
+
+func _show_tab(page: int) -> void:
+	_clear_collection()
+	match page:
+		CollectionPage.CARDS:
 			_show_cards()
-		CollectionTab.CONDIMENTS:
+		CollectionPage.CONDIMENTS:
 			_show_condiments()
-		CollectionTab.STAFF:
+		CollectionPage.STAFF:
 			_show_staff()
-		CollectionTab.STATIONS:
+		CollectionPage.STATIONS:
 			_show_stations()
-		CollectionTab.CHEFS:
+		CollectionPage.CHEFS:
 			_show_chefs()
-		CollectionTab.EVENTS:
+		CollectionPage.EVENTS:
 			_show_events()
 
 
@@ -394,13 +417,18 @@ func _create_separator() -> HSeparator:
 	return separator
 
 
-func _on_tab_bar_tab_changed(tab: int) -> void:
-	_show_tab(tab)
+func _on_menu_entry_pressed(page: int) -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	_show_page(page)
 
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
 	EventBus.toggle_tooltip.emit(false, "")
+	# A page goes back to the menu, with its entry selected.
+	if _page != NO_PAGE:
+		_show_menu(_page)
+		return
 	# Scene root goes back to the main menu. Overlay instances return to the host.
 	if get_tree().current_scene == self:
 		get_tree().change_scene_to_file(ScenePaths.MAIN_MENU)

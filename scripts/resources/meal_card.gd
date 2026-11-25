@@ -150,6 +150,19 @@ func _add_quiet_gold(tile: Hex, amount: int) -> void:
 		tile.map.add_turn_gold_for_tile(tile, amount)
 
 
+## What the stars add right now: this Meal's output with its stars minus the same output at 1 star.
+func get_star_bonus(tile: Hex = null) -> Dictionary:
+	var bonus := {"flavour": 0, "mult": 0.0}
+	if star_level <= 1:
+		return bonus
+	var scale := StationManager.output_scale_for(tile, self)
+	var with_stars := _read_output(tile, true, scale, star_output_scale())
+	var at_one_star := _read_output(tile, true, scale, 1.0)
+	bonus["flavour"] = with_stars.flavour - at_one_star.flavour
+	bonus["mult"] = with_stars.additive_mult - at_one_star.additive_mult
+	return bonus
+
+
 ## Primary number is Flavour, else Mult. One extra slot shows Mult or xMult beside it.
 func get_board_chip(tile: Hex = null) -> Dictionary:
 	if tile != null and tile.map != null and not is_recipe_ready(tile):
@@ -258,6 +271,37 @@ func get_inspect_recipe_text(_tile: Hex = null) -> String:
 	return "Requires: %s" % bag
 
 
+## Same as get_inspect_recipe_text, as BBCode with each item's icon on its left (named cards show
+## their own icon, kinds show the kind icon). icon_size is the icon height in pixels.
+func get_inspect_recipe_bbcode(icon_size: int) -> String:
+	var parts: PackedStringArray = []
+	for card_id: String in recipe_required_card_ids:
+		var template := GameManager.get_tile_card_by_id(card_id)
+		var label := template.name if template != null else card_id.capitalize()
+		parts.append(_icon_bbcode(template.icon if template != null else null, icon_size) + label)
+	var counts := _recipe_slot_counts()
+	for tag: StringName in counts:
+		var count := int(counts[tag])
+		if count <= 0:
+			continue
+		var label := GameTerms.get_ingredient_kind_label(tag)
+		# Kitchenware and Seafood read the same singular and plural.
+		if count > 1 and tag != TAG_KITCHENWARE and tag != TAG_SEAFOOD:
+			label += "s"
+		parts.append(_icon_bbcode(FeastStatIcons.get_ingredient_kind_icon(tag), icon_size) + "%d %s" % [count, label])
+	if parts.is_empty():
+		return ""
+	var bag := ", ".join(parts)
+	var waived := get_waived_ingredient_slots()
+	if waived > 0:
+		bag = "%s (any %d Ingredient optional)" % [bag, waived]
+	return "Requires: %s" % bag
+
+
+static func _icon_bbcode(texture: Texture2D, icon_size: int) -> String:
+	return FeastStatIcons.inline_bbcode(texture, icon_size)
+
+
 ## One entry per required card, in inspect text order. Keys: icon (Texture2D), kind (StringName,
 ## empty for a named card). A count of 2 lists the kind twice.
 func get_requirement_icons() -> Array[Dictionary]:
@@ -334,19 +378,21 @@ func _missing_for_tag(cards: Array[TileCard], tag: StringName) -> int:
 	var needed := int(_recipe_slot_counts().get(tag, 0))
 	if needed <= 0:
 		return 0
-	return maxi(needed - _filter_tile_cards_by_kind(_cards_left_for_kind_slots(cards), tag).size(), 0)
+	return maxi(needed - _filter_tile_cards_by_kind(_cards_left_for_kind_slots(cards, tag), tag).size(), 0)
 
 
-## Station cards minus one copy of each named requirement. A named card fills its own slot only,
-## so Chocolate Cake (Chocolate + any Sweet) needs a second Sweet beside the Chocolate.
-func _cards_left_for_kind_slots(cards: Array[TileCard]) -> Array[TileCard]:
+## Station cards minus one copy of each named requirement printed with this kind. A named card
+## never fills a kind slot of its own printed kind (Chocolate Cake still needs a second Sweet),
+## but a kind a Kitchenware gave it can fill another slot (Seasoned Corn covers Grilled Corn).
+func _cards_left_for_kind_slots(cards: Array[TileCard], tag: StringName) -> Array[TileCard]:
 	if recipe_required_card_ids.is_empty():
 		return cards
 	var left: Array[TileCard] = cards.duplicate()
 	for card_id: String in recipe_required_card_ids:
 		for i in left.size():
 			if left[i].id == card_id:
-				left.remove_at(i)
+				if TileCard.matches_kind_filter(left[i], tag, false):
+					left.remove_at(i)
 				break
 	return left
 
