@@ -76,7 +76,9 @@ before it cooks, from the draw pile today and the whole deck on later Days, x th
 A Meal or Ingredient is credited with how much likelier it makes a plan, so the bots set up Stations that
 cook later in the Day. Discard: on a weak hand, or to search when a new hand (a few ordinary cards plus the
 better odds for the plans) beats the hand's best plays (`details.search_discards`); the novice-family bots
-only after their discovery Day.
+only after their discovery Day. Every plan counts on the same draws, so a new Meal is credited less for each
+Meal on the board still short of its recipe, and the novice-family bots credit plans only in proportion to
+their skill.
 `details.play_log` lists every play as `day:hour:card@station row` (`+` = merge) and each Day records the
 Techniques seated at its end (`staff`). All of these numbers are untuned.
 `details.replace_detail` lists every replacement (day, Hour, old and new card with kinds, stars lost) and
