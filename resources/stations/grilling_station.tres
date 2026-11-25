@@ -52,7 +52,7 @@ chance = 0.25
 
 [sub_resource type="Resource" id="choice_1"]
 script = ExtResource("s_seasoned_grill")
-description = "Seasoned Grill: at the end of each Day, Seafood Meals served on this station gain x0.1 output for good"
+description = "Seasoned Grill: at the end of each Day, Seafood Meals served on this station gain x0.1 output"
 growth_per_day = 0.1
 
 [sub_resource type="Resource" id="capstone_0"]

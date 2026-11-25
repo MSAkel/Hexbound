@@ -14,5 +14,6 @@ ingredient_tags = Array[StringName]([&"beverage"])
 id = "wine"
 name = "Wine"
 icon = ExtResource("1_icon")
-description = "+3 {mult}. Gains x0.25 {mult} for each Station serving a Meat dish."
+description = "+3 {mult}.
++1 {mult} for each Station serving a Meat dish."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

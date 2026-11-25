@@ -1,21 +1,20 @@
 extends Node
 
-## Headless check of the deck rules on the real run screen (Hand, card picks, Merchant, RoundFlow,
+## Headless check of the deck rules on the real run screen (Hand, Day-end gold, Merchant, RoundFlow,
 ## saves), which the playtest bot skips. Fails on a broken rule or a script error.
 ##
 ## godot --headless --path . res://scenes/debug/deck_flow_check.tscn
 ##
 ## Plays Pitmaster on a fixed seed: draws 4, plays 2 (the Hour ends, no pick between Hours), ends
-## an Hour early with End Hour, saves, finishes the Day, uses the free and paid card-pick rerolls,
-## picks (drawn in the next Day's opening hand), uses the removal service, checks the new Day
-## reshuffled every pile, continues the saved run, then skips Day 2's pick.
+## an Hour early with End Hour, saves, finishes the Day (no card pick: the summary leads to the
+## Merchant, and the Day pays Gold per different Meal on the board), uses the removal service, checks
+## the new Day reshuffled every pile, continues the saved run, then ends Day 2.
 
 const CHEF_ID := "pitmaster"
 const WAIT_LIMIT := 60.0
 
 var _failures: Array[String] = []
 var _main: Node = null
-var _paid_cost_after_day_1 := 0
 
 
 func _ready() -> void:
@@ -44,12 +43,12 @@ func _run() -> void:
 		return
 	await _wait_until(func() -> bool: return not hand.is_hand_hidden(), "the opening hand to show")
 
-	_check(DeckManager.deck_size() == ChefRegistry.get_expected_deck_size(GameManager.selected_chef),
+	_check(DeckManager.deck_size() == ChefRegistry.get_expected_deck_size(GameManager.selected_chef, DeckManager.kitchen_station_ids),
 		"starting deck has %d cards" % DeckManager.deck_size())
 	_check(DeckManager.hand.size() == DeckManager.HOUR_DRAW, "opening hand holds %d cards" % DeckManager.hand.size())
 	_check(_hand_ui_count(hand) == DeckManager.HOUR_DRAW, "opening hand shows %d cards" % _hand_ui_count(hand))
 
-	# Hour 1: two plays end the Hour. There is no card pick between Hours: the next hand is drawn.
+	# Hour 1: the Hour's plays end it. There is no card pick between Hours: the next hand is drawn.
 	for _play in DeckManager.PLAYS_PER_HOUR:
 		if not await _play_one(hand):
 			return
@@ -61,13 +60,25 @@ func _run() -> void:
 	_check(DeckManager.hand.size() == DeckManager.HOUR_DRAW, "Hour 2 hand holds %d cards" % DeckManager.hand.size())
 	_check(_hand_ui_count(hand) == DeckManager.HOUR_DRAW, "Hour 2 hand shows %d cards" % _hand_ui_count(hand))
 
+	# Hour 2: Discard throws the hand away and draws as many new cards, using no play.
+	await _wait_until(func() -> bool: return hand.can_discard_hand(), "the Hour 2 deal to land")
+	var discards_before := DeckManager.discards_left
+	var pile_before := DeckManager.discard_pile.size()
+	_check(hand.can_discard_hand(), "Discard is available")
+	hand.discard_hand()
+	_check(DeckManager.discards_left == discards_before - 1, "Discard used one of the Day's discards")
+	_check(DeckManager.discard_pile.size() == pile_before + DeckManager.HOUR_DRAW, "Discard moved the hand to the discard pile")
+	_check(DeckManager.hand.size() == DeckManager.HOUR_DRAW, "Discard drew a full new hand")
+	_check(DeckManager.plays_left() == DeckManager.PLAYS_PER_HOUR, "Discard used no play")
+	await _wait_until(func() -> bool: return _hand_ui_count(hand) == DeckManager.HOUR_DRAW, "the redrawn hand to show")
+
 	# Hour 2: End Hour with no plays.
 	var discard_before := DeckManager.discard_pile.size()
 	_check(hand.can_end_hour(), "End Hour is available")
 	hand.end_hour()
 	await _wait_until(func() -> bool: return GameManager.is_processing_turn, "the Hour 2 to end")
 	await _wait_until(func() -> bool: return not GameManager.is_processing_turn and not hand.is_hand_hidden(), "the Hour 3 hand to show")
-	# 15 cards: Hours 1-3 draw 12, so the draw pile never ran out and the discard pile kept them.
+	# The full starting deck is larger than Hours 1-3 draw, so the discard pile kept every card.
 	_check(DeckManager.discard_pile.size() == discard_before + DeckManager.HOUR_DRAW, "End Hour discarded the hand")
 	_check(DeckManager.hand.size() == DeckManager.HOUR_DRAW, "Hour 3 hand holds %d cards" % DeckManager.hand.size())
 
@@ -81,18 +92,20 @@ func _run() -> void:
 		saved_total += (saved_deck.get(key, []) as Array).size()
 	_check(saved_total == DeckManager.deck_size(), "the save holds every deck card (%d of %d)" % [saved_total, DeckManager.deck_size()])
 
-	# End the Day, pick, use the removal service, start the next Day.
+	# End the Day, use the removal service, start the next Day. No card pick between them.
+	var deck_before_day_end := DeckManager.deck_size()
 	GameManager.debug_meet_round_goal_and_complete()
+	var meal_gold: int = int(EconomyManager.last_speed_reward.get("meal_gold", -1))
+	var unique_meals := EconomyManager.count_unique_board_meals()
+	_check(meal_gold == unique_meals * EconomyManager.GOLD_PER_UNIQUE_MEAL,
+		"the Day paid %d Gold for %d different Meals (got %d)" % [unique_meals * EconomyManager.GOLD_PER_UNIQUE_MEAL, unique_meals, meal_gold])
 	await _wait_until(func() -> bool: return RoundFlow.get_step() == RoundFlow.Step.SUMMARY, "the Day summary")
 	RoundFlow.notify_summary_confirmed()
-	await _wait_until(func() -> bool: return selection.visible, "the end-of-Day pick")
-	await _check_rerolls(selection)
-	var choice := selection._first_choice_card()
-	var day_pick_id := String(choice.card.id) if choice != null else ""
-	selection._on_tile_card_choice_selected(choice)
 	await _wait_until(func() -> bool: return RoundFlow.get_step() == RoundFlow.Step.MERCHANT, "the Merchant")
 	var merchant := get_tree().get_first_node_in_group("run_merchant")
 	var viewer := get_tree().get_first_node_in_group("deck_viewer") as DeckViewer
+	_check(not selection.visible, "no card pick at the end of the Day")
+	_check(DeckManager.deck_size() == deck_before_day_end, "the Day's end added no card")
 	_check(viewer != null, "the deck viewer exists")
 	if viewer != null:
 		viewer.open_removal()
@@ -102,7 +115,6 @@ func _run() -> void:
 	var size_before_removal := DeckManager.deck_size()
 	var price := DeckManager.removal_price()
 	var gold_before := EconomyManager.amount
-	# A draw pile card, not the pick waiting for the top of the next Day.
 	_check(DeckManager.buy_removal(DeckManager.draw_pile[0]), "the removal service removes a card")
 	_check(DeckManager.deck_size() == size_before_removal - 1, "the deck lost one card")
 	_check(EconomyManager.amount == gold_before - price, "removal cost %d Gold" % price)
@@ -113,9 +125,6 @@ func _run() -> void:
 	_check(DeckManager.played_pile.is_empty(), "the new Day shuffled the played pile back in")
 	_check(DeckManager.discard_pile.is_empty(), "the new Day shuffled the discard pile back in")
 	_check(DeckManager.hand.size() == DeckManager.HOUR_DRAW, "Day 2 hand holds %d cards" % DeckManager.hand.size())
-	_check(day_pick_id.is_empty() or _hand_ids().has(day_pick_id), "the end-of-Day pick (%s) is in Day 2's opening hand" % day_pick_id)
-	_check(EconomyManager.rerolls_remaining == EconomyManager.get_free_rerolls_per_day(), "free rerolls refilled for Day 2")
-	_check(EconomyManager.get_reroll_cost() == 0, "Day 2 starts with free rerolls")
 
 	# Save, leave, and Continue: the deck and hand must come back as they were.
 	RunSaveManager.save_current_run()
@@ -135,47 +144,15 @@ func _run() -> void:
 	_check(_hand_ids() == hand_before, "Continue restored the hand")
 	_check(_hand_ui_count(hand) == hand_before.size(), "the continued hand shows %d cards" % _hand_ui_count(hand))
 
-	# End Day 2 and skip its pick: no card joins the deck. Paid rerolls kept their Day 1 price.
+	# End Day 2: the summary leads straight to the Merchant again.
 	selection = get_tree().get_first_node_in_group("run_card_selection") as CardSelectionUI
+	var deck_before_day_2_end := DeckManager.deck_size()
 	GameManager.debug_meet_round_goal_and_complete()
 	await _wait_until(func() -> bool: return RoundFlow.get_step() == RoundFlow.Step.SUMMARY, "the Day 2 summary")
 	RoundFlow.notify_summary_confirmed()
-	await _wait_until(func() -> bool: return selection.visible, "the Day 2 end-of-Day pick")
-	for _reroll in EconomyManager.rerolls_remaining:
-		await _reroll_once(selection)
-	_check(EconomyManager.get_reroll_cost() == _paid_cost_after_day_1, "the paid reroll price carried over from Day 1 (%d, got %d)" % [_paid_cost_after_day_1, EconomyManager.get_reroll_cost()])
-	await get_tree().create_timer(0.5).timeout
-	var deck_before_skip := DeckManager.deck_size()
-	selection._on_skip_button_pressed()
 	await _wait_until(func() -> bool: return RoundFlow.get_step() == RoundFlow.Step.MERCHANT, "the Day 2 Merchant")
-	_check(DeckManager.deck_size() == deck_before_skip, "skipping the pick added no card")
-
-
-## Free rerolls first, then Gold rerolls that climb by 1 each and keep their price.
-func _check_rerolls(selection: CardSelectionUI) -> void:
-	var free := EconomyManager.get_free_rerolls_per_day()
-	_check(EconomyManager.rerolls_remaining == free, "%d free rerolls on Day 1 (got %d)" % [free, EconomyManager.rerolls_remaining])
-	for _reroll in free:
-		await _reroll_once(selection)
-	_check(EconomyManager.rerolls_remaining == 0, "free rerolls used up")
-	EconomyManager.add(10)
-	var cost := EconomyManager.get_reroll_cost()
-	_check(cost == EconomyManager.PAID_REROLL_BASE_COST, "the first paid reroll costs %d (got %d)" % [EconomyManager.PAID_REROLL_BASE_COST, cost])
-	var gold_before := EconomyManager.amount
-	await _reroll_once(selection)
-	_check(EconomyManager.amount == gold_before - cost, "a paid reroll cost %d Gold" % cost)
-	_check(EconomyManager.get_reroll_cost() == cost + EconomyManager.PAID_REROLL_STEP, "the next paid reroll costs more")
-	_paid_cost_after_day_1 = EconomyManager.get_reroll_cost()
-	await get_tree().create_timer(0.5).timeout
-
-
-## Presses Reroll once the offer has finished dealing in, then waits for the new offer.
-func _reroll_once(selection: CardSelectionUI) -> void:
-	await _wait_until(func() -> bool: return selection._first_choice_card() != null, "the offer to deal in")
-	await get_tree().create_timer(1.0).timeout
-	selection._on_reroll_button_pressed()
-	await _wait_until(func() -> bool: return selection._first_choice_card() != null, "the rerolled offer")
-	await get_tree().create_timer(1.0).timeout
+	_check(selection == null or not selection.visible, "no card pick at the end of Day 2")
+	_check(DeckManager.deck_size() == deck_before_day_2_end, "Day 2's end added no card")
 
 
 func _play_one(hand: Hand) -> bool:

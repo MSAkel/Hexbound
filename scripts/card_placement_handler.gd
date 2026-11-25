@@ -383,6 +383,8 @@ func _placement_failure_message(hex: Hex) -> String:
 		return "Already on this %s" % GameTerms.STATION
 	if not tile_card.can_place_on_tile(hex):
 		return _meal_slot_rule_message(tile_card)
+	if hex.active_tile_card != null and not TileCard.REPLACE_ENABLED:
+		return "%s taken" % GameTerms.SPOT
 	return "Can't place here"
 
 

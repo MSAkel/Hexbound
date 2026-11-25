@@ -1,17 +1,17 @@
 extends MealCard
 
-## Needs Salmon and Honey. +60 Flavour. Starts at x1 Mult and gains x0.25 Mult for each time a
-## Honey on its station has triggered this Hour (retriggers count). Honey passed down by a Cutting
-## Board counts too. Before the Hour, the chip assumes each Honey triggers once.
+## Needs Salmon and Honey. +60 Flavour, +2 Mult for each time a Honey on its station has triggered
+## this Hour (retriggers count). Honey passed down by a Cutting Board counts too. Before the Hour,
+## the chip assumes each Honey triggers once. No xMult (Meals no longer give it). Untuned.
 
 const HONEY_ID := "honey"
-const XMULT_PER_HONEY_TRIGGER := 0.25
+const MULT_PER_HONEY_TRIGGER := 2.0
 
 
 func _meal_outputs(tile: Hex, preview: bool) -> Dictionary:
 	return {
 		"flavour": int(round(_get_production_amount())),
-		"multiplicative_mult": 1.0 + XMULT_PER_HONEY_TRIGGER * float(_honey_triggers(tile, preview)),
+		"additive_mult": MULT_PER_HONEY_TRIGGER * float(_honey_triggers(tile, preview)),
 	}
 
 

@@ -35,27 +35,27 @@ const ALL_EVENTS: Array[Type] = [
 const EVENT_INFO := {
 	Type.BLACKOUT: {
 		"name": "Blackout",
-		"description": "Every hour, 5 random seated cards on the pass are disabled.",
+		"description": "Every turn, 5 random cards on the board are disabled.",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.RUSH_HOUR: {
 		"name": "Rush Hour",
-		"description": "You have 1 less hour to complete the day.",
+		"description": "You have 1 less turn to complete the day.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.FADING_SECTOR: {
 		"name": "Fading Station",
-		"description": "Every hour, a random Station has its Ingredient output halved.",
+		"description": "Every turn, a random Station has its Ingredient output halved.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.SHORT_STAFFED: {
 		"name": "Rusty Hands",
-		"description": "Every hour, a random Technique is forgotten and has no effect.",
+		"description": "Every turn, a random Technique is disabled",
 		"rounds": LATE_EVENT_ROUNDS,
 	},
 	Type.AUSTERITY: {
 		"name": "Austerity",
-		"description": "You cannot gain gold during this day. Day completion rewards still pay out.",
+		"description": "You cannot gain gold during this day.",
 		"rounds": ANY_EVENT_ROUND,
 	},
 	Type.SEALED_HEXES: {

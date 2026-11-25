@@ -61,11 +61,12 @@ static func copy_placed_to_deck(source_card: TileCard) -> void:
 
 
 ## A duplicate played onto its own card, or Star Up. The seated instance keeps its state and gains a star.
-static func star_up_placed_at(tile: Hex) -> void:
+## Adds stars stars to the seated card (Star Anise: its effect_value, 2).
+static func star_up_placed_at(tile: Hex, stars: int = 1) -> void:
 	var target := tile.active_tile_card
 	if target == null:
 		return
-	target.star_level += 1
+	target.star_level += maxi(stars, 1)
 	tile.refresh_tile_card_visual_state()
 	_show_text(tile, "%s!" % TileCard.star_text(target.star_level), Color(1.0, 0.85, 0.2, 1.0))
 

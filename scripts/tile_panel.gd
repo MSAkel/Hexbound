@@ -7,7 +7,9 @@ extends Control
 @onready var rarity_label: Label = $VBoxContainer/RunePanelContainer/RuneVBox/NameRow/RarityBadge/RarityLabel
 @onready var card_subtitle: RichTextLabel = $VBoxContainer/RunePanelContainer/RuneVBox/RuneSubtitle
 @onready var card_chip_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneChipLine
-@onready var card_recipe_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneRecipeLine
+@onready var card_recipe_line: RichTextLabel = $VBoxContainer/RunePanelContainer/RuneVBox/RuneRecipeLine
+## Icon height beside each Meal requirement on the recipe line (about the text size).
+const RECIPE_ICON_SIZE := 24
 @onready var card_description: RichTextLabel = $VBoxContainer/RunePanelContainer/RuneVBox/RuneDescription
 @onready var card_bonus_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/RuneBonusLine
 @onready var condiment_fuse_line: Label = $VBoxContainer/RunePanelContainer/RuneVBox/CondimentFuseLine
@@ -211,7 +213,7 @@ func _set_recipe_line(card: TileCard) -> void:
 	if meal == null:
 		card_recipe_line.hide()
 		return
-	var recipe_text := meal.get_inspect_recipe_text(hex)
+	var recipe_text := meal.get_inspect_recipe_bbcode(RECIPE_ICON_SIZE)
 	if recipe_text.is_empty():
 		card_recipe_line.hide()
 		return
@@ -260,11 +262,20 @@ func _get_rarity_display_name(rarity: int) -> String:
 			return "Common"
 
 
-# Star level output scale. Hidden for 1-star cards.
+# What the card's stars add right now, such as "★3: +6 Flavour". Hidden for 1-star cards and
+# while the stars add nothing (a Meal whose recipe is not ready).
 func _set_bonus_line(card: TileCard) -> void:
 	var lines: Array[String] = []
 	if card.star_level > 1:
-		lines.append("%s: x%s Flavour, Gold, +Mult, xMult (above x1)" % [TileCard.star_text(card.star_level), String.num(card.star_output_scale(), 2)])
+		var bonus := card.get_star_bonus(hex)
+		var parts: Array[String] = []
+		if int(bonus["flavour"]) > 0:
+			parts.append("+%d Flavour" % int(bonus["flavour"]))
+		var mult := float(bonus["mult"])
+		if mult >= 0.05:
+			parts.append("+%s Mult" % String.num(snappedf(mult, 0.1)))
+		if not parts.is_empty():
+			lines.append("%s: %s" % [TileCard.star_text(card.star_level), ", ".join(parts)])
 	if lines.is_empty():
 		card_bonus_line.hide()
 		return

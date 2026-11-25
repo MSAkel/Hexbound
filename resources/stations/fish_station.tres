@@ -46,15 +46,15 @@ flat_flavour = 25
 
 [sub_resource type="Resource" id="choice_0"]
 script = ExtResource("s_seafood_platter")
-description = "Seafood Platter: Seafood on this station gains x0.25 output for each different Seafood here"
+description = "Seafood Platter: Seafood on this station gains x0.20 output for each different Seafood here"
 target_tags = Array[StringName]([&"seafood"])
-per_kind = 0.25
+per_kind = 0.2
 
 [sub_resource type="Resource" id="choice_1"]
 script = ExtResource("s_serve_bonus")
-description = "Seafood Meals served here gain +8 {mult} while a Sauce Station is on the board"
+description = "Seafood Meals served here gain +4 {mult} while a Sauce Station is on the board"
 target_meal_categories = Array[int]([3])
-bonus_mult = 8.0
+bonus_mult = 4.0
 requires_type_id = "sauce_station"
 
 [sub_resource type="Resource" id="capstone_0"]

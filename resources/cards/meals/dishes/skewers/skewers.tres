@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://dgq3h6fwy4h2m"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/skewers/skewers.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://biyi6rij8ohs6" path="res://assets/icons/food/meals/dishes/skewers.png" id="1_fe8kp"]
+[ext_resource type="Script" uid="uid://c1cdb0g3bh2kv" path="res://resources/cards/meals/dishes/skewers/skewers.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -14,6 +14,7 @@ product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "skewers"
 name = "Skewers"
-icon = ExtResource("1_icon")
-description = "+4 {mult}. +1 {mult} for each Meat on its Station."
+icon = ExtResource("1_fe8kp")
+description = "+4 {mult}.
++1 {mult} for each Meat on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

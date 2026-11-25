@@ -15,7 +15,7 @@ const DAY_MERGE_FLASH := Color(1.6, 1.45, 1.1, 1.0)
 const DAY_MERGE_FLASH_DURATION := 0.4
 
 const TOOLTIP_DAY := "Current day. %d days complete a run." % ScoreProgression.RUN_LENGTH_ROUNDS
-const TOOLTIP_HOURS := "Hours left before kitchen close. Reach the day target with hours to spare."
+const TOOLTIP_HOURS := "Turns left before kitchen close. Reach the day target with turns to spare."
 
 var _round_counter: CountingNumber
 var _turn_counter: CountingNumber

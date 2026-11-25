@@ -38,7 +38,8 @@ func choose_offer(_offer: Array[TileCard], _is_reward: bool) -> int:
 	return 0
 
 
-## {"card": TileCard, "hex": Hex} to play, or {"end": true} to end the Hour with plays left.
+## {"card": TileCard, "hex": Hex} to play, {"discard": true} to throw the hand away and draw a new
+## one (DeckManager.discard_hand, no play used), or {"end": true} to end the Hour with plays left.
 func choose_hand_action(hand: Array[TileCard]) -> Dictionary:
 	for card: TileCard in hand:
 		var hexes: Array[Hex] = runner.legal_hexes(card)

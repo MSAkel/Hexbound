@@ -176,8 +176,10 @@ func _add_debug_starting_cards() -> void:
 
 
 func _on_cards_drawn(cards: Array[TileCard]) -> void:
-	# A new hand replaces whatever the last Hour left on screen.
-	_free_discarded_cards()
+	# A new hand replaces whatever the last Hour left on screen. A mid-Hour discard is still flying
+	# to the chef portrait and frees itself when it lands.
+	if not DeckManager.is_redrawing:
+		_free_discarded_cards()
 	var added: Array[CardUI] = []
 	for card: TileCard in cards:
 		added.append(_add_card(card))
@@ -511,6 +513,18 @@ func end_hour() -> void:
 	AudioManager.play_end_turn_bell()
 
 
+## Discard button: throws the hand away and draws as many new cards (DeckManager.discard_hand).
+func discard_hand() -> void:
+	if not can_discard_hand():
+		return
+	DeckManager.discard_hand()
+
+
+## True while the hand is up, nothing is resolving and a discard is left this Day.
+func can_discard_hand() -> bool:
+	return can_end_hour() and _discarded_cards.is_empty() and _deal_queue.is_empty() and DeckManager.can_discard_hand()
+
+
 ## True while the player can end the Hour: the hand is up and nothing is resolving.
 func can_end_hour() -> bool:
 	return (
@@ -590,6 +604,11 @@ func _hide_hand() -> void:
 
 func _on_hand_discarded() -> void:
 	_discarded_cards.append_array(_get_hand_cards())
+	# The Discard button: the hand stays up, so the old cards fly off now. A deal still running would
+	# keep posing them (and error once they are freed), so it stops first.
+	if DeckManager.is_redrawing:
+		_cancel_deal()
+		_fling_discarded_cards()
 
 
 ## Frees the cards the last Hour discarded. They are already gone from DeckManager.hand.

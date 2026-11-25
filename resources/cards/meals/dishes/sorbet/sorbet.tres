@@ -15,5 +15,6 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "sorbet"
 name = "Sorbet"
 icon = ExtResource("1_owtpp")
-description = "+3 {mult}. +1 {mult} for each different meal category being served."
+description = "+3 {mult}.
++1 {mult} for each different meal category being served."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

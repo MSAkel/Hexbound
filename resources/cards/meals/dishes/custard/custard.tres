@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MealCard" format=3]
+[gd_resource type="Resource" format=3 uid="uid://crttvjjfukgv1"]
 
-[ext_resource type="Texture2D" uid="uid://c7pbw0fv4kx4t" path="res://assets/icons/placeholder.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/custard/custard.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://buld3kar13miy" path="res://assets/icons/food/meals/dishes/custard.png" id="1_743y6"]
+[ext_resource type="Script" uid="uid://cs4tltguwxr33" path="res://resources/cards/meals/dishes/custard/custard.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -14,6 +14,7 @@ product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "custard"
 name = "Custard"
-icon = ExtResource("1_icon")
-description = "+4 {mult}. +1 {mult} for each Sweet or Dairy on its Station."
+icon = ExtResource("1_743y6")
+description = "+4 {mult}.
++1 {mult} for each Sweet or Dairy on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

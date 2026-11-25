@@ -17,5 +17,5 @@ func on_station_started(ctx: StaffContext) -> void:
 			if card.add_garnish():
 				added = true
 		if added:
-			ctx.pulse(ctx.map.get_hex_for_tile_card(card))
+			ctx.garnish_landed(ctx.map.get_hex_for_tile_card(card))
 		return

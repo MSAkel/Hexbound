@@ -28,6 +28,9 @@ const GARNISH_BANG_REBOUND := 0.07
 const GARNISH_BANG_SETTLE := 0.12
 const GARNISH_OUTLINE_SIZE := 7
 const GARNISH_FONT_SCALE := 1.18
+## Card trigger floats that fly into the score readout show only the number, this much larger
+## than CARD_FONT_SIZE (about 25%, untuned).
+const SCORE_FLOAT_FONT_SCALE := 1.25
 const CARD_OUTLINE_SIZE := 4
 const SCORE_OUTLINE_SIZE := 5
 const GARNISH_TEXT_COLOR := Color("#E26110")
@@ -60,10 +63,15 @@ func set_text(
 	_color: Color = Color.WHITE,
 	icon: Texture2D = null,
 	target_icon: Texture2D = null,
-	garnished: bool = false
+	garnished: bool = false,
+	number_only: bool = false
 ) -> void:
 	if not is_node_ready():
 		await ready
+	# Score floats: the readout they fly into already shows Flavour or Mult, so no icon.
+	if number_only:
+		icon = null
+		target_icon = null
 
 	_garnished = garnished
 	label.bbcode_enabled = false
@@ -74,6 +82,8 @@ func set_text(
 	# Product icons still distinguish Flavour, Gold, and Mult.
 	var label_color := GARNISH_TEXT_COLOR if _garnished else Color.WHITE
 	var font_scale := GARNISH_FONT_SCALE if _garnished else 1.0
+	if number_only:
+		font_scale *= SCORE_FLOAT_FONT_SCALE
 	_apply_label_style(label_color, ScoreReadoutStyle.parse_amount(text), true, font_scale)
 	_target_icon = target_icon
 	_apply_icon(icon)

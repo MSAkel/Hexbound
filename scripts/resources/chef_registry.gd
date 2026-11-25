@@ -14,10 +14,14 @@ const CHEF_PATHS: Array[String] = [
 	"res://resources/chefs/chef_de_cuisine.tres",
 ]
 
-## Default deck for chefs without deck_stations: random Ingredients and Kitchenware drawn from
-## cards tagged starting_hand_eligible. Untuned.
-const DEFAULT_INGREDIENT_COUNT := 11
-const DEFAULT_KITCHENWARE_COUNT := 4
+## Meals in every starting deck (user, Nov 24: raised from the 3 most kits gave, since Meals were
+## too hard to get without the end-of-Day card pick). Untuned.
+const STARTING_MEAL_COUNT := 4
+## Of those, how many come from the chef's speciality (the home Station's kit, kit order). The rest
+## are random Meals from the chef's pool. A chef whose home Station is rolled ("any" or "a|b"), such
+## as Restaurateur and Chef de Cuisine, has no speciality and gets all random (user, Nov 24).
+const SPECIALITY_MEAL_COUNT := 2
+
 const STATION_KIT_DIR := "res://resources/station_kits/"
 const STATION_KIT_IDS: Array[String] = [
 	"grilling", "cold", "fish", "pastry", "sauce", "roasting", "bar", "fry",
@@ -56,51 +60,118 @@ static func get_chef_by_id(chef_id: String) -> ChefDefinition:
 	return _definitions_by_id.get(chef_id)
 
 
-## Builds the chef's starting deck. Call inside a fresh RunRng stream ("starting_deck:<chef id>")
-## so a seed always deals the same deck. Returns {"cards": Array[TileCard], "stations": Array[String]},
-## where stations are the kit Station ids in order (home first).
+## Builds the chef's starting deck: one copy of every Ingredient and Kitchenware the chef can see
+## (GameManager.get_draw_pool, sorted by id), plus STARTING_MEAL_COUNT different Meals:
+## SPECIALITY_MEAL_COUNT from the home Station's kit and the rest random (see _starting_meal_ids). Kits no longer deal their Ingredients, Kitchenware or random entries: those are all
+## in the deck already. More copies come from the Merchant. Untuned.
+## Call inside a fresh RunRng stream ("starting_deck:<chef id>") so a seed always deals the same
+## deck (an "any" or "a|b" Station choice rolls). Returns {"cards": Array[TileCard],
+## "stations": Array[String]}, where stations are the kit Station ids in order (home first).
 static func build_starting_deck(chef: ChefDefinition) -> Dictionary:
 	var cards: Array[TileCard] = []
 	var stations: Array[String] = []
 	if chef == null:
 		return {"cards": cards, "stations": stations}
-	if not chef.has_station_deck():
-		cards.append_array(_draw_starters(DEFAULT_INGREDIENT_COUNT, TileCard.TileCardType.INGREDIENT))
-		cards.append_array(_draw_starters(DEFAULT_KITCHENWARE_COUNT, TileCard.TileCardType.KITCHENWARE))
-		return {"cards": cards, "stations": stations}
+	if chef.has_station_deck():
+		for meal_id: String in _starting_meal_ids(chef, stations):
+			cards.append(DeckManager.make_deck_card(GameManager.get_tile_card_by_id(meal_id)))
+	for template: TileCard in _full_set_templates():
+		cards.append(DeckManager.make_deck_card(template))
+	return {"cards": cards, "stations": stations}
 
+
+## Starting deck size for the deal check. stations are the kit Station ids the deck was built
+## from (rolled choices differ by seed, and so does their Meal count).
+static func get_expected_deck_size(chef: ChefDefinition, _stations: Array[String]) -> int:
+	var total := _full_set_templates().size()
+	if chef == null or not chef.has_station_deck():
+		return total
+	return total + mini(STARTING_MEAL_COUNT, _meal_pool_ids().size())
+
+
+## Every Ingredient and Kitchenware the chef can see, one each, sorted by id so a seed deals the same.
+static func _full_set_templates() -> Array[TileCard]:
+	var templates: Array[TileCard] = []
+	for card: TileCard in GameManager.get_draw_pool():
+		if card.type == TileCard.TileCardType.INGREDIENT or card.type == TileCard.TileCardType.KITCHENWARE:
+			templates.append(card)
+	templates.sort_custom(func(x: TileCard, y: TileCard) -> bool: return x.id < y.id)
+	return templates
+
+
+## STARTING_MEAL_COUNT different Meal ids: SPECIALITY_MEAL_COUNT from the home Station's kit (kit
+## order, kit_swaps applied) when the chef has a fixed home Station, then random Meals from the pool.
+## Still rolls every deck_stations entry, so stations lists the kit Stations as before.
+static func _starting_meal_ids(chef: ChefDefinition, stations: Array[String]) -> Array[String]:
+	var pool := _meal_pool_ids()
+	var picked: Array[String] = []
+	_kit_meal_ids(chef, stations)
+	if _has_meal_speciality(chef) and not stations.is_empty():
+		var home := stations[0]
+		for meal_id: String in _meal_entries("%s:full" % home, home, _parse_swaps(chef)):
+			if picked.size() >= mini(SPECIALITY_MEAL_COUNT, STARTING_MEAL_COUNT):
+				break
+			if meal_id in pool and meal_id not in picked:
+				picked.append(meal_id)
+	var rest: Array[String] = []
+	for meal_id: String in pool:
+		if meal_id not in picked:
+			rest.append(meal_id)
+	while picked.size() < STARTING_MEAL_COUNT and not rest.is_empty():
+		picked.append(rest.pop_at(RunRng.randi_range(0, rest.size() - 1)))
+	return picked
+
+
+## True when the chef's home Station (first deck_stations entry) is one fixed Station, not a roll.
+static func _has_meal_speciality(chef: ChefDefinition) -> bool:
+	if chef == null or chef.deck_stations.is_empty():
+		return false
+	var choice := chef.deck_stations[0].split(":")[0].strip_edges()
+	return choice != ChefDefinition.ANY_STATION and not choice.contains("|")
+
+
+## Meal ids the chef can see (GameManager.get_draw_pool), sorted so a seed rolls the same.
+static func _meal_pool_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for card: TileCard in GameManager.get_draw_pool():
+		if card.type == TileCard.TileCardType.MEAL and card.id not in ids:
+			ids.append(card.id)
+	ids.sort()
+	return ids
+
+
+## Rolls each deck_stations entry to a Station (appending it to stations) and returns the Meal ids
+## its kit slots name, in kit order.
+static func _kit_meal_ids(chef: ChefDefinition, stations: Array[String]) -> Array[String]:
 	var swaps := _parse_swaps(chef)
-	var used_ids: Array[String] = []
+	var meal_ids: Array[String] = []
 	for entry: String in chef.deck_stations:
-		var parts := entry.split(":")
-		var station_id := _roll_station(parts[0], stations)
+		var station_id := _roll_station(entry.split(":")[0], stations)
 		if station_id.is_empty():
 			push_error("ChefRegistry: %s deck entry '%s' found no Station kit." % [chef.id, entry])
 			continue
 		stations.append(station_id)
-		var kit := get_station_kit(station_id)
-		var size := StationKit.size_from_id(parts[1] if parts.size() > 1 else "full")
-		var kit_entries := kit.entries_for(size)
-		for slot in kit_entries.size():
-			var card_entry: String = swaps.get("%s:%d" % [station_id, slot + 1], kit_entries[slot])
-			var card := _deal_entry(card_entry, used_ids)
-			if card == null:
-				push_error("ChefRegistry: %s deck entry '%s' (%s slot %d) gave no card." % [chef.id, card_entry, station_id, slot + 1])
-				continue
-			cards.append(card)
-			used_ids.append(card.id)
-	return {"cards": cards, "stations": stations}
+		meal_ids.append_array(_meal_entries(entry, station_id, swaps))
+	return meal_ids
 
 
-## Starting deck size, for the deal check.
-static func get_expected_deck_size(chef: ChefDefinition = null) -> int:
-	if chef == null or not chef.has_station_deck():
-		return DEFAULT_INGREDIENT_COUNT + DEFAULT_KITCHENWARE_COUNT
-	var total := 0
-	for entry: String in chef.deck_stations:
-		var parts := entry.split(":")
-		total += int(StationKit.SIZE_COUNTS[StationKit.size_from_id(parts[1] if parts.size() > 1 else "full")])
-	return total
+## The Meal ids one deck_stations entry deals from station_id's kit at the entry's size.
+static func _meal_entries(entry: String, station_id: String, swaps: Dictionary) -> Array[String]:
+	var meal_ids: Array[String] = []
+	var kit := get_station_kit(station_id)
+	if kit == null:
+		return meal_ids
+	var parts := entry.split(":")
+	var size := StationKit.size_from_id(parts[1] if parts.size() > 1 else "full")
+	var kit_entries := kit.entries_for(size)
+	for slot in kit_entries.size():
+		var card_entry: String = swaps.get("%s:%d" % [station_id, slot + 1], kit_entries[slot])
+		if card_entry.begins_with(ChefDefinition.RANDOM_PREFIX):
+			continue
+		var template := GameManager.get_tile_card_by_id(card_entry)
+		if template != null and template.type == TileCard.TileCardType.MEAL:
+			meal_ids.append(card_entry)
+	return meal_ids
 
 
 static func get_station_kit(station_id: String) -> StationKit:
@@ -153,49 +224,3 @@ static func _parse_swaps(chef: ChefDefinition) -> Dictionary:
 			continue
 		swaps[halves[0].strip_edges()] = halves[1].strip_edges()
 	return swaps
-
-
-## A card id or a random entry, as a fresh deck card.
-static func _deal_entry(entry: String, used_ids: Array[String]) -> TileCard:
-	if entry.begins_with(ChefDefinition.RANDOM_PREFIX):
-		var drawn := _draw_random_entry(entry.substr(ChefDefinition.RANDOM_PREFIX.length()), used_ids)
-		return DeckManager.make_deck_card(drawn) if drawn != null else null
-	var template := GameManager.get_tile_card_by_id(entry)
-	if template == null:
-		return null
-	return DeckManager.make_deck_card(template)
-
-
-## One random starting-hand-eligible card the chef can see. kind is "kitchenware", "ingredient"
-## or an Ingredient tag. Cards already in the deck are skipped while others remain.
-static func _draw_random_entry(kind: String, used_ids: Array[String]) -> TileCard:
-	var card_type := TileCard.TileCardType.INGREDIENT
-	if StringName(kind) == TileCard.TAG_KITCHENWARE:
-		card_type = TileCard.TileCardType.KITCHENWARE
-	var pool: Array[TileCard] = []
-	for card: TileCard in GameManager.get_draw_pool():
-		if not card.starting_hand_eligible or card.type != card_type:
-			continue
-		if card_type == TileCard.TileCardType.INGREDIENT and kind != ChefDefinition.RANDOM_INGREDIENT:
-			if not card.has_ingredient_tag(StringName(kind)):
-				continue
-		pool.append(card)
-	if pool.is_empty():
-		return null
-	var fresh: Array[TileCard] = []
-	for card: TileCard in pool:
-		if card.id not in used_ids:
-			fresh.append(card)
-	var drawn := CardLoot.draw_filtered(1, fresh if not fresh.is_empty() else pool, card_type)
-	return drawn[0] if not drawn.is_empty() else null
-
-
-static func _draw_starters(count: int, card_type: TileCard.TileCardType) -> Array[TileCard]:
-	var pool: Array[TileCard] = []
-	for card in GameManager.get_draw_pool():
-		if card.starting_hand_eligible:
-			pool.append(card)
-	var cards: Array[TileCard] = []
-	for card: TileCard in CardLoot.draw_filtered(count, pool, card_type):
-		cards.append(DeckManager.make_deck_card(card))
-	return cards

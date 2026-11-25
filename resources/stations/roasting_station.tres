@@ -11,37 +11,37 @@
 
 [sub_resource type="Resource" id="level_1"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +3 {flavour} for each Hour played today."
+description = "Meats and Vegetables on this station gain +3 {flavour} for each Turn played today."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 3
 
 [sub_resource type="Resource" id="level_2"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +4 {flavour} for each Hour played today."
+description = "Meats and Vegetables on this station gain +4 {flavour} for each Turn played today."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 4
 
 [sub_resource type="Resource" id="level_3"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +4 {flavour} for each Hour played today."
+description = "Meats and Vegetables on this station gain +4 {flavour} for each Turn played today."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 4
 
 [sub_resource type="Resource" id="level_4"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +5 {flavour} for each Hour played today."
+description = "Meats and Vegetables on this station gain +5 {flavour} for each Turn played today."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 5
 
 [sub_resource type="Resource" id="level_5"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today."
+description = "Meats and Vegetables on this station gain +6 {flavour} for each Turn played today."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 6
 
 [sub_resource type="Resource" id="level_6"]
 script = ExtResource("s_per_hour_flat")
-description = "Meats and Vegetables on this station gain +6 {flavour} for each Hour played today."
+description = "Meats and Vegetables on this station gain +6 {flavour} for each Turn played today."
 target_tags = Array[StringName]([&"meat", &"vegetable"])
 per_hour = 6
 

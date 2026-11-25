@@ -8,5 +8,5 @@ script = ExtResource("1_script")
 id = "rolling_boil"
 name = "Rolling Boil"
 icon = ExtResource("1_18ar2")
-description = "After this Station is done, x0.1 {mult} for every {trigger} on it this Hour"
+description = "After this Station is done, x0.1 {mult} for every {trigger} on it this Turn"
 rarity = 2

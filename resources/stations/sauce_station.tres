@@ -57,11 +57,11 @@ stacks = 2
 
 [sub_resource type="Resource" id="capstone_0"]
 script = ExtResource("s_mother_sauce")
-description = "Mother Sauce: the first Sauce & Dip Meal served here each Hour gives a {garnish} to a Meal on each station either side"
+description = "Mother Sauce: the first Sauce & Dip Meal served here each Turn gives a {garnish} to a Meal on each station either side"
 
 [sub_resource type="Resource" id="capstone_1"]
 script = ExtResource("s_serve_bonus")
-description = "Reduction: Sauce & Dip Meals served here gain +2 {mult} for each Hour played today"
+description = "Reduction: Sauce & Dip Meals served here gain +2 {mult} for each Turn played today"
 target_meal_categories = Array[int]([7])
 bonus_mult_per_hour = 2.0
 

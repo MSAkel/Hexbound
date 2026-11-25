@@ -52,7 +52,11 @@ func _ready() -> void:
 	EventBus.tile_card_selected.connect(func(_card: TileCard) -> void: _check_state_hints())
 	EventBus.staff_added.connect(func(_slot: int) -> void: request(&"staff"))
 	EventBus.condiment_belt_changed.connect(_on_condiment_belt_changed)
-	EventBus.station_type_changed.connect(func(_segment: int, _type: String) -> void: request(&"station_type"))
+	EventBus.station_type_changed.connect(func(_segment: int, _type: String) -> void:
+		# No Station type tip while the Station UI is hidden (StationManager.SHOW_STATION_UI).
+		if StationManager.SHOW_STATION_UI:
+			request(&"station_type")
+	)
 	EventBus.station_leveled_up.connect(func(_segment: int, _level: int) -> void: request(&"station_level"))
 	EventBus.event_reveal_finished.connect(func() -> void: request(&"event_active"))
 	EventBus.game_ended.connect(_clear_queue)

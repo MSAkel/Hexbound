@@ -3,13 +3,11 @@ extends VBoxContainer
 
 ## Bottom-right of the run screen: the deck pile, a card with the number of cards left to draw under
 ## it. Clicking the pile opens the deck viewer, and hovering it shows the draw and discard counts.
-## On Day 1 the kitchen line above the pile names the Stations the starting deck was built from, for
 ## chefs whose kitchen is rolled. The layout and art live in deck_hud.tscn.
 
 const HOVER_SCALE := 1.06
 const HOVER_TIME := 0.08
 
-@onready var _kitchen_label: Label = %KitchenLabel
 @onready var _pile_button: Button = %PileButton
 @onready var _cards: Control = %Cards
 @onready var _count_label: Label = %CountLabel
@@ -37,29 +35,6 @@ func get_pile_rect() -> Rect2:
 
 func _refresh() -> void:
 	_count_label.text = str(DeckManager.draw_pile_size())
-	var kitchen := kitchen_text()
-	_kitchen_label.text = kitchen
-	_kitchen_label.visible = not kitchen.is_empty() and GameManager.current_round <= 1
-
-
-## "Your kitchen: Fry + Bar" for chefs whose starting Stations are rolled. Empty otherwise.
-static func kitchen_text() -> String:
-	var chef := GameManager.selected_chef
-	if chef == null or DeckManager.kitchen_station_ids.is_empty():
-		return ""
-	var rolled := false
-	for entry: String in chef.deck_stations:
-		var choice := entry.split(":")[0]
-		if choice == ChefDefinition.ANY_STATION or "|" in choice:
-			rolled = true
-	if not rolled:
-		return ""
-	var names: Array[String] = []
-	for station_id: String in DeckManager.kitchen_station_ids:
-		var station_type := StationManager.get_station_type_by_id(station_id)
-		names.append(station_type.display_name.trim_suffix(" Station") if station_type != null else station_id)
-	return "Your kitchen: %s" % " + ".join(names)
-
 
 func _on_pile_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)

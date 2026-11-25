@@ -9,4 +9,4 @@ id = "basting"
 name = "Basting"
 icon = ExtResource("1_mbmus")
 description = "When an Ingredient on this Station has a {garnish}, add another {garnish} to it"
-rarity = 2
+rarity = 1

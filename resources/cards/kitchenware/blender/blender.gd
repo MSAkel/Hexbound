@@ -1,6 +1,6 @@
 extends TileCard
 
-## +2 Mult, +1 Mult for each Ingredient it Blends. Blended: the next 2 Ingredients on its Station
+## +10 Flavour. Blended: the next 2 Ingredients on its Station
 ## each also count as the other's kinds, for recipes and "for each" effects (not Station setups).
 ## With only one Ingredient after it, nothing is Blended. See KitchenwarePrep.
 
@@ -11,11 +11,11 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	var targets := _effect_preview_cards(tile)
 	if targets.size() < TARGET_COUNT:
 		failed_tile_card_text(tile)
-		_pay_kitchenware_mult(tile)
+		_pay_kitchenware_output(tile)
 		return
 	for target: TileCard in targets:
 		_create_targeted_ability_floating_text(tile, ICON_FLAVOUR, target)
-	_pay_kitchenware_mult(tile, targets.size())
+	_pay_kitchenware_output(tile, targets.size())
 
 
 func apply_board_prep(tile: Hex, board: HexBoardQuery) -> void:

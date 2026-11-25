@@ -55,13 +55,68 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CardGrid" type="GridContainer" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500109]
+[node name="IngredientHeader" type="Label" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500120]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 28
+text = "Ingredients (0)"
+horizontal_alignment = 1
+
+[node name="IngredientGrid" type="GridContainer" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500121]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/h_separation = 14
 theme_override_constants/v_separation = 14
 columns = 8
+
+[node name="IngredientGap" type="Control" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500122]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+
+[node name="KitchenwareHeader" type="Label" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500123]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 28
+text = "Kitchenware (0)"
+horizontal_alignment = 1
+
+[node name="KitchenwareGrid" type="GridContainer" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500124]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 8
+
+[node name="KitchenwareGap" type="Control" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500125]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+
+[node name="MealHeader" type="Label" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500126]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 28
+text = "Meals (0)"
+horizontal_alignment = 1
+
+[node name="MealGrid" type="GridContainer" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500127]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 8
+
+[node name="MealGap" type="Control" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500128]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
 
 [node name="EmptyLabel" type="Label" parent="Panel/Box/Scroll/ScrollContent" unique_id=1733500110]
 unique_name_in_owner = true

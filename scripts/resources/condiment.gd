@@ -17,6 +17,8 @@ enum EffectType {
 	SEND_BACK,
 	DUPLICATE_ORDER,
 	SWAP_SPOTS,
+	## Tip: effect_value Gold for each different Meal on the board.
+	GOLD_PER_UNIQUE_MEAL,
 }
 
 enum TargetKind {
@@ -79,7 +81,7 @@ func _get_fuse_summary_source() -> String:
 		EffectType.THROW_OUT:
 			return "{destroy} seated card"
 		EffectType.STAR_UP:
-			return "+1 star on seated card"
+			return "+%d star on seated card" % maxi(1, int(effect_value))
 		EffectType.SEND_BACK:
 			return "{discard} seated card, stars kept"
 		EffectType.DUPLICATE_ORDER:

@@ -1,13 +1,18 @@
 extends MealCard
 
-## Needs Chocolate and another Sweet. Starts at x1 Mult and gains x0.25 for each different Sweet on its station.
+## Needs Chocolate and another Sweet. +40 Flavour and +2 Mult, +2 Mult for each different Sweet on
+## its station. No xMult (Meals no longer give it). Untuned.
 
-const XMULT_PER_SWEET := 0.25
+const BASE_FLAVOUR := 40
+const MULT_PER_SWEET := 2.0
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
 	var sweet_count := 1 if tile == null else _different_sweet_count(tile)
-	return {"multiplicative_mult": 1.0 + XMULT_PER_SWEET * float(sweet_count)}
+	return {
+		"flavour": BASE_FLAVOUR,
+		"additive_mult": _get_production_amount() + MULT_PER_SWEET * float(sweet_count),
+	}
 
 
 func get_trigger_preview_coords(hover_tile: Hex) -> Array[Vector2i]:

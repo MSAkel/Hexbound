@@ -3,7 +3,9 @@ extends Node2D
 
 ## Station dressing drawn in map space, between the base tiles and the seated cards.
 ## Meal slots get a warm fill. A locked second slot shows the locked box art.
-## Typed stations tint their regular spots in the type colour. Station events animate here.
+## Typed stations tint their regular spots in the type colour (only while StationManager.SHOW_STATION_UI).
+## The Station that cooks this Hour (HexTileMap.get_cooking_segment) gets a gold fill and outline.
+## Station events animate here.
 
 const MEAL_SLOT_FILL := Color(0.92, 0.32, 0.36, 0.34)
 const STATION_TINT_ALPHA := 0.13
@@ -12,6 +14,10 @@ const FLASH_ALPHA := 0.35
 const LOCKED_BOX: Texture2D = preload("res://assets/gui/panels/box_container_locked.png")
 ## Rounded square matching the base tile, inset so the tile border stays visible.
 const HEX_INSET := 0.9
+## The Station cooking this Hour: a light fill under the cards and an outline round each spot.
+const COOK_FILL := Color(1.0, 0.82, 0.3, 0.14)
+const COOK_OUTLINE := Color(1.0, 0.84, 0.36, 0.95)
+const COOK_OUTLINE_WIDTH := 4.0
 
 var _map: HexTileMap
 var _hex_points := PackedVector2Array()
@@ -22,6 +28,8 @@ var _flash := {}
 var _tint_fade := {}
 ## Padlock break on the second Meal slot.
 var _lock_break := {}
+## Cooking Station drawn last frame, so the overlay redraws when the Hour moves on.
+var _drawn_cooking_segment := -1
 
 
 func setup(map: HexTileMap) -> void:
@@ -37,11 +45,39 @@ func refresh() -> void:
 	queue_redraw()
 
 
+## The Hour counter has no signal of its own, so watch the cooking Station here.
+func _process(_delta: float) -> void:
+	if _map != null and _cooking_segment() != _drawn_cooking_segment:
+		queue_redraw()
+
+
 func _draw() -> void:
 	if _map == null or _map.map_data.is_empty():
 		return
 	for segment_index in _map.get_segment_count():
 		_draw_station(segment_index)
+	_drawn_cooking_segment = _cooking_segment()
+	_draw_cooking_station(_drawn_cooking_segment)
+
+
+## The Station resolving now, or the one that will cook when the Hour ends.
+func _cooking_segment() -> int:
+	if _map.cooking_segment >= 0:
+		return _map.cooking_segment
+	return _map.get_cooking_segment()
+
+
+func _draw_cooking_station(segment_index: int) -> void:
+	if segment_index < 0:
+		return
+	for hex: Hex in _map.get_hexes_in_segment(segment_index):
+		var center := _cell_center(hex.coordinates)
+		_draw_hex(center, COOK_FILL)
+		var outline := PackedVector2Array()
+		for point: Vector2 in _hex_points:
+			outline.append(center + point)
+		outline.append(outline[0])
+		draw_polyline(outline, COOK_OUTLINE, COOK_OUTLINE_WIDTH, true)
 
 
 func _draw_station(segment_index: int) -> void:
@@ -52,7 +88,7 @@ func _draw_station(segment_index: int) -> void:
 		var meal_slot_index := _map.get_meal_slot_index(hex.coordinates)
 		if meal_slot_index >= 0:
 			_draw_meal_slot(segment_index, meal_slot_index, center, flash)
-		elif station_type != null:
+		elif station_type != null and StationManager.SHOW_STATION_UI:
 			var color := station_type.color
 			color.a = STATION_TINT_ALPHA * float(_tint_fade.get(segment_index, 1.0)) + FLASH_ALPHA * flash
 			_draw_hex(center, color)
@@ -97,7 +133,7 @@ func _cell_center(coords: Vector2i) -> Vector2:
 #region --- Station animations ---
 
 func _on_station_type_changed(segment_index: int, _type_id: String) -> void:
-	if GameManager.skip_presentation:
+	if GameManager.skip_presentation or not StationManager.SHOW_STATION_UI:
 		queue_redraw()
 		return
 	_animate(_flash, segment_index, 1.0, 0.0, 0.9)

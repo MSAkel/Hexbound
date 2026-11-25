@@ -3,10 +3,9 @@ extends Control
 
 const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
 const CONDIMENT_ITEM_SCENE := preload("res://scenes/ui/condiments/condiment_shop_item.tscn")
-## Tile cards on the shelf before the chef's extra slots (tile_card_count).
-const MERCHANT_TILE_CARD_COUNT := 3
-## Extra shelf slot that always offers a staff member the player does not own.
-const MERCHANT_STAFF_COUNT := 1
+## Cards on the shelf before the chef's extra slots (shelf_card_count). Each slot rolls its kind
+## (Ingredient, Kitchenware, Meal or Technique) by MerchantPacks.SHELF_KIND_WEIGHTS.
+const MERCHANT_SHELF_CARD_COUNT := 3
 const BASE_REROLL_COST := 5
 
 @onready var cards_grid: GridContainer = $ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/CardsGridContainer
@@ -115,7 +114,7 @@ func open() -> void:
 		_stock_reroll_count = 0
 		_reroll_cost = BASE_REROLL_COST
 		_free_rerolls_left = GameManager.chef.free_merchant_rerolls()
-	cards_grid.columns = tile_card_count() + MERCHANT_STAFF_COUNT
+	cards_grid.columns = shelf_card_count()
 	_update_reroll_button()
 	UiManager.show_panel(self)
 	await _refresh_merchant_stock(restored_cards, restored_condiments, restored_packs)
@@ -278,12 +277,12 @@ func _roll_card_stock() -> Array[Card]:
 		else:
 			excluded_staff_ids.append(locked.id)
 
-	var tiles: Array = draw_tile_card_stock(_stock_reroll_count, locked_tile_ids)
-	var staff: Array = draw_staff_stock(_stock_reroll_count, excluded_staff_ids)
+	var locked_cards: Array[Card] = []
+	for locked_card: Card in _locked_cards.values():
+		locked_cards.append(locked_card)
+	var drawn := draw_shelf_stock(_stock_reroll_count, locked_tile_ids, excluded_staff_ids, -1, locked_cards)
 	var inventory: Array[Card] = []
-	var tile_slots := tile_card_count()
-	for slot in tile_slots + MERCHANT_STAFF_COUNT:
-		var drawn := tiles if slot < tile_slots else staff
+	for slot in shelf_card_count():
 		var item: Card = _locked_cards.get(slot, null)
 		if item == null and not drawn.is_empty():
 			item = drawn.pop_front()
@@ -323,41 +322,90 @@ func _roll_pack_stock() -> Array[int]:
 	return stock
 
 
-## Tile cards on the shelf: the base count plus the chef's extra slots (no chef has any right now).
-static func tile_card_count() -> int:
-	return MERCHANT_TILE_CARD_COUNT + GameManager.chef.extra_merchant_tile_slots()
+## Cards on the shelf: the base count plus the chef's extra slots (no chef has any right now).
+static func shelf_card_count() -> int:
+	return MERCHANT_SHELF_CARD_COUNT + GameManager.chef.extra_merchant_tile_slots()
+
+
+## A shelf never shows more than this many cards of one type (user, Nov 24: if two of the 3 share a
+## type, the third can't be that type).
+const MAX_SHELF_CARDS_PER_KIND := 2
+
+
+## The shelf type a card counts as for MAX_SHELF_CARDS_PER_KIND.
+static func shelf_kind_of(card: Card) -> MerchantPacks.Kind:
+	if card is StaffCard:
+		return MerchantPacks.Kind.TECHNIQUES
+	var tile := card as TileCard
+	if tile != null and tile.type == TileCard.TileCardType.MEAL:
+		return MerchantPacks.Kind.MEALS
+	if tile != null and tile.type == TileCard.TileCardType.KITCHENWARE:
+		return MerchantPacks.Kind.KITCHENWARE
+	return MerchantPacks.Kind.INGREDIENTS
 
 
 ## Stock rolls are static so the headless playtest bot shops the same shelves.
-## exclude_ids are left off the roll so locked items never appear twice.
-static func draw_tile_card_stock(
+## Each slot rolls a kind by MerchantPacks.SHELF_KIND_WEIGHTS, then takes the next card of that kind, so a
+## shelf never shows one card twice. A kind with nothing left (every Technique owned, or a chef's
+## filter emptying a category) is skipped, and so is a kind already shown MAX_SHELF_CARDS_PER_KIND
+## times. exclude_tile_ids and exclude_staff_ids are left off the roll so locked and owned items
+## never appear twice. locked are the cards already held on the shelf: they count toward the cap.
+## count < 0 uses shelf_card_count() less the locked cards.
+static func draw_shelf_stock(
 	stock_reroll_count: int,
-	exclude_ids: Array[String] = []
-) -> Array[TileCard]:
+	exclude_tile_ids: Array[String] = [],
+	exclude_staff_ids: Array[String] = [],
+	count: int = -1,
+	locked: Array[Card] = []
+) -> Array[Card]:
+	var slots := maxi(0, shelf_card_count() - locked.size()) if count < 0 else count
 	var stream_name: String = RunRng.build_merchant_stream_name(
 		GameManager.current_round,
 		stock_reroll_count
 	)
-	var tile_slots := tile_card_count()
-	var drawn := CardLoot.draw_filtered(
-		tile_slots + exclude_ids.size(),
-		GameManager.get_draw_pool(),
-		null,
-		null,
-		true,
-		RunRng.create_rng(stream_name)
-	)
-	var stock: Array[TileCard] = []
-	for tile_card in drawn:
-		if stock.size() < tile_slots and tile_card.id not in exclude_ids:
-			stock.append(tile_card)
+	var by_kind: Dictionary = {}
+	for kind: MerchantPacks.Kind in [
+		MerchantPacks.Kind.INGREDIENTS,
+		MerchantPacks.Kind.KITCHENWARE,
+		MerchantPacks.Kind.MEALS,
+		MerchantPacks.Kind.TECHNIQUES,
+	]:
+		var kind_rng := RunRng.create_rng("%s:k%d" % [stream_name, kind])
+		var candidates: Array[Card] = []
+		if kind == MerchantPacks.Kind.TECHNIQUES:
+			for staff in StaffCatalog.draw(slots, kind_rng, exclude_staff_ids):
+				candidates.append(staff)
+		else:
+			var pool := MerchantPacks.tile_pool(kind)
+			# draw_filtered falls back to the whole card pool when given an empty one.
+			if not pool.is_empty():
+				for tile_card in CardLoot.draw_filtered(
+					slots + exclude_tile_ids.size(), pool, null, null, true, kind_rng
+				):
+					if tile_card.id not in exclude_tile_ids:
+						candidates.append(tile_card)
+		by_kind[kind] = candidates
+
+	var rng := RunRng.create_rng(stream_name)
+	var stock: Array[Card] = []
+	var kind_counts: Dictionary = {}
+	for card: Card in locked:
+		var locked_kind := shelf_kind_of(card)
+		kind_counts[locked_kind] = int(kind_counts.get(locked_kind, 0)) + 1
+	for _slot in slots:
+		var open_kinds: Array[MerchantPacks.Kind] = []
+		for kind: MerchantPacks.Kind in by_kind:
+			if (by_kind[kind] as Array).is_empty():
+				continue
+			if int(kind_counts.get(kind, 0)) >= MAX_SHELF_CARDS_PER_KIND:
+				continue
+			open_kinds.append(kind)
+		var picked := MerchantPacks.pick_weighted_kind(open_kinds, rng, MerchantPacks.SHELF_KIND_WEIGHTS)
+		if picked < 0:
+			break
+		kind_counts[picked] = int(kind_counts.get(picked, 0)) + 1
+		stock.append((by_kind[picked] as Array).pop_front())
 	return stock
-
-
-## Staff already owned when the stock is rolled stay off the shelf.
-static func draw_staff_stock(stock_reroll_count: int, owned_staff_ids: Array[String]) -> Array[StaffCard]:
-	var stream_name := "merchant_staff:r%d:e%d" % [GameManager.current_round, stock_reroll_count]
-	return StaffCatalog.draw(MERCHANT_STAFF_COUNT, RunRng.create_rng(stream_name), owned_staff_ids)
 
 
 static func draw_condiment_stock(

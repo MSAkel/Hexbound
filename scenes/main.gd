@@ -95,7 +95,7 @@ func _begin_fresh_run() -> void:
 	hand.build_starting_hand()
 	if debug_starting_round > 1:
 		GameManager.set_starting_round_for_debug(debug_starting_round)
-	var expected_deck_size := ChefRegistry.get_expected_deck_size(GameManager.selected_chef)
+	var expected_deck_size := ChefRegistry.get_expected_deck_size(GameManager.selected_chef, DeckManager.kitchen_station_ids)
 	if DeckManager.deck_size() < expected_deck_size:
 		push_error(
 			"Starting deck only dealt %d/%d cards. Delete the run save and start a new run."

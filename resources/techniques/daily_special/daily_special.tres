@@ -8,4 +8,4 @@ script = ExtResource("1_script")
 id = "daily_special"
 name = "Daily Special"
 icon = ExtResource("1_wj08d")
-description = "The first Meal served on this Station each Hour has a 1 in 3 chance to gain 2 Gold"
+description = "The first Meal served on this Station each Turn has a 1 in 3 chance to gain 2 Gold"

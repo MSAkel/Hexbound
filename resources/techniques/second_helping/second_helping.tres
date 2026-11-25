@@ -8,5 +8,5 @@ script = ExtResource("1_script")
 id = "second_helping"
 name = "Second Helping"
 icon = ExtResource("1_h1rh1")
-description = "{retrigger} the first Meal served on this Station each Hour"
+description = "{retrigger} the first Meal served on this Station each Turn"
 rarity = 1

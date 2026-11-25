@@ -64,10 +64,12 @@ func _check_tile_pool() -> void:
 	_check("Tile card pool", all_present, detail)
 
 
-## The exact symptom: the merchant has a Technique to offer, and a Chef's Notebook can open.
+## The exact symptom: the merchant fills its shelf, has a Technique to offer, and a Chef's Notebook can open.
 func _check_merchant_shelf() -> void:
-	var stock := Merchant.draw_staff_stock(0, [] as Array[String])
-	_check("Merchant Technique slot", stock.size() == Merchant.MERCHANT_STAFF_COUNT, "%d drawn" % stock.size())
+	var stock := Merchant.draw_shelf_stock(0)
+	_check("Merchant shelf", stock.size() == Merchant.shelf_card_count(), "%d drawn" % stock.size())
+	var techniques := StaffCatalog.draw(1, RandomNumberGenerator.new())
+	_check("Merchant Technique stock", techniques.size() == 1, "%d drawn" % techniques.size())
 	var notebook := MerchantPacks.draw_contents(MerchantPacks.Kind.TECHNIQUES, 0, 0)
 	_check(
 		"Chef's Notebook contents",

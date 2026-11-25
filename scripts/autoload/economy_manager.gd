@@ -9,6 +9,9 @@ extends Node
 const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
 const GOLD_PER_UNUSED_TURN := 3
+## Gold at the end of each Day for each different Meal on the board (user, Nov 24: Meals no longer
+## pay a Gold per serve). Untuned.
+const GOLD_PER_UNIQUE_MEAL := 1
 ## Free card-pick rerolls per Day before the difficulty reduction (get_free_rerolls_per_day).
 ## Untuned. With one card pick a Day (at the end of it), 2 free rerolls show up to 9 cards.
 const STARTING_REROLLS := 2
@@ -114,7 +117,9 @@ func can_afford(cost: int) -> bool:
 func apply_round_speed_rewards(skipped_turns: int) -> void:
 	var base_gold := ROUND_COMPLETION_GOLD
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns
-	var total_gold := base_gold + early_gold
+	var unique_meals := count_unique_board_meals()
+	var meal_gold := GOLD_PER_UNIQUE_MEAL * unique_meals
+	var total_gold := base_gold + early_gold + meal_gold
 
 	if total_gold > 0:
 		_credit(total_gold)
@@ -124,7 +129,22 @@ func apply_round_speed_rewards(skipped_turns: int) -> void:
 		"skipped_turns": skipped_turns,
 		"base_gold": base_gold,
 		"early_gold": early_gold,
+		"unique_meals": unique_meals,
+		"meal_gold": meal_gold,
 	}
+
+
+## Different Meals (by card id) seated on the board right now.
+func count_unique_board_meals() -> int:
+	var map := get_tree().get_first_node_in_group("hex_map_group") as HexTileMap
+	if map == null:
+		return 0
+	var ids: Dictionary = {}
+	for hex: Hex in map.get_all_hexes_with_runes():
+		var card := hex.active_tile_card
+		if card != null and card.type == TileCard.TileCardType.MEAL:
+			ids[card.id] = true
+	return ids.size()
 
 
 ## Called when a new turn begins so per-turn gold tracking resets.

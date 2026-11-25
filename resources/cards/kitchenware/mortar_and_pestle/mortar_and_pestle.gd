@@ -1,6 +1,6 @@
 extends TileCard
 
-## +2 Mult, +1 Mult if it Seasons an Ingredient. Seasoned: the next Ingredient on its Station also
+## +10 Flavour. Seasoned: the next Ingredient on its Station also
 ## counts as a Seasoning, for recipes and "for each" effects (not Station setups). See KitchenwarePrep.
 
 const TARGET_COUNT := 1
@@ -11,7 +11,7 @@ func _on_activate_tile_card(tile: Hex) -> void:
 	var targets := _effect_preview_cards(tile)
 	for target: TileCard in targets:
 		_create_targeted_ability_floating_text(tile, ICON_FLAVOUR, target)
-	_pay_kitchenware_mult(tile, targets.size())
+	_pay_kitchenware_output(tile, targets.size())
 
 
 func apply_board_prep(tile: Hex, board: HexBoardQuery) -> void:

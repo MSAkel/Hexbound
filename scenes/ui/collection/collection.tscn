@@ -1,21 +1,15 @@
 [gd_scene format=3 uid="uid://duvvd2s4kriyg"]
 
 [ext_resource type="Script" uid="uid://dy2gqsj6wlkur" path="res://scenes/ui/collection/collection.gd" id="1_wnhp0"]
-[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image_pixel_ar.png" id="2_g1foq"]
+[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_g1foq"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
+[ext_resource type="Texture2D" uid="uid://dy4vqioicidss" path="res://assets/main_menu/menu_highlight.png" id="4_highlight"]
 
 [sub_resource type="Gradient" id="Gradient_cmwxi"]
 colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_3h1o3"]
 gradient = SubResource("Gradient_cmwxi")
-width = 50
-
-[sub_resource type="Gradient" id="Gradient_qt1dd"]
-colors = PackedColorArray(0.0294099, 0.073063, 0.0810991, 1, 0.127457, 0.249696, 0.321985, 0.580392)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_wnhp0"]
-gradient = SubResource("Gradient_qt1dd")
 width = 50
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_r6dd1"]
@@ -30,6 +24,23 @@ content_margin_top = 25.0
 content_margin_right = 25.0
 content_margin_bottom = 25.0
 bg_color = Color(0.15294118, 0.15294118, 0.15294118, 0.28627452)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_menu_item"]
+content_margin_left = 40.0
+content_margin_top = 6.0
+content_margin_right = 40.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_highlight"]
+content_margin_left = 40.0
+content_margin_top = 6.0
+content_margin_right = 40.0
+content_margin_bottom = 8.0
+texture = ExtResource("4_highlight")
+texture_margin_left = 28.0
+texture_margin_top = 16.0
+texture_margin_right = 28.0
+texture_margin_bottom = 16.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wnhp0"]
 
@@ -62,16 +73,6 @@ grow_vertical = 2
 mouse_filter = 2
 texture = SubResource("GradientTexture1D_3h1o3")
 
-[node name="Foreground" type="TextureRect" parent="." unique_id=1168488758]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("GradientTexture1D_wnhp0")
-
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=746111216]
 layout_mode = 1
 anchors_preset = 15
@@ -86,11 +87,11 @@ layout_mode = 2
 theme_override_constants/separation = 24
 
 [node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer" unique_id=622977923]
-theme_type_variation = &"AccentButton"
 custom_minimum_size = Vector2(100, 42)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
+theme_type_variation = &"AccentButton"
 theme_override_font_sizes/font_size = 24
 text = "BACK"
 
@@ -104,20 +105,132 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_cmwxi")
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/PanelContainer" unique_id=1952959809]
 layout_mode = 2
 
-[node name="TabBar" type="TabBar" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=1366092697]
+[node name="PageTitle" type="Label" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=1441061010]
+visible = false
 layout_mode = 2
-size_flags_vertical = 0
-theme_override_constants/tab_separation = 8
-current_tab = 0
-tab_count = 6
-tab_0/title = "Cards"
-tab_1/title = "Condiments"
-tab_2/title = "Techniques"
-tab_3/title = "Stations"
-tab_4/title = "Chefs"
-tab_5/title = "Events"
+theme_override_colors/font_color = Color(0.9098039, 0.8745098, 0.7882353, 1)
+theme_override_font_sizes/font_size = 40
+text = "Cards"
+
+[node name="MenuCenter" type="CenterContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=1441061011]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CollectionMenu" type="VBoxContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter" unique_id=1441061012]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MenuTitle" type="Label" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu" unique_id=1441061013]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7607843, 0.6039216, 0.3372549, 1)
+theme_override_font_sizes/font_size = 30
+text = "COLLECTION"
+horizontal_alignment = 1
+
+[node name="CardsButton" type="Button" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu" unique_id=1441061001]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.97, 0.92, 0.84, 1)
+theme_override_colors/font_focus_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_font_sizes/font_size = 38
+theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/hover = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/focus = SubResource("StyleBoxTexture_highlight")
+text = "Cards"
+
+[node name="TechniquesButton" type="Button" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu" unique_id=1441061002]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.97, 0.92, 0.84, 1)
+theme_override_colors/font_focus_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_font_sizes/font_size = 38
+theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/hover = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/focus = SubResource("StyleBoxTexture_highlight")
+text = "Techniques"
+
+[node name="StationsButton" type="Button" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu" unique_id=1441061003]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.97, 0.92, 0.84, 1)
+theme_override_colors/font_focus_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_font_sizes/font_size = 38
+theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/hover = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/focus = SubResource("StyleBoxTexture_highlight")
+text = "Stations"
+
+[node name="ChefsButton" type="Button" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu" unique_id=1441061004]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.97, 0.92, 0.84, 1)
+theme_override_colors/font_focus_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_font_sizes/font_size = 38
+theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/hover = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/focus = SubResource("StyleBoxTexture_highlight")
+text = "Chefs"
+
+[node name="CondimentsButton" type="Button" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu" unique_id=1441061005]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.97, 0.92, 0.84, 1)
+theme_override_colors/font_focus_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_font_sizes/font_size = 38
+theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/hover = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/focus = SubResource("StyleBoxTexture_highlight")
+text = "Condiments"
+
+[node name="EventsButton" type="Button" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu" unique_id=1441061006]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.97, 0.92, 0.84, 1)
+theme_override_colors/font_focus_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.12, 0.13, 0.2, 1)
+theme_override_font_sizes/font_size = 38
+theme_override_styles/normal = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/hover = SubResource("StyleBoxTexture_highlight")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_menu_item")
+theme_override_styles/focus = SubResource("StyleBoxTexture_highlight")
+text = "Events"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_wnhp0")
@@ -141,4 +254,9 @@ columns = 5
 layout_mode = 0
 
 [connection signal="pressed" from="PanelContainer/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="tab_changed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/TabBar" to="." method="_on_tab_bar_tab_changed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu/CardsButton" to="." method="_on_menu_entry_pressed" binds= [0]]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu/TechniquesButton" to="." method="_on_menu_entry_pressed" binds= [1]]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu/StationsButton" to="." method="_on_menu_entry_pressed" binds= [2]]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu/ChefsButton" to="." method="_on_menu_entry_pressed" binds= [3]]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu/CondimentsButton" to="." method="_on_menu_entry_pressed" binds= [4]]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/MenuCenter/CollectionMenu/EventsButton" to="." method="_on_menu_entry_pressed" binds= [5]]

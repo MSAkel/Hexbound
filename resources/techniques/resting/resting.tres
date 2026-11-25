@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "resting"
 name = "Resting"
-description = "Meat and Poultry dishes served on this Station give +1 {mult} for each earlier Hour this Day"
+description = "Meat and Poultry dishes served on this Station give +1 {mult} for each earlier Turn this Day"
 rarity = 1

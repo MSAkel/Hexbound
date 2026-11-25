@@ -239,6 +239,37 @@ texture = ExtResource("2_gold")
 expand_mode = 3
 stretch_mode = 5
 
+[node name="MealGoldRow" type="HBoxContainer" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows" unique_id=1840275163]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 11
+
+[node name="MealGoldTitle" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/MealGoldRow" unique_id=1840275164]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.28235295, 0.18431373, 0.05882353, 1)
+theme_override_font_sizes/font_size = 22
+text = "Different Meals (x1 each)"
+vertical_alignment = 1
+
+[node name="MealGoldValue" type="Label" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/MealGoldRow" unique_id=1840275165]
+custom_minimum_size = Vector2(63, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.43, 0.06, 1)
+theme_override_font_sizes/font_size = 28
+text = "+1"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MealGoldIcon" type="TextureRect" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer/RemainingTurnsRewardsContainer/RewardBreakdownPanel/RewardBreakdownRows/MealGoldRow" unique_id=1840275166]
+custom_minimum_size = Vector2(40, 40)
+custom_maximum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("2_gold")
+expand_mode = 3
+stretch_mode = 5
+
 [node name="ButtonSpacer" type="Control" parent="PanelContainer/ContentMarginContainer/ContentBoxContainer" unique_id=2145883020]
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2

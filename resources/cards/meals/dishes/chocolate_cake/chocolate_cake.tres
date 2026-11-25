@@ -8,11 +8,13 @@ script = ExtResource("2_script")
 meal_category = 5
 recipe_sweet_count = 1
 recipe_required_card_ids = Array[String](["chocolate"])
+base_production_amount = 2
 type = 2
 product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "chocolate_cake"
 name = "Chocolate Cake"
 icon = ExtResource("1_hptpl")
-description = "Starts at x1 {mult}. Gains x0.25 {mult} for each different Sweet on its Station."
+description = "+40 {flavour}, +2 {mult}.
++2 {mult} for each different Sweet on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

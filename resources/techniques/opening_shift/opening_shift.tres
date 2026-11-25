@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "opening_shift"
 name = "Opening Shift"
-description = "+3 {mult} during the first Hour of each Day"
+description = "+3 {mult} during the first Turn of each Day"
 rarity = 0

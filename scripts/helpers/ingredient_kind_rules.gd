@@ -3,24 +3,24 @@ extends RefCounted
 
 ## Ingredient kind rules. Every Ingredient gives the same base Flavour (`BASE_FLAVOUR`) and follows
 ## one shared rule set by its kind, so Ingredient cards carry no script of their own.
-## The rule is printed on the tooltip (`TileCard.get_tooltip_description_text`), not on the card.
+## The rule is printed on its own line on the card and the tooltip (`TileCard.get_description_text`).
 ## All numbers untuned. Design: the Option D tab of the Ingredient Design Sheet.
 ##
-## - Meat: +5 Flavour per adjacent Seasoning.
-## - Seafood: +10 Flavour if next to a Fruit.
-## - Seasoning: +10 Flavour if next to another Seasoning.
+## - Meat: +5 Flavour for each adjacent Seasoning.
+## - Seafood: +5 Flavour for each adjacent Fruit.
+## - Seasoning: +5 Flavour for each adjacent Seasoning.
 ## - Vegetable: +5 Flavour per different kind of adjacent Ingredient.
-## - Fruit: +10 Flavour if next to a Kitchenware.
+## - Fruit: +5 Flavour for each adjacent Kitchenware.
 ## - Sweet: Desserts and Beverages on this Station gain +1 Mult per Sweet (read by MealCard).
-## - Dairy: +10 Flavour each time a Kitchenware prepares it this Hour.
+## - Dairy: +10 Flavour each time a Kitchenware triggers it this Hour.
 
 const BASE_FLAVOUR := 15
 
 const MEAT_PER_SEASONING := 5.0
-const SEAFOOD_NEXT_TO_FRUIT := 10.0
-const SEASONING_NEXT_TO_SEASONING := 10.0
+const SEAFOOD_PER_FRUIT := 5.0
+const SEASONING_PER_SEASONING := 5.0
 const VEGETABLE_PER_KIND := 5.0
-const FRUIT_NEXT_TO_KITCHENWARE := 10.0
+const FRUIT_PER_KITCHENWARE := 5.0
 const DAIRY_PER_PREPARATION := 10.0
 const SWEET_MEAL_MULT := 1.0
 
@@ -50,19 +50,19 @@ static func rule_kind(card: TileCard) -> StringName:
 static func rule_text(kind: StringName) -> String:
 	match kind:
 		TileCard.TAG_MEAT:
-			return "+%d {flavour} per adjacent Seasoning." % int(MEAT_PER_SEASONING)
+			return "+%d {flavour} for each adjacent Seasoning." % int(MEAT_PER_SEASONING)
 		TileCard.TAG_SEAFOOD:
-			return "+%d {flavour} if next to a Fruit." % int(SEAFOOD_NEXT_TO_FRUIT)
+			return "+%d {flavour} for each adjacent Fruit." % int(SEAFOOD_PER_FRUIT)
 		TileCard.TAG_SEASONING:
-			return "+%d {flavour} if next to another Seasoning." % int(SEASONING_NEXT_TO_SEASONING)
+			return "+%d {flavour} for each adjacent Seasoning." % int(SEASONING_PER_SEASONING)
 		TileCard.TAG_VEGETABLE:
 			return "+%d {flavour} for each different kind of adjacent Ingredient." % int(VEGETABLE_PER_KIND)
 		TileCard.TAG_FRUIT:
-			return "+%d {flavour} if next to a Kitchenware." % int(FRUIT_NEXT_TO_KITCHENWARE)
+			return "+%d {flavour} for each adjacent Kitchenware." % int(FRUIT_PER_KITCHENWARE)
 		TileCard.TAG_SWEET:
 			return "Desserts and Beverages on this Station gain +%d {mult}." % int(SWEET_MEAL_MULT)
 		TileCard.TAG_DAIRY:
-			return "+%d {flavour} each time a Kitchenware prepares it this Hour." % int(DAIRY_PER_PREPARATION)
+			return "+%d {flavour} each time a Kitchenware triggers it this Turn." % int(DAIRY_PER_PREPARATION)
 	return ""
 
 
@@ -75,13 +75,13 @@ static func flavour_bonus(card: TileCard, tile: Hex) -> float:
 		TileCard.TAG_MEAT:
 			return MEAT_PER_SEASONING * float(preview_cards(card, tile).size())
 		TileCard.TAG_SEAFOOD:
-			return SEAFOOD_NEXT_TO_FRUIT if not preview_cards(card, tile).is_empty() else 0.0
+			return SEAFOOD_PER_FRUIT * float(preview_cards(card, tile).size())
 		TileCard.TAG_SEASONING:
-			return SEASONING_NEXT_TO_SEASONING if not preview_cards(card, tile).is_empty() else 0.0
+			return SEASONING_PER_SEASONING * float(preview_cards(card, tile).size())
 		TileCard.TAG_VEGETABLE:
 			return VEGETABLE_PER_KIND * float(_adjacent_kinds(card, tile).size())
 		TileCard.TAG_FRUIT:
-			return FRUIT_NEXT_TO_KITCHENWARE if not preview_cards(card, tile).is_empty() else 0.0
+			return FRUIT_PER_KITCHENWARE * float(preview_cards(card, tile).size())
 		TileCard.TAG_DAIRY:
 			return DAIRY_PER_PREPARATION * float(card.prep_statuses.size() + card.hour_times_prepared)
 	return 0.0

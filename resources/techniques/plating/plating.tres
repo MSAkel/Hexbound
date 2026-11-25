@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 id = "plating"
 name = "Plating"
-description = "+1 {mult} for each Meal served on this Station this Hour, doubled when two or more are served"
+description = "+1 {mult} for each Meal served on this Station this Turn, doubled when two or more are served"
 rarity = 0

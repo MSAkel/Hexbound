@@ -14,5 +14,6 @@ ingredient_tags = Array[StringName]([&"dish"])
 id = "chicken_curry"
 name = "Chicken Curry"
 icon = ExtResource("1_i4lop")
-description = "+5 {mult}. +2 {mult} for each different Seasoning on its Station."
+description = "+5 {mult}.
++2 {mult} for each different Seasoning on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"
