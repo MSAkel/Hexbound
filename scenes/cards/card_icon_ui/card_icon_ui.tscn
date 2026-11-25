@@ -8,6 +8,9 @@
 [ext_resource type="Texture2D" uid="uid://ckkj012xvfaf4" path="res://assets/particles/slash/slash_01.png" id="6_2n4xw"]
 [ext_resource type="Texture2D" uid="uid://b7o3wmx04suuu" path="res://assets/icons/stats/garnish.png" id="7_8l3cu"]
 [ext_resource type="Script" uid="uid://oseck4kpvgh2" path="res://scenes/cards/card_icon_ui/hex_stroke.gd" id="8_qx4s6"]
+[ext_resource type="Texture2D" uid="uid://gmxnx6ksvag2" path="res://assets/gui/panels/ingredient_card_icon_container.png" id="9_ingframe"]
+[ext_resource type="Texture2D" uid="uid://1dd3hpc8l3wk" path="res://assets/gui/panels/kitchenware_card_icon_container.png" id="10_kitframe"]
+[ext_resource type="Texture2D" uid="uid://coy82wswwp7sm" path="res://assets/gui/panels/meal_card_icon_container.png" id="11_mealframe"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qvrl4"]
 
@@ -176,9 +179,70 @@ disabled = true
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="CardIcon" parent="Container/RuneButton" unique_id=1287840582 instance=ExtResource("2_2geio")]
-custom_minimum_size = Vector2(112, 96)
+[node name="Frame" type="Control" parent="Container/RuneButton" unique_id=1620934871]
 layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -34.0
+offset_top = -34.0
+offset_right = 34.0
+offset_bottom = 34.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="IngredientFrame" type="TextureRect" parent="Container/RuneButton/Frame" unique_id=1620934872]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_ingframe")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KitchenwareFrame" type="TextureRect" parent="Container/RuneButton/Frame" unique_id=1620934873]
+visible = false
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_kitframe")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MealFrame" type="TextureRect" parent="Container/RuneButton/Frame" unique_id=1620934874]
+visible = false
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_mealframe")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CardIcon" parent="Container/RuneButton/Frame" unique_id=1287840582 instance=ExtResource("2_2geio")]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 1
+offset_left = 11.0
+offset_top = 11.0
+offset_right = -11.0
+offset_bottom = -11.0
+show_hex = false
 
 [node name="OutputChip" type="PanelContainer" parent="Container" unique_id=1294529278]
 z_index = 5

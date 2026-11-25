@@ -163,7 +163,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(78, 40)
 layout_mode = 2
 size_flags_vertical = 4
-tooltip_text = "Paste seed from clipboard"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)

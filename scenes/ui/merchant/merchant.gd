@@ -809,7 +809,6 @@ func _build_removal_button() -> void:
 	_removal_button = reroll_button.duplicate() as Button
 	_removal_button.name = "RemovalButton"
 	_removal_button.icon = null
-	_removal_button.tooltip_text = "Take a card out of your deck for good. Each removal this visit costs 1 Gold more."
 	var parent := reroll_button.get_parent()
 	parent.add_child(_removal_button)
 	parent.move_child(_removal_button, reroll_button.get_index() + 1)

@@ -74,7 +74,7 @@ func _draw() -> void:
 	draw_polyline(ring, HEX_OUTLINE_COLOR, outline_width, true)
 
 
-## Half side of the square token for a control of this radius. Shared with HexStroke so the glow traces the token.
+## Half side of the square token for a control of this radius.
 static func token_half_extent(radius: float) -> float:
 	return radius * TOKEN_HALF_RATIO
 
