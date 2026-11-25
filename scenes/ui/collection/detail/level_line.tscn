@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[node name="LevelLine" type="Label"]
+custom_minimum_size = Vector2(80, 0)
+theme_override_colors/font_color = Color(0.2431, 0.2039, 0.149, 1)
+theme_override_font_sizes/font_size = 17
+text = "+1 Flavour on each Meat."
+autowrap_mode = 3

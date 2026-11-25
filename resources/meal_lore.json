@@ -1,5 +1,5 @@
 {
-  "_note": "Draft real-world history for the Meal Collection page. Not used by the game yet. Keyed by meal card id.",
+  "_note": "Real-world history for each Meal, keyed by meal card id. Read by the game's Collection screen (MealLore) and the Meal Collection web page. Draft text: fact-check before shipping.",
   "meals": {
     "apple_pie": {
       "origin": "England",
@@ -8,7 +8,7 @@
       "where": "England",
       "when": "c. 1381",
       "certainty": "No single inventor.",
-      "certainty_note": "The oldest known English recipe dates to the late 1300s; the dish grew from many kitchens.",
+      "certainty_note": "The oldest known English recipe dates to the late 1300s, but the dish grew from many kitchens.",
       "story": "The earliest English apple pie recipe, from around 1381, called for apples, figs, raisins, pears and saffron in a pastry case. Sugar was too expensive to add. Settlers later brought pies to America, where apple pie became a national symbol.",
       "facts": [
         "Apples are not native to America: early colonists brought seeds and cuttings from Europe.",
@@ -31,7 +31,7 @@
       "where": "Mesopotamia",
       "when": "c. 3500 BCE",
       "certainty": "Ancient roots.",
-      "certainty_note": "Residue on jars from around 3500 BCE is strong evidence; brewing may be older.",
+      "certainty_note": "Residue on jars from around 3500 BCE is strong evidence, and brewing may be older still.",
       "story": "Early farmers in the Near East discovered that soaked grain left to sit would ferment. The Sumerians loved beer so much they had a goddess of brewing, Ninkasi. A hymn to her, written about 1800 BCE, doubles as one of the oldest beer recipes.",
       "facts": [
         "Bavaria’s 1516 purity law allowed only water, barley and hops in beer.",
@@ -52,7 +52,7 @@
       "where": "Near Nantes, France",
       "when": "c. 1890s",
       "certainty": "Popular legend.",
-      "certainty_note": "Lefeuvre is widely credited with beurre blanc; the \"happy accident\" detail is a cherished story.",
+      "certainty_note": "Lefeuvre is widely credited with beurre blanc. The \"happy accident\" detail is a cherished story.",
       "story": "Cook Clémence Lefeuvre was said to be making a béarnaise for fish when she forgot the egg yolks. What came out was a silky sauce of butter, shallots and wine vinegar. Diners loved it, and beurre blanc (\"white butter\") became a classic of the Loire Valley.",
       "facts": [
         "Beurre blanc was first served with pike from the Loire, not scallops.",
@@ -75,7 +75,7 @@
       "where": "Peru",
       "when": "About 2,000 years ago",
       "certainty": "Ancient roots.",
-      "certainty_note": "Early versions used local fruit juices; lime arrived later with the Spanish.",
+      "certainty_note": "Early versions used local fruit juices. Lime arrived later with the Spanish.",
       "story": "Along Peru’s coast, people have eaten raw fish marinated in tangy juices for around two thousand years. When Spanish ships brought limes and onions, the dish became the bright, zesty ceviche known today. The citrus firms up the fish so it tastes cooked without any heat.",
       "facts": [
         "Peru celebrates National Ceviche Day every June 28th.",
@@ -117,11 +117,11 @@
     "chicken_curry": {
       "origin": "India & Britain",
       "tagline": "A spiced stew that travelled from India to become a British favourite.",
-      "first_made_by": "Indian cooks; Hannah Glasse wrote the first English recipe",
+      "first_made_by": "Indian cooks, with the first English recipe by Hannah Glasse",
       "where": "India, then London",
       "when": "1747 (first English recipe)",
       "certainty": "No single inventor.",
-      "certainty_note": "Spiced meat stews are far older than the word “curry”; the dates here are when the dish reached English cookbooks and restaurants.",
+      "certainty_note": "Spiced meat stews are far older than the word “curry”. The dates here are when the dish reached English cookbooks and restaurants.",
       "story": "Cooks across India have simmered meat in spiced sauces for centuries. British traders and soldiers brought a taste for these dishes home, and in 1747 Hannah Glasse printed a recipe “to make a Currey the India way” in her best-selling cookbook. In 1810 Sake Dean Mahomed opened the Hindoostane Coffee House in London, the first Indian restaurant in Britain.",
       "facts": [
         "The English word “curry” is often traced to the Tamil “kari”, a spiced sauce.",
@@ -146,7 +146,7 @@
       "where": "San Antonio, Texas",
       "when": "1860s–1930s",
       "certainty": "No single inventor.",
-      "certainty_note": "Chili was street food long before anyone wrote a recipe down; the chili queens made it famous.",
+      "certainty_note": "Chili was street food long before anyone wrote a recipe down. The chili queens made it famous.",
       "story": "From the 1860s, women known as the chili queens set up stalls in San Antonio’s plazas each evening and sold bowls of spicy beef stew by lantern light. Visitors spread the word. In 1896 William Gebhardt registered his Eagle Brand chili powder in San Antonio, so anyone could make the dish at home.",
       "facts": [
         "Chili was named the official state dish of Texas in 1977.",
@@ -170,7 +170,7 @@
       "where": "Amsterdam, Netherlands",
       "when": "1828",
       "certainty": "No single inventor.",
-      "certainty_note": "Van Houten’s cocoa press made baking with chocolate practical; many bakers built on it.",
+      "certainty_note": "Van Houten’s cocoa press made baking with chocolate practical, and many bakers built on it.",
       "story": "For centuries chocolate was mostly a drink. In 1828 Dutch chemist Coenraad van Houten patented a press that squeezed fat from cocoa beans, leaving a fine powder. Bakers could now mix chocolate straight into batter, and chocolate cakes spread across Europe and America.",
       "facts": [
         "Austria’s Sachertorte was created in 1832 by 16-year-old apprentice Franz Sacher.",
@@ -193,7 +193,7 @@
       "where": "The Brown Derby, Hollywood",
       "when": "1937 (some say 1929)",
       "certainty": "Disputed origin.",
-      "certainty_note": "Most accounts credit owner Robert Cobb in 1937; others credit his chefs, and one story dates it to 1929.",
+      "certainty_note": "Most accounts credit owner Robert Cobb in 1937. Others credit his chefs, and one story dates it to 1929.",
       "story": "The best-known story says Robert Cobb, owner of the Hollywood Brown Derby, was hungry late one night and chopped up whatever he found in the kitchen: lettuce, avocado, tomato, chicken, egg, cheese and bacon. Another version says he chopped it finely for a friend, theatre owner Sid Grauman, after dental work. Either way it went on the menu and became a classic.",
       "facts": [
         "The salad is traditionally served with each ingredient laid out in its own row.",
@@ -218,7 +218,7 @@
       "where": "Ethiopia and Yemen",
       "when": "1400s (first records)",
       "certainty": "Popular legend.",
-      "certainty_note": "The Kaldi story was first written down in 1671; the earliest solid records come from Yemen’s Sufi monasteries.",
+      "certainty_note": "The Kaldi story was first written down in 1671. The earliest solid records come from Yemen’s Sufi monasteries.",
       "story": "Legend says an Ethiopian goatherd named Kaldi noticed his goats dancing after eating red berries from a shrub. What is certain is that by the 1400s, Sufi monks in Yemen brewed coffee to stay awake through night prayers. Coffeehouses soon spread to Mecca, Istanbul and Europe.",
       "facts": [
         "Coffee \"beans\" are actually the seeds of a cherry-like fruit.",
@@ -258,7 +258,7 @@
       "where": "Europe",
       "when": "Middle Ages",
       "certainty": "Ancient roots.",
-      "certainty_note": "Custards baked in pastry are recorded in medieval European cookery; milk-and-egg mixtures are likely older still.",
+      "certainty_note": "Custards baked in pastry are recorded in medieval European cookery, and milk-and-egg mixtures are likely older still.",
       "story": "Medieval cooks baked mixtures of milk or cream and eggs inside pastry cases, and the name is usually traced to “crustade”, a dish with a crust. Over time custard stepped out of the pastry to become a dessert and a pouring sauce in its own right. In 1837 the English chemist Alfred Bird created an egg-free custard powder because his wife was allergic to eggs.",
       "facts": [
         "Crème brûlée, flan and crème anglaise are all members of the custard family.",
@@ -280,7 +280,7 @@
       "where": "Belgium or France",
       "when": "Late 1700s",
       "certainty": "Disputed origin.",
-      "certainty_note": "Belgium and France both claim fried potato sticks; neither story has firm proof.",
+      "certainty_note": "Belgium and France both claim fried potato sticks, but neither story has firm proof.",
       "story": "Belgians tell of river villages that fried potato strips when the rivers froze and they couldn’t catch fish. The French point to Paris street vendors selling fried potatoes around the time of the Revolution. In 1802 Thomas Jefferson served “potatoes served in the French manner” at the White House, and fries never left the menu.",
       "facts": [
         "Belgian frites are traditionally fried twice, once to cook and once to crisp.",
@@ -296,11 +296,11 @@
     "fried_chicken": {
       "origin": "Southern USA",
       "tagline": "Crisp, seasoned and shaped by two cooking traditions.",
-      "first_made_by": "Cooks of the American South; Mary Randolph printed an early recipe",
+      "first_made_by": "Cooks of the American South, with an early recipe by Mary Randolph",
       "where": "Virginia, USA",
       "when": "1820s (first printed recipe)",
       "certainty": "No single inventor.",
-      "certainty_note": "Southern fried chicken grew out of many kitchens; the date is the earliest printed American recipe.",
+      "certainty_note": "Southern fried chicken grew out of many kitchens. The date is the earliest printed American recipe.",
       "story": "Scottish settlers liked to fry chicken in fat, and enslaved West African cooks brought rich seasoning traditions to Southern kitchens. Together they shaped the crisp, spiced fried chicken of the American South. Mary Randolph’s cookbook The Virginia House-Wife, from the 1820s, has one of the first printed American recipes: dredge in flour, salt, and fry in lard until light brown.",
       "facts": [
         "Colonel Harland Sanders began selling his fried chicken at a roadside restaurant in Corbin, Kentucky.",
@@ -347,7 +347,7 @@
       "where": "Worldwide",
       "when": "Ancient",
       "certainty": "No single inventor.",
-      "certainty_note": "Mixing fresh fruit is as old as orchards; there is no first recipe to point to.",
+      "certainty_note": "Mixing fresh fruit is as old as orchards, so there is no first recipe to point to.",
       "story": "People have tossed fresh fruit together for as long as orchards have existed. In the early 1900s, canneries in California turned leftover peaches, pears and grapes into \"fruit cocktail\", making fruit salad a year-round staple in kitchens around the world.",
       "facts": [
         "Food scientist William Vere Cruess at UC Berkeley is often called the father of canned fruit cocktail.",
@@ -366,9 +366,9 @@
       "tagline": "A cold soup from the hot south of Spain.",
       "first_made_by": "Andalusian farm workers (traditionally)",
       "where": "Andalusia, Spain",
-      "when": "Centuries old; tomato versions from the 1800s",
+      "when": "Centuries old (with tomato from the 1800s)",
       "certainty": "Gradual origin.",
-      "certainty_note": "Early gazpachos were bread, oil, garlic and vinegar; tomatoes and peppers came after they arrived from the Americas.",
+      "certainty_note": "Early gazpachos were bread, oil, garlic and vinegar. Tomatoes and peppers came after they arrived from the Americas.",
       "story": "Gazpacho began in Andalusia as a simple pounded mix of stale bread, olive oil, garlic, vinegar and water, a cooling meal for people working in the heat. Tomatoes and peppers, brought from the Americas, were added later, and by the 1800s the red version familiar today had taken over. It is still served cold, often in a glass.",
       "facts": [
         "Ajoblanco is a white gazpacho made with almonds instead of tomatoes.",
@@ -392,7 +392,7 @@
       "where": "Mexico",
       "when": "About 9,000 years ago (corn)",
       "certainty": "Ancient roots.",
-      "certainty_note": "Corn was domesticated in Mexico thousands of years ago; roasting it over fire is as old as the crop.",
+      "certainty_note": "Corn was domesticated in Mexico thousands of years ago, and roasting it over fire is as old as the crop.",
       "story": "Farmers in southern Mexico bred corn from a wild grass called teosinte around 9,000 years ago. Roasting cobs over an open fire is one of the oldest ways to eat it. In Mexico today, street vendors sell elote: grilled corn spread with mayonnaise, crumbly cheese, chili powder and lime.",
       "facts": [
         "“Elote” comes from the Nahuatl word “elotl”, meaning ear of corn.",
@@ -438,7 +438,7 @@
       "where": "Central Mexico",
       "when": "Before the 1500s",
       "certainty": "Ancient roots.",
-      "certainty_note": "Spanish visitors in the 1500s described an Aztec avocado sauce; the dish is likely much older.",
+      "certainty_note": "Spanish visitors in the 1500s described an Aztec avocado sauce, and the dish is likely much older.",
       "story": "The Aztecs mashed avocados in a stone bowl called a molcajete and called the result “ahuacamolli”, avocado sauce. Spanish arrivals in the 1500s wrote about it with delight. The basic idea has barely changed: ripe avocado, chili, a little onion and salt, with lime added later.",
       "facts": [
         "The name joins the Nahuatl words “ahuacatl” (avocado) and “molli” (sauce).",
@@ -485,8 +485,8 @@
       "where": "No single place",
       "when": "Modern dish, ancient parts",
       "certainty": "No single inventor.",
-      "certainty_note": "Salmon and honey have each been eaten for thousands of years; the glazed dish has no recorded first cook.",
-      "story": "Peoples of the Pacific Northwest have roasted salmon over open fires for thousands of years, often on cedar planks. Honey is one of humanity’s oldest sweeteners; a cave painting in Spain thousands of years old shows someone gathering it from a wild hive. Brushing honey over salmon so it caramelises in the heat is a modern meeting of the two.",
+      "certainty_note": "Salmon and honey have each been eaten for thousands of years, but the glazed dish has no recorded first cook.",
+      "story": "Peoples of the Pacific Northwest have roasted salmon over open fires for thousands of years, often on cedar planks. Honey is one of humanity’s oldest sweeteners. A cave painting in Spain thousands of years old shows someone gathering it from a wild hive. Brushing honey over salmon so it caramelises in the heat is a modern meeting of the two.",
       "facts": [
         "Salmon usually return to the stream where they hatched to spawn.",
         "Sealed honey keeps for an extraordinarily long time because of its low water content.",
@@ -508,7 +508,7 @@
       "where": "Coney Island, New York",
       "when": "Late 1800s",
       "certainty": "Disputed origin.",
-      "certainty_note": "Feltman is generally credited with the sausage in a bun; others claim it, and the name’s origin is also argued over.",
+      "certainty_note": "Feltman is generally credited with the sausage in a bun, but others claim it and the name’s origin is also argued over.",
       "story": "German immigrants brought frankfurters and wieners to America. Charles Feltman, a German baker’s son, began selling food from a cart at Coney Island in 1867, and he is generally credited with putting hot sausages in rolls so customers needed no plates or cutlery. His restaurant grew to fill a whole city block, and in 1916 a former employee, Nathan Handwerker, opened Nathan’s Famous nearby.",
       "facts": [
         "Nathan’s holds a famous hot dog eating contest at Coney Island every Fourth of July.",
@@ -535,7 +535,7 @@
       "story": "Perry’s restaurant in Milford served a warm lobster roll, dressed with melted butter in a toasted bun, from 1929. The cold Maine version with mayonnaise came later. Both now define a New England summer.",
       "facts": [
         "In colonial New England lobster was so plentiful it was seen as poor people’s food.",
-        "Connecticut style is warm with butter; Maine style is cold with mayo.",
+        "Connecticut style is warm with butter, while Maine style is cold with mayo.",
         "A split-top bun lets the sides be buttered and griddled to a golden crisp."
       ],
       "ingredients": [
@@ -553,7 +553,7 @@
       "where": "London, England",
       "when": "1747",
       "certainty": "Well documented.",
-      "certainty_note": "Glasse’s cookbook has an early printed recipe; people likely mashed potatoes long before.",
+      "certainty_note": "Glasse’s cookbook has an early printed recipe, but people likely mashed potatoes long before.",
       "story": "Potatoes came from the Andes and reached Europe in the 1500s, but many people were wary of them at first. Hannah Glasse’s best-selling 1747 cookbook included a recipe for potatoes mashed with butter and milk. In France, Antoine-Augustin Parmentier helped win people over to the potato.",
       "facts": [
         "Parmentier first ate potatoes as a prisoner of war and spent years promoting them in France.",
@@ -575,7 +575,7 @@
       "where": "United States",
       "when": "Early 1900s",
       "certainty": "Disputed origin.",
-      "certainty_note": "The Pig Stand drive-in chain in Texas claimed to have invented them; fried onion recipes are older, and the claim can’t be confirmed.",
+      "certainty_note": "The Pig Stand drive-in chain in Texas claimed to have invented them. Fried onion recipes are older, and the claim can’t be confirmed.",
       "story": "Fried onions in batter go back a long way, but onion rings as a menu item took off in American roadside restaurants in the early 1900s. The Pig Stand, an early Texas drive-in chain, claimed to have invented them. They became a standard side for burgers, and many chains now make theirs from chopped onion pressed into ring shapes.",
       "facts": [
         "Sweet onions are often used because they turn soft and mild when fried.",
@@ -599,7 +599,7 @@
       "where": "Mediterranean",
       "when": "Ancient",
       "certainty": "Ancient roots.",
-      "certainty_note": "Dressed raw greens appear in Roman writing; no single creator.",
+      "certainty_note": "Dressed raw greens appear in Roman writing, with no single creator.",
       "story": "Romans enjoyed raw greens dressed with salt, oil and vinegar. They called them \"herba salata\", salted greens, which gave us the word salad. Over the centuries, salads grew from simple leaves into whole meals.",
       "facts": [
         "In 1699 English writer John Evelyn published \"Acetaria\", an entire book about salads.",
@@ -622,7 +622,7 @@
       "where": "United States",
       "when": "1920s",
       "certainty": "Popular story.",
-      "certainty_note": "Seafood \"cocktails\" existed earlier; Prohibition is credited with making them fashionable.",
+      "certainty_note": "Seafood \"cocktails\" existed earlier, but Prohibition is credited with making them fashionable.",
       "story": "Seafood cocktails go back to the Gold Rush, but shrimp cocktail took off during Prohibition in the 1920s. With alcohol banned, restaurants filled their cocktail glasses with chilled shrimp and tangy sauce instead. It became the classic steakhouse starter.",
       "facts": [
         "In 1970s Britain, prawn cocktail was the country’s most popular starter.",
@@ -644,7 +644,7 @@
       "where": "Around the Mediterranean and the Middle East",
       "when": "Ancient times",
       "certainty": "Ancient roots.",
-      "certainty_note": "Cooking meat on spits is far older than written records; no single place or person can be credited.",
+      "certainty_note": "Cooking meat on spits is far older than written records, so no single place or person can be credited.",
       "story": "Threading meat onto a stick and turning it over a fire is one of the oldest ways of cooking. Homer’s Iliad describes meat roasted on spits, and the idea spread into dishes across the world: Greek souvlaki, Turkish şiş kebab, Japanese yakitori and Southeast Asian satay. Each region settled on its own meat, cut and seasoning, but the stick stayed the same.",
       "facts": [
         "“Şiş” is Turkish for skewer, which is where “shish kebab” comes from.",
@@ -667,7 +667,7 @@
       "where": "Persia and the Middle East",
       "when": "Medieval times",
       "certainty": "Ancient roots.",
-      "certainty_note": "Chilled sweet drinks called sharbat came first; frozen sorbetto developed later in Italy and France.",
+      "certainty_note": "Chilled sweet drinks called sharbat came first. Frozen sorbetto developed later in Italy and France.",
       "story": "In Persia, people cooled sweet fruit drinks called sharbat with ice stored through the summer in domed ice houses. The idea travelled to Italy, where cooks froze sweetened fruit juice into sorbetto, and on to France as sorbet. With no milk or cream, it tastes of pure fruit.",
       "facts": [
         "The word comes from the Arabic “sharbat”, a drink.",
@@ -688,7 +688,7 @@
       "where": "La Maison Dorée, Marseille",
       "when": "1880",
       "certainty": "Well attributed.",
-      "certainty_note": "French culinary writers credit Meynier with the 1880 recipe; olive pastes go back to Roman times.",
+      "certainty_note": "French culinary writers credit Meynier with the 1880 recipe, but olive pastes go back to Roman times.",
       "story": "In 1880, chef Meynier of La Maison Dorée in Marseille blended black olives, capers and anchovies with olive oil into a rich paste. He named it after the capers, “tapenas” in Provençal. Olive pastes are much older: Roman writers such as Cato the Elder described olive relishes over two thousand years ago.",
       "facts": [
         "The name comes from the Provençal word for capers, not olives.",
@@ -711,7 +711,7 @@
       "where": "France (the name)",
       "when": "Ancient",
       "certainty": "No single inventor.",
-      "certainty_note": "Oil and vinegar dressings are ancient; the French name came much later.",
+      "certainty_note": "Oil and vinegar dressings are ancient, but the French name came much later.",
       "story": "People have dressed food with oil and vinegar since ancient times. The name comes from the French \"vinaigre\", meaning sour wine. A spoon of mustard helps the oil and vinegar stay mixed, turning two liquids that hate each other into a smooth dressing.",
       "facts": [
         "The classic ratio is three parts oil to one part vinegar.",
@@ -739,7 +739,7 @@
       "facts": [
         "The oldest known winery, with a grape press, was found in a cave in Armenia.",
         "Georgian qvevri winemaking is on UNESCO’s Intangible Cultural Heritage list.",
-        "Red wine gets its colour from grape skins; the juice of most grapes is clear."
+        "Red wine gets its colour from grape skins. The juice of most grapes is clear."
       ],
       "ingredients": [
         "Grapes",

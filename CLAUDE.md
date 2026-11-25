@@ -110,8 +110,8 @@ python scripts/debug/catalog/build_meal_collection.py catalog.json meal_collecti
 to the mechanics it relies on and affects is the `MAP` table in `technique_map_template.html`;
 a new Technique shows as unmapped until it gets an entry there.
 `build_meal_collection.py catalog.json meal_collection.html` builds the Meal Collection page:
-draft real-world history per Meal from `meal_collection/meal_lore.json` (keyed by meal id, not
-used by the game) plus effect, category and recipe from the export. A new Meal shows as
+draft real-world history per Meal from `resources/meal_lore.json` (keyed by meal id, and the game's
+Collection screen reads the same file through `MealLore`) plus effect, category and recipe from the export. A new Meal shows as
 "still to write" until it gets a lore entry; the builder lists those. Stations export a `setup` list
 (kinds, named cards, "different" rules) that the maps read; keep it in step with `StationType`.
 
@@ -206,6 +206,24 @@ per Station type, used as a mini (first 5), small (first 6) or full (all 9) kit.
 `kit_swaps` (`"<station id>:<slot>=<card id>"`) replace kit slots with a chef's signature cards.
 `ChefRegistry.build_starting_deck` builds it in the `starting_deck:<chef id>` RNG stream, so a seed
 deals the same deck. An empty `deck_stations` deals the full set with no Meals.
+
+## Collection screen
+
+`scenes/ui/collection/collection.tscn`: a menu of six collections, each a page with a tile list
+(`collection_tile.tscn`) on the left and a parchment detail panel (`detail/collection_detail.tscn`,
+built from the small section scenes in `detail/`) on the right. Looks live in those scenes.
+Meal history comes from `resources/meal_lore.json` (`MealLore`). The right stick scrolls the detail
+panel through `InputManager`'s `get_pad_scroll_target` menu hook.
+
+`CollectionStats` (autoload) keeps lifetime stats in `user://collection_stats.json`, separate from the
+run save: Picked (Merchant buys, pack picks, card picks), Wins with (in the final deck / roster / belt
+/ board at a win), Times served, Station Times set, Chef runs, wins, best Day and top level won.
+A run's counts gather in memory, ride in the run save (`collection_stats` key) and merge into the
+file once when the run ends (`RunHistoryManager.archive_finished_run`, or
+`finish_abandoned_run` from the save). Headless runs and `skip_presentation` (bot, fuzz, CI) never
+count or write. Story unlocks at 30 lifetime serves, Fun facts at 50 (`STORY_UNLOCK_SERVES`,
+`FACTS_UNLOCK_SERVES`). Unlocks are stored, so they never lock again. A Meal with
+`hidden_until_discovered` shows as "???" until it has been in the deck (none are hidden now).
 
 ## Conventions
 

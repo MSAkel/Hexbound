@@ -1,9 +1,10 @@
 """Fill in Gimbot's blank accented letters (é, û, ç, ñ ...) from its own base letters and accent marks.
 
-gimbot_regular.otf maps Latin-1 accented letters to empty glyphs. This writes a copy with them
-composed, used only by the Meal Collection page (Gimbot-Accented.otf here). Needs fontTools.
+The original gimbot_regular.otf mapped Latin-1 accented letters to empty glyphs. The game's
+assets/fonts/gimbot_regular.otf is this script's output (Crème Brûlée, Beurre Blanc). Run it again
+only on a fresh copy of the original font. Needs fontTools.
 
-    python compose_accents.py assets/fonts/gimbot_regular.otf Gimbot-Accented.otf
+    python compose_accents.py original_gimbot_regular.otf assets/fonts/gimbot_regular.otf
 """
 import sys, unicodedata
 from fontTools.ttLib import TTFont

@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/detail_chips_section.gd" id="1_chips"]
+
+[node name="DetailChipsSection" type="VBoxContainer"]
+theme_override_constants/separation = 10
+script = ExtResource("1_chips")
+
+[node name="Heading" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_font_sizes/font_size = 26
+text = "Traditional ingredients"
+
+[node name="Chips" type="HFlowContainer" parent="."]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8

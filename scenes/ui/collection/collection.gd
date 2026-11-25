@@ -1,27 +1,23 @@
 extends Panel
 
-## Collection screen. Opens on a vertical menu of collection types; each entry opens a page that
-## lists only that type (cards, Techniques, Stations, Chefs, Condiments, events). Back on a page
-## returns to the menu, back on the menu leaves the Collection.
+## Collection screen. Opens on a vertical menu of collection types. Each entry opens a page that
+## lists only that type (cards, Techniques, Stations, Chefs, Condiments, events): a grid of tiles on
+## the left and a detail panel for the selected tile on the right. Back on a page returns to the
+## menu, back on the menu leaves the Collection.
 
 signal closed
 
 const CONTENT := "PanelContainer/VBoxContainer/PanelContainer/VBoxContainer"
+const TILE_SCENE := preload("res://scenes/ui/collection/collection_tile.tscn")
+const EVENT_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
 
 @onready var menu_center: CenterContainer = get_node(CONTENT + "/MenuCenter")
 @onready var collection_menu: VBoxContainer = get_node(CONTENT + "/MenuCenter/CollectionMenu")
 @onready var page_title: Label = get_node(CONTENT + "/PageTitle")
-@onready var collection_grid_container: GridContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer/CollectionGridContainer
-@onready var collection_scroll: ScrollContainer = $PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer
-
-const CARD_UI_SCENE := preload("uid://dt0t3awb0mejg")
-const EVENT_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
-
-const TEXT_PRIMARY := Color("e8dfc9")
-const TEXT_SECONDARY := Color("aeb9b3")
-const ACCENT := Color("c29a56")
-const ITEM_BACKGROUND := Color("182b30e8")
-const ITEM_BORDER := Color("617575")
+@onready var page_body: HBoxContainer = get_node(CONTENT + "/PageBody")
+@onready var list_scroll: ScrollContainer = get_node(CONTENT + "/PageBody/ListPanel/ListScroll")
+@onready var list_grid: GridContainer = get_node(CONTENT + "/PageBody/ListPanel/ListScroll/ListMargin/ListGrid")
+@onready var detail: CollectionDetail = get_node(CONTENT + "/PageBody/Detail")
 
 ## Menu order. Each menu button passes its index (the scene's pressed binds).
 enum CollectionPage {
@@ -37,14 +33,21 @@ const NO_PAGE := -1
 
 ## Page on screen, or NO_PAGE while the menu shows.
 var _page: int = NO_PAGE
+## What each tile of the open page shows, by tile index: a Card, StationType, ChefDefinition,
+## Condiment or an EventManager.Type.
+var _entries: Array = []
 
 
 func _ready() -> void:
 	add_to_group(InputManager.MENU_GROUP)
-	collection_scroll.follow_focus = true
 	# Game terms can be renamed, so these two read GameTerms rather than the scene text.
 	(collection_menu.get_node("TechniquesButton") as Button).text = GameTerms.TECHNIQUES
 	(collection_menu.get_node("CondimentsButton") as Button).text = GameTerms.CONDIMENTS
+	# Hover moves focus, so only one menu entry shows the highlight (as on the main menu).
+	for node in collection_menu.get_children():
+		if node is Button:
+			var button := node as Button
+			button.mouse_entered.connect(button.grab_focus)
 	visibility_changed.connect(_on_visibility_changed)
 	_show_menu()
 
@@ -65,7 +68,11 @@ func _focus_current() -> void:
 		var first := collection_menu.get_node("CardsButton") as Button
 		first.grab_focus()
 		return
-	if MenuFocus.grab_first(collection_grid_container) == null:
+	for tile in list_grid.get_children():
+		if tile is CollectionTile and (tile as CollectionTile).button_pressed:
+			(tile as CollectionTile).grab_focus()
+			return
+	if MenuFocus.grab_first(list_grid) == null:
 		MenuFocus.grab_first(self)
 
 
@@ -81,26 +88,43 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Shows the menu of collection types and hides any page.
 func _show_menu(focus_page: int = CollectionPage.CARDS) -> void:
-	_clear_collection()
+	_clear_list()
 	_page = NO_PAGE
 	menu_center.visible = true
 	page_title.visible = false
-	collection_scroll.visible = false
+	page_body.visible = false
 	var buttons := collection_menu.get_children().filter(func(node: Node) -> bool: return node is Button)
 	var target := buttons[clampi(focus_page, 0, buttons.size() - 1)] as Button
 	target.grab_focus.call_deferred()
 
 
-## Opens the page for one collection type.
+## Opens the page for one collection type, with its first entry selected.
 func _show_page(page: int) -> void:
 	_page = page
 	menu_center.visible = false
 	page_title.visible = true
-	collection_scroll.visible = true
-	collection_scroll.scroll_vertical = 0
+	page_body.visible = true
 	page_title.text = _page_title(page)
-	_show_tab(page)
+	_clear_list()
+	_entries = _page_entries(page)
+	# One group per page, so exactly one tile is selected.
+	var group := ButtonGroup.new()
+	for i in _entries.size():
+		var tile := TILE_SCENE.instantiate() as CollectionTile
+		tile.entry_index = i
+		tile.button_group = group
+		list_grid.add_child(tile)
+		_set_tile(tile, _entries[i])
+		tile.chosen.connect(_on_tile_chosen)
+	list_scroll.scroll_vertical = 0
+	if list_grid.get_child_count() > 0:
+		(list_grid.get_child(0) as CollectionTile).select()
 	_focus_current.call_deferred()
+
+
+## The right stick scrolls the detail panel while a page is open (InputManager hook).
+func get_pad_scroll_target() -> ScrollContainer:
+	return detail.get_scroll() if _page != NO_PAGE else null
 
 
 func _page_title(page: int) -> String:
@@ -120,48 +144,96 @@ func _page_title(page: int) -> String:
 	return ""
 
 
-func _show_tab(page: int) -> void:
-	_clear_collection()
+func _page_entries(page: int) -> Array:
+	var entries: Array = []
 	match page:
 		CollectionPage.CARDS:
-			_show_cards()
-		CollectionPage.CONDIMENTS:
-			_show_condiments()
+			var cards: Array = []
+			for card in GameManager.tile_cards_pool:
+				if card is TileCard:
+					cards.append(card)
+			entries = _with_meals_grouped_by_category(cards)
 		CollectionPage.STAFF:
-			_show_staff()
+			entries.assign(StaffCatalog.get_all())
 		CollectionPage.STATIONS:
-			_show_stations()
+			entries.assign(StationManager.get_station_types())
 		CollectionPage.CHEFS:
-			_show_chefs()
+			entries.assign(ChefRegistry.get_all_chefs())
+		CollectionPage.CONDIMENTS:
+			entries.assign(CondimentCatalog.get_all())
 		CollectionPage.EVENTS:
-			_show_events()
+			entries.assign(EventManager.ALL_EVENTS)
+	return entries
 
 
-func _clear_collection() -> void:
+func _set_tile(tile: CollectionTile, entry: Variant) -> void:
+	if _is_undiscovered(entry):
+		tile.set_undiscovered((entry as MealCard).icon)
+	elif entry is MealCard:
+		var meal := entry as MealCard
+		tile.set_entry(meal.icon, meal.name, CollectionDetail.meal_kind_label(meal))
+	elif entry is TileCard:
+		var card := entry as TileCard
+		var kind := card.get_distinct_recipe_tag_label()
+		tile.set_entry(card.icon, card.name, kind if not kind.is_empty() else GameTerms.get_tile_card_type_label(card))
+	elif entry is StaffCard:
+		var technique := entry as StaffCard
+		tile.set_entry(technique.icon, technique.name, CollectionDetail.rarity_label(technique.rarity))
+	elif entry is StationType:
+		var station_type := entry as StationType
+		tile.set_entry(station_type.icon, station_type.display_name, "")
+	elif entry is ChefDefinition:
+		var chef := entry as ChefDefinition
+		tile.set_entry(chef.icon, chef.display_name, "")
+	elif entry is Condiment:
+		var condiment := entry as Condiment
+		tile.set_entry(condiment.icon, condiment.display_name, "")
+	elif entry is int:
+		tile.set_entry(EVENT_ICON, EventManager.get_event_name(int(entry)), "")
+
+
+## A Meal marked hidden_until_discovered that has never been in the player's deck.
+func _is_undiscovered(entry: Variant) -> bool:
+	if not entry is MealCard or not (entry as MealCard).hidden_until_discovered:
+		return false
+	return not bool(CollectionStats.get_meal_stats((entry as MealCard).id)["discovered"])
+
+
+func _show_detail(entry: Variant) -> void:
+	if _is_undiscovered(entry):
+		detail.show_undiscovered()
+	elif entry is MealCard:
+		detail.show_meal(entry as MealCard)
+	elif entry is TileCard:
+		detail.show_tile_card(entry as TileCard)
+	elif entry is StaffCard:
+		detail.show_technique(entry as StaffCard)
+	elif entry is StationType:
+		detail.show_station(entry as StationType)
+	elif entry is ChefDefinition:
+		detail.show_chef(entry as ChefDefinition)
+	elif entry is Condiment:
+		detail.show_condiment(entry as Condiment)
+	elif entry is int:
+		detail.show_event(int(entry) as EventManager.Type)
+
+
+## A tile was selected (click, focus or the page opening): show it, and keep focus on it so the
+## arrow keys carry on from there.
+func _on_tile_chosen(tile: CollectionTile) -> void:
+	if tile.entry_index < 0 or tile.entry_index >= _entries.size():
+		return
+	if not tile.has_focus() and tile.is_visible_in_tree() and get_viewport().gui_get_focus_owner() != null:
+		tile.grab_focus()
+	_show_detail(_entries[tile.entry_index])
+
+
+func _clear_list() -> void:
 	EventBus.toggle_tooltip.emit(false, "")
-	for child in collection_grid_container.get_children():
-		collection_grid_container.remove_child(child)
+	_entries.clear()
+	for child in list_grid.get_children():
+		list_grid.remove_child(child)
 		child.queue_free()
-
-
-func _show_card_uis(cards: Array) -> void:
-	collection_grid_container.columns = 5
-	for card in cards:
-		if card is not Card:
-			continue
-		var card_ui: CardUI = CARD_UI_SCENE.instantiate()
-		# Focusable so a controller can walk the grid and read each card's keyword tips.
-		card_ui.configure_interaction(CardUI.InteractionMode.PREVIEW, {"focusable": true})
-		collection_grid_container.add_child(card_ui)
-		card_ui.set_card(card)
-
-
-func _show_cards() -> void:
-	var cards: Array = []
-	for card in GameManager.tile_cards_pool:
-		if card is TileCard:
-			cards.append(card)
-	_show_card_uis(_with_meals_grouped_by_category(cards))
 
 
 ## Same cards in the same order, except the Meals are sorted by category and then by name.
@@ -185,236 +257,6 @@ func _with_meals_grouped_by_category(cards: Array) -> Array:
 		else:
 			result.append(card)
 	return result
-
-
-func _show_staff() -> void:
-	_show_card_uis(StaffCatalog.get_all())
-
-
-func _show_stations() -> void:
-	collection_grid_container.columns = 3
-	for station_type: StationType in StationManager.get_station_types():
-		collection_grid_container.add_child(_create_station_entry(station_type))
-
-
-func _show_condiments() -> void:
-	collection_grid_container.columns = 5
-	for condiment: Condiment in CondimentCatalog.get_all():
-		collection_grid_container.add_child(_create_condiment_entry(condiment))
-
-
-func _create_condiment_entry(condiment: Condiment) -> PanelContainer:
-	var panel := _create_item_panel(Vector2(180, 200))
-	panel.mouse_default_cursor_shape = Control.CURSOR_HELP
-
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 10)
-	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(column)
-
-	var icon := TextureRect.new()
-	icon.custom_minimum_size = Vector2(96, 96)
-	icon.texture = condiment.icon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(icon)
-
-	var name_label := _create_label(condiment.display_name, 18, TEXT_PRIMARY)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(name_label)
-
-	panel.mouse_entered.connect(_show_condiment_tooltip.bind(panel, condiment))
-	panel.mouse_exited.connect(_hide_tooltip)
-	panel.focus_entered.connect(_show_condiment_tooltip.bind(panel, condiment))
-	panel.focus_exited.connect(_hide_tooltip)
-	return panel
-
-
-func _show_condiment_tooltip(panel: Control, condiment: Condiment) -> void:
-	EventBus.toggle_tooltip.emit(true, condiment.get_tooltip_text(), panel.get_global_rect())
-
-
-func _show_chefs() -> void:
-	collection_grid_container.columns = 3
-	for chef: ChefDefinition in ChefRegistry.get_all_chefs():
-		collection_grid_container.add_child(_create_chef_entry(chef))
-
-
-func _show_events() -> void:
-	collection_grid_container.columns = 3
-	for event_type: EventManager.Type in EventManager.ALL_EVENTS:
-		collection_grid_container.add_child(_create_event_entry(event_type))
-
-
-func _hide_tooltip() -> void:
-	EventBus.toggle_tooltip.emit(false, "")
-
-
-func _create_chef_entry(chef: ChefDefinition) -> PanelContainer:
-	var panel := _create_item_panel(Vector2(500, 270))
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 18)
-	panel.add_child(row)
-
-	var portrait := TextureRect.new()
-	portrait.custom_minimum_size = Vector2(170, 230)
-	portrait.texture = chef.icon
-	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	row.add_child(portrait)
-
-	var details := VBoxContainer.new()
-	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	details.add_theme_constant_override("separation", 8)
-	row.add_child(details)
-
-	details.add_child(_create_label(chef.display_name.to_upper(), 27, TEXT_PRIMARY))
-	details.add_child(_create_separator())
-	details.add_child(_create_label("SPECIALITY", 14, ACCENT))
-	var speciality_label := _create_label(
-		CardKeywordGlossary.to_plain(chef.speciality_description), 20, TEXT_PRIMARY
-	)
-	speciality_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	speciality_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	details.add_child(speciality_label)
-	return panel
-
-
-func _create_event_entry(event_type: EventManager.Type) -> PanelContainer:
-	var panel := _create_item_panel(Vector2(500, 210))
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 18)
-	panel.add_child(row)
-
-	var icon := TextureRect.new()
-	icon.custom_minimum_size = Vector2(72, 72)
-	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	icon.texture = EVENT_ICON
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	row.add_child(icon)
-
-	var details := VBoxContainer.new()
-	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	details.add_theme_constant_override("separation", 10)
-	row.add_child(details)
-
-	details.add_child(_create_label(EventManager.get_event_name(event_type).to_upper(), 25, TEXT_PRIMARY))
-	details.add_child(_create_separator())
-	var description := _create_label(EventManager.get_event_description(event_type), 17, TEXT_SECONDARY)
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	description.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	details.add_child(description)
-	details.add_child(_create_label(EventManager.get_allowed_rounds_label(event_type).to_upper(), 14, ACCENT))
-	return panel
-
-
-func _create_station_entry(station_type: StationType) -> PanelContainer:
-	var panel := _create_item_panel(Vector2(500, 170))
-	var details := VBoxContainer.new()
-	details.add_theme_constant_override("separation", 8)
-	panel.add_child(details)
-
-	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 14)
-	details.add_child(header)
-	if station_type.icon != null:
-		var icon := TextureRect.new()
-		icon.custom_minimum_size = Vector2(56, 56)
-		icon.texture = station_type.icon
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		header.add_child(icon)
-	var name_label := _create_label(station_type.display_name.to_upper(), 25, station_type.color)
-	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	header.add_child(name_label)
-
-	details.add_child(_create_separator())
-	details.add_child(_create_label("REQUIRES", 14, ACCENT))
-	var requirements := _create_label(station_type.get_requirements_text(), 18, TEXT_PRIMARY)
-	requirements.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	details.add_child(requirements)
-
-	details.add_child(_create_separator())
-	details.add_child(_create_label("LEVELS", 14, ACCENT))
-	for level: int in range(StationManager.START_LEVEL, StationManager.MAX_LEVEL + 1):
-		details.add_child(_create_station_level_row(level, _station_level_lines(station_type, level)))
-	return panel
-
-
-## Everything reaching a level gives a station, one line each.
-func _station_level_lines(station_type: StationType, level: int) -> PackedStringArray:
-	var lines: PackedStringArray = []
-	var upgrade := station_type.get_level_upgrade_text(level)
-	if not upgrade.is_empty():
-		lines.append(CardKeywordGlossary.to_plain(upgrade))
-	if level == StationManager.MEAL_SLOT_UNLOCK_LEVEL:
-		lines.append("Opens a locked second %s (higher difficulty levels)." % GameTerms.MEAL_SLOT)
-	var options: Array[StationPerk] = []
-	if level == StationManager.CHOICE_LEVEL:
-		options = station_type.choice_options
-	elif level == StationManager.CAPSTONE_LEVEL:
-		options = station_type.capstone_options
-	if not options.is_empty():
-		lines.append("Choose one perk:")
-	for perk: StationPerk in options:
-		lines.append("• %s" % CardKeywordGlossary.to_plain(perk.description))
-	return lines
-
-
-func _create_station_level_row(level: int, lines: PackedStringArray) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-
-	var level_label := _create_label("LV %d" % level, 16, ACCENT)
-	level_label.custom_minimum_size = Vector2(42, 0)
-	level_label.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	row.add_child(level_label)
-
-	var column := VBoxContainer.new()
-	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	column.add_theme_constant_override("separation", 2)
-	row.add_child(column)
-	for line: String in lines:
-		var label := _create_label(line, 16, TEXT_PRIMARY)
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		column.add_child(label)
-	return row
-
-
-func _create_item_panel(minimum_size: Vector2) -> PanelContainer:
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = minimum_size
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	# Entries take focus so a controller can scroll through them.
-	panel.focus_mode = Control.FOCUS_ALL
-
-	var style := StyleBoxFlat.new()
-	style.bg_color = ITEM_BACKGROUND
-	style.border_color = ITEM_BORDER
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 20
-	style.content_margin_top = 18
-	style.content_margin_right = 20
-	style.content_margin_bottom = 18
-	panel.add_theme_stylebox_override("panel", style)
-	return panel
-
-
-func _create_label(text: String, font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", color)
-	return label
-
-
-func _create_separator() -> HSeparator:
-	var separator := HSeparator.new()
-	separator.modulate = ITEM_BORDER
-	return separator
 
 
 func _on_menu_entry_pressed(page: int) -> void:

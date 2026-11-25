@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/detail_text_section.gd" id="1_text"]
+
+[node name="DetailTextSection" type="VBoxContainer"]
+theme_override_constants/separation = 10
+script = ExtResource("1_text")
+
+[node name="Heading" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_font_sizes/font_size = 26
+text = "The story"
+
+[node name="Body" type="RichTextLabel" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.2431, 0.2039, 0.149, 1)
+theme_override_constants/line_separation = 6
+theme_override_font_sizes/normal_font_size = 18
+theme_override_font_sizes/bold_font_size = 18
+bbcode_enabled = true
+text = "Story text."
+fit_content = true

@@ -1,0 +1,111 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/collection_detail.gd" id="1_detail"]
+[ext_resource type="Texture2D" path="res://assets/gui/collection/well_dashed.png" id="2_well"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_parchment"]
+content_margin_left = 6.0
+content_margin_top = 10.0
+content_margin_right = 6.0
+content_margin_bottom = 10.0
+bg_color = Color(0.9529, 0.9176, 0.8275, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.7608, 0.6039, 0.3373, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_well"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+texture = ExtResource("2_well")
+texture_margin_left = 36.0
+texture_margin_top = 36.0
+texture_margin_right = 36.0
+texture_margin_bottom = 36.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="CollectionDetail" type="PanelContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_parchment")
+script = ExtResource("1_detail")
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+follow_focus = false
+horizontal_scroll_mode = 0
+
+[node name="Margin" type="MarginContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 18
+
+[node name="Body" type="VBoxContainer" parent="Scroll/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="Header" type="HBoxContainer" parent="Scroll/Margin/Body"]
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="IconWell" type="PanelContainer" parent="Scroll/Margin/Body/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(176, 156)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_well")
+
+[node name="Icon" type="TextureRect" parent="Scroll/Margin/Body/Header/IconWell"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeaderText" type="VBoxContainer" parent="Scroll/Margin/Body/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Tags" type="HBoxContainer" parent="Scroll/Margin/Body/Header/HeaderText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Name" type="Label" parent="Scroll/Margin/Body/Header/HeaderText"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_constants/line_spacing = -4
+theme_override_font_sizes/font_size = 44
+text = "Lobster Roll"
+autowrap_mode = 3
+
+[node name="Tagline" type="Label" parent="Scroll/Margin/Body/Header/HeaderText"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3608, 0.2941, 0.2078, 1)
+theme_override_font_sizes/font_size = 18
+text = "Warm lobster, melted butter, toasted bun."
+autowrap_mode = 3
+
+[node name="Sections" type="VBoxContainer" parent="Scroll/Margin/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 22

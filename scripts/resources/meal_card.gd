@@ -25,6 +25,9 @@ enum MealCategory {
 }
 
 @export var meal_category: MealCategory = MealCategory.NONE
+## Shows as "???" in the Collection until this Meal has been in the player's deck once
+## (CollectionStats). Off for every Meal at launch.
+@export var hidden_until_discovered: bool = false
 
 ## Station requirements, counted across the station's regular spots (plus Passed Ingredients).
 @export var recipe_vegetable_count: int = 0
