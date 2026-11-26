@@ -6,6 +6,7 @@ extends "res://scripts/debug/playtest/human_policy.gd"
 ##   Knowledge gaps  Before its "discovery day" it does not use a mechanic at all: merging a card
 ##                   onto its copy, replacing a card, rerolling, drinking condiments, moving staff,
 ##                   the Discard button.
+##   Plans           Credits a Meal plan (human_policy) only in proportion to its skill.
 ##                   Each run draws the day it notices each one. The lower the skill, the later.
 ##   Misjudgment     Every what-if value is perceived with noise, so it mis-ranks cards, spots,
 ##                   shop items and drinks, and buys things a careful player would skip.
@@ -155,6 +156,12 @@ func _should_reroll(best_value: float, is_reward: bool) -> bool:
 
 func _may_reroll_shop() -> bool:
 	return _knows("reroll")
+
+
+## A player still learning doesn't work out deck odds for Meals still short of their recipe: it
+## credits that share of a plan as its skill (0.25 for the novice profile).
+func _plan_share() -> float:
+	return super._plan_share() * _skill()
 
 
 func _may_discard() -> bool:

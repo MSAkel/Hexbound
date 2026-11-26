@@ -398,7 +398,9 @@ func _plan_bonus(card: TileCard, hex: Hex) -> float:
 		if not runner.map.is_meal_slot(hex.coordinates) or meal.is_recipe_ready(hex):
 			return 0.0
 		var plan: Dictionary = await _plan_for(segment, meal, hex)
-		return PLAN_SHARE * _plan_ev(plan, _scenario_now(), [])
+		# Every plan counts on the same draws, plays and discards: a new Meal is credited less for
+		# each plan on the board still short of its recipe.
+		return _plan_share() * _plan_ev(plan, _scenario_now(), []) / float(1 + _open_plan_count())
 	if runner.map.is_meal_slot(hex.coordinates) or hex.active_tile_card != null:
 		return 0.0
 	var bonus := 0.0
@@ -406,7 +408,22 @@ func _plan_bonus(card: TileCard, hex: Hex) -> float:
 		var before := _plan_ev(plan, _scenario_now(), [])
 		var after := _plan_ev(plan, _scenario_now(), [card])
 		bonus += maxf(0.0, after - before)
-	return PLAN_SHARE * bonus
+	return _plan_share() * bonus
+
+
+## Meals on the board still short of their recipe.
+func _open_plan_count() -> int:
+	var count := 0
+	for hex: Hex in runner.map.get_hexes_in_trigger_order():
+		var meal := hex.active_tile_card as MealCard
+		if meal != null and not meal.is_recipe_ready(hex):
+			count += 1
+	return count
+
+
+## Share of a plan's worth this player credits. A subclass that plans less can lower it.
+func _plan_share() -> float:
+	return PLAN_SHARE
 
 
 ## Plans a Station can hold: its own Meals still short of their recipe, and each Meal in hand that
@@ -515,7 +532,8 @@ func _scenario_now() -> Dictionary:
 		"hand": DeckManager.hand.duplicate(),
 		"pile": DeckManager.draw_pile.duplicate(),
 		"plays_left": DeckManager.plays_left(),
-		"discards_left": DeckManager.discards_left,
+		# A player who doesn't use the Discard button yet gets no extra draws from it.
+		"discards_left": DeckManager.discards_left if _may_discard() else 0,
 		"extra_draws": 0,
 	}
 
@@ -603,7 +621,8 @@ func _p_complete_tomorrow(plan: Dictionary, needs: Array, meal_play: int, segmen
 	if needs.size() + meal_play > hours * DeckManager.PLAYS_PER_HOUR:
 		return 0.0
 	var deck := DeckManager.all_cards()
-	var draws := hours * DeckManager.HOUR_DRAW + DeckManager.HAND_DISCARDS_PER_DAY * DeckManager.HOUR_DRAW / 2
+	var discards := DeckManager.HAND_DISCARDS_PER_DAY if _may_discard() else 0
+	var draws := hours * DeckManager.HOUR_DRAW + discards * DeckManager.HOUR_DRAW / 2
 	var chance := 1.0
 	var all_needs: Array = needs.duplicate()
 	if meal_play > 0:
