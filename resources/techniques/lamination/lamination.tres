@@ -1,10 +1,12 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://ca1qbv36aucok"]
 
+[ext_resource type="Texture2D" uid="uid://djnx7ue2sbqy4" path="res://assets/icons/techniques/lamination.png" id="1_krl25"]
 [ext_resource type="Script" uid="uid://7b342j4dfnfm" path="res://resources/techniques/lamination/lamination.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "lamination"
 name = "Lamination"
+icon = ExtResource("1_krl25")
 description = "Sweets on this Station can hold one more {garnish}, and their {garnish} lasts one more Turn"
 rarity = 2

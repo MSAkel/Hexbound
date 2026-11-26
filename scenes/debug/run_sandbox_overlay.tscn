@@ -120,7 +120,6 @@ max_value = 100.0
 value = 1.0
 rounded = true
 allow_greater = true
-tooltip_text = "Skip straight to this round without playing the rounds in between."
 
 [node name="JumpRoundButton" type="Button" parent="OverlayRoot/ToolsPanel/MarginContainer/VBoxContainer/ToolsScroll/ToolsBody/RoundJumpRow" unique_id=40928001]
 layout_mode = 2

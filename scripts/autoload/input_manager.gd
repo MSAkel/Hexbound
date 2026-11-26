@@ -310,8 +310,15 @@ func _scroll_with_right_stick(delta: float) -> void:
 	scroll.scroll_vertical += step
 
 
-## The ScrollContainer around the focused control, else the first scrollable one in the active menu.
+## The active menu's own pad scroll target when it names one (get_pad_scroll_target, such as the
+## Collection's detail panel), else the ScrollContainer around the focused control, else the first
+## scrollable one in the active menu.
 func _find_scroll_target() -> ScrollContainer:
+	var active := get_active_menu()
+	if active != null and active.has_method("get_pad_scroll_target"):
+		var target := active.call("get_pad_scroll_target") as ScrollContainer
+		if target != null and target.is_visible_in_tree() and _can_scroll(target):
+			return target
 	var node: Node = get_viewport().gui_get_focus_owner()
 	while node != null:
 		if node is ScrollContainer and _can_scroll(node as ScrollContainer):

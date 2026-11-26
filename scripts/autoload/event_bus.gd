@@ -112,9 +112,9 @@ signal staff_drag_ended
 
 ## Condiment belt contents changed.
 signal condiment_belt_changed
-## A belt condiment was picked up. The sell panel arms while it is held.
+## A belt condiment was picked up to drink.
 signal condiment_drag_started(slot_index: int)
-## Follows every condiment_drag_started, whether it was used, sold or put back.
+## Follows every condiment_drag_started, whether it was used or put back.
 signal condiment_drag_ended
 ## Tile-target drink was selected or cancelled. Slot is -1 when idle.
 signal condiment_targeting_changed(slot_index: int)

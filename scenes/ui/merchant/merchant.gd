@@ -246,18 +246,21 @@ func _on_condiment_targeting_changed(slot_index: int) -> void:
 
 
 ## Restored stock is shown as saved. Otherwise a fresh roll fills every unlocked slot.
+## A reroll (include_packs false) leaves the packs as they are: only cards and condiments change.
 func _refresh_merchant_stock(
 	restored_cards: Array[Card] = [],
 	restored_condiments: Array[Condiment] = [],
-	restored_packs: Array[int] = []
+	restored_packs: Array[int] = [],
+	include_packs: bool = true
 ) -> void:
 	_clear_selection()
 	await _display_merchant_cards(
 		restored_cards if not restored_cards.is_empty() else _roll_card_stock()
 	)
-	await _display_merchant_packs(
-		restored_packs if not restored_packs.is_empty() else _roll_pack_stock()
-	)
+	if include_packs:
+		await _display_merchant_packs(
+			restored_packs if not restored_packs.is_empty() else _roll_pack_stock()
+		)
 	await _display_merchant_condiments(
 		restored_condiments if not restored_condiments.is_empty() else _roll_condiment_stock()
 	)
@@ -617,6 +620,7 @@ func _seat_purchased_staff(staff: StaffCard, shelf_rect: Rect2) -> void:
 	if rail != null:
 		rail.set_next_arrival_origin(shelf_rect)
 	StaffManager.add_staff(staff)
+	CollectionStats.record_pick(CollectionStats.GROUP_TECHNIQUE, staff.id)
 
 
 ## Gold is spent when the pack opens. Its cards come from a draw seeded by the shelf slot,
@@ -630,7 +634,8 @@ func _complete_pack_purchase() -> void:
 	if not EconomyManager.can_afford(pack.price):
 		return
 	var slot := _displayed_packs.find(pack)
-	var contents := MerchantPacks.draw_contents(pack.kind, _stock_reroll_count, slot)
+	# Packs survive rerolls, so their contents are seeded by the visit, not the reroll count.
+	var contents := MerchantPacks.draw_contents(pack.kind, 0, slot)
 	# Nothing to open means nothing to charge for.
 	if contents.is_empty():
 		return
@@ -701,6 +706,7 @@ func _complete_condiment_purchase() -> void:
 	EconomyManager.remove(gold_price)
 	if not CondimentManager.add_condiment(_selected_condiment_ui.condiment):
 		return
+	CollectionStats.record_pick(CollectionStats.GROUP_CONDIMENT, _selected_condiment_ui.condiment.id)
 	_locked_condiments.erase(_displayed_condiments.find(_selected_condiment_ui))
 	_selected_condiment_ui.mark_sold()
 	AudioManager.play_sfx(UISounds.MERCHANT_CARD_PURCHASED)
@@ -724,7 +730,7 @@ func _on_reroll_button_pressed() -> void:
 
 	AudioManager.play_sfx(UISounds.CLICK)
 	_stock_reroll_count += 1
-	await _refresh_merchant_stock()
+	await _refresh_merchant_stock([], [], [], false)
 	_update_reroll_button()
 	# Fresh stock replaced the focused card, so re-seat the ring on the new grid.
 	_queue_focus()
@@ -803,7 +809,6 @@ func _build_removal_button() -> void:
 	_removal_button = reroll_button.duplicate() as Button
 	_removal_button.name = "RemovalButton"
 	_removal_button.icon = null
-	_removal_button.tooltip_text = "Take a card out of your deck for good. Each removal this visit costs 1 Gold more."
 	var parent := reroll_button.get_parent()
 	parent.add_child(_removal_button)
 	parent.move_child(_removal_button, reroll_button.get_index() + 1)

@@ -1,10 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://crd17itnl0xac"]
 
+[ext_resource type="Texture2D" uid="uid://cm2khtb5kpqnw" path="res://assets/icons/techniques/knife_skills.png" id="1_gkl6m"]
 [ext_resource type="Script" uid="uid://bmvarips8dqbq" path="res://resources/techniques/knife_skills/knife_skills.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "knife_skills"
 name = "Knife Skills"
+icon = ExtResource("1_gkl6m")
 description = "+1 {mult} each time a Kitchenware on this Station {triggers}"
-rarity = 0

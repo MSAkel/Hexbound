@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/level_row.gd" id="1_level"]
+
+[node name="LevelRow" type="HBoxContainer"]
+theme_override_constants/separation = 12
+script = ExtResource("1_level")
+
+[node name="LevelLabel" type="Label" parent="."]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 17
+text = "LV 1"
+
+[node name="Lines" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3

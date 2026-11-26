@@ -11,9 +11,12 @@ signal lock_toggle_requested(item: CondimentShopItem, locked: bool)
 const SIZE := Vector2(108, 136)
 const MERCHANT_TRAY_HEIGHT := 44.0
 const MERCHANT_TRAY_GAP := 10.0
+const HOVER_SCALE := Vector2(1.05, 1.05)
+const HOVER_DURATION := 0.1
 
-@export var well_idle_style: StyleBoxFlat
-@export var well_selected_style: StyleBoxFlat
+## Both empty: the bottle stands on the shelf with no panel behind it.
+@export var well_idle_style: StyleBox
+@export var well_selected_style: StyleBox
 
 @onready var _price_label: Label = %PriceLabel
 @onready var _lock_icon: TextureRect = %LockIcon
@@ -27,6 +30,9 @@ var price: int = 0
 var _sold := false
 var _locked := false
 var _chosen := false
+var _hover_tween: Tween
+## Icon texture -> share of its height left empty below the drawing.
+static var _bottom_pad_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -40,6 +46,8 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	focus_entered.connect(_on_focus_entered)
 	focus_exited.connect(_on_focus_exited)
+	_icon.resized.connect(_update_icon_pivot)
+	_update_icon_pivot()
 	_refresh()
 
 
@@ -75,6 +83,7 @@ func mark_sold() -> void:
 	_purchase_tray.set_focusable(false)
 	_tray_gap.visible = false
 	focus_mode = Control.FOCUS_NONE
+	_apply_icon_scale(false)
 	if has_focus():
 		release_focus()
 	_update_layout_height()
@@ -133,6 +142,7 @@ func _refresh() -> void:
 	if condiment == null:
 		return
 	_icon.texture = condiment.icon
+	_sit_icon_on_shelf()
 	# Keep the authored flask colors. Do not tint with liquid_color.
 	_icon.self_modulate = Color.WHITE
 	_price_label.text = MerchantShopStyling.format_price(price)
@@ -142,6 +152,51 @@ func _refresh() -> void:
 		"font_color",
 		MerchantShopStyling.price_label_color(can_afford and not _sold)
 	)
+
+
+func _icon_rest_scale() -> Vector2:
+	var raised := not _sold and (has_focus() or get_global_rect().has_point(get_global_mouse_position()))
+	return HOVER_SCALE if raised else Vector2.ONE
+
+
+func _apply_icon_scale(animate: bool) -> void:
+	if _hover_tween != null and _hover_tween.is_valid():
+		_hover_tween.kill()
+	var target := _icon_rest_scale()
+	if not animate or GameManager.skip_presentation:
+		_icon.scale = target
+		return
+	_hover_tween = create_tween()
+	_hover_tween.tween_property(_icon, "scale", target, HOVER_DURATION).set_trans(
+		Tween.TRANS_QUAD
+	).set_ease(Tween.EASE_OUT)
+
+
+## Moves the icon down by the empty rows under its drawing, so every bottle's base stands on the
+## same line (the shelf top). Icons are drawn with different amounts of space below them.
+func _sit_icon_on_shelf() -> void:
+	var drop := _bottom_padding(_icon.texture) * _icon.get_parent_control().custom_minimum_size.y
+	_icon.offset_top = drop
+	_icon.offset_bottom = drop
+
+
+static func _bottom_padding(texture: Texture2D) -> float:
+	if texture == null:
+		return 0.0
+	if _bottom_pad_cache.has(texture):
+		return _bottom_pad_cache[texture]
+	var pad := 0.0
+	var image := texture.get_image()
+	if image != null and image.get_height() > 0:
+		var used := image.get_used_rect()
+		if used.has_area():
+			pad = float(image.get_height() - used.end.y) / float(image.get_height())
+	_bottom_pad_cache[texture] = pad
+	return pad
+
+
+func _update_icon_pivot() -> void:
+	_icon.pivot_offset = _icon.size * 0.5
 
 
 func _tooltip_text() -> String:
@@ -166,10 +221,12 @@ func _on_mouse_entered() -> void:
 	if _sold:
 		return
 	AudioManager.play_condiment_hover()
+	_apply_icon_scale(true)
 	EventBus.toggle_tooltip.emit(true, _tooltip_text(), get_global_rect())
 
 
 func _on_mouse_exited() -> void:
+	_apply_icon_scale(true)
 	# A focused bottle keeps its tooltip so the gamepad cursor stays readable.
 	if has_focus():
 		return
@@ -180,8 +237,10 @@ func _on_focus_entered() -> void:
 	if _sold:
 		return
 	AudioManager.play_condiment_hover()
+	_apply_icon_scale(true)
 	EventBus.toggle_tooltip.emit(true, _tooltip_text(), get_global_rect())
 
 
 func _on_focus_exited() -> void:
+	_apply_icon_scale(true)
 	EventBus.toggle_tooltip.emit(false, "", Rect2())

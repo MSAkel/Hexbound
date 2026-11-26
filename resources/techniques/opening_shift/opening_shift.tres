@@ -1,10 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://dkcaldtmsnrwb"]
 
+[ext_resource type="Texture2D" uid="uid://b5mrnwpedbp5u" path="res://assets/icons/techniques/opening_shift.png" id="1_mijv6"]
 [ext_resource type="Script" uid="uid://i0dkq6tu2m1t" path="res://resources/techniques/opening_shift/opening_shift.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "opening_shift"
 name = "Opening Shift"
+icon = ExtResource("1_mijv6")
 description = "+3 {mult} during the first Turn of each Day"
-rarity = 0

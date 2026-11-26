@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://b2xtl6qjvmogd"]
 
 [ext_resource type="Script" uid="uid://rsqe0wcpnnkb" path="res://scenes/ui/deck/deck_hud.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://c1iwjaikk22iy" path="res://assets/card/card_bg.png" id="2_card_bg"]
@@ -41,13 +41,12 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(130, 186)
 layout_mode = 2
 size_flags_horizontal = 4
-tooltip_text = ""
 mouse_default_cursor_shape = 2
-theme_override_styles/focus = SubResource("StyleBoxEmpty_pile")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_pile")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_pile")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_pile")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_pile")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_pile")
 flat = true
 
 [node name="Cards" type="Control" parent="PileButton" unique_id=1950117304]
@@ -61,15 +60,13 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="BackCard" type="TextureRect" parent="PileButton/Cards" unique_id=1950117305]
-texture_filter = 1
 modulate = Color(0.7, 0.6, 0.55, 1)
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 10.0
-offset_top = 0.0
-offset_right = 0.0
 offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -83,10 +80,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 0.0
 offset_top = 8.0
 offset_right = -10.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -94,8 +89,8 @@ texture = ExtResource("2_card_bg")
 expand_mode = 1
 
 [node name="InsideBorder" type="TextureRect" parent="PileButton/Cards/TopCard" unique_id=1950117307]
-texture_filter = 1
 self_modulate = Color(0.45, 0.27, 0.2, 1)
+texture_filter = 1
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.077
@@ -109,8 +104,8 @@ texture = ExtResource("3_inside")
 expand_mode = 1
 
 [node name="DesignDetails" type="TextureRect" parent="PileButton/Cards/TopCard" unique_id=1950117308]
-texture_filter = 1
 self_modulate = Color(0.34, 0.19, 0.14, 1)
+texture_filter = 1
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.105

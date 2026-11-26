@@ -1,10 +1,12 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://wqtff6l5jsbi"]
 
+[ext_resource type="Texture2D" uid="uid://imw44yaqso0h" path="res://assets/icons/techniques/on_ice.png" id="1_dactu"]
 [ext_resource type="Script" uid="uid://d2pnuxxem8erm" path="res://resources/techniques/on_ice/on_ice.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "on_ice"
 name = "On Ice"
+icon = ExtResource("1_dactu")
 description = "+2 {mult} for each {garnished} Seafood on the board when this Station starts"
 rarity = 1

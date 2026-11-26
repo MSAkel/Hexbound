@@ -12,6 +12,8 @@ const DRAW_DURATION := 0.38
 const FADE_DURATION := 0.22
 # Inset from the token control so the stroke sits on the hex edge.
 const RADIUS_INSET := 1.0
+## Half side of the token's container art (68px) as a fraction of the 56px control radius.
+const TOKEN_HALF_RATIO := 34.0 / 56.0
 const REST_WIDTH := 3.0
 const REST_COLOR := Color(1.0, 0.86, 0.42, 0.95)
 # Cyan outline so the firing tile does not share the gold segment-reveal flash.
@@ -180,11 +182,11 @@ func _rebuild() -> void:
 		return
 
 
-## Rounded square that traces the CardIcon token edge, starting top-center and going clockwise.
+## Rounded square that traces the token container edge, starting top-center and going clockwise.
 func _outline_vertices() -> PackedVector2Array:
 	var parent_control := get_parent() as Control
 	var center := Vector2.ZERO
 	if parent_control != null and parent_control.size != Vector2.ZERO:
 		center = parent_control.size * 0.5
 	var radius := minf(center.x, center.y)
-	return HexShape.rounded_square(center, CardIcon.token_half_extent(radius) - RADIUS_INSET)
+	return HexShape.rounded_square(center, radius * TOKEN_HALF_RATIO - RADIUS_INSET)

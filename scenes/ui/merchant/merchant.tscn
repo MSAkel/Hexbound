@@ -189,8 +189,8 @@ theme_override_constants/separation = 72
 [node name="ShelfRow" type="HBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn" unique_id=1760726572]
 layout_mode = 2
 size_flags_horizontal = 3
-alignment = 2
 theme_override_constants/separation = 24
+alignment = 2
 
 [node name="PacksShelf" type="Control" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/CardsCenter/MerchandiseColumn/ShelfRow" unique_id=1920384751]
 custom_minimum_size = Vector2(400, 210)
@@ -268,8 +268,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 36.0
+offset_top = 36.0
 offset_right = -36.0
-offset_bottom = 140.0
+offset_bottom = 176.0
 grow_horizontal = 2
 theme_override_constants/separation = 18
 alignment = 1
@@ -295,9 +296,11 @@ theme_override_styles/panel = SubResource("MerchantSideWash")
 
 [node name="MerchantSide" type="VBoxContainer" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame" unique_id=1617271380]
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_constants/separation = 14
 
 [node name="Gramps" type="TextureRect" parent="ContainerPanel/ShopPanel/MarginContainer/MainVBox/Body/MerchantSideFrame/MerchantSide" unique_id=204440647]
+visible = false
 texture_filter = 1
 custom_minimum_size = Vector2(310, 320)
 layout_mode = 2

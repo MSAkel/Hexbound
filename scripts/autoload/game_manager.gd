@@ -433,6 +433,7 @@ func reset_for_new_run() -> void:
 	StaffManager.reset_for_new_run()
 	StationManager.reset_for_new_run()
 	RunLedger.reset_for_new_run()
+	CollectionStats.reset_for_new_run()
 	EconomyManager.set_run_starting_gold(selected_difficulty)
 	EconomyManager.reset_rerolls()
 	EconomyManager.reset_paid_rerolls()

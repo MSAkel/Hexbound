@@ -109,11 +109,6 @@ static func _static_init() -> void:
 			roundi(TileCard.STAR_SCALE_STEP * 100.0), GameTerms.SPOT.to_lower(),
 		],
 		Context.HOUR, [&"hand"], PRIORITY_NORMAL)
-	_add(&"sell", CATEGORY_CARDS, "Selling",
-		"Drag %s and %s here to **sell** them. Deck cards can't be sold, but the Merchant can **remove** them." % [
-			GameTerms.TECHNIQUES, GameTerms.CONDIMENTS,
-		],
-		Context.HOUR, [&"sell_panel"], PRIORITY_LOW)
 
 	# Merchant.
 	_add(&"merchant_intro", CATEGORY_MERCHANT, "The Merchant",
@@ -134,12 +129,12 @@ static func _static_init() -> void:
 		"Leave to start the next Day.",
 		Context.MERCHANT, [&"merchant_leave"], PRIORITY_PANEL)
 	_add(&"staff", CATEGORY_MERCHANT, GameTerms.TECHNIQUES,
-		"**%s** sit beside a Station. Drag a %s to swap Stations." % [
+		"**%s** sit beside a Station. Drag a %s to swap Stations. Click one to **sell** it." % [
 			GameTerms.TECHNIQUES, GameTerms.TECHNIQUE,
 		],
 		Context.HOUR, [&"staff_slot"], PRIORITY_NORMAL)
 	_add(&"condiments", CATEGORY_MERCHANT, "Using %s" % GameTerms.CONDIMENTS,
-		"**Drag** a Condiment out to use it. Some need a target. Drop one on the sell spot to sell it.",
+		"**Drag** a Condiment out to use it. Some need a target. Click one to **sell** it.",
 		Context.HOUR, [&"condiment_belt"], PRIORITY_NORMAL)
 
 	# Stations.

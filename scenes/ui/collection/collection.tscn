@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_g1foq"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
 [ext_resource type="Texture2D" uid="uid://dy4vqioicidss" path="res://assets/main_menu/menu_highlight.png" id="4_highlight"]
+[ext_resource type="PackedScene" path="res://scenes/ui/collection/detail/collection_detail.tscn" id="5_detail"]
 
 [sub_resource type="Gradient" id="Gradient_cmwxi"]
 colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
@@ -43,6 +44,22 @@ texture_margin_right = 28.0
 texture_margin_bottom = 16.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wnhp0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_list"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 6.0
+content_margin_bottom = 12.0
+bg_color = Color(0.07059, 0.1373, 0.1647, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1725, 0.2588, 0.2784, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
 
 [node name="Collection" type="Panel" unique_id=354411271]
 anchors_preset = 15
@@ -229,26 +246,41 @@ theme_override_styles/disabled = SubResource("StyleBoxEmpty_menu_item")
 theme_override_styles/focus = SubResource("StyleBoxTexture_highlight")
 text = "Events"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]
+[node name="PageBody" type="HBoxContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer" unique_id=453277977]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="ListPanel" type="PanelContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/PageBody" unique_id=1725908816]
+custom_minimum_size = Vector2(660, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_list")
+
+[node name="ListScroll" type="ScrollContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/PageBody/ListPanel" unique_id=1958177970]
+layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_wnhp0")
+follow_focus = true
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer" unique_id=1725908816]
+[node name="ListMargin" type="MarginContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/PageBody/ListPanel/ListScroll" unique_id=1958177971]
 layout_mode = 2
-theme_override_constants/margin_left = 0
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 50
-theme_override_constants/margin_bottom = 0
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 6
 
-[node name="CollectionGridContainer" type="GridContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/ScrollContainer/MarginContainer" unique_id=1958177970]
+[node name="ListGrid" type="GridContainer" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/PageBody/ListPanel/ListScroll/ListMargin" unique_id=1958177972]
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-columns = 5
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 4
+
+[node name="Detail" parent="PanelContainer/VBoxContainer/PanelContainer/VBoxContainer/PageBody" unique_id=1958177973 instance=ExtResource("5_detail")]
+layout_mode = 2
 
 [node name="Tooltip" parent="." unique_id=1750094709 instance=ExtResource("3_tooltip")]
 layout_mode = 0

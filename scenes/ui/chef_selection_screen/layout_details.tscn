@@ -3,41 +3,86 @@
 [ext_resource type="Script" uid="uid://0i1m5cdptyvb" path="res://scenes/ui/chef_selection_screen/layout_details.gd" id="1_details"]
 [ext_resource type="Texture2D" uid="uid://b2vyro2l3sink" path="res://assets/characters/sous_chef.png" id="2_slhp1"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(1, 0.9137255, 0.7058824, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.11, 0.07, 0.06, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+corner_detail = 2
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
+bg_color = Color(0.11, 0.07, 0.06, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+corner_detail = 2
+anti_aliasing = false
+
 [node name="LayoutDetails" type="HBoxContainer" unique_id=1598077284]
 size_flags_vertical = 3
-theme_override_constants/separation = 28
+theme_override_constants/separation = 48
+alignment = 1
 script = ExtResource("1_details")
 
-[node name="ProfileColumn" type="VBoxContainer" parent="." unique_id=1601771923]
-custom_minimum_size = Vector2(400, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 14
-
-[node name="ChefIcon" type="TextureRect" parent="ProfileColumn" unique_id=1967071723]
+[node name="ChefIcon" type="TextureRect" parent="." unique_id=1967071723]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(220, 250)
+custom_minimum_size = Vector2(300, 320)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_vertical = 4
 texture = ExtResource("2_slhp1")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ChefNameLabel" type="Label" parent="ProfileColumn" unique_id=593003074]
-theme_type_variation = &"TitleLabel"
-unique_name_in_owner = true
+[node name="InfoColumn" type="VBoxContainer" parent="." unique_id=1601771923]
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
-text = "SOMMELIER"
-horizontal_alignment = 1
+size_flags_vertical = 4
+theme_override_constants/separation = 12
 
-[node name="SpecialityDescriptionLabel" type="Label" parent="ProfileColumn" unique_id=262045084]
+[node name="ChefNameLabel" type="Label" parent="InfoColumn" unique_id=593003074]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(580, 48)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
+theme_type_variation = &"TitleLabel"
+theme_override_colors/font_color = Color(0.43529412, 0.15294118, 0.19607843, 1)
+theme_override_font_sizes/font_size = 40
+text = "SOMMELIER"
+
+[node name="SpecialityDescriptionLabel" type="Label" parent="InfoColumn" unique_id=262045084]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Every 3rd Kitchenware Trigger repeats."
-horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="ProgressGap" type="Control" parent="InfoColumn" unique_id=1601771924]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ProgressLabel" type="Label" parent="InfoColumn" unique_id=1601771925]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.11, 0.07, 0.06, 1)
+theme_override_font_sizes/font_size = 18
+text = "Progress"
+
+[node name="ProgressPlaceholder" type="ProgressBar" parent="InfoColumn" unique_id=1601771926]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_progress_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_progress_fill")
+value = 5.0
+show_percentage = false

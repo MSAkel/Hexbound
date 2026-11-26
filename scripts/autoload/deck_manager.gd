@@ -256,6 +256,10 @@ func gain_card(card: TileCard, source: Source) -> TileCard:
 			var drawn: Array[TileCard] = [copy]
 			cards_drawn.emit(drawn)
 	piles_changed.emit()
+	CollectionStats.record_deck_card(copy)
+	# Picked counts only the player's own choices, not copies, Send Back or debug cards.
+	if source == Source.PICK or source == Source.MERCHANT or source == Source.PACK:
+		CollectionStats.record_pick(CollectionStats.GROUP_CARD, copy.id)
 	# Save and tutorial listeners treat this as "a card joined the deck".
 	EventBus.tile_card_selected.emit(copy)
 	return copy

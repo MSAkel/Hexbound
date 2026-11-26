@@ -5,4 +5,4 @@
 [resource]
 script = ExtResource("1_kit")
 station_id = "grilling_station"
-cards = Array[String](["skillet", "steak", "random:meat", "random:seasoning", "skewers", "random:meat", "grilled_steak", "chef_knife", "random:seasoning"])
+cards = Array[String](["skillet", "beef", "random:meat", "random:seasoning", "skewers", "random:meat", "grilled_steak", "chef_knife", "random:seasoning"])

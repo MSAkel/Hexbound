@@ -1,6 +1,6 @@
 extends MealCard
 
-## Needs Steak. +60 Flavour. On its first trigger each Hour it Garnishes itself once for each of:
+## Needs Beef. +60 Flavour. On its first trigger each Hour it Garnishes itself once for each of:
 ## Salt on its station, Black Pepper on its station, a Wine being served on any station. At most 2
 ## of these Garnishes per Hour (the Garnish stack cap still applies). The Garnish lasts the Hour,
 ## like any other, so retriggers that Hour are boosted too.

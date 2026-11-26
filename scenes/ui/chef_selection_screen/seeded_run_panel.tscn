@@ -1,22 +1,20 @@
 [gd_scene format=3 uid="uid://bvqrwh8folnlg"]
 
 [ext_resource type="Script" uid="uid://roesvq1wbu3x" path="res://scenes/ui/chef_selection_screen/seeded_run_panel.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bs2lsg858r70c" path="res://assets/gui/panels/tick_box_border_bg.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://ydbc627ethaa" path="res://assets/gui/panels/tick_box_number.png" id="3_unchecked"]
+[ext_resource type="Texture2D" uid="uid://b38l1hyumhr1g" path="res://assets/gui/panels/tick_box_checked.png" id="4_checked"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 14.0
-content_margin_top = 10.0
-content_margin_right = 14.0
-content_margin_bottom = 10.0
-bg_color = Color(0.78, 0.66, 0.46, 0.38)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.43, 0.33, 0.19, 0.32)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 28.0
+content_margin_bottom = 22.0
+texture = ExtResource("2_bg")
+texture_margin_left = 14.0
+texture_margin_top = 14.0
+texture_margin_right = 14.0
+texture_margin_bottom = 14.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7pmlo"]
 
@@ -77,18 +75,21 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [node name="SeededRunPanel" type="PanelContainer" unique_id=1496029994]
-custom_minimum_size = Vector2(280, 0)
+texture_filter = 1
+custom_minimum_size = Vector2(320, 140)
 size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
 script = ExtResource("1_script")
 
 [node name="Body" type="VBoxContainer" parent="." unique_id=1274451996]
 layout_mode = 2
 theme_override_constants/separation = 6
+alignment = 1
 
 [node name="HeaderRow" type="HBoxContainer" parent="Body" unique_id=1801150615]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 14
+alignment = 1
 
 [node name="SeededRunToggle" type="CheckBox" parent="Body/HeaderRow" unique_id=1799371459]
 unique_name_in_owner = true
@@ -100,13 +101,15 @@ theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
 theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_7nsra")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_xld13")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_x7o2x")
+theme_override_icons/checked = ExtResource("4_checked")
+theme_override_icons/unchecked = ExtResource("3_unchecked")
 
 [node name="SeededRunLabel" type="Label" parent="Body/HeaderRow" unique_id=1801150616]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 0
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 22
 text = "Seeded Run"
 vertical_alignment = 1
 
@@ -124,8 +127,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 20
 text = "Unlocks are disabled"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SeedInputRow" type="HBoxContainer" parent="Body/SeedBody" unique_id=1445381064]
@@ -159,7 +163,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(78, 40)
 layout_mode = 2
 size_flags_vertical = 4
-tooltip_text = "Paste seed from clipboard"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)

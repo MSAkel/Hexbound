@@ -25,14 +25,14 @@ const MAX_SCORE := 9223372036854775807
 ## Nov 22 2026 (user): Day 2 3315 -> 11000, Day 3 11700 -> 20000, Day 4 28688 -> 30000.
 const AUTHORED_ROUND_SCORES: Array[int] = [
 	150,
-	600,
-	3500,
-	6750,
-	1100,
-	16000,
-	22000,
-	33000,
-	50000,
+	550,
+	2750,
+	6000,
+	9000,
+	14000,
+	20000,
+	29000,
+	38000,
 ]
 ## Multiplier used by the endless curve. Values above 1 increase the target every round.
 const ENDLESS_GROWTH_FACTOR := 1.5

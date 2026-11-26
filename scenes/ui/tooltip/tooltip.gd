@@ -7,6 +7,7 @@ const offset: Vector2 = Vector2(10, 10)
 
 const BODY_COLOR := Color(0.21230483, 0.21230483, 0.21230483, 1)
 const HEADER_COLOR := Color(0.36923152, 0.31425732, 0.21094128, 1)
+const DIVIDER_COLOR := Color(0.37, 0.31, 0.21, 0.45)
 const BODY_FONT_SIZE := 14
 const HEADER_FONT_SIZE := 17
 ## Text starting with this is ready-made BBCode (inline icons): shown as is, not escaped, and the
@@ -102,6 +103,13 @@ static func header_bbcode(text: String) -> String:
 ## Body copy in the tooltip style. bbcode is not escaped, so it may hold [img] and [color] tags.
 static func body_bbcode(bbcode: String) -> String:
 	return "[font_size=%d][color=#%s]%s[/color][/font_size]" % [BODY_FONT_SIZE, BODY_COLOR.to_html(false), bbcode]
+
+
+## Thin rule with a little space above and below, to separate entries in a ready-made tooltip.
+static func divider_bbcode() -> String:
+	return "[font_size=6] [/font_size]\n[hr height=1 width=100%% color=#%s]\n[font_size=6] [/font_size]" % [
+		DIVIDER_COLOR.to_html(true),
+	]
 
 
 ## First line is the tooltip header. Remaining lines are body copy.

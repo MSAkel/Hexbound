@@ -1,10 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://bp4epv4hdinkw"]
 
+[ext_resource type="Texture2D" uid="uid://cb1u7oubau4f0" path="res://assets/icons/techniques/early_close.png" id="1_71oip"]
 [ext_resource type="Script" uid="uid://cedb6umveedlt" path="res://resources/techniques/early_close/early_close.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 id = "early_close"
 name = "Early Close"
+icon = ExtResource("1_71oip")
 description = "When the Day's goal is met, gain 1 Gold for each Turn left"
-rarity = 0

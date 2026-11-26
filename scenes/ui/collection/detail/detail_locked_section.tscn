@@ -1,0 +1,96 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/detail_locked_section.gd" id="1_locked"]
+[ext_resource type="Texture2D" path="res://assets/icons/others/lock.svg" id="2_lock"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_well"]
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 14.0
+bg_color = Color(0.902, 0.8431, 0.7059, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0.9843, 0.9608, 0.902, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(0.7608, 0.6039, 0.3373, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="DetailLockedSection" type="VBoxContainer"]
+theme_override_constants/separation = 10
+script = ExtResource("1_locked")
+
+[node name="Heading" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1647, 0.149, 0.1255, 1)
+theme_override_font_sizes/font_size = 26
+text = "The story"
+
+[node name="Well" type="PanelContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_well")
+
+[node name="Row" type="HBoxContainer" parent="Well"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Lock" type="TextureRect" parent="Well/Row"]
+modulate = Color(0.4784, 0.3529, 0.1647, 1)
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_lock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Column" type="VBoxContainer" parent="Well/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Line" type="Label" parent="Well/Row/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2431, 0.2039, 0.149, 1)
+theme_override_font_sizes/font_size = 17
+text = "Serve Lobster Roll 30 times to unlock"
+autowrap_mode = 3
+
+[node name="Progress" type="HBoxContainer" parent="Well/Row/Column"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bar" type="ProgressBar" parent="Well/Row/Column/Progress"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+max_value = 30.0
+step = 1.0
+value = 12.0
+show_percentage = false
+
+[node name="Count" type="Label" parent="Well/Row/Column/Progress"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 16
+text = "12 / 30"

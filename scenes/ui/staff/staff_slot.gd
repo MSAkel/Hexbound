@@ -6,6 +6,8 @@ extends Control
 ## Layout lives in staff_slot.tscn.
 
 signal drag_started(slot_index: int)
+## Pressed and released without becoming a drag. StaffRail opens the Sell button.
+signal clicked(slot_index: int)
 signal hover_changed(slot_index: int, hovered: bool)
 
 const DRAG_START_THRESHOLD_PX := 8.0
@@ -34,8 +36,6 @@ const RIM_FADE_DURATION := 0.32
 const COPY_GHOST_DURATION := 0.5
 const REJECT_SHAKE_PX := 7.0
 const REJECT_DURATION := 0.22
-const EMPTY_WELL_MODULATE := Color(1, 1, 1, 1.0)
-const FILLED_WELL_MODULATE := Color(1, 1, 1, 0.0)
 const DUST_COLOR := Color(0.93, 0.88, 0.78, 0.9)
 
 @export var slot_index: int = 0
@@ -89,8 +89,10 @@ func set_staff(new_staff: StaffCard) -> void:
 ## Turns this instance into the cursor ghost used while dragging.
 func configure_as_ghost() -> void:
 	_is_ghost = true
+	# Only the icon on its background rides the cursor. The frame stays in the slot.
 	_well.hide()
 	_drop_glow.hide()
+	_name_tag.hide()
 	_refresh()
 
 
@@ -212,7 +214,7 @@ func play_reject() -> void:
 	_motion_tween.tween_callback(_finish_motion)
 
 
-## Ghost only. Shrinks into the sell panel, then calls done.
+## Ghost only. Shrinks into target_global_center (the sell panel, or its own hex), then calls done.
 func play_sell_into(target_global_center: Vector2, done: Callable) -> void:
 	if GameManager.skip_presentation:
 		done.call()
@@ -238,24 +240,26 @@ func _begin_motion() -> Tween:
 	return _motion_tween
 
 
-## Landing beat appended to a travel tween. heavy adds dust and a screen shake.
+## Landing beat appended to a travel tween. heavy (a merchant arrival) adds a squash, rim flash,
+## dust and a screen shake. Drops and swaps settle straight to the rest scale with no squash or flash.
 func _append_seat(tween: Tween, heavy: bool) -> void:
 	tween.tween_callback(func() -> void:
 		_token.position = Vector2.ZERO
-		_flash_rim(RIM_FADE_DURATION)
 		if heavy:
+			_flash_rim(RIM_FADE_DURATION)
 			_burst_dust()
 			_shake_screen(SEAT_SHAKE_STRENGTH, SEAT_SHAKE_DURATION)
 			AudioManager.play_sfx(UISounds.GROUND_IMPACT)
 		else:
 			AudioManager.play_ui_hover()
 	)
-	tween.tween_property(_token, "scale", SEAT_SQUASH_SCALE, SEAT_SQUASH_DURATION).set_trans(
-		Tween.TRANS_QUAD
-	).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_token, "scale", _rest_scale(), SEAT_SETTLE_DURATION).set_trans(
-		Tween.TRANS_BACK
-	).set_ease(Tween.EASE_OUT)
+	if heavy:
+		tween.tween_property(_token, "scale", SEAT_SQUASH_SCALE, SEAT_SQUASH_DURATION).set_trans(
+			Tween.TRANS_QUAD
+		).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_token, "scale", _rest_scale(), SEAT_SETTLE_DURATION).set_trans(
+			Tween.TRANS_BACK
+		).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(_finish_motion)
 
 
@@ -345,7 +349,6 @@ func _shake_screen(strength: float, duration: float) -> void:
 func _refresh() -> void:
 	var shown := staff != null and not _lifted
 	_token.visible = shown
-	_well.modulate = FILLED_WELL_MODULATE if shown else EMPTY_WELL_MODULATE
 	if _is_ghost:
 		_well.hide()
 	# Empty hexes pass the pointer through. Drops are resolved by rect, not by hover.
@@ -407,9 +410,12 @@ func _on_gui_input(event: InputEvent) -> void:
 	if _is_ghost or staff == null:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		_press_held = event.pressed
 		if event.pressed:
+			_press_held = true
 			_press_screen_pos = event.global_position
+		elif _press_held:
+			_press_held = false
+			clicked.emit(slot_index)
 		return
 	# A small pointer move is still a click. Past the threshold it becomes a drag.
 	if event is InputEventMouseMotion and _press_held:

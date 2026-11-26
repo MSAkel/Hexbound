@@ -137,7 +137,6 @@ visible = false
 custom_minimum_size = Vector2(160, 52)
 layout_mode = 2
 size_flags_horizontal = 10
-tooltip_text = "Keep every card. The Gold paid for the service is not refunded."
 text = "Skip"
 
 [node name="RemoveButton" type="Button" parent="Panel/Box/Footer" unique_id=1733500113]

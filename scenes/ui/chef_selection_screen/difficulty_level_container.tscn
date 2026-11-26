@@ -1,91 +1,96 @@
 [gd_scene format=3 uid="uid://ln018toeb6p5"]
 
 [ext_resource type="Script" uid="uid://ca47lh6e1ysqu" path="res://scenes/ui/chef_selection_screen/difficulty_level_container.gd" id="1_difficulty"]
-[ext_resource type="Texture2D" uid="uid://dlt2r1er50yoc" path="res://assets/gui/buttons/borderless_arrow.png" id="3_rjl0r"]
+[ext_resource type="Texture2D" uid="uid://didjnsss55pud" path="res://assets/gui/buttons/tick_box_arrow.png" id="2_arrow"]
+[ext_resource type="Texture2D" uid="uid://bxsvm5cbi28f0" path="res://assets/gui/panels/difficulty_level_bg.png" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://ydbc627ethaa" path="res://assets/gui/panels/tick_box_number.png" id="4_number"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_arrow"]
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
-bg_color = Color(0.96862745, 0.9098039, 0.8235294, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.43, 0.33, 0.19, 0.4)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bg"]
+content_margin_left = 22.0
+content_margin_top = 22.0
+content_margin_right = 22.0
+content_margin_bottom = 22.0
+texture = ExtResource("3_bg")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_number"]
+texture = ExtResource("4_number")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
 
 [node name="DifficultyLevelContainer" type="HBoxContainer" unique_id=471677585]
-custom_minimum_size = Vector2(0, 110)
 size_flags_horizontal = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
+alignment = 1
 script = ExtResource("1_difficulty")
 
-[node name="SectionTitle" type="Label" parent="." unique_id=1135214372]
+[node name="PrevSelectionButton" type="TextureButton" parent="." unique_id=1866206214]
+texture_filter = 1
+layout_mode = 2
+size_flags_vertical = 4
+texture_normal = ExtResource("2_arrow")
+texture_pressed = ExtResource("2_arrow")
+texture_hover = ExtResource("2_arrow")
+stretch_mode = 3
+flip_h = true
+
+[node name="DifficultyPanel" type="PanelContainer" parent="." unique_id=1866206210]
+texture_filter = 1
+custom_minimum_size = Vector2(300, 260)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxTexture_bg")
+
+[node name="DifficultyCopy" type="VBoxContainer" parent="DifficultyPanel" unique_id=10758362]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="SectionTitle" type="Label" parent="DifficultyPanel/DifficultyCopy" unique_id=1135214372]
+layout_mode = 2
 theme_type_variation = &"TitleLabel"
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 26
 text = "DIFFICULTY"
-vertical_alignment = 1
-
-[node name="PrevArrowFrame" type="PanelContainer" parent="." unique_id=1866206210]
-custom_minimum_size = Vector2(52, 52)
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_arrow")
-
-[node name="PrevSelectionButton" type="TextureButton" parent="PrevArrowFrame" unique_id=1866206214]
-custom_minimum_size = Vector2(28, 28)
-layout_mode = 2
-texture_normal = ExtResource("3_rjl0r")
-texture_pressed = ExtResource("3_rjl0r")
-texture_hover = ExtResource("3_rjl0r")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="DifficultyCopy" type="VBoxContainer" parent="." unique_id=10758362]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-theme_override_constants/separation = 4
-
-[node name="DifficultyLevel" type="Label" parent="DifficultyCopy" unique_id=1841812399]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Level 1"
 horizontal_alignment = 1
 
-[node name="DifficultyInfo" type="Label" parent="DifficultyCopy" unique_id=38132031]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(220, 0)
+[node name="NumberBox" type="PanelContainer" parent="DifficultyPanel/DifficultyCopy" unique_id=1004794079]
+custom_minimum_size = Vector2(90, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxTexture_number")
+
+[node name="DifficultyLevel" type="Label" parent="DifficultyPanel/DifficultyCopy/NumberBox" unique_id=1841812399]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 48
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DifficultyInfo" type="Label" parent="DifficultyPanel/DifficultyCopy" unique_id=38132031]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "Base difficulty."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="NextArrowFrame" type="PanelContainer" parent="." unique_id=1004794079]
-custom_minimum_size = Vector2(52, 52)
+[node name="NextSelectionButton" type="TextureButton" parent="." unique_id=1004794080]
+texture_filter = 1
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_arrow")
+texture_normal = ExtResource("2_arrow")
+texture_pressed = ExtResource("2_arrow")
+texture_hover = ExtResource("2_arrow")
+stretch_mode = 3
 
-[node name="NextSelectionButton" type="TextureButton" parent="NextArrowFrame" unique_id=1004794080]
-custom_minimum_size = Vector2(28, 28)
-layout_mode = 2
-texture_normal = ExtResource("3_rjl0r")
-texture_pressed = ExtResource("3_rjl0r")
-texture_hover = ExtResource("3_rjl0r")
-ignore_texture_size = true
-stretch_mode = 5
-flip_h = true
-
-[connection signal="pressed" from="PrevArrowFrame/PrevSelectionButton" to="." method="_on_prev_selection_button_pressed"]
-[connection signal="pressed" from="NextArrowFrame/NextSelectionButton" to="." method="_on_next_selection_button_pressed"]
+[connection signal="pressed" from="PrevSelectionButton" to="." method="_on_prev_selection_button_pressed"]
+[connection signal="pressed" from="NextSelectionButton" to="." method="_on_next_selection_button_pressed"]

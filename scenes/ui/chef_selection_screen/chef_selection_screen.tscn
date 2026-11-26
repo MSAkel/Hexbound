@@ -11,18 +11,6 @@
 [ext_resource type="PackedScene" uid="uid://bvqrwh8folnlg" path="res://scenes/ui/chef_selection_screen/seeded_run_panel.tscn" id="13_seeded_run"]
 [ext_resource type="PackedScene" uid="uid://ronbvr33lwb5" path="res://scenes/ui/chef_selection_screen/abandon_run_confirm_panel.tscn" id="14_abandon_panel"]
 
-[sub_resource type="InputEventAction" id="InputEventAction_layout_prev"]
-action = &"chef_layout_prev"
-
-[sub_resource type="Shortcut" id="Shortcut_layout_prev"]
-events = [SubResource("InputEventAction_layout_prev")]
-
-[sub_resource type="InputEventAction" id="InputEventAction_layout_next"]
-action = &"chef_layout_next"
-
-[sub_resource type="Shortcut" id="Shortcut_layout_next"]
-events = [SubResource("InputEventAction_layout_next")]
-
 [node name="ChefSelectionScreen" type="Control" unique_id=925662086]
 layout_mode = 3
 anchors_preset = 15
@@ -55,7 +43,6 @@ custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
-shortcut = SubResource("Shortcut_layout_prev")
 texture_normal = ExtResource("6_arrow_normal")
 texture_pressed = ExtResource("7_arrow_pressed")
 texture_hover = ExtResource("8_arrow_hover")
@@ -101,7 +88,7 @@ color = Color(0.43, 0.33, 0.19, 0.28)
 [node name="Footer" type="HBoxContainer" parent="SafeArea/Page/UnifiedPanel/Content" unique_id=2041827096]
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
-theme_override_constants/separation = 28
+theme_override_constants/separation = 48
 alignment = 1
 
 [node name="DifficultyLevelContainer" parent="SafeArea/Page/UnifiedPanel/Content/Footer" unique_id=1103390495 instance=ExtResource("2_difficulty")]
@@ -110,13 +97,13 @@ layout_mode = 2
 
 [node name="FooterDivider" parent="SafeArea/Page/UnifiedPanel/Content/Footer" unique_id=315356182 instance=ExtResource("12_vertical_divider")]
 size_flags_vertical = 4
-span = 82.0
+span = 200.0
 
 [node name="PlayColumn" type="VBoxContainer" parent="SafeArea/Page/UnifiedPanel/Content/Footer" unique_id=1161585173]
-custom_minimum_size = Vector2(280, 0)
+custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_constants/separation = 10
+theme_override_constants/separation = 28
 
 [node name="SeededRunPanel" parent="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn" unique_id=1300363034 instance=ExtResource("13_seeded_run")]
 unique_name_in_owner = true
@@ -124,7 +111,7 @@ layout_mode = 2
 
 [node name="PlayButton" type="Button" parent="SafeArea/Page/UnifiedPanel/Content/Footer/PlayColumn" unique_id=1794758867]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 70)
+custom_minimum_size = Vector2(300, 70)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
@@ -132,7 +119,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
-text = "PLAY"
+text = "Play"
 
 [node name="NextSelectionButton" type="TextureButton" parent="SafeArea/Page" unique_id=1794269466]
 texture_filter = 1
@@ -140,7 +127,6 @@ custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
-shortcut = SubResource("Shortcut_layout_next")
 texture_normal = ExtResource("6_arrow_normal")
 texture_pressed = ExtResource("7_arrow_pressed")
 texture_hover = ExtResource("8_arrow_hover")

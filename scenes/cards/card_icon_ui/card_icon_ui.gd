@@ -15,7 +15,11 @@ extends Control
 #region Scene references
 
 @onready var rune_button: TextureButton = $Container/RuneButton
-@onready var card_icon: CardIcon = $Container/RuneButton/CardIcon
+@onready var card_icon: CardIcon = $Container/RuneButton/Frame/CardIcon
+# Container art per card type. The scene holds the textures; setup only picks which one shows.
+@onready var _ingredient_frame: TextureRect = $Container/RuneButton/Frame/IngredientFrame
+@onready var _kitchenware_frame: TextureRect = $Container/RuneButton/Frame/KitchenwareFrame
+@onready var _meal_frame: TextureRect = $Container/RuneButton/Frame/MealFrame
 @onready var _anim_target: Control = $Container
 @onready var placement_smoke: GPUParticles2D = $PlacementSmoke
 @onready var placement_dust: GPUParticles2D = $PlacementDust
@@ -91,7 +95,7 @@ const TRIGGER_LINK_FLASH_DURATION := 0.42
 const CHAINED_ACTIVATION_PEAK_SCALE := Vector2(1.06, 1.06)
 const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
 # Map inspect hover. Subtler than placement ghost and activation pop.
-const INSPECT_HOVER_SCALE := Vector2(1.08, 1.08)
+const INSPECT_HOVER_SCALE := Vector2(1.04, 1.04)
 const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
 const INSPECT_HOVER_DURATION := 0.12
 # Keep the chips seated inside the token's bottom corners while their width follows the numbers.
@@ -136,9 +140,17 @@ func setup(rune: TileCard) -> void:
 		call_deferred("setup", rune)
 		return
 	
+	_show_type_frame(rune)
 	card_icon.setup(rune)
 	refresh_output_chip(rune)
 	refresh_condiment_badges(rune, center_coordinates)
+
+
+func _show_type_frame(rune: TileCard) -> void:
+	var card_type := rune.type if rune != null else TileCard.TileCardType.INGREDIENT
+	_ingredient_frame.visible = card_type == TileCard.TileCardType.INGREDIENT
+	_kitchenware_frame.visible = card_type == TileCard.TileCardType.KITCHENWARE
+	_meal_frame.visible = card_type == TileCard.TileCardType.MEAL
 
 
 ## Configures this instance as the display-only ghost used while aiming a hand card.

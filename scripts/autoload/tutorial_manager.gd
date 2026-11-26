@@ -308,7 +308,6 @@ func _check_state_hints() -> void:
 	if _hand_matches_board(board):
 		request(&"overplay")
 	if GameManager.current_round >= 2:
-		request(&"sell")
 		request(&"event_preview")
 	if _has_staff():
 		request(&"staff")

@@ -15,8 +15,8 @@ const CHEF_PATHS: Array[String] = [
 ]
 
 ## Meals in every starting deck (user, Nov 24: raised from the 3 most kits gave, since Meals were
-## too hard to get without the end-of-Day card pick). Untuned.
-const STARTING_MEAL_COUNT := 4
+## too hard to get without the end-of-Day card pick; Nov 26: 4 -> 5, the extra one random). Untuned.
+const STARTING_MEAL_COUNT := 5
 ## Of those, how many come from the chef's speciality (the home Station's kit, kit order). The rest
 ## are random Meals from the chef's pool. A chef whose home Station is rolled ("any" or "a|b"), such
 ## as Restaurateur and Chef de Cuisine, has no speciality and gets all random (user, Nov 24).
@@ -120,6 +120,28 @@ static func _starting_meal_ids(chef: ChefDefinition, stations: Array[String]) ->
 	while picked.size() < STARTING_MEAL_COUNT and not rest.is_empty():
 		picked.append(rest.pop_at(RunRng.randi_range(0, rest.size() - 1)))
 	return picked
+
+
+## The Meals every starting deck of this chef holds: the first SPECIALITY_MEAL_COUNT Meals of the
+## home Station's kit, with kit_swaps applied. Empty for chefs whose home Station is rolled, since
+## all their starting Meals are random. Rolls nothing, so it is safe outside a run (Collection).
+static func get_signature_meal_ids(chef: ChefDefinition) -> Array[String]:
+	var picked: Array[String] = []
+	if not _has_meal_speciality(chef):
+		return picked
+	# Not filtered by GameManager.get_draw_pool, which follows the chef bound for the run.
+	var home := chef.deck_stations[0].split(":")[0].strip_edges()
+	for meal_id: String in _meal_entries("%s:full" % home, home, _parse_swaps(chef)):
+		if picked.size() >= mini(SPECIALITY_MEAL_COUNT, STARTING_MEAL_COUNT):
+			break
+		if meal_id not in picked:
+			picked.append(meal_id)
+	return picked
+
+
+## Station ids a deck_stations entry can roll (the "|" choices), or ["any"].
+static func get_deck_station_choices(entry: String) -> PackedStringArray:
+	return entry.split(":")[0].strip_edges().split("|")
 
 
 ## True when the chef's home Station (first deck_stations entry) is one fixed Station, not a roll.
