@@ -664,17 +664,23 @@ func is_tile_card_active(hex: Hex) -> bool:
 		return false
 	if cooking_segment >= 0 and get_segment_index(hex.coordinates) != cooking_segment:
 		return false
+	# Sealed Plates, 86'd and No Repeats.
+	if EventManager.is_card_blocked(hex):
+		return false
 	return hex.active_tile_card.is_active
 
 
 ## The Station that cooks in the given Hour of the Day (1-based): one Station per Hour, top to bottom,
 ## so each cooks once a Day. Hours past the last Station wrap to the top (untuned; a Day has 4 Hours
-## and the board 4 Stations, so this only matters if either changes).
+## and the board 4 Stations, so this only matters if either changes). Reverse Service cooks bottom up.
 func get_cooking_segment_for_hour(hour_number: int) -> int:
 	var count := get_segment_count()
 	if count <= 0:
 		return -1
-	return posmod(hour_number - 1, count)
+	var index := posmod(hour_number - 1, count)
+	if EventManager.is_cooking_reversed():
+		return count - 1 - index
+	return index
 
 
 ## The Station that cooks this Hour.
@@ -964,10 +970,6 @@ func multiply_turn_multiplicative_mult_for_segment(segment_index: int, factor: f
 func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 	if amount == 0:
 		return
-	# Austerity must not credit the segment ledger either, or the HUD would lie.
-	if not EventManager.can_gain_gold():
-		return
-
 	var segment_index := get_segment_index(tile.coordinates)
 	_layout.add_segment_turn_gold(segment_index, amount)
 	HourLedger.record("g", segment_index, amount)
@@ -978,8 +980,6 @@ func add_turn_gold_for_tile(tile: Hex, amount: int) -> void:
 ## Records gold on a segment by index. Used when a drink relays gold to the next segment.
 func add_turn_gold_for_segment(segment_index: int, amount: int) -> void:
 	if amount == 0:
-		return
-	if not EventManager.can_gain_gold():
 		return
 	_layout.add_segment_turn_gold(segment_index, amount)
 	HourLedger.record("g", segment_index, amount)

@@ -89,9 +89,9 @@ func add_staff_to_slot(template: StaffCard, slot: int) -> int:
 	return slot
 
 
-## Staff stay put while the Hour is firing.
+## Staff stay put while the Hour is firing, and for the whole Day under Shift Swap.
 func can_rearrange() -> bool:
-	return not GameManager.is_processing_turn
+	return not GameManager.is_processing_turn and not EventManager.is_staff_locked()
 
 
 ## Moves a staff member into to_slot. An occupied target swaps the two.
@@ -125,6 +125,22 @@ func sell_staff(slot: int) -> int:
 	return value
 
 
+## Shift Swap. Every staff member moves steps seats down (negative: up), wrapping around.
+func rotate_slots(steps: int) -> void:
+	var moved_slots: Array[StaffCard] = []
+	moved_slots.resize(SLOT_COUNT)
+	var moved_state: Array[Dictionary] = []
+	moved_state.resize(SLOT_COUNT)
+	for i in SLOT_COUNT:
+		var target := posmod(i + steps, SLOT_COUNT)
+		moved_slots[target] = slots[i]
+		moved_state[target] = _hour_state[i]
+	for i in SLOT_COUNT:
+		slots[i] = moved_slots[i]
+		_hour_state[i] = moved_state[i]
+	_notify_roster_changed()
+
+
 func _notify_roster_changed() -> void:
 	EventBus.staff_roster_changed.emit()
 	RunSaveManager.request_autosave()
@@ -138,7 +154,7 @@ func _notify_roster_changed() -> void:
 ## An off-shift staff member has no effect, and copy staff pointing at them copy nothing.
 func resolve_effect_at(slot: int, depth: int = 0) -> StaffCard:
 	var staff := get_staff(slot)
-	if staff == null or depth > SLOT_COUNT or EventManager.is_staff_off_shift(staff):
+	if staff == null or depth > SLOT_COUNT:
 		return null
 	return staff.resolve_effect(self, slot, depth)
 
@@ -305,10 +321,9 @@ func on_day_ended() -> void:
 		ctx.effect.on_day_ended(ctx)
 
 
-## Hour finished firing. Drops per-Hour scratch state and brings Short Staffed's pick back.
+## Hour finished firing. Drops per-Hour scratch state.
 func end_hour() -> void:
 	_reset_hour_state()
-	EventManager.clear_off_shift_staff()
 
 #endregion --- Engine hooks ---
 

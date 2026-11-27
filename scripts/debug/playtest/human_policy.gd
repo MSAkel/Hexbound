@@ -176,7 +176,7 @@ func _cooking_segment() -> int:
 
 
 ## True when the Station still cooks today: this Hour's Station or one a later Hour of the Day
-## cooks (Rush Hour's 3 Hours never reach the bottom Station). A Day that meets its goal early
+## cooks. A Day that meets its goal early
 ## ends before the rest cook; the bot does not guess that.
 func _cooks_today(segment: int) -> bool:
 	var last_hour := GameManager.get_max_turns_per_round()
@@ -530,12 +530,21 @@ func _filler_cards(needs: Array) -> Array[TileCard]:
 func _scenario_now() -> Dictionary:
 	return {
 		"hand": DeckManager.hand.duplicate(),
-		"pile": DeckManager.draw_pile.duplicate(),
+		"pile": _drawable_today(DeckManager.draw_pile),
 		"plays_left": DeckManager.plays_left(),
 		# A player who doesn't use the Discard button yet gets no extra draws from it.
 		"discards_left": DeckManager.discards_left if _may_discard() else 0,
 		"extra_draws": 0,
 	}
+
+
+## The draw pile minus the cards Out of Stock keeps in it today.
+func _drawable_today(pile: Array[TileCard]) -> Array[TileCard]:
+	var drawable: Array[TileCard] = []
+	for card: TileCard in pile:
+		if not EventManager.is_card_out_of_stock(card):
+			drawable.append(card)
+	return drawable
 
 
 func _scenario_after_discard() -> Dictionary:

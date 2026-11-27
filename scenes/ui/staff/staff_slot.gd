@@ -358,10 +358,8 @@ func _refresh() -> void:
 		return
 	_icon.texture = _icon_for(staff)
 	_name_tag.text = staff.name
-	# Short Staffed dims the off-shift member like a blacked-out spot card.
-	var tint := Hex.RUNE_INACTIVE_MODULATE if EventManager.is_staff_off_shift(staff) else Color.WHITE
-	_icon.modulate = tint
-	_name_tag.modulate = tint
+	_icon.modulate = Color.WHITE
+	_name_tag.modulate = Color.WHITE
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 

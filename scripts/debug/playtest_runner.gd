@@ -42,13 +42,13 @@ const BOTS: Array[String] = ["human", "novice", "casual", "slip"]
 const REPORT_PATH := "user://playtest_report.json"
 const STARTER_SEED_COUNT := 16
 const DEFAULT_RUN_COUNT := 8
-## Events that reroll part of the board or staff at the start of every Hour. EventManager isn't in
+## Events that reroll part of the board at the start of every Hour. EventManager isn't in
 ## the sim snapshot, so --extra-hours can't roll those back and skips the probe on those days.
 const PROBE_SKIPPED_EVENTS: Array[int] = [
 	EventManager.Type.BLACKOUT,
-	EventManager.Type.FADING_SECTOR,
-	EventManager.Type.SHORT_STAFFED,
 ]
+## --events=<name,name,name>: the Day 3, 6 and 9 events, by EventManager.Type name.
+var _forced_events: Array[int] = []
 ## Safety stops for a run or Hour that never finishes.
 const MAX_HOURS_PER_RUN := 120
 const MAX_ACTIONS_PER_HOUR := 30
@@ -292,6 +292,15 @@ func _ready() -> void:
 	get_tree().quit(1 if _failed > 0 else 0)
 
 
+## --events: replaces the Day 3, 6 and 9 events, in order (a test hook; legality is not checked).
+func _force_event_schedule() -> void:
+	if _forced_events.is_empty():
+		return
+	for index in mini(_forced_events.size(), EventManager.scheduled_events.size()):
+		EventManager.scheduled_events[index] = _forced_events[index] as EventManager.Type
+	EventBus.event_schedule_changed.emit()
+
+
 func _parse_args() -> void:
 	var requested_chef := ""
 	for arg: String in OS.get_cmdline_user_args():
@@ -342,6 +351,14 @@ func _parse_args() -> void:
 			_skill = clampf(float(value), 0.0, 1.0)
 		elif arg.begins_with("--learning="):
 			_learning = maxf(0.0, float(value))
+		elif arg.begins_with("--events="):
+			_forced_events.clear()
+			for entry: String in value.split(",", false):
+				var key := entry.strip_edges().to_upper()
+				if EventManager.Type.has(key):
+					_forced_events.append(int(EventManager.Type[key]))
+				else:
+					push_error("PlaytestRunner: unknown event %s (%s)" % [entry, ", ".join(EventManager.Type.keys())])
 		elif arg == "--verbose":
 			_verbose = true
 		elif arg == "--trace":
@@ -571,6 +588,7 @@ func _begin_run(chef_id: String, seed_text: String) -> void:
 	GameManager.selected_difficulty = (_difficulty - 1) as Difficulty.Level
 	RunRng.begin_new_run(seed_text)
 	GameManager.reset_for_new_run()
+	_force_event_schedule()
 	_clear_board()
 	map.generate_terrain()
 	_run_over = false
@@ -632,6 +650,7 @@ func _start_day() -> void:
 		"round": GameManager.current_round,
 		"goal": GameManager.required_score,
 		"event": EventManager.get_active_event_name(),
+		"event_text": EventManager.get_event_description(EventManager.active_event),
 		"hours": 0,
 		"leftover_hours": 0,
 	}

@@ -253,6 +253,7 @@ func _complete_current_round(skipped_turns: int = get_skipped_turns()) -> void:
 	EconomyManager.apply_round_speed_rewards(skipped_turns)
 	StaffManager.on_day_ended()
 	StationManager.on_day_ended()
+	EventManager.on_day_ended()
 	if EventManager.is_completing_final_event_round():
 		RoundFlow.begin_victory_transition()
 		return
@@ -273,9 +274,7 @@ func advance_round() -> void:
 ## Round-dependent state and HUD refresh, shared by the round advance and the debug start.
 func _apply_round_state() -> void:
 	required_score = ScoreProgression.get_required_score(current_round, selected_difficulty)
-	# Apply the event first so Rush Hour's reduced max is reflected in remaining turns.
 	EventManager.on_round_advanced(current_round)
-	required_score = EventManager.apply_score_modifier(required_score)
 	remaining_turns = get_max_turns_per_round()
 	EventBus.turn_changed.emit()
 	EventBus.round_changed.emit(current_round)
@@ -321,8 +320,9 @@ func get_draw_pool() -> Array[TileCard]:
 
 
 ## Rating is Flavour x Additive. xMult already folded into Additive when it fired.
+## Full Service zeroes a Turn under its threshold, here so the real Hour, the bot and the checks agree.
 func compute_hour_turn_contribution(flavour: int, additive_mult: float) -> int:
-	return int(round(float(flavour) * additive_mult))
+	return EventManager.apply_turn_score_rule(int(round(float(flavour) * additive_mult)))
 
 
 func record_turn_segment_peaks(segment_contributions: Array[int]) -> void:
@@ -461,6 +461,7 @@ func _debug_apply_round_jump(target_round: int) -> void:
 	EconomyManager.reset_round_tracking()
 	current_round = target_round
 	_apply_round_state()
+	EventManager.on_day_started()
 	EventBus.turn_started.emit()
 	# No merchant visit precedes a debug jump, so the reveal plays right away.
 	EventManager.play_reveal()
