@@ -196,7 +196,7 @@ and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All n
   `MerchantPacks.SHELF_KIND_WEIGHTS` (Technique 50%, Meal 40%, Ingredient 5%, Kitchenware 5%); there is
   no guaranteed Technique slot. Ingredients and Kitchenware cost 1 Gold, Meals 3 (`TileCard.SHOP_PRICE`,
   `MEAL_SHOP_PRICE`); packs 3/3/4/4 (`MerchantPacks.PRICES`), pack kinds by `KIND_WEIGHTS`.
-- Stars have no cap and add `TileCard.STAR_SCALE_STEP` (+20%) each.
+- Stars have no cap and add `TileCard.STAR_SCALE_STEP` (+15%) each.
 - Saves (version 7) store every pile in order. Version 6 runs can't be continued.
 
 ## Chefs

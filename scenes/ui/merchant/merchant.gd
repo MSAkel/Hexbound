@@ -60,6 +60,8 @@ func _ready() -> void:
 	_show_merchant_button.pressed.connect(_on_show_merchant_button_pressed)
 	_pack_opening = PackOpening.new()
 	_content_panel.add_child(_pack_opening)
+	# Clicks follow tree order, not z_index, so the overlay must sit before the button to leave it usable.
+	_content_panel.move_child(_pack_opening, _show_board_button.get_index())
 	_pack_opening.card_kept.connect(_on_pack_card_kept)
 	_pack_opening.skipped.connect(_on_pack_skipped)
 	EventBus.gold_changed.connect(_on_currency_changed)

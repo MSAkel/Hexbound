@@ -63,46 +63,32 @@ func missing_counts(cards: Array[TileCard]) -> Dictionary:
 const UNCOUNTABLE_LABELS: Array[String] = [GameTerms.SEAFOOD, GameTerms.DAIRY, GameTerms.KITCHENWARE]
 
 
-## Player-facing requirements, e.g. "2 different Vegetables · 1 Fruit · 1 Kitchenware".
-func get_requirements_text(separator: String = " · ") -> String:
-	var parts: PackedStringArray = []
-	for card_id: String in required_card_ids:
-		var template := GameManager.get_tile_card_by_id(card_id)
-		parts.append(template.name if template != null else card_id.capitalize())
-	for tag: StringName in required_counts:
-		var count := int(required_counts[tag])
-		var label := "Ingredient" if tag == TAG_ANY_INGREDIENT else GameTerms.get_ingredient_kind_label(tag)
-		if label.is_empty():
-			label = String(tag).capitalize()
-		if count > 1 and not label in UNCOUNTABLE_LABELS:
-			label += "s"
-		if tag == TAG_ANY_INGREDIENT:
-			label = "different kinds of Ingredient" if tag in distinct_tags else "any %s" % label
-		elif tag in distinct_tags and count > 1:
-			label = "different %s" % label
-		parts.append("%d %s" % [count, label])
-	return separator.join(parts)
+## One thing the station needs, for display: a named card, or a count of one kind.
+class Requirement:
+	## "2 different Meats", or the card's name.
+	var text: String
+	## The card's icon or the kind icon. Null for "any Ingredient".
+	var icon: Texture2D
+	var needed: int
+	## How many of needed the cards passed to get_requirements already cover.
+	var have: int
+
+	func _init(p_text: String, p_icon: Texture2D, p_needed: int, p_have: int) -> void:
+		text = p_text
+		icon = p_icon
+		needed = p_needed
+		have = p_have
 
 
-## Text and backing of a requirement the cards already cover, and of the "1/2" on one partly covered.
-const COVERED_TEXT_COLOR := Color(0.12, 0.42, 0.14, 1)
-const COVERED_BG_COLOR := Color(0.45, 0.75, 0.35, 0.35)
-
-
-## get_requirements_text as BBCode with each item's icon on its left: a named card shows its own
-## icon, a kind shows the kind icon. "Any Ingredient" has no icon. icon_size is in pixels.
-## With covered_by (a station's regular-spot cards), requirements those cards already meet are
-## highlighted, and a count they meet in part shows how many are there ("1/2").
-func get_requirements_bbcode(
-	icon_size: int, separator: String = "   ", check: bool = false, covered_by: Array[TileCard] = []
-) -> String:
-	var missing := missing_counts(covered_by) if check else {}
-	var parts: PackedStringArray = []
+## Named cards first, then kinds. covered_by is a station's regular-spot cards.
+func get_requirements(covered_by: Array[TileCard] = []) -> Array[Requirement]:
+	var missing := missing_counts(covered_by)
+	var out: Array[Requirement] = []
 	for card_id: String in required_card_ids:
 		var template := GameManager.get_tile_card_by_id(card_id)
 		var name_text := template.name if template != null else card_id.capitalize()
-		var part := FeastStatIcons.inline_bbcode(template.icon if template != null else null, icon_size) + name_text
-		parts.append(_covered_bbcode(part) if check and not missing.has(StringName(card_id)) else part)
+		var card_icon: Texture2D = template.icon if template != null else null
+		out.append(Requirement.new(name_text, card_icon, 1, 1 - int(missing.get(StringName(card_id), 0))))
 	for tag: StringName in required_counts:
 		var count := int(required_counts[tag])
 		var label := "Ingredient" if tag == TAG_ANY_INGREDIENT else GameTerms.get_ingredient_kind_label(tag)
@@ -114,21 +100,19 @@ func get_requirements_bbcode(
 			label = "different kinds of Ingredient" if tag in distinct_tags else "any %s" % label
 		elif tag in distinct_tags and count > 1:
 			label = "different %s" % label
-		var icon: Texture2D = null if tag == TAG_ANY_INGREDIENT else FeastStatIcons.get_ingredient_kind_icon(tag)
-		var part := FeastStatIcons.inline_bbcode(icon, icon_size) + "%d %s" % [count, label]
-		var short := int(missing.get(tag, 0))
-		if check and short <= 0:
-			part = _covered_bbcode(part)
-		elif check and short < count:
-			part += " [color=#%s](%d/%d)[/color]" % [COVERED_TEXT_COLOR.to_html(false), count - short, count]
-		parts.append(part)
+		var kind_icon: Texture2D = null
+		if tag != TAG_ANY_INGREDIENT:
+			kind_icon = FeastStatIcons.get_ingredient_kind_icon(tag)
+		out.append(Requirement.new("%d %s" % [count, label], kind_icon, count, count - int(missing.get(tag, 0))))
+	return out
+
+
+## Player-facing requirements, e.g. "2 different Vegetables · 1 Fruit · 1 Kitchenware".
+func get_requirements_text(separator: String = " · ") -> String:
+	var parts: PackedStringArray = []
+	for requirement: Requirement in get_requirements():
+		parts.append(requirement.text)
 	return separator.join(parts)
-
-
-func _covered_bbcode(part: String) -> String:
-	return "[bgcolor=#%s][color=#%s] %s [/color][/bgcolor]" % [
-		COVERED_BG_COLOR.to_html(true), COVERED_TEXT_COLOR.to_html(false), part,
-	]
 
 
 ## Perk for a level, or null below level 1.

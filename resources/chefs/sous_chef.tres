@@ -14,7 +14,7 @@ id = "sous_chef"
 display_name = "Sous Chef"
 icon = ExtResource("2_icon")
 ingame_portrait = ExtResource("3_ingame")
-speciality_description = "Every 3rd Kitchenware {trigger} each Turn repeats."
+speciality_description = "Every 3rd Kitchenware {trigger} repeats."
 perk = SubResource("Perk")
 deck_stations = Array[String](["fry_station:full", "roasting_station:small"])
 kit_swaps = Array[String](["fry_station:6=chicken", "fry_station:9=cheese"])

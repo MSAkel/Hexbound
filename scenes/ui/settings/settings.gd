@@ -12,16 +12,9 @@ signal closed
 @onready var v_sync_check_box: CheckBox = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/VSyncContainer/VSyncCheckBox
 @onready var frame_rate_option_button: OptionButton = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/FrameRateContainer/FrameRateOptionButton
 @onready var hints_check_box: CheckBox = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/TutorialContainer/HintsCheckBox
-@onready var reset_hints_button: Button = $Parchment/VBoxContainer/ScrollContainer/SettingsContainer/ResetHintsContainer/ResetHintsButton
 @onready var back_button: Button = $Parchment/VBoxContainer/BackButton
 
-const RESET_HINTS_TEXT := "Reset tips"
-const RESET_HINTS_CONFIRM_TEXT := "Are you sure?"
-const RESET_HINTS_DONE_TEXT := "Done!"
-
 var _resolution_options: Array[Vector2i] = []
-## Reset tips needs a second press so a stray click can't wipe progress.
-var _reset_hints_armed := false
 
 func _ready() -> void:
 	# Initialize sliders with current values
@@ -101,8 +94,6 @@ func _sync_settings_controls() -> void:
 	var resolution_enabled := GameSettings.display_mode == GameSettings.DISPLAY_MODE_WINDOWED
 	resolution_option_button.disabled = not resolution_enabled
 	hints_check_box.set_pressed_no_signal(TutorialManager.hints_enabled)
-	_reset_hints_armed = false
-	reset_hints_button.text = RESET_HINTS_TEXT
 
 func _on_master_volume_changed(value: float) -> void:
 	AudioServer.set_bus_volume_db(0, linear_to_db(value))
@@ -157,11 +148,5 @@ func _on_hints_check_box_toggled(toggled_on: bool) -> void:
 
 func _on_reset_hints_button_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	if not _reset_hints_armed:
-		_reset_hints_armed = true
-		reset_hints_button.text = RESET_HINTS_CONFIRM_TEXT
-		return
-	_reset_hints_armed = false
 	TutorialManager.reset_all()
 	hints_check_box.set_pressed_no_signal(true)
-	reset_hints_button.text = RESET_HINTS_DONE_TEXT

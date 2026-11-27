@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/station_menu/station_menu_special.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://0ehwg4ow5qxq" path="res://assets/fonts/retrobit.otf" id="2_font"]
+
+[node name="StationMenuSpecial" type="VBoxContainer"]
+mouse_filter = 2
+theme_override_constants/separation = 0
+script = ExtResource("1_script")
+
+[node name="Name" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.478, 0.29, 0.157, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+text = "Pairing"
+horizontal_alignment = 1
+
+[node name="Description" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.212, 0.149, 0.125, 1)
+theme_override_font_sizes/normal_font_size = 15
+bbcode_enabled = true
+text = "Beverages on this station also count as on the stations either side"
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1

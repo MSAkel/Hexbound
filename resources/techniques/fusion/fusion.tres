@@ -1,10 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://cx7uknsxxx8ep"]
 
 [ext_resource type="Script" uid="uid://b8yy11gcqak5c" path="res://resources/techniques/fusion/fusion.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c0pegaktbf20c" path="res://assets/icons/techniques/fusion.png" id="1_t0vsd"]
 
 [resource]
 script = ExtResource("1_script")
 id = "fusion"
 name = "Fusion"
+icon = ExtResource("1_t0vsd")
 description = "+15 {flavour} for each different Station type on the board"
-rarity = 0

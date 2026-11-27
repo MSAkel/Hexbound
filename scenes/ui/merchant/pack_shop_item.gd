@@ -1,22 +1,30 @@
 class_name PackShopItem
 extends Control
 
-## Merchant shelf pack. Name, what it holds and a price. Opening it happens in PackOpening.
+## Merchant shelf pack: its art and a price. The name and contents are in the tooltip. Opening it
+## happens in PackOpening.
 ## Mirrors CondimentShopItem (select, lock, buy tray) and is built in code, so it has no scene.
-## Placeholder look: the pack art is still to come.
 
 signal selected(item: PackShopItem)
 signal gold_purchase_requested(item: PackShopItem)
 signal lock_toggle_requested(item: PackShopItem, locked: bool)
 
 const SIZE := Vector2(150, 140)
-const WELL_SIZE := Vector2(140, 92)
+const ART_SIZE := Vector2(140, 112)
+## The art grows a little while hovered, focused or selected.
+const HOVER_SCALE := Vector2(1.08, 1.08)
+const HOVER_DURATION := 0.1
+## Pack art per MerchantPacks.Kind.
+const ART: Array[Texture2D] = [
+	preload("res://assets/icons/packs/produce_basket.png"),
+	preload("res://assets/icons/packs/utensil_drawer.png"),
+	preload("res://assets/icons/packs/recipe_box.png"),
+	preload("res://assets/icons/packs/chef's_notebook.png"),
+]
 const MERCHANT_TRAY_HEIGHT := 44.0
 const MERCHANT_TRAY_GAP := 10.0
 const TRAY_SCENE := preload("res://scenes/ui/merchant/merchant_purchase_tray.tscn")
 const LOCK_TEXTURE := preload("res://assets/icons/others/lock.svg")
-const NAME_COLOR := Color(0.97, 0.93, 0.8, 1.0)
-const COUNT_COLOR := Color(0.9, 0.82, 0.62, 1.0)
 
 var kind: MerchantPacks.Kind = MerchantPacks.Kind.INGREDIENTS
 var price: int = 0
@@ -26,9 +34,9 @@ var _locked := false
 var _chosen := false
 var _price_label: Label
 var _lock_icon: TextureRect
-var _well: PanelContainer
-var _name_label: Label
-var _count_label: Label
+var _art: TextureRect
+var _hovered := false
+var _hover_tween: Tween
 var _tray_gap: Control
 var _tray: MerchantPurchaseTray
 
@@ -81,6 +89,7 @@ func mark_sold() -> void:
 	if has_focus():
 		release_focus()
 	_update_layout_height()
+	_apply_art_scale(false)
 	_refresh()
 
 
@@ -94,6 +103,7 @@ func set_merchant_selected(active: bool) -> void:
 	# Buy buttons only enter the focus chain while their tray is on screen.
 	_tray.set_focusable(show_tray)
 	_update_layout_height()
+	_apply_art_scale(true)
 	_refresh()
 
 
@@ -147,29 +157,20 @@ func _build() -> void:
 	_price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chip_row.add_child(_price_label)
 
-	_well = PanelContainer.new()
-	_well.custom_minimum_size = WELL_SIZE
-	_well.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_well.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(_well)
-	var text_column := VBoxContainer.new()
-	text_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	text_column.alignment = BoxContainer.ALIGNMENT_CENTER
-	text_column.add_theme_constant_override("separation", 4)
-	_well.add_child(text_column)
-	_name_label = Label.new()
-	_name_label.add_theme_font_size_override("font_size", 20)
-	_name_label.add_theme_color_override("font_color", NAME_COLOR)
-	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	text_column.add_child(_name_label)
-	_count_label = Label.new()
-	_count_label.add_theme_font_size_override("font_size", 15)
-	_count_label.add_theme_color_override("font_color", COUNT_COLOR)
-	_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	text_column.add_child(_count_label)
+	# The column would reset the art's scale, so it sits in a plain slot.
+	var art_slot := Control.new()
+	art_slot.custom_minimum_size = ART_SIZE
+	art_slot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	art_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(art_slot)
+	_art = TextureRect.new()
+	_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_art.pivot_offset = ART_SIZE * 0.5
+	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	art_slot.add_child(_art)
 
 	_tray_gap = Control.new()
 	_tray_gap.custom_minimum_size = Vector2(0, MERCHANT_TRAY_GAP)
@@ -202,17 +203,27 @@ func _on_lock_toggled(locked: bool) -> void:
 
 
 func _refresh() -> void:
-	if _name_label == null:
+	if _art == null:
 		return
-	_name_label.text = MerchantPacks.display_name(kind)
-	_count_label.text = "%d %s" % [MerchantPacks.CARD_COUNT, MerchantPacks.contents_label(kind)]
+	_art.texture = ART[kind]
 	_price_label.text = MerchantShopStyling.format_price(price)
-	_well.add_theme_stylebox_override("panel", _well_style(_chosen))
 	var can_afford := EconomyManager.can_afford(price)
 	_price_label.add_theme_color_override(
 		"font_color",
 		MerchantShopStyling.price_label_color(can_afford and not _sold)
 	)
+
+
+func _apply_art_scale(animate: bool) -> void:
+	if _hover_tween != null and _hover_tween.is_valid():
+		_hover_tween.kill()
+	var raised := not _sold and (_hovered or _chosen or has_focus())
+	var target := HOVER_SCALE if raised else Vector2.ONE
+	if not animate or not is_inside_tree():
+		_art.scale = target
+		return
+	_hover_tween = create_tween()
+	_hover_tween.tween_property(_art, "scale", target, HOVER_DURATION).set_trans(Tween.TRANS_SINE)
 
 
 func _tooltip_text() -> String:
@@ -234,11 +245,15 @@ func _on_gui_input(event: InputEvent) -> void:
 func _on_mouse_entered() -> void:
 	if _sold:
 		return
+	_hovered = true
+	_apply_art_scale(true)
 	AudioManager.play_condiment_hover()
 	EventBus.toggle_tooltip.emit(true, _tooltip_text(), get_global_rect())
 
 
 func _on_mouse_exited() -> void:
+	_hovered = false
+	_apply_art_scale(true)
 	# A focused pack keeps its tooltip so the gamepad cursor stays readable.
 	if has_focus():
 		return
@@ -248,11 +263,13 @@ func _on_mouse_exited() -> void:
 func _on_focus_entered() -> void:
 	if _sold:
 		return
+	_apply_art_scale(true)
 	AudioManager.play_condiment_hover()
 	EventBus.toggle_tooltip.emit(true, _tooltip_text(), get_global_rect())
 
 
 func _on_focus_exited() -> void:
+	_apply_art_scale(true)
 	EventBus.toggle_tooltip.emit(false, "", Rect2())
 
 
@@ -270,22 +287,6 @@ static func _price_chip_style() -> StyleBoxFlat:
 	style.set_corner_radius_all(7)
 	style.shadow_color = Color(0, 0, 0, 0.22)
 	style.shadow_size = 2
-	return style
-
-
-static func _well_style(chosen: bool) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.set_content_margin_all(8.0)
-	# Warm wood, so a pack reads as different from the green condiment wells.
-	style.bg_color = Color(0.42, 0.3, 0.19, 1)
-	style.set_border_width_all(2)
-	style.border_color = (
-		Color(0.9568627, 0.8313726, 0.5411765, 1) if chosen else Color(0.9686275, 0.9137255, 0.7686275, 1)
-	)
-	style.set_corner_radius_all(12)
-	style.shadow_color = Color(0, 0, 0, 0.25)
-	style.shadow_size = 4
-	style.shadow_offset = Vector2(0, 3)
 	return style
 
 #endregion

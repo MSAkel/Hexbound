@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("1_script")
+price_override = 2
 id = "crudo"
 name = "Crudo"
 icon = ExtResource("1_n1q5n")

@@ -24,7 +24,7 @@ var _card_uis: Array[CardUI] = []
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	# Below the Show Board button (z 2) so the player can still peek at the board.
+	# Drawn below the Show Board button (z 2). The merchant also orders it before the button for clicks.
 	z_index = 1
 	var wash := StyleBoxFlat.new()
 	wash.bg_color = Color(0.03, 0.05, 0.04, 0.9)

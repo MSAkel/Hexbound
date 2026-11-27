@@ -109,7 +109,7 @@ func show_station(station_type: StationType) -> void:
 	for requirement: Dictionary in _station_requirements(station_type):
 		var row := REQUIREMENT_ROW_SCENE.instantiate() as CollectionRequirementRow
 		requires.add_row(row)
-		row.setup(requirement["icon"] as Texture2D, String(requirement["text"]), bool(requirement["different"]))
+		row.setup(requirement["icon"] as Texture2D, String(requirement["text"]))
 	var levels := _add_rows_section("Levels")
 	for level: int in range(StationManager.START_LEVEL, StationManager.MAX_LEVEL + 1):
 		var row := LEVEL_ROW_SCENE.instantiate() as CollectionLevelRow
@@ -276,7 +276,7 @@ func _recipe_slots(meal: MealCard) -> Array[Dictionary]:
 	return slots
 
 
-## One row per requirement: {"icon", "text", "different"}. Named cards show their own art, kinds
+## One row per requirement: {"icon", "text"}. Named cards show their own art, kinds
 ## the kind icon (placeholders for now), "any Ingredient" the placeholder icon.
 func _station_requirements(station_type: StationType) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
@@ -285,16 +285,13 @@ func _station_requirements(station_type: StationType) -> Array[Dictionary]:
 		rows.append({
 			"icon": template.icon if template != null and template.icon != null else FeastStatIcons.PLACEHOLDER,
 			"text": template.name if template != null else card_id.capitalize(),
-			"different": false,
 		})
 	for tag: StringName in station_type.required_counts:
 		var count := int(station_type.required_counts[tag])
-		var different := tag in station_type.distinct_tags and count > 1
 		var text := ""
 		var icon_texture: Texture2D = FeastStatIcons.PLACEHOLDER
 		if tag == StationType.TAG_ANY_INGREDIENT:
 			text = "%d kinds of %s" % [count, GameTerms.INGREDIENT] if tag in station_type.distinct_tags else "%d any %s" % [count, GameTerms.INGREDIENT]
-			different = tag in station_type.distinct_tags
 		else:
 			var label := GameTerms.get_ingredient_kind_label(tag)
 			if label.is_empty():
@@ -303,7 +300,7 @@ func _station_requirements(station_type: StationType) -> Array[Dictionary]:
 				label += "s"
 			text = "%d %s" % [count, label]
 			icon_texture = FeastStatIcons.get_ingredient_kind_icon(tag)
-		rows.append({"icon": icon_texture, "text": text, "different": different})
+		rows.append({"icon": icon_texture, "text": text})
 	return rows
 
 

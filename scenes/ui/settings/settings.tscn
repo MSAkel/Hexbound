@@ -5,6 +5,33 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qvi1m"]
 bg_color = Color(0.050708726, 0.09320182, 0.09985284, 0.56600004)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1m5ku"]
+bg_color = Color(0.27752772, 0.27752775, 0.27752757, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8e5ad"]
+bg_color = Color(0.2784314, 0.2784314, 0.2784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7e8uy"]
+bg_color = Color(0.2784314, 0.2784314, 0.2784314, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a538o"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lhcga"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_j7utt"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_q2a4p"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vox1r"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_e7ua6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b15m5"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_upyvp"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bvujo"]
+
 [node name="SettingsContainer" type="PanelContainer" unique_id=897472805]
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +41,7 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_qvi1m")
 script = ExtResource("1_settings")
 
-[node name="Parchment" type="PanelContainer" parent="."]
+[node name="Parchment" type="PanelContainer" parent="." unique_id=1940341476]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -29,11 +56,11 @@ size_flags_vertical = 4
 theme_override_constants/separation = 32
 
 [node name="Title" type="Label" parent="Parchment/VBoxContainer" unique_id=2122274666]
-theme_type_variation = &"TitleLabel"
 layout_mode = 2
 size_flags_vertical = 0
-text = "Options"
+theme_type_variation = &"TitleLabel"
 theme_override_font_sizes/font_size = 64
+text = "Options"
 horizontal_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Parchment/VBoxContainer" unique_id=1844229110]
@@ -115,6 +142,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_1m5ku")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_8e5ad")
+theme_override_styles/hover = SubResource("StyleBoxFlat_7e8uy")
 selected = 1
 item_count = 4
 popup/item_0/text = "50%"
@@ -140,6 +170,9 @@ layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_a538o")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_lhcga")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_j7utt")
 button_pressed = true
 
 [node name="DisplayModeContainer" type="HBoxContainer" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1918488560]
@@ -156,6 +189,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_1m5ku")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_8e5ad")
+theme_override_styles/hover = SubResource("StyleBoxFlat_7e8uy")
 selected = 0
 item_count = 3
 popup/item_0/text = "Fullscreen"
@@ -179,6 +215,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_1m5ku")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_8e5ad")
+theme_override_styles/hover = SubResource("StyleBoxFlat_7e8uy")
 selected = 4
 item_count = 7
 popup/item_0/text = "1024x576"
@@ -210,6 +249,9 @@ layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_q2a4p")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_vox1r")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_e7ua6")
 
 [node name="FrameRateContainer" type="HBoxContainer" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1739204518]
 layout_mode = 2
@@ -225,6 +267,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_1m5ku")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_8e5ad")
+theme_override_styles/hover = SubResource("StyleBoxFlat_7e8uy")
 
 [node name="TutorialContainer" type="HBoxContainer" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1844229101]
 layout_mode = 2
@@ -240,6 +285,9 @@ layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4
 size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b15m5")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_upyvp")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_bvujo")
 
 [node name="ResetHintsContainer" type="HBoxContainer" parent="Parchment/VBoxContainer/ScrollContainer/SettingsContainer" unique_id=1844229104]
 layout_mode = 2
@@ -258,11 +306,11 @@ size_flags_vertical = 4
 text = "Reset tips"
 
 [node name="BackButton" type="Button" parent="Parchment/VBoxContainer" unique_id=1457783041]
-theme_type_variation = &"AccentButton"
 custom_minimum_size = Vector2(100, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
+theme_type_variation = &"ConfirmButton"
 text = "Close"
 
 [connection signal="item_selected" from="Parchment/VBoxContainer/ScrollContainer/SettingsContainer/GameSpeed/GameSpeedOptionButton" to="." method="_on_game_speed_option_button_item_selected"]

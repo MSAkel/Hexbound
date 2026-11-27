@@ -1,14 +1,18 @@
 extends MealCard
 
-## Needs Lettuce, a Meat and a Fruit (the real salad's chicken or bacon and avocado). +40 Flavour,
-## +10 Flavour for each different kind of Ingredient on its station. No Mult. Untuned.
+## Needs Lettuce, a Meat and a Fruit (the real salad's chicken or bacon and avocado). +40 Flavour and
+## +2 Mult, +10 Flavour and +1 Mult for each different kind of Ingredient on its station. Untuned.
 
+const BASE_FLAVOUR := 40
 const FLAVOUR_PER_KIND := 10
+const MULT_PER_KIND := 1.0
 
 
 func _meal_outputs(tile: Hex, _preview: bool) -> Dictionary:
+	var kind_count := _station_kinds(tile).size()
 	return {
-		"flavour": int(round(_get_production_amount())) + FLAVOUR_PER_KIND * _station_kinds(tile).size(),
+		"flavour": BASE_FLAVOUR + FLAVOUR_PER_KIND * kind_count,
+		"additive_mult": _get_production_amount() + MULT_PER_KIND * float(kind_count),
 	}
 
 

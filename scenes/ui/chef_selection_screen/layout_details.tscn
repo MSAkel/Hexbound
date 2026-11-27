@@ -76,7 +76,7 @@ mouse_filter = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.11, 0.07, 0.06, 1)
 theme_override_font_sizes/font_size = 18
-text = "Progress"
+text = "EXP (WIP)"
 
 [node name="ProgressPlaceholder" type="ProgressBar" parent="InfoColumn" unique_id=1601771926]
 custom_minimum_size = Vector2(0, 40)

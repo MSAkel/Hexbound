@@ -913,6 +913,10 @@ func _on_game_ended() -> void:
 
 func _on_station_choice_requested(segment_index: int) -> void:
 	# Read the pick before it resolves: which station, which level, what was on offer and on the board.
+	# A chef who takes every pick only closes the announcement. There is nothing to choose or log.
+	if GameManager.chef.takes_every_station_pick():
+		StationManager.resolve_choice(segment_index, 0)
+		return
 	var level := StationManager.get_pending_choice_level(segment_index)
 	var station_id := StationManager.get_station_type_id(segment_index)
 	var options := StationManager.get_choice_options(segment_index)

@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="FontFile" uid="uid://0ehwg4ow5qxq" path="res://assets/fonts/retrobit.otf" id="1_font"]
+[ext_resource type="Texture2D" path="res://assets/gui/menu/ornament.png" id="2_orn"]
+[ext_resource type="Script" path="res://scenes/ui/station_menu/station_menu_divider.gd" id="3_script"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_rule"]
+color = Color(0.447, 0.18, 0.243, 0.55)
+thickness = 2
+
+[node name="StationMenuDivider" type="HBoxContainer"]
+mouse_filter = 2
+theme_override_constants/separation = 8
+script = ExtResource("3_script")
+
+[node name="LeftRule" type="HSeparator" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_rule")
+
+[node name="LeftOrnament" type="TextureRect" parent="."]
+texture_filter = 1
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_orn")
+stretch_mode = 3
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.447, 0.18, 0.243, 1)
+theme_override_fonts/font = ExtResource("1_font")
+theme_override_font_sizes/font_size = 16
+text = "House Specials"
+
+[node name="RightOrnament" type="TextureRect" parent="."]
+texture_filter = 1
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_orn")
+stretch_mode = 3
+
+[node name="RightRule" type="HSeparator" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_rule")

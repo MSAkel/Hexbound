@@ -2,14 +2,12 @@ class_name TutorialOverlay
 extends CanvasLayer
 
 ## Draws TutorialManager's active hint: a dimmed screen with spotlight holes over the
-## anchors, an arrow, and a callout.
+## anchors, an arrow, and a callout. Layout and looks live in tutorial_overlay.tscn.
 ##
 ## Click hints block the game until dismissed. Action hints (e.g. "place a card") leave input
 ## alone and finish when their EventBus signal fires.
 ## Must be the last child of MainUI: _input runs in reverse tree order, so this node sees
 ## clicks before the hand does.
-
-const SPOTLIGHT_SHADER := preload("res://scenes/ui/tutorial/tutorial_spotlight.gdshader")
 
 ## Anchor name -> node path(s) under MainUI. Arrays are combined into one hole.
 const ANCHOR_PATHS := {
@@ -59,15 +57,13 @@ const CLICK_DIM := 0.62
 const ACTION_DIM := 0.3
 const SCREEN_MARGIN := 16.0
 const CALLOUT_GAP := 64.0
-const CALLOUT_WIDTH := 520.0
 const ARROW_SIZE := 22.0
 const FADE_IN := 0.25
 const FADE_OUT := 0.16
 
-const PANEL_COLOR := Color(0.07, 0.11, 0.09, 0.97)
-const BORDER_COLOR := Color("#6fdc9c")
-const TITLE_COLOR := Color("#ffd166")
-const PROMPT_COLOR := Color(0.78, 0.9, 0.83)
+## The arrow is drawn in code, so its colours are set here in the inspector.
+@export var arrow_color := Color("#ffd166")
+@export var arrow_outline_color := Color(0.1, 0.07, 0.02)
 
 var _main_ui: Node = null
 var _active_id: StringName = &""
@@ -86,27 +82,26 @@ var _settle_signature := ""
 var _settle_timer := 0.0
 var _tween: Tween = null
 
-var _root: Control
-var _dim: ColorRect
-var _dim_material: ShaderMaterial
-var _arrow_layer: Control
-var _callout: PanelContainer
-var _title_label: Label
-var _body_label: RichTextLabel
-var _dots_label: Label
-var _prompt_label: Label
-var _button_row: HBoxContainer
-var _skip_basics_button: Button
-var _start_button: Button
-var _hide_tips_button: LinkButton
+@onready var _root: Control = %Root
+@onready var _dim: ColorRect = %Dim
+@onready var _dim_material: ShaderMaterial = _dim.material
+@onready var _arrow_layer: Control = %ArrowLayer
+@onready var _callout: PanelContainer = %Callout
+@onready var _title_label: Label = %TitleLabel
+@onready var _body_label: RichTextLabel = %BodyLabel
+@onready var _dots_label: Label = %DotsLabel
+@onready var _prompt_label: Label = %PromptLabel
+@onready var _button_row: HBoxContainer = %ButtonRow
+@onready var _skip_basics_button: Button = %SkipBasicsButton
+@onready var _start_button: Button = %StartButton
+@onready var _hide_tips_button: LinkButton = %HideTipsButton
 
 
 func _ready() -> void:
-	layer = 50
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	_main_ui = get_parent()
-	_build_ui()
 	_root.hide()
+	MenuFocus.trap_row([_skip_basics_button, _start_button])
+	_pulse_prompt()
 	EventBus.station_type_changed.connect(func(segment: int, _type: String) -> void: _last_typed_segment = segment)
 	EventBus.station_leveled_up.connect(func(segment: int, _level: int) -> void: _last_leveled_segment = segment)
 	EventBus.event_banner_shown.connect(func(_name: String, _dock: bool) -> void: _event_banner_animating = true)
@@ -420,6 +415,8 @@ func _resolve_anchor(anchor: StringName) -> Rect2:
 			return board.get_tile_screen_rect(_locked_spot) if _locked_spot.x >= 0 else Rect2()
 		&"board_station":
 			return _segment_rect(board, _first_occupied_segment(board))
+		&"board_station_badge":
+			return board.get_station_badge_screen_rect(_first_occupied_segment(board))
 		&"meal_slot":
 			return _meal_slot_rect(board)
 		&"staff_slot":
@@ -536,6 +533,9 @@ func _position_callout() -> void:
 	var pos := Vector2((view.x - size.x) * 0.5, view.y * 0.32 - size.y * 0.5)
 	if target.size != Vector2.ZERO:
 		var center := target.get_center()
+		# Sit over the Station badge, so its arrow doesn't cross the row to reach it.
+		if &"board_station_badge" in _anchor_names:
+			center.x = _target_holes[-1].get_center().x
 		var candidates: Array[Vector2] = [
 			Vector2(center.x - size.x * 0.5, target.position.y - CALLOUT_GAP - size.y),
 			Vector2(center.x - size.x * 0.5, target.end.y + CALLOUT_GAP),
@@ -593,8 +593,8 @@ func _draw_arrow_to(callout_rect: Rect2, target: Rect2) -> void:
 	])
 	var outline := points.duplicate()
 	outline.append(points[0])
-	_arrow_layer.draw_colored_polygon(points, Color(TITLE_COLOR, alpha))
-	_arrow_layer.draw_polyline(outline, Color(0.1, 0.07, 0.02, alpha), 3.0, true)
+	_arrow_layer.draw_colored_polygon(points, Color(arrow_color, alpha))
+	_arrow_layer.draw_polyline(outline, Color(arrow_outline_color, alpha), 3.0, true)
 
 
 func _closest_point_on_rect(rect: Rect2, point: Vector2) -> Vector2:
@@ -661,138 +661,15 @@ func _kill_tween() -> void:
 		_tween.kill()
 
 
-func _now() -> float:
-	return Time.get_ticks_msec() / 1000.0
-
-#endregion
-
-
-#region Build
-
-func _build_ui() -> void:
-	_root = Control.new()
-	_root.name = "Root"
-	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_root)
-
-	_dim = ColorRect.new()
-	_dim.name = "Dim"
-	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_dim_material = ShaderMaterial.new()
-	_dim_material.shader = SPOTLIGHT_SHADER
-	_dim_material.set_shader_parameter("outline_color", TITLE_COLOR)
-	_dim.material = _dim_material
-	_root.add_child(_dim)
-
-	_arrow_layer = Control.new()
-	_arrow_layer.name = "ArrowLayer"
-	_arrow_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_arrow_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_arrow_layer.draw.connect(_draw_arrow)
-	_root.add_child(_arrow_layer)
-
-	_callout = PanelContainer.new()
-	_callout.name = "Callout"
-	_callout.custom_minimum_size = Vector2(CALLOUT_WIDTH, 0)
-	_callout.mouse_filter = Control.MOUSE_FILTER_STOP
-	_callout.add_theme_stylebox_override("panel", _make_panel_style())
-	_root.add_child(_callout)
-
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 10)
-	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_callout.add_child(column)
-
-	var header := HBoxContainer.new()
-	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(header)
-
-	_title_label = Label.new()
-	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_title_label.add_theme_font_size_override("font_size", 28)
-	_title_label.add_theme_color_override("font_color", TITLE_COLOR)
-	header.add_child(_title_label)
-
-	_dots_label = Label.new()
-	_dots_label.add_theme_font_size_override("font_size", 16)
-	_dots_label.add_theme_color_override("font_color", BORDER_COLOR)
-	_dots_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	header.add_child(_dots_label)
-
-	_body_label = RichTextLabel.new()
-	_body_label.bbcode_enabled = true
-	_body_label.fit_content = true
-	_body_label.scroll_active = false
-	_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_body_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_body_label.add_theme_font_size_override("normal_font_size", 23)
-	_body_label.add_theme_constant_override("line_separation", 4)
-	column.add_child(_body_label)
-
-	var footer := HBoxContainer.new()
-	footer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(footer)
-
-	_hide_tips_button = LinkButton.new()
-	_hide_tips_button.text = "Turn off tips"
-	_hide_tips_button.underline = LinkButton.UNDERLINE_MODE_ON_HOVER
-	_hide_tips_button.add_theme_font_size_override("font_size", 15)
-	_hide_tips_button.add_theme_color_override("font_color", Color(PROMPT_COLOR, 0.55))
-	_hide_tips_button.add_theme_color_override("font_hover_color", PROMPT_COLOR)
-	_hide_tips_button.size_flags_vertical = Control.SIZE_SHRINK_END
-	_hide_tips_button.focus_mode = Control.FOCUS_NONE
-	_hide_tips_button.pressed.connect(_on_hide_tips_pressed)
-	footer.add_child(_hide_tips_button)
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	footer.add_child(spacer)
-
-	_prompt_label = Label.new()
-	_prompt_label.add_theme_font_size_override("font_size", 17)
-	_prompt_label.add_theme_color_override("font_color", PROMPT_COLOR)
-	footer.add_child(_prompt_label)
-
-	_button_row = HBoxContainer.new()
-	_button_row.alignment = BoxContainer.ALIGNMENT_END
-	_button_row.add_theme_constant_override("separation", 12)
-	footer.add_child(_button_row)
-
-	_skip_basics_button = Button.new()
-	_skip_basics_button.text = "Skip tutorial"
-	_skip_basics_button.custom_minimum_size = Vector2(150, 44)
-	_skip_basics_button.pressed.connect(_on_skip_basics_pressed)
-	_button_row.add_child(_skip_basics_button)
-
-	_start_button = Button.new()
-	_start_button.text = "Let's cook!"
-	_start_button.custom_minimum_size = Vector2(150, 44)
-	_start_button.pressed.connect(_on_start_pressed)
-	_button_row.add_child(_start_button)
-	MenuFocus.trap_row([_skip_basics_button, _start_button])
-
-	# Prompt text gently pulses so it reads as an instruction, not body copy.
+## Prompt text gently pulses so it reads as an instruction, not body copy.
+func _pulse_prompt() -> void:
 	var pulse := create_tween().set_loops()
 	pulse.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	pulse.tween_property(_prompt_label, "modulate:a", 0.55, 0.8).set_trans(Tween.TRANS_SINE)
 	pulse.tween_property(_prompt_label, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_SINE)
 
 
-func _make_panel_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = PANEL_COLOR
-	style.border_color = BORDER_COLOR
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(12)
-	style.set_content_margin_all(22)
-	style.content_margin_top = 18
-	style.content_margin_bottom = 16
-	style.shadow_color = Color(0, 0, 0, 0.45)
-	style.shadow_size = 14
-	style.shadow_offset = Vector2(0, 6)
-	return style
+func _now() -> float:
+	return Time.get_ticks_msec() / 1000.0
 
 #endregion

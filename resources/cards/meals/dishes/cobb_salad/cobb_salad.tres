@@ -9,13 +9,13 @@ meal_category = 4
 recipe_fruit_count = 1
 recipe_meat_count = 1
 recipe_required_card_ids = Array[String](["lettuce"])
-base_production_amount = 40
+base_production_amount = 2
 type = 2
-product = 1
+product = 2
 ingredient_tags = Array[StringName]([&"dish"])
 id = "cobb_salad"
 name = "Cobb Salad"
 icon = ExtResource("1_cp86h")
-description = "+40 {flavour}.
-+10 {flavour} for each different kind of Ingredient on its Station."
+description = "+40 {flavour}, +2 {mult}.
++10 {flavour} and +1 {mult} for each different kind of Ingredient on its Station."
 metadata/_custom_type_script = "uid://d4h7dishcrd01"

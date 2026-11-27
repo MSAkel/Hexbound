@@ -3,7 +3,7 @@ extends TileCard
 ## +10 Flavour. Triggers the Ingredients on both sides of it on
 ## its Station again: the nearest one before it and the nearest one after it. Tempura (Fry Station)
 ## adds one more trigger for Seafood and Vegetables.
-## Fried Meals (Fried Chicken, Fritters, Onion Rings) read how many triggers the Deep
+## Fried Meals (Fried Chicken, Onion Rings) read how many triggers the Deep
 ## Fryers on their station gave this Hour (hour_prepared_count).
 
 const RETRIGGERS := 1

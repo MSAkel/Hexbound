@@ -1,13 +1,17 @@
 [gd_scene format=3 uid="uid://dnplb0re6qdej"]
 
-[ext_resource type="Texture2D" uid="uid://8dlbxn3x8mrv" path="res://assets/background/background_image_pixel_art.png" id="2_bg"]
+[ext_resource type="Script" path="res://scenes/ui/menu_background/menu_background_view.gd" id="1_view"]
+[ext_resource type="Texture2D" uid="uid://vms22eqhmvl8" path="res://assets/main_menu/Cover-Photo-Pig.jpg" id="2_bg"]
+[ext_resource type="Shader" uid="uid://i50fn8bv7qcf" path="res://scenes/ui/menu_background/menu_background_drift.gdshader" id="3_drift"]
 
 [sub_resource type="Gradient" id="Gradient_foreground"]
-colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
+colors = PackedColorArray(0, 0, 0, 0.54800004, 0, 0, 0, 0.439)
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_foreground"]
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_foreground"]
 gradient = SubResource("Gradient_foreground")
-width = 50
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_drift"]
+shader = ExtResource("3_drift")
 
 [node name="MenuBackgroundView" type="Control"]
 layout_mode = 3
@@ -17,6 +21,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("1_view")
 
 [node name="ClipRoot" type="Control" parent="."]
 layout_mode = 1
@@ -29,6 +34,8 @@ mouse_filter = 2
 clip_contents = true
 
 [node name="Background" type="TextureRect" parent="ClipRoot"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_drift")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -47,4 +54,5 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = SubResource("GradientTexture1D_foreground")
+texture = SubResource("GradientTexture2D_foreground")
+expand_mode = 1

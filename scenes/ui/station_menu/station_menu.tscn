@@ -1,0 +1,174 @@
+[gd_scene format=3 uid="uid://c2lrmi3s33aw1"]
+
+[ext_resource type="Script" uid="uid://d3k56ueohqj27" path="res://scenes/ui/station_menu/station_menu.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://0ehwg4ow5qxq" path="res://assets/fonts/retrobit.otf" id="2_font"]
+[ext_resource type="Texture2D" uid="uid://bj51j82ccwf0g" path="res://assets/gui/menu/leader_dot.png" id="3_dot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/station_menu/station_menu_divider.tscn" id="4_divider"]
+[ext_resource type="PackedScene" path="res://scenes/ui/station_menu/station_menu_special.tscn" id="5_special"]
+[ext_resource type="PackedScene" path="res://scenes/ui/station_menu/station_menu_entry.tscn" id="6_entry"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cover"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.231, 0.141, 0.094, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.839, 0.635, 0.365, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 2
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_page"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(1, 0.929, 0.769, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.44705883, 0.18039216, 0.24313726, 0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rule"]
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.447, 0.18, 0.243, 0.5)
+
+[node name="StationMenu" type="PanelContainer" unique_id=1816735087]
+custom_minimum_size = Vector2(560, 0)
+offset_right = 560.0
+offset_bottom = 600.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cover")
+script = ExtResource("1_script")
+special_scene = ExtResource("5_special")
+entry_scene = ExtResource("6_entry")
+
+[node name="Page" type="PanelContainer" parent="." unique_id=1944997065]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_page")
+
+[node name="Rule" type="PanelContainer" parent="Page" unique_id=882036775]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rule")
+
+[node name="Column" type="VBoxContainer" parent="Page/Rule" unique_id=2085430802]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 7
+
+[node name="Header" type="HBoxContainer" parent="Page/Rule/Column" unique_id=544639110]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="StationIcon" type="TextureRect" parent="Page/Rule/Column/Header" unique_id=422256609]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StationName" type="Label" parent="Page/Rule/Column/Header" unique_id=1492674059]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.447, 0.18, 0.243, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 28
+text = "Grilling Station"
+
+[node name="Level" type="Label" parent="Page/Rule/Column" unique_id=1235517613]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.478, 0.29, 0.157, 1)
+theme_override_font_sizes/font_size = 15
+text = "Level 2"
+horizontal_alignment = 1
+
+[node name="ServedRow" type="HBoxContainer" parent="Page/Rule/Column" unique_id=2007792390]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Label" type="Label" parent="Page/Rule/Column/ServedRow" unique_id=1483346463]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.212, 0.149, 0.125, 1)
+theme_override_font_sizes/font_size = 15
+text = "Meals served"
+
+[node name="Leader" type="TextureRect" parent="Page/Rule/Column/ServedRow" unique_id=1293666863]
+texture_filter = 1
+custom_minimum_size = Vector2(24, 4)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_dot")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Served" type="Label" parent="Page/Rule/Column/ServedRow" unique_id=1754568340]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.478, 0.29, 0.157, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "1/2"
+
+[node name="SpecialsDivider" parent="Page/Rule/Column" unique_id=1119088060 instance=ExtResource("4_divider")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "House Specials"
+
+[node name="Specials" type="VBoxContainer" parent="Page/Rule/Column" unique_id=1554452359]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="NoSpecialty" type="Label" parent="Page/Rule/Column" unique_id=548941333]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.27, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+text = "No specialty yet."
+horizontal_alignment = 1
+
+[node name="TypesDivider" parent="Page/Rule/Column" unique_id=795536757 instance=ExtResource("4_divider")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Station Types"
+
+[node name="Entries" type="VBoxContainer" parent="Page/Rule/Column" unique_id=1005538496]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2

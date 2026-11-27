@@ -607,6 +607,14 @@ func refresh_dish_output_chips() -> void:
 	refresh_board_output_chips()
 
 
+## Screen rect of a station's badge. Empty when badges are hidden (StationManager.SHOW_STATION_UI).
+func get_station_badge_screen_rect(segment_index: int) -> Rect2:
+	if segment_index < 0 or segment_index >= _station_badges.size():
+		return Rect2()
+	var badge := _station_badges[segment_index]
+	return badge.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, badge.size)
+
+
 # Convert a map cell into a viewport/CanvasLayer rect so the panel aligns with the camera.
 func get_tile_screen_rect(coords: Vector2i) -> Rect2:
 	var tile_size := Vector2(HEX_TEXTURE_SIZE)

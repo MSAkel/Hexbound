@@ -1,8 +1,167 @@
-[gd_scene format=3]
+[gd_scene format=4 uid="uid://24ctki5wo32w"]
 
-[ext_resource type="Script" path="res://scenes/ui/tutorial/tutorial_overlay.gd" id="1_overlay"]
+[ext_resource type="Script" uid="uid://dj7m60qfugxcx" path="res://scenes/ui/tutorial/tutorial_overlay.gd" id="1_overlay"]
+[ext_resource type="Shader" uid="uid://cor2kquebuqmx" path="res://scenes/ui/tutorial/tutorial_spotlight.gdshader" id="2_spotlight"]
 
-[node name="TutorialOverlay" type="CanvasLayer"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]
+resource_local_to_scene = true
+shader = ExtResource("2_spotlight")
+shader_parameter/holes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/hole_count = 0
+shader_parameter/rect_size = Vector2(1920, 1080)
+shader_parameter/dim_alpha = 0.62
+shader_parameter/corner_radius = 14.0
+shader_parameter/feather = 5.0
+shader_parameter/outline_color = Color(1, 0.81960785, 0.4, 1)
+shader_parameter/outline_width = 3.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_callout"]
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.07, 0.11, 0.09, 0.97)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.43529412, 0.8627451, 0.6117647, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 14
+shadow_offset = Vector2(0, 6)
+
+[node name="TutorialOverlay" type="CanvasLayer" unique_id=123777104]
 process_mode = 3
 layer = 50
 script = ExtResource("1_overlay")
+
+[node name="Root" type="Control" parent="." unique_id=1169427478]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="Root" unique_id=399724678]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_spotlight")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ArrowLayer" type="Control" parent="Root" unique_id=2074648447]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Callout" type="PanelContainer" parent="Root" unique_id=1823775016]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 0
+offset_left = 700.0
+offset_top = 253.0
+offset_right = 1220.0
+offset_bottom = 438.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_callout")
+
+[node name="Column" type="VBoxContainer" parent="Root/Callout" unique_id=721128009]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Root/Callout/Column" unique_id=1343165010]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="Root/Callout/Column/Header" unique_id=1235524005]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.81960785, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+text = "Tip title"
+
+[node name="DotsLabel" type="Label" parent="Root/Callout/Column/Header" unique_id=1668186566]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.43529412, 0.8627451, 0.6117647, 1)
+theme_override_font_sizes/font_size = 16
+text = "●○○"
+
+[node name="BodyLabel" type="RichTextLabel" parent="Root/Callout/Column" unique_id=39196944]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/line_separation = 4
+theme_override_font_sizes/normal_font_size = 23
+bbcode_enabled = true
+text = "The tip's text goes here. The game fills it in from TutorialHints."
+fit_content = true
+scroll_active = false
+
+[node name="Footer" type="HBoxContainer" parent="Root/Callout/Column" unique_id=1784519469]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HideTipsButton" type="LinkButton" parent="Root/Callout/Column/Footer" unique_id=1226554629]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+focus_mode = 0
+theme_override_colors/font_color = Color(0.78, 0.9, 0.83, 0.55)
+theme_override_colors/font_hover_color = Color(0.78, 0.9, 0.83, 1)
+theme_override_font_sizes/font_size = 15
+text = "Turn off tips"
+underline = 1
+
+[node name="Spacer" type="Control" parent="Root/Callout/Column/Footer" unique_id=1343419015]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="PromptLabel" type="Label" parent="Root/Callout/Column/Footer" unique_id=1339942915]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.9, 0.83, 1)
+theme_override_font_sizes/font_size = 17
+text = "Click to continue"
+
+[node name="ButtonRow" type="HBoxContainer" parent="Root/Callout/Column/Footer" unique_id=1336487316]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="SkipBasicsButton" type="Button" parent="Root/Callout/Column/Footer/ButtonRow" unique_id=671304374]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 44)
+layout_mode = 2
+text = "Skip tutorial"
+
+[node name="StartButton" type="Button" parent="Root/Callout/Column/Footer/ButtonRow" unique_id=1800799404]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 44)
+layout_mode = 2
+text = "Let's cook!"
+
+[connection signal="draw" from="Root/ArrowLayer" to="." method="_draw_arrow"]
+[connection signal="pressed" from="Root/Callout/Column/Footer/HideTipsButton" to="." method="_on_hide_tips_pressed"]
+[connection signal="pressed" from="Root/Callout/Column/Footer/ButtonRow/SkipBasicsButton" to="." method="_on_skip_basics_pressed"]
+[connection signal="pressed" from="Root/Callout/Column/Footer/ButtonRow/StartButton" to="." method="_on_start_pressed"]

@@ -86,16 +86,18 @@ static func _static_init() -> void:
 		],
 		Context.HOUR, [&"hand", &"deck_pile"], PRIORITY_CHAIN)
 	_add(&"basics_place", CATEGORY_BASICS, "Place a card",
-		"Drag an %s card onto an empty **spot**." % GameTerms.INGREDIENT.to_lower(),
+		"Drag an %s or %s card onto an empty **spot**." % [
+			GameTerms.INGREDIENT.to_lower(), GameTerms.KITCHENWARE.to_lower(),
+		],
 		Context.HOUR, [&"board_spot", &"hand"], PRIORITY_CHAIN, &"card_played")
 	_add(&"basics_stations", CATEGORY_BASICS, "Stations",
-		"Each row is a **Station**. **6 spots** for %ss and %s, then **2 spots** for **%ss**. Stations trigger top to bottom." % [
+		"Each row is a **Station**. **6 spots** for %ss and %s, then **2 spots** for **%ss**. Stations trigger top to bottom, one station per turn." % [
 			GameTerms.INGREDIENT, GameTerms.KITCHENWARE, GameTerms.MEAL,
 		],
 		Context.HOUR, [&"board_station"], PRIORITY_CHAIN)
 	_add(&"basics_station_types", CATEGORY_BASICS, "Station types",
 		_station_types_body(),
-		Context.HOUR, [&"board_station"], PRIORITY_CHAIN)
+		Context.HOUR, [&"board_station", &"board_station_badge"], PRIORITY_CHAIN)
 	_add(&"basics_score", CATEGORY_BASICS, "Turn Rating",
 		"Cards add {flavour} and {mult}. At the end of the Turn, **{flavour} × {mult}** is its **%s**." % GameTerms.RATING,
 		Context.HOUR, [&"hand"], PRIORITY_CHAIN)
@@ -162,7 +164,7 @@ static func _static_init() -> void:
 
 
 static func _station_types_body() -> String:
-	return "The right cards on a Station's 6 spots give it a **type** and a bonus. You can view all station types in the **Collection**."
+	return "The right cards on a Station's 6 spots give it a **type** and a bonus."
 
 
 static func _add(

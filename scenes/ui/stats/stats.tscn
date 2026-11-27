@@ -1,15 +1,8 @@
 [gd_scene format=3 uid="uid://b2eiuv5rpwsc3"]
 
 [ext_resource type="Script" uid="uid://ucb1cvtf2itl" path="res://scenes/ui/stats/stats.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dfeixxsrnd7v6" path="res://assets/background/background_image.png" id="2_bg"]
+[ext_resource type="PackedScene" uid="uid://dnplb0re6qdej" path="res://scenes/ui/menu_background/menu_background_view.tscn" id="2_bg"]
 [ext_resource type="PackedScene" uid="uid://bh6ysb32dx1if" path="res://scenes/ui/tooltip/tooltip.tscn" id="3_tooltip"]
-
-[sub_resource type="Gradient" id="Gradient_dim"]
-colors = PackedColorArray(0, 0.0013243196, 0.010594678, 0.60200006, 0.060921706, 0.13968152, 0.18618697, 0.580392)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_dim"]
-gradient = SubResource("Gradient_dim")
-width = 50
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_outer"]
 content_margin_left = 50.0
@@ -32,26 +25,8 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="TextureRect" parent="." unique_id=1533554805]
+[node name="MenuBackgroundView" parent="." unique_id=1533554805 instance=ExtResource("2_bg")]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("2_bg")
-expand_mode = 1
-
-[node name="Foreground" type="TextureRect" parent="." unique_id=1357713858]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = SubResource("GradientTexture1D_dim")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=262397464]
 layout_mode = 1

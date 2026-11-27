@@ -83,6 +83,9 @@ signal generated_hand_card(card: Card)
 signal toggle_tooltip(visible: bool, text: String, element_rect: Rect2)
 ## Shows the tooltip centered above element_rect. Hide it with toggle_tooltip.
 signal show_tooltip_above(text: String, element_rect: Rect2)
+## Opens the StationMenu beside element_rect. cards are the row's regular-spot cards.
+## Hide it with toggle_tooltip.
+signal show_station_menu(segment_index: int, cards: Array[TileCard], element_rect: Rect2)
 ## One hover panel per glossary keyword. Source is the CardUI that requested it.
 signal toggle_keyword_tooltips(visible: bool, entries: Array, element_rect: Rect2, source: Object)
 ## Re-evaluate the control beneath a stationary cursor after a covering UI closes.

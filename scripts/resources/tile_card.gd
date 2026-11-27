@@ -107,7 +107,7 @@ const MEAL_SHOP_PRICE := 3
 ## Playing a copy onto the same card merges it up one star. Each star past the first adds this much
 ## output scale: Flavour, Gold, +Mult, and xMult above x1 (see _activation_output_scale).
 ## Stars have no cap. Untuned.
-const STAR_SCALE_STEP := 0.20
+const STAR_SCALE_STEP := 0.15
 
 ## What playing a hand card onto a hex would do.
 enum Overplay { NONE, PLACE, MERGE, REPLACE }

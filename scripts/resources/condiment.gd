@@ -55,9 +55,18 @@ func needs_two_tile_target() -> bool:
 	return target_kind == TargetKind.TWO_TILE
 
 
-## Name and description for hover tooltips, with glossary tokens resolved.
+## Gold a GOLD_PER_UNIQUE_MEAL condiment (Tip) would pay if used on the board as it stands.
+func get_unique_meal_gold() -> int:
+	return int(effect_value) * EconomyManager.count_unique_board_meals()
+
+
+## Name and description for hover tooltips, with glossary tokens resolved. Tip also shows what it
+## would pay right now.
 func get_tooltip_text() -> String:
-	return "%s\n%s" % [display_name, CardKeywordGlossary.to_plain(description)]
+	var text := "%s\n%s" % [display_name, CardKeywordGlossary.to_plain(description)]
+	if effect_type == EffectType.GOLD_PER_UNIQUE_MEAL:
+		text += "\n(current: %s)" % MerchantShopStyling.format_price(get_unique_meal_gold())
+	return text
 
 
 func get_fuse_summary() -> String:

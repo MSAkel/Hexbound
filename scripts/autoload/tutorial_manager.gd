@@ -288,7 +288,9 @@ func _on_active_panel_changed(panel: Control) -> void:
 		"Merchant":
 			request(&"merchant")
 		"StationUpgradeChoice":
-			request(&"station_perk")
+			# The hint asks for a pick, which a chef who takes every perk never makes.
+			if not GameManager.chef.takes_every_station_pick():
+				request(&"station_perk")
 
 
 ## Hints for a run that just opened, fresh or continued.

@@ -7,13 +7,8 @@ const offset: Vector2 = Vector2(10, 10)
 
 const BODY_COLOR := Color(0.21230483, 0.21230483, 0.21230483, 1)
 const HEADER_COLOR := Color(0.36923152, 0.31425732, 0.21094128, 1)
-const DIVIDER_COLOR := Color(0.37, 0.31, 0.21, 0.45)
 const BODY_FONT_SIZE := 14
 const HEADER_FONT_SIZE := 17
-## Text starting with this is ready-made BBCode (inline icons): shown as is, not escaped, and the
-## label gets RAW_MIN_WIDTH so long rows stay on one line. Build it with header_bbcode/body_bbcode.
-const RAW_BBCODE_PREFIX := "[raw]"
-const RAW_MIN_WIDTH := 460.0
 const DEFAULT_MIN_WIDTH := 180.0
 
 # Card keyword panels reuse this scene without listening to the global tooltip bus.
@@ -90,26 +85,8 @@ func _update_content(text: String) -> void:
 
 
 func _set_rich_text(text: String) -> void:
-	var raw := text.begins_with(RAW_BBCODE_PREFIX)
-	rich_text_label.custom_minimum_size.x = RAW_MIN_WIDTH if raw else DEFAULT_MIN_WIDTH
-	rich_text_label.text = text.substr(RAW_BBCODE_PREFIX.length()) if raw else format_tooltip_bbcode(text)
-
-
-## Header line in the tooltip style, for ready-made (RAW_BBCODE_PREFIX) tooltips.
-static func header_bbcode(text: String) -> String:
-	return _header_bbcode(text)
-
-
-## Body copy in the tooltip style. bbcode is not escaped, so it may hold [img] and [color] tags.
-static func body_bbcode(bbcode: String) -> String:
-	return "[font_size=%d][color=#%s]%s[/color][/font_size]" % [BODY_FONT_SIZE, BODY_COLOR.to_html(false), bbcode]
-
-
-## Thin rule with a little space above and below, to separate entries in a ready-made tooltip.
-static func divider_bbcode() -> String:
-	return "[font_size=6] [/font_size]\n[hr height=1 width=100%% color=#%s]\n[font_size=6] [/font_size]" % [
-		DIVIDER_COLOR.to_html(true),
-	]
+	rich_text_label.custom_minimum_size.x = DEFAULT_MIN_WIDTH
+	rich_text_label.text = format_tooltip_bbcode(text)
 
 
 ## First line is the tooltip header. Remaining lines are body copy.

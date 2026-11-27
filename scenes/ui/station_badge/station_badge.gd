@@ -2,7 +2,7 @@ class_name StationBadge
 extends PanelContainer
 
 ## Station type, level and serving progress, seated in map space right of a station row.
-## Hover shows the station's meals served and its active perks.
+## Hover opens the StationMenu: Meals served, active perks and every Station type.
 
 const BADGE_WIDTH := 132.0
 const BASE_COLOR := Color(0.78, 0.72, 0.66, 1)
@@ -10,8 +10,10 @@ const PANEL_FILL := Color(0.13, 0.1, 0.12, 0.92)
 const TRACK_COLOR := Color(1, 1, 1, 0.16)
 const PUNCH_SCALE := 1.16
 const LEVEL_PUNCH_SCALE := 1.4
+const LEVEL_FLASH_SCENE := preload("res://scenes/ui/station_badge/station_level_flash.tscn")
 
 var segment_index := -1
+var _level_flash: StationLevelFlash
 var _map: HexTileMap
 var _icon: TextureRect
 var _name_label: Label
@@ -31,6 +33,7 @@ func setup(map: HexTileMap, index: int) -> void:
 	EventBus.station_state_changed.connect(_on_station_state_changed)
 	EventBus.station_type_changed.connect(_on_station_type_changed)
 	EventBus.station_leveled_up.connect(_on_station_leveled_up)
+	StationManager.choice_resolved.connect(_on_choice_resolved)
 	refresh(false)
 
 
@@ -176,8 +179,32 @@ func _on_station_leveled_up(index: int, level: int) -> void:
 	_append_punch(create_tween(), self, PUNCH_SCALE)
 	_append_punch(create_tween(), _level_label, LEVEL_PUNCH_SCALE)
 	_float_text("Level %d" % level, _station_color())
+	_play_level_flash()
 	if level == StationManager.MEAL_SLOT_UNLOCK_LEVEL and StationManager.has_meal_slot_lock(index):
 		AudioManager.play_sfx(UISounds.MEAL_SLOT_UNLOCKED)
+
+
+## The level 3 and 6 popup covers the board as the Station levels up, so flash again once it closes.
+func _on_choice_resolved(index: int) -> void:
+	if index != segment_index or GameManager.skip_presentation:
+		return
+	# A Station that lost its type also resolves its pick, back at the starting level.
+	if StationManager.get_level(index) >= StationManager.CHOICE_LEVEL:
+		_play_level_flash()
+
+
+## Golden flash around the badge. It sits on the map, since this container would resize a child.
+func _play_level_flash() -> void:
+	if _map == null:
+		return
+	# Several levels at once restart one flash instead of stacking them.
+	if is_instance_valid(_level_flash):
+		_level_flash.queue_free()
+	_level_flash = LEVEL_FLASH_SCENE.instantiate()
+	_map.add_child(_level_flash)
+	_level_flash.position = position
+	_level_flash.size = size
+	_level_flash.play(_speed())
 
 
 ## Pop target up to peak scale and settle back, after whatever tween already holds.
@@ -207,67 +234,18 @@ func _float_text(text: String, color: Color) -> void:
 
 #region --- Tooltip ---
 
-## Icon height in the Station list (Station icons and requirement icons).
-const TOOLTIP_ICON_SIZE := 22
-const TOOLTIP_STATION_ICON_SIZE := 26
-
-
+## Opens the StationMenu beside the badge.
 func show_tooltip() -> void:
 	var screen_rect := get_global_transform_with_canvas() * Rect2(Vector2.ZERO, size)
-	EventBus.toggle_tooltip.emit(true, get_tooltip_bbcode(), screen_rect)
-
-
-## This Station's state (get_tooltip_body), then every Station type with its icon and the cards it
-## needs, each with its icon. This row's type is marked, the requirements this row's cards already
-## cover are highlighted and a divider line separates the types. Ready-made BBCode for the tooltip.
-func get_tooltip_bbcode() -> String:
-	var body := get_tooltip_body().split("\n")
-	var out: PackedStringArray = [Tooltip.RAW_BBCODE_PREFIX + Tooltip.header_bbcode(body[0])]
-	for i in range(1, body.size()):
-		out.append(Tooltip.body_bbcode(body[i].replace("[", "[lb]")))
-	out.append("")
-	out.append(Tooltip.header_bbcode("Station types"))
-	var current := StationManager.get_station_type(segment_index)
-	var cards: Array[TileCard] = _map.get_regular_tile_cards(segment_index) if _map != null else []
-	var types := StationManager.get_station_types()
-	for type_index in types.size():
-		var station_type := types[type_index]
-		if type_index > 0:
-			out.append(Tooltip.divider_bbcode())
-		var name_text := station_type.display_name
-		if current != null and current.id == station_type.id:
-			name_text += "  (this Station)"
-		out.append("[font_size=%d][color=#%s]%s%s[/color][/font_size]" % [
-			Tooltip.BODY_FONT_SIZE + 1,
-			station_type.color.darkened(0.5).to_html(false),
-			FeastStatIcons.inline_bbcode(station_type.icon, TOOLTIP_STATION_ICON_SIZE),
-			name_text,
-		])
-		out.append(Tooltip.body_bbcode(
-			"      " + station_type.get_requirements_bbcode(TOOLTIP_ICON_SIZE, "   ", true, cards)
-		))
-	return "\n".join(out)
+	var cards: Array[TileCard] = []
+	if _map != null:
+		cards = _map.get_regular_tile_cards(segment_index)
+	# Clears any text tooltip first. The menu closes on that same signal.
+	hide_tooltip()
+	EventBus.show_station_menu.emit(segment_index, cards, screen_rect)
 
 
 func hide_tooltip() -> void:
 	EventBus.toggle_tooltip.emit(false, "", Rect2())
-
-
-## First line is the tooltip header, the rest is body copy.
-func get_tooltip_body() -> String:
-	var lines: PackedStringArray = [StationManager.get_station_name(segment_index)]
-	var station_type := StationManager.get_station_type(segment_index)
-	if station_type == null:
-		lines.append("No specialty yet.")
-		return "\n".join(lines)
-	var next := StationManager.get_next_threshold(segment_index)
-	if next >= 0:
-		lines.append("Meals served: %d/%d" % [StationManager.get_served(segment_index), next])
-	var current := station_type.perk_for_level(StationManager.get_level(segment_index))
-	if current != null:
-		lines.append(current.description)
-	for perk: StationPerk in StationManager.get_picked_perks(segment_index):
-		lines.append(perk.description)
-	return CardKeywordGlossary.to_plain("\n".join(lines))
 
 #endregion --- Tooltip ---

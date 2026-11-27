@@ -200,13 +200,17 @@ func get_current_threshold(segment_index: int) -> int:
 ## Index into the type's choice_options, or -1 when nothing was picked.
 func get_choice(segment_index: int) -> int:
 	var station := _station(segment_index)
-	return station.choice if station != null else -1
+	if station == null or GameManager.chef.takes_every_station_pick():
+		return -1
+	return station.choice
 
 
 ## Index into the type's capstone_options, or -1 when nothing was picked.
 func get_capstone_choice(segment_index: int) -> int:
 	var station := _station(segment_index)
-	return station.capstone if station != null else -1
+	if station == null or GameManager.chef.takes_every_station_pick():
+		return -1
+	return station.capstone
 
 
 func get_chosen_perk(segment_index: int) -> StationPerk:
@@ -261,13 +265,12 @@ func get_picked_perks(segment_index: int) -> Array[StationPerk]:
 	return perks
 
 
-## Level of the pick this station is waiting on (CHOICE_LEVEL or CAPSTONE_LEVEL), or 0.
-## Always 0 when the chef takes every pick, so no popup opens.
+## Level of the pick this station is waiting on (CHOICE_LEVEL or CAPSTONE_LEVEL), or 0. A chef who
+## takes every pick waits here too: the popup only announces the perks, and closing it marks the
+## level as seen (choice or capstone is set, but nothing reads it as a pick).
 func get_pending_choice_level(segment_index: int) -> int:
 	var station := _station(segment_index)
 	if station == null or station.type == null:
-		return 0
-	if GameManager.chef.takes_every_station_pick():
 		return 0
 	if station.level >= CHOICE_LEVEL and station.choice < 0 and not station.type.choice_options.is_empty():
 		return CHOICE_LEVEL
@@ -693,6 +696,7 @@ func get_pending_choice_segment() -> int:
 
 
 ## Locks in the pick the station is waiting on. The popup calls this. Opens the next pending pick.
+## For a chef who takes every pick, option_index only marks the announcement as seen.
 func resolve_choice(segment_index: int, option_index: int) -> void:
 	if not _pending_choices.has(segment_index):
 		return

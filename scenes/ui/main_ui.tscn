@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://dicyak4kt044t" path="res://scenes/ui/settings/settings.tscn" id="14_8s2gp"]
 [ext_resource type="PackedScene" uid="uid://cmhitn3d5i88l" path="res://scenes/ui/victory_screen/victory_screen.tscn" id="14_victory"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tooltip/keyword_tooltip_stack.tscn" id="16_keyword_tips"]
+[ext_resource type="PackedScene" path="res://scenes/ui/station_menu/station_menu.tscn" id="26_station_menu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tutorial/tutorial_overlay.tscn" id="17_tutorial"]
 [ext_resource type="PackedScene" uid="uid://duvvd2s4kriyg" path="res://scenes/ui/collection/collection.tscn" id="18_collection"]
 [ext_resource type="PackedScene" path="res://scenes/ui/condiments/condiment_belt.tscn" id="19_condiment_belt"]
@@ -54,6 +55,10 @@ visible = false
 offset_right = 220.0
 offset_bottom = 120.0
 mouse_filter = 2
+
+[node name="StationMenu" parent="." instance=ExtResource("26_station_menu")]
+visible = false
+z_index = 100
 
 [node name="KeywordTooltipStack" parent="." unique_id=500675727 instance=ExtResource("16_keyword_tips")]
 visible = false

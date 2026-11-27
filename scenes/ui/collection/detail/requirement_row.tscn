@@ -2,17 +2,6 @@
 
 [ext_resource type="Script" path="res://scenes/ui/collection/detail/requirement_row.gd" id="1_req"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_different"]
-content_margin_left = 8.0
-content_margin_top = 3.0
-content_margin_right = 8.0
-content_margin_bottom = 4.0
-bg_color = Color(0.7608, 0.6039, 0.3373, 1)
-corner_radius_top_left = 99
-corner_radius_top_right = 99
-corner_radius_bottom_right = 99
-corner_radius_bottom_left = 99
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot"]
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -32,18 +21,6 @@ corner_radius_bottom_left = 12
 [node name="RequirementRow" type="HBoxContainer"]
 theme_override_constants/separation = 10
 script = ExtResource("1_req")
-
-[node name="Different" type="PanelContainer" parent="."]
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_different")
-
-[node name="Label" type="Label" parent="Different"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9529, 0.9176, 0.8275, 1)
-theme_override_font_sizes/font_size = 11
-text = "DIFFERENT"
 
 [node name="IconSlot" type="PanelContainer" parent="."]
 custom_minimum_size = Vector2(48, 48)

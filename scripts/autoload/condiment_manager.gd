@@ -453,7 +453,7 @@ func _apply_instant(condiment: Condiment) -> void:
 		Condiment.EffectType.CONDIMENT_PACK:
 			_grant_pack()
 		Condiment.EffectType.GOLD_PER_UNIQUE_MEAL:
-			var gold := int(condiment.effect_value) * EconomyManager.count_unique_board_meals()
+			var gold: int = condiment.get_unique_meal_gold()
 			if gold > 0:
 				EconomyManager.add(gold)
 				AudioManager.play_sfx(UISounds.GOLD_GAINED)

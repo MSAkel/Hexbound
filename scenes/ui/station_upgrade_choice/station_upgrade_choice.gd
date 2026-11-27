@@ -1,20 +1,29 @@
 class_name StationUpgradeChoice
 extends Control
 
-## Level 3 perk pick for a typed station. Opens over the board when StationManager asks for it,
-## blocks play until the player picks, and keeps any Hour in progress waiting meanwhile.
+## Level 3 and level 6 perk pick for a typed station. Opens over the board when StationManager asks
+## for it, blocks play until the player picks, and keeps any Hour in progress waiting meanwhile.
+## For a chef who takes every pick (Chef de Cuisine) it only announces both perks, with a Close button.
 
+const ACTIVE_BADGE_SCENE := preload("res://scenes/ui/station_upgrade_choice/active_perk_badge.tscn")
+const ALL_PERKS_FOOTER_SCENE := preload("res://scenes/ui/station_upgrade_choice/all_perks_footer.tscn")
 const DIM_COLOR := Color(0.098, 0.096, 0.092, 0.72)
 const OPTION_FILL := Color(0.13, 0.1, 0.12, 0.96)
 const OPTION_SIZE := Vector2(300, 190)
 const HOVER_SCALE := 1.05
 const PICK_SCALE := 1.12
+const SUBTITLE_COLOR := Color(0.97, 0.93, 0.8, 1)
 
 var _segment_index := -1
 var _dim: ColorRect
 var _title: Label
 var _subtitle: Label
 var _options_row: HBoxContainer
+## Note and Close button, shown instead of a pick when the chef gets every perk.
+var _all_perks_footer: Control
+var _close_button: Button
+## True while the popup announces perks instead of asking for one.
+var _announcing := false
 var _board_view_button: Button
 ## True while the options are hidden so the player can inspect the board.
 var _board_view := false
@@ -61,7 +70,7 @@ func _build() -> void:
 	_subtitle = Label.new()
 	_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_subtitle.add_theme_font_size_override("font_size", 20)
-	_subtitle.text = "Level %d reached. Choose one perk for this station." % StationManager.CHOICE_LEVEL
+	_subtitle.add_theme_color_override("font_color", SUBTITLE_COLOR)
 	content.add_child(_subtitle)
 
 	_options_row = HBoxContainer.new()
@@ -69,6 +78,11 @@ func _build() -> void:
 	_options_row.add_theme_constant_override("separation", 36)
 	_options_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(_options_row)
+
+	_all_perks_footer = ALL_PERKS_FOOTER_SCENE.instantiate()
+	content.add_child(_all_perks_footer)
+	_close_button = _all_perks_footer.get_node("%CloseButton")
+	_close_button.pressed.connect(_close_announcement)
 
 	# Pinned top center, like the card pick, so it stays put and off the board when the options hide.
 	_board_view_button = Button.new()
@@ -89,6 +103,7 @@ func _on_station_choice_requested(segment_index: int) -> void:
 		return
 	_segment_index = segment_index
 	_picking = false
+	_announcing = GameManager.chef.takes_every_station_pick()
 	_populate(station_type)
 	# Never steal the card pick or merchant. Sit on top of them instead.
 	if UiManager.active_panel == null or not UiManager.active_panel.visible:
@@ -123,6 +138,10 @@ func _populate(station_type: StationType) -> void:
 		level = StationManager.CHOICE_LEVEL
 	_title.text = "%s · Level %d" % [station_type.display_name, level]
 	_title.add_theme_color_override("font_color", station_type.color)
+	var instruction := "Choose one perk for this station."
+	if _announcing:
+		instruction = "Both perks are now active on this station."
+	_subtitle.text = "Level %d reached. %s" % [level, instruction]
 	var options := StationManager.get_choice_options(_segment_index)
 	for i in options.size():
 		var panel := _make_option(options[i], station_type, i)
@@ -134,8 +153,9 @@ func _make_option(perk: StationPerk, station_type: StationType, index: int) -> P
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = OPTION_SIZE
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	panel.focus_mode = Control.FOCUS_ALL
+	if not _announcing:
+		panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		panel.focus_mode = Control.FOCUS_ALL
 	var style := StyleBoxFlat.new()
 	style.bg_color = OPTION_FILL
 	style.border_color = station_type.color
@@ -171,6 +191,10 @@ func _make_option(perk: StationPerk, station_type: StationType, index: int) -> P
 	text.add_theme_font_size_override("normal_font_size", 20)
 	text.text = "[center]%s[/center]" % CardKeywordGlossary.to_bbcode(perk.description)
 	column.add_child(text)
+
+	if _announcing:
+		column.add_child(ACTIVE_BADGE_SCENE.instantiate())
+		return panel
 
 	panel.mouse_entered.connect(_set_focus.bind(index))
 	panel.mouse_exited.connect(_on_option_mouse_exited.bind(index))
@@ -210,6 +234,9 @@ func is_gamepad_menu_active() -> bool:
 ## InputManager menu hook.
 func focus_default() -> void:
 	if not visible or _board_view or _picking or _option_panels.is_empty():
+		return
+	if _announcing:
+		_close_button.grab_focus()
 		return
 	_option_panels[clampi(_focus_index, 0, _option_panels.size() - 1)].grab_focus()
 
@@ -261,6 +288,16 @@ func _pick(index: int) -> void:
 	tween.chain().tween_callback(_finish_pick.bind(index))
 
 
+func _close_announcement() -> void:
+	if _picking:
+		return
+	_picking = true
+	AudioManager.play_sfx(UISounds.CLICK)
+	var tween := create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, 0.2)
+	tween.tween_callback(_finish_pick.bind(0))
+
+
 func _finish_pick(index: int) -> void:
 	hide()
 	modulate.a = 1.0
@@ -294,6 +331,7 @@ func _set_board_view(active: bool) -> void:
 	_title.visible = not active
 	_subtitle.visible = not active
 	_options_row.visible = not active
+	_all_perks_footer.visible = _announcing and not active
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if active else Control.MOUSE_FILTER_STOP
 	if active:
 		# The board view belongs to the in-run controller. A focused button would eat its presses.

@@ -2,12 +2,12 @@ class_name StationBoardOverlay
 extends Node2D
 
 ## Station dressing drawn in map space, between the base tiles and the seated cards.
-## Meal slots get a warm fill. A locked second slot shows the locked box art.
+## Meal slots show their own slot art. A locked second slot shows the locked box art.
 ## Typed stations tint their regular spots in the type colour (only while StationManager.SHOW_STATION_UI).
 ## The Station that cooks this Hour (HexTileMap.get_cooking_segment) gets a gold fill and outline.
 ## Station events animate here.
 
-const MEAL_SLOT_FILL := Color(0.92, 0.32, 0.36, 0.34)
+const MEAL_SLOT: Texture2D = preload("res://assets/gui/panels/meal_slot.png")
 const STATION_TINT_ALPHA := 0.13
 ## Extra alpha at full flash strength.
 const FLASH_ALPHA := 0.35
@@ -95,15 +95,14 @@ func _draw_station(segment_index: int) -> void:
 
 
 func _draw_meal_slot(segment_index: int, meal_slot_index: int, center: Vector2, flash: float) -> void:
-	var fill := MEAL_SLOT_FILL
-	fill.a += FLASH_ALPHA * 0.7 * flash
 	if not StationManager.is_meal_slot_unlocked(segment_index, meal_slot_index):
 		_draw_lock(center, 0.0)
-	elif meal_slot_index > 0 and _lock_break.has(segment_index):
-		_draw_hex(center, fill)
+		return
+	# Native size on whole pixels keeps the pixel art sharp. A flash brightens it.
+	var brightness := 1.0 + FLASH_ALPHA * flash
+	draw_texture(MEAL_SLOT, (center - MEAL_SLOT.get_size() * 0.5).floor(), Color(brightness, brightness, brightness))
+	if meal_slot_index > 0 and _lock_break.has(segment_index):
 		_draw_lock(center, float(_lock_break[segment_index]))
-	else:
-		_draw_hex(center, fill)
 
 
 func _draw_hex(center: Vector2, color: Color) -> void:

@@ -12,7 +12,6 @@
 [ext_resource type="Texture2D" uid="uid://dumw8c651bcla" path="res://assets/gui/buttons/button_cancel_default.png" id="10_cnnrm"]
 [ext_resource type="Texture2D" uid="uid://blbvf1vu7m0br" path="res://assets/gui/buttons/button_cancel_hover.png" id="11_cnhov"]
 [ext_resource type="Texture2D" uid="uid://d4bvdu23rp8sf" path="res://assets/gui/buttons/button_cancel_pressed.png" id="12_cnprs"]
-[ext_resource type="Texture2D" uid="uid://wvyfd0eq2tcu" path="res://assets/gui/buttons/button_confirm_default.png" id="13_cfnrm"]
 [ext_resource type="Texture2D" uid="uid://bewabpk6kwypq" path="res://assets/gui/buttons/button_confirm_hover.png" id="14_cfhov"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_acc_p"]
@@ -163,7 +162,7 @@ content_margin_left = 20.0
 content_margin_top = 11.0
 content_margin_right = 20.0
 content_margin_bottom = 12.0
-texture = ExtResource("13_cfnrm")
+texture = ExtResource("3_g21io")
 texture_margin_left = 32.0
 texture_margin_top = 12.0
 texture_margin_right = 24.0
