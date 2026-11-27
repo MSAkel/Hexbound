@@ -173,6 +173,8 @@ func get_board_chip(tile: Hex = null) -> Dictionary:
 	# Idle in a locked second slot. It pays nothing until the station is level 3 again.
 	if tile != null and StationManager.is_meal_slot_locked(tile.coordinates):
 		return _hidden_board_chip()
+	if tile != null and EventManager.is_card_blocked(tile):
+		return _hidden_board_chip()
 	var output := _read_output(tile, true, StationManager.output_scale_for(tile, self), star_output_scale())
 	var chip: Dictionary
 	if output.flavour > 0:
@@ -214,6 +216,9 @@ func is_serving(tile: Hex) -> bool:
 	if tile == null or tile.map == null:
 		return false
 	if StationManager.is_meal_slot_locked(tile.coordinates):
+		return false
+	# Sealed Plates, 86'd and No Repeats.
+	if EventManager.is_card_blocked(tile):
 		return false
 	return is_recipe_ready(tile)
 

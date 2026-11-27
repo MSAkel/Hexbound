@@ -343,14 +343,26 @@ func remove_card(card: TileCard) -> bool:
 
 #region Piles
 
+## Out of Stock cards are skipped: they stay where they are in the draw pile until the Day ends.
 func _draw_one() -> TileCard:
-	if draw_pile.is_empty():
-		if discard_pile.is_empty():
+	var index := _first_drawable(draw_pile)
+	if index < 0:
+		if _first_drawable(discard_pile) < 0:
 			return null
 		draw_pile.append_array(discard_pile)
 		discard_pile.clear()
 		_shuffle(draw_pile)
-	return draw_pile.pop_front()
+		index = _first_drawable(draw_pile)
+		if index < 0:
+			return null
+	return draw_pile.pop_at(index)
+
+
+func _first_drawable(pile: Array[TileCard]) -> int:
+	for i in pile.size():
+		if not EventManager.is_card_out_of_stock(pile[i]):
+			return i
+	return -1
 
 
 func _reshuffle_for_day() -> void:

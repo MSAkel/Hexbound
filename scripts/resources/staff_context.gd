@@ -83,7 +83,7 @@ func multiply_mult(factor: float) -> void:
 
 
 func add_gold(amount: int) -> void:
-	if amount <= 0 or not EventManager.can_gain_gold():
+	if amount <= 0:
 		return
 	EconomyManager.add(amount)
 	if not GameManager.skip_presentation:

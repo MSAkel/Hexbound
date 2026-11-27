@@ -26,8 +26,8 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
 - `--extra-hours` real day flow, but when an Hour is about to meet the goal with Hours to spare, the
   bot also plays those Hours out as a what-if (picks, plays, condiments) and rolls everything back.
   Each day gets `extra_hour_scores`, `full_day_score` and `early_gold`, so you can see what finishing
-  early gives up with the deck and gold of a real run. Skipped on Blackout, Fading Station and
-  Short Staffed days (those reroll part of the board every Hour). Costs roughly +35% run time.
+  early gives up with the deck and gold of a real run. Skipped on Blackout days (it rerolls
+  part of the board every Hour).
 - `--after-goal=stop|continue|continue:<N>` what the bot does once a Day's goal is met with Hours to
   spare: `stop` (default) ends the Day for the early-finish gold, `continue` plays every Hour of every
   Day, `continue:N` plays on through Day N. Each Day records `continued`, and `leftover_hours` counts
@@ -45,6 +45,9 @@ godot --headless --path . res://scenes/debug/playtest_runner.tscn -- [flags]
   `details.hour_ledger` (`HourLedger`, `scripts/helpers/hour_ledger.gd`): the card that paid it and its
   scales `[garnish, star, chef, station, queued]`. Replaying the events rebuilds the Hour score exactly.
   Off by default, since it makes reports much larger. It does not change gameplay.
+- `--events=<name,name,name>` replaces the Day 3, 6 and 9 events, by `EventManager.Type` name
+  (`--events=reverse_service,shift_swap,full_service`). A test hook: legality per Day isn't checked.
+  Each Day records `event` and `event_text` (the event's text with today's picks).
 - `--no-condiments`, `--no-overplay`, `--check-sim`, `--verbose`
 - `--out=<path>` report path (default `user://playtest_report.json`)
 
@@ -150,8 +153,7 @@ Collection screen reads the same file through `MealLore`) plus effect, category 
 ## Deck and draw
 
 Player-facing text calls an Hour a **Turn** (`GameTerms.HOUR` is "Turn"; card, Technique, Station,
-event and UI text say Turn). Code, save keys and these notes still say Hour. The event name Rush Hour
-is kept.
+event and UI text say Turn). Code, save keys and these notes still say Hour.
 
 `DeckManager` (`scripts/autoload/deck_manager.gd`) owns the run's deck: draw pile, hand, discard pile
 and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All numbers untuned.
@@ -166,7 +168,7 @@ and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All n
   Station N; a Day has 4 Hours and the board 4 Stations). While an Hour resolves,
   `HexTileMap.cooking_segment` makes every other Station's cards inactive: they don't fire, can't be
   retriggered and don't score, and their Meals aren't served. Ending the Day early leaves the later
-  Stations uncooked. Rush Hour (3 Hours) never cooks the bottom Station.
+  Stations uncooked. Reverse Service (an event) cooks bottom to top.
 - A played card is placed on the board and its deck card goes to the played pile. The board copies
   the card (`Hex.place_tile_card`), so board card and deck card are separate once played. A redraw on a
   later Day can merge onto its own board copy or go on an empty spot. Playing a different card onto a
@@ -248,3 +250,34 @@ count or write. Story unlocks at 30 lifetime serves, Fun facts at 50 (`STORY_UNL
 - GDScript warnings are treated as errors in this project — keep types explicit
   (e.g. avoid constants inferred from Variant).
 - Don't commit `.godot/`, `.cursor_video_frames/`, `tools/` or `docs/` (see `.gitignore`).
+
+## Events
+
+`EventManager` (`scripts/autoload/event_manager.gd`): one event on each of Days 3, 6 and 9, all
+different, picked at run start; in Endless Mode one every 3 Days after Day 9 (12, 15, ...) from the
+Day 9 pool, never the same twice in a row. Design: the project doc `claude/event-rework-design.md`.
+Numbers untuned unless the doc says the user set them.
+
+- Blackout (6, 9): each Turn, 2 cards on the Station that cooks that Turn are disabled.
+- Fading Station (3, 6, 9): one Station, named at Day start, has its Ingredient output halved all Day.
+- Shift Swap (6, 9): Techniques move one seat down at Day start (`StaffManager.rotate_slots`) and back
+  at Day end; they can't be moved that Day.
+- Wages Due (3, 6): lose 4 Gold at the start of every Turn (`EconomyManager.lose`, not spending).
+- Sealed Plates (3, 6, 9): each Station's second Meal slot is sealed (a regular spot where difficulty
+  locks it); a card on it doesn't trigger or serve.
+- Full Service (9): a Turn under 20% of the Day's target scores nothing
+  (`GameManager.compute_hour_turn_contribution`).
+- Reverse Service (3): Stations cook bottom up (`HexTileMap.get_cooking_segment_for_hour`).
+- Out of Stock (3, 6, 9): 2 Ingredient kinds the deck holds, never both from one Station's setup,
+  aren't drawn that Day (`DeckManager._draw_one` skips them).
+- 86'd (6, 9): the 2 most-served Meals on the board (this run's serves) can't be served.
+- No Repeats (6, 9): a Meal that is on more than one Station scores nothing.
+- Bad Review (3, 6): unless the goal is met by the end of Turn 3, the highest-starred board card
+  (picked at Day start) loses all its stars when the Day ends.
+
+Sealed Plates, 86'd and No Repeats go through `EventManager.is_card_blocked(hex)`, read by
+`HexTileMap.is_tile_card_active` and `MealCard.is_serving`. Day-start picks that read the board run
+in `EventManager.on_day_started` (from `RoundFlow._finish_transition`); Day-end effects in
+`on_day_ended` (from `GameManager._complete_current_round`). Removed: Rush Hour (Nov 2026). A save
+that scheduled it, or an event no longer legal on its Day, gets the first legal unused event instead.
+

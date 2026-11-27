@@ -686,8 +686,6 @@ func add_flavour(tile: Hex, base_points: Variant) -> void:
 
 
 func add_gold(tile: Hex, base_amount: Variant, scaled: bool = true) -> void:
-	if not EventManager.can_gain_gold():
-		return
 	# Garnish does not scale Gold. Every other scale still does.
 	var gold_scale := _activation_output_scale / _activation_garnish_scale
 	var amount := int(round(float(base_amount) * (gold_scale if scaled else 1.0)))

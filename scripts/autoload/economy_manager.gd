@@ -86,9 +86,6 @@ func set_amount(new_amount: int) -> void:
 
 
 func add(amount_to_add: int) -> void:
-	# Austerity blocks gold gained during the day. Round-clear payouts go through _credit.
-	if amount_to_add > 0 and not EventManager.can_gain_gold():
-		return
 	_credit(amount_to_add)
 
 
@@ -108,12 +105,21 @@ func remove(amount_to_remove: int) -> void:
 		EventBus.gold_spent.emit(amount_to_remove)
 
 
+## Gold taken by an event (Wages Due). Not spending: no gold_spent signal, so Techniques that
+## react to spending don't trigger. Never goes below 0.
+func lose(amount_to_lose: int) -> void:
+	var lost := clampi(amount_to_lose, 0, _amount)
+	if lost == 0:
+		return
+	_amount -= lost
+	EventBus.gold_changed.emit(_amount)
+
+
 func can_afford(cost: int) -> bool:
 	return _amount >= cost
 
 
 ## Pays round completion gold and early-finish bonus when the goal is met.
-## Austerity does not block these, it only stops gold gained during the day.
 func apply_round_speed_rewards(skipped_turns: int) -> void:
 	var base_gold := ROUND_COMPLETION_GOLD
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns

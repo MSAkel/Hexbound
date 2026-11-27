@@ -206,6 +206,8 @@ func _finish_transition() -> void:
 	_advance_round_after_merchant = false
 	_outgoing_event = -1
 
+	# Before the staff hooks, so Shift Swap's moved seats are in place for them.
+	EventManager.on_day_started()
 	StaffManager.on_day_started()
 	StationManager.on_day_started()
 	GameManager.chef.on_day_started()
