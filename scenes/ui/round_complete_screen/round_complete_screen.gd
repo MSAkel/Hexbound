@@ -42,7 +42,9 @@ func _on_show_panel() -> void:
 	var unique_meals: int = reward.get("unique_meals", 0)
 	meal_gold_row.visible = unique_meals > 0
 	if unique_meals > 0:
-		meal_gold_title.text = "Different Meals (x%d each)" % EconomyManager.GOLD_PER_UNIQUE_MEAL
+		meal_gold_title.text = "Different Meals (%d per %d)" % [
+			EconomyManager.GOLD_PER_UNIQUE_MEAL_SET, EconomyManager.UNIQUE_MEALS_PER_GOLD,
+		]
 		meal_gold_label.text = "+%d" % reward.get("meal_gold", 0)
 
 	# Deferred so the panel is laid out and visible before the button takes focus.

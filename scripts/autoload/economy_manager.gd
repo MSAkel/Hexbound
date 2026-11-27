@@ -9,9 +9,10 @@ extends Node
 const ROUND_COMPLETION_GOLD := 3
 ## Extra gold per unused turn when finishing a round early.
 const GOLD_PER_UNUSED_TURN := 3
-## Gold at the end of each Day for each different Meal on the board (user, Nov 24: Meals no longer
-## pay a Gold per serve). Untuned.
-const GOLD_PER_UNIQUE_MEAL := 1
+## Gold at the end of each Day for every UNIQUE_MEALS_PER_GOLD different Meals on the board, rounded
+## down (user, Nov 24: Meals no longer pay a Gold per serve; Nov 27: 1 Gold per 2 Meals). Untuned.
+const GOLD_PER_UNIQUE_MEAL_SET := 1
+const UNIQUE_MEALS_PER_GOLD := 2
 ## Free card-pick rerolls per Day before the difficulty reduction (get_free_rerolls_per_day).
 ## Untuned. With one card pick a Day (at the end of it), 2 free rerolls show up to 9 cards.
 const STARTING_REROLLS := 2
@@ -124,7 +125,7 @@ func apply_round_speed_rewards(skipped_turns: int) -> void:
 	var base_gold := ROUND_COMPLETION_GOLD
 	var early_gold := GOLD_PER_UNUSED_TURN * skipped_turns
 	var unique_meals := count_unique_board_meals()
-	var meal_gold := GOLD_PER_UNIQUE_MEAL * unique_meals
+	var meal_gold := get_unique_meal_day_gold(unique_meals)
 	var total_gold := base_gold + early_gold + meal_gold
 
 	if total_gold > 0:
@@ -138,6 +139,11 @@ func apply_round_speed_rewards(skipped_turns: int) -> void:
 		"unique_meals": unique_meals,
 		"meal_gold": meal_gold,
 	}
+
+
+## Day-end Gold paid for this many different Meals.
+func get_unique_meal_day_gold(unique_meals: int) -> int:
+	return GOLD_PER_UNIQUE_MEAL_SET * floori(float(unique_meals) / float(UNIQUE_MEALS_PER_GOLD))
 
 
 ## Different Meals (by card id) seated on the board right now.

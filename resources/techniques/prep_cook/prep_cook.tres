@@ -5,7 +5,8 @@
 
 [resource]
 script = ExtResource("1_script")
+price_override = 2
 id = "prep_cook"
 name = "Prep Cook"
 icon = ExtResource("1_hw7bs")
-description = "+15 {flavour} for each Ingredient on this Station while it is level 1 or 2"
+description = "+15 {flavour} for each Ingredient on stations up to level 3"

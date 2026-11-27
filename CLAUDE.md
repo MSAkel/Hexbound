@@ -180,8 +180,8 @@ and played pile. Design: the project doc `claude/deck-and-draw-design.md`. All n
   (`RoundFlow.CARD_PICK_ENABLED` false; the CARD_PICK step and its reroll code are kept, unused). New
   cards come only from the Merchant and packs.
 - Day-end Gold (`EconomyManager.apply_round_speed_rewards`): `ROUND_COMPLETION_GOLD` (3), plus
-  `GOLD_PER_UNUSED_TURN` (3) per Hour left, plus `GOLD_PER_UNIQUE_MEAL` (1) for each different Meal on
-  the board. The Day Complete screen shows each part. Untuned.
+  `GOLD_PER_UNUSED_TURN` (3) per Hour left, plus `GOLD_PER_UNIQUE_MEAL_SET` (1) for every
+  `UNIQUE_MEALS_PER_GOLD` (2) different Meals on the board, rounded down. The Day Complete screen shows each part. Untuned.
 - Techniques cost 4/6/8 by rarity (`StaffCard.BASE_PRICE_BY_RARITY`); a Technique's `price_override`
   above 0 replaces that (Leftovers, a Common at 2).
 - Discard (move to the discard pile) and destroy (remove completely) are different words: Throw Out

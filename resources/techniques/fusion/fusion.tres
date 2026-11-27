@@ -5,7 +5,8 @@
 
 [resource]
 script = ExtResource("1_script")
+price_override = 3
 id = "fusion"
 name = "Fusion"
 icon = ExtResource("1_t0vsd")
-description = "+15 {flavour} for each different Station type on the board"
+description = "+25 {flavour} for each different Station type on the board"

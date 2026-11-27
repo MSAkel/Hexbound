@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="MealCard" format=3 uid="uid://c4saladplat01"]
+[gd_resource type="Resource" format=3 uid="uid://c4saladplat01"]
 
 [ext_resource type="Texture2D" uid="uid://vhgfidc52ks6" path="res://assets/icons/food/meals/dishes/salad.png" id="1_icon"]
-[ext_resource type="Script" path="res://resources/cards/meals/dishes/salad/salad.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://b8k4saladpl01" path="res://resources/cards/meals/dishes/salad/salad.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 meal_category = 4
-recipe_vegetable_count = 2
+recipe_vegetable_count = 1
+recipe_seasoning_count = 1
+recipe_required_card_ids = Array[String](["lettuce"])
 base_production_amount = 3
 type = 2
 product = 2

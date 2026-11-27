@@ -2,7 +2,8 @@ extends StaffCard
 
 ## Pays after the station is done, so this Hour's Desserts count.
 const MULT_PER_SWEET := 1.0
-const MULT_PER_SWEET_AFTER_DESSERT := 3.0
+## Flat bonus, paid once however many Desserts the station served.
+const DESSERT_MULT := 2.0
 
 
 func on_meal_served(ctx: StaffContext, tile: Hex, meal: TileCard) -> void:
@@ -15,10 +16,10 @@ func on_station_finished(ctx: StaffContext) -> void:
 	for card: TileCard in ctx.station_cards(TileCard.TileCardType.INGREDIENT):
 		if card.has_ingredient_tag(TileCard.TAG_SWEET):
 			sweets += 1
-	var per_sweet: float = MULT_PER_SWEET
+	var mult: float = MULT_PER_SWEET * sweets
 	if bool(ctx.hour_state.get("dessert", false)):
-		per_sweet = MULT_PER_SWEET_AFTER_DESSERT
-	ctx.add_mult(per_sweet * sweets)
+		mult += DESSERT_MULT
+	ctx.add_mult(mult)
 
 
 func _counts_as(meal: TileCard, tile: Hex, category: int) -> bool:

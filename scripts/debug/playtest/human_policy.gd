@@ -688,8 +688,8 @@ func _discard_plan_gain() -> float:
 #endregion
 
 
-## Day-end Gold for each different Meal on the board (EconomyManager.GOLD_PER_UNIQUE_MEAL): a Meal
-## whose id is not on the board yet pays it every Day it stays, today included.
+## Day-end Gold for the different Meals on the board (EconomyManager.get_unique_meal_day_gold): a Meal
+## whose id is not on the board yet is worth its average share every Day it stays, today included.
 func _unique_meal_gold(card: TileCard) -> float:
 	if card.type != TileCard.TileCardType.MEAL:
 		return 0.0
@@ -697,7 +697,8 @@ func _unique_meal_gold(card: TileCard) -> float:
 		if hex.active_tile_card != null and hex.active_tile_card.id == card.id:
 			return 0.0
 	var days := float(_merchants_left() + 1)
-	return float(EconomyManager.GOLD_PER_UNIQUE_MEAL) * days * _gold_value()
+	var share := float(EconomyManager.GOLD_PER_UNIQUE_MEAL_SET) / float(EconomyManager.UNIQUE_MEALS_PER_GOLD)
+	return share * days * _gold_value()
 
 
 func _station_progress_bonus(card: TileCard, hex: Hex) -> float:

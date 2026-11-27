@@ -97,8 +97,9 @@ func _run() -> void:
 	GameManager.debug_meet_round_goal_and_complete()
 	var meal_gold: int = int(EconomyManager.last_speed_reward.get("meal_gold", -1))
 	var unique_meals := EconomyManager.count_unique_board_meals()
-	_check(meal_gold == unique_meals * EconomyManager.GOLD_PER_UNIQUE_MEAL,
-		"the Day paid %d Gold for %d different Meals (got %d)" % [unique_meals * EconomyManager.GOLD_PER_UNIQUE_MEAL, unique_meals, meal_gold])
+	var expected_meal_gold := EconomyManager.get_unique_meal_day_gold(unique_meals)
+	_check(meal_gold == expected_meal_gold,
+		"the Day paid %d Gold for %d different Meals (got %d)" % [expected_meal_gold, unique_meals, meal_gold])
 	await _wait_until(func() -> bool: return RoundFlow.get_step() == RoundFlow.Step.SUMMARY, "the Day summary")
 	RoundFlow.notify_summary_confirmed()
 	await _wait_until(func() -> bool: return RoundFlow.get_step() == RoundFlow.Step.MERCHANT, "the Merchant")

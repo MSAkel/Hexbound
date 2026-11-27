@@ -1,4 +1,4 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://crcwf24akf31l"]
 
 [ext_resource type="Script" uid="uid://cxfarbvhpeawa" path="res://resources/techniques/sugar_work/sugar_work.gd" id="1_script"]
 
@@ -6,5 +6,4 @@
 script = ExtResource("1_script")
 id = "sugar_work"
 name = "Sugar Work"
-description = "+1 {mult} for each Sweet on this Station, or +3 each if a Dessert was served here this Turn"
-rarity = 0
+description = "+1 {mult} for each Sweet on this Station. +2 if a Dessert was served on this station"
