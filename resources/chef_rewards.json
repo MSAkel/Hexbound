@@ -1,0 +1,4 @@
+{
+	"_about": "Chef level rewards per chef id (ChefProgression). signature_cards: [{card_id, level}], bio_parts: [{part, level}] with text in chef_bios.json, outfit: {level, name, portrait (res:// path), tint (fallback colour on the base portrait)}. Design levels: 2 signature card 1, 3 bio part 1, 4 signature card 2, 5 bio part 2, 6 outfit. A chef with no entries hides those sections on its Collection page.",
+	"chefs": {}
+}

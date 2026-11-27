@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/cards/card_face/card_face.tscn" id="3_face"]
 [ext_resource type="PackedScene" uid="uid://dwveidib2jxhc" path="res://scenes/ui/merchant/merchant_purchase_tray.tscn" id="9_tray"]
 [ext_resource type="Texture2D" uid="uid://ciex4tt5xt0ji" path="res://assets/icons/others/lock.svg" id="10_lock"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tooltip/recipe_tooltip.tscn" id="11_tooltip"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_price_chip"]
 content_margin_left = 12.0
@@ -89,6 +90,11 @@ anchor_right = 1.0
 offset_top = 336.0
 offset_bottom = 380.0
 grow_horizontal = 2
+
+[node name="RecipeTooltip" parent="." unique_id=1847201010 instance=ExtResource("11_tooltip")]
+visible = false
+top_level = true
+layout_mode = 0
 
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]

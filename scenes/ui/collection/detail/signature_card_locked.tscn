@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/signature_card_locked.gd" id="1_locked_card"]
+[ext_resource type="Texture2D" path="res://assets/icons/others/lock.svg" id="2_lock"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 14.0
+bg_color = Color(0.902, 0.8431, 0.7059, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7608, 0.6039, 0.3373, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="SignatureCardLocked" type="PanelContainer"]
+custom_minimum_size = Vector2(133, 197)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+script = ExtResource("1_locked_card")
+
+[node name="Column" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Mark" type="Label" parent="Column"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 84
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Requirement" type="HBoxContainer" parent="Column"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Lock" type="TextureRect" parent="Column/Requirement"]
+modulate = Color(0.4784, 0.3529, 0.1647, 1)
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_lock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Level" type="Label" parent="Column/Requirement"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2431, 0.2039, 0.149, 1)
+theme_override_font_sizes/font_size = 15
+text = "Chef level 4"

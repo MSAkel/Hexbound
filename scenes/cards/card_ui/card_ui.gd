@@ -14,6 +14,8 @@ signal lock_toggle_requested(card_ui: CardUI, locked: bool)
 @onready var _price_chip_label: Label = $MerchantPriceRow/PriceCenter/PriceChip/PriceChipRow/PriceChipLabel
 @onready var _price_chip_lock_icon: TextureRect = $MerchantPriceRow/PriceCenter/PriceChip/PriceChipRow/LockIcon
 @onready var _purchase_tray: MerchantPurchaseTray = $MerchantPurchaseTray
+# Meal cards list their recipe by name above the card while hovered.
+@onready var _recipe_tooltip: RecipeTooltip = $RecipeTooltip
 
 enum InteractionMode {
 	HAND,
@@ -804,7 +806,19 @@ func _show_keyword_tooltips() -> void:
 		return
 	# Always emit a hover claim so an empty keyword list closes the previous card's tips.
 	var entries := CardKeywordGlossary.tooltip_entries(card.get_description_text())
-	EventBus.toggle_keyword_tooltips.emit(true, entries, get_keyword_tooltip_anchor_rect(), self)
+	var anchor_rect := get_keyword_tooltip_anchor_rect()
+	EventBus.toggle_keyword_tooltips.emit(true, entries, anchor_rect, self)
+	_show_recipe_tooltip(anchor_rect)
+
+
+func _show_recipe_tooltip(anchor_rect: Rect2) -> void:
+	if _recipe_tooltip == null:
+		return
+	var meal := card as MealCard
+	if meal == null:
+		_recipe_tooltip.hide()
+		return
+	_recipe_tooltip.show_above(meal, anchor_rect)
 
 
 # Visual card bounds after offset_transform, using the hover pose so tips sit on the lifted top corners.
@@ -838,3 +852,5 @@ func _visual_global_rect_for(pose_offset: Vector2, pose_scale: Vector2) -> Rect2
 
 func _hide_keyword_tooltips() -> void:
 	EventBus.toggle_keyword_tooltips.emit(false, [], Rect2(), self)
+	if _recipe_tooltip != null:
+		_recipe_tooltip.hide()

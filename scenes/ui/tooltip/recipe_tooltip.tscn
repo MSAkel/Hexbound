@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" uid="uid://8qge5btjbib0" path="res://assets/gui/panels/tooltip.png" id="1_panel"]
+[ext_resource type="Script" path="res://scenes/ui/tooltip/recipe_tooltip.gd" id="2_script"]
+[ext_resource type="Theme" uid="uid://d4kymlgb3fxc4" path="res://themes/main_theme.tres" id="3_theme"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_recipe"]
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+texture = ExtResource("1_panel")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_vertical = 2
+
+[node name="RecipeTooltip" type="PanelContainer"]
+z_index = 100
+mouse_filter = 2
+theme = ExtResource("3_theme")
+theme_override_styles/panel = SubResource("StyleBoxTexture_recipe")
+script = ExtResource("2_script")
+
+[node name="Rows" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Rows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36923152, 0.31425732, 0.21094128, 1)
+theme_override_font_sizes/font_size = 26
+text = "Recipe"
+horizontal_alignment = 1
+
+[node name="Recipe" type="RichTextLabel" parent="Rows"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.21230483, 0.21230483, 0.21230483, 1)
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
+text = "[center]1 Sweet[/center]"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0

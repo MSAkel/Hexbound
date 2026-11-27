@@ -15,10 +15,10 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qvrl4"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_output_chip"]
-content_margin_left = 8.0
-content_margin_top = 4.0
-content_margin_right = 8.0
-content_margin_bottom = 4.0
+content_margin_left = 3.0
+content_margin_top = 1.0
+content_margin_right = 3.0
+content_margin_bottom = 1.0
 bg_color = Color(1, 1, 1, 1)
 border_width_left = 1
 border_width_top = 1
@@ -244,16 +244,31 @@ offset_right = -11.0
 offset_bottom = -11.0
 show_hex = false
 
+[node name="StarLabel" type="Label" parent="Container" unique_id=1620934880]
+visible = false
+z_index = 3
+layout_mode = 0
+offset_left = 25.0
+offset_top = 23.0
+offset_right = 49.0
+offset_bottom = 37.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 11
+text = "★2"
+
 [node name="OutputChip" type="PanelContainer" parent="Container" unique_id=1294529278]
 z_index = 5
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -28.0
-offset_right = 58.0
-offset_bottom = -12.0
+offset_left = 25.0
+offset_top = -38.0
+offset_right = 55.0
+offset_bottom = -25.0
 grow_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_output_chip")
@@ -261,11 +276,11 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_output_chip")
 [node name="OutputChipRow" type="HBoxContainer" parent="Container/OutputChip" unique_id=1299805366]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 alignment = 1
 
 [node name="OutputChipIcon" type="TextureRect" parent="Container/OutputChip/OutputChipRow" unique_id=1387776164]
-custom_minimum_size = Vector2(14, 14)
+custom_minimum_size = Vector2(9, 9)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
@@ -274,8 +289,8 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
 text = "0"
 
 [node name="OutputChipExtra" type="PanelContainer" parent="Container" unique_id=1748203517]
@@ -287,10 +302,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -58.0
-offset_top = -28.0
-offset_right = -10.0
-offset_bottom = -12.0
+offset_left = -55.0
+offset_top = -38.0
+offset_right = -25.0
+offset_bottom = -25.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
@@ -299,11 +314,11 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_output_chip")
 [node name="OutputChipExtraRow" type="HBoxContainer" parent="Container/OutputChipExtra" unique_id=1846631022]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 alignment = 1
 
 [node name="OutputChipExtraIcon" type="TextureRect" parent="Container/OutputChipExtra/OutputChipExtraRow" unique_id=1633532851]
-custom_minimum_size = Vector2(15, 15)
+custom_minimum_size = Vector2(9, 9)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
@@ -312,8 +327,8 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
 text = "+0"
 
 [node name="PlacementSmoke" type="GPUParticles2D" parent="." unique_id=2116065945]
@@ -369,11 +384,11 @@ visible = false
 z_index = 7
 layout_mode = 3
 anchors_preset = 0
-offset_left = 70.0
-offset_top = 14.0
-offset_right = 96.0
-offset_bottom = 40.0
-pivot_offset = Vector2(13, 13)
+offset_left = 69.0
+offset_top = 23.0
+offset_right = 87.0
+offset_bottom = 41.0
+pivot_offset = Vector2(9, 9)
 mouse_filter = 2
 
 [node name="GarnishBadgeIcon" type="TextureRect" parent="GarnishBadge" unique_id=1904417360]
@@ -392,15 +407,15 @@ stretch_mode = 5
 visible = false
 z_index = 7
 layout_mode = 0
-offset_left = 34.0
-offset_top = 21.0
+offset_left = 40.0
+offset_top = 24.0
 offset_right = 69.0
-offset_bottom = 33.0
+offset_bottom = 37.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.92, 0.55, 1)
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 9
 text = "x1.5"
 horizontal_alignment = 2
 vertical_alignment = 1

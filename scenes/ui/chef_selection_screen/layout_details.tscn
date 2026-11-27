@@ -72,17 +72,32 @@ custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="ProgressLabel" type="Label" parent="InfoColumn" unique_id=1601771925]
+[node name="ProgressRow" type="HBoxContainer" parent="InfoColumn" unique_id=1601771927]
+layout_mode = 2
+
+[node name="ProgressLabel" type="Label" parent="InfoColumn/ProgressRow" unique_id=1601771925]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.11, 0.07, 0.06, 1)
+theme_override_font_sizes/font_size = 18
+text = "CHEF LEVEL 3"
+
+[node name="ProgressCount" type="Label" parent="InfoColumn/ProgressRow" unique_id=1601771928]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.11, 0.07, 0.06, 1)
 theme_override_font_sizes/font_size = 18
-text = "EXP (WIP)"
+text = "340 / 600 EXP"
+horizontal_alignment = 2
 
-[node name="ProgressPlaceholder" type="ProgressBar" parent="InfoColumn" unique_id=1601771926]
+[node name="ProgressBar" type="ProgressBar" parent="InfoColumn" unique_id=1601771926]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_progress_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_progress_fill")
-value = 5.0
+step = 1.0
+value = 34.0
 show_percentage = false

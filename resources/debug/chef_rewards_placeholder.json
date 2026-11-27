@@ -1,0 +1,24 @@
+{
+	"_about": "Debug-only placeholder chef rewards for building the chef page (ChefProgression.PLACEHOLDER_ARG). Not real content.",
+	"rewards": {
+		"pitmaster": {
+			"signature_cards": [
+				{"card_id": "grilled_steak", "level": 2},
+				{"card_id": "hamburger", "level": 4}
+			],
+			"bio_parts": [
+				{"part": 1, "level": 3},
+				{"part": 2, "level": 5}
+			],
+			"outfit": {"level": 6, "name": "Placeholder Ember Apron", "portrait": "", "tint": "#ffb27a"}
+		}
+	},
+	"bios": {
+		"pitmaster": {
+			"parts": [
+				"Placeholder bio, part 1. Grew up beside a smoker that never went cold, learning that patience is the first ingredient.",
+				"Placeholder bio, part 2. Opened a roadside pit with one grill and a hand-painted sign, and the queue has not stopped since."
+			]
+		}
+	}
+}

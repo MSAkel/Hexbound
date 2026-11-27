@@ -16,6 +16,7 @@ func _ready() -> void:
 	_check_condiments()
 	_check_tile_pool()
 	_check_merchant_shelf()
+	_check_chef_rewards()
 	if _failures > 0:
 		print("[content] FAILED: %d check(s)" % _failures)
 	else:
@@ -76,3 +77,41 @@ func _check_merchant_shelf() -> void:
 		notebook.size() == MerchantPacks.CARD_COUNT,
 		"%d of %d Techniques" % [notebook.size(), MerchantPacks.CARD_COUNT]
 	)
+
+
+## Chef level rewards (ChefProgression): every written signature card exists and every reward
+## level is a real chef level. The debug placeholder set is checked too, so the
+## page it builds stays valid.
+func _check_chef_rewards() -> void:
+	for placeholders: int in [0, 1]:
+		ChefProgression.placeholders_override = placeholders
+		ChefProgression.reload_data()
+		var problems: Array[String] = []
+		var rewards := 0
+		for chef: ChefDefinition in ChefRegistry.get_all_chefs():
+			# Rewards not written yet (empty card id, text or name) show as locked slots.
+			for entry: Dictionary in ChefProgression.get_signature_cards(chef.id):
+				var card_id := String(entry.get("card_id", ""))
+				if not card_id.is_empty():
+					rewards += 1
+					if GameManager.get_tile_card_by_id(card_id) == null:
+						problems.append("%s: no card %s" % [chef.id, card_id])
+				_check_reward_level(problems, chef.id, entry)
+			for part: Dictionary in ChefProgression.get_bio_parts(chef.id):
+				if not String(part.get("text", "")).is_empty():
+					rewards += 1
+				_check_reward_level(problems, chef.id, part)
+			var outfit := ChefProgression.get_outfit(chef.id)
+			if not String(outfit.get("name", "")).is_empty():
+				rewards += 1
+			_check_reward_level(problems, chef.id, outfit)
+		var label := "Chef rewards (placeholder)" if placeholders == 1 else "Chef rewards"
+		_check(label, problems.is_empty(), "%d rewards" % rewards if problems.is_empty() else "; ".join(problems))
+	ChefProgression.placeholders_override = -1
+	ChefProgression.reload_data()
+
+
+func _check_reward_level(problems: Array[String], chef_id: String, entry: Dictionary) -> void:
+	var level := int(entry.get("level", 0))
+	if level < 2 or level > ChefProgression.MAX_LEVEL:
+		problems.append("%s: reward at chef level %d" % [chef_id, level])

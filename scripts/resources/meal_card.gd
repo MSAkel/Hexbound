@@ -276,12 +276,35 @@ func get_inspect_recipe_text(_tile: Hex = null) -> String:
 	var waived := get_waived_ingredient_slots()
 	if waived > 0:
 		bag = "%s (any %d Ingredient optional)" % [bag, waived]
-	return "Requires: %s" % bag
+	return "Recipe: %s" % bag
 
 
 ## Same as get_inspect_recipe_text, as BBCode with each item's icon on its left (named cards show
 ## their own icon, kinds show the kind icon). icon_size is the icon height in pixels.
 func get_inspect_recipe_bbcode(icon_size: int) -> String:
+	var parts := _recipe_icon_parts(icon_size)
+	if parts.is_empty():
+		return ""
+	var bag := ", ".join(parts)
+	var waived := get_waived_ingredient_slots()
+	if waived > 0:
+		bag = "%s (any %d Ingredient optional)" % [bag, waived]
+	return "Recipe: %s" % bag
+
+
+## Hover tooltip copy for a Meal card: one requirement per line, each with its icon on the left.
+func get_recipe_tooltip_bbcode(icon_size: int) -> String:
+	var lines := _recipe_icon_parts(icon_size)
+	if lines.is_empty():
+		return ""
+	var waived := get_waived_ingredient_slots()
+	if waived > 0:
+		lines.append("(any %d Ingredient optional)" % waived)
+	return "\n".join(lines)
+
+
+## One BBCode entry per requirement (icon, then name or count and kind), in inspect text order.
+func _recipe_icon_parts(icon_size: int) -> PackedStringArray:
 	var parts: PackedStringArray = []
 	for card_id: String in recipe_required_card_ids:
 		var template := GameManager.get_tile_card_by_id(card_id)
@@ -297,13 +320,7 @@ func get_inspect_recipe_bbcode(icon_size: int) -> String:
 		if count > 1 and tag != TAG_KITCHENWARE and tag != TAG_SEAFOOD:
 			label += "s"
 		parts.append(_icon_bbcode(FeastStatIcons.get_ingredient_kind_icon(tag), icon_size) + "%d %s" % [count, label])
-	if parts.is_empty():
-		return ""
-	var bag := ", ".join(parts)
-	var waived := get_waived_ingredient_slots()
-	if waived > 0:
-		bag = "%s (any %d Ingredient optional)" % [bag, waived]
-	return "Requires: %s" % bag
+	return parts
 
 
 static func _icon_bbcode(texture: Texture2D, icon_size: int) -> String:

@@ -1,8 +1,8 @@
 class_name DeckHud
 extends VBoxContainer
 
-## Bottom-right of the run screen: the deck pile, a card with the number of cards left to draw under
-## it. Clicking the pile opens the deck viewer, and hovering it shows the draw and discard counts.
+## Bottom-right of the run screen: the deck pile, a card with the cards left to draw out of the whole
+## deck under it. Clicking the pile opens the deck viewer, and hovering it shows the draw and discard counts.
 ## chefs whose kitchen is rolled. The layout and art live in deck_hud.tscn.
 
 const HOVER_SCALE := 1.06
@@ -34,7 +34,7 @@ func get_pile_rect() -> Rect2:
 
 
 func _refresh() -> void:
-	_count_label.text = str(DeckManager.draw_pile_size())
+	_count_label.text = "%d/%d" % [DeckManager.draw_pile_size(), DeckManager.deck_size()]
 
 func _on_pile_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)

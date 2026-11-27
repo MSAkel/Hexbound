@@ -66,15 +66,19 @@ func get_station_stats(station_id: String) -> Dictionary:
 	return {"set": int(entry.get("set", 0)), "wins": int(entry.get("wins", 0))}
 
 
-## {"runs", "wins", "best_day", "highest_difficulty_won"} for a Chef id. highest_difficulty_won is
-## a Difficulty.Level index, -1 when never won.
+## {"runs", "wins", "best_day", "highest_difficulty_won", "xp", "level"} for a Chef id.
+## highest_difficulty_won is a Difficulty.Level index, -1 when never won. level comes from xp
+## (ChefProgression).
 func get_chef_stats(chef_id: String) -> Dictionary:
 	var entry := _entry("chefs", chef_id)
+	var xp := int(entry.get("xp", 0))
 	return {
 		"runs": int(entry.get("runs", 0)),
 		"wins": int(entry.get("wins", 0)),
 		"best_day": int(entry.get("best_day", 0)),
 		"highest_difficulty_won": int(entry.get("highest_difficulty_won", -1)),
+		"xp": xp,
+		"level": ChefProgression.level_for_xp(xp),
 	}
 
 #endregion
@@ -146,21 +150,26 @@ func finish_run(is_win: bool) -> void:
 	_finished_this_run = true
 	_note_deck_meals()
 	var chef_id := GameManager.selected_chef.id if GameManager.selected_chef != null else ""
-	_merge(_run, _capture_final(), chef_id, is_win, GameManager.current_round, int(GameManager.selected_difficulty))
+	# A lost run failed its current Day; a won run cleared every Day up to it.
+	var day := GameManager.current_round
+	var days_cleared := day if is_win else day - 1
+	_merge(_run, _capture_final(), chef_id, is_win, day, int(GameManager.selected_difficulty), days_cleared)
 
 
-## An abandoned run, from its resume save: counts as a run for the Chef, never as a win.
+## An abandoned run, from its resume save: counts as a run for the Chef, never as a win. It still
+## pays chef XP for the Days it cleared.
 func finish_abandoned_run(save_payload: Dictionary) -> void:
 	if not _is_writable():
 		return
 	var state: Dictionary = save_payload.get("collection_stats", {})
 	var game_state: Dictionary = save_payload.get("game_manager", {})
 	var final: Dictionary = state.get("final", {}) if state.get("final") is Dictionary else {}
+	var day := int(game_state.get("current_round", 1))
 	_merge(state, final, String(save_payload.get("chef_id", "")), false,
-		int(game_state.get("current_round", 1)), int(save_payload.get("difficulty", 0)))
+		day, int(save_payload.get("difficulty", 0)), day - 1)
 
 
-func _merge(run: Dictionary, final: Dictionary, chef_id: String, is_win: bool, day: int, difficulty: int) -> void:
+func _merge(run: Dictionary, final: Dictionary, chef_id: String, is_win: bool, day: int, difficulty: int, days_cleared: int) -> void:
 	_ensure_loaded()
 	var picked: Dictionary = run.get("picked", {})
 	for key: String in picked:
@@ -199,7 +208,18 @@ func _merge(run: Dictionary, final: Dictionary, chef_id: String, is_win: bool, d
 		if is_win:
 			_add(chef, "wins", 1)
 			chef["highest_difficulty_won"] = maxi(int(chef.get("highest_difficulty_won", -1)), difficulty)
+		_add_chef_xp(chef_id, chef, ChefProgression.run_xp(days_cleared, is_win, difficulty))
 	_save()
+
+
+## Adds a run's XP. A chef level that reaches a signature Meal marks it discovered, so the Cards
+## page doesn't show it as "???".
+func _add_chef_xp(chef_id: String, chef: Dictionary, gained: int) -> void:
+	_add(chef, "xp", gained)
+	var level := ChefProgression.level_for_xp(int(chef["xp"]))
+	for card_id: String in ChefProgression.get_unlocked_signature_card_ids(chef_id, level):
+		if GameManager.get_tile_card_by_id(card_id) is MealCard:
+			_entry_for_write("meals", card_id)["discovered"] = true
 
 
 ## Card, Technique, Condiment and Station type ids the run holds right now.

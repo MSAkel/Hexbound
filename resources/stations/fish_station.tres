@@ -76,7 +76,7 @@ icon = ExtResource("3_icon")
 color = Color(0.2, 0.62, 0.86, 1)
 required_counts = {
 &"seafood": 2,
-&"fruit": 1,
+&"seasoning": 1,
 &"kitchenware": 1
 }
 distinct_tags = Array[StringName]([&"seafood"])

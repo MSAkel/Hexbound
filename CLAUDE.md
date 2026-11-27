@@ -242,6 +242,20 @@ count or write. Story unlocks at 30 lifetime serves, Fun facts at 50 (`STORY_UNL
 `FACTS_UNLOCK_SERVES`). Unlocks are stored, so they never lock again. A Meal with
 `hidden_until_discovered` shows as "???" until it has been in the deck (none are hidden now).
 
+Chef XP and levels (`ChefProgression`, `scripts/helpers/chef_progression.gd`; design: the project doc
+"Flavour Pass: Meta Progression Design"): XP is per chef, kept as `xp` in the chef's stats entry and
+added in the same run-end merge: 10 per Day cleared plus 50 on a win, x (1 + 0.1 per difficulty level
+above 1). Abandoned runs pay the Days cleared. Six levels at 0/100/300/600/1500/3000 total XP (5 and 6
+set by the user, the rest untuned). Rewards per chef live in `resources/chef_rewards.json` (signature
+cards, bio parts, outfit, each with its chef level) and bio text in `resources/chef_bios.json`; both are
+empty until content is written. The chef selection screen shows the chef level and EXP bar
+(`layout_details`). The Collection chef page adds, below "Your stats", Signature cards, Bio and
+Alternate outfit (`detail_signature_cards`, `detail_bio_section`, `detail_outfit_section`), always:
+rewards not written yet show locked at their design level (`ChefProgression.SIGNATURE_CARD_LEVELS`,
+`BIO_PART_LEVELS`, `OUTFIT_LEVEL`). Reaching a signature Meal's level marks it discovered. Debug builds show placeholder rewards on the
+Pitmaster with `-- --chef-rewards-placeholder` (`resources/debug/chef_rewards_placeholder.json`);
+the content check validates both sets. Signature cards do not enter the card pool yet.
+
 ## Conventions
 
 - Autoloads live in `scripts/autoload/` (registered in `project.godot`).

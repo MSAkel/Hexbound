@@ -26,10 +26,10 @@ extends Control
 @onready var placement_slash: GPUParticles2D = $PlacementSlash
 @onready var garnish_badge: Control = $GarnishBadge
 @onready var _garnish_stack_label: Label = $GarnishStackLabel
+@onready var _star_label: Label = $Container/StarLabel
 
 var _garnish_badge_tween: Tween = null
 var _garnish_badge_rest_position := Vector2.ZERO
-var _star_label: Label = null
 @onready var hex_stroke: HexStroke = $HexStroke
 @onready var output_chip: PanelContainer = $Container/OutputChip
 @onready var output_chip_icon: TextureRect = $Container/OutputChip/OutputChipRow/OutputChipIcon
@@ -98,17 +98,14 @@ const CHAINED_ACTIVATION_HIGHLIGHT := Color(1.28, 0.78, 0.28, 1.0)
 const INSPECT_HOVER_SCALE := Vector2(1.04, 1.04)
 const INSPECT_HOVER_MODULATE := Color(1.15, 1.1, 1.0, 1.0)
 const INSPECT_HOVER_DURATION := 0.12
-# Keep the chips seated inside the token's bottom corners while their width follows the numbers.
-const OUTPUT_CHIP_BOTTOM_INSET := 12.0
-const OUTPUT_CHIP_SIDE_INSET := 15.0
+# Keep the chips seated inside the card box's bottom corners while their width follows the numbers.
+const OUTPUT_CHIP_BOTTOM_INSET := 25.0
+const OUTPUT_CHIP_SIDE_INSET := 25.0
 # Smallest gap kept between the two chips. Wide pairs spill past the side insets evenly instead.
 const OUTPUT_CHIP_GAP := 2.0
-# Star level sits inside the token's top-left corner, clear of its border.
-const STAR_LABEL_POSITION := Vector2(16, 12)
-const STAR_LABEL_FONT_SIZE := 15
 # Garnish badge intro: pops up this many times its resting size over the card, then shrinks
 # into its corner. Durations are at game speed 1.
-const GARNISH_BADGE_INTRO_SCALE := 2.8
+const GARNISH_BADGE_INTRO_SCALE := 4.0
 const GARNISH_BADGE_POP_DURATION := 0.14
 const GARNISH_BADGE_HOLD_DURATION := 0.16
 const GARNISH_BADGE_SHRINK_DURATION := 0.24
@@ -855,28 +852,11 @@ func _refresh_garnish_stack_label(stacks: int) -> void:
 	_garnish_stack_label.show()
 
 
-# Merged cards show their star level in the top-left corner, opposite the Garnish label.
+# Merged cards show their star level in the card box's top-left corner, opposite the Garnish label.
 func _refresh_star_label(star_level: int) -> void:
-	if star_level <= 1:
-		if _star_label != null:
-			_star_label.hide()
-		return
-
-	if _star_label == null:
-		_star_label = Label.new()
-		_star_label.name = "StarLabel"
-		_star_label.z_index = 5
-		_star_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		_star_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-		_star_label.add_theme_font_size_override("font_size", STAR_LABEL_FONT_SIZE)
-		_star_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
-		_star_label.add_theme_color_override("font_outline_color", Color(0.12, 0.08, 0.04, 1.0))
-		_star_label.add_theme_constant_override("outline_size", 4)
-		_star_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_star_label.position = STAR_LABEL_POSITION
-		add_child(_star_label)
-	_star_label.text = TileCard.star_text(star_level)
-	_star_label.show()
+	_star_label.visible = star_level > 1
+	if _star_label.visible:
+		_star_label.text = TileCard.star_text(star_level)
 
 
 ## Starts a looping orange pulse and outline on a source card while its triggers resolve.

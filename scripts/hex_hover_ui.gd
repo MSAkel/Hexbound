@@ -192,7 +192,6 @@ func _set_occupied_icon_hover(map_coords: Vector2i) -> void:
 	if hex.card_icon_ui == null:
 		return
 	hex.card_icon_ui.play_inspect_hover_in()
-	AudioManager.play_ui_hover()
 
 
 func _clear_occupied_icon_hover() -> void:

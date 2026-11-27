@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/collection/detail/bio_locked_row.gd" id="1_bio_locked"]
+[ext_resource type="Texture2D" path="res://assets/icons/others/lock.svg" id="2_lock"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_well"]
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+bg_color = Color(0.902, 0.8431, 0.7059, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="BioLockedRow" type="PanelContainer"]
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_well")
+script = ExtResource("1_bio_locked")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Lock" type="TextureRect" parent="Row"]
+modulate = Color(0.4784, 0.3529, 0.1647, 1)
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_lock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Column" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="Label" type="Label" parent="Row/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4784, 0.3529, 0.1647, 1)
+theme_override_font_sizes/font_size = 18
+text = "Part 1"
+
+[node name="Line" type="Label" parent="Row/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2431, 0.2039, 0.149, 1)
+theme_override_font_sizes/font_size = 17
+text = "Reach chef level 3 to unlock"
+autowrap_mode = 3

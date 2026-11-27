@@ -6,4 +6,4 @@
 script = ExtResource("1_script")
 id = "sugar_work"
 name = "Sugar Work"
-description = "+1 {mult} for each Sweet on this Station. +2 if a Dessert was served on this station"
+description = "+1 {mult} for each Sweet on this Station. +3 if a Dessert was served on this station"

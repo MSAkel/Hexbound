@@ -17,6 +17,9 @@ const REQUIREMENT_ROW_SCENE := preload("res://scenes/ui/collection/detail/requir
 const LEVEL_ROW_SCENE := preload("res://scenes/ui/collection/detail/level_row.tscn")
 const STATS_SCENE := preload("res://scenes/ui/collection/detail/detail_stats.tscn")
 const LOCKED_SECTION_SCENE := preload("res://scenes/ui/collection/detail/detail_locked_section.tscn")
+const SIGNATURE_CARDS_SCENE := preload("res://scenes/ui/collection/detail/detail_signature_cards.tscn")
+const BIO_SECTION_SCENE := preload("res://scenes/ui/collection/detail/detail_bio_section.tscn")
+const OUTFIT_SECTION_SCENE := preload("res://scenes/ui/collection/detail/detail_outfit_section.tscn")
 
 const EVENT_ICON := preload("res://assets/gui/map_layouts/challenge_icon.png")
 
@@ -144,6 +147,7 @@ func show_chef(chef: ChefDefinition) -> void:
 		["Best Day", str(int(chef_stats["best_day"])) if int(chef_stats["best_day"]) > 0 else "-"],
 		["Top level won", str(best_level + 1) if best_level >= 0 else "-"],
 	])
+	_add_chef_rewards(chef, int(chef_stats["xp"]))
 
 
 func show_event(event_type: EventManager.Type) -> void:
@@ -230,6 +234,21 @@ func _add_locked_section(heading: String, meal: MealCard, served: int, goal: int
 	var section := LOCKED_SECTION_SCENE.instantiate() as CollectionDetailLockedSection
 	_sections.add_child(section)
 	section.setup(heading, "Serve %s %d times to unlock" % [meal.name, goal], served, goal)
+
+
+## Signature cards, Bio and Alternate outfit. Rewards not written yet still show, locked at their
+## chef level.
+func _add_chef_rewards(chef: ChefDefinition, xp: int) -> void:
+	var level := ChefProgression.level_for_xp(xp)
+	var cards := SIGNATURE_CARDS_SCENE.instantiate() as CollectionDetailSignatureCards
+	_sections.add_child(cards)
+	cards.setup(ChefProgression.get_signature_cards(chef.id), level)
+	var bio := BIO_SECTION_SCENE.instantiate() as CollectionDetailBioSection
+	_sections.add_child(bio)
+	bio.setup(ChefProgression.get_bio_parts(chef.id), level)
+	var outfit := OUTFIT_SECTION_SCENE.instantiate() as CollectionDetailOutfitSection
+	_sections.add_child(outfit)
+	outfit.setup(chef, ChefProgression.get_outfit(chef.id), level)
 
 
 ## Picked, Wins with and win rate (wins out of the runs it ended in) for a card, Technique or Condiment.
