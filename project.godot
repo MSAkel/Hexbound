@@ -17,6 +17,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Flavour Pass"
 config/version="0.0.40"
 run/main_scene="uid://gd4rito42dyr"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="FlavourPass"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="uid://reock0uri2jm"
 config/main_scene="uid://gd4rito42dyr"
@@ -27,6 +29,7 @@ buses/default_bus_layout="uid://dvt12q5rvq0mh"
 
 [autoload]
 
+ProfileManager="*res://scripts/autoload/profile_manager.gd"
 UiManager="*res://scripts/autoload/ui_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"

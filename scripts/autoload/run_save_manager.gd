@@ -1,10 +1,10 @@
 extends Node
 
-## Persists in-progress runs to user:// so players can resume from the main menu.
+## Persists in-progress runs to the active profile (ProfileManager) so players can resume from the main menu.
 ## Only stable checkpoints are written. Mid-action quits keep the last good file.
 
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
-const SAVE_PATH := "user://run_save.json"
+const SAVE_FILE_NAME := "run_save.json"
 # 6: 8-spot stations with Meal slots, station types and levels, new card pool.
 # 7: deck and draw piles (DeckManager). Older runs had no deck, so they can't be continued.
 const SAVE_VERSION := 7
@@ -61,8 +61,20 @@ func _notification(what: int) -> void:
 		_on_window_close_requested()
 
 
+## The active profile's run save.
+func save_path() -> String:
+	return ProfileManager.path(SAVE_FILE_NAME)
+
+
+## ProfileManager switched or cleared the profile: forget any Continue request from the old one.
+func reload() -> void:
+	continue_run_pending = false
+	_has_pending_run_seed = false
+	_pending_run_seed = ""
+
+
 func has_save() -> bool:
-	return SAVE_FILE.has_readable(SAVE_PATH)
+	return SAVE_FILE.has_readable(save_path())
 
 
 func request_continue_run() -> void:
@@ -124,7 +136,7 @@ func delete_save() -> void:
 	clear_continue_run_pending()
 	_autosave_queued = false
 	_autosave_generation += 1
-	SAVE_FILE.delete_all(SAVE_PATH)
+	SAVE_FILE.delete_all(save_path())
 
 
 ## Records an abandoned resume save as a loss, then deletes it.
@@ -198,7 +210,7 @@ func save_current_run() -> void:
 		payload["card_offer"] = card_selection.capture_offer_state()
 
 	var json_text := JSON.stringify(payload, "\t")
-	if not SAVE_FILE.write_text(SAVE_PATH, json_text):
+	if not SAVE_FILE.write_text(save_path(), json_text):
 		push_error("RunSaveManager: failed to write run save.")
 
 
@@ -356,7 +368,7 @@ func _on_game_ended() -> void:
 
 
 func _load_save_payload() -> Dictionary:
-	return SAVE_FILE.read_json_dictionary(SAVE_PATH)
+	return SAVE_FILE.read_json_dictionary(save_path())
 
 
 func _apply_offer_ui_state(payload: Dictionary) -> void:

@@ -1,9 +1,9 @@
 extends Node
 
-## Persistent meta progression: lifetime stats.
+## Persistent meta progression: lifetime stats, kept in the active profile (ProfileManager).
 
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
-const SAVE_PATH := "user://player_profile.save"
+const SAVE_FILE_NAME := "lifetime_stats.save"
 
 var _loaded: bool = false
 var _lifetime_stats: Dictionary = {}
@@ -17,14 +17,24 @@ func ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	if not SAVE_FILE.has_readable(SAVE_PATH):
+	if not SAVE_FILE.has_readable(_save_path()):
 		_init_defaults()
 		return
-	var data := SAVE_FILE.read_var_dictionary(SAVE_PATH)
+	var data := SAVE_FILE.read_var_dictionary(_save_path())
 	if data.is_empty():
 		_init_defaults()
 		return
 	_apply_save_data(data)
+
+
+## ProfileManager switched or cleared the profile.
+func reload() -> void:
+	_loaded = false
+	ensure_loaded()
+
+
+func _save_path() -> String:
+	return ProfileManager.path(SAVE_FILE_NAME)
 
 
 ## Read-only copy of lifetime counters for the Stats screen.
@@ -33,19 +43,12 @@ func get_lifetime_stats_snapshot() -> Dictionary:
 	return _lifetime_stats.duplicate(true)
 
 
-## Wipes lifetime stats back to a fresh profile.
-func reset_progression() -> void:
-	SAVE_FILE.delete_all(SAVE_PATH)
-	_init_defaults()
-	save()
-
-
 func save() -> void:
 	var data := {
 		"version": 1,
 		"lifetime_stats": _lifetime_stats.duplicate(),
 	}
-	if not SAVE_FILE.write_var(SAVE_PATH, data):
+	if not SAVE_FILE.write_var(_save_path(), data):
 		push_error("MetaProgressionManager: failed to write profile save")
 
 
@@ -93,6 +96,7 @@ func record_run_snapshot(snapshot: Dictionary) -> void:
 			win_difficulty
 		)
 	save()
+	ProfileManager.refresh_summary()
 
 
 func _init_defaults() -> void:

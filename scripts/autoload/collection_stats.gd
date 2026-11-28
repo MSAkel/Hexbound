@@ -1,6 +1,6 @@
 extends Node
 
-## Lifetime Collection stats, kept in their own file (STATS_PATH), apart from the run save:
+## Lifetime Collection stats, kept in their own file (_stats_path()), apart from the run save:
 ## how often the player picked each card, Technique and Condiment, wins with them, Station types
 ## set and won with, Chef runs and wins, Meal serves and the Story / Fun facts unlocks they drive.
 ##
@@ -9,7 +9,7 @@ extends Node
 ## once, when the run ends: won, lost or abandoned. A crash or quit loses only what came after the
 ## last checkpoint. The playtest bot, fuzz runs and CI never count or write (see _is_tracking).
 
-const STATS_PATH := "user://collection_stats.json"
+const STATS_FILE_NAME := "collection_stats.json"
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
 const VERSION := 1
 
@@ -49,14 +49,16 @@ func get_pick_stats(group: String, id: String) -> Dictionary:
 	}
 
 
-## {"served", "story", "facts", "discovered"} for a Meal id.
+## {"served", "story", "facts", "discovered"} for a Meal id. Unlock all shows Story, Fun facts and
+## the Meal itself without changing what is stored (served stays true).
 func get_meal_stats(meal_id: String) -> Dictionary:
 	var entry := _entry("meals", meal_id)
+	var unlock_all := ProfileManager.is_unlock_all()
 	return {
 		"served": int(entry.get("served", 0)),
-		"story": bool(entry.get("story", false)),
-		"facts": bool(entry.get("facts", false)),
-		"discovered": bool(entry.get("discovered", false)),
+		"story": unlock_all or bool(entry.get("story", false)),
+		"facts": unlock_all or bool(entry.get("facts", false)),
+		"discovered": unlock_all or bool(entry.get("discovered", false)),
 	}
 
 
@@ -210,6 +212,7 @@ func _merge(run: Dictionary, final: Dictionary, chef_id: String, is_win: bool, d
 			chef["highest_difficulty_won"] = maxi(int(chef.get("highest_difficulty_won", -1)), difficulty)
 		_add_chef_xp(chef_id, chef, ChefProgression.run_xp(days_cleared, is_win, difficulty))
 	_save()
+	ProfileManager.refresh_summary()
 
 
 ## Adds a run's XP. A chef level that reaches a signature Meal marks it discovered, so the Cards
@@ -262,18 +265,30 @@ func _is_writable() -> bool:
 	return DisplayServer.get_name() != "headless"
 
 
+## ProfileManager switched or cleared the profile. A run's pending counts belong to no profile yet
+## (switching happens on the main menu only), so they are dropped too.
+func reload() -> void:
+	_loaded = false
+	_lifetime = {}
+	reset_for_new_run()
+
+
+func _stats_path() -> String:
+	return ProfileManager.path(STATS_FILE_NAME)
+
+
 func _ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	var data := SAVE_FILE.read_json_dictionary(STATS_PATH) if SAVE_FILE.has_readable(STATS_PATH) else {}
+	var data := SAVE_FILE.read_json_dictionary(_stats_path()) if SAVE_FILE.has_readable(_stats_path()) else {}
 	_lifetime = data if not data.is_empty() else {"version": VERSION}
 
 
 func _save() -> void:
 	_lifetime["version"] = VERSION
-	if not SAVE_FILE.write_text(STATS_PATH, JSON.stringify(_lifetime, "\t")):
-		push_error("CollectionStats: failed to write %s." % STATS_PATH)
+	if not SAVE_FILE.write_text(_stats_path(), JSON.stringify(_lifetime, "\t")):
+		push_error("CollectionStats: failed to write %s." % _stats_path())
 
 
 func _entry(group: String, id: String) -> Dictionary:

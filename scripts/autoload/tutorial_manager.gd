@@ -12,12 +12,13 @@ signal hint_dismissed(id: StringName)
 ## Seen set or enabled flag changed. The tips archive and settings redraw from it.
 signal progress_changed
 
-const SAVE_PATH := "user://tutorial_progress.save"
+const SAVE_FILE_NAME := "tutorial_progress.save"
 const STATE_POLL_INTERVAL := 0.5
 const _StationManagerScript := preload("res://scripts/autoload/station_manager.gd")
 
 ## Tests point this at a scratch file so they never touch the player's progress.
-var save_path := SAVE_PATH
+## Empty: the active profile's file (ProfileManager). Tests set a scratch path.
+var save_path := ""
 var hints_enabled := true
 ## Headless runs and the playtest bot never show hints. Tests set this to run the queue anyway.
 var force_active_for_tests := false
@@ -84,7 +85,7 @@ func ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	var data := AtomicSaveFile.read_var_dictionary(save_path)
+	var data := AtomicSaveFile.read_var_dictionary(_save_path())
 	hints_enabled = bool(data.get("hints_enabled", true))
 	_seen.clear()
 	var seen_ids: Variant = data.get("seen", [])
@@ -93,10 +94,16 @@ func ensure_loaded() -> void:
 			_seen[StringName(String(seen_id))] = true
 
 
-## Re-read progress from save_path. Tests use this to check what reached disk.
+## Re-read progress from save_path. Tests use this to check what reached disk; ProfileManager calls
+## it after a profile switch.
 func reload() -> void:
 	_loaded = false
 	ensure_loaded()
+	progress_changed.emit()
+
+
+func _save_path() -> String:
+	return save_path if not save_path.is_empty() else ProfileManager.path(SAVE_FILE_NAME)
 
 
 func is_seen(id: StringName) -> bool:
@@ -489,7 +496,7 @@ func _save() -> void:
 	for id: StringName in _seen:
 		seen_ids.append(String(id))
 	seen_ids.sort()
-	AtomicSaveFile.write_var(save_path, {
+	AtomicSaveFile.write_var(_save_path(), {
 		"hints_enabled": hints_enabled,
 		"seen": seen_ids,
 	})

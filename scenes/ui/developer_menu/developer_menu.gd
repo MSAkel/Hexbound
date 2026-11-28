@@ -89,8 +89,8 @@ func _setup_reset_confirm_dialog() -> void:
 	_reset_confirm_dialog = ConfirmationDialog.new()
 	_reset_confirm_dialog.title = "Reset progression?"
 	_reset_confirm_dialog.dialog_text = (
-		"This resets lifetime stats and run history. "
-		+ "Your in-progress run save is also deleted. This cannot be undone."
+		"This deletes the active profile: chef XP, Collection stats and unlocks, lifetime stats, "
+		+ "run history, tutorial progress and the run in progress. This cannot be undone."
 	)
 	_reset_confirm_dialog.ok_button_text = "Reset"
 	_reset_confirm_dialog.cancel_button_text = "Cancel"
@@ -111,11 +111,13 @@ func _on_reset_progression_pressed() -> void:
 
 func _on_reset_progression_confirmed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
-	MetaProgressionManager.reset_progression()
-	RunHistoryManager.clear()
-	RunSaveManager.delete_save()
-	GameSettings.reset_progression_preferences()
-	TutorialManager.reset_all()
+	# Clears every file of the active profile (Collection stats and chef XP included).
+	ProfileManager.delete_slot(ProfileManager.active_slot)
+
+
+func _on_open_save_folder_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	OS.shell_open(ProjectSettings.globalize_path(ProfileManager.root_dir()))
 
 
 func _on_ui_sandbox_button_pressed() -> void:

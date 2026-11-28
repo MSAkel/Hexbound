@@ -239,7 +239,7 @@ func _add_locked_section(heading: String, meal: MealCard, served: int, goal: int
 ## Signature cards, Bio and Alternate outfit. Rewards not written yet still show, locked at their
 ## chef level.
 func _add_chef_rewards(chef: ChefDefinition, xp: int) -> void:
-	var level := ChefProgression.level_for_xp(xp)
+	var level := ChefProgression.reward_level_for_xp(xp)
 	var cards := SIGNATURE_CARDS_SCENE.instantiate() as CollectionDetailSignatureCards
 	_sections.add_child(cards)
 	cards.setup(ChefProgression.get_signature_cards(chef.id), level)

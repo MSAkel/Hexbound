@@ -17,6 +17,7 @@ func _ready() -> void:
 	_check_tile_pool()
 	_check_merchant_shelf()
 	_check_chef_rewards()
+	_check_unlock_all()
 	if _failures > 0:
 		print("[content] FAILED: %d check(s)" % _failures)
 	else:
@@ -115,3 +116,26 @@ func _check_reward_level(problems: Array[String], chef_id: String, entry: Dictio
 	var level := int(entry.get("level", 0))
 	if level < 2 or level > ChefProgression.MAX_LEVEL:
 		problems.append("%s: reward at chef level %d" % [chef_id, level])
+
+
+## Unlock all (ProfileManager) must open every lock the game has: chef rewards, Meal Story and Fun
+## facts, and "???" Meals. A new lock that skips is_unlock_all() should get a line here.
+func _check_unlock_all() -> void:
+	var problems: Array[String] = []
+	ProfileManager.unlock_all_override = 1
+	if ChefProgression.reward_level_for_xp(0) != ChefProgression.MAX_LEVEL:
+		problems.append("chef rewards stay at level %d" % ChefProgression.reward_level_for_xp(0))
+	var meal_id := ""
+	for card: TileCard in GameManager.tile_cards_pool:
+		if card is MealCard:
+			meal_id = card.id
+			break
+	var meal := CollectionStats.get_meal_stats(meal_id)
+	for key: String in ["story", "facts", "discovered"]:
+		if not bool(meal[key]):
+			problems.append("Meal %s stays locked" % key)
+	ProfileManager.unlock_all_override = 0
+	if ChefProgression.reward_level_for_xp(0) != 1:
+		problems.append("chef rewards unlocked without the flag")
+	ProfileManager.unlock_all_override = -1
+	_check("Unlock all", problems.is_empty(), "every lock opens" if problems.is_empty() else "; ".join(problems))

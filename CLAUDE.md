@@ -232,7 +232,7 @@ built from the small section scenes in `detail/`) on the right. Looks live in th
 Meal history comes from `resources/meal_lore.json` (`MealLore`). The right stick scrolls the detail
 panel through `InputManager`'s `get_pad_scroll_target` menu hook.
 
-`CollectionStats` (autoload) keeps lifetime stats in `user://collection_stats.json`, separate from the
+`CollectionStats` (autoload) keeps lifetime stats in the profile's `collection_stats.json`, separate from the
 run save: Picked (Merchant buys, pack picks, card picks), Wins with (in the final deck / roster / belt
 / board at a win), Times served, Station Times set, Chef runs, wins, best Day and top level won.
 A run's counts gather in memory, ride in the run save (`collection_stats` key) and merge into the
@@ -255,6 +255,34 @@ rewards not written yet show locked at their design level (`ChefProgression.SIGN
 `BIO_PART_LEVELS`, `OUTFIT_LEVEL`). Reaching a signature Meal's level marks it discovered. Debug builds show placeholder rewards on the
 Pitmaster with `-- --chef-rewards-placeholder` (`resources/debug/chef_rewards_placeholder.json`);
 the content check validates both sets. Signature cards do not enter the card pool yet.
+
+## Player profiles
+
+`ProfileManager` (`scripts/autoload/profile_manager.gd`, first in `[autoload]`; design: the project doc
+"Flavour Pass: Player Profiles Design") owns three numbered profile slots. Each is a folder,
+`<root>/profiles/<slot>/`, holding `run_save.json`, `collection_stats.json`, `lifetime_stats.save`
+(`MetaProgressionManager`), `run_history.json`, `tutorial_progress.save` and `profile.cfg` (summary for
+the profile screen, last chef shown, `unlock_all`). `<root>/profiles.cfg` holds the active slot;
+`user://game_settings.save` stays shared. Every save owner asks `ProfileManager.path(file)` and has a
+`reload()` that `switch_to` / `delete_slot` call; never hard-code a `user://` save path. A slot's folder is
+created on its first write (`AtomicSaveFile` makes missing folders), so an empty slot is valid and
+reads as defaults. Saves from before profiles are not migrated.
+
+- `config/use_custom_user_dir` is on: `user://` is `%APPDATA%\FlavourPass` (playtest reports land
+  there too). Editor runs (Play in the editor, CI, the bot) use root `user://dev/`
+  (`OS.has_feature("editor")`), so an exported build on the same PC opens on fresh profiles.
+- Main menu: the Profile button (bottom left) opens `scenes/ui/profiles/profile_panel.tscn`, three
+  `profile_slot_card.tscn` cards: Select, Delete and, on the active card, Unlock all. Delete and Unlock
+  all each ask twice (`profile_confirm_panel.tscn`). Switching happens on the main menu only. The
+  developer menu's Reset progression deletes the active slot; Open save folder opens the root.
+- **Unlock all** sets one flag per profile; it never fakes stats or XP. Every lock must check
+  `ProfileManager.is_unlock_all()`: chef rewards go through `ChefProgression.reward_level_for_xp`
+  (the XP bar keeps the real level), Meal Story, Fun facts and "???" through
+  `CollectionStats.get_meal_stats`. A new lock (difficulty gates, card unlocks) must check it too and
+  get a line in the content check's `_check_unlock_all`. Unlock all also turns off Steam achievements
+  for that profile, once achievements exist. Tests force it with `ProfileManager.unlock_all_override`.
+- Headless runs never write `profile.cfg` or `profiles.cfg`. Play time counts while the game is open and
+  is written only for a slot that already has a folder.
 
 ## Conventions
 

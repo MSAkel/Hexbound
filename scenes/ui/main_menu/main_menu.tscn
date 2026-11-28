@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://vms22eqhmvl8" path="res://assets/main_menu/Cover-Photo-Pig.jpg" id="7_cover"]
 [ext_resource type="Shader" uid="uid://i50fn8bv7qcf" path="res://scenes/ui/menu_background/menu_background_drift.gdshader" id="9_drift"]
 [ext_resource type="Texture2D" uid="uid://dy4vqioicidss" path="res://assets/main_menu/menu_highlight.png" id="8_highlight"]
+[ext_resource type="PackedScene" path="res://scenes/ui/profiles/profile_panel.tscn" id="10_profiles"]
 
 [sub_resource type="Gradient" id="Gradient_8ouhi"]
 colors = PackedColorArray(0, 0, 0, 0.54800004, 0, 0, 0, 0.439)
@@ -309,11 +310,34 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
 text = "DEVELOPER MENU"
 alignment = 2
 
+[node name="ProfileButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = -90.0
+offset_right = 330.0
+offset_bottom = -43.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxEmpty_7pmlo")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ftetl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7nsra")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_x7o2x")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xld13")
+text = "PROFILE 1"
+alignment = 0
+
 [node name="SettingsContainer" parent="." unique_id=368611362 instance=ExtResource("4_cmwxi")]
 visible = false
 layout_mode = 1
 
 [node name="TipsArchive" parent="." unique_id=170776203 instance=ExtResource("6_tips_archive")]
+visible = false
+layout_mode = 1
+
+[node name="ProfilePanel" parent="." instance=ExtResource("10_profiles")]
 visible = false
 layout_mode = 1
 
@@ -325,3 +349,4 @@ layout_mode = 1
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/TipsButton" to="." method="_on_tips_button_pressed"]
 [connection signal="pressed" from="MenuContainer/MenuItemsContainer/Exit" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="TopRightContainer/DeveloperMenuButton" to="." method="_on_developer_menu_pressed"]
+[connection signal="pressed" from="ProfileButton" to="." method="_on_profile_button_pressed"]

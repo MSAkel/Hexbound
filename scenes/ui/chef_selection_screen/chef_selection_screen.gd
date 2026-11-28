@@ -101,7 +101,7 @@ func get_selected_chef() -> ChefDefinition:
 
 func _restore_last_chef() -> void:
 	GameSettings.ensure_loaded()
-	var chef_id := GameSettings.last_chef_selection_id
+	var chef_id := ProfileManager.get_last_chef_selection_id()
 	# Fall back to the last run chef when settings have no stored selection yet.
 	if chef_id.is_empty() and GameManager.selected_chef != null:
 		chef_id = GameManager.selected_chef.id
@@ -133,7 +133,7 @@ func _step_layout(direction: int) -> void:
 
 func _update_display() -> void:
 	layout_details.display_selection(get_selected_chef())
-	GameSettings.set_last_chef_selection_id(get_selected_chef().id)
+	ProfileManager.set_last_chef_selection_id(get_selected_chef().id)
 
 
 func _on_back_button_pressed() -> void:

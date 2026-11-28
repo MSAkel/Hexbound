@@ -14,6 +14,8 @@ const HOVER_DURATION := 0.12
 @onready var settings_container: PanelContainer = $SettingsContainer
 @onready var tips_archive: TipsArchive = $TipsArchive
 @onready var continue_button: Button = $MenuContainer/MenuItemsContainer/ContinueButton
+@onready var profile_button: Button = $ProfileButton
+@onready var profile_panel: ProfilePanel = $ProfilePanel
 
 # Tracks in-flight hover tweens so rapid enter/exit does not stack.
 var _hover_tweens: Dictionary = {}
@@ -24,6 +26,8 @@ func _ready() -> void:
 	add_to_group(InputManager.MENU_GROUP)
 	game_version.text = ProjectSettings.get_setting("application/config/version")
 	_refresh_continue_button()
+	_refresh_profile_button()
+	ProfileManager.profile_changed.connect(_on_profile_changed)
 	call_deferred("_focus_main_menu")
 
 	# Play main menu music
@@ -42,15 +46,17 @@ func _ready() -> void:
 			button.focus_entered.connect(_on_button_focus.bind(button, true))
 			button.focus_exited.connect(_on_button_focus.bind(button, false))
 
-	_set_button_pivot(developer_menu_button)
-	developer_menu_button.resized.connect(_on_button_resized.bind(developer_menu_button))
-	developer_menu_button.mouse_entered.connect(_on_button_hover.bind(developer_menu_button))
-	developer_menu_button.mouse_exited.connect(_on_button_unhover.bind(developer_menu_button))
-	developer_menu_button.focus_entered.connect(_on_button_focus.bind(developer_menu_button, true))
-	developer_menu_button.focus_exited.connect(_on_button_focus.bind(developer_menu_button, false))
-	
+	for corner_button: Button in [developer_menu_button, profile_button]:
+		_set_button_pivot(corner_button)
+		corner_button.resized.connect(_on_button_resized.bind(corner_button))
+		corner_button.mouse_entered.connect(_on_button_hover.bind(corner_button))
+		corner_button.mouse_exited.connect(_on_button_unhover.bind(corner_button))
+		corner_button.focus_entered.connect(_on_button_focus.bind(corner_button, true))
+		corner_button.focus_exited.connect(_on_button_focus.bind(corner_button, false))
+
 	settings_container.closed.connect(_on_settings_closed)
 	tips_archive.closed.connect(_on_tips_closed)
+	profile_panel.closed.connect(_on_profile_panel_closed)
 
 
 func _process(_delta: float) -> void:
@@ -121,6 +127,29 @@ func _refresh_continue_button() -> void:
 	continue_button.disabled = not has_save
 
 
+func _refresh_profile_button() -> void:
+	profile_button.text = "PROFILE %d" % ProfileManager.active_slot
+
+
+func _on_profile_changed(_slot: int) -> void:
+	_refresh_continue_button()
+	_refresh_profile_button()
+
+
+func _on_profile_button_pressed() -> void:
+	AudioManager.play_sfx(UISounds.CLICK)
+	menu_container.hide()
+	profile_button.hide()
+	profile_panel.show()
+
+
+func _on_profile_panel_closed() -> void:
+	profile_panel.hide()
+	menu_container.show()
+	profile_button.show()
+	call_deferred("_focus_main_menu")
+
+
 func _on_continue_pressed() -> void:
 	if not RunSaveManager.has_save():
 		return
@@ -162,6 +191,7 @@ func _on_tips_closed() -> void:
 
 func _on_exit_pressed() -> void:
 	AudioManager.play_sfx(UISounds.CLICK)
+	ProfileManager.flush_play_time()
 	get_tree().quit()
 
 

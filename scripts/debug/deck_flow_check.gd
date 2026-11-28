@@ -84,7 +84,7 @@ func _run() -> void:
 
 	# Save, then read the deck back from the file.
 	RunSaveManager.save_current_run()
-	var payload: Dictionary = preload("res://scripts/helpers/atomic_save_file.gd").read_json_dictionary(RunSaveManager.SAVE_PATH)
+	var payload: Dictionary = preload("res://scripts/helpers/atomic_save_file.gd").read_json_dictionary(RunSaveManager.save_path())
 	var saved_deck: Dictionary = payload.get("deck", {})
 	_check((saved_deck.get("hand", []) as Array).size() == DeckManager.HOUR_DRAW, "the save holds the hand")
 	var saved_total := 0

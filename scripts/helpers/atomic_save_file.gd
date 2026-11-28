@@ -63,7 +63,15 @@ static func read_var_dictionary(path: String) -> Dictionary:
 	return {}
 
 
+## Profile folders are created on their first write.
+static func _ensure_dir(path: String) -> void:
+	var dir := path.get_base_dir()
+	if not DirAccess.dir_exists_absolute(dir):
+		DirAccess.make_dir_recursive_absolute(dir)
+
+
 static func _write_tmp_text(path: String, text: String) -> bool:
+	_ensure_dir(path)
 	var tmp := tmp_path(path)
 	var file := FileAccess.open(tmp, FileAccess.WRITE)
 	if file == null:
@@ -76,6 +84,7 @@ static func _write_tmp_text(path: String, text: String) -> bool:
 
 
 static func _write_tmp_var(path: String, value: Variant) -> bool:
+	_ensure_dir(path)
 	var tmp := tmp_path(path)
 	var file := FileAccess.open(tmp, FileAccess.WRITE)
 	if file == null:

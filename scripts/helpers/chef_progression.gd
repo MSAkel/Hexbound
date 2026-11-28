@@ -52,6 +52,14 @@ static func level_for_xp(xp: int) -> int:
 	return mini(level, MAX_LEVEL)
 
 
+## The chef level that decides which rewards show: the real level, or MAX_LEVEL on a profile with
+## Unlock all (ProfileManager). The XP bar and stats keep showing the real level.
+static func reward_level_for_xp(xp: int) -> int:
+	if ProfileManager.is_unlock_all():
+		return MAX_LEVEL
+	return level_for_xp(xp)
+
+
 ## Total XP that reaches a level (1-based).
 static func xp_for_level(level: int) -> int:
 	return LEVEL_XP[clampi(level, 1, MAX_LEVEL) - 1]

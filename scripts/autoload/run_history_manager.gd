@@ -4,7 +4,7 @@ extends Node
 ## Separate from the mid-run resume save and from lifetime meta aggregates.
 
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
-const SAVE_PATH := "user://run_history.json"
+const SAVE_FILE_NAME := "run_history.json"
 const SAVE_VERSION := 1
 const MAX_ENTRIES := 50
 const HEX_MAP_GROUP := "hex_map_group"
@@ -23,16 +23,28 @@ func ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	if not SAVE_FILE.has_readable(SAVE_PATH):
+	if not SAVE_FILE.has_readable(_save_path()):
 		_entries = []
 		return
-	var data := SAVE_FILE.read_json_dictionary(SAVE_PATH)
+	var data := SAVE_FILE.read_json_dictionary(_save_path())
 	if data.is_empty():
 		_entries = []
 		return
 	_entries = data.get("entries", [])
 	if _entries is not Array:
 		_entries = []
+
+
+## ProfileManager switched or cleared the profile.
+func reload() -> void:
+	_loaded = false
+	_entries = []
+	_archived_this_run = false
+	ensure_loaded()
+
+
+func _save_path() -> String:
+	return ProfileManager.path(SAVE_FILE_NAME)
 
 
 ## Call when a fresh run begins so a later end can archive once.
@@ -43,7 +55,7 @@ func notify_run_started() -> void:
 func clear() -> void:
 	_entries = []
 	_archived_this_run = false
-	SAVE_FILE.delete_all(SAVE_PATH)
+	SAVE_FILE.delete_all(_save_path())
 
 
 ## Snapshot the live board and run totals into history. Safe to call twice in one run.
@@ -157,5 +169,5 @@ func _save() -> void:
 		"version": SAVE_VERSION,
 		"entries": _entries,
 	}
-	if not SAVE_FILE.write_text(SAVE_PATH, JSON.stringify(payload)):
+	if not SAVE_FILE.write_text(_save_path(), JSON.stringify(payload)):
 		push_error("RunHistoryManager: failed to write run history")

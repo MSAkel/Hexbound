@@ -10,15 +10,21 @@ REPORT_NAME = "playtest_report.json"
 BOT_SUITES = ("run", "power", "fuzz", "full_nine")
 
 
-def project_name() -> str:
+def _project_setting(key: str) -> str:
     with open(os.path.join(PROJECT_ROOT, "project.godot"), encoding="utf-8") as handle:
-        match = re.search(r'^config/name="([^"]+)"', handle.read(), re.M)
+        match = re.search(r'^%s="?([^"\r\n]+)"?' % re.escape(key), handle.read(), re.M)
     return match.group(1) if match else ""
+
+
+def project_name() -> str:
+    return _project_setting("config/name")
 
 
 def default_report_path() -> str:
     """The runner's default user:// report for this project on this machine."""
     appdata = os.environ.get("APPDATA") or os.path.expanduser("~/.local/share")
+    if _project_setting("config/use_custom_user_dir") == "true":
+        return os.path.join(appdata, _project_setting("config/custom_user_dir_name"), REPORT_NAME)
     return os.path.join(appdata, "Godot", "app_userdata", project_name(), REPORT_NAME)
 
 

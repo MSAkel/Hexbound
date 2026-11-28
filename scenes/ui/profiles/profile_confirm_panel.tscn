@@ -1,0 +1,108 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/profiles/profile_confirm_panel.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bfkrusn35um81" path="res://assets/gui/panels/panel_borderless.png" id="2_wthhp"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+content_margin_left = 43.0
+content_margin_top = 49.0
+content_margin_right = 41.0
+content_margin_bottom = 57.0
+texture = ExtResource("2_wthhp")
+
+[node name="ProfileConfirmPanel" type="Control"]
+visible = false
+z_index = 20
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0.05, 0.08, 0.09, 0.62)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DialogPanel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(560, 300)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_panel")
+
+[node name="Content" type="VBoxContainer" parent="Center/DialogPanel"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleLabel" type="Label" parent="Center/DialogPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 23
+text = "Are you sure?"
+horizontal_alignment = 1
+
+[node name="TitleGap" type="Control" parent="Center/DialogPanel/Content"]
+custom_minimum_size = Vector2(0, 33)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="DescriptionLabel" type="Label" parent="Center/DialogPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4509804, 0.18039216, 0.24313726, 1)
+theme_override_font_sizes/font_size = 20
+text = "This can't be undone."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ButtonSpacer" type="Control" parent="Center/DialogPanel/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="ButtonRow" type="HBoxContainer" parent="Center/DialogPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="CancelButton" type="Button" parent="Center/DialogPanel/Content/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(199, 58)
+layout_mode = 2
+theme_type_variation = &"CancelButton"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Cancel"
+
+[node name="ConfirmButton" type="Button" parent="Center/DialogPanel/Content/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(199, 58)
+layout_mode = 2
+theme_type_variation = &"ConfirmButton"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.92, 0.92, 0.92, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Confirm"
+
+[connection signal="pressed" from="Center/DialogPanel/Content/ButtonRow/CancelButton" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="Center/DialogPanel/Content/ButtonRow/ConfirmButton" to="." method="_on_confirm_button_pressed"]
