@@ -119,7 +119,7 @@ func _check_reward_level(problems: Array[String], chef_id: String, entry: Dictio
 
 
 ## Unlock all (ProfileManager) must open every lock the game has: chef rewards, Meal Story and Fun
-## facts, and "???" Meals. A new lock that skips is_unlock_all() should get a line here.
+## facts, "???" Meals and difficulty levels. A new lock that skips is_unlock_all() should get a line here.
 func _check_unlock_all() -> void:
 	var problems: Array[String] = []
 	ProfileManager.unlock_all_override = 1
@@ -134,8 +134,15 @@ func _check_unlock_all() -> void:
 	for key: String in ["story", "facts", "discovered"]:
 		if not bool(meal[key]):
 			problems.append("Meal %s stays locked" % key)
+	var last_difficulty := Difficulty.get_all_levels().size() - 1
+	for chef: ChefDefinition in ChefRegistry.get_all_chefs():
+		if not ChefProgression.is_difficulty_unlocked(chef.id, last_difficulty):
+			problems.append("difficulty Level %d stays locked for %s" % [last_difficulty + 1, chef.id])
 	ProfileManager.unlock_all_override = 0
 	if ChefProgression.reward_level_for_xp(0) != 1:
 		problems.append("chef rewards unlocked without the flag")
+	for chef: ChefDefinition in ChefRegistry.get_all_chefs():
+		if not ChefProgression.is_difficulty_unlocked(chef.id, 0):
+			problems.append("difficulty Level 1 locked for %s" % chef.id)
 	ProfileManager.unlock_all_override = -1
 	_check("Unlock all", problems.is_empty(), "every lock opens" if problems.is_empty() else "; ".join(problems))

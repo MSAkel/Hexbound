@@ -67,6 +67,26 @@ static func xp_for_level(level: int) -> int:
 #endregion
 
 
+#region Difficulty unlocks
+
+## Difficulty levels unlock per chef (user, Nov 28): Level 1 is always open, and winning a run on a
+## level opens the next one for that chef only. Built on CollectionStats' highest_difficulty_won, so
+## wins from before this change count. Unlock all opens every level.
+static func highest_unlocked_difficulty(chef_id: String) -> int:
+	var last := Difficulty.get_all_levels().size() - 1
+	if ProfileManager.is_unlock_all():
+		return last
+	var won := int(CollectionStats.get_chef_stats(chef_id).get("highest_difficulty_won", -1))
+	return clampi(won + 1, 0, last)
+
+
+## level is a Difficulty.Level index.
+static func is_difficulty_unlocked(chef_id: String, level: int) -> bool:
+	return level <= highest_unlocked_difficulty(chef_id)
+
+#endregion
+
+
 #region Rewards
 
 ## Signature cards in unlock order: [{"card_id", "level"}]. Without authored entries, one slot per

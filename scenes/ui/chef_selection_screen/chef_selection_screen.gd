@@ -133,6 +133,7 @@ func _step_layout(direction: int) -> void:
 
 func _update_display() -> void:
 	layout_details.display_selection(get_selected_chef())
+	difficulty_container.set_chef(get_selected_chef().id)
 	ProfileManager.set_last_chef_selection_id(get_selected_chef().id)
 
 
@@ -162,6 +163,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_play_button_pressed() -> void:
+	if not difficulty_container.is_selected_unlocked():
+		return
 	AudioManager.play_sfx(UISounds.CLICK)
 	if RunSaveManager.has_save():
 		abandon_run_confirm_panel.show_panel()

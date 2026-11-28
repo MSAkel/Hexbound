@@ -147,6 +147,10 @@ Collection screen reads the same file through `MealLore`) plus effect, category 
   Station levelling is on (`StationManager.LEVELING_ENABLED`).
   Day 1's target is the same at every level: no one should lose Day 1. Ramp values are untuned.
   `Difficulty.Level` is 0-based (`LEVEL_1` = 0); saves store that index.
+  Levels unlock per chef (`ChefProgression.is_difficulty_unlocked`): Level 1 is open, and a won run on
+  a level opens the next one for that chef only (from `highest_difficulty_won` in `CollectionStats`).
+  The chef selection screen only shows unlocked levels: its arrows stop (disabled) at Level 1 and
+  at the highest unlocked level, without wrapping. Bots ignore the gate.
 - Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
 
@@ -278,7 +282,7 @@ reads as defaults. Saves from before profiles are not migrated.
 - **Unlock all** sets one flag per profile; it never fakes stats or XP. Every lock must check
   `ProfileManager.is_unlock_all()`: chef rewards go through `ChefProgression.reward_level_for_xp`
   (the XP bar keeps the real level), Meal Story, Fun facts and "???" through
-  `CollectionStats.get_meal_stats`. A new lock (difficulty gates, card unlocks) must check it too and
+  `CollectionStats.get_meal_stats`, difficulty levels through `ChefProgression.highest_unlocked_difficulty`. A new lock (difficulty gates, card unlocks) must check it too and
   get a line in the content check's `_check_unlock_all`. Unlock all also turns off Steam achievements
   for that profile, once achievements exist. Tests force it with `ProfileManager.unlock_all_override`.
 - Headless runs never write `profile.cfg` or `profiles.cfg`. Play time counts while the game is open and
