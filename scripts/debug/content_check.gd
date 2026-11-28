@@ -138,6 +138,8 @@ func _check_unlock_all() -> void:
 	for chef: ChefDefinition in ChefRegistry.get_all_chefs():
 		if not ChefProgression.is_difficulty_unlocked(chef.id, last_difficulty):
 			problems.append("difficulty Level %d stays locked for %s" % [last_difficulty + 1, chef.id])
+		if not ChefProgression.is_chef_unlocked(chef.id):
+			problems.append("chef %s stays locked" % chef.id)
 	ProfileManager.unlock_all_override = 0
 	if ChefProgression.reward_level_for_xp(0) != 1:
 		problems.append("chef rewards unlocked without the flag")
@@ -146,3 +148,45 @@ func _check_unlock_all() -> void:
 			problems.append("difficulty Level 1 locked for %s" % chef.id)
 	ProfileManager.unlock_all_override = -1
 	_check("Unlock all", problems.is_empty(), "every lock opens" if problems.is_empty() else "; ".join(problems))
+	_check_chef_unlocks()
+
+
+## Every chef has an unlock rule, the condition texts exist, and the rules unlock what they say.
+## Headless runs never read or write the profile's stats, so stored unlocks are empty here and only
+## the open-from-start chefs may be open.
+func _check_chef_unlocks() -> void:
+	var problems: Array[String] = []
+	var all_ids: Array[String] = []
+	ProfileManager.unlock_all_override = 0
+	for chef: ChefDefinition in ChefRegistry.get_all_chefs():
+		all_ids.append(chef.id)
+		if not ChefProgression.CHEF_UNLOCKS.has(chef.id):
+			problems.append("%s has no unlock rule" % chef.id)
+			continue
+		var open := ChefProgression.is_chef_open_from_start(chef.id)
+		if open != (chef.id == "sous_chef"):
+			problems.append("%s open from start: %s" % [chef.id, open])
+		if ChefProgression.is_chef_unlocked(chef.id) != open:
+			problems.append("%s unlocked without a win" % chef.id)
+		if not open and ChefProgression.get_unlock_condition_text(chef.id).is_empty():
+			problems.append("%s has no condition text" % chef.id)
+		var rule: Dictionary = ChefProgression.CHEF_UNLOCKS[chef.id]
+		if rule.has("station") and StationManager.get_station_type_by_id(String(rule["station"])) == null:
+			problems.append("%s needs unknown Station %s" % [chef.id, rule["station"]])
+	ProfileManager.unlock_all_override = -1
+	for chef_id: String in ChefProgression.CHEF_UNLOCKS:
+		if chef_id not in all_ids:
+			problems.append("unlock rule for unknown chef %s" % chef_id)
+	var by_bar := ChefProgression.check_chef_unlocks({"stations": ["bar_station", "pastry_station"], "gold": 100}, ["sous_chef"])
+	by_bar.sort()
+	if by_bar != (["pastry_chef", "restaurateur", "sommelier"] as Array[String]):
+		problems.append("a Bar + Pastry win with 100 Gold unlocks %s" % [by_bar])
+	var others := all_ids.filter(func(id: String) -> bool: return id != "chef_de_cuisine")
+	var won_others: Array[String] = []
+	won_others.assign(others)
+	if "chef_de_cuisine" not in ChefProgression.check_chef_unlocks({}, won_others):
+		problems.append("winning with every other chef doesn't unlock the Chef de Cuisine")
+	won_others.erase("restaurateur")
+	if "chef_de_cuisine" in ChefProgression.check_chef_unlocks({}, won_others):
+		problems.append("the Chef de Cuisine unlocks without a Restaurateur win")
+	_check("Chef unlocks", problems.is_empty(), "%d chefs have rules" % all_ids.size() if problems.is_empty() else "; ".join(problems))

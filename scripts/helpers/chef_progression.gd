@@ -71,18 +71,99 @@ static func xp_for_level(level: int) -> int:
 
 ## Difficulty levels unlock per chef (user, Nov 28): Level 1 is always open, and winning a run on a
 ## level opens the next one for that chef only. Built on CollectionStats' highest_difficulty_won, so
-## wins from before this change count. Unlock all opens every level.
+## wins from before this change count. Unlock all opens every level. A locked chef (see Chef
+## unlocks) has only Level 1.
 static func highest_unlocked_difficulty(chef_id: String) -> int:
 	var last := Difficulty.get_all_levels().size() - 1
 	if ProfileManager.is_unlock_all():
 		return last
+	if not is_chef_unlocked(chef_id):
+		return 0
 	var won := int(CollectionStats.get_chef_stats(chef_id).get("highest_difficulty_won", -1))
 	return clampi(won + 1, 0, last)
 
 
-## level is a Difficulty.Level index.
+## level is a Difficulty.Level index. A locked chef has only Level 1.
 static func is_difficulty_unlocked(chef_id: String, level: int) -> bool:
 	return level <= highest_unlocked_difficulty(chef_id)
+
+#endregion
+
+
+#region Chef unlocks
+
+## How each chef unlocks (user, Nov 28; project doc "Flavour Pass: Chef Unlocks Design"). An empty
+## entry is open from the start. Otherwise the chef unlocks on a win (any chef, any difficulty) with:
+## "station": that Station type on the board at the win; "gold": at least that much Gold held at the
+## win; "all_other_chefs": a win with every other chef since unlocks began. The chef selection
+## screen's condition text and the run-end check both read this table. Wins from before chef unlocks
+## existed don't count, and seeded runs never count (CollectionStats).
+const CHEF_UNLOCKS: Dictionary[String, Dictionary] = {
+	"sous_chef": {},
+	"sommelier": {"station": "bar_station"},
+	"forager": {"station": "cold_station"},
+	"fishmonger": {"station": "fish_station"},
+	"pitmaster": {"station": "grilling_station"},
+	"pastry_chef": {"station": "pastry_station"},
+	"restaurateur": {"gold": 100},
+	"chef_de_cuisine": {"all_other_chefs": true},
+}
+
+
+## Unlock all opens every chef. A chef missing from CHEF_UNLOCKS is open (the content check flags it).
+static func is_chef_unlocked(chef_id: String) -> bool:
+	if ProfileManager.is_unlock_all() or is_chef_open_from_start(chef_id):
+		return true
+	return CollectionStats.is_chef_unlock_stored(chef_id)
+
+
+static func is_chef_open_from_start(chef_id: String) -> bool:
+	return (CHEF_UNLOCKS.get(chef_id, {}) as Dictionary).is_empty()
+
+
+## The chef selection screen's text for a locked chef, e.g. "Win a run with a Bar Station on the
+## board."
+static func get_unlock_condition_text(chef_id: String) -> String:
+	var rule: Dictionary = CHEF_UNLOCKS.get(chef_id, {})
+	if rule.has("station"):
+		return "Win a run with a %s on the board." % _station_name(String(rule["station"]))
+	if rule.has("gold"):
+		return "Win a run holding %d or more Gold." % int(rule["gold"])
+	if rule.has("all_other_chefs"):
+		return "Win a run with each of the other %d chefs." % (CHEF_UNLOCKS.size() - 1)
+	return ""
+
+
+## Chefs this win unlocks, whether or not they were unlocked before (the caller keeps the stored ones).
+## win: {"stations": station type ids on the board, "gold": Gold held}. won_chefs: every chef won
+## with since unlocks began, this win's chef included.
+static func check_chef_unlocks(win: Dictionary, won_chefs: Array[String]) -> Array[String]:
+	var stations: Array = win.get("stations", [])
+	var gold := int(win.get("gold", 0))
+	var unlocked: Array[String] = []
+	for chef_id: String in CHEF_UNLOCKS:
+		var rule: Dictionary = CHEF_UNLOCKS[chef_id]
+		if rule.is_empty():
+			continue
+		var met := true
+		if rule.has("station") and String(rule["station"]) not in stations:
+			met = false
+		if rule.has("gold") and gold < int(rule["gold"]):
+			met = false
+		if rule.has("all_other_chefs"):
+			for other_id: String in CHEF_UNLOCKS:
+				if other_id != chef_id and other_id not in won_chefs:
+					met = false
+		if met:
+			unlocked.append(chef_id)
+	return unlocked
+
+
+## "Bar" reads "Bar Station"; names that already say Station stay as they are.
+static func _station_name(station_id: String) -> String:
+	var station_type := StationManager.get_station_type_by_id(station_id)
+	var station_name := station_type.display_name if station_type != null else station_id.capitalize()
+	return station_name if station_name.ends_with("Station") else "%s Station" % station_name
 
 #endregion
 
