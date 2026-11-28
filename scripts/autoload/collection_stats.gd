@@ -7,7 +7,12 @@ extends Node
 ## During a run, counts gather in _run (pending) and travel inside the run save, so a run that is
 ## continued later or abandoned from the menu still counts. They are merged into the lifetime file
 ## once, when the run ends: won, lost or abandoned. A crash or quit loses only what came after the
-## last checkpoint. The playtest bot, fuzz runs and CI never count or write (see _is_tracking).
+## last checkpoint. The playtest bot, fuzz runs and CI never count or write (see _is_tracking), and
+## seeded runs never merge: no stats, chef XP, difficulty or chef unlocks.
+##
+## Chef unlocks (ChefProgression.CHEF_UNLOCKS) live in their own "unlocks" section, {"chefs": ids
+## unlocked, "won_chefs": ids won with}, filled only from wins after chef unlocks were added, so
+## older wins in "chefs" never count. A file without it has only the open-from-start chefs.
 
 const STATS_FILE_NAME := "collection_stats.json"
 const SAVE_FILE := preload("res://scripts/helpers/atomic_save_file.gd")
@@ -83,6 +88,11 @@ func get_chef_stats(chef_id: String) -> Dictionary:
 		"level": ChefProgression.level_for_xp(xp),
 	}
 
+## True when a win has unlocked this chef (stored, so it never locks again). Use
+## ChefProgression.is_chef_unlocked, which also opens the start chef and Unlock all.
+func is_chef_unlock_stored(chef_id: String) -> bool:
+	return chef_id in _unlock_list("chefs")
+
 #endregion
 
 
@@ -150,12 +160,19 @@ func finish_run(is_win: bool) -> void:
 	if _finished_this_run or not _is_tracking():
 		return
 	_finished_this_run = true
+	if RunRng.is_unlock_progress_disabled():
+		return
 	_note_deck_meals()
 	var chef_id := GameManager.selected_chef.id if GameManager.selected_chef != null else ""
 	# A lost run failed its current Day; a won run cleared every Day up to it.
 	var day := GameManager.current_round
 	var days_cleared := day if is_win else day - 1
-	_merge(_run, _capture_final(), chef_id, is_win, day, int(GameManager.selected_difficulty), days_cleared)
+	var final := _capture_final()
+	_merge(_run, final, chef_id, is_win, day, int(GameManager.selected_difficulty), days_cleared)
+	if is_win:
+		_record_chef_unlocks(chef_id, final.get("stations", []), EconomyManager.amount)
+	_save()
+	ProfileManager.refresh_summary()
 
 
 ## An abandoned run, from its resume save: counts as a run for the Chef, never as a win. It still
@@ -163,12 +180,18 @@ func finish_run(is_win: bool) -> void:
 func finish_abandoned_run(save_payload: Dictionary) -> void:
 	if not _is_writable():
 		return
+	# The live RunRng may hold another run by now, so the save says whether this one was seeded.
+	var run_rng: Variant = save_payload.get("run_rng", {})
+	if run_rng is Dictionary and bool((run_rng as Dictionary).get("is_seeded_run", false)):
+		return
 	var state: Dictionary = save_payload.get("collection_stats", {})
 	var game_state: Dictionary = save_payload.get("game_manager", {})
 	var final: Dictionary = state.get("final", {}) if state.get("final") is Dictionary else {}
 	var day := int(game_state.get("current_round", 1))
 	_merge(state, final, String(save_payload.get("chef_id", "")), false,
 		day, int(save_payload.get("difficulty", 0)), day - 1)
+	_save()
+	ProfileManager.refresh_summary()
 
 
 func _merge(run: Dictionary, final: Dictionary, chef_id: String, is_win: bool, day: int, difficulty: int, days_cleared: int) -> void:
@@ -211,8 +234,20 @@ func _merge(run: Dictionary, final: Dictionary, chef_id: String, is_win: bool, d
 			_add(chef, "wins", 1)
 			chef["highest_difficulty_won"] = maxi(int(chef.get("highest_difficulty_won", -1)), difficulty)
 		_add_chef_xp(chef_id, chef, ChefProgression.run_xp(days_cleared, is_win, difficulty))
-	_save()
-	ProfileManager.refresh_summary()
+
+
+## A win: notes the chef won with and stores every chef it unlocks. stations are the Station type
+## ids on the board at the win, gold the Gold held then (the last Day's completion Gold is paid).
+func _record_chef_unlocks(chef_id: String, stations: Variant, gold: int) -> void:
+	var won := _unlock_list("won_chefs")
+	if not chef_id.is_empty() and chef_id not in won:
+		won.append(chef_id)
+	var unlocked := _unlock_list("chefs")
+	for unlocked_id: String in ChefProgression.check_chef_unlocks(
+			{"stations": _unique(stations), "gold": gold}, won):
+		if unlocked_id not in unlocked:
+			unlocked.append(unlocked_id)
+	_lifetime["unlocks"] = {"chefs": unlocked, "won_chefs": won}
 
 
 ## Adds a run's XP. A chef level that reaches a signature Meal marks it discovered, so the Cards
@@ -307,6 +342,13 @@ func _entry_for_write(group: String, id: String) -> Dictionary:
 	if not bucket.get(id) is Dictionary:
 		bucket[id] = {}
 	return bucket[id]
+
+
+## A list in the "unlocks" section, as a fresh Array.
+func _unlock_list(key: String) -> Array[String]:
+	_ensure_loaded()
+	var section: Variant = _lifetime.get("unlocks", {})
+	return _unique((section as Dictionary).get(key, []) if section is Dictionary else [])
 
 
 func _empty_run() -> Dictionary:

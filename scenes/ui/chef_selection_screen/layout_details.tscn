@@ -68,11 +68,13 @@ text = "Every 3rd Kitchenware Trigger repeats."
 autowrap_mode = 3
 
 [node name="ProgressGap" type="Control" parent="InfoColumn" unique_id=1601771924]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 mouse_filter = 2
 
 [node name="ProgressRow" type="HBoxContainer" parent="InfoColumn" unique_id=1601771927]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="ProgressLabel" type="Label" parent="InfoColumn/ProgressRow" unique_id=1601771925]

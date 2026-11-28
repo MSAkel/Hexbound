@@ -135,6 +135,8 @@ func _update_display() -> void:
 	layout_details.display_selection(get_selected_chef())
 	difficulty_container.set_chef(get_selected_chef().id)
 	ProfileManager.set_last_chef_selection_id(get_selected_chef().id)
+	# A locked chef can be browsed but not played. A locked last chef still opens here.
+	play_button.disabled = not ChefProgression.is_chef_unlocked(get_selected_chef().id)
 
 
 func _on_back_button_pressed() -> void:
@@ -163,7 +165,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_play_button_pressed() -> void:
-	if not difficulty_container.is_selected_unlocked():
+	if not difficulty_container.is_selected_unlocked() or not _is_selected_chef_unlocked():
 		return
 	AudioManager.play_sfx(UISounds.CLICK)
 	if RunSaveManager.has_save():
@@ -181,7 +183,15 @@ func _on_abandon_run_cancelled() -> void:
 	call_deferred("_focus_chef_selection")
 
 
+func _is_selected_chef_unlocked() -> bool:
+	var chef := layout_details.get_selected_chef()
+	return chef != null and ChefProgression.is_chef_unlocked(chef.id)
+
+
+## The bots and --chef= set GameManager.selected_chef directly and ignore the lock.
 func _start_new_run() -> void:
+	if not _is_selected_chef_unlocked():
+		return
 	var selected_chef := layout_details.get_selected_chef()
 	# Chef choice locks in its speciality for the entire run.
 	GameManager.selected_chef = selected_chef

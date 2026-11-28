@@ -150,7 +150,8 @@ Collection screen reads the same file through `MealLore`) plus effect, category 
   Levels unlock per chef (`ChefProgression.is_difficulty_unlocked`): Level 1 is open, and a won run on
   a level opens the next one for that chef only (from `highest_difficulty_won` in `CollectionStats`).
   The chef selection screen only shows unlocked levels: its arrows stop (disabled) at Level 1 and
-  at the highest unlocked level, without wrapping. Bots ignore the gate.
+  at the highest unlocked level, without wrapping. Bots ignore the gate. A locked chef (see Chef
+  unlocks) has only Level 1.
 - Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
 
@@ -228,6 +229,27 @@ per Station type, used as a mini (first 5), small (first 6) or full (all 9) kit.
 `ChefRegistry.build_starting_deck` builds it in the `starting_deck:<chef id>` RNG stream, so a seed
 deals the same deck. An empty `deck_stations` deals the full set with no Meals.
 
+### Chef unlocks
+
+Design: the project doc "Flavour Pass: Chef Unlocks Design". Only the Sous Chef is open on a new
+profile. Every other chef unlocks on a won run (any chef, any difficulty) that meets its rule in
+`ChefProgression.CHEF_UNLOCKS`: Sommelier, Forager, Fishmonger, Pitmaster and Pastry Chef need a Bar,
+Cold, Fish, Grilling or Pastry Station on the board at the win; Restaurateur 100+ Gold held at the win
+(`EconomyManager.amount`, after the last Day's completion Gold); Chef de Cuisine a win with each of
+the other 7. One win can unlock several. The same table gives the chef selection screen's condition
+text (`get_unlock_condition_text`) and the run-end check (`check_chef_unlocks`).
+
+- Stored in the `unlocks` section of `collection_stats.json`: `chefs` (unlocked ids) and `won_chefs`
+  (ids won with), written in the run-end merge on a win. Wins from before chef unlocks don't count
+  (the `chefs` stats section is not read). Stored unlocks never lock again. Unlock all opens every
+  chef (`ChefProgression.is_chef_unlocked`).
+- The chef selection screen still steps through all 8 chefs. A locked one shows LOCKED, its
+  condition and a black silhouette (`LayoutDetails.locked_silhouette_color`), no chef level, Level 1
+  only, and Play disabled (`_start_new_run` refuses it too). Bots and `--chef=` ignore the lock.
+- **Seeded runs count for nothing** but run history: `CollectionStats.finish_run` and
+  `finish_abandoned_run` (reading `run_rng.is_seeded_run` from the save) skip the whole merge, so no
+  stats, chef XP, difficulty or chef unlocks. This applies to every future unlock too.
+
 ## Collection screen
 
 `scenes/ui/collection/collection.tscn`: a menu of six collections, each a page with a tile list
@@ -241,7 +263,7 @@ run save: Picked (Merchant buys, pack picks, card picks), Wins with (in the fina
 / board at a win), Times served, Station Times set, Chef runs, wins, best Day and top level won.
 A run's counts gather in memory, ride in the run save (`collection_stats` key) and merge into the
 file once when the run ends (`RunHistoryManager.archive_finished_run`, or
-`finish_abandoned_run` from the save). Headless runs and `skip_presentation` (bot, fuzz, CI) never
+`finish_abandoned_run` from the save). Headless runs, seeded runs and `skip_presentation` (bot, fuzz, CI) never
 count or write. Story unlocks at 30 lifetime serves, Fun facts at 50 (`STORY_UNLOCK_SERVES`,
 `FACTS_UNLOCK_SERVES`). Unlocks are stored, so they never lock again. A Meal with
 `hidden_until_discovered` shows as "???" until it has been in the deck (none are hidden now).
@@ -282,7 +304,8 @@ reads as defaults. Saves from before profiles are not migrated.
 - **Unlock all** sets one flag per profile; it never fakes stats or XP. Every lock must check
   `ProfileManager.is_unlock_all()`: chef rewards go through `ChefProgression.reward_level_for_xp`
   (the XP bar keeps the real level), Meal Story, Fun facts and "???" through
-  `CollectionStats.get_meal_stats`, difficulty levels through `ChefProgression.highest_unlocked_difficulty`. A new lock (difficulty gates, card unlocks) must check it too and
+  `CollectionStats.get_meal_stats`, difficulty levels through `ChefProgression.highest_unlocked_difficulty`, chefs through
+  `ChefProgression.is_chef_unlocked`. A new lock (difficulty gates, card unlocks) must check it too and
   get a line in the content check's `_check_unlock_all`. Unlock all also turns off Steam achievements
   for that profile, once achievements exist. Tests force it with `ProfileManager.unlock_all_override`.
 - Headless runs never write `profile.cfg` or `profiles.cfg`. Play time counts while the game is open and

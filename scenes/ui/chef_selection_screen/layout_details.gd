@@ -1,6 +1,9 @@
 class_name LayoutDetails
 extends HBoxContainer
 
+## Multiplies a locked chef's portrait to a flat black shape. Alpha stays.
+@export var locked_silhouette_color := Color(0, 0, 0, 1)
+
 # Kept in sync by display_selection so Play can lock in the visible chef.
 var _selected_chef: ChefDefinition = null
 
@@ -10,12 +13,26 @@ var _selected_chef: ChefDefinition = null
 @onready var progress_label: Label = %ProgressLabel
 @onready var progress_count: Label = %ProgressCount
 @onready var progress_bar: ProgressBar = %ProgressBar
+@onready var progress_gap: Control = %ProgressGap
+@onready var progress_row: HBoxContainer = %ProgressRow
+
+
+## A locked chef (ChefProgression.is_chef_unlocked) shows LOCKED, its unlock condition and a
+## silhouette, and no chef level: it can't earn XP yet.
 
 
 func display_selection(chef: ChefDefinition) -> void:
 	_selected_chef = chef
-	chef_name_label.text = chef.display_name.to_upper()
+	var unlocked := ChefProgression.is_chef_unlocked(chef.id)
 	chef_icon.texture = chef.icon
+	chef_icon.self_modulate = Color.WHITE if unlocked else locked_silhouette_color
+	for node: Control in [progress_gap, progress_row, progress_bar]:
+		node.visible = unlocked
+	if not unlocked:
+		chef_name_label.text = "LOCKED"
+		speciality_description_label.text = ChefProgression.get_unlock_condition_text(chef.id)
+		return
+	chef_name_label.text = chef.display_name.to_upper()
 	speciality_description_label.text = CardKeywordGlossary.to_plain(chef.speciality_description)
 	_display_chef_level(int(CollectionStats.get_chef_stats(chef.id)["xp"]))
 
