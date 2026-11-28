@@ -1,17 +1,14 @@
 class_name DifficultyLevelContainer
 extends HBoxContainer
 
-## Emitted when the shown level or its lock state changes, so the screen can enable Play.
-signal selection_changed
-
-## Locked levels stay browsable but show this text and dim the number (ChefProgression decides
-## what is unlocked, per chef).
-const LOCKED_INFO := "Locked. Win a run on Level %d with this chef to unlock."
-const LOCKED_MODULATE := Color(1, 1, 1, 0.45)
+## Only unlocked levels can be shown (ChefProgression decides, per chef). The arrows stop at Level 1
+## and at the chef's highest unlocked level instead of wrapping, and are disabled there.
+const DISABLED_ARROW_MODULATE := Color(1, 1, 1, 0.35)
 
 @onready var difficulty_level: Label = %DifficultyLevel
 @onready var difficulty_info: Label = %DifficultyInfo
-@onready var number_box: Control = $DifficultyPanel/DifficultyCopy/NumberBox
+@onready var prev_button: TextureButton = $PrevSelectionButton
+@onready var next_button: TextureButton = $NextSelectionButton
 
 # Ordered list used for prev/next navigation on the selection screen.
 var _difficulties: Array[Difficulty.Level] = Difficulty.get_all_levels()
@@ -28,14 +25,14 @@ func get_selected_difficulty() -> Difficulty.Level:
 
 
 func is_selected_unlocked() -> bool:
-	return _chef_id.is_empty() or ChefProgression.is_difficulty_unlocked(_chef_id, int(get_selected_difficulty()))
+	return _current_index <= _highest_index()
 
 
 ## Shows the unlocks of this chef. A level the chef hasn't unlocked falls back to its highest
 ## unlocked level.
 func set_chef(chef_id: String) -> void:
 	_chef_id = chef_id
-	_clamp_to_unlocked()
+	_current_index = mini(_current_index, _highest_index())
 	_update_display()
 
 
@@ -44,18 +41,14 @@ func display_difficulty(level: Difficulty.Level) -> void:
 	if index < 0:
 		return
 
-	_current_index = index
-	_clamp_to_unlocked()
+	_current_index = mini(index, _highest_index())
 	_update_display()
 
 
-func _clamp_to_unlocked() -> void:
+func _highest_index() -> int:
 	if _chef_id.is_empty():
-		return
-	var highest := ChefProgression.highest_unlocked_difficulty(_chef_id)
-	if int(_difficulties[_current_index]) > highest:
-		var index := _difficulties.find(highest)
-		_current_index = maxi(index, 0)
+		return _difficulties.size() - 1
+	return clampi(ChefProgression.highest_unlocked_difficulty(_chef_id), 0, _difficulties.size() - 1)
 
 
 # Refresh the name and description labels for the current difficulty.
@@ -65,21 +58,28 @@ func _update_display() -> void:
 	var level := _difficulties[_current_index]
 	# The number box shows the level number only ("Level 3" -> "3").
 	difficulty_level.text = str(_current_index + 1)
-	var unlocked := is_selected_unlocked()
-	difficulty_info.text = Difficulty.get_level_info(level) if unlocked else LOCKED_INFO % _current_index
-	number_box.modulate = Color.WHITE if unlocked else LOCKED_MODULATE
-	selection_changed.emit()
+	difficulty_info.text = Difficulty.get_level_info(level)
+	_set_arrow_enabled(prev_button, _current_index > 0)
+	_set_arrow_enabled(next_button, _current_index < _highest_index())
 
 
-# Wrap to the last difficulty when moving past the start of the list.
+func _set_arrow_enabled(button: TextureButton, enabled: bool) -> void:
+	button.disabled = not enabled
+	button.modulate = Color.WHITE if enabled else DISABLED_ARROW_MODULATE
+	button.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+
+
 func _on_prev_selection_button_pressed() -> void:
-	_current_index = (_current_index - 1 + _difficulties.size()) % _difficulties.size()
+	if _current_index <= 0:
+		return
+	_current_index -= 1
 	_update_display()
 	AudioManager.play_sfx(UISounds.SELECT)
 
 
-# Wrap to the first difficulty when moving past the end of the list.
 func _on_next_selection_button_pressed() -> void:
-	_current_index = (_current_index + 1) % _difficulties.size()
+	if _current_index >= _highest_index():
+		return
+	_current_index += 1
 	_update_display()
 	AudioManager.play_sfx(UISounds.SELECT)

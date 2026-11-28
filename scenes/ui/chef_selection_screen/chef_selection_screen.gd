@@ -27,7 +27,6 @@ func _ready() -> void:
 	PadPrompt.attach(next_selection_button, InputManager.ACTION_PAGE_NEXT)
 
 	selections = ChefRegistry.get_all_chefs()
-	difficulty_container.selection_changed.connect(_update_play_button)
 
 	var previous_run_transition := RunSaveManager.consume_scene_enter_transition_request()
 	_restore_last_chef()
@@ -136,11 +135,6 @@ func _update_display() -> void:
 	layout_details.display_selection(get_selected_chef())
 	difficulty_container.set_chef(get_selected_chef().id)
 	ProfileManager.set_last_chef_selection_id(get_selected_chef().id)
-
-
-## Play stays off while the shown difficulty is locked for this chef.
-func _update_play_button() -> void:
-	play_button.disabled = not difficulty_container.is_selected_unlocked()
 
 
 func _on_back_button_pressed() -> void:

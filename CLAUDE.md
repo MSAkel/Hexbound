@@ -149,7 +149,8 @@ Collection screen reads the same file through `MealLore`) plus effect, category 
   `Difficulty.Level` is 0-based (`LEVEL_1` = 0); saves store that index.
   Levels unlock per chef (`ChefProgression.is_difficulty_unlocked`): Level 1 is open, and a won run on
   a level opens the next one for that chef only (from `highest_difficulty_won` in `CollectionStats`).
-  The chef selection screen shows locked levels dimmed and disables Play on them. Bots ignore the gate.
+  The chef selection screen only shows unlocked levels: its arrows stop (disabled) at Level 1 and
+  at the highest unlocked level, without wrapping. Bots ignore the gate.
 - Baseline (Oct 2026, Level 1, 2 runs/chef): all chefs win; Sommelier's late-game
   score/goal ratio (3–4x on days 6–9) is much higher than the other chefs (1.1–2x) — worth watching.
 
